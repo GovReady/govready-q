@@ -1,0 +1,40 @@
+{% extends "master.html" %}
+
+{% block title %}
+{{m.title}} - GovReady
+{% endblock %}
+
+{% block body %}
+<h1>{{m.title}}</h1>
+
+<div>
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#result" aria-controls="result" role="tab" data-toggle="tab">Result</a></li>
+    <li role="presentation"><a href="#questions" aria-controls="questions" role="tab" data-toggle="tab">Questions</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="result">
+        <h2>Module Complete</h2>
+        <blockquote>
+            {{output|safe}}
+        </blockquote>
+        
+    </div>
+
+    <div role="tabpanel" class="tab-pane" id="questions">
+        <h2>Questions</h2>
+        {% for q in all_questions %}
+            <p><a href="?q={{q.id}}">{{q.title}}</a></p>
+        {% endfor %}        
+    </div>
+  </div>
+
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

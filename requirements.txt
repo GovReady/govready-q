@@ -1,0 +1,4 @@
+markdown
+jinja2
+rtyaml
+django==1.9

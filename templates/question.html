@@ -1,0 +1,106 @@
+{% extends "master.html" %}
+
+{% block title %}
+Next Question: {{q.title}} - GovReady
+{% endblock %}
+
+{% block body %}
+<h1>{{q.title}}</h1>
+
+<div id="question" style="margin: 2em 0">
+    <form method="post">
+        {% csrf_token %}
+
+        <input type="hidden" name="question" value="{{q.id}}">
+
+        {% if q.type == "text" %}
+          <div class="form-group">
+            <label for="inputctrl">{{q.prompt}}</label>
+            <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.placeholder}}" {% if last_value %}value="{{last_value}}"{% endif %}>
+            <p class="help-block">{{q.help}}</p>
+          </div>
+
+        {% elif q.type == "email" %}
+          <div class="form-group">
+            <label for="inputctrl">{{q.prompt}}</label>
+            <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if last_value %}value="{{last_value}}"{% endif %}>
+            <p class="help-block">{{q.help}}</p>
+          </div>
+
+        {% elif q.type == "password" %}
+          <div class="form-group">
+            <label for="inputctrl">{{q.prompt}}</label>
+            <input name="value" type="password" class="form-control" id="inputctrl" placeholder="password">
+            <p class="help-block">{{q.help}}</p>
+          </div>
+
+        {% elif q.type == "checkboxes" %}
+          <p>{{q.prompt}}</p>
+          <div class="checkbox">
+            <label>
+              <input type="checkbox"> Item
+            </label>
+          </div>
+          <p class="help-block">{{q.help}}</p>
+
+        {% elif q.type == "yesno" %}
+          <p>{{q.prompt}}</p>
+          <div class="radio">
+            <label>
+              <input name="value" value="no"  type="radio" {% if last_value == "no" %}checked{% endif %}> No
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input name="value" value="yes" type="radio" {% if last_value == "yes" %}checked{% endif %}> Yes
+            </label>
+          </div>
+          <p class="help-block">{{q.help}}</p>
+
+        {% else %}
+            {{q.type}}
+
+        {% endif %}
+
+      <button type="submit" class="btn btn-success">
+        {% if not request.GET.q %}Next{% else %}Submit{% endif %}
+        &raquo;
+      </button>
+    </form>     
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function() {
+    $('#inputctrl').focus();
+
+    {% if q.type == "text" or q.type == "password" or q.type == "email" %}
+    function validate_answer() {
+        var val = $('#inputctrl').val();
+        if (/^ *$/.exec(val))
+            return "You must enter something."
+        return undefined;
+    }
+
+    {% else %}
+
+    function validate_answer() { }
+    
+    {% endif %}
+
+    var form = $("#question > form");
+    form.on("submit", function() {
+        // client-side validation, block form if not valid
+        var problem = validate_answer();
+        if (problem) {
+            alert(problem);
+            return false;
+        }
+
+        // ok, submit
+        return true;
+    })
+})
+</script>
+{% endblock %}

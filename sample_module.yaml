@@ -1,0 +1,26 @@
+id: sample_module
+title: Let's Get Some Information
+questions:
+  - id: q1
+    title: Your Name
+    prompt: What's your name?
+    type: text
+  - id: q2
+    title: Do You Know Your Role
+    prompt: Do you know your role?
+    type: yesno
+  - id: q3
+    skip_if: q2 == 'no'
+    title: Your Role
+    prompt: What's your role?
+    type: text
+output:
+  format: markdown
+  template: |
+    Hello! This is the output of the thing.
+
+    Name: {{q1}}
+
+    Role: {{q3}}
+
+    Have a nice day!
