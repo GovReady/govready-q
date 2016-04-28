@@ -5,6 +5,7 @@ from django.conf import settings
 
 from questions import Module
 from .models import Task, Answer
+from django.contrib.auth.models import User
 
 @login_required
 def new_task(request):
@@ -71,7 +72,11 @@ def next_question(request, taskid, taskslug):
         return render(request, "question.html", {
             "module": m,
             "q": q,
+            "prompt": q.render_prompt(task.get_answers_dict()),
             "last_value": answered.get(q.id),
+            "ask_team_member_users": list(User.objects.all()),
+            "ask_team_member_modules": [Module.load(m) for m in q.answered_by_modules],
+            "team_member_responses": sum([list(Task.objects.filter(module_id=m)) for m in q.answered_by_modules], []),
         })
 
 

@@ -58,6 +58,14 @@ class Task(models.Model):
     def is_finished(self):
         return self.load_module().next_question(self.get_answers_dict()) == None
 
+    def get_status_display(self):
+        if not self.is_finished():
+            return "In Progress, last edit " + self.updated.strftime("%x %X")
+        else:
+            return "FInished on " + self.updated.strftime("%x %X")
+
+    def get_output(self):
+        return self.load_module().render_output(self.get_answers_dict())
 
 class Answer(models.Model):
     task = models.ForeignKey(Task, help_text="The Task that this Answer is for.")

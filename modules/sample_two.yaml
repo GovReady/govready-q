@@ -1,0 +1,20 @@
+id: sample_two
+title: Animal Habitat
+questions:
+
+  - id: q1
+    title: Live on land?
+    prompt: Does the animal live on land?
+    type: yesno
+
+  - id: q2
+    title: Live in the sea?
+    prompt: Does the animal live in the sea?
+    type: yesno
+
+output:
+  format: markdown
+  template: |
+    Lives on land: {{q1}}
+
+    Lives in the sea: {{q2}}

@@ -21,6 +21,7 @@
 		{% if not request.user.is_authenticated %}
 			<a href="/account/login/">Log In</a>
 		{% else %}
+			<a href="/">Home</a>
 			<a href="/account/logout/">Log Out</a>
 		{% endif %}
 	</div>

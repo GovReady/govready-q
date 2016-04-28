@@ -155,9 +155,17 @@ class Question(object):
         self.type = spec["type"]
         self.skip_if = [spec["skip_if"]] if spec.get("skip_if") else []
         self.choices = spec.get("choices", [])
+        self.answered_by_modules = spec.get('answered-by-modules', [])
 
     def __repr__(self):
         return "<Question %s '%s'>" % (self.id, self.title)
+
+    def render_prompt(self, answers):
+        from jinja2 import Template
+        import CommonMark
+        output = Template(self.prompt).render(answers)
+        output = CommonMark.commonmark(output)
+        return output
 
     def should_skip(self, answers):
         # Check if any of the skip_if conditions are met based on

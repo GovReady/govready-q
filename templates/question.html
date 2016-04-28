@@ -8,6 +8,60 @@ Next Question: {{q.title}} - GovReady
 <h1>{{module.title}}</h1>
 
 <div id="question" style="margin: 2em 0">
+    {{prompt|safe}}
+
+    {% if ask_team_member_modules %}
+    <div style="margin: 2em 0; padding: 1em; border: 1px solid #ccc">
+      {% if team_member_responses %}
+      <p>You asked team members for information:</p>
+      <table class="table">
+      <thead>
+        <tr>
+          <th>Team Member</th>
+          <th>Status</th>
+          <th>View</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for subtask in team_member_responses %}
+        <tr id="subtask_{{forloop.counter0}}" data-output="{{subtask.get_output}}">
+          <td>{{subtask.user}}</td>
+          <td>{{subtask.get_status_display}}</td>
+          <td>{% if subtask.is_finished %}
+            <a href="javascript:show_subtask_response('subtask_{{forloop.counter0}}');">Answer</a>
+          {% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      </table>
+      <hr>
+      {% endif %}
+
+      <p>You can ask a{% if team_member_responses %}nother{% endif %} team member for information to help you answer this question.</p>
+      <form class="form-inline" action="/tasks/start">
+        <div class="form-group" style="padding-right: 1em">
+          <label for="ask-who">Ask Team Member</label>
+          <select id="ask-who" class="form-control">
+            {% for user in ask_team_member_users %}
+            <option>{{user.username}}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" style="padding-right: 1em">
+          <label for="ask-module">To Complete Module</label>
+          <select id="ask-module" class="form-control" name="module">
+            {% for m in ask_team_member_modules %}
+              <option value="{{m.id}}">{{m.title}}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-warning">Ask &raquo;</button>
+      </form>
+    </div>
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
 
@@ -15,27 +69,29 @@ Next Question: {{q.title}} - GovReady
 
         {% if q.type == "text" %}
           <div class="form-group">
-            <label for="inputctrl">{{q.prompt}}</label>
             <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.placeholder}}" {% if last_value %}value="{{last_value}}"{% endif %}>
             <p class="help-block">{{q.help}}</p>
           </div>
 
         {% elif q.type == "email" %}
           <div class="form-group">
-            <label for="inputctrl">{{q.prompt}}</label>
             <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if last_value %}value="{{last_value}}"{% endif %}>
             <p class="help-block">{{q.help}}</p>
           </div>
 
         {% elif q.type == "password" %}
           <div class="form-group">
-            <label for="inputctrl">{{q.prompt}}</label>
             <input name="value" type="password" class="form-control" id="inputctrl" placeholder="password">
             <p class="help-block">{{q.help}}</p>
           </div>
 
+        {% elif q.type == "longtext" %}
+          <div class="form-group">
+            <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if last_value %}{{last_value}}{% endif %}</textarea>
+            <p class="help-block">{{q.help}}</p>
+          </div>
+
         {% elif q.type == "checkboxes" %}
-          <p>{{q.prompt}}</p>
           <div class="checkbox">
             <label>
               <input type="checkbox"> Item
@@ -44,7 +100,6 @@ Next Question: {{q.title}} - GovReady
           <p class="help-block">{{q.help}}</p>
 
         {% elif q.type == "choice" %}
-          <p>{{q.prompt}}</p>
           {% for choice in q.choices %}
           <div class="radio">
             <label>
@@ -55,7 +110,6 @@ Next Question: {{q.title}} - GovReady
           {% endfor %}
 
         {% elif q.type == "yesno" %}
-          <p>{{q.prompt}}</p>
           <div class="radio">
             <label>
               <input name="value" value="no"  type="radio" {% if last_value == "no" %}checked{% endif %}> No
@@ -79,6 +133,23 @@ Next Question: {{q.title}} - GovReady
       </button>
     </form>     
 </div>
+
+<div id="subtask-output-modal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Response From Teammate</h4>
+      </div>
+      <div class="modal-body">
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 {% endblock %}
 
 {% block extra_body %}
@@ -86,7 +157,7 @@ Next Question: {{q.title}} - GovReady
 $(function() {
     $('#inputctrl').focus();
 
-    {% if q.type == "text" or q.type == "password" or q.type == "email" %}
+    {% if q.type == "text" or q.type == "password" or q.type == "email" or q.type == "longtext" %}
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
@@ -121,5 +192,12 @@ $(function() {
         return true;
     })
 })
+
+function show_subtask_response(rowid) {
+  var row = $('#' + rowid);
+  var n = $("#subtask-output-modal");
+  n.find('.modal-body').html(row.attr('data-output'));
+  n.modal();
+}
 </script>
 {% endblock %}
