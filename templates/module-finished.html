@@ -7,6 +7,10 @@
 {% block body %}
 <h1>{{m.title}}</h1>
 
+<div style="margin: 2em 0">
+  <p class="text-success">This module is complete.</p>
+</div>
+
 <div>
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#result" aria-controls="result" role="tab" data-toggle="tab">Result</a></li>
@@ -14,17 +18,13 @@
   </ul>
 
   <!-- Tab panes -->
-  <div class="tab-content">
+  <div class="tab-content" style="margin-top: 15px">
     <div role="tabpanel" class="tab-pane active" id="result">
-        <h2>Module Complete</h2>
-        <blockquote>
-            {{output|safe}}
-        </blockquote>
-        
+        {{output|safe}}
     </div>
 
     <div role="tabpanel" class="tab-pane" id="questions">
-        <h2>Questions</h2>
+        <p>Click on any question to change your answer.</p>
         {% for q in all_questions %}
             <p><a href="?q={{q.id}}">{{q.title}}</a></p>
         {% endfor %}        

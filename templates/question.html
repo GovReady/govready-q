@@ -43,6 +43,17 @@ Next Question: {{q.title}} - GovReady
           </div>
           <p class="help-block">{{q.help}}</p>
 
+        {% elif q.type == "choice" %}
+          <p>{{q.prompt}}</p>
+          {% for choice in q.choices %}
+          <div class="radio">
+            <label>
+              <input name="value" value="{{choice.key}}" type="radio" {% if last_value == choice.key %}checked{% endif %}> {{choice.text}}
+              <p class="help-block">{{choice.help}}</p>
+            </label>
+          </div>
+          {% endfor %}
+
         {% elif q.type == "yesno" %}
           <p>{{q.prompt}}</p>
           <div class="radio">
@@ -70,7 +81,7 @@ Next Question: {{q.title}} - GovReady
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_body %}
 <script>
 $(function() {
     $('#inputctrl').focus();
@@ -80,6 +91,14 @@ $(function() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
             return "You must enter something."
+        return undefined;
+    }
+
+    {% elif q.type == "choice" %}
+    function validate_answer() {
+        var val = $('#question input[type="radio"]:checked').val();
+        if (!val)
+            return "You must make a selection."
         return undefined;
     }
 

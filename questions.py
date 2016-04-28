@@ -60,9 +60,11 @@ class Module(object):
         from jinja2 import Environment, meta
         env = Environment()
         ast = env.parse(self.output['template'])
-        needs_answer = list(map(
-            lambda qid : self.questions_by_id[qid],
-            meta.find_undeclared_variables(ast)))
+        needs_answer = [
+            self.questions_by_id[qid]
+            for qid in meta.find_undeclared_variables(ast)
+            if qid in self.questions_by_id
+            ]
 
         # Process the questions.
 
@@ -142,6 +144,7 @@ class Question(object):
         self.prompt = spec["prompt"]
         self.type = spec["type"]
         self.skip_if = [spec["skip_if"]] if spec.get("skip_if") else []
+        self.choices = spec.get("choices", [])
 
     def __repr__(self):
         return "<Question %s '%s'>" % (self.id, self.title)

@@ -1,0 +1,85 @@
+id: account_settings
+title: GovReady Account Settings
+questions:
+  - id: name
+    title: Your Name
+    prompt: What is your name?
+    type: text
+  - id: title
+    title: Your Title
+    prompt: What is your title in your organization or on this project?
+    type: text
+  - id: role
+    title: Your Role
+    prompt: Which is closest to your role in your organization or on this project?
+    type: choice
+    choices:
+      - key: isso
+        text: Information System Security Officer
+      - key: dev
+        text: Developer
+      - key: bizown
+        text: Business Owner
+      - key: pm
+        text: Project Manager
+
+  - id: chat
+    title: Your Chat Application
+    prompt: What chat application would you like to use to discuss your answers with your colleagues?
+    type: choice
+    choices:
+      - key: slack
+        text: Slack
+        help: Slack.com is a great service!
+      - key: skype
+        text: Skype
+        help: We like Skype too.
+  - id: ticketing
+    title: Your Ticking System
+    prompt: What ticketing system do you use to track software issues?
+    type: choice
+    choices:
+      - key: github
+        text: Github
+      - key: other
+        text: Other/Unknown
+  - id: scanningtool
+    title: Your Scanning Tool
+    prompt: What compliance scanning tool do you use?
+    type: choice
+    choices:
+      - key: openscap
+        text: OpenSCAP
+      - key: other
+        text: Other/Unknown
+  - id: systemsecurityplanbuilder
+    title: Your System Security Plan Builder
+    prompt: What system security plan builder do you use?
+    type: choice
+    choices:
+      - key: compliancemasonry
+        text: Compliance Masonry
+output:
+  format: markdown
+  template: |
+    Here are your account settings:
+
+    ### About You
+
+    Name: {{name}}
+
+    Title: {{title}}
+
+    Role: {{role}}
+
+    ---
+
+    ### Applications
+
+    Chat: {{chat}}
+
+    Ticketing: {{ticketing}}
+
+    Scanning Tool: {{scanningtool}}
+
+    System Security Plan Builder: {{systemsecurityplanbuilder}}

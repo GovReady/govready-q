@@ -10,7 +10,7 @@ from .models import Task, Answer
 def next_question(request):
     # Load the questions module.
     import rtyaml
-    m = Module(rtyaml.load(open("sample_module.yaml")))
+    m = Module(rtyaml.load(open("modules/account_settings.yaml")))
 
     # Get the Task.
     task, isnew = Task.objects.get_or_create(
