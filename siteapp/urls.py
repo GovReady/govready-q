@@ -3,10 +3,12 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
-import guidedmodules.views
+import siteapp.views
 
 urlpatterns = [
-    url(r'^$', guidedmodules.views.next_question),
+    url(r"^$", siteapp.views.homepage),
+
+    url(r"^tasks/", include("guidedmodules.urls")),
 
     url(r"^account/", include("account.urls")),
 

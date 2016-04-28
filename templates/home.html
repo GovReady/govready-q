@@ -1,0 +1,20 @@
+{% extends "site_base.html" %}
+
+{% block head_title %}
+Welcome
+{% endblock %}
+
+{% block body %}
+<h1>Ok, go.</h1>
+
+<p>You can work on:</p>
+
+{% for task in tasks %}
+<p><a href="{{task.get_absolute_url}}">{{task.title}}</a></p>
+{% endfor %}
+
+<p>Or start a new module:</p>
+
+<p><a href="/tasks/start?module=sample_module">Sample Module</a></p>
+
+{% endblock %}

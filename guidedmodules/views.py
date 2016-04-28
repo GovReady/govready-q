@@ -7,20 +7,26 @@ from questions import Module
 from .models import Task, Answer
 
 @login_required
-def next_question(request):
-    # Load the questions module.
-    import rtyaml
-    m = Module(rtyaml.load(open("modules/account_settings.yaml")))
+def new_task(request):
+    # Create a new task.
+    m = Module.load(request.GET['module'])
+    task = Task.objects.create(user=request.user, module_id=m.id, title=m.title)
+    return HttpResponseRedirect(task.get_absolute_url())
 
+@login_required
+def next_question(request, taskid, taskslug):
     # Get the Task.
-    task, isnew = Task.objects.get_or_create(
-        user=request.user,
-        module_id=m.id)
+    task = get_object_or_404(Task, user=request.user, id=taskid)
+
+    # Redirect if slug is not canonical.
+    if request.path != task.get_absolute_url():
+        return HttpResponseRedirect(task.get_absolute_url())
+
+    # Load the questions module.
+    m = task.load_module()
 
     # Load the answers the user has saved so far.
-    answered = { }
-    for q in task.answer_set.all():
-        answered[q.question_id] = q.value
+    answered = task.get_answers_dict()
 
     # Process form data.
     if request.method == "POST":
@@ -39,6 +45,9 @@ def next_question(request):
         answer.value = value
         answer.save()
 
+        # kick the task's updated field
+        task.save(update_fields=[])
+
         # return to a GET request
         return HttpResponseRedirect(request.path)
 
@@ -53,6 +62,7 @@ def next_question(request):
 
     if not q:
         return render(request, "module-finished.html", {
+            "task": task,
             "m": m,
             "output": m.render_output(answered),
             "all_questions": filter(lambda q : not q.should_skip(answered), m.questions)

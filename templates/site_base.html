@@ -17,6 +17,13 @@
 {% block topbar_base %}
 <div class="container">
 <header style="font-size: 80%; font-weight: bold; padding: .5em 0; border-bottom: 1px solid black; margin-bottom: 15px;">
+	<div style="float: right">
+		{% if not request.user.is_authenticated %}
+			<a href="/account/login/">Log In</a>
+		{% else %}
+			<a href="/account/logout/">Log Out</a>
+		{% endif %}
+	</div>
 GOVREADY GUIDED MODULES
 </header>
 </div>

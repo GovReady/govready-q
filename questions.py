@@ -45,6 +45,16 @@ class Module(object):
     def __repr__(self):
         return "<Module '%s'>" % (self.title,)
 
+    @staticmethod
+    def load(id):
+        # Sanity check id, since we're going to the filesystem.
+        import re
+        if re.search(r"[^a-z0-9\-_]", id):
+            raise ValueError(id)
+
+        import rtyaml
+        return Module(rtyaml.load(open("modules/%s.yaml" % id)))
+
     def next_question(self, questions_answered):
         # Compute the next question to ask the user, given the user's
         # answers to questions so far.
@@ -132,8 +142,8 @@ class Module(object):
         template = Template(self.output["template"])
         output = template.render(answers)
         if self.output["format"] == "markdown":
-            import markdown
-            output = markdown.markdown(output)
+            import CommonMark
+            output = CommonMark.commonmark(output)
         return output
 
 class Question(object):

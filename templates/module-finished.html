@@ -5,10 +5,13 @@
 {% endblock %}
 
 {% block body %}
-<h1>{{m.title}}</h1>
+<h1>{{task.title}}</h1>
+{% if task.title != m.title %}
+<p>({{m.title}})</p>
+{% endif %}
 
 <div style="margin: 2em 0">
-  <p class="text-success">This module is complete.</p>
+  <p class="text-success">This module is complete. Go back to <a href="/">your home</a>.</p>
 </div>
 
 <div>

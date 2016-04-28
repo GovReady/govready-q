@@ -1,30 +1,25 @@
 id: sample_module
-title: Let's Get Some Information
+title: Animal Compliance
 questions:
   - id: q1
-    title: Your Name
-    prompt: What's your name?
+    title: Your Favorite Animal
+    prompt: What's your favorite animal?
     type: text
   - id: q2
-    title: Do You Know Your Role
-    prompt: Do you know your role?
+    title: Do You Know Its Species Name
+    prompt: Do you know your the animal's species name?
     type: yesno
   - id: q3
     skip_if: q2 == 'no'
-    title: Your Role
-    prompt: What's your role?
+    title: Its Species Name
+    prompt: What's its species name?
     type: text
 output:
   format: markdown
   template: |
-    Hello! This is the output of the thing.
+    Hello! This is the output of the module based on the Markdown template in the YAML definition.
 
-    Name: {{q1}}
+    Animal:
+    * {{q1}}  {% if q2 == "yes" %} ( {{q3}} ) {% endif %}
 
-    {% if q2 == "yes" %}
-      Role: {{q3}}
-    {% else %}
-      Role: [don't know]
-    {% endif %}
-
-    Have a nice day!
+    _Have a nice day!_
