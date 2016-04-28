@@ -1,11 +1,11 @@
-{% extends "master.html" %}
+{% extends "site_base.html" %}
 
-{% block title %}
+{% block head_title %}
 Next Question: {{q.title}} - GovReady
 {% endblock %}
 
 {% block body %}
-<h1>{{q.title}}</h1>
+<h1>{{module.title}}</h1>
 
 <div id="question" style="margin: 2em 0">
     <form method="post">

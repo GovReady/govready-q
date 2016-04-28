@@ -1,4 +1,9 @@
 markdown
 jinja2
 rtyaml
+
 django==1.9
+jsonfield
+
+django-user-accounts
+pinax-theme-bootstrap

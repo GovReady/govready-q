@@ -21,6 +21,10 @@ output:
 
     Name: {{q1}}
 
-    Role: {{q3}}
+    {% if q2 == "yes" %}
+      Role: {{q3}}
+    {% else %}
+      Role: [don't know]
+    {% endif %}
 
     Have a nice day!

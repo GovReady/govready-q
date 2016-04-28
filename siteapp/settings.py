@@ -171,7 +171,7 @@ STATIC_URL = '/static/'
 if environment.get("static"):
 	STATIC_ROOT = environment["static"]
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-LOGIN_URL = '/accounts/login'
+LOGIN_URL = '/account/login/'
 LOGIN_REDIRECT_URL = '/home'
 
 # Convenience.
