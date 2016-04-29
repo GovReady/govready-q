@@ -56,9 +56,11 @@ INSTALLED_APPS = [
 	'django.contrib.contenttypes',
 	'django.contrib.sessions',
 	'django.contrib.messages',
-	'django.contrib.staticfiles',
 	'django.contrib.humanize',
 ]
+
+if 'static' in environment:
+	INSTALLED_APPS.append('django.contrib.staticfiles')
 
 # Add test_without_migrations if it is installed. This provides --nomigrations
 # to the test management command.
