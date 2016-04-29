@@ -6,3 +6,25 @@ Ok go:
 	python3 manage.py migrate
 	python3 manage.py runserver
 
+To deploy, on a fresh machine run:
+
+	git clone https://github.com/GovReady/govready-its-like-gps-but-for-compliance q
+	cd q
+	mkdir local
+
+Then run:
+
+	sudo deployment/setup.sh
+
+If this is truly on a new machine, it will create a new Sqlite database. You'll also see some output instructing you to create a file named `local/environment.json` containing:
+
+	{
+	  "debug": true,
+	  "host": "q.govready.com",
+	  "https": true,
+	  "secret-key": "something random here",
+	  "static": "/root/public_html"
+	}
+
+You can copy the `secret-key` from what you see --- it was generated to be unique.
+
