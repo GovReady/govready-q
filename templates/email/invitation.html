@@ -1,0 +1,26 @@
+{% extends "email/template.html" %}
+
+{% block extra_head %}
+<style>
+	h1 {
+		font-style: italic;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<p>Hello,</p>
+
+<p>{{from_user}} is requesting your help completing a module at GovReady Q.</p>
+
+<blockquote>{{message}}</blockquote>
+
+<p>To accept the invitation and help {{from_user}}, please follow the following link:</p>
+
+<p><a href="{{accept_url}}">{{accept_url}}</a></p>
+
+<p>{{from_user}} will appreciate it!</p>
+
+<p>Thank you,</p>
+
+{% endblock %}

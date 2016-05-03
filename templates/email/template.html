@@ -1,0 +1,27 @@
+{% extends "htmlemailer/boilerplate.html" %}
+
+{% block head %}
+<style>
+#backgroundTable {
+	background-color: blue;
+	color: white;
+}
+#content-area {
+	padding: 1em;
+}
+a {
+	color: #262;
+}
+</style>
+{% block extra_head %}
+{% endblock %}
+{% endblock %}
+
+{% block body %}
+
+{% block content %}
+{% endblock %}
+
+<p>GovReady <b>Q</b></p>
+
+{% endblock %}

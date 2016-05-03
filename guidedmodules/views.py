@@ -1,17 +1,36 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 from questions import Module
-from .models import Task, Answer
+from .models import Project, ProjectMembership, Task, Answer, Invitation
 from django.contrib.auth.models import User
+
+@login_required
+def new_project(request):
+    p = Project.objects.create(
+        title="New Project",
+        notes="Description of your new project.")
+    ProjectMembership.objects.create(project=p, user=request.user, is_admin=True)
+    return HttpResponseRedirect(p.get_absolute_url())
 
 @login_required
 def new_task(request):
     # Create a new task.
+
+    # Validate that the module ID is valid.
     m = Module.load(request.GET['module'])
-    task = Task.objects.create(user=request.user, module_id=m.id, title=m.title)
+
+    # Validate that the user is permitted to create a task within the indicated Project.
+    project = get_object_or_404(Project, id=request.GET["project"], members__user=request.user)
+
+    # Create and redirect to start it.
+    task = Task.objects.create(
+        user=request.user,
+        project=project,
+        module_id=m.id,
+        title=m.title)
     return HttpResponseRedirect(task.get_absolute_url())
 
 @login_required
@@ -70,14 +89,41 @@ def next_question(request, taskid, taskslug):
         })
     else:
         return render(request, "question.html", {
+            "task": task,
             "module": m,
             "q": q,
             "prompt": q.render_prompt(task.get_answers_dict()),
             "last_value": answered.get(q.id),
-            "ask_team_member_users": list(User.objects.all()),
-            "ask_team_member_modules": [Module.load(m) for m in q.answered_by_modules],
-            "team_member_responses": sum([list(Task.objects.filter(module_id=m)) for m in q.answered_by_modules], []),
+            "can_ask_team_member": True,
+            "can_ask_team_members_user_list": list(User.objects.all().exclude(id=request.user.id)),
+            "team_member_responses": { t: t.answers.filter(question_id=q).first() for t in task.requests.all() },
         })
 
+@login_required
+def send_invitation(request):
+    import email_validator
+    if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
+    try:
+        if not request.POST['user'] and not request.POST['email']:
+            raise ValueError("Select a team member or enter an email address.")
+        inv = Invitation.create(
+            Task.objects.get(user=request.user, id=request.POST['task']),
+            request.POST['question'],
+            User.objects.get(id=request.POST['user']) if request.POST['user'] else None,
+            email_validator.validate_email(request.POST['email'])["email"] if request.POST['email'] else None,
+            request.POST['text'],
+            request.POST['project'] == "true"
+        )
+        inv.send() # TODO: Move this into an asynchronous queue.
+        return JsonResponse({ "status": "ok" })
+    except ValueError as e:
+        return JsonResponse({ "status": "error", "message": str(e) })
+    except Exception as e:
+        import sys
+        sys.stderr.write(str(e) + "\n")
+        return JsonResponse({ "status": "error", "message": "There was a problem -- sorry!" })
 
-
+def accept_invitation(request, code=None):
+    assert code.strip() != ""
+    inv = get_object_or_404(Invitation, email_invitation_code=code)
+    return HttpResponseRedirect(inv.accept(request))

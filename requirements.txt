@@ -1,6 +1,8 @@
 CommonMark
 jinja2
 rtyaml
+email_validator
+git+https://github.com/if-then-fund/django-html-emailer
 
 django==1.9
 jsonfield

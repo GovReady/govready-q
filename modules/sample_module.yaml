@@ -21,8 +21,6 @@ questions:
     title: Natural Habitat
     prompt: "What's the {{q1}}'s natural habitat?"
     type: longtext
-    answered-by-modules:
-      - sample_two
       
 output:
   format: markdown

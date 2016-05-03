@@ -155,7 +155,6 @@ class Question(object):
         self.type = spec["type"]
         self.skip_if = [spec["skip_if"]] if spec.get("skip_if") else []
         self.choices = spec.get("choices", [])
-        self.answered_by_modules = spec.get('answered-by-modules', [])
 
     def __repr__(self):
         return "<Question %s '%s'>" % (self.id, self.title)

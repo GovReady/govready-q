@@ -7,7 +7,9 @@ INSTALLED_APPS += [
     'account',
     'pinax_theme_bootstrap',
     'bootstrapform',
+    'htmlemailer',
 
+    'siteapp',
     'guidedmodules',
 ]
 
@@ -20,3 +22,5 @@ MIDDLEWARE_CLASSES += [
     "account.middleware.TimezoneMiddleware",
 ]
 SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend', 'siteapp.views.DirectLoginBackend']

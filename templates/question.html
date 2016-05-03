@@ -5,12 +5,21 @@ Next Question: {{q.title}} - GovReady
 {% endblock %}
 
 {% block body %}
+{% if task.requested_by %}
+<div id="requested-by" class="panel panel-warning">
+  <div class="panel-heading">{{task.requested_by.user}} has asked for your help completing this module</div>
+  <div class="panel-body">
+    {{task.requestor_notes}}
+  </div>
+</div>
+{% endif %}
+
 <h1>{{module.title}}</h1>
 
 <div id="question" style="margin: 2em 0">
     {{prompt|safe}}
 
-    {% if ask_team_member_modules %}
+    {% if team_member_responses or can_ask_team_member %}
     <div style="margin: 2em 0; padding: 1em; border: 1px solid #ccc">
       {% if team_member_responses %}
       <p>You asked team members for information:</p>
@@ -18,18 +27,14 @@ Next Question: {{q.title}} - GovReady
       <thead>
         <tr>
           <th>Team Member</th>
-          <th>Status</th>
-          <th>View</th>
+          <th>Answer</th>
         </tr>
       </thead>
       <tbody>
-        {% for subtask in team_member_responses %}
+        {% for subtask, answer in team_member_responses.items %}
         <tr id="subtask_{{forloop.counter0}}" data-output="{{subtask.get_output}}">
           <td>{{subtask.user}}</td>
-          <td>{{subtask.get_status_display}}</td>
-          <td>{% if subtask.is_finished %}
-            <a href="javascript:show_subtask_response('subtask_{{forloop.counter0}}');">Answer</a>
-          {% endif %}</td>
+          <td>{{answer}}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -37,28 +42,32 @@ Next Question: {{q.title}} - GovReady
       <hr>
       {% endif %}
 
-      <p>You can ask a{% if team_member_responses %}nother{% endif %} team member for information to help you answer this question.</p>
-      <form class="form-inline" action="/tasks/start">
+      {% if can_ask_team_member %}
+      <p>You can ask a{% if team_member_responses %}nother{% endif %} colleague to help you answer this question.</p>
+      <form class="form-inline" onsubmit="do_invite_show_modal(); return false;">
         <div class="form-group" style="padding-right: 1em">
-          <label for="ask-who">Ask Team Member</label>
-          <select id="ask-who" class="form-control">
-            {% for user in ask_team_member_users %}
-            <option>{{user.username}}</option>
-            {% endfor %}
-          </select>
+          {% if can_ask_team_members_user_list %}
+            <label for="invite-user">Ask Team Member</label>
+            <select id="invite-user" class="form-control">
+              {% for user in can_ask_team_members_user_list %}
+              <option value="{{user.id}}">{{user.username}}</option>
+              {% endfor %}
+              <option value=":__INVITE__:">Invite someone else...</option>
+            </select>
+          {% else %}
+            <label for="ask-invite">Invite to Help:</label>
+            <input id="invite-email" type="email" class="form-control" placeholder="team.member@youragency.gov">
+          {% endif %}
         </div>
-
-        <div class="form-group" style="padding-right: 1em">
-          <label for="ask-module">To Complete Module</label>
-          <select id="ask-module" class="form-control" name="module">
-            {% for m in ask_team_member_modules %}
-              <option value="{{m.id}}">{{m.title}}</option>
-            {% endfor %}
-          </select>
+        <div class="checkbox" style="padding-right: 1em">
+          <label>
+            <input type="checkbox" id="invite-to-project" onchange="$('#invite-to-team-tips').slideToggle($(this).val())"> Add to project team
+          </label>
         </div>
-
-        <button type="submit" class="btn btn-warning">Ask &raquo;</button>
+        <button type="submit" class="btn btn-success">Send Invitation</button>
       </form>
+      <p style="margin: 1em 0 0 0;" class="small text-warning">When you invite someone to help you with this module, they will be able to see your answers to this module. You&rsquo;ll be able to see their answers too. <span id="invite-to-team-tips" style="display: none">Inviting them to your project team means they will be able to answer other modules in {{task.project.title}}.</span></p>
+      {% endif %}
     </div>
     {% endif %}
 
@@ -134,18 +143,20 @@ Next Question: {{q.title}} - GovReady
     </form>     
 </div>
 
-<div id="subtask-output-modal" class="modal fade" tabindex="-1" role="dialog">
+<div id="invite-modal" class="modal fade" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Response From Teammate</h4>
+        <h4 class="modal-title">Invite to Help</h4>
       </div>
       <div class="modal-body">
-        
+        <p>Send <span id="invite-modal-name"></span> a message about why you are sending them this invitation:</p>
+        <textarea id="invite-message" style="width: 100%; height: 4em">Can you give me a hand completing the module {{module.title}} for {{task.project.title}}?</textarea>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="do_invite_send();">Send Invitation</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -156,6 +167,7 @@ Next Question: {{q.title}} - GovReady
 <script>
 $(function() {
     $('#inputctrl').focus();
+    $('#invite-modal').on("shown.bs.modal", function() { $('#invite-modal').find('textarea').focus(); })
 
     {% if q.type == "text" or q.type == "password" or q.type == "email" or q.type == "longtext" %}
     function validate_answer() {
@@ -193,11 +205,35 @@ $(function() {
     })
 })
 
-function show_subtask_response(rowid) {
-  var row = $('#' + rowid);
-  var n = $("#subtask-output-modal");
-  n.find('.modal-body').html(row.attr('data-output'));
-  n.modal();
+function do_invite_show_modal() {
+  // client-side validation
+  if ($('#invite-email').is(":visible") && $('#invite-email').val() == "") {
+    alert("Enter an email address.");
+    return;
+  }
+
+  $('#invite-modal').modal();
 }
+
+function do_invite_send() {
+ $('#invite-modal').modal('hide');
+ ajax_with_indicator({
+  url: '{% url "send_invitation" %}',
+  method: "POST",
+  data: {
+    task: {{task.id}},
+    question: "{{q.id}}",
+    email: $('#invite-email').is(":visible") ? $('#invite-email').val() : null,
+    user: $('#invite-user').is(":visible") ? $('#invite-user').val() : null,
+    project: $('#invite-to-project').attr('checked') != null,
+    text: $('#invite-message').val()
+  },
+  success: function(res) {
+    // status == error is handled by ajax_with_indicator
+    show_modal_error("Send Invitation", "The invitation has been sent. We will notify you when the invitation has been accepted.")
+  }
+ })
+}
+
 </script>
 {% endblock %}

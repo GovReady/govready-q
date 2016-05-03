@@ -1,0 +1,17 @@
+{% extends "email/template.txt" %}
+{% block content %}
+Hello,
+
+{{from_user}} is requesting your help completing a module at GovReady Q: {{task.title}}.
+
+> {{message}}
+
+To accept the invitation and help {{from_user}}, please follow the following link:
+
+{{accept_url}}
+
+{{from_user}} will appreciate it!
+
+Thank you,
+
+{% endblock %}

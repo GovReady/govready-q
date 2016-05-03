@@ -9,12 +9,19 @@ Welcome
 
 <p>You can work on:</p>
 
-{% for task in tasks %}
-<p><a href="{{task.get_absolute_url}}">{{task.title}}</a></p>
+{% for item in projects %}
+	<h2>{{item.project.title}}</h2>
+
+	{% for task in item.tasks %}
+		<p><a href="{{task.get_absolute_url}}">{{task.title}}</a></p>
+	{% empty %}
+		<p>No tasks yet.</p>
+	{% endfor %}
+
+	<p>Start a new module:</p>
+
+	<p><a href="/tasks/start?module=sample_module&amp;project={{item.project.id}}">Sample Module About An Animal</a></p>
+
 {% endfor %}
-
-<p>Or start a new module:</p>
-
-<p><a href="/tasks/start?module=sample_module">Sample Module About An Animal</a></p>
 
 {% endblock %}
