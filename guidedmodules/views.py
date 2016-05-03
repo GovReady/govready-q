@@ -94,7 +94,7 @@ def next_question(request, taskid, taskslug):
             "q": q,
             "prompt": q.render_prompt(task.get_answers_dict()),
             "last_value": answered.get(q.id),
-            "can_ask_team_member": True,
+            "can_ask_team_member": m.allow_help,
             "can_ask_team_members_user_list": list(User.objects.all().exclude(id=request.user.id)),
             "team_member_responses": { t: t.answers.filter(question_id=q).first() for t in task.requests.all() },
         })

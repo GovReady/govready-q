@@ -3,6 +3,7 @@ class Module(object):
         # Load from a YAML specification.
         self.id = spec["id"]
         self.title = spec["title"]
+        self.allow_help = spec.get("allow-help", True)
 
         # The question definitions.
         self.questions = []
