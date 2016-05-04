@@ -78,29 +78,25 @@ EOF
 ##########
 
 # Make a place to collect static files and to serve as the virtual root.
-mkdir -p /home/ubuntu/public_html/static
+sudo -u site mkdir -p ../public_html/static
 
 # Install dependencies.
-pip3 install -r requirements.txt
+sudo -u site pip3 install -r requirements.txt
 
 # Create database / migrate database.
 # TODO: Get rid of this in a real production environment because we should
 # not touch the production database unless someone says so.
-python3 manage.py migrate
+sudo -u site python3 manage.py migrate
 
 # Create an 'admin' user.
-python3 manage.py createsuperuser --username=admin --email=admin@$DOMAIN --noinput
+#python3 manage.py createsuperuser --username=admin --email=admin@$DOMAIN --noinput
 # gain access with: ./manage.py changepassword admin
 
 # Collect static files to get ready to launch.
-python3 manage.py collectstatic --noinput
+sudo -u site python3 manage.py collectstatic --noinput
 
 # Supervisor, which runs uwsgi
-cat > /etc/supervisor/conf.d/q.govready.com.conf <<EOF;
-[program:app-uwsgi]
-command = uwsgi_python3 --socket /tmp/uwsgi.sock --wsgi-file siteapp/wsgi.py --chmod-socket=666
-directory = /root/q
-EOF
+ln -sf `pwd`/deployment/supervisor.conf /etc/supervisor/conf.d/q.govready.com.conf
 service supervisor restart
 
 # Restart nginx.

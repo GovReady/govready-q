@@ -6,7 +6,7 @@ Ok go:
 	python3 manage.py migrate
 	python3 manage.py runserver
 
-To deploy, on a fresh machine run:
+To deploy, on a fresh machine, create a Unix user named "site" and in its home directory run:
 
 	git clone https://github.com/GovReady/govready-its-like-gps-but-for-compliance q
 	cd q
