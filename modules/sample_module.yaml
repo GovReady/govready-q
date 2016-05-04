@@ -6,6 +6,11 @@ questions:
     prompt: What's your favorite animal?
     type: text
 
+  - id: qb
+    title: Did you own
+    prompt: Did you ever own a {{q1}}?
+    type: yesno
+
   - id: q2
     title: Do You Know Its Species Name
     prompt: Do you know the {{q1}}'s species name?
