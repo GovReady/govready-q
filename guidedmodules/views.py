@@ -125,8 +125,6 @@ def next_question(request, taskid, taskslug):
             "q": q,
             "prompt": q.render_prompt(task.get_answers_dict()),
             "last_value": answered.get(q.id),
-            "can_ask_team_member": m.allow_help,
-            "can_ask_team_members_user_list": list(ProjectMembership.objects.exclude(user=request.user)),
         })
 
 @login_required

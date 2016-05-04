@@ -1,6 +1,5 @@
 id: account_settings
 title: GovReady Account Settings
-allow-help: false
 questions:
   - id: name
     title: Your Name
