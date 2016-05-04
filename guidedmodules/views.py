@@ -58,7 +58,7 @@ def new_task(request):
 
     # Create and redirect to start it.
     task = Task.objects.create(
-        user=request.user,
+        editor=request.user,
         project=project,
         module_id=m.id,
         title=m.title)
@@ -67,7 +67,7 @@ def new_task(request):
 @login_required
 def next_question(request, taskid, taskslug):
     # Get the Task.
-    task = get_object_or_404(Task, user=request.user, id=taskid)
+    task = get_object_or_404(Task, editor=request.user, id=taskid)
 
     # Redirect if slug is not canonical.
     if request.path != task.get_absolute_url():
@@ -126,8 +126,7 @@ def next_question(request, taskid, taskslug):
             "prompt": q.render_prompt(task.get_answers_dict()),
             "last_value": answered.get(q.id),
             "can_ask_team_member": m.allow_help,
-            "can_ask_team_members_user_list": list(ProjectMembership.objects.exclude(user=request.user).exclude(user=task.requested_by.user if task.requested_by else None)),
-            "team_member_responses": { t: t.answers.filter(question_id=q.id).first() for t in task.requests.all() },
+            "can_ask_team_members_user_list": list(ProjectMembership.objects.exclude(user=request.user)),
         })
 
 @login_required

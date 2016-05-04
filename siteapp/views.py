@@ -24,10 +24,10 @@ def homepage(request):
 		for mbr in ProjectMembership.objects.filter(user=request.user).order_by('-project__created'):
 			projects.append({
 				"project": mbr.project,
-				"tasks": Task.objects.filter(user=request.user, project=mbr.project).order_by('-updated')
+				"tasks": Task.objects.filter(editor=request.user, project=mbr.project).order_by('-updated')
 			})
 		return render(request, "home.html", {
-			"has_tasks": Task.objects.filter(user=request.user).exclude(project=None).exists(),
+			"has_tasks": Task.objects.filter(editor=request.user).exclude(project=None).exists(),
 			"projects": projects,
 		})
 

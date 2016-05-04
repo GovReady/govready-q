@@ -17,7 +17,7 @@ Next Question: {{q.title}} - GovReady
 <h1>{{module.title}}</h1>
 
 <div class="row">
-  <div class="{% if not team_member_responses %}col-md-9{% else %}col-md-6{% endif %}">
+  <div class="col-md-6">
     <div id="question" style="margin: 2em 0">
         {{prompt|safe}}
 
@@ -95,36 +95,9 @@ Next Question: {{q.title}} - GovReady
     </div>
   </div> <!-- /col -->
 
-  <div class="{% if not team_member_responses %}col-md-3{% else %}col-md-6{% endif %}">
-    {% if team_member_responses or can_ask_team_member %}
+  <div class="col-md-6">
+    {% if can_ask_team_member %}
       <div style="margin: 2em 0; padding: 1em; border: 1px solid #ccc">
-        {% if team_member_responses %}
-        <p>You asked team members for help with this module:</p>
-        <table class="table">
-        <thead>
-          <tr>
-            <th>Team Member</th>
-            <th>Answer</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for subtask, answer in team_member_responses.items %}
-          <tr id="subtask_{{forloop.counter0}}" data-output="{{subtask.get_output}}">
-            <td>{{subtask.user}}</td>
-            {% if answer %}
-              <td style="cursor: pointer; color: #050" onclick="show_modal_error('{{subtask.user}}\'s Answer', $('<pre>').text('{{answer.value|escapejs}}'))">{{answer.value|truncatewords:10}}</td>
-            {% else %}
-              <td><i>Not answered.</i></td>
-            {% endif %}
-          </tr>
-          {% endfor %}
-        </tbody>
-        </table>
-        <hr>
-        {% endif %}
-
-        {% if can_ask_team_member %}
-        <p>You can ask a{% if team_member_responses %}nother{% endif %} colleague to help you answer this question.</p>
         <form class="form" onsubmit="do_invite_show_modal(); return false;">
           <div class="form-group" style="padding-right: 1em">
             {% if can_ask_team_members_user_list %}
@@ -150,7 +123,6 @@ Next Question: {{q.title}} - GovReady
         <p style="margin: 1em 0 0 0; line-height: 125%;" class="small text-warning">When you invite someone to help you with this module, they will be able to see your answers to this module. You&rsquo;ll be able to see their answers too. <span id="invite-to-team-tips" style="display: none">Inviting them to your project team means they will be able to answer other modules in {{task.project.title}}.</span></p>
         {% endif %}
       </div>
-    {% endif %}
   </div> <!-- /col -->
 </div> <!-- /row -->
 
