@@ -43,6 +43,10 @@ Welcome
 		<p>Start a new module:</p>
 
 		<p><a href="/tasks/start?module=sample_module&amp;project={{item.project.id}}">Sample Module About An Animal</a></p>
+
+	{% else %}
+		<p><a href="/tasks/new-project">Start a New Project</a></p>
+
 	{% endif %}
   </div>
 </div>

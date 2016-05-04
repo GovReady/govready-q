@@ -14,10 +14,6 @@ def homepage(request):
 		# First task: Fill out your account settings.
 		return HttpResponseRedirect(Task.get_task_for_module(request.user, "account_settings").get_absolute_url())
 
-	elif not ProjectMembership.objects.filter(user=request.user).exists():
-		# Second task: Create a Project.
-		return HttpResponseRedirect("/tasks/new-project")
-
 	else:
 		# Ok, show user what they can do.
 		projects = [ ]
