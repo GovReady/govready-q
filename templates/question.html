@@ -16,132 +16,143 @@ Next Question: {{q.title}} - GovReady
 
 <h1>{{module.title}}</h1>
 
-<div id="question" style="margin: 2em 0">
-    {{prompt|safe}}
+<div class="row">
+  <div class="{% if not team_member_responses %}col-md-9{% else %}col-md-6{% endif %}">
+    <div id="question" style="margin: 2em 0">
+        {{prompt|safe}}
 
-    {% if team_member_responses or can_ask_team_member %}
-    <div style="margin: 2em 0; padding: 1em; border: 1px solid #ccc">
-      {% if team_member_responses %}
-      <p>You asked team members for information:</p>
-      <table class="table">
-      <thead>
-        <tr>
-          <th>Team Member</th>
-          <th>Answer</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for subtask, answer in team_member_responses.items %}
-        <tr id="subtask_{{forloop.counter0}}" data-output="{{subtask.get_output}}">
-          <td>{{subtask.user}}</td>
-          <td>{{answer}}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      </table>
-      <hr>
-      {% endif %}
 
-      {% if can_ask_team_member %}
-      <p>You can ask a{% if team_member_responses %}nother{% endif %} colleague to help you answer this question.</p>
-      <form class="form-inline" onsubmit="do_invite_show_modal(); return false;">
-        <div class="form-group" style="padding-right: 1em">
-          {% if can_ask_team_members_user_list %}
-            <label for="invite-user">Ask Team Member</label>
-            <select id="invite-user" class="form-control">
-              {% for user in can_ask_team_members_user_list %}
-              <option value="{{user.id}}">{{user.username}}</option>
+        <form method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="question" value="{{q.id}}">
+
+            {% if q.type == "text" %}
+              <div class="form-group">
+                <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.placeholder}}" {% if last_value %}value="{{last_value}}"{% endif %}>
+                <p class="help-block">{{q.help}}</p>
+              </div>
+
+            {% elif q.type == "email" %}
+              <div class="form-group">
+                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if last_value %}value="{{last_value}}"{% endif %}>
+                <p class="help-block">{{q.help}}</p>
+              </div>
+
+            {% elif q.type == "password" %}
+              <div class="form-group">
+                <input name="value" type="password" class="form-control" id="inputctrl" placeholder="password">
+                <p class="help-block">{{q.help}}</p>
+              </div>
+
+            {% elif q.type == "longtext" %}
+              <div class="form-group">
+                <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if last_value %}{{last_value}}{% endif %}</textarea>
+                <p class="help-block">{{q.help}}</p>
+              </div>
+
+            {% elif q.type == "checkboxes" %}
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox"> Item
+                </label>
+              </div>
+              <p class="help-block">{{q.help}}</p>
+
+            {% elif q.type == "choice" %}
+              {% for choice in q.choices %}
+              <div class="radio">
+                <label>
+                  <input name="value" value="{{choice.key}}" type="radio" {% if last_value == choice.key %}checked{% endif %}> {{choice.text}}
+                  <p class="help-block">{{choice.help}}</p>
+                </label>
+              </div>
               {% endfor %}
-              <option value=":__INVITE__:">Invite someone else...</option>
-            </select>
-          {% else %}
-            <label for="ask-invite">Invite to Help:</label>
-            <input id="invite-email" type="email" class="form-control" placeholder="team.member@youragency.gov">
-          {% endif %}
-        </div>
-        <div class="checkbox" style="padding-right: 1em">
-          <label>
-            <input type="checkbox" id="invite-to-project" onchange="$('#invite-to-team-tips').slideToggle($(this).val())"> Add to project team
-          </label>
-        </div>
-        <button type="submit" class="btn btn-success">Send Invitation</button>
-      </form>
-      <p style="margin: 1em 0 0 0;" class="small text-warning">When you invite someone to help you with this module, they will be able to see your answers to this module. You&rsquo;ll be able to see their answers too. <span id="invite-to-team-tips" style="display: none">Inviting them to your project team means they will be able to answer other modules in {{task.project.title}}.</span></p>
-      {% endif %}
+
+            {% elif q.type == "yesno" %}
+              <div class="radio">
+                <label>
+                  <input name="value" value="no"  type="radio" {% if last_value == "no" %}checked{% endif %}> No
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input name="value" value="yes" type="radio" {% if last_value == "yes" %}checked{% endif %}> Yes
+                </label>
+              </div>
+              <p class="help-block">{{q.help}}</p>
+
+            {% else %}
+                {{q.type}}
+
+            {% endif %}
+
+          <button type="submit" class="btn btn-success">
+            {% if not request.GET.q %}Next{% else %}Submit{% endif %}
+            &raquo;
+          </button>
+        </form>     
     </div>
-    {% endif %}
+  </div> <!-- /col -->
 
-    <form method="post">
-        {% csrf_token %}
-
-        <input type="hidden" name="question" value="{{q.id}}">
-
-        {% if q.type == "text" %}
-          <div class="form-group">
-            <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.placeholder}}" {% if last_value %}value="{{last_value}}"{% endif %}>
-            <p class="help-block">{{q.help}}</p>
-          </div>
-
-        {% elif q.type == "email" %}
-          <div class="form-group">
-            <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if last_value %}value="{{last_value}}"{% endif %}>
-            <p class="help-block">{{q.help}}</p>
-          </div>
-
-        {% elif q.type == "password" %}
-          <div class="form-group">
-            <input name="value" type="password" class="form-control" id="inputctrl" placeholder="password">
-            <p class="help-block">{{q.help}}</p>
-          </div>
-
-        {% elif q.type == "longtext" %}
-          <div class="form-group">
-            <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if last_value %}{{last_value}}{% endif %}</textarea>
-            <p class="help-block">{{q.help}}</p>
-          </div>
-
-        {% elif q.type == "checkboxes" %}
-          <div class="checkbox">
-            <label>
-              <input type="checkbox"> Item
-            </label>
-          </div>
-          <p class="help-block">{{q.help}}</p>
-
-        {% elif q.type == "choice" %}
-          {% for choice in q.choices %}
-          <div class="radio">
-            <label>
-              <input name="value" value="{{choice.key}}" type="radio" {% if last_value == choice.key %}checked{% endif %}> {{choice.text}}
-              <p class="help-block">{{choice.help}}</p>
-            </label>
-          </div>
+  <div class="{% if not team_member_responses %}col-md-3{% else %}col-md-6{% endif %}">
+    {% if team_member_responses or can_ask_team_member %}
+      <div style="margin: 2em 0; padding: 1em; border: 1px solid #ccc">
+        {% if team_member_responses %}
+        <p>You asked team members for help with this module:</p>
+        <table class="table">
+        <thead>
+          <tr>
+            <th>Team Member</th>
+            <th>Answer</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for subtask, answer in team_member_responses.items %}
+          <tr id="subtask_{{forloop.counter0}}" data-output="{{subtask.get_output}}">
+            <td>{{subtask.user}}</td>
+            {% if answer %}
+              <td style="cursor: pointer; color: #050" onclick="show_modal_error('{{subtask.user}}\'s Answer', $('<pre>').text('{{answer.value|escapejs}}'))">{{answer.value|truncatewords:10}}</td>
+            {% else %}
+              <td><i>Not answered.</i></td>
+            {% endif %}
+          </tr>
           {% endfor %}
-
-        {% elif q.type == "yesno" %}
-          <div class="radio">
-            <label>
-              <input name="value" value="no"  type="radio" {% if last_value == "no" %}checked{% endif %}> No
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input name="value" value="yes" type="radio" {% if last_value == "yes" %}checked{% endif %}> Yes
-            </label>
-          </div>
-          <p class="help-block">{{q.help}}</p>
-
-        {% else %}
-            {{q.type}}
-
+        </tbody>
+        </table>
+        <hr>
         {% endif %}
 
-      <button type="submit" class="btn btn-success">
-        {% if not request.GET.q %}Next{% else %}Submit{% endif %}
-        &raquo;
-      </button>
-    </form>     
-</div>
+        {% if can_ask_team_member %}
+        <p>You can ask a{% if team_member_responses %}nother{% endif %} colleague to help you answer this question.</p>
+        <form class="form" onsubmit="do_invite_show_modal(); return false;">
+          <div class="form-group" style="padding-right: 1em">
+            {% if can_ask_team_members_user_list %}
+              <label for="invite-user">Ask Team Member</label>
+              <select id="invite-user" class="form-control">
+                {% for pm in can_ask_team_members_user_list %}
+                <option value="{{pm.user.id}}">{{pm.user.username}}</option>
+                {% endfor %}
+                <option value=":__INVITE__:">Invite someone else...</option>
+              </select>
+            {% else %}
+              <label for="ask-invite">Invite to Help:</label>
+              <input id="invite-email" type="email" class="form-control" placeholder="team.member@youragency.gov">
+            {% endif %}
+          </div>
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" id="invite-to-project" onchange="$('#invite-to-team-tips').slideToggle($(this).val())"> Add to project team
+            </label>
+          </div>
+          <button type="submit" class="btn btn-success">Send Invitation</button>
+        </form>
+        <p style="margin: 1em 0 0 0; line-height: 125%;" class="small text-warning">When you invite someone to help you with this module, they will be able to see your answers to this module. You&rsquo;ll be able to see their answers too. <span id="invite-to-team-tips" style="display: none">Inviting them to your project team means they will be able to answer other modules in {{task.project.title}}.</span></p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div> <!-- /col -->
+</div> <!-- /row -->
 
 <div id="invite-modal" class="modal fade" tabindex="-1" role="dialog">
   <div class="modal-dialog">
@@ -152,7 +163,7 @@ Next Question: {{q.title}} - GovReady
       </div>
       <div class="modal-body">
         <p>Send <span id="invite-modal-name"></span> a message about why you are sending them this invitation:</p>
-        <textarea id="invite-message" style="width: 100%; height: 4em">Can you give me a hand completing the module {{module.title}} for {{task.project.title}}?</textarea>
+        <textarea id="invite-message" class="form-control" style="width: 100%; height: 4em">Can you give me a hand completing the module {{module.title}} for {{task.project.title}}?</textarea>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

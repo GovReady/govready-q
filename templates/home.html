@@ -5,23 +5,42 @@ Welcome
 {% endblock %}
 
 {% block body %}
-<h1>Ok, go.</h1>
+<h1 style="margin: 1em 0">Home</h1>
 
-<p>You can work on:</p>
+<div style="margin: 2em 0">
+{% if not has_tasks %}
+	<p>Start by beginnig a new module within one of your projects.</p>
+{% else %}
+	<p>You can continue working on a module you have already started or start a new module.</p>
+{% endif %}
+</div>
 
 {% for item in projects %}
-	<h2>{{item.project.title}}</h2>
+<div class="panel panel-primary">
+  <div class="panel-heading"><h3 style="margin: 0">{{item.project.title}}</h3></div>
+  <div class="panel-body">
+  	{% if item.tasks|length %}
+  		<p>Resume or revise one of your modules in this project:</p>
+  	{% endif %}
 
 	{% for task in item.tasks %}
 		<p><a href="{{task.get_absolute_url}}">{{task.title}}</a></p>
-	{% empty %}
-		<p>No tasks yet.</p>
 	{% endfor %}
+
+  	{% if item.tasks|length == 0 and has_tasks %}
+  		{# don't bother with this if no projects have any tasks #}
+		<p>You have not started any modules in this project.</p>
+  	{% endif %}
+
+	{% if item.tasks|length or has_tasks %}
+	<hr>
+	{% endif %}
 
 	<p>Start a new module:</p>
 
 	<p><a href="/tasks/start?module=sample_module&amp;project={{item.project.id}}">Sample Module About An Animal</a></p>
-
+  </div>
+</div>
 {% endfor %}
 
 {% endblock %}

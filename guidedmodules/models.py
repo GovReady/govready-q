@@ -254,7 +254,7 @@ class Invitation(models.Model):
             # out and force them to log into a new account.
             from django.core.urlresolvers import reverse
             logout(request)
-            return reverse('account_login') + "?next=" + urllib.parse.quote(self.get_acceptance_url())
+            return reverse('account_signup') + "?next=" + urllib.parse.quote(self.get_acceptance_url())
 
         # The user is now logged in and able to accept the invitation.
         with transaction.atomic():

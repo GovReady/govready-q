@@ -9,6 +9,36 @@ from django.contrib.auth.models import User
 
 @login_required
 def new_project(request):
+    from django.forms import ModelForm
+
+    class NewProjectForm(ModelForm):
+        class Meta:
+            model = Project
+            fields = ['title', 'notes']
+            help_texts = {
+                'title': 'Give your project a descriptive name.',
+                'notes': 'Optionally write some notes. If you invite other users to your project team, they\'ll be able to see this too.',
+            }
+
+    form = NewProjectForm()
+    if request.method == "POST":
+        # Save and then go back to the home page to see it.
+        form = NewProjectForm(request.POST)
+        if not form.errors:
+            with transaction.atomic():
+                project = form.save()
+                ProjectMembership.objects.create(
+                    project=project,
+                    user=request.user,
+                    is_admin=True)
+            return HttpResponseRedirect("/")
+
+    return render(request, "new-project.html", {
+        "first": not ProjectMembership.objects.filter(user=request.user).exists(),
+        "form": form,
+    })
+
+def x():
     p = Project.objects.create(
         title="New Project",
         notes="Description of your new project.")
@@ -95,8 +125,8 @@ def next_question(request, taskid, taskslug):
             "prompt": q.render_prompt(task.get_answers_dict()),
             "last_value": answered.get(q.id),
             "can_ask_team_member": m.allow_help,
-            "can_ask_team_members_user_list": list(User.objects.all().exclude(id=request.user.id)),
-            "team_member_responses": { t: t.answers.filter(question_id=q).first() for t in task.requests.all() },
+            "can_ask_team_members_user_list": list(ProjectMembership.objects.exclude(user=request.user).exclude(user=task.requested_by.user if task.requested_by else None)),
+            "team_member_responses": { t: t.answers.filter(question_id=q.id).first() for t in task.requests.all() },
         })
 
 @login_required

@@ -27,6 +27,7 @@ def homepage(request):
 				"tasks": Task.objects.filter(user=request.user, project=mbr.project).order_by('-updated')
 			})
 		return render(request, "home.html", {
+			"has_tasks": Task.objects.filter(user=request.user).exclude(project=None).exists(),
 			"projects": projects,
 		})
 

@@ -1,0 +1,27 @@
+{% extends "site_base.html" %}
+{% load bootstrap %}
+
+{% block head_title %}
+New Project - GovReady
+{% endblock %}
+
+{% block body %}
+<h1>New Project</h1>
+
+<div style="margin: 2em 0">
+  {% if first %}
+    <p>Create your first project.</p>
+  {% else %}
+    <p>Create a new project.</p>
+  {% endif %}
+</div>
+
+<form role="form" method="post">
+    {% csrf_token %}
+    {{ form|bootstrap }}
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary">Create</button>
+    </div>
+</form>
+
+{% endblock %}
