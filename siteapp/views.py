@@ -26,8 +26,15 @@ def homepage(request):
 				"project": mbr.project,
 				"tasks": Task.objects.filter(editor=request.user, project=mbr.project).order_by('-updated')
 			})
+
+		# Add a fake project for system modules for this user.
+		system_tasks = Task.objects.filter(editor=request.user, project=None)
+		if len(system_tasks):
+			projects.append({
+				"tasks": system_tasks
+			})
+
 		return render(request, "home.html", {
-			"has_tasks": Task.objects.filter(editor=request.user).exclude(project=None).exists(),
 			"projects": projects,
 		})
 
