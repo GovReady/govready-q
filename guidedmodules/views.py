@@ -120,6 +120,7 @@ def next_question(request, taskid, taskslug):
         })
     else:
         return render(request, "question.html", {
+            "DEBUG": settings.DEBUG,
             "task": task,
             "module": m,
             "q": q,

@@ -98,6 +98,17 @@ Next Question: {{q.title}} - GovReady
   <div class="col-md-6">
   </div> <!-- /col -->
 </div> <!-- /row -->
+
+{% if DEBUG %}
+<p>
+  user: <b>{{user}}</b>
+  |
+  module: <b>{{module.id}}</b>
+  |
+  question: <b>{{q.id}}</b>
+</p>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_body %}
