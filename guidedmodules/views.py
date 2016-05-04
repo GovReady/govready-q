@@ -166,18 +166,38 @@ def send_invitation(request):
     import email_validator
     if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
     try:
-        if not request.POST['user'] and not request.POST['email']:
+        if not request.POST['user_id'] and not request.POST['user_email']:
             raise ValueError("Select a team member or enter an email address.")
-        inv = Invitation.create(
-            Task.objects.get(user=request.user, id=request.POST['task']),
-            request.POST['question'],
-            User.objects.get(id=request.POST['user']) if request.POST['user'] else None,
-            email_validator.validate_email(request.POST['email'])["email"] if request.POST['email'] else None,
-            request.POST['text'],
-            request.POST['project'] == "true"
+
+        inv = Invitation.objects.create(
+            # who is sending the invitation?
+            from_user=request.user,
+            from_project=Project.objects.get(id=request.POST["project"], members__user=request.user), # validate that the user is a team member
+            
+            # what prompted this invitation?
+            prompt_task=Task.objects.get(id=request.POST["prompt_task"], editor=request.user) if request.POST.get("prompt_task") else None,
+            prompt_question_id=request.POST.get("prompt_question_id"),
+
+            # what is the recipient being invited to? validate that the user is an admin of this project
+            # or an editor of the task being reassigned.
+            into_project=(request.POST.get("add_to_team", "") != "") and Project.objects.get(id=request.POST["project"], members__user=request.user, members__is_admin=True),
+            into_new_task_module_id=request.POST.get("into_new_task_module_id"),
+            into_task_editorship=Task.objects.get(id=request.POST["into_task_editorship"], editor=request.user) if request.POST.get("into_task_editorship") else None,
+            into_discussion=None, # TODO + validation request.POST.get("into_discussion"),
+
+            # who is the recipient of the invitation?
+            to_user=User.objects.get(id=request.POST["user_id"]) if request.POST.get("user_id") else None,
+            to_email=request.POST.get("user_email"),
+
+            # personalization
+            text = request.POST.get("message", ""),
+            email_invitation_code = Invitation.generate_email_invitation_code(),
         )
+
         inv.send() # TODO: Move this into an asynchronous queue.
+
         return JsonResponse({ "status": "ok" })
+
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
     except Exception as e:

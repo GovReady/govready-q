@@ -3,7 +3,9 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
-from guidedmodules.models import Task, ProjectMembership
+import json
+
+from guidedmodules.models import Task, ProjectMembership, Invitation
 from questions import Module
 
 def homepage(request):
@@ -21,7 +23,8 @@ def homepage(request):
 		for mbr in ProjectMembership.objects.filter(user=request.user).order_by('-project__created'):
 			projects.append({
 				"project": mbr.project,
-				"tasks": Task.objects.filter(editor=request.user, project=mbr.project).order_by('-updated')
+				"tasks": Task.objects.filter(editor=request.user, project=mbr.project).order_by('-updated'),
+				"send_invitation": json.dumps(Invitation.form_context_dict(request.user, mbr.project)),
 			})
 
 		# Add a fake project for system modules for this user.

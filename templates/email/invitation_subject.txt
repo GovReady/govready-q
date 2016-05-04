@@ -1,3 +1,3 @@
 {% autoescape off %}
-{{from_user}} is requesting your help on {{task.title}} 
+{{invitation.from_user}} is requesting your help on GovReady Q
 {% endautoescape %}

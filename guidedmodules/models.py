@@ -5,6 +5,8 @@ from django.conf import settings
 
 from jsonfield import JSONField
 
+from questions import Module
+
 class Project(models.Model):
     title = models.CharField(max_length=256, help_text="The title of this Project.")
     notes = models.TextField(blank=True, help_text="Notes about this Project for Project members.")
@@ -184,27 +186,25 @@ class Invitation(models.Model):
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     @staticmethod
-    def create(from_task, from_question_id, to_user, to_email, text, add_to_project):
-        return Invitation.objects.create(
-            from_user = from_task.user,
-            from_task = from_task,
-            question_id = from_question_id,
-            to_user = to_user,
-            to_email = to_email,
-            text = text,
-            invite_to_project = from_task.project if add_to_project else None,
-            email_invitation_code = Invitation.generate_email_invitation_code(),
-        )
-
-    @staticmethod
     def generate_email_invitation_code():
         import random, string
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(24))
+
+    @staticmethod
+    def form_context_dict(user, project):
+        return {
+            "addable_modules": [{ "id": m.id, "title": m.title } for m in Module.get_anserable_modules()],
+            "users": [{ "id": pm.user.id, "name": str(pm.user) } for pm in ProjectMembership.objects.filter(project=project).exclude(user=user)],
+        }
 
     def get_acceptance_url(self):
         from django.core.urlresolvers import reverse
         return settings.SITE_ROOT_URL \
             + reverse('accept_invitation', kwargs={'code': self.email_invitation_code})
+
+    @property
+    def into_new_task_module_title(self):
+        return Module.load(self.into_new_task_module_id).title
 
     def send(self):
         # Send and mark as sent.

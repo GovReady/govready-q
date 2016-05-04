@@ -40,11 +40,8 @@ Welcome
 		{# can only start these within a project #}
 		<hr>
 
-		<p>Start a new module:</p>
-
-		{% for m in answerable_modules %}
-			<p><a href="/tasks/start?module={{m.id}}&amp;project={{item.project.id}}">{{m.title}}</a></p>
-		{% endfor %}
+    <script>var project_invitation_info_{{item.project.id}} = {{item.send_invitation|safe}};</script>
+		<p><button class="btn btn-primary" onclick="show_invite_modal({{item.project.id}}, '{{item.project.title|escapejs}}', project_invitation_info_{{item.project.id}}, 'Can you give me a hand completing a module for {{item.project.title}}?')">Start Module</button></p>
 
 	{% else %}
 		<p><a href="/tasks/new-project">Start a New Project</a></p>
@@ -54,4 +51,126 @@ Welcome
 </div>
 {% endfor %}
 
+<div id="invitation_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="invitation_modal_title">Start a Module (<span></span>)</h4>
+      </div>
+      <div class="modal-body">
+        <p>Start a new module.</p>
+        <form method="get" action="/tasks/start" class="form-inline" onsubmit="return send_invitation()">
+            {% csrf_token %}
+            <input type="hidden" name="project" value=""/>
+            <div class="form-group" style="margin-right: 1em">
+              <label for="invite-module">Module</label>
+              <br>
+              <select id="invite-module" class="form-control" name="module">
+              </select>
+            </div>
+            <div class="form-group" style="margin-right: 1em">
+              <label for="invite-user-select">Answered By</label>
+              <br>
+              <select id="invite-user-select" class="form-control" name="user" onchange="invite_toggle_mode()">
+              </select>
+            </div>
+            <div class="form-group" style="margin-right: 1em; display: none">
+              <label for="invite-user-email">
+                Invite by Email
+                (<a onclick="$('#invite-user-select').val('__me__'); invite_toggle_mode()">back</a>)
+              </label>
+              <br>
+              <input id="invite-user-email" class="form-control" name="email" type="email" placeholder="person@your-agency.gov">
+            </div>
+            <div id="invite-message-container" style="display: none">
+              <p style="margin-top: 1em">Include a message about why you are sending this invitation:</p>
+              <textarea id="invite-message" class="form-control" style="width: 100%; height: 4em"></textarea>
+            </div>
+            <div id="invite-addtoteam-container" style="display: none">
+              <div class="checkbox" style="margin-top: 1em">
+                <label>
+                  <input name="add-to-team" type="checkbox"> Add to project team
+                </label>
+              </div>
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Nevermind</button>
+        <button type="button" class="btn btn-danger btn-submit" onclick="$('#invitation_modal form').submit()">Start</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_body %}
+<script>
+function show_invite_modal(project_id, project_title, info, message_default_text) {
+  var m = $('#invitation_modal');
+  m.find('h4 span').text(project_title)
+  m.find('form input[name=project]').val(project_id);
+
+  var s = m.find('form select[name=module]');
+  s.text('');
+  info.addable_modules.forEach(function(m) {
+    s.append($("<option/>").attr('value', m.id).text(m.title))
+  })
+
+  var s = m.find('form select[name=user]');
+  s.text('');
+  s.append($("<option/>").attr('value', '__me__').text("Myself"))
+  info.users.forEach(function(user) {
+    s.append($("<option/>").attr('value', user.id).text(user.name))
+  })
+  s.append($("<option/>").attr('value', '__invite__').text("Invite someone new..."))
+  invite_toggle_mode();
+
+  $('#invite-message').text(message_default_text);
+
+  m.modal();
+}
+function invite_toggle_mode() {
+  var m = ($('#invite-user-select').val() == '__invite__'); // inviting by email
+  var n = ($('#invite-user-select').val() != '__me__'); // inviting (user or email)
+  $('#invite-user-select').parent().toggle(!m);
+  $('#invite-user-email').parent().toggle(m);
+  $('#invite-message-container').toggle(n);
+  $('#invite-addtoteam-container').toggle(m);
+  $('#invitation_modal .btn-submit').text(!n ? "Start" : "Invite");
+}
+function send_invitation(form) {
+  // If the user will be filling out the module themself, then
+  // do regular form submission.
+  if ($('#invite-user-select').val() == '__me__')
+    return true;
+
+  // Otherwise, do an AJAX submit to send the invitation.
+  $('#invitation_modal').modal('hide');
+  ajax_with_indicator({
+   url: '{% url "send_invitation" %}',
+   method: "POST",
+   data: {
+     project: $('#invitation_modal form input[name=project]').val(),
+     //prompt_task
+     //prompt_question_id
+     add_to_team: $('#invitation_modal form input[name=add-to-team]').attr('checked') != null ? "1" : "0",
+     into_new_task_module_id: $('#invitation_modal form input[name=module]').val(),
+     //into_task_editorship
+     //into_discussion
+     user_id: $('#invite-user-select').is(":visible") ? $('#invite-user-select').val() : null,
+     user_email: $('#invite-user-email').is(":visible") ? $('#invite-user-email').val() : null,
+     message: $('#invite-message').val()
+   },
+   success: function(res) {
+     // status == error is handled by ajax_with_indicator
+     show_modal_error("Send Invitation", "The invitation has been sent. We will notify you when the invitation has been accepted.")
+   }
+  });
+
+  return false;
+}
+</script>
 {% endblock %}
