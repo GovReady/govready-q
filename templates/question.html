@@ -19,13 +19,16 @@ Next Question: {{q.title}} - GovReady
 <div class="row">
   <div class="col-md-6">
     <div id="question" style="margin: 2em 0">
-        {{prompt|safe}}
-
-
         <form method="post">
             {% csrf_token %}
 
             <input type="hidden" name="question" value="{{q.id}}">
+
+            {% if last_value %}
+              <input type="submit" class="btn btn-danger btn-sm" name="clear-answer" value="Clear Answer" style="float: right"/>
+            {% endif %}
+
+            {{prompt|safe}}
 
             {% if q.type == "text" %}
               <div class="form-group">

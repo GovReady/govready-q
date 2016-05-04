@@ -81,10 +81,17 @@ def next_question(request, taskid, taskslug):
 
     # Process form data.
     if request.method == "POST":
-        # validation
+        # validate question
         q = request.POST.get("question")
         if q not in m.questions_by_id:
             return HttpResponse("invalid question id", status=400)
+
+        # clear answer?
+        if request.POST.get("clear-answer"):
+            Answer.objects.filter(task=task, question_id=q).delete()
+            return HttpResponseRedirect(request.path)
+
+        # validate value
         value = request.POST.get("value", "")
         if not value.strip():
             return HttpResponse("empty answer", status=400)
