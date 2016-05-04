@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.db import transaction
 
 from questions import Module
 from .models import Project, ProjectMembership, Task, Answer, Invitation
