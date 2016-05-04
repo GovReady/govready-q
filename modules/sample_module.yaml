@@ -25,7 +25,8 @@ questions:
   - id: q4
     title: Natural Habitat
     prompt: "What's the {{q1}}'s natural habitat?"
-    type: longtext
+    type: module
+    module-id: sample_two
       
 output:
   format: markdown
@@ -37,6 +38,8 @@ output:
 
     #### Habitat:
 
-    {{q4}}
+    Lives on land: {{q4.q1}}
+
+    Lives in the sea: {{q4.q2}}
 
     _Have a nice day!_

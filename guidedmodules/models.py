@@ -72,9 +72,16 @@ class Task(models.Model):
         return Module.load(self.module_id)
 
     def get_answers_dict(self):
+        m = self.load_module()
         answered = { }
         for q in self.answers.all():
             answered[q.question_id] = q.value
+
+            # If this question type is "module", its answer value is the dict
+            # returned by get_answers_dict on the Task that is the answer to
+            # the question.
+            if m.questions_by_id[q.question_id].type == "module":
+                answered[q.question_id] = q.answered_by_task.get_answers_dict()
         return answered
 
     def is_finished(self):
@@ -94,6 +101,7 @@ class Answer(models.Model):
     question_id = models.CharField(max_length=128, help_text="The ID of the question (with the Task's module) that this Answer answers.")
 
     value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
+    answered_by_task = models.ForeignKey(Task, blank=True, null=True, related_name="is_answer_of", help_text="A Task that supplies the answer for this question.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by the user completing this Answer.")
 

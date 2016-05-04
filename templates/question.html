@@ -82,6 +82,20 @@ Next Question: {{q.title}} - GovReady
               </div>
               <p class="help-block">{{q.help}}</p>
 
+            {% elif q.type == "module" %}
+              <div class="form-group">
+                <label for="inputctrl">Select a module to answer this question:</label>
+                <select name="value" class="form-control" id="inputctrl">
+                  {% for m in answer_tasks %}
+                    <option value="{{m.id}}">{{m.title}}</option>
+                  {% endfor %}
+                  <option value="__new">Start a new module on {{answer_module.title}}...</option>
+                </select>
+                <p class="help-block">{{q.help}}</p>
+              </div>
+
+              <p class="help-block">{{q.help}}</p>
+
             {% else %}
                 {{q.type}}
 

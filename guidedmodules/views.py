@@ -88,11 +88,34 @@ def next_question(request, taskid, taskslug):
         value = request.POST.get("value", "")
         if not value.strip():
             return HttpResponse("empty answer", status=400)
-        
+
         # save answer
         answer, isnew = Answer.objects.get_or_create(
             task=task,
             question_id=q)
+
+        # normal redirect - reload the page
+        redirect_to = request.path
+
+        # fetch the task that answers this question
+        if m.questions_by_id[q].type == "module":
+            if value == "__new":
+                # Create a new task, and we'll redirect to it immediately.
+                m1 = Module.load(m.questions_by_id[q].module_id) # validate input
+                t = Task.objects.create(
+                    editor=request.user,
+                    project=task.project,
+                    module_id=m1.id,
+                    title=m1.title)
+                redirect_to = t.get_absolute_url()
+            else:
+                # user selects an existing Task (ensure the user has access to it)
+                t = Task.objects.get(project=task.project, id=int(value))
+
+            answer.answered_by_task = t
+            value = t.get_answers_dict()
+
+
         answer.value = value
         answer.save()
 
@@ -100,7 +123,7 @@ def next_question(request, taskid, taskslug):
         task.save(update_fields=[])
 
         # return to a GET request
-        return HttpResponseRedirect(request.path)
+        return HttpResponseRedirect(redirect_to)
 
 
     # Display requested question.
@@ -126,6 +149,9 @@ def next_question(request, taskid, taskslug):
             "q": q,
             "prompt": q.render_prompt(task.get_answers_dict()),
             "last_value": answered.get(q.id),
+            "answer_module": Module.load(q.module_id) if q.module_id else None,
+            "answer_tasks": Task.objects.filter(project=task.project, module_id=q.module_id),
+            "answer_task": Task.objects.filter(is_answer_of__question_id=q.id),
         })
 
 @login_required
