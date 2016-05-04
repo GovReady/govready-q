@@ -35,31 +35,6 @@ questions:
       - key: skype
         text: Skype
         help: We like Skype too.
-  - id: ticketing
-    title: Your Ticking System
-    prompt: What ticketing system do you use to track software issues?
-    type: choice
-    choices:
-      - key: github
-        text: Github
-      - key: other
-        text: Other/Unknown
-  - id: scanningtool
-    title: Your Scanning Tool
-    prompt: What compliance scanning tool do you use?
-    type: choice
-    choices:
-      - key: openscap
-        text: OpenSCAP
-      - key: other
-        text: Other/Unknown
-  - id: systemsecurityplanbuilder
-    title: Your System Security Plan Builder
-    prompt: What system security plan builder do you use?
-    type: choice
-    choices:
-      - key: compliancemasonry
-        text: Compliance Masonry
 output:
   format: markdown
   template: |
@@ -78,9 +53,3 @@ output:
     ### Applications
 
     Chat: {{chat}}
-
-    Ticketing: {{ticketing}}
-
-    Scanning Tool: {{scanningtool}}
-
-    System Security Plan Builder: {{systemsecurityplanbuilder}}
