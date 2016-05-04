@@ -3,6 +3,7 @@ class Module(object):
         # Load from a YAML specification.
         self.id = spec["id"]
         self.title = spec["title"]
+        self.answerable_in_project = spec.get("type") != "account"
 
         # The question definitions.
         self.questions = []
@@ -44,6 +45,14 @@ class Module(object):
 
     def __repr__(self):
         return "<Module '%s'>" % (self.title,)
+
+    @staticmethod
+    def get_anserable_modules():
+        import glob, os.path, rtyaml
+        for fn in glob.glob("modules/*.yaml"):
+            m = Module(rtyaml.load(open(fn)))
+            if m.answerable_in_project:
+                yield m
 
     @staticmethod
     def load(id):

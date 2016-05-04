@@ -1,5 +1,6 @@
 id: account_settings
 title: GovReady Account Settings
+type: account
 questions:
   - id: name
     title: Your Name

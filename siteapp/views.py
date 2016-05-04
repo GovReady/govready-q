@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 from guidedmodules.models import Task, ProjectMembership
+from questions import Module
 
 def homepage(request):
 	if not request.user.is_authenticated():
@@ -31,6 +32,7 @@ def homepage(request):
 			})
 
 		return render(request, "home.html", {
+			"answerable_modules": Module.get_anserable_modules(),
 			"projects": projects,
 		})
 

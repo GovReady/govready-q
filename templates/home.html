@@ -42,7 +42,9 @@ Welcome
 
 		<p>Start a new module:</p>
 
-		<p><a href="/tasks/start?module=sample_module&amp;project={{item.project.id}}">Sample Module About An Animal</a></p>
+		{% for m in answerable_modules %}
+			<p><a href="/tasks/start?module={{m.id}}&amp;project={{item.project.id}}">{{m.title}}</a></p>
+		{% endfor %}
 
 	{% else %}
 		<p><a href="/tasks/new-project">Start a New Project</a></p>
