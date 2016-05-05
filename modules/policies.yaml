@@ -1,0 +1,58 @@
+id: policies 
+title: Policy Module 
+short_description: Document your oganization's policies
+long_description: >
+  It's important to have policies an procedures 
+  for each of the 18 families of security controls.
+  This module will help you document how well your
+  organization is doing with policies.
+editor_requirements: Person familiar with organization policies and procedures
+questions:
+
+  - id: pol_q1
+    title: Likely policies exist?
+    jargon: >
+      Does organization have policies for access control, incident response, 
+      awareness training?
+    prompt: >
+      Would you say your organization has written policies and procedures for
+      who has access to systems, how to respond if you are hacked, and 
+      training your team on security?
+    type: yesno
+
+  - id: pol_q2
+    skip_if: pol_q1 == 'no'
+    title: Policies centralized?
+    jargon: Are policies and proceedures maintened in centralized store?
+    prompt: What best describes where your organization's official policies and procedures are found?
+    type: choice
+    choices:
+      - key: harddrives
+        text: Various harddrives
+      - key: shared_folder
+        text: Shared network folder
+      - key: dms
+        text: Enterprise document management system like Sharepoint or Documentum?
+      - key: web_page
+        text: Intranet or public web page
+      - key: git
+        text: Git repo like GitHub or GitLab
+
+  - id: pol_q3
+    skip_if: pol_q1 == 'no'
+    title:  Less likely policies exist?
+    jargon: >
+      Does organization have policies for contingency planning, media protection, and 
+      systems and communications protection?
+    prompt: > 
+      Would you say your organization has written policies an procedures for
+      your data center being destroyed in a storm, how back up media is transported, and
+      encrypting data exchanges?
+    type: yesno
+
+output:
+  format: markdown
+  template: |
+    Lives on land: {{q1}}
+
+    Lives in the sea: {{q2}}
