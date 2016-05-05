@@ -53,6 +53,8 @@ questions:
 output:
   format: markdown
   template: |
-    Lives on land: {{q1}}
+    Commonly found policies exist?: {{pol_q1}}
 
-    Lives in the sea: {{q2}}
+    Less commonly found  policies exist?: {{pol_q3}}
+
+    Polices and procedures are kept and managed via: {{pol_q2}}
