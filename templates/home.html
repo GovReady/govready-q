@@ -14,39 +14,55 @@ Welcome
 {% for item in projects %}
 <div class="panel panel-primary">
   <div class="panel-heading">
-  	<h3 style="margin: 0">
-  		{% if item.project %}
-  			{{item.project.title}}
-  		{% else %}
-  			Account Modules
-  		{% endif %}
-  	</h3>
+    <h3 style="margin: 0">
+      {% if item.project %}
+        {{item.project.title}}
+      {% else %}
+        Account Modules
+      {% endif %}
+    </h3>
   </div>
   <div class="panel-body">
-  	{% if item.tasks|length %}
-  		<p>Resume or revise one of your modules in this project:</p>
-  	{% endif %}
+    {% if item.open_invitations %}
+      <h4>Invitations waiting for a response...</h4>
+      <div class="invitation-list">
+      {% for inv in item.open_invitations %}
+        <p data-id="{{inv.id}}" title="{{inv.text}}">
+          On {{inv.created|date}} you invited {{inv.to_display}} {{inv.purpose}}.
+          (<a href="javascript:cancel_invitation({{inv.id}});">cancel</a>)
+        </p>
+      {% endfor %}
+      </div>
+    {% endif %}
 
-	{% for task in item.tasks %}
-		<p><a href="{{task.get_absolute_url}}">{{task.title}}</a></p>
-	{% endfor %}
+    {% if item.project %}<h4>Modules you are editing</h4>{% endif %}
+    {% if item.tasks|length %}
+      {% for task in item.tasks %}
+        <p><a href="{{task.get_absolute_url}}">{{task.title}}</a> ({{task.get_status_display}})</p>
+      {% endfor %}
+    {% endif %}
+    {% if item.tasks|length == 0 %}
+      <p>You have not started any modules in this project.</p>
+    {% endif %}
 
-  	{% if item.tasks|length == 0 %}
-  		{# don't bother with this if no projects have any tasks #}
-		<p>You have not started any modules in this project.</p>
-  	{% endif %}
+    {% if item.others_tasks|length %}
+      <h4>Other modules in this project (edited by others)</h4>
+      {% for task in item.others_tasks %}
+        <p><a href="{{task.get_absolute_url}}">{{task.title}}</a> (edited by {{task.editor}}; {{task.get_status_display}})</p>
+      {% endfor %}
+    {% endif %}
 
-	{% if item.project %}
-		{# can only start these within a project #}
-		<hr>
+    {% if item.project %}
+      {# can only start a new module within a project #}
+      <hr>
 
-    <script>var project_invitation_info_{{item.project.id}} = {{item.send_invitation|safe}};</script>
-		<p><button class="btn btn-primary" onclick="show_invite_modal({{item.project.id}}, '{{item.project.title|escapejs}}', project_invitation_info_{{item.project.id}}, 'Can you give me a hand completing a module for {{item.project.title}}?')">Start Module</button></p>
+      <script>var project_invitation_info_{{item.project.id}} = {{item.send_invitation|safe}};</script>
+      <p><button class="btn btn-primary" onclick="show_invite_modal({{item.project.id}}, '{{item.project.title|escapejs}}', project_invitation_info_{{item.project.id}}, 'Can you give me a hand completing a module for {{item.project.title}}?')">Start Module</button></p>
 
-	{% else %}
-		<p><a href="/tasks/new-project">Start a New Project</a></p>
+    {% else %}
+      <p><a href="/tasks/new-project">Start a New Project</a></p>
 
-	{% endif %}
+    {% endif %}
   </div>
 </div>
 {% endfor %}
@@ -157,7 +173,7 @@ function send_invitation(form) {
      //prompt_task
      //prompt_question_id
      add_to_team: $('#invitation_modal form input[name=add-to-team]').attr('checked') != null ? "1" : "0",
-     into_new_task_module_id: $('#invitation_modal form input[name=module]').val(),
+     into_new_task_module_id: $('#invitation_modal form select[name=module]').val(),
      //into_task_editorship
      //into_discussion
      user_id: $('#invite-user-select').is(":visible") ? $('#invite-user-select').val() : null,
@@ -166,11 +182,26 @@ function send_invitation(form) {
    },
    success: function(res) {
      // status == error is handled by ajax_with_indicator
-     show_modal_error("Send Invitation", "The invitation has been sent. We will notify you when the invitation has been accepted.")
+     show_modal_error("Send Invitation", "The invitation has been sent. We will notify you when the invitation has been accepted.", function() { window.location.reload() })
    }
   });
 
   return false;
+}
+
+function cancel_invitation(invid) {
+  ajax_with_indicator({
+   url: '{% url "cancel_invitation" %}',
+   method: "POST",
+   data: {
+    id: invid
+   },
+   success: function(res) {
+     show_modal_error("Cancel Invitation", "The invitation has been canceled.");
+     var n = $('.invitation-list p[data-id=' + invid + ']');
+     n.slideUp(function() { n.remove(); })
+   }
+  });
 }
 </script>
 {% endblock %}

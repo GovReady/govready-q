@@ -3,6 +3,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonRespons
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 
 from questions import Module
 from .models import Project, ProjectMembership, Task, Answer, Invitation
@@ -209,3 +210,10 @@ def accept_invitation(request, code=None):
     assert code.strip() != ""
     inv = get_object_or_404(Invitation, email_invitation_code=code)
     return HttpResponseRedirect(inv.accept(request))
+
+@login_required
+def cancel_invitation(request):
+    inv = get_object_or_404(Invitation, id=request.POST['id'], from_user=request.user)
+    inv.revoked_at = timezone.now()
+    inv.save(update_fields=['revoked_at'])
+    return JsonResponse({ "status": "ok" })

@@ -10,5 +10,6 @@ urlpatterns = [
     url(r'start$', guidedmodules.views.new_task),
     url(r'new-project$', guidedmodules.views.new_project),
     url(r'_send_invitation$', guidedmodules.views.send_invitation, name="send_invitation"),
+    url(r'_cancel_invitation$', guidedmodules.views.cancel_invitation, name="cancel_invitation"),
     url(r'accept-invitation/(?P<code>.*)$', guidedmodules.views.accept_invitation, name="accept_invitation"),
 ]

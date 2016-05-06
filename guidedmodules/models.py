@@ -197,6 +197,24 @@ class Invitation(models.Model):
             "users": [{ "id": pm.user.id, "name": str(pm.user) } for pm in ProjectMembership.objects.filter(project=project).exclude(user=user)],
         }
 
+    def to_display(self):
+        return str(self.to_user) if self.to_user else self.to_email
+
+    def purpose(self):
+        if self.into_new_task_module_id:
+            return ("to edit a new module <%s>" % Module.load(self.into_new_task_module_id).title) \
+                + (" and to join the project team" if self.into_project else "")
+        elif self.into_task_editorship:
+            return ("to take over editing <%s>" % self.into_task_editorship.title) \
+                + (" and to join the project team" if self.into_project else "")
+        elif self.into_discussion:
+            return ("to join the discussion <%s>" % self.into_discussion.title) \
+                + (" and to join the project team" if self.into_project else "")
+        elif self.into_project:
+            return "to join this project team"
+        else:
+            raise Exception()
+
     def get_acceptance_url(self):
         from django.core.urlresolvers import reverse
         return settings.SITE_ROOT_URL \
@@ -308,7 +326,7 @@ class Invitation(models.Model):
                 m = Module.load(self.into_new_task_module_id)
                 task = Task.objects.create(
                     project=self.from_project,
-                    user=request.user,
+                    editor=request.user,
                     module_id=self.into_new_task_module_id,
                     title=m.title,
                 )
