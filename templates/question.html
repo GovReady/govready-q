@@ -23,9 +23,11 @@ Next Question: {{q.title}} - GovReady
             {% csrf_token %}
 
             <input type="hidden" name="question" value="{{q.id}}">
+            <input type="hidden" name="method" value="set">
 
             {% if answer.value %}
-              <input type="submit" class="btn btn-danger btn-sm" name="clear-answer" value="Clear Answer" style="float: right"/>
+              <button type="submit" class="btn btn-danger btn-sm" style="float: right"
+                onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
             {% endif %}
 
             {{prompt|safe}}
@@ -161,6 +163,10 @@ $(function() {
 
     var form = $("#question > form");
     form.on("submit", function() {
+        // skip client-side validation if user is trying to clear the answer
+        if ($('#question form input[name=method]').val() == "clear")
+          return true;
+
         // client-side validation, block form if not valid
         var problem = validate_answer();
         if (problem) {

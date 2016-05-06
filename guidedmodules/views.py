@@ -88,7 +88,7 @@ def next_question(request, taskid, taskslug):
             return HttpResponse("invalid question id", status=400)
 
         # clear answer?
-        if request.POST.get("clear-answer"):
+        if request.POST.get("method") == "clear":
             Answer.objects.filter(task=task, question_id=q).delete()
             return HttpResponseRedirect(request.path)
 
