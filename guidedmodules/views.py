@@ -156,9 +156,10 @@ def next_question(request, taskid, taskslug):
             "module": m,
             "q": q,
             "prompt": q.render_prompt(task.get_answers_dict()),
-            "last_value": answered.get(q.id),
+            "answer": Answer.objects.filter(task=task, question_id=q.id).first(),
             "answer_module": Module.load(q.module_id) if q.module_id else None,
             "answer_tasks": Task.objects.filter(project=task.project, module_id=q.module_id),
+            "answer_tasks_show_user": Task.objects.filter(project=task.project).exclude(editor=request.user).exists(),
             "answer_task": Task.objects.filter(is_answer_of__question_id=q.id),
         })
 

@@ -24,7 +24,7 @@ Next Question: {{q.title}} - GovReady
 
             <input type="hidden" name="question" value="{{q.id}}">
 
-            {% if last_value %}
+            {% if answer.value %}
               <input type="submit" class="btn btn-danger btn-sm" name="clear-answer" value="Clear Answer" style="float: right"/>
             {% endif %}
 
@@ -32,13 +32,13 @@ Next Question: {{q.title}} - GovReady
 
             {% if q.type == "text" %}
               <div class="form-group">
-                <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.placeholder}}" {% if last_value %}value="{{last_value}}"{% endif %}>
+                <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
                 <p class="help-block">{{q.help}}</p>
               </div>
 
             {% elif q.type == "email" %}
               <div class="form-group">
-                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if last_value %}value="{{last_value}}"{% endif %}>
+                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if answer.value %}value="{{answer.value}}"{% endif %}>
                 <p class="help-block">{{q.help}}</p>
               </div>
 
@@ -50,7 +50,7 @@ Next Question: {{q.title}} - GovReady
 
             {% elif q.type == "longtext" %}
               <div class="form-group">
-                <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if last_value %}{{last_value}}{% endif %}</textarea>
+                <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if answer.value %}{{answer.value}}{% endif %}</textarea>
                 <p class="help-block">{{q.help}}</p>
               </div>
 
@@ -66,7 +66,7 @@ Next Question: {{q.title}} - GovReady
               {% for choice in q.choices %}
               <div class="radio">
                 <label>
-                  <input name="value" value="{{choice.key}}" type="radio" {% if last_value == choice.key %}checked{% endif %}> {{choice.text}}
+                  <input name="value" value="{{choice.key}}" type="radio" {% if answer.value == choice.key %}checked{% endif %}> {{choice.text}}
                   <p class="help-block">{{choice.help}}</p>
                 </label>
               </div>
@@ -75,12 +75,12 @@ Next Question: {{q.title}} - GovReady
             {% elif q.type == "yesno" %}
               <div class="radio">
                 <label>
-                  <input name="value" value="no"  type="radio" {% if last_value == "no" %}checked{% endif %}> No
+                  <input name="value" value="no"  type="radio" {% if answer.value == "no" %}checked{% endif %}> No
                 </label>
               </div>
               <div class="radio">
                 <label>
-                  <input name="value" value="yes" type="radio" {% if last_value == "yes" %}checked{% endif %}> Yes
+                  <input name="value" value="yes" type="radio" {% if answer.value == "yes" %}checked{% endif %}> Yes
                 </label>
               </div>
               <p class="help-block">{{q.help}}</p>
@@ -89,8 +89,12 @@ Next Question: {{q.title}} - GovReady
               <div class="form-group">
                 <label for="inputctrl">Select a module to answer this question:</label>
                 <select name="value" class="form-control" id="inputctrl">
+                  <option value="">Select...</option>
                   {% for m in answer_tasks %}
-                    <option value="{{m.id}}">{{m.title}}</option>
+                    <option value="{{m.id}}" {% if m == answer.answered_by_task %}selected{% endif %}>
+                      {{m.title}}
+                      ({% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}})
+                    </option>
                   {% endfor %}
                   <option value="__new">Start a new module on {{answer_module.title}}...</option>
                 </select>
@@ -133,7 +137,7 @@ Next Question: {{q.title}} - GovReady
 $(function() {
     $('#inputctrl').focus();
 
-    {% if q.type == "text" or q.type == "password" or q.type == "email" or q.type == "longtext" %}
+    {% if q.type == "text" or q.type == "password" or q.type == "email" or q.type == "longtext" or q.type == "module" %}
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
