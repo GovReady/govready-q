@@ -193,7 +193,8 @@ class Invitation(models.Model):
     @staticmethod
     def form_context_dict(user, project):
         return {
-            "addable_modules": [{ "id": m.id, "title": m.title } for m in Module.get_anserable_modules()],
+            "project_id": project.id,
+            "project_title": project.title,
             "users": [{ "id": pm.user.id, "name": str(pm.user) } for pm in ProjectMembership.objects.filter(project=project).exclude(user=user)],
         }
 

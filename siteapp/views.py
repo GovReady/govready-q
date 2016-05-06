@@ -26,6 +26,8 @@ def homepage(request):
 				"tasks": Task.objects.filter(editor=request.user, project=mbr.project).order_by('-updated'),
 				"others_tasks": Task.objects.filter(project=mbr.project).exclude(editor=request.user).order_by('-updated'),
 				"open_invitations": Invitation.objects.filter(from_user=request.user, from_project=mbr.project, accepted_at=None, revoked_at=None).order_by('-created'),
+
+	            "startable_modules": Module.get_anserable_modules(),
 				"send_invitation": json.dumps(Invitation.form_context_dict(request.user, mbr.project)),
 			})
 
