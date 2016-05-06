@@ -90,7 +90,8 @@ Next Question: {{q.title}} - GovReady
             {% elif q.type == "module" %}
               <div class="form-group">
                 <label for="inputctrl">Select a module to answer this question:</label>
-                <select name="value" class="form-control" id="inputctrl">
+                <select name="value" class="form-control" id="inputctrl"
+                  onchange="if ($(this).val() == '__invite') invite_user_to_start_module();">
                   <option value="">Select...</option>
                   {% for m in answer_tasks %}
                     <option value="{{m.id}}" {% if m == answer.answered_by_task %}selected{% endif %}>
@@ -99,6 +100,7 @@ Next Question: {{q.title}} - GovReady
                     </option>
                   {% endfor %}
                   <option value="__new">Start a new module on {{answer_module.title}}...</option>
+                  <option value="__invite">Invite a colleague to answer {{answer_module.title}}...</option>
                 </select>
                 <p class="help-block">{{q.help}}</p>
               </div>
@@ -179,5 +181,21 @@ $(function() {
     })
 })
 
+{% if q.type == "module" %}
+function invite_user_to_start_module() {
+  var info = {{send_invitation|safe}};
+  show_invite_modal(
+    info.project_title,
+    'Invite a colleague to answer the module {{answer_module.title|escapejs}}.',
+    info,
+    'Can you give me a hand completing the module {{answer_module.title|escapejs}} for ' + info.project_title + '?',
+    {
+      project: info.project_id,
+      into_new_task_module_id: "{{answer_module.id|escapejs}}"
+    });
+
+  return false;
+}
+{% endif %}
 </script>
 {% endblock %}

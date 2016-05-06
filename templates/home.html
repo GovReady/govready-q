@@ -86,52 +86,6 @@ Welcome
 </div>
 {% endfor %}
 
-<div id="invitation_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="invitation_modal_title">Start a Module (<span></span>)</h4>
-      </div>
-      <div class="modal-body">
-        <p style="margin: 1.5em 0 2em 0">Hmm text here.</p>
-        <form class="form" onsubmit="return send_invitation()">
-            {% csrf_token %}
-            <div class="form-group" style="margin-right: 1em">
-              <label for="invite-user-select">Select user to invite</label>
-              <br>
-              <select id="invite-user-select" class="form-control" name="user" onchange="invite_toggle_mode()">
-              </select>
-            </div>
-            <div class="form-group" style="margin-right: 1em; display: none">
-              <label for="invite-user-email">
-                Invite by Email
-                (<a onclick="$('#invite-user-select').val(''); invite_toggle_mode()">back</a>)
-              </label>
-              <br>
-              <input id="invite-user-email" class="form-control" name="email" type="email" placeholder="person@your-agency.gov" style="width: 25em;">
-            </div>
-            <div id="invite-message-container" style="margin-top: 1em">
-              <label for="invite-message">Include a message about why you are sending this invitation:</label>
-              <textarea id="invite-message" class="form-control" style="width: 100%; height: 4em"></textarea>
-            </div>
-            <div id="invite-addtoteam-container" style="display: none">
-              <div class="checkbox" style="margin-top: 1em">
-                <label>
-                  <input name="add-to-team" type="checkbox"> Add user to project team
-                </label>
-              </div>
-            </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Nevermind</button>
-        <button type="button" class="btn btn-danger btn-submit" onclick="$('#invitation_modal form').submit()">Invite</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 {% endblock %}
 
 {% block extra_body %}
@@ -153,62 +107,9 @@ function invite_user_to_start_module(info) {
     {
       project: info.project_id,
       into_new_task_module_id: m.val()
-    });
-
-  return false;
-}
-
-var invite_modal_extra_data = { };
-function show_invite_modal(project_title, prompt, info, message_default_text, data) {
-  var m = $('#invitation_modal');
-  m.find('h4 span').text(project_title);
-  m.find('p').text(prompt);
-
-  var s = m.find('form select[name=user]');
-  s.text('');
-  s.append($("<option/>").attr('value', '').text('Select team member...'))
-  info.users.forEach(function(user) {
-    s.append($("<option/>").attr('value', user.id).text(user.name))
-  })
-  s.append($("<option/>").attr('value', '__invite__').text("Invite someone new..."))
-  invite_toggle_mode();
-
-  $('#invite-message').text(message_default_text);
-
-  invite_modal_extra_data = data;
-
-  m.modal();
-}
-function invite_toggle_mode() {
-  var m = ($('#invite-user-select').val() == '__invite__'); // inviting by email
-  $('#invite-user-select').parent().toggle(!m);
-  $('#invite-user-email').parent().toggle(m);
-  $('#invite-addtoteam-container').toggle(m);
-}
-function send_invitation(form) {
-  var data = {
-     //prompt_task
-     //prompt_question_id
-     add_to_team: $('#invitation_modal form input[name=add-to-team]').attr('checked') != null ? "1" : "0",
-     into_new_task_module_id: $('#invitation_modal form select[name=module]').val(),
-     //into_task_editorship
-     //into_discussion
-     user_id: $('#invite-user-select').is(":visible") ? $('#invite-user-select').val() : null,
-     user_email: $('#invite-user-email').is(":visible") ? $('#invite-user-email').val() : null,
-     message: $('#invite-message').val()
-  };
-  for (var k in invite_modal_extra_data)
-    data[k] = invite_modal_extra_data[k];
-  $('#invitation_modal').modal('hide');
-  ajax_with_indicator({
-   url: '{% url "send_invitation" %}',
-   method: "POST",
-   data: data,
-   success: function(res) {
-     // status == error is handled by ajax_with_indicator
-     show_modal_error("Send Invitation", "The invitation has been sent. We will notify you when the invitation has been accepted.", function() { window.location.reload() })
-   }
-  });
+    },
+    function() { window.location.reload() }
+  );
 
   return false;
 }

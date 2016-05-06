@@ -150,6 +150,7 @@ def next_question(request, taskid, taskslug):
             "all_questions": filter(lambda q : not q.should_skip(answered), m.questions)
         })
     else:
+        import json
         return render(request, "question.html", {
             "DEBUG": settings.DEBUG,
             "task": task,
@@ -161,6 +162,7 @@ def next_question(request, taskid, taskslug):
             "answer_tasks": Task.objects.filter(project=task.project, module_id=q.module_id),
             "answer_tasks_show_user": Task.objects.filter(project=task.project).exclude(editor=request.user).exists(),
             "answer_task": Task.objects.filter(is_answer_of__question_id=q.id),
+            "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)) if task.project else None,
         })
 
 @login_required

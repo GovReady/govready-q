@@ -40,6 +40,54 @@ GOVREADY Q
 {% endblock %}
 
 {% block theme_script %}
+
+<div id="invitation_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true" data-url="{% url "send_invitation" %}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="invitation_modal_title">Start a Module (<span></span>)</h4>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 1.5em 0 2em 0">Hmm text here.</p>
+        <form class="form" onsubmit="return send_invitation()">
+            {% csrf_token %}
+            <div class="form-group" style="margin-right: 1em">
+              <label for="invite-user-select">Select user to invite</label>
+              <br>
+              <select id="invite-user-select" class="form-control" name="user" onchange="invite_toggle_mode()">
+              </select>
+            </div>
+            <div class="form-group" style="margin-right: 1em; display: none">
+              <label for="invite-user-email">
+                Invite by Email
+                <span>(<a onclick="$('#invite-user-select').val(''); invite_toggle_mode()">back</a>)</span>
+              </label>
+              <br>
+              <input id="invite-user-email" class="form-control" name="email" type="email" placeholder="person@your-agency.gov" style="width: 25em;">
+            </div>
+            <div id="invite-message-container" style="margin-top: 1em">
+              <label for="invite-message">Include a message about why you are sending this invitation:</label>
+              <textarea id="invite-message" class="form-control" style="width: 100%; height: 4em"></textarea>
+            </div>
+            <div id="invite-addtoteam-container" style="display: none">
+              <div class="checkbox" style="margin-top: 1em">
+                <label>
+                  <input name="add-to-team" type="checkbox"> Add user to project team
+                </label>
+              </div>
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Nevermind</button>
+        <button type="button" class="btn btn-danger btn-submit" onclick="$('#invitation_modal form').submit()">Invite</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js" integrity="sha256-lZFHibXzMHo3GGeehn1hudTAP3Sc0uKXBXAzHX1sjtk=" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 <script src="{% static "js/main.js" %}"></script>
