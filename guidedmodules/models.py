@@ -232,7 +232,14 @@ class Invitation(models.Model):
         # If this is a repeat-click, just redirect the user to where
         # they went the first time.
         if self.accepted_at:
-            return self.accepted_task.get_absolute_url()
+            if self.accepted_task:
+                return self.accepted_task.get_absolute_url()
+            elif self.into_task_editorship:
+                return self.into_task_editorship.get_absolute_url()
+            elif self.into_discussion:
+                return self.into_discussion.answer.get_absolute_url()
+            else:
+                return "/"
 
         # Can't accept if this object has expired. Warn the user but
         # send them to the homepage.
