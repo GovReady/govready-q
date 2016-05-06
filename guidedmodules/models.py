@@ -90,10 +90,25 @@ class Task(models.Model):
         return self.load_module().next_question(self.get_answers_dict()) == None
 
     def get_status_display(self):
+        # Has an invitation been sent to take over editing?
+        inv = self.get_active_invitation_to_transfer_editorship()
+        if inv:
+            return inv.to_display() + " has been invited to edit"
+
+        # Is this task done?
         if not self.is_finished():
             return "In Progress, last edit " + self.updated.strftime("%x %X")
         else:
             return "Finished on " + self.updated.strftime("%x %X")
+
+    def get_active_invitation_to_transfer_editorship(self, user):
+        inv = self.invitations_to_take_over.filter(from_user=user, accepted_at=None).order_by('-created').first()
+        if inv and not inv.is_expired():
+            return inv
+        return None
+
+    def get_source_invitation(self, user):
+        return self.invitations_to_take_over.filter(accepted_user=user).order_by('-created').first()
 
     def get_output(self):
         return self.load_module().render_output(self.get_answers_dict())

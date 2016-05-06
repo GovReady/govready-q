@@ -5,13 +5,38 @@ Next Question: {{q.title}} - GovReady
 {% endblock %}
 
 {% block body %}
-{% if task.requested_by %}
-<div id="requested-by" class="panel panel-warning">
-  <div class="panel-heading">{{task.requested_by.user}} has asked for your help completing this module</div>
-  <div class="panel-body">
-    {{task.requestor_notes}}
+
+{% if task.editor == request.user %}
+  {% with active_invitation_to_transfer_editorship as inv %}
+    {% if inv %}
+      <div class="panel panel-warning">
+        <div class="panel-heading">Invitation sent</div>
+        <div class="panel-body">
+          On {{inv.created|date}} you invited {{inv.to_display}} to take over editing this module. They haven&rsquo;t yet accepted your invitation. You can keep working on it until they accept the invitation.
+        </div>
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% with source_invitation as inv %}
+    {% if inv %}
+      <div class="panel panel-warning">
+        <div class="panel-heading">Invitation</div>
+        <div class="panel-body">
+          <p>On {{inv.created|date}} {{inv.from_user}} asked you to take over editing this module. {{inv.from_user}} wrote:</p>
+          <blockquote>{{inv.text}}</blockquote>
+          <p style="margin: 0">When you are finished, <a href="javascript:return_to_requestor({{inv.from_user.id}})">send it back to {{inv.from_user}}</a>.</p>
+        </div>
+      </div>
+    {% endif %}
+  {% endwith %}
+{% else %}
+  <div class="panel panel-danger">
+    <div class="panel-heading">Someone else is editing this module</div>
+    <div class="panel-body">
+      This module is being edited by {{task.editor}}. You cannot make changes to it.
+    </div>
   </div>
-</div>
 {% endif %}
 
 <h1>{{module.title}}</h1>
@@ -121,8 +146,13 @@ Next Question: {{q.title}} - GovReady
   </div> <!-- /col -->
 
   <div class="col-md-6">
+  
+    <p>Need help? <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this module</a>.</p>
+
   </div> <!-- /col -->
 </div> <!-- /row -->
+
+
 
 {% if DEBUG %}
 <p>
@@ -185,7 +215,7 @@ $(function() {
 function invite_user_to_start_module() {
   var info = {{send_invitation|safe}};
   show_invite_modal(
-    info.project_title,
+    'Ask a Colleague',
     'Invite a colleague to answer the module {{answer_module.title|escapejs}}.',
     info,
     'Can you give me a hand completing the module {{answer_module.title|escapejs}} for ' + info.project_title + '?',
@@ -197,5 +227,34 @@ function invite_user_to_start_module() {
   return false;
 }
 {% endif %}
+
+function invite_to_transfer_editor() {
+  var info = {{send_invitation|safe}};
+  show_invite_modal(
+    'Ask a Colleague',
+    'Invite a colleague to complete {{task.title|escapejs}}.',
+    info,
+    'Can you take over answering {{task.title|escapejs}} for ' + info.project_title + ' and let me know when it is done?',
+    {
+      project: info.project_id,
+      into_task_editorship: {{task.id}}
+    });
+  return false;
+}
+
+function return_to_requestor(user) {
+  var info = {{send_invitation|safe}};
+  show_invite_modal(
+    'Return This Module',
+    'Let the person that requested this module from you know you are finished by inviting them to take back editor ownership of it.',
+    info,
+    'I finished answering {{task.title|escapejs}}.',
+    {
+      user_id: user,
+      project: info.project_id,
+      into_task_editorship: {{task.id}}
+    });
+  return false;
+}
 </script>
 {% endblock %}

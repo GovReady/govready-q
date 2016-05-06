@@ -68,7 +68,11 @@ def new_task(request):
 @login_required
 def next_question(request, taskid, taskslug):
     # Get the Task.
-    task = get_object_or_404(Task, editor=request.user, id=taskid)
+    task = get_object_or_404(Task, id=taskid)
+
+    # Does user have read privs?
+    if task.editor != request.user and not ProjectMembership.objects.filter(project=task.project, user=request.user).exists():
+        return HttpResponseNotAllowed(["POST"]) # TODO: use a better status code
 
     # Redirect if slug is not canonical.
     if request.path != task.get_absolute_url():
@@ -82,6 +86,10 @@ def next_question(request, taskid, taskslug):
 
     # Process form data.
     if request.method == "POST":
+        # does user have write privs?
+        if task.editor != request.user:
+            return HttpResponseNotAllowed(["POST"])
+
         # validate question
         q = request.POST.get("question")
         if q not in m.questions_by_id:
@@ -158,10 +166,15 @@ def next_question(request, taskid, taskslug):
             "q": q,
             "prompt": q.render_prompt(task.get_answers_dict()),
             "answer": Answer.objects.filter(task=task, question_id=q.id).first(),
+
+            "active_invitation_to_transfer_editorship": task.get_active_invitation_to_transfer_editorship(request.user),
+            "source_invitation": task.get_source_invitation(request.user),
+
             "answer_module": Module.load(q.module_id) if q.module_id else None,
             "answer_tasks": Task.objects.filter(project=task.project, module_id=q.module_id),
             "answer_tasks_show_user": Task.objects.filter(project=task.project).exclude(editor=request.user).exists(),
             "answer_task": Task.objects.filter(is_answer_of__question_id=q.id),
+
             "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)) if task.project else None,
         })
 
@@ -176,7 +189,7 @@ def send_invitation(request):
         inv = Invitation.objects.create(
             # who is sending the invitation?
             from_user=request.user,
-            from_project=Project.objects.get(id=request.POST["project"], members__user=request.user), # validate that the user is a team member
+            from_project=Project.objects.filter(id=request.POST["project"], members__user=request.user).first(), # validate that the user is a team member
             
             # what prompted this invitation?
             prompt_task=Task.objects.get(id=request.POST["prompt_task"], editor=request.user) if request.POST.get("prompt_task") else None,
@@ -184,7 +197,7 @@ def send_invitation(request):
 
             # what is the recipient being invited to? validate that the user is an admin of this project
             # or an editor of the task being reassigned.
-            into_project=(request.POST.get("add_to_team", "") != "") and Project.objects.get(id=request.POST["project"], members__user=request.user, members__is_admin=True),
+            into_project=(request.POST.get("add_to_team", "") != "") and Project.objects.filter(id=request.POST["project"], members__user=request.user, members__is_admin=True).exists(),
             into_new_task_module_id=request.POST.get("into_new_task_module_id"),
             into_task_editorship=Task.objects.get(id=request.POST["into_task_editorship"], editor=request.user) if request.POST.get("into_task_editorship") else None,
             into_discussion=None, # TODO + validation request.POST.get("into_discussion"),

@@ -1,11 +1,12 @@
 var invite_modal_extra_data = { };
 var invite_modal_callback = function() { };
-function show_invite_modal(project_title, prompt, info, message_default_text, data, callback) {
+function show_invite_modal(title, prompt, info, message_default_text, data, callback) {
   var m = $('#invitation_modal');
-  m.find('h4 span').text(project_title);
+  m.find('h4').text(title);
   m.find('p').text(prompt);
 
   var s = m.find('form select[name=user]');
+  s.prop('disabled', false);
   s.text('');
   if (info.users.length > 0)
     s.append($("<option/>").attr('value', '').text('Select team member...'))
@@ -15,6 +16,11 @@ function show_invite_modal(project_title, prompt, info, message_default_text, da
     s.append($("<option/>").attr('value', user.id).text(user.name))
   })
   s.append($("<option/>").attr('value', '__invite__').text("Invite someone new..."))
+  if (data.user_id) {
+    s.val(data.user_id);
+    if (s.val() == data.user_id) // valid?
+      s.prop('disabled', true);
+  }
   invite_toggle_mode();
 
   $('#invite-message').text(message_default_text);

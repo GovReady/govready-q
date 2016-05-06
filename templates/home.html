@@ -100,7 +100,7 @@ function invite_user_to_start_module(info) {
   var mt = m.find('option[value=' + m.val() + ']').text();
 
   show_invite_modal(
-    info.project_title,
+    'Start a Module (' + info.project_title + ')',
     'Invite a colleague to answer the module ' + mt + '.',
     info,
     'Can you give me a hand completing the module ' + mt + ' for ' + info.project_title + '?',
