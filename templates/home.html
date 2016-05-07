@@ -1,7 +1,7 @@
-{% extends "site_base.html" %}
+{% extends "base.html" %}
 
-{% block head_title %}
-Welcome
+{% block title %}
+Home
 {% endblock %}
 
 {% block body %}
@@ -88,7 +88,7 @@ Welcome
 
 {% endblock %}
 
-{% block extra_body %}
+{% block scripts %}
 <script>
 function invite_user_to_start_module(info) {
   var m = $('#start-module-' + info.project_id);

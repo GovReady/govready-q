@@ -1,5 +1,5 @@
 from django.db import models, transaction
-from django.contrib.auth.models import User
+from siteapp.models import User
 from django.utils import timezone
 from django.conf import settings
 
@@ -90,11 +90,6 @@ class Task(models.Model):
         return self.load_module().next_question(self.get_answers_dict()) == None
 
     def get_status_display(self):
-        # Has an invitation been sent to take over editing?
-        inv = self.get_active_invitation_to_transfer_editorship()
-        if inv:
-            return inv.to_display() + " has been invited to edit"
-
         # Is this task done?
         if not self.is_finished():
             return "In Progress, last edit " + self.updated.strftime("%x %X")
@@ -261,25 +256,26 @@ class Invitation(models.Model):
     def accept(self, request):
         from django.contrib.auth import authenticate, login, logout
         from django.contrib import messages
+        from django.http import HttpResponseRedirect
         import urllib.parse
 
         # If this is a repeat-click, just redirect the user to where
         # they went the first time.
         if self.accepted_at:
             if self.accepted_task:
-                return self.accepted_task.get_absolute_url()
+                return HttpResponseRedirect(self.accepted_task.get_absolute_url())
             elif self.into_task_editorship:
-                return self.into_task_editorship.get_absolute_url()
+                return HttpResponseRedirect(self.into_task_editorship.get_absolute_url())
             elif self.into_discussion:
-                return self.into_discussion.answer.get_absolute_url()
+                return HttpResponseRedirect(self.into_discussion.answer.get_absolute_url())
             else:
-                return "/"
+                return HttpResponseRedirect("/")
 
         # Can't accept if this object has expired. Warn the user but
         # send them to the homepage.
         if self.is_expired() or self.revoked_at:
             messages.add_message(request, messages.ERROR, 'The invitation you wanted to accept has expired.')
-            return "/"
+            return HttpResponseRedirect("/")
 
         # Get the user logged into an account.
         
@@ -298,7 +294,7 @@ class Invitation(models.Model):
             matched_user = authenticate(user_object=matched_user)
             if not matched_user.is_active:
                 messages.add_message(request, messages.ERROR, 'Your account has been deactivated.')
-                return "/"
+                return HttpResponseRedirect("/")
             if request.user.is_authenticated():
                 # The user was logged into a different account before. Log them out
                 # of that account and then log them into the account in the invitation.
@@ -318,9 +314,9 @@ class Invitation(models.Model):
             # login page, with a next URL set to take them back to this step. In the
             # event the user was logged in (and we didn't handle it above), log them
             # out and force them to log into a new account.
-            from django.core.urlresolvers import reverse
+            from siteapp.views import login_view
             logout(request)
-            return reverse('account_signup') + "?next=" + urllib.parse.quote(self.get_acceptance_url())
+            return login_view(request, invitation=self)
 
         # The user is now logged in and able to accept the invitation.
         with transaction.atomic():
@@ -384,4 +380,4 @@ class Invitation(models.Model):
             # TODO: Notify self.from_user that the invitation was accepted.
             #       Create other notifications?
 
-            return redirect_to
+            return HttpResponseRedirect(redirect_to)

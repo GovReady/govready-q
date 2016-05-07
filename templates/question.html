@@ -1,7 +1,7 @@
-{% extends "site_base.html" %}
+{% extends "base.html" %}
 
-{% block head_title %}
-Next Question: {{q.title}} - GovReady
+{% block title %}
+Next Question: {{q.title}}
 {% endblock %}
 
 {% block body %}
@@ -166,7 +166,7 @@ Next Question: {{q.title}} - GovReady
 
 {% endblock %}
 
-{% block extra_body %}
+{% block scripts %}
 <script>
 $(function() {
     $('#inputctrl').focus();

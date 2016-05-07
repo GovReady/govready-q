@@ -146,7 +146,7 @@ USE_I18N = False
 USE_L10N = True
 USE_TZ = True
 
-#AUTH_USER_MODEL = primary_app + '.User'
+AUTH_USER_MODEL = primary_app + '.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
@@ -171,8 +171,8 @@ STATIC_URL = '/static/'
 if environment.get("static"):
 	STATIC_ROOT = environment["static"]
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-LOGIN_URL = '/account/login/'
-LOGIN_REDIRECT_URL = '/home'
+LOGIN_URL = '/registration/login/'
+LOGIN_REDIRECT_URL = '/'
 
 # Convenience.
 

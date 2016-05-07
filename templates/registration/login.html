@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load bootstrap %}
+
+{% block title %}
+Log in
+{% endblock %}
+
+{% block body %}
+    {% if invitation %}
+        <h1>Accept invitation</h1>
+        <div style="margin: 2em 0">
+            <p>Thanks for accepting an invitation to help your colleague. You will need to create an account on GovReady Q to continue.</p>
+        </div>
+    {% else %}
+		<h1>Create an account or log in</h1>
+
+		{% if next %}
+		    {% if user.is_authenticated %}
+		    	<p>Your account doesn&rsquo;t have access to this page. To proceed, please login with an account that has access.</p>
+		    {% else %}
+		    	<p>Please login to see this page.</p>
+		    {% endif %}
+		{% endif %}
+    {% endif %}
+
+
+	<div class="row">
+		<div class="col-md-6">
+			<h2>Create an account at Q</h2>
+
+			<form method="post">
+				{% csrf_token %}
+				<input type="hidden" name="method" value="new-user">
+				{{new_user_form|bootstrap}}
+			    <div class="form-group">
+			      <button type="submit" class="btn btn-primary">Create Account</button>
+			    </div>
+			</form>
+		</div>
+		<div class="col-md-6">
+			<h2>Already have an account?</h2>
+
+			<form method="post">
+				{% csrf_token %}
+				<input type="hidden" name="method" value="login">
+				{{login_form|bootstrap}}
+			    <div class="form-group">
+			      <button type="submit" class="btn btn-primary">Log In</button>
+			    </div>
+			</form>
+
+			{# Assumes you setup the password_reset view in your URLconf #}
+			<p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+		</div>
+	</div>
+{% endblock %}

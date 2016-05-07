@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from questions import Module
 from .models import Project, ProjectMembership, Task, Answer, Invitation
-from django.contrib.auth.models import User
+from siteapp.models import User
 
 @login_required
 def new_project(request):
@@ -225,7 +225,7 @@ def send_invitation(request):
 def accept_invitation(request, code=None):
     assert code.strip() != ""
     inv = get_object_or_404(Invitation, email_invitation_code=code)
-    return HttpResponseRedirect(inv.accept(request))
+    return inv.accept(request)
 
 @login_required
 def cancel_invitation(request):
