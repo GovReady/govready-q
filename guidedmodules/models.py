@@ -103,7 +103,8 @@ class Task(models.Model):
         return None
 
     def get_source_invitation(self, user):
-        return self.invitations_to_take_over.filter(accepted_user=user).order_by('-created').first()
+        return self.invitations_to_take_over.filter(accepted_user=user).order_by('-created').first() \
+            or self.invitations_received.filter(accepted_user=user).order_by('-created').first()
 
     def get_output(self):
         return self.load_module().render_output(self.get_answers_dict())
