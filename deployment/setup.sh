@@ -13,7 +13,7 @@ DOMAIN=q.govready.com
 # Update system packages.
 apt-get update && apt-get upgrade -y
 
-# Get nginx from a PPA to get version 1.6 so we can support SPDY.
+# Get nginx from a PPA to get version 1.6 so we can support HTTP/2	.
 if [ ! -f /etc/apt/sources.list.d/nginx-stable-trusty.list ]; then
 	sudo apt-get install -y software-properties-common # provides apt-add-repository
 	sudo add-apt-repository -y ppa:nginx/stable
@@ -32,12 +32,6 @@ rm -f /etc/nginx/sites-enabled/default
 
 # Put in our nginx site config.
 ln -sf `pwd`/deployment/nginx.conf /etc/nginx/sites-enabled/$DOMAIN
-
-# Create DHparams for perfect forward secrecy as specified in the nginx config.
-if [ ! -f /etc/ssl/local/dh2048.pem ]; then
-	mkdir -p /etc/ssl/local
-	openssl dhparam -out /etc/ssl/local/dh2048.pem 2048
-fi
 
 # Create a self-signed certificate so that nginx can start.
 if [ ! -f /etc/ssl/local/ssl_certificate.key ]; then
