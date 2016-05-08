@@ -21,7 +21,6 @@ questions:
     type: yesno
 
   - id: pol_q2
-    skip_if: pol_q1 == 'no'
     title: Policies centralized?
     jargon: Are policies and proceedures maintened in centralized store?
     prompt: What best describes where your organization's official policies and procedures are kept and managed?
@@ -37,9 +36,11 @@ questions:
         text: Intranet or public web page
       - key: git
         text: Git repo like GitHub or GitLab
+    impute:
+      - condition: pol_q1 == 'no'
+        value: NA
 
   - id: pol_q3
-    skip_if: pol_q1 == 'no'
     title:  Less likely policies exist?
     jargon: >
       Does organization have policies for contingency planning, media protection, and 
@@ -49,6 +50,9 @@ questions:
       your data center being destroyed in a storm, transport back up tapes or disks, and
       encrypting data exchanges between systems?
     type: yesno
+    impute:
+      - condition: pol_q1 == 'no'
+        value: don't know
 
 output:
   format: markdown

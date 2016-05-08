@@ -17,10 +17,12 @@ questions:
     type: yesno
 
   - id: q3
-    skip_if: q2 == 'no'
     title: Its Species Name
     prompt: What's the technical name of the species commonly known as {{q1}}?
     type: text
+    impute:
+      - condition: q2 == 'no'
+        value: don't know
 
   - id: q4
     title: Natural Habitat

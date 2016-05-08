@@ -95,7 +95,7 @@ class Module(object):
             # an answer, or if one of its skip conditions is
             # met.
             return q.id in questions_answered \
-              or q.should_skip(questions_answered)
+              or q.impute_answer(questions_answered)
 
         while len(needs_answer) > 0:
             # Get the next question to look at.
@@ -133,20 +133,25 @@ class Module(object):
         can_answer.sort(key = lambda q : q.def_index)
         return can_answer[0]
 
+    def add_imputed_answers(self, answers):
+        # Set (and override) any answers with inputed answers. Imputed
+        # answers take precedence over explicit answers because the
+        # explicit answers were probably entered before another answer
+        # was changed to allow for the original answer to be imputed.
+        # It's in a consistent state only when we take the imputed
+        # answers.
+        #
+        # Proceed in order (?) in case there are dependencies between
+        # imputations. TODO: This should follow the dependency chain
+        # defined by next_question.
+        for q in self.questions:
+            v = q.impute_answer(answers)
+            if v:
+                answers[q.id] = v
+
     def render_output(self, answers):
         # Now that all questions have been answered, generate this
         # module's output.
-
-        # Some questions may currently be in a skip state even though
-        # the user may have previously entered an answer for it. Clear
-        # out those questions. Go in forward order in case there are
-        # dependencies between skip states.
-        answers = dict(answers) # clone
-        for q in self.questions:
-            if q.id in answers and q.should_skip(answers):
-                del answers[q.id]
-
-        # Render.
         from jinja2 import Template
         template = Template(self.output["template"])
         output = template.render(answers)
@@ -162,7 +167,7 @@ class Question(object):
         self.title = spec["title"]
         self.prompt = spec["prompt"]
         self.type = spec["type"]
-        self.skip_if = [spec["skip_if"]] if spec.get("skip_if") else []
+        self.impute = [(s["condition"], s["value"]) for s in spec.get("impute", [])]
         self.choices = spec.get("choices", [])
         self.module_id = spec.get("module-id")
 
@@ -176,15 +181,16 @@ class Question(object):
         output = CommonMark.commonmark(output)
         return output
 
-    def should_skip(self, answers):
-        # Check if any of the skip_if conditions are met based on
-        # the questions that have been answered so far.
+    def impute_answer(self, answers):
+        # Check if any of the impute conditions are met based on
+        # the questions that have been answered so far and return
+        # the imputed value.
         from jinja2 import Environment, meta
         env = Environment()
-        for condition in self.skip_if:
+        for condition, value in self.impute:
             condition_func = env.compile_expression(condition)
             if condition_func(answers):
-                # The condition is met.
-                return True
+                # The condition is met. Return the imputed value.
+                return value
         return None
 

@@ -151,11 +151,15 @@ def next_question(request, taskid, taskslug):
         q = m.next_question(answered)
 
     if not q:
+        # Set imputed answers
+        m.add_imputed_answers(answered)
+
+        # Render.
         return render(request, "module-finished.html", {
             "task": task,
             "m": m,
             "output": m.render_output(answered),
-            "all_questions": filter(lambda q : not q.should_skip(answered), m.questions)
+            "all_questions": filter(lambda q : not q.impute_answer(answered), m.questions)
         })
     else:
         import json
