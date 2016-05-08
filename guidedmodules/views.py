@@ -176,38 +176,45 @@ def next_question(request, taskid, taskslug):
         # Display next unanswered question.
         q = m.next_question(answered)
 
+    # Common context variables.
+    import json
+    context = {
+        "task": task,
+        "active_invitation_to_transfer_editorship": task.get_active_invitation_to_transfer_editorship(request.user),
+        "source_invitation": task.get_source_invitation(request.user),
+
+        "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)) if task.project else None,
+    }
+
     if not q:
+        # There is no next question - the module is complete.
+
         # Set imputed answers
         m.add_imputed_answers(answered)
 
         # Render.
-        return render(request, "module-finished.html", {
+        context.update({
             "task": task,
             "m": m,
             "output": m.render_output(answered),
             "all_questions": filter(lambda q : not q.impute_answer(answered), m.questions),
             "is_answer_of": task.is_answer_of.filter(answered_by=request.user).order_by('-updated').first(),
         })
+        return render(request, "module-finished.html", context)
     else:
-        import json
-        return render(request, "question.html", {
+        context.update({
             "DEBUG": settings.DEBUG,
-            "task": task,
             "module": m,
             "q": q,
             "prompt": q.render_prompt(task.get_answers_dict()),
             "answer": Answer.objects.filter(task=task, question_id=q.id).first(),
 
-            "active_invitation_to_transfer_editorship": task.get_active_invitation_to_transfer_editorship(request.user),
-            "source_invitation": task.get_source_invitation(request.user),
-
             "answer_module": Module.load(q.module_id) if q.module_id else None,
             "answer_tasks": Task.objects.filter(project=task.project, module_id=q.module_id),
             "answer_tasks_show_user": Task.objects.filter(project=task.project).exclude(editor=request.user).exists(),
             "answer_task": Task.objects.filter(is_answer_of__question_id=q.id),
-
-            "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)) if task.project else None,
         })
+        return render(request, "question.html", context)
 
 @login_required
 def send_invitation(request):

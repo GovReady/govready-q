@@ -1,0 +1,32 @@
+{% if task.editor == request.user %}
+{% with active_invitation_to_transfer_editorship as inv %}
+  {% if inv %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">Invitation sent</div>
+      <div class="panel-body">
+        On {{inv.created|date}} you invited {{inv.to_display}} to take over editing this module. They haven&rsquo;t yet accepted your invitation. You can keep working on it until they accept the invitation.
+      </div>
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% with source_invitation as inv %}
+  {% if inv %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">Invitation</div>
+      <div class="panel-body">
+        <p>On {{inv.created|date}} {{inv.from_user}} asked you to take over editing this module. {{inv.from_user}} wrote:</p>
+        <blockquote>{{inv.text}}</blockquote>
+        <p style="margin: 0">When you are finished, <a href="javascript:return_to_requestor({{inv.from_user.id}})">send it back to {{inv.from_user}}</a>.</p>
+      </div>
+    </div>
+  {% endif %}
+{% endwith %}
+{% else %}
+<div class="panel panel-danger">
+  <div class="panel-heading">Someone else is editing this module</div>
+  <div class="panel-body">
+    This module is being edited by {{task.editor}}. You cannot make changes to it.
+  </div>
+</div>
+{% endif %}

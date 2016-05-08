@@ -4,6 +4,8 @@
 {{m.title}}
 {% endblock %}
 
+{% include "task-status.html" %}
+
 {% block body %}
 <h1>{{task.title}}</h1>
 {% if task.title != m.title %}
