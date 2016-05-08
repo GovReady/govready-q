@@ -11,6 +11,11 @@ Home
 <p>You can continue working on a module you have already started or start a new module.</p>
 </div>
 
+<div style="float: right; margin-bottom: 1em">
+  <a href="/tasks/new-project" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> New Project</a>
+</div>
+<div class="clearfix"> </div>
+
 {% for item in projects %}
 <div class="panel panel-primary">
   <div class="panel-heading">
@@ -77,10 +82,6 @@ Home
           <button class="btn btn-warning" onclick="return invite_user_to_start_module(project_invitation_info_{{item.project.id}});">Invite to Answer ...</button>
         </div>
       </form>
-
-    {% else %}
-      <p><a href="/tasks/new-project">Start a New Project</a></p>
-
     {% endif %}
   </div>
 </div>

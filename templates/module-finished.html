@@ -11,7 +11,9 @@
 {% endif %}
 
 <div style="margin: 2em 0">
-  <p class="text-success">This module is complete. Go back to <a href="/">your home</a>.</p>
+  <p class="text-success">This module is complete. Go back to
+  {% if is_answer_of %}answering <a href="{{is_answer_of.task.get_absolute_url}}?q={{is_answer_of.question_id}}">{{is_answer_of.get_question.title}} in {{is_answer_of.task.title}}</a> or {% endif %}
+  <a href="/">your home</a>.</p>
 </div>
 
 <div>

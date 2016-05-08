@@ -134,6 +134,9 @@ def next_question(request, taskid, taskslug):
 
                 redirect_to = t.get_absolute_url()
 
+                from django.contrib import messages
+                messages.add_message(request, messages.INFO, 'You are now editing a new module to answer the previous question.')
+
             else:
                 # user selects an existing Task (ensure the user has access to it)
                 t = Task.objects.get(project=task.project, id=int(value))
@@ -182,7 +185,8 @@ def next_question(request, taskid, taskslug):
             "task": task,
             "m": m,
             "output": m.render_output(answered),
-            "all_questions": filter(lambda q : not q.impute_answer(answered), m.questions)
+            "all_questions": filter(lambda q : not q.impute_answer(answered), m.questions),
+            "is_answer_of": task.is_answer_of.filter(answered_by=request.user).order_by('-updated').first(),
         })
     else:
         import json

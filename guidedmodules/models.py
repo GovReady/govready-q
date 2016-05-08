@@ -129,6 +129,9 @@ class Answer(models.Model):
     class Meta:
         unique_together = [('task', 'question_id')]
 
+    def get_question(self):
+        return self.task.load_module().questions_by_id[self.question_id]
+
 class Discussion(models.Model):
     project = models.ForeignKey(Project, help_text="The Project that this Discussion exists within.")
     for_answer = models.ForeignKey(Answer, help_text="The Answer that this discussion thread is for.")
