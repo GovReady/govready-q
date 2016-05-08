@@ -95,27 +95,35 @@ def next_question(request, taskid, taskslug):
         if q not in m.questions_by_id:
             return HttpResponse("invalid question id", status=400)
 
-        # clear answer?
-        if request.POST.get("method") == "clear":
-            Answer.objects.filter(task=task, question_id=q).delete()
-            return HttpResponseRedirect(request.path)
-
         # validate value
-        value = request.POST.get("value", "")
-        if not value.strip():
-            return HttpResponse("empty answer", status=400)
+        if request.POST.get("method") == "clear":
+            value = None
+        else:
+            value = request.POST.get("value", "")
+            if not value.strip():
+                return HttpResponse("empty answer", status=400)
 
         # save answer
         answer, isnew = Answer.objects.get_or_create(
             task=task,
-            question_id=q)
+            question_id=q,
+            defaults={
+                # must specify this to avoid not-null constraint, but we
+                # update it again later since it may change if an answer
+                # is updated
+                "answered_by": request.user
+            })
 
         # normal redirect - reload the page
         redirect_to = request.path
 
         # fetch the task that answers this question
+        answered_by_task = None
         if m.questions_by_id[q].type == "module":
-            if value == "__new":
+            if value == None:
+                # answer is being cleared
+                t = None
+            elif value == "__new":
                 # Create a new task, and we'll redirect to it immediately.
                 m1 = Module.load(m.questions_by_id[q].module_id) # validate input
                 t = Task.objects.create(
@@ -123,20 +131,35 @@ def next_question(request, taskid, taskslug):
                     project=task.project,
                     module_id=m1.id,
                     title=m1.title)
+
                 redirect_to = t.get_absolute_url()
+
             else:
                 # user selects an existing Task (ensure the user has access to it)
                 t = Task.objects.get(project=task.project, id=int(value))
 
-            answer.answered_by_task = t
-            value = t.get_answers_dict()
+            answered_by_task = t
+            value = (t.get_answers_dict() if t else None)
 
+        if value != answer.value or answered_by_task != answer.answered_by_task:
+            # Move existing answer to history.
+            if not isnew:
+                answer.history.append({
+                    "answered_by": request.user.id,
+                    "value": answer.value,
+                    "answered_by_task": answer.answered_by_task.id if answer.answered_by_task else None,
+                    "notes": answer.notes,
+                    "updated": answer.updated,
+                })
 
-        answer.value = value
-        answer.save()
+            # Update Answer.
+            answer.answered_by = request.user
+            answer.value = value
+            answer.answered_by_task = answered_by_task
+            answer.save()
 
-        # kick the task's updated field
-        task.save(update_fields=[])
+            # kick the task's updated field
+            task.save(update_fields=[])
 
         # return to a GET request
         return HttpResponseRedirect(redirect_to)

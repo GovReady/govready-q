@@ -77,13 +77,14 @@ class Task(models.Model):
         m = self.load_module()
         answered = { }
         for q in self.answers.all():
-            answered[q.question_id] = q.value
-
             # If this question type is "module", its answer value is the dict
             # returned by get_answers_dict on the Task that is the answer to
             # the question.
             if m.questions_by_id[q.question_id].type == "module":
-                answered[q.question_id] = q.answered_by_task.get_answers_dict()
+                if q.answered_by_task:
+                    answered[q.question_id] = q.answered_by_task.get_answers_dict()
+            else:
+                answered[q.question_id] = q.value
         return answered
 
     def is_finished(self):
@@ -113,10 +114,13 @@ class Answer(models.Model):
     task = models.ForeignKey(Task, related_name="answers", help_text="The Task that this Answer is for.")
     question_id = models.CharField(max_length=128, help_text="The ID of the question (with the Task's module) that this Answer answers.")
 
+    answered_by = models.ForeignKey(User, help_text="The user that provided this answer.")
     value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
     answered_by_task = models.ForeignKey(Task, blank=True, null=True, related_name="is_answer_of", help_text="A Task that supplies the answer for this question.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by the user completing this Answer.")
+
+    history = JSONField(default=[], blank=True, help_text="A history of this Answer, as a list of dicts with keys that are the same as the model fields.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
