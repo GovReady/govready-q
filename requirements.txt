@@ -1,5 +1,5 @@
 CommonMark
-dateutil
+python-dateutil
 jinja2
 rtyaml
 email_validator
