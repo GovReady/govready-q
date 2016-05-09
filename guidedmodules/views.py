@@ -6,7 +6,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from questions import Module
-from .models import Project, ProjectMembership, Task, Answer, Invitation
+from .models import Project, ProjectMembership, Task, Answer, Invitation, Discussion, Comment
 from siteapp.models import User
 
 @login_required
@@ -285,3 +285,60 @@ def cancel_invitation(request):
     inv.revoked_at = timezone.now()
     inv.save(update_fields=['revoked_at'])
     return JsonResponse({ "status": "ok" })
+
+@login_required
+def start_a_discussion(request):
+    # This view function is expected to be idempotent. It is called even when a
+    # discussion exists in order to fetch its content.
+
+    # Get the task - validate permission to start a discussion.
+    task = get_object_or_404(Task, id=request.POST['task'], editor=request.user)
+
+    # Get the answer for this task. It may not exist yet.
+    m = task.load_module()
+    q = m.questions_by_id[request.POST['question']] # validate question ID is ok
+    answer, isnew = Answer.objects.get_or_create(
+        task=task,
+        question_id=q.id,
+        defaults={ # must include non-null fields
+            "answered_by": request.user
+        })
+
+    # Get the discussion.
+    discussion, is_new = Discussion.objects.get_or_create(
+        project=task.project,
+        for_answer=answer,
+    )
+
+    # Get the initial state of the discussion to populate the HTML.
+    return JsonResponse({
+        "status": "ok",
+        "discussion_id": discussion.id,
+        "project_name": discussion.project.title,
+        "guests": [ user.render_context_dict() for user in discussion.external_participants.all() ],
+        "comments": [ comment.render_context_dict() for comment in discussion.comments.all() ],
+    })
+
+@login_required
+def submit_discussion_comment(request):
+    discussion = get_object_or_404(Discussion, id=request.POST['discussion'])
+
+    # Does user have write privs?
+    if not ProjectMembership.objects.filter(project=discussion.project, user=request.user).exists() \
+        and request.user not in discussion.external_participants.all():
+        return JsonResponse({ "status": "error", "message": "No access."})
+
+    # Validate.
+    text = request.POST.get("text", "").strip()
+    if text == "":
+        return JsonResponse({ "status": "error", "message": "No comment entered."})
+
+    # Save comment.
+    comment = Comment.objects.create(
+        discussion=discussion,
+        user=request.user,
+        text=text
+        )
+
+    # Return the comment for display.
+    return JsonResponse(comment.render_context_dict())

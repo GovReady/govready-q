@@ -1,0 +1,189 @@
+<style>
+#discussion .comment .username {
+  color: black;
+}
+#discussion .comment .proposed-answer {
+  margin: 1em 0;
+  border: 1px solid #EEE;
+  padding: .5em 2em .5em 1em;
+}
+#discussion .comment .commands {
+  margin: 0 -15px -15px -15px;
+  padding: 10px 15px;
+  background-color: #EEE;
+  font-size: 11px;
+}
+#discussion .comment .commands button {
+  margin-right: 1em;
+}
+#discussion .comment .ifeditpriv { display: none; }
+#discussion .comment.has-edit-priv .ifeditpriv { display: inline; }
+#discussion .comment.author-is-self .ifnotauthor { display: none; }
+</style>
+
+<div id="discussion" class="row" style="display: none">
+  <div class="col-xs-12">
+    <h2>Team conversation</h2>
+  </div>
+
+  <div class="col-md-9">
+    <div class="comment-thread">
+      ... 
+    </div>
+    <div class="comment-input">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <form onsubmit="submit_comment(); return false;">
+            <textarea class="form-control" rows="3" placeholder="Enter your message here."></textarea>
+            <div style="margin-top: 1em; text-align: right">
+              <button type="submit" class="btn btn-default">Propose an Answer</button>
+              <button type="submit" class="btn btn-primary">Comment</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <p>
+            This conversation is open
+            <button type="submit" class="btn btn-default btn-sm">We&rsquo;re good, close it</button>
+          </p>
+
+          <p>
+            Who can see this conversation? <span class="fillin-project_name"></span> members<span class="fillin-guests"></span>.
+            <a href="">Invite Guest</a>
+          </p>
+        </div>
+      </div>
+  </div>
+</div>
+
+<div id="comment-template" style="display: none">
+  <div class="comment panel panel-default">
+    <div class="panel-heading">
+      <span class="comment-author">...</span> commented <span class="comment-date"></span>
+    </div>
+    <div class="panel-body">
+      <div class="comment-text"> </div>
+
+      {% comment %}
+      <div class="proposed-answer">
+        <div class="radio">
+          <label>
+            <input type="radio" disabled> No
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" checked disabled> Yes
+          </label>
+        </div>
+      </div>
+      {% endcomment %}
+
+      <div class="commands">
+          <button title="Edit your comment" class="ifeditpriv">
+            <i class="glyphicon glyphicon-pencil"></i>
+          </button>
+          <button title="React to this comment with an emoji" class="ifnotauthor">
+            <i class="glyphicon glyphicon-plus"></i>
+            <i class="glyphicon glyphicon-heart"></i>
+          </button>
+          <button title="Delete this comment" class="ifeditpriv">
+            <i class="glyphicon glyphicon-trash"></i>
+          </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var discussion_id = null;
+function display_discussion(discussion, is_page_load) {
+  discussion_id = discussion.discussion_id;
+
+  // show the discussion
+  if (is_page_load)
+    $('#discussion').show();
+  else
+    $('#discussion').fadeIn();
+
+  // fill in the context block on the right side
+  $('#discussion .fillin-project_name').text(discussion.project_name);
+  if (discussion.guests.length > 0 || 1) {
+    // show guest count & names
+    var text = " and " + discussion.guests.length + " guest";
+    if (discussion.guests.length != 1) text += "s";
+    if (discussion.guests.length > 1) {
+      text += " (";
+      for (var i = 0; i < discussion.guests.length; i++) {
+        text += discussion.guests[i].name;
+        if (i < discussion.guests.length-1)
+          text += ", ";
+      }
+      text += ")";
+    }
+    $('#discussion .fillin-guests').text(text);
+  }
+
+  // show comments
+  var c = $('#discussion .comment-thread');
+  if (discussion.comments.length == 0) {
+    c.addClass("empty");
+    c.html("<p>No comments have been left so far.</p>")
+  } else {
+    c.text('');
+    discussion.comments.forEach(function(item) {
+      render_comment(item);
+    });
+  }
+}
+
+function render_comment(item) {
+  var c = $('#discussion .comment-thread')
+  
+  if (c.hasClass('empty')) {
+    c.text('');
+    c.removeClass('empty');
+  }
+
+  var n = $('#comment-template > div').clone();
+  c.append(n);
+
+  n.find('.comment-author').text(item.user.name);
+  n.find('.comment-date').text(item.date_relative);
+  n.find('.comment-date').attr('title', new Date(item.date_posix * 1000));
+  n.find('.comment-text').html(item.text_rendered);
+  if (item.user.id == {{request.user.id}}) // TODO: admins too
+    n.addClass('has-edit-priv');
+  if (item.user.id == {{request.user.id}})
+    n.addClass('author-is-self');
+}
+
+function submit_comment() {
+  function disable_enable_controls(state) {
+    var disable_ctrls = $('#discussion .comment-input form');
+    disable_ctrls.find('textarea, input, button').prop("disabled", state);
+  }
+  disable_enable_controls(true);
+
+  ajax_with_indicator({
+    url: "{% url 'submit-comment' %}",
+    method: "POST",
+    data: {
+      discussion: discussion_id,
+      text: $('#discussion .comment-input form textarea').val()
+    },
+    complete: function() {
+      disable_enable_controls(false);
+    },
+    success: function(c) {
+      $('#discussion .comment-input form textarea').val('');
+      render_comment(c)
+    }
+  })
+}
+</script>

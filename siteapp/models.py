@@ -18,3 +18,9 @@ class User(UserBase):
             return name.value + " <" + self.email + ">"
         else:
             return self.email
+
+    def render_context_dict(self):
+        return {
+            "id": self.id,
+            "name": str(self),
+        }

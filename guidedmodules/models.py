@@ -134,7 +134,7 @@ class Answer(models.Model):
 
 class Discussion(models.Model):
     project = models.ForeignKey(Project, help_text="The Project that this Discussion exists within.")
-    for_answer = models.ForeignKey(Answer, help_text="The Answer that this discussion thread is for.")
+    for_answer = models.OneToOneField(Answer, blank=True, related_name="discussion", help_text="The Answer that this discussion thread is for.")
 
     external_participants = models.ManyToManyField(User, blank=True, help_text="Additional Users who are participating in this chat, besides those that are members of the Project that contains the Discussion.")
 
@@ -147,8 +147,8 @@ class Discussion(models.Model):
             or (user in self.external_participants)
 
 class Comment(models.Model):
-    discussion = models.ForeignKey(Discussion, help_text="The Discussion that this comment is attached to.")
-    replies_to = models.ForeignKey('self', related_name="replies", help_text="If this is a reply to a Comment, the Comment that this is in reply to.")
+    discussion = models.ForeignKey(Discussion, related_name="comments", help_text="The Discussion that this comment is attached to.")
+    replies_to = models.ForeignKey('self', blank=True, null=True, related_name="replies", help_text="If this is a reply to a Comment, the Comment that this is in reply to.")
     user = models.ForeignKey(User, help_text="The user making a comment.")
 
     emojis = models.CharField(max_length=256, blank=True, null=True, help_text="A comma-separated list of emoji names that the user is reacting with.")
@@ -163,6 +163,27 @@ class Comment(models.Model):
         index_together = [
             ('discussion', 'user'),
         ]
+
+    def render_context_dict(self):
+        import CommonMark, dateutil.relativedelta
+
+        def reldate(date, ref):
+            rd = dateutil.relativedelta.relativedelta(ref, date)
+            if rd.months > 1: return "%d months, %d days" % (rd.months, rd.days)
+            if rd.months == 1: return "%d month, %d days" % (rd.months, rd.days)
+            if rd.days >= 7: return "%d days" % rd.days
+            if rd.days > 1: return "%d days, %d hours" % (rd.days, rd.hours)
+            if rd.days == 1: return "%d day, %d hours" % (rd.days, rd.hours)
+            return "%d hours, %d minutes ago" % (rd.hours, rd.minutes)
+
+        return {
+            "id": self.id,
+            "replies_to": self.replies_to_id,
+            "user": self.user.render_context_dict(),
+            "date_relative": reldate(self.created, timezone.now()),
+            "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
+            "text_rendered": CommonMark.commonmark(self.text),
+        }
 
 class Invitation(models.Model):
     # who is sending the invitation

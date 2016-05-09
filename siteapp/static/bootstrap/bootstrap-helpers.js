@@ -75,17 +75,25 @@ function ajax_with_indicator(options) {
     if (ajax_num_executing_requests == 0)
       $('#ajax_loading_indicator').stop(true).hide(); // stop() prevents an ongoing fade from causing the thing to be shown again after this call
   }
+
   var old_success = options.success;
   var old_error = options.error;
+
   options.success = function(data) {
     hide_loading_indicator();
+    if (options.complete)
+      options.complete();
     if (data.status == "error")
       show_modal_error("Error", data.message);
     else if (old_success)
       old_success(data);
   };
+
   options.error = function(jqxhr) {
     hide_loading_indicator();
+    if (options.complete)
+      options.complete();
+
     if (!old_error && jqxhr.status == 500 && /^text\/html/.test(jqxhr.getResponseHeader("content-type")) && /^(<!DOCTYPE[\w\W]*>)?\s*<html/.test(jqxhr.responseText)) {
       // We might get back HTML in a 500 error. Flask does this. Show the
       // HTML, in an iframe.
@@ -101,6 +109,7 @@ function ajax_with_indicator(options) {
       old_error(jqxhr.responseText, jqxhr);
     }
   };
+
   ajax_num_executing_requests++;
   $.ajax(options);
   return false; // handy when called from onclick

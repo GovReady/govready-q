@@ -1,4 +1,5 @@
 CommonMark
+dateutil
 jinja2
 rtyaml
 email_validator

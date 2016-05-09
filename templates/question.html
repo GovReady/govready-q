@@ -19,11 +19,6 @@ Next Question: {{q.title}}
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="set">
 
-            {% if answer.value %}
-              <button type="submit" class="btn btn-danger btn-sm" style="float: right"
-                onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
-            {% endif %}
-
             {{prompt|safe}}
 
             {% if q.type == "text" %}
@@ -118,21 +113,35 @@ Next Question: {{q.title}}
             {% if not request.GET.q %}Next{% else %}Submit{% endif %}
             &raquo;
           </button>
+
+        {% if answer.value %}
+          <button type="submit" class="btn btn-danger btn-sm"
+            onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
+        {% endif %}
         </form>     
     </div>
   </div> <!-- /col -->
 
   <div class="col-md-6">
-  
-    <p>Need help? <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this module</a>.</p>
+
+    <button class="btn btn-info" onclick="$('#need-help').slideToggle();">Get Help From A Colleague</button>
+
+    <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em">
+        <li>
+            {% if not answer.discussion %}
+            <a href="javascript:start_a_discussion()">Start a team conversation about this question</a>
+            {% else %}
+            Team conversation has been started &mdash; see below!
+            {% endif %}
+        </li>
+        <li><a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this module</a></li>
+    </ul>
 
   </div> <!-- /col -->
 </div> <!-- /row -->
 
-
-
 {% if DEBUG %}
-<p>
+<p style="margin: 1em 0 2em 0">
   user: <b>{{user}}</b>
   |
   module: <b>{{module.id}}</b>
@@ -141,12 +150,17 @@ Next Question: {{q.title}}
 </p>
 {% endif %}
 
+{% include "discussion.html" %}
+
 {% endblock %}
 
 {% block scripts %}
 <script>
 $(function() {
     $('#inputctrl').focus();
+    {% if answer.discussion %}
+    start_a_discussion(true); // is idempotent
+    {% endif %}
 
     {% if q.type == "text" or q.type == "password" or q.type == "email" or q.type == "longtext" or q.type == "module" %}
     function validate_answer() {
@@ -248,6 +262,20 @@ function return_to_requestor(user) {
       into_task_editorship: {{task.id}}
     });
   return false;
+}
+
+function start_a_discussion(is_page_load) {
+    ajax_with_indicator({
+        url: "{% url 'start_a_discussion' %}",
+        method: "POST",
+        data: {
+            task: {{task.id}},
+            question: "{{q.id|escapejs}}"
+        },
+        success(res) {
+            display_discussion(res, is_page_load);
+        }
+    })
 }
 </script>
 {% endblock %}
