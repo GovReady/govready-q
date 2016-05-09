@@ -13,7 +13,7 @@
 {% with source_invitation as inv %}
   {% if inv %}
     <div class="panel panel-warning">
-      <div class="panel-heading">Invitation</div>
+      <div class="panel-heading">Editor Notice</div>
       <div class="panel-body">
         <p>On {{inv.created|date}} {{inv.from_user}} asked you to take over editing this module. {{inv.from_user}} wrote:</p>
         <blockquote>{{inv.text}}</blockquote>

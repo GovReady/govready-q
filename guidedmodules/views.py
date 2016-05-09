@@ -292,7 +292,11 @@ def start_a_discussion(request):
     # discussion exists in order to fetch its content.
 
     # Get the task - validate permission to start a discussion.
-    task = get_object_or_404(Task, id=request.POST['task'], editor=request.user)
+    task = get_object_or_404(Task, id=request.POST['task'])
+    if task.editor != request.user:
+        # If not the editor, then any project team member may open discussion.
+        if not ProjectMembership.objects.filter.exists(project=task.project, user=request.user).exists():
+            return JsonResponse({ "status": "error", "message": "You do not have permission!" })
 
     # Get the answer for this task. It may not exist yet.
     m = task.load_module()

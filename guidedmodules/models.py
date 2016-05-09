@@ -176,10 +176,28 @@ class Comment(models.Model):
             if rd.days == 1: return "%d day, %d hours" % (rd.days, rd.hours)
             return "%d hours, %d minutes ago" % (rd.hours, rd.minutes)
 
+        def get_user_role():
+            if self.user == self.discussion.for_answer.task.editor:
+                return "editor"
+            if ProjectMembership.objects.filter(
+                project=self.discussion.project,
+                user=self.user,
+                is_admin=True):
+                return "team admin"
+            if self.user in self.discussion.external_participants.all():
+                return "guest"
+            if ProjectMembership.objects.filter(
+                project=self.discussion.project,
+                user=self.user,
+                is_admin=True):
+                return "project member"
+            return "former participant"
+
         return {
             "id": self.id,
             "replies_to": self.replies_to_id,
             "user": self.user.render_context_dict(),
+            "user_role": get_user_role(),
             "date_relative": reldate(self.created, timezone.now()),
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
             "text_rendered": CommonMark.commonmark(self.text),
@@ -279,7 +297,7 @@ class Invitation(models.Model):
 
     def is_expired(self):
         from datetime import timedelta
-        return timezone.now() > (self.sent_at + timedelta(days=10))
+        return self.sent_at and timezone.now() > (self.sent_at + timedelta(days=10))
     is_expired.boolean = True
 
     def accept(self, request):

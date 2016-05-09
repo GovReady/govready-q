@@ -124,17 +124,24 @@ Next Question: {{q.title}}
 
   <div class="col-md-6">
 
-    <button class="btn btn-info" onclick="$('#need-help').slideToggle();">Get Help From A Colleague</button>
+    <button class="btn btn-info" onclick="$('#need-help').slideToggle();">Get Help From Colleagues</button>
 
     <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em">
         <li>
-            {% if not answer.discussion %}
-            <a href="javascript:start_a_discussion()">Start a team conversation about this question</a>
+            {% if answer.discussion %}
+              Team conversation has been started &mdash; see below!
             {% else %}
-            Team conversation has been started &mdash; see below!
+              {# if you can see this page, you can start a conversation #}
+              <a href="javascript:start_a_discussion()">Start a team conversation about this question</a>
             {% endif %}
         </li>
-        <li><a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this module</a></li>
+        <li>
+          {% if request.user == task.editor %}
+            <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this module</a>
+          {% else %}
+            The editor of this module can ask a colleague to finish this module
+          {% endif %}
+        </li>
     </ul>
 
   </div> <!-- /col -->
