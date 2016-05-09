@@ -194,7 +194,6 @@ def next_question(request, taskid, taskslug):
 
         # Render.
         context.update({
-            "task": task,
             "m": m,
             "output": m.render_output(answered),
             "all_questions": filter(lambda q : not q.impute_answer(answered), m.questions),
