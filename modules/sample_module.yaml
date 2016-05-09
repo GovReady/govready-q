@@ -7,9 +7,32 @@ questions:
     type: text
 
   - id: qb
-    title: Did you own
+    title: Did You Ever Own One
     prompt: Did you ever own a {{q1}}?
     type: yesno
+
+  - id: qc
+    title: Classify The Animal
+    prompt: How would you classify this animal?
+    type: multiple-choice
+    min: 2
+    max: 3
+    choices:
+      - key: pet
+        text: common pet
+        help: Is this animal a common pet?
+      - key: exotic-pet
+        text: exotic pet
+        help: Is this animal considered an exotic pet?
+      - key: not-a-pet
+        text: not a pet
+        help: Choose this if the animal is not socially acceptable as a pet.
+      - key: kid-friendly
+        text: kid friendly
+        help: Would this animal be a good pet for kids?
+      - key: adult-friendly
+        text: adult friendly
+        help: Would this animal be a fulfilling pet for adults?
 
   - id: q2
     title: Do You Know Its Species Name
@@ -37,6 +60,8 @@ output:
 
     #### Animal:
     {{q1}}  {% if q2 == "yes" %} ( {{q3}} ) {% endif %}
+
+    {{qc}}
 
     #### Habitat:
 

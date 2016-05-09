@@ -169,6 +169,9 @@ class Question(object):
         self.type = spec["type"]
         self.impute = [(s["condition"], s["value"]) for s in spec.get("impute", [])]
         self.choices = spec.get("choices", [])
+        if self.type in ("multiple-choice",):
+            self.choice_selection_min = int(spec.get("min", "0"))
+            self.choice_selection_max = int(spec["max"]) if spec.get("max") else None
         self.module_id = spec.get("module-id")
 
     def __repr__(self):
@@ -194,3 +197,51 @@ class Question(object):
                 return value
         return None
 
+    def validate(self, value):
+        validate_func = getattr(self, "validate_" + self.type.replace("-", "_"))
+        return validate_func(value)
+
+    def validate_text(self, value):
+        if value == "":
+            raise ValueError("empty")
+        return value
+
+    def validate_password(self, value):
+        if value == "":
+            raise ValueError("empty")
+        return value
+
+    def validate_email(self, value):
+        import email_validator
+        email_validator.validate_email(value)
+        return value
+
+    def validate_longtext(self, value):
+        if value == "":
+            raise ValueError("empty")
+        return value
+
+    def validate_choice(self, value):
+        if value not in [choice['key'] for choice in self.choices]:
+            raise ValueError("invalid choice")
+        return value
+
+    def validate_yesno(self, value):
+        if value not in ("yes", "no"):
+            raise ValueError("invalid choice")
+        return value
+
+    def validate_multiple_choice(self, value):
+        # Comes in from the view function as an array.
+        for item in value:
+            if item not in [choice['key'] for choice in self.choices]:
+                raise ValueError("invalid choice: " + item)
+        if len(value) < self.choice_selection_min:
+            raise ValueError("not enough choices")
+        if self.choice_selection_max and len(value) > self.choice_selection_max:
+            raise ValueError("too many choices")
+        return value
+
+    def validate_module(self, value):
+        # handled by view function
+        return value

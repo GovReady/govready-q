@@ -50,14 +50,6 @@ Next Question: {{q.title}}
                 <p class="help-block">{{q.help}}</p>
               </div>
 
-            {% elif q.type == "checkboxes" %}
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox"> Item
-                </label>
-              </div>
-              <p class="help-block">{{q.help}}</p>
-
             {% elif q.type == "choice" %}
               {% for choice in q.choices %}
               <div class="radio">
@@ -80,6 +72,22 @@ Next Question: {{q.title}}
                 </label>
               </div>
               <p class="help-block">{{q.help}}</p>
+
+            {% elif q.type == "multiple-choice" %}
+              {% for choice in q.choices %}
+              <div class="checkbox">
+                <label>
+                  <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer.value %}checked{% endif %}> {{choice.text}}
+                  <p class="help-block">{{choice.help}}</p>
+                </label>
+              </div>
+              {% endfor %}
+
+              {% if q.choice_selection_min > 0 %}
+                  <p class="help-block">You must choose at least {{q.choice_selection_min}} {% if q.choice_selection_max %}and at most {{q.choice_selection_max}}{% endif %} options.</p>
+              {% elif q.choice_selection_max %}
+                  <p class="help-block">You may choose at most {{q.choice_selection_max}} options.</p>
+              {% endif %}
 
             {% elif q.type == "module" %}
               <div class="form-group">
@@ -153,6 +161,22 @@ $(function() {
         var val = $('#question input[type="radio"]:checked').val();
         if (!val)
             return "You must make a selection."
+        return undefined;
+    }
+
+    {% elif q.type == "multiple-choice" %}
+    function validate_answer() {
+        // Collect the checked values.
+        var vals = [];
+        $('#question input[type="checkbox"]:checked').each(function() {
+            vals.push($(this).val());
+        });
+        if (vals.length < {{q.choice_selection_min}})
+            return "You must choose at least {{q.choice_selection_min}} options.";
+        {% if q.choice_selection_max %}
+        if (vals.length > {{q.choice_selection_max}})
+            return "You must choose at most {{q.choice_selection_max}} options.";
+        {% endif %}
         return undefined;
     }
 

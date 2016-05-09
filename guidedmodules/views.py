@@ -96,13 +96,24 @@ def next_question(request, taskid, taskslug):
             return HttpResponse("invalid question id", status=400)
         q = m.questions_by_id[q]
 
-        # validate value
+        # validate and parse value
         if request.POST.get("method") == "clear":
             value = None
         else:
-            value = request.POST.get("value", "")
-            if not value.strip():
-                return HttpResponse("empty answer", status=400)
+            # parse
+            if q.type == "multiple-choice":
+                # multiple items submitted
+                value = request.POST.getlist("value")
+            else:
+                # single item submitted
+                value = request.POST.get("value", "").strip()
+
+            # validate
+            try:
+                value = q.validate(value)
+            except ValueError as e:
+                # client side validation should have picked this up
+                return HttpResponse("invalid value: " + str(e), status=400)
 
         # save answer
         answer, isnew = Answer.objects.get_or_create(
@@ -139,7 +150,7 @@ def next_question(request, taskid, taskslug):
                 messages.add_message(request, messages.INFO, 'You are now editing a new module to answer the previous question.')
 
             else:
-                # user selects an existing Task (ensure the user has access to it)
+                # user selects an existing Task (TODO :ensure the user has access to it)
                 t = Task.objects.get(project=task.project, id=int(value))
 
             answered_by_task = t
