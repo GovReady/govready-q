@@ -94,6 +94,7 @@ def next_question(request, taskid, taskslug):
         q = request.POST.get("question")
         if q not in m.questions_by_id:
             return HttpResponse("invalid question id", status=400)
+        q = m.questions_by_id[q]
 
         # validate value
         if request.POST.get("method") == "clear":
@@ -106,7 +107,7 @@ def next_question(request, taskid, taskslug):
         # save answer
         answer, isnew = Answer.objects.get_or_create(
             task=task,
-            question_id=q,
+            question_id=q.id,
             defaults={
                 # must specify this to avoid not-null constraint, but we
                 # update it again later since it may change if an answer
@@ -119,13 +120,13 @@ def next_question(request, taskid, taskslug):
 
         # fetch the task that answers this question
         answered_by_task = None
-        if m.questions_by_id[q].type == "module":
+        if q.type == "module":
             if value == None:
                 # answer is being cleared
                 t = None
             elif value == "__new":
                 # Create a new task, and we'll redirect to it immediately.
-                m1 = Module.load(m.questions_by_id[q].module_id) # validate input
+                m1 = Module.load(q.module_id) # validate input
                 t = Task.objects.create(
                     editor=request.user,
                     project=task.project,
@@ -170,7 +171,10 @@ def next_question(request, taskid, taskslug):
 
     # Display requested question.
     if "q" in request.GET:
-        q = m.questions_by_id[request.GET['q']]
+        try:
+            q = m.questions_by_id[request.GET['q']]
+        except KeyError:
+            raise Http404()
 
     else:
         # Display next unanswered question.
