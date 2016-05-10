@@ -26,7 +26,12 @@
 <div class="panel panel-danger">
   <div class="panel-heading">Someone else is editing this module</div>
   <div class="panel-body">
-    This module is being edited by {{task.editor}}. You cannot make changes to it.
+    This module is being edited by {{task.editor}}.
+    {% if write_priv %}
+      But you are a project admin so you can edit it.
+    {% else %}
+      You cannot make changes to it.
+    {% endif %}
   </div>
 </div>
 {% endif %}

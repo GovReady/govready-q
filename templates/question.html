@@ -6,6 +6,14 @@ Next Question: {{q.title}}
 
 {% block body %}
 
+<style>
+#question form {
+  margin: 1em -15px;
+  padding: 1em 15px;
+  border: 1px solid #BBB;
+}
+</style>
+
 {% include "task-status.html" %}
 
 <h1>{{module.title}}</h1>
@@ -109,15 +117,15 @@ Next Question: {{q.title}}
 
             {% endif %}
 
-          <button type="submit" class="btn btn-success">
-            {% if not request.GET.q %}Next{% else %}Submit{% endif %}
-            &raquo;
-          </button>
+            <button type="submit" class="btn btn-success" {% if not write_priv %}disabled title="Only the editor can change the answer to this question."{% endif %}>
+              {% if not request.GET.q %}Next{% else %}Submit{% endif %}
+              &raquo;
+            </button>
 
-        {% if answer.value %}
-          <button type="submit" class="btn btn-danger btn-sm"
-            onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
-        {% endif %}
+            {% if answer.value and write_priv %}
+              <button type="submit" class="btn btn-danger btn-sm"
+                onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
+            {% endif %}
         </form>     
     </div>
   </div> <!-- /col -->
@@ -127,16 +135,12 @@ Next Question: {{q.title}}
     <button class="btn btn-info" onclick="$('#need-help').slideToggle();">Get Help From Colleagues</button>
 
     <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em">
-        <li>
-            {% if answer.discussion %}
-              Team conversation has been started &mdash; see below!
-            {% else %}
-              {# if you can see this page, you can start a conversation #}
-              <a href="javascript:start_a_discussion()">Start a team conversation about this question</a>
-            {% endif %}
+        <li id="start-a-discussion">
+            {# if you can see this page, you can start a conversation #}
+            <a href="javascript:start_a_discussion()">Start a team conversation about this question</a>
         </li>
         <li>
-          {% if request.user == task.editor %}
+          {% if write_priv %}
             <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this module</a>
           {% else %}
             The editor of this module can ask a colleague to finish this module
@@ -280,7 +284,15 @@ function start_a_discussion(is_page_load) {
             question: "{{q.id|escapejs}}"
         },
         success(res) {
-            display_discussion(res, is_page_load);
+          // replace link that starts discussion with static text
+          $('#start-a-discussion').text('Team conversation has been started: see below!');
+
+          // load the discussion
+          display_discussion(res, is_page_load);
+
+          // scroll to it if this is from a user action
+          if (!is_page_load)
+            smooth_scroll_to($("#discussion"));
         }
     })
 }

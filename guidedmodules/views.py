@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseNotAllowed
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.db import transaction
@@ -72,7 +72,12 @@ def next_question(request, taskid, taskslug):
 
     # Does user have read privs?
     if task.editor != request.user and not ProjectMembership.objects.filter(project=task.project, user=request.user).exists():
-        return HttpResponseNotAllowed(["POST"]) # TODO: use a better status code
+        return HttpResponseForbidden()
+
+    # Does user have write privs? The user is either the editor or an admin of
+    # the project that the task belongs too.
+    write_priv = (task.editor == request.user) \
+        or ProjectMembership.objects.filter(project=task.project, user=request.user, is_admin=True).exists()
 
     # Redirect if slug is not canonical.
     if request.path != task.get_absolute_url():
@@ -87,8 +92,8 @@ def next_question(request, taskid, taskslug):
     # Process form data.
     if request.method == "POST":
         # does user have write privs?
-        if task.editor != request.user:
-            return HttpResponseNotAllowed(["POST"])
+        if not write_priv:
+            return HttpResponseForbidden()
 
         # validate question
         q = request.POST.get("question")
@@ -195,6 +200,7 @@ def next_question(request, taskid, taskslug):
     import json
     context = {
         "task": task,
+        "write_priv": write_priv,
         "active_invitation_to_transfer_editorship": task.get_active_invitation_to_transfer_editorship(request.user),
         "source_invitation": task.get_source_invitation(request.user),
 
@@ -295,7 +301,7 @@ def start_a_discussion(request):
     task = get_object_or_404(Task, id=request.POST['task'])
     if task.editor != request.user:
         # If not the editor, then any project team member may open discussion.
-        if not ProjectMembership.objects.filter.exists(project=task.project, user=request.user).exists():
+        if not ProjectMembership.objects.filter(project=task.project, user=request.user).exists():
             return JsonResponse({ "status": "error", "message": "You do not have permission!" })
 
     # Get the answer for this task. It may not exist yet.
