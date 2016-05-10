@@ -24,3 +24,4 @@ class User(UserBase):
             "id": self.id,
             "name": str(self),
         }
+        

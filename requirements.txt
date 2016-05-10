@@ -3,6 +3,8 @@ python-dateutil
 jinja2
 rtyaml
 email_validator
+
+git+https://github.com/JoshData/commonmark-py-plaintext
 git+https://github.com/if-then-fund/django-html-emailer
 
 django==1.9
