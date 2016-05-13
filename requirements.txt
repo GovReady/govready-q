@@ -1,4 +1,4 @@
-CommonMark
+CommonMark==0.6.4
 python-dateutil
 jinja2
 rtyaml
