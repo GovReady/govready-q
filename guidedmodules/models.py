@@ -412,7 +412,7 @@ class Invitation(models.Model):
         # they went the first time.
         if self.accepted_at:
             if self.accepted_task:
-                return HttpResponseRedirect(self.accepted_task.get_absolute_url())
+                return HttpResponseRedirect(self.accepted_task.get_absolute_url() + "/start")
             elif self.into_task_editorship:
                 return HttpResponseRedirect(self.into_task_editorship.get_absolute_url() + "/start")
             elif self.into_discussion:
@@ -491,7 +491,7 @@ class Invitation(models.Model):
                     module_id=self.into_new_task_module_id,
                     title=m.title,
                 )
-                redirect_to = task.get_absolute_url()
+                redirect_to = task.get_absolute_url() + "/start"
 
             # Make this user the new editor of the Task.
             if self.into_task_editorship:
