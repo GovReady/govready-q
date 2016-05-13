@@ -151,9 +151,13 @@ class Task(models.Model):
         return self.load_module().render_output(self.get_answers_dict())
 
     def is_answer_to_unique(self):
-        x = self.is_answer_to.all()
-        if len(x) == 1:
-            return x.first()
+        # Is this Task a submodule of exactly one other Task?
+        # We'd normally check len(self.is_answer_to.all()). But because we use TaskAnswers
+        # to store the history of answers to a TaskQuestion, the uniqueness is on the
+        # TaskQuestion... And then we want to return the current answer for that TaskQuestion.
+        qs = TaskQuestion.objects.filter(answers__answered_by_task=self).distinct()
+        if len(qs) == 1:
+            return qs.first().get_answer()
         return None
 
 class TaskQuestion(models.Model):
