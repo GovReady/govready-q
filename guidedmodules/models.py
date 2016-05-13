@@ -83,14 +83,14 @@ class Task(models.Model):
             if not a:
                 continue
 
-            # If this question type is "module", its answer value is the dict
-            # returned by get_answers_dict on the Task that is the answer to
-            # the question.
+            # If this question type is "module", its answer value is stored
+            # differently --- and it is a Task instance.
             if m.questions_by_id[q.question_id].type == "module":
-                if a.answered_by_task:
-                    answered[q.question_id] = a.answered_by_task.get_answers_dict()
+                if a.answered_by_task_id:
+                    answered[q.question_id] = a.answered_by_task
             else:
                 answered[q.question_id] = a.value
+
         return answered
 
     def is_started(self):

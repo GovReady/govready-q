@@ -155,6 +155,16 @@ class Module(object):
             if v:
                 answers[q.id] = v
 
+    def prerender_answers(self, answers, module_loader):
+        for q in self.questions:
+            if q.id in answers:
+                if q.type == "module":
+                    sub_module, sub_answers = module_loader(answers[q.id])
+                    sub_module.prerender_answers(sub_answers, module_loader)
+                    answers[q.id] = sub_answers
+                else:
+                    answers[q.id] = RenderedAnswer(q, answers[q.id])
+
     def render_content(self, content, context):
         from jinja2 import Template
         template = Template(content["template"])
@@ -257,3 +267,29 @@ class Question(object):
     def validate_module(self, value):
         # handled by view function
         return value
+
+    def get_choice(self, key):
+        for choice in self.choices:
+            if choice["key"] == key:
+                return choice
+        raise KeyError(repr(key) + " is not a choice")
+
+class RenderedAnswer:
+    def __init__(self, question, answer):
+        self.question = question
+        self.answer = answer
+    def __str__(self):
+        # How the template renders a question variable.
+        if self.question.type == "yesno":
+            return "Yes" if self.answer else "No"
+        if self.question.type == "choice":
+            return self.question.get_choice(self.answer)["text"]
+        if self.question.type == "multiple-choice":
+            return ", ".join(self.question.get_choice(c)["text"] for c in self.answer)
+        return str(self.answer)
+
+    @property # if not @property, it renders as "bound method" by jinja template
+    def key(self):
+        if self.question.type in ("yesno", "choice", "multiple-choice"):
+            return self.answer
+        raise Exception(".key is not a sensible operation for the %s question type." % self.question.type)

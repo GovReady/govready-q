@@ -209,6 +209,9 @@ def next_question(request, taskid, taskslug, intropage=None):
 
         # Set imputed answers
         m.add_imputed_answers(answered)
+        def module_loader(task):
+            return (task.load_module(), task.get_answers_dict())
+        m.prerender_answers(answered, module_loader)
 
         # Render.
         context.update({
