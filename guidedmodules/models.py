@@ -93,6 +93,9 @@ class Task(models.Model):
 
         return answered
 
+    def can_transfer_owner(self):
+        return self.project is not None
+
     def is_started(self):
         return self.questions.exists()
 

@@ -47,12 +47,14 @@
 			{% endif %}
 		</a>
 
+    {% if task.can_transfer_owner %}
 		<p style="margin-top: 30px">
             Or you can <a href="javascript:invite_user_to_take_over_module()">invite a colleague to edit this module</a>.
             {% if source_invitation %}
             Or you can <a href="javascript:return_to_requestor({{source_invitation.from_user.id}})">send it back to {{source_invitation.from_user}}</a>.
             {% endif %}
-        </p>
+    </p>
+    {% endif %}
 	</div>
 </div>
 
