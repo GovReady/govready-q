@@ -169,7 +169,7 @@ Next Question: {{q.title}}
 <script>
 $(function() {
     $('#inputctrl').focus();
-    {% if answer.discussion %}
+    {% if discussion %}
     start_a_discussion(true); // is idempotent
     {% endif %}
 

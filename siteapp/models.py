@@ -8,12 +8,12 @@ class User(UserBase):
     objects = UserManager()
 
     def __str__(self):
-        from guidedmodules.models import Answer
-        name = Answer.objects.filter(
-            task__editor=self,
-            task__project=None,
-            task__module_id="account_settings",
-            question_id="name").first()
+        from guidedmodules.models import TaskAnswer
+        name = TaskAnswer.objects.filter(
+            question__task__editor=self,
+            question__task__project=None,
+            question__task__module_id="account_settings",
+            question__question_id="name").first()
         if name:
             return name.value + " <" + self.email + ">"
         else:

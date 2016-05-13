@@ -76,15 +76,21 @@ class Task(models.Model):
     def get_answers_dict(self):
         m = self.load_module()
         answered = { }
-        for q in self.answers.all():
+        for q in self.questions.all():
+            # Get the latest TaskAnswer instance for this TaskQuestion,
+            # if there is any (there should be).
+            a = q.get_answer()
+            if not a:
+                continue
+
             # If this question type is "module", its answer value is the dict
             # returned by get_answers_dict on the Task that is the answer to
             # the question.
             if m.questions_by_id[q.question_id].type == "module":
-                if q.answered_by_task:
-                    answered[q.question_id] = q.answered_by_task.get_answers_dict()
+                if a.answered_by_task:
+                    answered[q.question_id] = a.answered_by_task.get_answers_dict()
             else:
-                answered[q.question_id] = q.value
+                answered[q.question_id] = a.value
         return answered
 
     def is_finished(self):
@@ -110,17 +116,11 @@ class Task(models.Model):
     def get_output(self):
         return self.load_module().render_output(self.get_answers_dict())
 
-class Answer(models.Model):
-    task = models.ForeignKey(Task, related_name="answers", help_text="The Task that this Answer is for.")
-    question_id = models.CharField(max_length=128, help_text="The ID of the question (with the Task's module) that this Answer answers.")
+class TaskQuestion(models.Model):
+    task = models.ForeignKey(Task, related_name="questions", help_text="The Task that this TaskQuestion is a part of.")
+    question_id = models.CharField(max_length=128, help_text="The ID of the question (within the Task's module) that this TaskQuestion represents.")
 
-    answered_by = models.ForeignKey(User, help_text="The user that provided this answer.")
-    value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
-    answered_by_task = models.ForeignKey(Task, blank=True, null=True, related_name="is_answer_of", help_text="A Task that supplies the answer for this question.")
-
-    notes = models.TextField(blank=True, help_text="Notes entered by the user completing this Answer.")
-
-    history = JSONField(default=[], blank=True, help_text="A history of this Answer, as a list of dicts with keys that are the same as the model fields.")
+    notes = models.TextField(blank=True, help_text="Notes entered by editors working on this question.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -132,15 +132,33 @@ class Answer(models.Model):
     def get_question(self):
         return self.task.load_module().questions_by_id[self.question_id]
 
+    def get_answer(self):
+        # The current answer is the one with the highest primary key.
+        return self.answers.order_by('-id').first()
+
+class TaskAnswer(models.Model):
+    question = models.ForeignKey(TaskQuestion, related_name="answers", help_text="The TaskQuestion that this is an aswer to.")
+
+    answered_by = models.ForeignKey(User, help_text="The user that provided this answer.")
+    value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
+    answered_by_task = models.ForeignKey(Task, blank=True, null=True, related_name="is_answer_to", help_text="A Task that supplies the answer for this question.")
+
+    notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswer.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+
 class Discussion(models.Model):
     project = models.ForeignKey(Project, help_text="The Project that this Discussion exists within.")
-    for_answer = models.OneToOneField(Answer, blank=True, related_name="discussion", help_text="The Answer that this discussion thread is for.")
+    for_question = models.OneToOneField(TaskQuestion, blank=True, related_name="discussion", help_text="The TaskQuestion that this discussion thread is for.")
 
     external_participants = models.ManyToManyField(User, blank=True, help_text="Additional Users who are participating in this chat, besides those that are members of the Project that contains the Discussion.")
 
     @property
     def title(self):
-        return repr(self.for_answer)
+        return repr(self.for_question)
 
     def is_participant(self, user):
         return (ProjectMembership.objects.filter(project=self.project, user=user)) \
@@ -177,7 +195,7 @@ class Comment(models.Model):
             return "%d hours, %d minutes ago" % (rd.hours, rd.minutes)
 
         def get_user_role():
-            if self.user == self.discussion.for_answer.task.editor:
+            if self.user == self.discussion.for_question.task.editor:
                 return "editor"
             if ProjectMembership.objects.filter(
                 project=self.discussion.project,
@@ -314,7 +332,7 @@ class Invitation(models.Model):
             elif self.into_task_editorship:
                 return HttpResponseRedirect(self.into_task_editorship.get_absolute_url())
             elif self.into_discussion:
-                return HttpResponseRedirect(self.into_discussion.answer.get_absolute_url())
+                return HttpResponseRedirect(self.into_discussion.for_question.get_absolute_url())
             else:
                 return HttpResponseRedirect("/")
 
@@ -415,7 +433,7 @@ class Invitation(models.Model):
                     # add the user to the external_participants list for the discussion. 
                     self.into_discussion.external_participants.add(request.user)
                     messages.add_message(request, messages.INFO, 'You are now a participant in the discussion on %s.' % discussion.title)
-                redirect_to = self.into_discussion.answer.get_absolute_url()
+                redirect_to = self.into_discussion.for_question.get_absolute_url()
 
             # Update this invitation.
             Invitation.objects.filter(id=self.id).update(

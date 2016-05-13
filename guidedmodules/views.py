@@ -6,7 +6,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from questions import Module
-from .models import Project, ProjectMembership, Task, Answer, Invitation, Discussion, Comment
+from .models import Project, ProjectMembership, Task, TaskQuestion, TaskAnswer, Invitation, Discussion, Comment
 from siteapp.models import User
 
 @login_required
@@ -120,16 +120,11 @@ def next_question(request, taskid, taskslug):
                 # client side validation should have picked this up
                 return HttpResponse("invalid value: " + str(e), status=400)
 
-        # save answer
-        answer, isnew = Answer.objects.get_or_create(
+        # save answer - get the TaskQuestion instance first
+        question, isnew = TaskQuestion.objects.get_or_create(
             task=task,
             question_id=q.id,
-            defaults={
-                # must specify this to avoid not-null constraint, but we
-                # update it again later since it may change if an answer
-                # is updated
-                "answered_by": request.user
-            })
+        )
 
         # normal redirect - reload the page
         redirect_to = request.path
@@ -161,25 +156,19 @@ def next_question(request, taskid, taskslug):
             answered_by_task = t
             value = (t.get_answers_dict() if t else None)
 
-        if value != answer.value or answered_by_task != answer.answered_by_task:
-            # Move existing answer to history.
-            if not isnew:
-                answer.history.append({
-                    "answered_by": request.user.id,
-                    "value": answer.value,
-                    "answered_by_task": answer.answered_by_task.id if answer.answered_by_task else None,
-                    "notes": answer.notes,
-                    "updated": answer.updated,
-                })
+        # Create a new TaskAnswer if the answer is actually changing.
+        current_answer = question.get_answer()
+        if not current_answer or (value != current_answer.value or answered_by_task != current_answer.answered_by_task):
+            answer = TaskAnswer.objects.create(
+                question=question,
+                answered_by=request.user,
+                value=value,
+                answered_by_task=answered_by_task,
+            )
 
-            # Update Answer.
-            answer.answered_by = request.user
-            answer.value = value
-            answer.answered_by_task = answered_by_task
-            answer.save()
-
-            # kick the task's updated field
+            # kick the task and questions's updated field
             task.save(update_fields=[])
+            question.save(update_fields=[])
 
         # return to a GET request
         return HttpResponseRedirect(redirect_to)
@@ -218,21 +207,27 @@ def next_question(request, taskid, taskslug):
             "m": m,
             "output": m.render_output(answered),
             "all_questions": filter(lambda q : not q.impute_answer(answered), m.questions),
-            "is_answer_of": task.is_answer_of.filter(answered_by=request.user).order_by('-updated').first(),
+            "is_answer_to": task.is_answer_to.filter(answered_by=request.user).order_by('-updated').first(),
         })
         return render(request, "module-finished.html", context)
     else:
+        taskq = TaskQuestion.objects.filter(task=task, question_id=q.id).first()
+        answer = None
+        if taskq:
+            answer = taskq.get_answer()
+
         context.update({
             "DEBUG": settings.DEBUG,
             "module": m,
             "q": q,
             "prompt": q.render_prompt(task.get_answers_dict()),
-            "answer": Answer.objects.filter(task=task, question_id=q.id).first(),
+            "answer": answer,
+            "discussion": Discussion.objects.filter(for_question=taskq).first(),
 
             "answer_module": Module.load(q.module_id) if q.module_id else None,
             "answer_tasks": Task.objects.filter(project=task.project, module_id=q.module_id),
             "answer_tasks_show_user": Task.objects.filter(project=task.project).exclude(editor=request.user).exists(),
-            "answer_task": Task.objects.filter(is_answer_of__question_id=q.id),
+            "answer_task": Task.objects.filter(is_answer_to__question__question_id=q.id),
         })
         return render(request, "question.html", context)
 
@@ -304,20 +299,18 @@ def start_a_discussion(request):
         if not ProjectMembership.objects.filter(project=task.project, user=request.user).exists():
             return JsonResponse({ "status": "error", "message": "You do not have permission!" })
 
-    # Get the answer for this task. It may not exist yet.
+    # Get the TaskQuestion for this task. It may not exist yet.
     m = task.load_module()
     q = m.questions_by_id[request.POST['question']] # validate question ID is ok
-    answer, isnew = Answer.objects.get_or_create(
+    tq, isnew = TaskQuestion.objects.get_or_create(
         task=task,
-        question_id=q.id,
-        defaults={ # must include non-null fields
-            "answered_by": request.user
-        })
+        question_id=q.id
+        )
 
     # Get the discussion.
     discussion, is_new = Discussion.objects.get_or_create(
         project=task.project,
-        for_answer=answer,
+        for_question=tq,
     )
 
     # Get the initial state of the discussion to populate the HTML.
