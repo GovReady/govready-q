@@ -96,11 +96,18 @@ Next Question: {{q.title}}
                   <p class="help-block">You may choose at most {{q.choice_selection_max}} options.</p>
               {% endif %}
 
+            {% elif q.type == "module" and answer_tasks|length == 0 %}
+              <p>You will next begin the module {{answer_module.title}}.</p>
+
+              <input type="hidden" name="value" value="__new"/>
+
             {% elif q.type == "module" %}
+
+              {# TODO: Split this into radios: Keep previous answer, change and select a new module, start a new module. #}
+
               <div class="form-group">
                 <label for="inputctrl">Select a module to answer this question:</label>
-                <select name="value" class="form-control" id="inputctrl"
-                  onchange="if ($(this).val() == '__invite') invite_user_to_start_module();">
+                <select name="value" class="form-control" id="inputctrl">
                   <option value="">Select...</option>
                   {% for m in answer_tasks %}
                     <option value="{{m.id}}" {% if m == answer.answered_by_task %}selected{% endif %}>
@@ -109,7 +116,6 @@ Next Question: {{q.title}}
                     </option>
                   {% endfor %}
                   <option value="__new">Start a new module on {{answer_module.title}}...</option>
-                  <option value="__invite">Invite a colleague to answer {{answer_module.title}}...</option>
                 </select>
                 <p class="help-block">{{q.help}}</p>
               </div>
@@ -141,7 +147,7 @@ Next Question: {{q.title}}
             </li>
             <li>
               {% if write_priv %}
-                <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this module</a>
+                <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this {% if q.type == "module" %}{{module.title}}{% endif %} module</a>
               {% else %}
                 The editor of this module can ask a colleague to finish this module
               {% endif %}
@@ -233,23 +239,6 @@ $(function() {
         return true;
     });
 })
-
-{% if q.type == "module" %}
-function invite_user_to_start_module() {
-  var info = {{send_invitation|safe}};
-  show_invite_modal(
-    'Ask a Colleague',
-    'Invite a colleague to answer the module {{answer_module.title|escapejs}}.',
-    info,
-    'Can you give me a hand completing the module {{answer_module.title|escapejs}} for ' + info.project_title + '?',
-    {
-      project: info.project_id,
-      into_new_task_module_id: "{{answer_module.id|escapejs}}"
-    });
-
-  return false;
-}
-{% endif %}
 
 function start_a_discussion(is_page_load) {
     ajax_with_indicator({

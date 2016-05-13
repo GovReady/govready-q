@@ -27,9 +27,16 @@
 {% include "task-header.html" with col_width="4" col_active="review" %}
 
 <div style="margin: 2em 0">
-  <p class="text-success">This module is complete. Go back to
-  {% if is_answer_to %}answering <a href="{{is_answer_to.question.task.get_absolute_url}}?q={{is_answer_to.question.question_id}}">{{is_answer_to.question.get_question.title}} in {{is_answer_to.question.task.title}}</a> or {% endif %}
-  <a href="/">your home</a>.</p>
+  {# TODO: Check that user is the editor of the supermodule. #}
+  {% with supermodule=task.is_answer_to_unique %}
+    {% if supermodule %}
+      <p class="text-success">This module is complete.</p>
+      <p><a href="{{supermodule.question.task.get_absolute_url}}" class="btn btn-primary">Continue Answering {{supermodule.question.task.title}} &raquo;</a></p>
+    {% else %}
+      <p class="text-success">This module is complete. Go back to <a href="/">your home</a>.</p>
+    {% endif %}
+  {% endwith %}
+
 </div>
 
 <div>

@@ -137,6 +137,12 @@ class Task(models.Model):
     def get_output(self):
         return self.load_module().render_output(self.get_answers_dict())
 
+    def is_answer_to_unique(self):
+        x = self.is_answer_to.all()
+        if len(x) == 1:
+            return x.first()
+        return None
+
 class TaskQuestion(models.Model):
     task = models.ForeignKey(Task, related_name="questions", help_text="The Task that this TaskQuestion is a part of.")
     question_id = models.CharField(max_length=128, help_text="The ID of the question (within the Task's module) that this TaskQuestion represents.")

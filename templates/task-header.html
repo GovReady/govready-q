@@ -21,7 +21,14 @@ h1 { margin: 0; }
 }
 </style>
 
-<div id="project-name">{{task.project.title}}</div>
+<div id="project-name">
+  {{task.project.title}}
+  {% with supermodule=task.is_answer_to_unique %}
+    {% if supermodule %}
+      (submodule of {{supermodule.question.task.title}})
+    {% endif %}
+  {% endwith %}
+</div>
 <h1>{{task.title}}</h1>
 
 <div id="progress-context" class="row">

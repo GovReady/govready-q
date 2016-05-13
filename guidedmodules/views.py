@@ -146,10 +146,7 @@ def next_question(request, taskid, taskslug, intropage=None):
                     module_id=m1.id,
                     title=m1.title)
 
-                redirect_to = t.get_absolute_url()
-
-                from django.contrib import messages
-                messages.add_message(request, messages.INFO, 'You are now editing a new module to answer the previous question.')
+                redirect_to = t.get_absolute_url() + "/start"
 
             else:
                 # user selects an existing Task (TODO :ensure the user has access to it)
@@ -218,7 +215,6 @@ def next_question(request, taskid, taskslug, intropage=None):
             "m": m,
             "output": m.render_output(answered),
             "all_questions": filter(lambda q : not q.impute_answer(answered), m.questions),
-            "is_answer_to": task.is_answer_to.filter(answered_by=request.user).order_by('-updated').first(),
         })
         return render(request, "module-finished.html", context)
     else:
@@ -239,7 +235,6 @@ def next_question(request, taskid, taskslug, intropage=None):
             "answer_module": Module.load(q.module_id) if q.module_id else None,
             "answer_tasks": Task.objects.filter(project=task.project, module_id=q.module_id),
             "answer_tasks_show_user": Task.objects.filter(project=task.project).exclude(editor=request.user).exists(),
-            "answer_task": Task.objects.filter(is_answer_to__question__question_id=q.id),
         })
         return render(request, "question.html", context)
 
