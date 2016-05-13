@@ -173,11 +173,9 @@ class TaskQuestion(models.Model):
                 "type": "event",
                 "date": answer.created,
                 "html":
-                    "<p>"
-                    + ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> " 
+                    ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> " 
                     % html.escape(str(answer.answered_by)))
-                    + ("answered the question." if i == 0 else "changed the answer.")
-                    + "</p>",
+                    + ("answered the question." if i == 0 else "changed the answer."),
                 "who": answer.answered_by,
                 "who_is_in_text": True,
             })
