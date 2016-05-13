@@ -235,6 +235,7 @@ def next_question(request, taskid, taskslug, intropage=None):
             "answer_module": Module.load(q.module_id) if q.module_id else None,
             "answer_tasks": Task.objects.filter(project=task.project, module_id=q.module_id),
             "answer_tasks_show_user": Task.objects.filter(project=task.project).exclude(editor=request.user).exists(),
+            "answer_answered_by_task_can_write": answer.answered_by_task.has_write_priv(request.user) if answer and answer.answered_by_task else None,
         })
         return render(request, "question.html", context)
 

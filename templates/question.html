@@ -97,27 +97,53 @@ Next Question: {{q.title}}
               {% endif %}
 
             {% elif q.type == "module" and answer_tasks|length == 0 %}
+              {# The user must choose or start a module, but there is nothing to choose from, so show a simplified interface. #}
+
               <p>You will next begin the module {{answer_module.title}}.</p>
 
-              <input type="hidden" name="value" value="__new"/>
+              {# must be a radio so the client-side validation passes, but we hide it #}
+              <input type="radio" name="value" value="__new" checked style="display: none"/>
 
             {% elif q.type == "module" %}
+              {% if answer.answered_by_task %}
+                <p>A module has already been selected to provide the information. You can keep your selection{% if answer_tasks|length > 1 %}, select a different module,{% endif %} or start a new one.</p>
+                <div class="radio">
+                  <label>
+                    <input name="value" value="{{answer.answered_by_task.id}}" type="radio" checked>
+                    Use my answers in {{answer.answered_by_task.title}}
+                      (<a href="{{answer.answered_by_task.get_absolute_url}}{% if not answer.answered_by_task.is_finished %}/start{% endif %}">view{% if answer_answered_by_task_can_write %}/edit{% endif %}</a>)
+                  </label>
+                </div>
 
-              {# TODO: Split this into radios: Keep previous answer, change and select a new module, start a new module. #}
+              {% else %}
 
-              <div class="form-group">
-                <label for="inputctrl">Select a module to answer this question:</label>
-                <select name="value" class="form-control" id="inputctrl">
-                  <option value="">Select...</option>
-                  {% for m in answer_tasks %}
-                    <option value="{{m.id}}" {% if m == answer.answered_by_task %}selected{% endif %}>
+                <p>Select an existing module that provides the answers or start a new {{answer_module.title}} module.</p>
+
+              {% endif %}
+
+              {% for m in answer_tasks %}
+              {% if m != answer.answered_by_task %}
+                <div class="radio">
+                  <label>
+                    <input name="value" value="{{m.id}}" type="radio">
+                      {% if answer.answered_by_task %}Change answers to:<br>{% endif %}
                       {{m.title}}
                       ({% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}})
-                    </option>
-                  {% endfor %}
-                  <option value="__new">Start a new module on {{answer_module.title}}...</option>
-                </select>
-                <p class="help-block">{{q.help}}</p>
+                  </label>
+                </div>
+              {% endif %}
+              {% endfor %}
+
+              <div class="radio">
+                <label>
+                  <input name="value" value="__new" type="radio">
+                  {% if answer.answered_by_task %}
+                    Start over by answering
+                  {% else %}
+                    Start
+                  {% endif %}
+                  a new {{answer_module.title}} module
+                </label>
               </div>
 
               <p class="help-block">{{q.help}}</p>
@@ -190,7 +216,7 @@ $(function() {
     show_static_history({{history|json}});
     {% endif %}
 
-    {% if q.type == "text" or q.type == "password" or q.type == "email" or q.type == "longtext" or q.type == "module" %}
+    {% if q.type == "text" or q.type == "password" or q.type == "email" or q.type == "longtext" %}
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
@@ -198,7 +224,7 @@ $(function() {
         return undefined;
     }
 
-    {% elif q.type == "choice" %}
+    {% elif q.type == "choice" or q.type == "module" %}
     function validate_answer() {
         var val = $('#question input[type="radio"]:checked').val();
         if (!val)
