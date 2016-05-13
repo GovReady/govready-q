@@ -9,6 +9,10 @@ long_description: >
   This long_description is pretty geeky and also needs to
   be udpated.
 editor_requirements: Person knowledgable about the system
+introduction:
+  format: markdown
+  template: |
+    This module will help you create a `opencontrol.yaml` file for Compliance-Masonry.
 questions:
 
   - id: q1
