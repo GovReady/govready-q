@@ -65,7 +65,7 @@ output:
     Hello! This is the output of the module based on the Markdown template in the YAML definition.
 
     #### Animal:
-    {{q1}}  {% if q2 == "yes" %} ( {{q3}} ) {% endif %}
+    {{q1}} {% if q2 %} ( {{q3}} ) {% endif %}
 
     {{qc}}
 

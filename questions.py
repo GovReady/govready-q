@@ -278,6 +278,7 @@ class RenderedAnswer:
     def __init__(self, question, answer):
         self.question = question
         self.answer = answer
+
     def __str__(self):
         # How the template renders a question variable.
         if self.question.type == "yesno":
@@ -287,6 +288,13 @@ class RenderedAnswer:
         if self.question.type == "multiple-choice":
             return ", ".join(self.question.get_choice(c)["text"] for c in self.answer)
         return str(self.answer)
+
+    def __bool__(self):
+        # How the template converts a question variable to
+        # a boolean within an expression (i.e. within an if).
+        if self.question.type == "yesno":
+            return self.answer == "yes"
+        return bool(self.answer)
 
     @property # if not @property, it renders as "bound method" by jinja template
     def key(self):
