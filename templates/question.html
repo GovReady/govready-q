@@ -251,35 +251,6 @@ function invite_user_to_start_module() {
 }
 {% endif %}
 
-function invite_to_transfer_editor() {
-  var info = {{send_invitation|safe}};
-  show_invite_modal(
-    'Ask a Colleague',
-    'Invite a colleague to complete {{task.title|escapejs}}.',
-    info,
-    'Can you take over answering {{task.title|escapejs}} for ' + info.project_title + ' and let me know when it is done?',
-    {
-      project: info.project_id,
-      into_task_editorship: {{task.id}}
-    });
-  return false;
-}
-
-function return_to_requestor(user) {
-  var info = {{send_invitation|safe}};
-  show_invite_modal(
-    'Return This Module',
-    'Let the person that requested this module from you know you are finished by inviting them to take back editor ownership of it.',
-    info,
-    'I finished answering {{task.title|escapejs}}.',
-    {
-      user_id: user,
-      project: info.project_id,
-      into_task_editorship: {{task.id}}
-    });
-  return false;
-}
-
 function start_a_discussion(is_page_load) {
     ajax_with_indicator({
         url: "{% url 'start_a_discussion' %}",

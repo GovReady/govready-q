@@ -390,7 +390,7 @@ class Invitation(models.Model):
             if self.accepted_task:
                 return HttpResponseRedirect(self.accepted_task.get_absolute_url())
             elif self.into_task_editorship:
-                return HttpResponseRedirect(self.into_task_editorship.get_absolute_url())
+                return HttpResponseRedirect(self.into_task_editorship.get_absolute_url() + "/start")
             elif self.into_discussion:
                 return HttpResponseRedirect(self.into_discussion.for_question.get_absolute_url())
             else:
@@ -480,7 +480,7 @@ class Invitation(models.Model):
                     self.into_task_editorship.save(update_fields=['editor'])
                     # TODO: Create a notification that the editor changed?
                     messages.add_message(request, messages.INFO, 'You are now the editor for module %s.' % self.into_task_editorship.title)
-                    redirect_to = self.into_task_editorship.get_absolute_url()
+                    redirect_to = self.into_task_editorship.get_absolute_url() + "/start"
 
             # Add this user into a discussion.
             if self.into_discussion:

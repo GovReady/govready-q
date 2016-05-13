@@ -41,7 +41,7 @@ h1 { margin: 0; }
 {% if task.editor == request.user %}
 {% with active_invitation_to_transfer_editorship as inv %}
   {% if inv %}
-    <div class="panel panel-warning">
+    <div class="panel panel-warning" style="margin-top: 30px">
       <div class="panel-heading">Invitation sent</div>
       <div class="panel-body">
         On {{inv.created|date}} you invited {{inv.to_display}} to take over editing this module. They haven&rsquo;t yet accepted your invitation. You can keep working on it until they accept the invitation.
@@ -50,20 +50,8 @@ h1 { margin: 0; }
   {% endif %}
 {% endwith %}
 
-{% with source_invitation as inv %}
-  {% if inv %}
-    <div class="panel panel-warning">
-      <div class="panel-heading">Editor Notice</div>
-      <div class="panel-body">
-        <p>On {{inv.created|date}} {{inv.from_user}} asked you to take over editing this module. {{inv.from_user}} wrote:</p>
-        <blockquote>{{inv.text}}</blockquote>
-        <p style="margin: 0">When you are finished, <a href="javascript:return_to_requestor({{inv.from_user.id}})">send it back to {{inv.from_user}}</a>.</p>
-      </div>
-    </div>
-  {% endif %}
-{% endwith %}
 {% else %}
-<div class="panel panel-danger">
+<div class="panel panel-danger" style="margin-top: 30px">
   <div class="panel-heading">Someone else is editing this module</div>
   <div class="panel-body">
     This module is being edited by {{task.editor}}.
@@ -75,3 +63,19 @@ h1 { margin: 0; }
   </div>
 </div>
 {% endif %}
+
+<script>
+function invite_to_transfer_editor() {
+  var info = {{send_invitation|safe}};
+  show_invite_modal(
+    'Ask a Colleague',
+    'Invite a colleague to complete {{task.title|escapejs}}.',
+    info,
+    'Can you take over answering {{task.title|escapejs}} for ' + info.project_title + ' and let me know when it is done?',
+    {
+      project: info.project_id,
+      into_task_editorship: {{task.id}}
+    });
+  return false;
+}
+</script>
