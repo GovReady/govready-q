@@ -15,6 +15,9 @@ class Project(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
+    def __repr__(self):
+        return "<Project %d %s>" % (self.id, self.title[0:30])
+
     def get_absolute_url(self):
         from django.utils.text import slugify
         return "/tasks/projects/%d/%s" % (self.id, slugify(self.title))
@@ -45,6 +48,9 @@ class Task(models.Model):
         index_together = [
             ('project', 'editor', 'module_id'),
         ]
+
+    def __repr__(self):
+        return "<Task [%d] %s %s>" % (self.id, self.title[0:30], repr(self.project))
 
     @staticmethod
     def has_completed_task(user, module_id, project=None):
@@ -163,6 +169,9 @@ class TaskQuestion(models.Model):
     class Meta:
         unique_together = [('task', 'question_id')]
 
+    def __repr__(self):
+        return "<TaskQuestion %s in %s>" % (self.question_id, repr(self.task))
+
     def get_absolute_url(self):
         from urllib.parse import quote
         return self.task.get_absolute_url() + "?q=" + quote(self.question_id)
@@ -220,6 +229,9 @@ class TaskAnswer(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    def __repr__(self):
+        return "<TaskAnswer %s>" % (repr(self.question),)
 
 
 class Discussion(models.Model):
