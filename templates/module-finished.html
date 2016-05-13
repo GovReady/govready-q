@@ -27,9 +27,8 @@
 {% include "task-header.html" with col_width="4" col_active="review" %}
 
 <div style="margin: 2em 0">
-  {# TODO: Check that user is the editor of the supermodule. #}
   {% with supermodule=task.is_answer_to_unique %}
-    {% if supermodule %}
+    {% if supermodule and supermodule.question.task.editor == request.user %}
       <p class="text-success">This module is complete.</p>
       <p><a href="{{supermodule.question.task.get_absolute_url}}" class="btn btn-primary">Continue Answering {{supermodule.question.task.title}} &raquo;</a></p>
     {% else %}
