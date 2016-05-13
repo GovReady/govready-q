@@ -85,7 +85,8 @@ def homepage(request):
 
     elif not Task.has_completed_task(request.user, "account_settings"):
         # First task: Fill out your account settings.
-        return HttpResponseRedirect(Task.get_task_for_module(request.user, "account_settings").get_absolute_url())
+        return HttpResponseRedirect(Task.get_task_for_module(request.user, "account_settings").get_absolute_url()
+            + "/start")
 
     elif not Task.objects.filter(editor=request.user).exclude(project=None).exists() \
         and not ProjectMembership.objects.filter(user=request.user).exists():
