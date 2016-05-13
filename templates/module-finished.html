@@ -5,6 +5,21 @@
 {% endblock %}
 
 {% block body %}
+<style>
+#finished-tabs-panels .tab-pane {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  padding: 30px 15px;
+}
+#result {
+  background-color: #FBF6F4;
+  color: black;
+}
+#finished-tabs .active a[href='#result'] {
+  background-color: #FBF6F4;
+}
+</style>
 
 <div class="row">
   <div class="col-sm-push-2 col-sm-8">
@@ -18,13 +33,13 @@
 </div>
 
 <div>
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#result" aria-controls="result" role="tab" data-toggle="tab">Result</a></li>
-    <li role="presentation"><a href="#questions" aria-controls="questions" role="tab" data-toggle="tab">Questions</a></li>
+  <ul id="finished-tabs" class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#result" aria-controls="result" role="tab" data-toggle="tab">Document</a></li>
+    <li role="presentation"><a href="#questions" aria-controls="questions" role="tab" data-toggle="tab">Change Answers</a></li>
   </ul>
 
   <!-- Tab panes -->
-  <div class="tab-content" style="margin-top: 15px">
+  <div id="finished-tabs-panels" class="tab-content">
     <div role="tabpanel" class="tab-pane active" id="result">
         {{output|safe}}
     </div>
