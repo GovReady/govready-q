@@ -132,7 +132,7 @@ Next Question: {{q.title}}
               &raquo;
             </button>
 
-            {% if answer.value and write_priv %}
+            {% if answer.is_answered and write_priv %}
               <button type="submit" class="btn btn-danger btn-sm"
                 onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
             {% endif %}

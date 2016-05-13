@@ -237,6 +237,9 @@ class TaskAnswer(models.Model):
     def __repr__(self):
         return "<TaskAnswer %s>" % (repr(self.question),)
 
+    @property
+    def is_answered(self):
+        return self.value or self.answered_by_task
 
 class Discussion(models.Model):
     project = models.ForeignKey(Project, help_text="The Project that this Discussion exists within.")
