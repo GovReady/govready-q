@@ -12,10 +12,11 @@
 	}
 </style>
 
-{% include "task-header.html" with col_width="4" col_active="start" %}
-
-<div style="margin-top: 45px" class="row">
+<div class="row">
 	<div class="col-sm-push-2 col-sm-8">
+    <div style="margin-bottom: 45px" >
+      {% include "task-header.html" with col_width="4" col_active="start" %}
+    </div>
 
         {% with source_invitation as inv %}
           {% if inv %}

@@ -17,10 +17,11 @@ Next Question: {{q.title}}
 }
 </style>
 
-{% include "task-header.html" with col_width="4" col_active="questions" %}
 
 <div class="row">
-  <div class="col-md-6">
+  <div class="col-sm-push-2 col-sm-8">
+    {% include "task-header.html" with col_width="4" col_active="questions" %}
+
     <div id="question" style="margin: 2em 0">
         <form method="post">
             {% csrf_token %}
@@ -147,11 +148,9 @@ Next Question: {{q.title}}
             </li>
         </ul>
 
-        
-    </div>
-  </div> <!-- /col -->
+    </div> <!-- /question -->
 
-  <div class="col-md-6">
+    {% include "discussion.html" %}
 
   </div> <!-- /col -->
 </div> <!-- /row -->
@@ -165,8 +164,6 @@ Next Question: {{q.title}}
   question: <b>{{q.id}}</b>
 </p>
 {% endif %}
-
-{% include "discussion.html" %}
 
 {% endblock %}
 

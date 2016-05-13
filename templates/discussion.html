@@ -1,4 +1,7 @@
 <style>
+#discussion .comment-thread {
+  margin: 1em 0 1.5em 0;
+}
 #discussion .comment .username {
   color: black;
 }
@@ -24,56 +27,41 @@
 #discussion .comment .ifeditpriv { display: none; }
 #discussion .comment.has-edit-priv .ifeditpriv { display: inline; }
 #discussion .comment.author-is-self .ifnotauthor { display: none; }
+#discussion .event {
+  margin: 15px 0;
+}
 #discussion .event .event-info {
   font-size: 85%;
   color: #555;
-  margin-bottom: 7px;
 }
 #discussion .event .event-info > div {
   display: inline;
   padding-bottom: 5px;
-  border-bottom: 1px solid #AAA;
+  border-top: 1px solid #AAA;
 }
 </style>
 
-<div id="discussion" class="row" style="display: none;">
-  <div class="col-xs-12">
-    <h2>History</h2>
-  </div>
+<div id="discussion" style="display: none;">
+  <h2>Activity</h2>
 
-  <div class="col-md-9">
     <div class="comment-thread">
       
     </div>
     <div class="comment-input active-discussion-only" style="display: none">
-      <div class="panel panel-default">
-        <div class="panel-body">
-          <form onsubmit="submit_comment(); return false;">
-            <textarea class="form-control" rows="3" placeholder="Enter your message here."></textarea>
-            <div style="margin-top: 1em; text-align: right">
-              {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
-              <button type="submit" class="btn btn-primary">Comment</button>
-            </div>
-          </form>
-          <hr>
-          <p>
-            This conversation is <span style="color: green">open</span>
-            <button type="submit" class="btn btn-default btn-sm">We&rsquo;re good, close it</button>
-          </p>
+      <form onsubmit="submit_comment(); return false;">
+        <label for="discussion-your-comment">Help answer this question:</label>
+        <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder="Enter your message here."></textarea>
+        <div style="margin-top: 1em; text-align: right">
+          {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
+          <button type="submit" class="btn btn-primary">Comment</button>
         </div>
-      </div>
+      </form>
     </div>
-  </div>
-  <div class="col-md-3 active-discussion-only" style="display: none">
-      <div class="panel panel-default">
-        <div class="panel-body">
-          <p>
-            Who can see this conversation? <span class="fillin-project_name"></span> members<span class="fillin-guests"></span>.
-            <a id="invite-guest" href="javascript:invite_user_to_discussion()">Invite Colleague</a>
-          </p>
-        </div>
-      </div>
-  </div>
+
+    <p class="small">
+      Who can see this conversation? <span class="fillin-project_name"></span> members<span class="fillin-guests"></span>.
+      <a id="invite-guest" href="javascript:invite_user_to_discussion()">Invite Colleague</a>
+    </p>
 </div>
 
 <div id="comment-template" style="display: none">
