@@ -9,15 +9,15 @@ Next Question: {{q.title}}
 
 <style>
 #question form {
-  margin: 1em -15px;
-  padding: 1em 15px;
-  border: 1px solid #BBB;
+  margin: 2em 0;
+}
+
+#question-prompt {
+  font-weight: bold;
 }
 </style>
 
-{% include "task-status.html" %}
-
-<h1>{{module.title}}</h1>
+{% include "task-header.html" with col_width="4" col_active="questions" %}
 
 <div class="row">
   <div class="col-md-6">
@@ -28,7 +28,9 @@ Next Question: {{q.title}}
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="set">
 
-            {{prompt|safe}}
+            <div id="question-prompt">
+              {{prompt|safe}}
+            </div>
 
             {% if q.type == "text" %}
               <div class="form-group">
@@ -154,7 +156,7 @@ Next Question: {{q.title}}
   </div> <!-- /col -->
 </div> <!-- /row -->
 
-{% if DEBUG %}
+{% if DEBUG and 0 %}
 <p style="margin: 1em 0 2em 0">
   user: <b>{{user}}</b>
   |

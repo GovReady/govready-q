@@ -1,3 +1,43 @@
+<style>
+#project-name {
+  margin: 2em 0 5px 0;
+  color: #888;
+}
+h1 { margin: 0; }
+#progress-context {
+  margin-top: 15px;
+}
+#progress-context > div > div {
+  border-top: 2px solid #C5C5C2;
+  padding-top: 2px;
+  margin-right: 15px;
+  color: #C5C5C2;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+#progress-context > div.active > div {
+  border-top: 2px solid #2556a1;
+  color: #1e5281;
+}
+</style>
+
+<div id="project-name">{{task.project.title}}</div>
+<h1>{{task.title}}</h1>
+
+<div id="progress-context" class="row">
+  <div class="col-sm-{{col_width}} {% if col_active == "start" %}active{% endif %}">
+    <div>Start Module</div>
+  </div>
+
+  <div class="col-sm-{{col_width}} {% if col_active == "questions" %}active{% endif %}">
+    <div>Answer Questions</div>
+  </div>
+
+  <div class="col-sm-{{col_width}} {% if col_active == "review" %}active{% endif %}">
+    <div>Review</div>
+  </div>
+</div>
+
 {% if task.editor == request.user %}
 {% with active_invitation_to_transfer_editorship as inv %}
   {% if inv %}

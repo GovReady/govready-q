@@ -4,13 +4,9 @@
 {{m.title}}
 {% endblock %}
 
-{% include "task-status.html" %}
-
 {% block body %}
-<h1>{{task.title}}</h1>
-{% if task.title != m.title %}
-<p>({{m.title}})</p>
-{% endif %}
+
+{% include "task-header.html" with col_width="4" col_active="review" %}
 
 <div style="margin: 2em 0">
   <p class="text-success">This module is complete. Go back to
