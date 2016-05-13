@@ -134,19 +134,6 @@ class Task(models.Model):
         return self.invitations_to_take_over.filter(accepted_user=user).order_by('-created').first() \
             or self.invitations_received.filter(accepted_user=user).order_by('-created').first()
 
-    def get_history(self):
-        history = []
-        history.append({
-            "date": self.created,
-            "text": "The module was started.",
-        })
-        for inv in self.invitations_received.exclude(accepted_user=None):
-            history.append({
-                "date": inv.created,
-                "text": "Something happened.",
-            })
-        return history
-
     def get_output(self):
         return self.load_module().render_output(self.get_answers_dict())
 
@@ -194,9 +181,6 @@ class TaskQuestion(models.Model):
                 "who": answer.answered_by,
                 "who_is_in_text": True,
             })
-
-        # Task history.
-        history.extend(self.task.get_history())
 
         # Sort.
         history.sort(key = lambda item : item["date"])
