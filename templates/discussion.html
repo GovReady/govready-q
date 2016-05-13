@@ -139,7 +139,6 @@ function display_discussion(discussion, is_page_load) {
 
   // show the discussion
   $('#discussion').show();
-  $('#discussion h2').text("Team conversation");
   $('#discussion .active-discussion-only').show();
   $('#discussion #invite-guest').toggle(discussion.discussion.can_invite);
 
@@ -162,6 +161,7 @@ function display_discussion(discussion, is_page_load) {
   }
 
   // show events
+  $('#discussion .comment-thread').html('');
   discussion.events.forEach(function(item) {
     if (item.type == "event")
         render_event(item)

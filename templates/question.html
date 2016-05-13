@@ -174,8 +174,11 @@ Next Question: {{q.title}}
 <script>
 $(function() {
     $('#inputctrl').focus();
-    {% if discussion or history %}
+    {% if discussion %}
+    {# a discussion already exists, so show it #}
     start_a_discussion(true); // is idempotent
+    {% elif history %}
+    show_static_history({{history|json}});
     {% endif %}
 
     {% if q.type == "text" or q.type == "password" or q.type == "email" or q.type == "longtext" or q.type == "module" %}
@@ -271,6 +274,14 @@ function start_a_discussion(is_page_load) {
             smooth_scroll_to($("#discussion"));
         }
     })
+}
+
+function show_static_history(history) {
+  // There's no discussion yet, but we do have activity.
+  $('#discussion').show();
+  history.forEach(function(item) {
+      render_event(item)
+    });
 }
 </script>
 {% endblock %}
