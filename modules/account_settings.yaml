@@ -6,7 +6,9 @@ introduction:
   template: |
     Hi,
 
-    This is a module.
+    GovReady Q works much better when you have a user profile. 
+
+    Answer a few  quick questions and will have your profile.
 questions:
   - id: name
     title: Your Name
