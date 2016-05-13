@@ -24,18 +24,28 @@
 #discussion .comment .ifeditpriv { display: none; }
 #discussion .comment.has-edit-priv .ifeditpriv { display: inline; }
 #discussion .comment.author-is-self .ifnotauthor { display: none; }
+#discussion .event .event-info {
+  font-size: 85%;
+  color: #555;
+  margin-bottom: 7px;
+}
+#discussion .event .event-info > div {
+  display: inline;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #AAA;
+}
 </style>
 
-<div id="discussion" class="row" style="display: none">
+<div id="discussion" class="row" style="display: none;">
   <div class="col-xs-12">
-    <h2>Team conversation</h2>
+    <h2>History</h2>
   </div>
 
   <div class="col-md-9">
     <div class="comment-thread">
-      ... 
+      
     </div>
-    <div class="comment-input">
+    <div class="comment-input active-discussion-only" style="display: none">
       <div class="panel panel-default">
         <div class="panel-body">
           <form onsubmit="submit_comment(); return false;">
@@ -54,7 +64,7 @@
       </div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-3 active-discussion-only" style="display: none">
       <div class="panel panel-default">
         <div class="panel-body">
           <p>
@@ -107,16 +117,29 @@
   </div>
 </div>
 
+<div id="event-template" style="display: none">
+  <div class="event">
+    <div>
+      <div class="event-info">
+        <div>
+          <span class="event-date"></span>
+          <span class="event-who"></span>
+        </div>
+      </div>
+    </div>
+    <div class="body"> </div>
+  </div>
+</div>
+
 <script>
 var discussion_id = null;
 function display_discussion(discussion, is_page_load) {
   discussion_id = discussion.discussion_id;
 
   // show the discussion
-  if (is_page_load)
-    $('#discussion').show();
-  else
-    $('#discussion').fadeIn();
+  $('#discussion').show();
+  $('#discussion h2').text("Team conversation");
+  $('#discussion .active-discussion-only').show();
 
   // fill in the context block on the right side
   $('#discussion .fillin-project_name').text(discussion.project_name);
@@ -136,30 +159,19 @@ function display_discussion(discussion, is_page_load) {
     $('#discussion .fillin-guests').text(text);
   }
 
-  // show comments
-  var c = $('#discussion .comment-thread');
-  if (discussion.comments.length == 0) {
-    c.addClass("empty");
-    c.html("<p>No comments have been left so far.</p>")
-  } else {
-    c.text('');
-    discussion.comments.forEach(function(item) {
-      render_comment(item);
-    });
-  }
+  // show events
+  discussion.events.forEach(function(item) {
+    if (item.type == "event")
+        render_event(item)
+    else if (item.type == "comment")
+        render_comment(item);
+  });
 }
 
 function render_comment(item) {
-  var c = $('#discussion .comment-thread')
-  
-  if (c.hasClass('empty')) {
-    c.text('');
-    c.removeClass('empty');
-  }
-
+  // Create and fill in a DOM node.
   var n = $('#comment-template > div').clone();
-  c.append(n);
-
+  n.attr('data-sort-order', item.date_posix);
   n.find('.comment-author').text(item.user.name);
   n.find('.comment-date').text(item.date_relative);
   n.find('.comment-date').attr('title', new Date(item.date_posix * 1000));
@@ -169,6 +181,24 @@ function render_comment(item) {
     n.addClass('has-edit-priv');
   if (item.user.id == {{request.user.id}})
     n.addClass('author-is-self');
+
+  // Add to the DOM.
+  var c = $('#discussion .comment-thread');
+  c.append(n);
+}
+
+function render_event(item) {
+  var n = $('#event-template > div').clone();
+  n.attr('data-sort-order', item.date_posix);
+
+  n.find('.body').html(item.html);
+  n.find('.event-date').text(item.date_relative);
+  n.find('.event-date').attr('title', new Date(item.date_posix * 1000));
+  if (item.who && !item.who_is_in_text)
+    n.find('.event-who').text("by " + item.who.name);
+
+  var c = $('#discussion .comment-thread')
+  c.append(n);
 }
 
 function submit_comment() {

@@ -113,6 +113,19 @@ class Task(models.Model):
         return self.invitations_to_take_over.filter(accepted_user=user).order_by('-created').first() \
             or self.invitations_received.filter(accepted_user=user).order_by('-created').first()
 
+    def get_history(self):
+        history = []
+        history.append({
+            "date": self.created,
+            "text": "The module was started.",
+        })
+        for inv in self.invitations_received.exclude(accepted_user=None):
+            history.append({
+                "date": inv.created,
+                "text": "Something happened.",
+            })
+        return history
+
     def get_output(self):
         return self.load_module().render_output(self.get_answers_dict())
 
@@ -135,6 +148,45 @@ class TaskQuestion(models.Model):
     def get_answer(self):
         # The current answer is the one with the highest primary key.
         return self.answers.order_by('-id').first()
+
+    def get_history(self):
+        history = []
+
+        # Get the answers. Their serial order follows their primary
+        # key. We just want to know which was first so that we can
+        # display different text.
+        import html
+        for i, answer in enumerate(self.answers.order_by('id')):
+            history.append({
+                "type": "event",
+                "date": answer.created,
+                "html":
+                    "<p>"
+                    + ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> " 
+                    % html.escape(str(answer.answered_by)))
+                    + ("answered the question." if i == 0 else "changed the answer.")
+                    + "</p>",
+                "who": answer.answered_by,
+                "who_is_in_text": True,
+            })
+
+        # Task history.
+        history.extend(self.task.get_history())
+
+        # Sort.
+        history.sort(key = lambda item : item["date"])
+
+        # render events for easier client-side processing
+        for item in history:
+            if "who" in item:
+                item["who"] = item["who"].render_context_dict()
+
+            item["date_relative"] = reldate(item["date"], timezone.now()) + " ago"
+            item["date_posix"] = item["date"].timestamp()
+            del item["date"] # not JSON serializable
+
+        return history
+
 
 class TaskAnswer(models.Model):
     question = models.ForeignKey(TaskQuestion, related_name="answers", help_text="The TaskQuestion that this is an aswer to.")
@@ -183,16 +235,7 @@ class Comment(models.Model):
         ]
 
     def render_context_dict(self):
-        import CommonMark, dateutil.relativedelta
-
-        def reldate(date, ref):
-            rd = dateutil.relativedelta.relativedelta(ref, date)
-            if rd.months > 1: return "%d months, %d days" % (rd.months, rd.days)
-            if rd.months == 1: return "%d month, %d days" % (rd.months, rd.days)
-            if rd.days >= 7: return "%d days" % rd.days
-            if rd.days > 1: return "%d days, %d hours" % (rd.days, rd.hours)
-            if rd.days == 1: return "%d day, %d hours" % (rd.days, rd.hours)
-            return "%d hours, %d minutes ago" % (rd.hours, rd.minutes)
+        import CommonMark
 
         def get_user_role():
             if self.user == self.discussion.for_question.task.editor:
@@ -212,14 +255,28 @@ class Comment(models.Model):
             return "former participant"
 
         return {
+            "type": "comment",
             "id": self.id,
             "replies_to": self.replies_to_id,
             "user": self.user.render_context_dict(),
             "user_role": get_user_role(),
-            "date_relative": reldate(self.created, timezone.now()),
+            "date_relative": reldate(self.created, timezone.now()) + " ago",
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
             "text_rendered": CommonMark.commonmark(self.text),
         }
+
+def reldate(date, ref):
+    import dateutil.relativedelta
+    rd = dateutil.relativedelta.relativedelta(ref, date)
+    def r(n, unit):
+        return str(n) + " " + unit + ("s" if n != 1 else "")
+    def c(*rs):
+        return ", ".join(r(*s) for s in rs)
+    if rd.months >= 1: return c((rd.months, "month"), (rd.days, "day"))
+    if rd.days >= 7: return c((rd.days, "day"),)
+    if rd.days >= 1: return c((rd.days, "day"), (rd.hours, "hour"))
+    if rd.hours >= 1: return c((rd.hours, "hour"), (rd.minutes, "minute"))
+    return c((rd.minutes, "minute"),)
 
 class Invitation(models.Model):
     # who is sending the invitation

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load q %}
 
 {% block title %}
 Next Question: {{q.title}}
@@ -126,27 +127,29 @@ Next Question: {{q.title}}
               <button type="submit" class="btn btn-danger btn-sm"
                 onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
             {% endif %}
-        </form>     
+        </form>
+
+        <button class="btn btn-info" onclick="$('#need-help').slideToggle();">Get Help From Colleagues</button>
+
+        <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em">
+            <li id="start-a-discussion">
+                {# if you can see this page, you can start a conversation #}
+                <a href="javascript:start_a_discussion()">Start a team conversation about this question</a>
+            </li>
+            <li>
+              {% if write_priv %}
+                <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this module</a>
+              {% else %}
+                The editor of this module can ask a colleague to finish this module
+              {% endif %}
+            </li>
+        </ul>
+
+        
     </div>
   </div> <!-- /col -->
 
   <div class="col-md-6">
-
-    <button class="btn btn-info" onclick="$('#need-help').slideToggle();">Get Help From Colleagues</button>
-
-    <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em">
-        <li id="start-a-discussion">
-            {# if you can see this page, you can start a conversation #}
-            <a href="javascript:start_a_discussion()">Start a team conversation about this question</a>
-        </li>
-        <li>
-          {% if write_priv %}
-            <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this module</a>
-          {% else %}
-            The editor of this module can ask a colleague to finish this module
-          {% endif %}
-        </li>
-    </ul>
 
   </div> <!-- /col -->
 </div> <!-- /row -->
@@ -169,7 +172,7 @@ Next Question: {{q.title}}
 <script>
 $(function() {
     $('#inputctrl').focus();
-    {% if discussion %}
+    {% if discussion or history %}
     start_a_discussion(true); // is idempotent
     {% endif %}
 
@@ -226,7 +229,7 @@ $(function() {
 
         // ok, submit
         return true;
-    })
+    });
 })
 
 {% if q.type == "module" %}

@@ -15,7 +15,7 @@ class User(UserBase):
             question__task__module_id="account_settings",
             question__question_id="name").first()
         if name:
-            return name.value + " <" + self.email + ">"
+            return name.value #+ " <" + self.email + ">"
         else:
             return self.email
 

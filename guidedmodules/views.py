@@ -221,6 +221,7 @@ def next_question(request, taskid, taskslug):
             "module": m,
             "q": q,
             "prompt": q.render_prompt(task.get_answers_dict()),
+            "history": taskq.get_history() if taskq else None,
             "answer": answer,
             "discussion": Discussion.objects.filter(for_question=taskq).first(),
 
@@ -313,13 +314,19 @@ def start_a_discussion(request):
         for_question=tq,
     )
 
+    # Build the event history.
+    events = []
+    events.extend(tq.get_history())
+    events.extend([ comment.render_context_dict() for comment in discussion.comments.all() ])
+    events.sort(key = lambda item : item["date_posix"])
+
     # Get the initial state of the discussion to populate the HTML.
     return JsonResponse({
         "status": "ok",
         "discussion_id": discussion.id,
         "project_name": discussion.project.title,
         "guests": [ user.render_context_dict() for user in discussion.external_participants.all() ],
-        "comments": [ comment.render_context_dict() for comment in discussion.comments.all() ],
+        "events": events,
     })
 
 @login_required
