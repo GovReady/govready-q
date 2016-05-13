@@ -106,6 +106,24 @@ class Task(models.Model):
         else:
             return "Finished on " + self.updated.strftime("%x %X")
 
+    def has_read_priv(self, user):
+        if self.has_write_priv(user):
+            return True
+        if ProjectMembership.objects.filter(project=self.project, user=user).exists():
+            return True
+        if Discussion.objects.filter(for_question__task=self, external_participants=user).exists():
+            return True
+        return False
+
+    def has_write_priv(self, user):
+        if self.editor == user:
+            # The editor.
+            return True
+        if ProjectMembership.objects.filter(project=self.project, user=user, is_admin=True).exists():
+            # An admin of the project.
+            return True
+        return False
+
     def get_active_invitation_to_transfer_editorship(self, user):
         inv = self.invitations_to_take_over.filter(from_user=user, accepted_at=None).order_by('-created').first()
         if inv and not inv.is_expired():
@@ -144,6 +162,10 @@ class TaskQuestion(models.Model):
 
     class Meta:
         unique_together = [('task', 'question_id')]
+
+    def get_absolute_url(self):
+        from urllib.parse import quote
+        return self.task.get_absolute_url() + "?q=" + quote(self.question_id)
 
     def get_question(self):
         return self.task.load_module().questions_by_id[self.question_id]
@@ -213,11 +235,14 @@ class Discussion(models.Model):
 
     @property
     def title(self):
-        return repr(self.for_question)
+        return self.for_question.get_question().title
 
     def is_participant(self, user):
         return (ProjectMembership.objects.filter(project=self.project, user=user)) \
-            or (user in self.external_participants)
+            or (user in self.external_participants.all())
+
+    def can_invite_guests(self, user):
+        return ProjectMembership.objects.filter(project=self.project, user=user).exists()
 
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", help_text="The Discussion that this comment is attached to.")
@@ -252,8 +277,7 @@ class Comment(models.Model):
                 return "guest"
             if ProjectMembership.objects.filter(
                 project=self.discussion.project,
-                user=self.user,
-                is_admin=True):
+                user=self.user):
                 return "project member"
             return "former participant"
 
@@ -492,7 +516,7 @@ class Invitation(models.Model):
                 else:
                     # add the user to the external_participants list for the discussion. 
                     self.into_discussion.external_participants.add(request.user)
-                    messages.add_message(request, messages.INFO, 'You are now a participant in the discussion on %s.' % discussion.title)
+                    messages.add_message(request, messages.INFO, 'You are now a participant in the discussion on %s.' % self.into_discussion.title)
                 redirect_to = self.into_discussion.for_question.get_absolute_url()
 
             # Update this invitation.

@@ -8,13 +8,16 @@ function show_invite_modal(title, prompt, info, message_default_text, data, call
   var s = m.find('form select[name=user]');
   s.prop('disabled', false);
   s.text('');
-  if (info.users.length > 0)
+  if (info.users.length > 0 && !data.into_discussion) {
+    // The users list only has project members. They are already in the discussion,
+    // so it doesn't make sense to list them if we are doing an invite to a discussion.
     s.append($("<option/>").attr('value', '').text('Select team member...'))
-  else
+    info.users.forEach(function(user) {
+      s.append($("<option/>").attr('value', user.id).text(user.name))
+    })
+  } else {
     m.find('label[for="invite-user-email"] span').remove(); // hide link to hide the email address input and show the dropdown because drop-down is empty
-  info.users.forEach(function(user) {
-    s.append($("<option/>").attr('value', user.id).text(user.name))
-  })
+  }
   s.append($("<option/>").attr('value', '__invite__').text("Invite someone new..."))
   if (data.user_id) {
     s.val(data.user_id);
@@ -40,7 +43,7 @@ function send_invitation(form) {
   var data = {
      //prompt_task
      //prompt_question_id
-     add_to_team: $('#invitation_modal form input[name=add-to-team]').attr('checked') != null ? "1" : "0",
+     add_to_team: $('#invitation_modal form input[name=add-to-team]').is(':checked') ? "1" : "",
      into_new_task_module_id: $('#invitation_modal form select[name=module]').val(),
      //into_task_editorship
      //into_discussion

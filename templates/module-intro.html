@@ -77,15 +77,14 @@ function invite_user_to_take_over_module() {
 }
 
 function return_to_requestor(user) {
-  var info = {{send_invitation|safe}};
   show_invite_modal(
     'Return This Module',
     'Let the person that requested this module from you know that you are unable to complete it.',
-    info,
+    {{send_invitation|safe}},
     'I cannot answer {{task.title|escapejs}}.',
     {
       user_id: user,
-      project: info.project_id,
+      project: {{task.project.id}},
       into_task_editorship: {{task.id}}
     });
   return false;

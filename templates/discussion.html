@@ -69,7 +69,7 @@
         <div class="panel-body">
           <p>
             Who can see this conversation? <span class="fillin-project_name"></span> members<span class="fillin-guests"></span>.
-            <a href="">Invite Guest</a>
+            <a id="invite-guest" href="javascript:invite_user_to_discussion()">Invite Colleague</a>
           </p>
         </div>
       </div>
@@ -132,17 +132,19 @@
 </div>
 
 <script>
-var discussion_id = null;
+var discussion_info = null;
+
 function display_discussion(discussion, is_page_load) {
-  discussion_id = discussion.discussion_id;
+  discussion_info = discussion.discussion;
 
   // show the discussion
   $('#discussion').show();
   $('#discussion h2').text("Team conversation");
   $('#discussion .active-discussion-only').show();
+  $('#discussion #invite-guest').toggle(discussion.discussion.can_invite);
 
   // fill in the context block on the right side
-  $('#discussion .fillin-project_name').text(discussion.project_name);
+  $('#discussion .fillin-project_name').text(discussion_info.project.title);
   if (discussion.guests.length > 0 || 1) {
     // show guest count & names
     var text = " and " + discussion.guests.length + " guest";
@@ -212,7 +214,7 @@ function submit_comment() {
     url: "{% url 'submit-comment' %}",
     method: "POST",
     data: {
-      discussion: discussion_id,
+      discussion: discussion_info.id,
       text: $('#discussion .comment-input form textarea').val()
     },
     complete: function() {
@@ -223,5 +225,20 @@ function submit_comment() {
       render_comment(c)
     }
   })
+}
+
+function invite_user_to_discussion() {
+  show_invite_modal(
+    'Invite to Discussion',
+    'Invite a colleague to join the discussion. They will be a guest of this discussion if they are not added to the project team.',
+    {{send_invitation|safe}},
+    'Please join our discussion about ' + discussion_info.title + ' in ' + discussion_info.project.title + '.',
+    {
+      project: discussion_info.project.id,
+      into_discussion: discussion_info.id
+    }
+  );
+
+  return false;
 }
 </script>

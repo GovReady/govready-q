@@ -71,13 +71,12 @@ def next_question(request, taskid, taskslug, intropage=None):
     task = get_object_or_404(Task, id=taskid)
 
     # Does user have read privs?
-    if task.editor != request.user and not ProjectMembership.objects.filter(project=task.project, user=request.user).exists():
+    if not task.has_read_priv(request.user):
         return HttpResponseForbidden()
 
     # Does user have write privs? The user is either the editor or an admin of
     # the project that the task belongs too.
-    write_priv = (task.editor == request.user) \
-        or ProjectMembership.objects.filter(project=task.project, user=request.user, is_admin=True).exists()
+    write_priv = task.has_write_priv(request.user)
 
     # Redirect if slug is not canonical.
     if request.path != task.get_absolute_url() + (intropage or ""):
@@ -249,6 +248,14 @@ def send_invitation(request):
         if not request.POST['user_id'] and not request.POST['user_email']:
             raise ValueError("Select a team member or enter an email address.")
 
+        # if a discussion is given, validate that the requesting user is a participant
+        # able to invite guests
+        into_discussion = None
+        if "into_discussion" in request.POST:
+            into_discussion = get_object_or_404(Discussion, id=request.POST["into_discussion"])
+            if not into_discussion.can_invite_guests(request.user):
+                return HttpResponseForbidden()
+
         inv = Invitation.objects.create(
             # who is sending the invitation?
             from_user=request.user,
@@ -263,7 +270,7 @@ def send_invitation(request):
             into_project=(request.POST.get("add_to_team", "") != "") and Project.objects.filter(id=request.POST["project"], members__user=request.user, members__is_admin=True).exists(),
             into_new_task_module_id=request.POST.get("into_new_task_module_id"),
             into_task_editorship=Task.objects.get(id=request.POST["into_task_editorship"], editor=request.user) if request.POST.get("into_task_editorship") else None,
-            into_discussion=None, # TODO + validation request.POST.get("into_discussion"),
+            into_discussion=into_discussion,
 
             # who is the recipient of the invitation?
             to_user=User.objects.get(id=request.POST["user_id"]) if request.POST.get("user_id") else None,
@@ -299,29 +306,36 @@ def cancel_invitation(request):
 
 @login_required
 def start_a_discussion(request):
-    # This view function is expected to be idempotent. It is called even when a
-    # discussion exists in order to fetch its content.
+    # This view function creates a discussion, or returns an existing one.
 
-    # Get the task - validate permission to start a discussion.
+    # Validate and retreive the Task and question_id that the discussion
+    # is to be attached to.
     task = get_object_or_404(Task, id=request.POST['task'])
-    if task.editor != request.user:
-        # If not the editor, then any project team member may open discussion.
-        if not ProjectMembership.objects.filter(project=task.project, user=request.user).exists():
-            return JsonResponse({ "status": "error", "message": "You do not have permission!" })
-
-    # Get the TaskQuestion for this task. It may not exist yet.
     m = task.load_module()
     q = m.questions_by_id[request.POST['question']] # validate question ID is ok
-    tq, isnew = TaskQuestion.objects.get_or_create(
-        task=task,
-        question_id=q.id
-        )
 
-    # Get the discussion.
-    discussion, is_new = Discussion.objects.get_or_create(
-        project=task.project,
-        for_question=tq,
-    )
+    # The user may not have permission to create - only to get.
+
+    tq_filter = { "task": task, "question_id": q.id }
+    tq = TaskQuestion.objects.filter(**tq_filter).first()
+    if not tq:
+        # Validate user can create discussion. Any user who can read the task can start
+        # a discussion.
+        if not task.has_read_priv(request.user):
+            return JsonResponse({ "status": "error", "message": "You do not have permission!" })
+
+        # Get the TaskQuestion for this task. It may not exist yet.
+        tq, isnew = TaskQuestion.objects.get_or_create(**tq_filter)
+
+    d_filter = { "project": task.project, "for_question": tq }
+    discussion = Discussion.objects.filter(**d_filter).first()
+    if not discussion:
+        # Validate user can create discussion.
+        if not task.has_read_priv(request.user):
+            return JsonResponse({ "status": "error", "message": "You do not have permission!" })
+
+        # Get the Discussion.
+        discussion = Discussion.objects.get_or_create(**d_filter)[0]
 
     # Build the event history.
     events = []
@@ -332,8 +346,15 @@ def start_a_discussion(request):
     # Get the initial state of the discussion to populate the HTML.
     return JsonResponse({
         "status": "ok",
-        "discussion_id": discussion.id,
-        "project_name": discussion.project.title,
+        "discussion": {
+            "id": discussion.id,
+            "title": discussion.title,
+            "project": {
+                "id": discussion.project.id,
+                "title": discussion.project.title,
+            },
+            "can_invite": discussion.can_invite_guests(request.user),
+        },
         "guests": [ user.render_context_dict() for user in discussion.external_participants.all() ],
         "events": events,
     })
