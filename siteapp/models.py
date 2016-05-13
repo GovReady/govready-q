@@ -10,14 +10,19 @@ class User(UserBase):
     def __str__(self):
         from guidedmodules.models import TaskAnswer
         name = TaskAnswer.objects.filter(
-            question__task__editor=self,
-            question__task__project=None,
-            question__task__module_id="account_settings",
+            question__task=self.get_settings_task(),
             question__question_id="name").first()
         if name:
             return name.value #+ " <" + self.email + ">"
         else:
             return self.email
+
+    def get_settings_task(self):
+        from guidedmodules.models import Task
+        return Task.objects.filter(
+            editor=self,
+            project=None,
+            module_id="account_settings").first()
 
     def render_context_dict(self):
         return {
