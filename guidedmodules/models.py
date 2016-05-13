@@ -88,7 +88,11 @@ class Task(models.Model):
             if m.questions_by_id[q.question_id].type == "module":
                 if a.answered_by_task_id:
                     answered[q.question_id] = a.answered_by_task
-            else:
+            
+            # Some answers store None to reflect that an answer has been
+            # explicitly cleared. Don't pull those into the returned
+            # dict -- they're not answers for the purposes of a Module.
+            elif a.value:
                 answered[q.question_id] = a.value
 
         return answered
