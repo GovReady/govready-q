@@ -7,6 +7,12 @@ long_description: >
   This module will help you document how well your
   organization is doing with policies.
 editor_requirements: Person familiar with organization policies and procedures
+introduction:
+  format: markdown
+  template: |
+    Hi,
+
+    This is a module.
 questions:
 
   - id: pol_q1

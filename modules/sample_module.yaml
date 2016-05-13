@@ -1,5 +1,11 @@
 id: sample_module
 title: Animal Compliance
+introduction:
+  format: markdown
+  template: |
+    Welcome to the Animal Compliance module. This module will help you determine if your animal has an authority to operate.
+
+    This module should take you two minutes.
 questions:
   - id: q1
     title: Your Favorite Animal

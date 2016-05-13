@@ -37,6 +37,12 @@ class Module(object):
             self.questions.append(q)
             self.questions_by_id[q.id] = q
 
+        # Load the introduction template.
+        self.introduction = {
+            "format": spec["introduction"].get("format", "text"),
+            "template": spec["introduction"]["template"]
+        }
+
         # Load the output template.
         self.output = {
             "format": spec["output"].get("format", "text"),
@@ -149,16 +155,22 @@ class Module(object):
             if v:
                 answers[q.id] = v
 
-    def render_output(self, answers):
-        # Now that all questions have been answered, generate this
-        # module's output.
+    def render_content(self, content, context):
         from jinja2 import Template
-        template = Template(self.output["template"])
-        output = template.render(answers)
-        if self.output["format"] == "markdown":
+        template = Template(content["template"])
+        output = template.render(context)
+        if content["format"] == "markdown":
             import CommonMark
             output = CommonMark.commonmark(output)
         return output
+
+    def render_introduction(self):
+        return self.render_content(self.introduction, {})
+
+    def render_output(self, answers):
+        # Now that all questions have been answered, generate this
+        # module's output.
+        return self.render_content(self.output, answers)
 
 class Question(object):
     def __init__(self, spec):

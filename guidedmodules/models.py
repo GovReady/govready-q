@@ -93,6 +93,9 @@ class Task(models.Model):
                 answered[q.question_id] = a.value
         return answered
 
+    def is_started(self):
+        return self.questions.exists()
+
     def is_finished(self):
         return self.load_module().next_question(self.get_answers_dict()) == None
 

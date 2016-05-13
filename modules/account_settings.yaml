@@ -1,6 +1,12 @@
 id: account_settings
 title: GovReady Account Settings
 type: account
+introduction:
+  format: markdown
+  template: |
+    Hi,
+
+    This is a module.
 questions:
   - id: name
     title: Your Name

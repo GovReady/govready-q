@@ -1,5 +1,11 @@
 id: sample_two
 title: Animal Habitat
+introduction:
+  format: markdown
+  template: |
+    Hi,
+
+    This is a module.
 questions:
 
   - id: q1

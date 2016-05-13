@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{task.title}}
+{% endblock %}
+
+{% block body %}
+
+<style>
+	.well p:last-child {
+		margin: 0;
+	}
+</style>
+
+{% include "task-header.html" with col_width="4" col_active="start" %}
+
+<div style="margin-top: 45px" class="row">
+	<div class="col-sm-push-2 col-sm-8">
+		<div class="well well-lg">
+			{{introduction|safe}}
+		</div>
+
+		{% if task.is_started %}
+		<p>This module has already been started.</p>
+		{% endif %}
+
+		<a href="{{task.get_absolute_url}}" class="btn btn-primary">
+			{% if task.is_finished %}
+				Review answers &raquo;
+			{% elif task.is_started %}
+				Continue &raquo;
+			{% else %}
+				Let&rsquo;s get started &raquo;
+			{% endif %}
+		</a>
+	</div>
+</div>
+
+{% endblock %}

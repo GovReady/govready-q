@@ -43,7 +43,7 @@ Home
     {% if item.project %}<h4>Modules you are editing</h4>{% endif %}
     {% if item.tasks|length %}
       {% for task in item.tasks %}
-        <p><a href="{{task.get_absolute_url}}">{{task.title}}</a> ({{task.get_status_display}})</p>
+        <p><a href="{{task.get_absolute_url}}{% if not task.is_finished %}/start{% endif %}">{{task.title}}</a> ({{task.get_status_display}})</p>
       {% endfor %}
     {% endif %}
     {% if item.tasks|length == 0 %}

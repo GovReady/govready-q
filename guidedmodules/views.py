@@ -63,10 +63,10 @@ def new_task(request):
         project=project,
         module_id=m.id,
         title=m.title)
-    return HttpResponseRedirect(task.get_absolute_url())
+    return HttpResponseRedirect(task.get_absolute_url() + "/start")
 
 @login_required
-def next_question(request, taskid, taskslug):
+def next_question(request, taskid, taskslug, intropage=None):
     # Get the Task.
     task = get_object_or_404(Task, id=taskid)
 
@@ -80,7 +80,7 @@ def next_question(request, taskid, taskslug):
         or ProjectMembership.objects.filter(project=task.project, user=request.user, is_admin=True).exists()
 
     # Redirect if slug is not canonical.
-    if request.path != task.get_absolute_url():
+    if request.path != task.get_absolute_url() + (intropage or ""):
         return HttpResponseRedirect(task.get_absolute_url())
 
     # Load the questions module.
@@ -91,6 +91,9 @@ def next_question(request, taskid, taskslug):
 
     # Process form data.
     if request.method == "POST":
+        if intropage:
+            return HttpResponseForbidden()
+
         # does user have write privs?
         if not write_priv:
             return HttpResponseForbidden()
@@ -196,7 +199,13 @@ def next_question(request, taskid, taskslug):
         "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)) if task.project else None,
     }
 
-    if not q:
+    if intropage:
+        context.update({
+            "introduction": m.render_introduction(),
+        })
+        return render(request, "module-intro.html", context)
+
+    elif not q:
         # There is no next question - the module is complete.
 
         # Set imputed answers
