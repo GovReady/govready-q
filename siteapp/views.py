@@ -34,7 +34,7 @@ def login_view(request, invitation=None):
 
         redirect_to = settings.LOGIN_REDIRECT_URL
         if invitation:
-            redirect_to = invitation.get_acceptance_url()
+            redirect_to = invitation.get_acceptance_url() + "?auth=1"
         elif request.POST.get("next"):
             # TODO: Need to validate next?
             redirect_to = request.POST.get("next")

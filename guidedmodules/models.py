@@ -445,15 +445,32 @@ class Invitation(models.Model):
         matched_user = self.to_user \
             or User.objects.filter(email=self.to_email).exclude(id=self.from_user.id).first()
         
-        if self.to_user and request.user == self.to_user:
+        if request.user.is_authenticated() and request.GET.get("auth") == "1":
+            # The user is logged in and the "auth" flag is set, so let the user
+            # continue under this account. This code path occurs when the user
+            # first reaches this view but is not authenticated as the user that
+            # was invited. We then send them to create an account or log in.
+            # The "next" URL on that login screen adds "auth=1", so that when
+            # we come back here, we just accept whatever account they created
+            # or logged in to. The meaning of "auth" is the User's desire to
+            # continue with their existing credentials. We don't go through
+            # this path on the first run because the user may not want to
+            # accept the invitation under an account they happened to be logged
+            # in as.
+            pass
+
+        elif matched_user and request.user == matched_user:
             # If the invitation was to a user account, and the user is already logged
-            # in to it, then we're all set.
+            # in to it, then we're all set. Or if the invitation was sent to an email
+            # address already associated with a User account and the user is logged
+            # into that account, then we're all set.
             pass
 
         elif matched_user:
             # If the invitation was to a user account or to an email address that has
-            # an account, the user on this request has just demonstrated ownership of
-            # that user's email address, so we can log them in immediately.
+            # an account, but the user wasn't already logged in under that account,
+            # then since the user on this request has just demonstrated ownership of
+            # that user's email address, we can log them in immediately.
             matched_user = authenticate(user_object=matched_user)
             if not matched_user.is_active:
                 messages.add_message(request, messages.ERROR, 'Your account has been deactivated.')
@@ -464,12 +481,6 @@ class Invitation(models.Model):
                 logout(request) # setting a message after logout but before login should keep the message in the session
                 messages.add_message(request, messages.INFO, 'You have been logged in as %s.' % matched_user)
             login(request, matched_user)
-
-        elif request.user.is_authenticated() and request.user != self.from_user:
-            # The invitation was sent to an email address that does not have a matching
-            # User account, but the user is already logged into an account --- continue
-            # with that account.
-            pass
 
         else:
             # The invitation was sent to an email address that does not have a matching
