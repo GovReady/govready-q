@@ -165,7 +165,8 @@ class Module(object):
                 else:
                     answers[q.id] = RenderedAnswer(q, answers[q.id])
 
-    def render_content(self, content, context):
+    @staticmethod
+    def render_content(content, context):
         from jinja2 import Template
         template = Template(content["template"])
         output = template.render(context)
@@ -200,11 +201,13 @@ class Question(object):
         return "<Question %s '%s'>" % (self.id, self.title)
 
     def render_prompt(self, answers):
-        from jinja2 import Template
-        import CommonMark
-        output = Template(self.prompt).render(answers)
-        output = CommonMark.commonmark(output)
-        return output
+        return Module.render_content(
+            {
+                "template": self.prompt,
+                "format": "markdown",
+            },
+            answers
+        )
 
     def impute_answer(self, answers):
         # Check if any of the impute conditions are met based on
