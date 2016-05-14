@@ -63,6 +63,8 @@ output:
   - name: Document
     format: markdown
     template: |
+      # Animal Compliance for {{project}}
+
       Hello! This is the output of the module based on the Markdown template in the YAML definition.
 
       #### Animal:

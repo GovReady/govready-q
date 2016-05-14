@@ -150,11 +150,22 @@ class Task(models.Model):
     def get_output(self, answers=None):
         if not answers:
             answers = self.get_answers_dict()
+        
         m = self.load_module()
         m.add_imputed_answers(answers)
         def module_loader(task):
             return (task.load_module(), task.get_answers_dict())
         m.prerender_answers(answers, module_loader)
+
+        # add some default variables, but if there is a name
+        # conflict defer to the module
+        extra_default_variables = {
+            "project": self.project.title,
+        }
+        for k, v in extra_default_variables.items():
+            if k not in answers:
+                answers[k] = v
+        
         return m.render_output(answers)
 
     def is_answer_to_unique(self):
