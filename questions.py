@@ -43,11 +43,14 @@ class Module(object):
             "template": spec["introduction"]["template"]
         }
 
-        # Load the output template.
-        self.output = {
-            "format": spec["output"].get("format", "text"),
-            "template": spec["output"]["template"]
-        }
+        # Load the output templates.
+        self.output = [
+            {
+                "name": d.get("name", "Document"),
+                "format": d.get("format", "text"),
+                "template": d["template"]
+            } for d in spec.get("output", [])
+        ]
 
     def __repr__(self):
         return "<Module '%s'>" % (self.title,)
@@ -84,12 +87,14 @@ class Module(object):
 
         from jinja2 import Environment, meta
         env = Environment()
-        ast = env.parse(self.output['template'])
-        needs_answer = [
-            self.questions_by_id[qid]
-            for qid in meta.find_undeclared_variables(ast)
-            if qid in self.questions_by_id
-            ]
+        needs_answer = [ ]
+        for d in self.output:
+            ast = env.parse(d['template'])
+            needs_answer.extend([
+                self.questions_by_id[qid]
+                for qid in meta.find_undeclared_variables(ast)
+                if qid in self.questions_by_id
+            ])
 
         # Process the questions.
 
@@ -180,8 +185,14 @@ class Module(object):
 
     def render_output(self, answers):
         # Now that all questions have been answered, generate this
-        # module's output.
-        return self.render_content(self.output, answers)
+        # module's output. The output is a set of documents.
+        return [
+            {
+                "name": d["name"],
+                "html": self.render_content(d, answers)
+            }
+            for d in self.output
+        ]
 
 class Question(object):
     def __init__(self, spec):

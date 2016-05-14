@@ -44,20 +44,20 @@ questions:
         text: Skype
         help: We like Skype too.
 output:
-  format: markdown
-  template: |
-    Here are your account settings:
+  - format: markdown
+    template: |
+      Here are your account settings:
 
-    ### About You
+      ### About You
 
-    Name: {{name}}
+      Name: {{name}}
 
-    Title: {{title}}
+      Title: {{title}}
 
-    Role: {{role}}
+      Role: {{role}}
 
-    ---
+      ---
 
-    ### Applications
+      ### Applications
 
-    Chat: {{chat}}
+      Chat: {{chat}}

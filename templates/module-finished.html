@@ -12,11 +12,12 @@
   border-bottom: 1px solid #ddd;
   padding: 30px 15px;
 }
-#result {
+
+.output-document {
   background-color: #FBF6F4;
   color: black;
 }
-#finished-tabs .active a[href='#result'] {
+#finished-tabs .active.for-output-document a {
   background-color: #FBF6F4;
 }
 </style>
@@ -40,15 +41,19 @@
 
 <div>
   <ul id="finished-tabs" class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#result" aria-controls="result" role="tab" data-toggle="tab">Document</a></li>
+    {% for document in output %}
+      <li role="presentation" class="{% if forloop.first %}active{% endif %} for-output-document"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.name}}</a></li>
+    {% endfor %}
     <li role="presentation"><a href="#questions" aria-controls="questions" role="tab" data-toggle="tab">Change Answers</a></li>
   </ul>
 
   <!-- Tab panes -->
   <div id="finished-tabs-panels" class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="result">
-        {{output|safe}}
-    </div>
+    {% for document in output %}
+      <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %} output-document" id="document-{{forloop.counter}}">
+          {{document.html|safe}}
+      </div>
+    {% endfor %}
 
     <div role="tabpanel" class="tab-pane" id="questions">
         <p>Click on any question to change your answer.</p>

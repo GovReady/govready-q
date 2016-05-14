@@ -61,10 +61,10 @@ questions:
         value: don't know
 
 output:
-  format: markdown
-  template: |
-    Commonly found policies exist?: {{pol_q1}}
+  - format: markdown
+    template: |
+      Commonly found policies exist?: {{pol_q1}}
 
-    Less commonly found  policies exist?: {{pol_q3}}
+      Less commonly found  policies exist?: {{pol_q3}}
 
-    Polices and procedures are kept and managed via: {{pol_q2}} ({{pol_q2.key}})
+      Polices and procedures are kept and managed via: {{pol_q2}} ({{pol_q2.key}})

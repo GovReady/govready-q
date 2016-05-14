@@ -203,17 +203,9 @@ def next_question(request, taskid, taskslug, intropage=None):
 
     elif not q:
         # There is no next question - the module is complete.
-
-        # Set imputed answers
-        m.add_imputed_answers(answered)
-        def module_loader(task):
-            return (task.load_module(), task.get_answers_dict())
-        m.prerender_answers(answered, module_loader)
-
-        # Render.
         context.update({
             "m": m,
-            "output": m.render_output(answered),
+            "output": task.get_output(answered),
             "all_questions": filter(lambda q : not q.impute_answer(answered), m.questions),
         })
         return render(request, "module-finished.html", context)

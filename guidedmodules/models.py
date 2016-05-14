@@ -147,8 +147,15 @@ class Task(models.Model):
         return self.invitations_to_take_over.filter(accepted_user=user).order_by('-created').first() \
             or self.invitations_received.filter(accepted_user=user).order_by('-created').first()
 
-    def get_output(self):
-        return self.load_module().render_output(self.get_answers_dict())
+    def get_output(self, answers=None):
+        if not answers:
+            answers = self.get_answers_dict()
+        m = self.load_module()
+        m.add_imputed_answers(answers)
+        def module_loader(task):
+            return (task.load_module(), task.get_answers_dict())
+        m.prerender_answers(answers, module_loader)
+        return m.render_output(answers)
 
     def is_answer_to_unique(self):
         # Is this Task a submodule of exactly one other Task?

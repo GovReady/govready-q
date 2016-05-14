@@ -60,19 +60,30 @@ questions:
     module-id: sample_two
       
 output:
-  format: markdown
-  template: |
-    Hello! This is the output of the module based on the Markdown template in the YAML definition.
+  - name: Document
+    format: markdown
+    template: |
+      Hello! This is the output of the module based on the Markdown template in the YAML definition.
 
-    #### Animal:
-    {{q1}} {% if q2 %} ( {{q3}} ) {% endif %}
+      #### Animal:
+      {{q1}} {% if q2 %} ( {{q3}} ) {% endif %}
 
-    {{qc}}
+      {{qc}}
 
-    #### Habitat:
+      #### Habitat:
 
-    Lives on land: {{q4.q1}}
+      Lives on land: {{q4.q1}}
 
-    Lives in the sea: {{q4.q2}}
+      Lives in the sea: {{q4.q2}}
 
-    _Have a nice day!_
+      _Have a nice day!_
+  - name: Advanced Document
+    format: markdown
+    template: |
+      {{q1}} {% if q2 %} ( {{q3}} ) {% endif %}
+      
+      {{qc}}
+      
+      Land: {{q4.q1}}
+
+      Sea: {{q4.q2}}

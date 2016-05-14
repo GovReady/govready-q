@@ -19,8 +19,8 @@ questions:
     type: yesno
 
 output:
-  format: markdown
-  template: |
-    Lives on land: {{q1}}
+  - format: markdown
+    template: |
+      Lives on land: {{q1}}
 
-    Lives in the sea: {{q2}}
+      Lives in the sea: {{q2}}
