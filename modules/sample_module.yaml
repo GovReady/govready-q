@@ -94,4 +94,8 @@ output:
   - name: HTML
     format: html
     template: |
-      <b>{{q1}}</b>
+      <ul>
+      {% for item in qc %}
+        <li>{{item}} <i>{{item.key}}</i></li>
+      {% endfor %}
+      </ul>

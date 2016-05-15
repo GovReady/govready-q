@@ -383,6 +383,24 @@ class RenderedAnswer:
             return self.answer == "yes"
         return bool(self.answer)
 
+    def __iter__(self):
+        if self.question.type == "multiple-choice":
+            # Iterate by creating a RenderedAnswer for each choice key
+            # that make sup the value of this question, but pretending
+            # each was a single-choice with that value (rather than an
+            # array as it is for a multiple-choice).
+            return (
+                RenderedAnswer(Question({
+                    "id": self.question.id,
+                    "title": self.question.title,
+                    "prompt": self.question.prompt,
+                    "type": "choice",
+                    "choices": self.question.choices,
+                    }),
+                ans, self.escapefunc)
+                for ans in self.answer)
+        raise TypeError("Answer of type %s is not iterable." % self.question.type)
+
     @property # if not @property, it renders as "bound method" by jinja template
     def key(self):
         if self.question.type in ("yesno", "choice", "multiple-choice"):
