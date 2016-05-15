@@ -5,7 +5,7 @@ from django.conf import settings
 
 from jsonfield import JSONField
 
-from questions import Module
+from questions import Module, ModuleAnswers
 
 class Project(models.Model):
     title = models.CharField(max_length=256, help_text="The title of this Project.")
@@ -79,7 +79,7 @@ class Task(models.Model):
         from questions import Module
         return Module.load(self.module_id)
 
-    def get_answers_dict(self):
+    def get_answers(self):
         m = self.load_module()
         answered = { }
         for q in self.questions.all():
@@ -93,7 +93,7 @@ class Task(models.Model):
             # differently --- and it is a Task instance.
             if m.questions_by_id[q.question_id].type == "module":
                 if a.answered_by_task_id:
-                    answered[q.question_id] = a.answered_by_task
+                    answered[q.question_id] = a.answered_by_task.get_answers()
             
             # Some answers store None to reflect that an answer has been
             # explicitly cleared. Don't pull those into the returned
@@ -101,7 +101,7 @@ class Task(models.Model):
             elif a.value:
                 answered[q.question_id] = a.value
 
-        return answered
+        return ModuleAnswers(m, answered)
 
     def can_transfer_owner(self):
         return self.project is not None
@@ -110,7 +110,7 @@ class Task(models.Model):
         return self.questions.exists()
 
     def is_finished(self):
-        return self.load_module().next_question(self.get_answers_dict()) == None
+        return self.load_module().next_question(self.get_answers()) == None
 
     def get_status_display(self):
         # Is this task done?
@@ -149,24 +149,18 @@ class Task(models.Model):
 
     def get_output(self, answers=None):
         if not answers:
-            answers = self.get_answers_dict()
-        
-        m = self.load_module()
-        m.add_imputed_answers(answers)
-        def module_loader(task):
-            return (task.load_module(), task.get_answers_dict())
-        m.prerender_answers(answers, module_loader)
+            answers = self.get_answers()
 
         # add some default variables, but if there is a name
         # conflict defer to the module
-        extra_default_variables = {
+        context = {
             "project": self.project.title,
         }
-        for k, v in extra_default_variables.items():
-            if k not in answers:
-                answers[k] = v
         
-        return m.render_output(answers)
+        answers.add_imputed_answers()
+        context.update(answers.prerender())
+
+        return answers.module.render_output(context)
 
     def is_answer_to_unique(self):
         # Is this Task a submodule of exactly one other Task?

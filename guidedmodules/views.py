@@ -86,7 +86,7 @@ def next_question(request, taskid, taskslug, intropage=None):
     m = task.load_module()
 
     # Load the answers the user has saved so far.
-    answered = task.get_answers_dict()
+    answered = task.get_answers()
 
     # Process form data.
     if request.method == "POST":
@@ -153,7 +153,7 @@ def next_question(request, taskid, taskslug, intropage=None):
                 t = Task.objects.get(project=task.project, id=int(value))
 
             answered_by_task = t
-            value = (t.get_answers_dict() if t else None)
+            value = None
 
         # Create a new TaskAnswer if the answer is actually changing.
         current_answer = question.get_answer()
@@ -219,7 +219,7 @@ def next_question(request, taskid, taskslug, intropage=None):
             "DEBUG": settings.DEBUG,
             "module": m,
             "q": q,
-            "prompt": q.render_prompt(task.get_answers_dict()),
+            "prompt": q.render_prompt(task.get_answers()),
             "history": taskq.get_history() if taskq else None,
             "answer": answer,
             "discussion": Discussion.objects.filter(for_question=taskq).first(),

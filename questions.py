@@ -106,7 +106,7 @@ class Module(object):
             # Is q answered yet? Yes if the user has provided
             # an answer, or if one of its skip conditions is
             # met.
-            return q.id in questions_answered \
+            return q.id in questions_answered.answers \
               or q.impute_answer(questions_answered)
 
         while len(needs_answer) > 0:
@@ -159,17 +159,7 @@ class Module(object):
         for q in self.questions:
             v = q.impute_answer(answers)
             if v:
-                answers[q.id] = v
-
-    def prerender_answers(self, answers, module_loader):
-        for q in self.questions:
-            if q.id in answers:
-                if q.type == "module":
-                    sub_module, sub_answers = module_loader(answers[q.id])
-                    sub_module.prerender_answers(sub_answers, module_loader)
-                    answers[q.id] = sub_answers
-                else:
-                    answers[q.id] = RenderedAnswer(q, answers[q.id])
+                answers.answers[q.id] = v
 
     @staticmethod
     def render_content(content, context):
@@ -219,7 +209,7 @@ class Question(object):
                 "template": self.prompt,
                 "format": "markdown",
             },
-            answers
+            answers.answers
         )
 
     def impute_answer(self, answers):
@@ -231,7 +221,7 @@ class Question(object):
         env = SandboxedEnvironment()
         for condition, value in self.impute:
             condition_func = env.compile_expression(condition)
-            if condition_func(answers):
+            if condition_func(answers.answers):
                 # The condition is met. Return the imputed value.
                 return value
         return None
@@ -290,6 +280,26 @@ class Question(object):
             if choice["key"] == key:
                 return choice
         raise KeyError(repr(key) + " is not a choice")
+
+class ModuleAnswers:
+    def __init__(self, module, answers):
+        self.module = module
+        self.answers = answers
+
+    def add_imputed_answers(self):
+        self.module.add_imputed_answers(self)
+
+    def prerender(self):
+        ret = { }
+        for qid, value in self.answers.items():
+            if qid not in self.module.questions_by_id: continue
+            q = self.module.questions_by_id[qid]
+            if q.type == "module":
+                ret[q.id] = value.prerender()
+            else:
+                ret[q.id] = RenderedAnswer(q, value)
+        return ret
+
 
 class RenderedAnswer:
     def __init__(self, question, answer):
