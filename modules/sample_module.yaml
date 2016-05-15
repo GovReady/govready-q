@@ -99,3 +99,8 @@ output:
         <li>{{item}} <i>{{item.key}}</i></li>
       {% endfor %}
       </ul>
+  - name: Data
+    format: yaml
+    template:
+      - name: "{{q1}}"
+        value: "{{q2}}"

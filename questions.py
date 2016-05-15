@@ -162,7 +162,7 @@ class Module(object):
                 answers.answers[q.id] = v
 
     @staticmethod
-    def render_content(content, answers, additional_context={}):
+    def render_content(content, answers, output_format, additional_context={}):
         # Renders content (which is a dict with keys "format" and "template")
         # into HTML, using the ModuleAnswers in answers to provide the template
         # context.
@@ -179,8 +179,10 @@ class Module(object):
                 import html
                 return html.escape(s)
             def renderer(output):
-                # It's already HTML.
-                return output
+                if output_format == "html":
+                    # It's already HTML.
+                    return output
+                raise ValueError("Can't render HTML template as %s." % output_format)
 
         elif content["format"] == "markdown":
             def escapefunc(s):
@@ -188,18 +190,68 @@ class Module(object):
                 escape_chars = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
                 return "".join(("\\" if c in escape_chars else "") + c for c in s)
             def renderer(output):
-                # Convert CommonMark to HTML.
-                import CommonMark
-                return CommonMark.commonmark(output)
+                if output_format == "html":
+                    # Convert CommonMark to HTML.
+                    import CommonMark
+                    return CommonMark.commonmark(output)
+                raise ValueError("Can't render Markdown template as %s." % output_format)
 
         elif content["format"] == "text":
             def escapefunc(s):
                 # Don't perform any escaping.
                 return s
             def renderer(output):
-                # HTML-escape the final output and wrap it in a <pre> tag.
+                if output_format == "text":
+                    return output
+                if output_format == "html":
+                    # HTML-escape the final output and wrap it in a <pre> tag.
+                    import html
+                    return "<pre>" + html.escape(output) + "</pre>"
+                raise ValueError("Can't render text template as %s." % output_format)
+
+        elif content["format"] in ("json", "yaml"):
+            # Ok this is totally different. The template content
+            # isn't a string -- it's a Python data structure. Replace
+            # all of the strings in the Python data structure using
+            # render_content.
+            from collections import OrderedDict
+            def walk(value):
+                if isinstance(value, str):
+                    return Module.render_content(
+                        {
+                            "format": "text",
+                            "template": value
+                        },
+                        answers,
+                        "text",
+                        additional_context,
+                    )
+                elif isinstance(value, list):
+                    return [walk(i) for i in value]
+                elif isinstance(value, dict):
+                    return OrderedDict([ (k, walk(v)) for k, v in value.items() ])
+                else:
+                    # Leave unchanged.
+                    return value
+
+            # Render strings within the data structure.
+            value = walk(content["template"])
+
+            # Render to JSON or YAML.
+            if content["format"] == "json":
+                import json
+                output = json.dumps(value, indent=True)
+            elif content["format"] == "yaml":
+                import rtyaml
+                output = rtyaml.dump(value)
+
+            # Convert to HTML.
+            if output_format == "html":
                 import html
-                return "<pre>" + html.escape(output) + "</pre>"
+                output = "<pre>" + html.escape(output) + "</pre>"
+
+            # Return and skip all of the logic below.
+            return output
 
         else:
             raise ValueError(content["format"])
@@ -224,7 +276,7 @@ class Module(object):
         return output
 
     def render_introduction(self):
-        return self.render_content(self.introduction, ModuleAnswers(self, {}))
+        return self.render_content(self.introduction, ModuleAnswers(self, {}), "html")
 
     def render_output(self, answers, additional_variables):
         # Now that all questions have been answered, generate this
@@ -232,7 +284,7 @@ class Module(object):
         return [
             {
                 "name": d["name"],
-                "html": self.render_content(d, answers, additional_variables)
+                "html": self.render_content(d, answers, "html", additional_variables)
             }
             for d in self.output
         ]
@@ -260,7 +312,8 @@ class Question(object):
                 "template": self.prompt,
                 "format": "markdown",
             },
-            answers
+            answers,
+            "html"
         )
 
     def impute_answer(self, answers):
