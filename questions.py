@@ -174,7 +174,7 @@ class Module(object):
     @staticmethod
     def render_content(content, context):
         from jinja2.sandbox import SandboxedEnvironment
-        env = SandboxedEnvironment()
+        env = SandboxedEnvironment(autoescape=True)
         template = env.from_string(content['template'])
         output = template.render(context)
         if content["format"] == "markdown":
