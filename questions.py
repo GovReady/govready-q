@@ -85,8 +85,9 @@ class Module(object):
 
         # What questions are actually used in the template?
 
-        from jinja2 import Environment, meta
-        env = Environment()
+        from jinja2 import meta
+        from jinja2.sandbox import SandboxedEnvironment
+        env = SandboxedEnvironment()
         needs_answer = [ ]
         for d in self.output:
             ast = env.parse(d['template'])
@@ -172,8 +173,9 @@ class Module(object):
 
     @staticmethod
     def render_content(content, context):
-        from jinja2 import Template
-        template = Template(content["template"])
+        from jinja2.sandbox import SandboxedEnvironment
+        env = SandboxedEnvironment()
+        template = env.from_string(content['template'])
         output = template.render(context)
         if content["format"] == "markdown":
             import CommonMark
@@ -224,8 +226,9 @@ class Question(object):
         # Check if any of the impute conditions are met based on
         # the questions that have been answered so far and return
         # the imputed value.
-        from jinja2 import Environment, meta
-        env = Environment()
+        from jinja2 import meta
+        from jinja2.sandbox import SandboxedEnvironment
+        env = SandboxedEnvironment()
         for condition, value in self.impute:
             condition_func = env.compile_expression(condition)
             if condition_func(answers):
