@@ -162,26 +162,77 @@ class Module(object):
                 answers.answers[q.id] = v
 
     @staticmethod
-    def render_content(content, context):
+    def render_content(content, answers, additional_context={}):
+        # Renders content (which is a dict with keys "format" and "template")
+        # into HTML, using the ModuleAnswers in answers to provide the template
+        # context.
+
+        # Ensure imputed answers are computed.
+        answers.add_imputed_answers()
+
+        if content["format"] == "html":
+            def escapefunc(s):
+                # Ensure that variables are substituted with HTML escapes. We do
+                # the escaping ourself because Jinja2 can't handle escaping for
+                # other formats, and we use the __html__ method on RenderedAnswer
+                # to provide pre-escaped content.
+                import html
+                return html.escape(s)
+            def renderer(output):
+                # It's already HTML.
+                return output
+
+        elif content["format"] == "markdown":
+            def escapefunc(s):
+                # Punctuation can, and unless we know better, must be backslash-escaped.
+                escape_chars = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+                return "".join(("\\" if c in escape_chars else "") + c for c in s)
+            def renderer(output):
+                # Convert CommonMark to HTML.
+                import CommonMark
+                return CommonMark.commonmark(output)
+
+        elif content["format"] == "text":
+            def escapefunc(s):
+                # Don't perform any escaping.
+                return s
+            def renderer(output):
+                # HTML-escape the final output and wrap it in a <pre> tag.
+                import html
+                return "<pre>" + html.escape(output) + "</pre>"
+
+        else:
+            raise ValueError(content["format"])
+
+        # Create an intial context dict.
+        context = dict(additional_context) # clone
+
+        # Add rendered answers to it.
+        context.update(answers.get_template_context(escapefunc))
+
+        # Evaluate the template. Ensure autoescaping is turned on. Even though
+        # we handle it ourselves, we do so using the __html__ method on
+        # RenderedAnswer, which relies on autoescaping logic. This also lets
+        # the template writer disable autoescaping with "|safe".
         from jinja2.sandbox import SandboxedEnvironment
         env = SandboxedEnvironment(autoescape=True)
-        template = env.from_string(content['template'])
+        template = env.from_string(content["template"])
         output = template.render(context)
-        if content["format"] == "markdown":
-            import CommonMark
-            output = CommonMark.commonmark(output)
+
+        # Apply the renderer which turns the template output into HTML.
+        output = renderer(output)
         return output
 
     def render_introduction(self):
-        return self.render_content(self.introduction, {})
+        return self.render_content(self.introduction, ModuleAnswers(self, {}))
 
-    def render_output(self, answers):
+    def render_output(self, answers, additional_variables):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents.
         return [
             {
                 "name": d["name"],
-                "html": self.render_content(d, answers)
+                "html": self.render_content(d, answers, additional_variables)
             }
             for d in self.output
         ]
@@ -209,7 +260,7 @@ class Question(object):
                 "template": self.prompt,
                 "format": "markdown",
             },
-            answers.answers
+            answers
         )
 
     def impute_answer(self, answers):
@@ -289,25 +340,34 @@ class ModuleAnswers:
     def add_imputed_answers(self):
         self.module.add_imputed_answers(self)
 
-    def prerender(self):
+    def get_template_context(self, escapefunc = lambda x : x):
+        # Replace values with RenderedAnswer instances which take
+        # care of converting raw data values into what we want for
+        # rendering in templates.
         ret = { }
         for qid, value in self.answers.items():
-            if qid not in self.module.questions_by_id: continue
+            if qid not in self.module.questions_by_id:
+                continue
+
             q = self.module.questions_by_id[qid]
             if q.type == "module":
-                ret[q.id] = value.prerender()
+                ret[q.id] = value.get_template_context(escapefunc)
             else:
-                ret[q.id] = RenderedAnswer(q, value)
+                ret[q.id] = RenderedAnswer(q, value, escapefunc)
         return ret
 
 
 class RenderedAnswer:
-    def __init__(self, question, answer):
+    def __init__(self, question, answer, escapefunc):
         self.question = question
         self.answer = answer
+        self.escapefunc = escapefunc
+
+    def __html__(self):
+        # How the template renders a question variable.
+        return self.escapefunc(str(self))
 
     def __str__(self):
-        # How the template renders a question variable.
         if self.question.type == "yesno":
             return "Yes" if self.answer else "No"
         if self.question.type == "choice":

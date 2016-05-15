@@ -70,6 +70,8 @@ output:
       #### Animal:
       {{q1}} ( {{q3}} )
 
+      Read more about them using [a Wikipedia search](https://en.wikipedia.org/w/index.php?search={{q1|urlencode|safe}}).
+
       {{qc}}
 
       #### Habitat:
@@ -79,8 +81,8 @@ output:
       Lives in the sea: {{q4.q2}}
 
       _Have a nice day!_
-  - name: Advanced Document
-    format: markdown
+  - name: Text Document
+    format: text
     template: |
       {{q1}} {% if q2 %} ( {{q3}} ) {% endif %}
       
@@ -89,3 +91,7 @@ output:
       Land: {{q4.q1}}
 
       Sea: {{q4.q2}}
+  - name: HTML
+    format: html
+    template: |
+      <b>{{q1}}</b>

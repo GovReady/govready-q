@@ -150,17 +150,9 @@ class Task(models.Model):
     def get_output(self, answers=None):
         if not answers:
             answers = self.get_answers()
-
-        # add some default variables, but if there is a name
-        # conflict defer to the module
-        context = {
+        return answers.module.render_output(answers, {
             "project": self.project.title,
-        }
-        
-        answers.add_imputed_answers()
-        context.update(answers.prerender())
-
-        return answers.module.render_output(context)
+        })
 
     def is_answer_to_unique(self):
         # Is this Task a submodule of exactly one other Task?
