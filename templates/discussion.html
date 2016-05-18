@@ -287,8 +287,16 @@ function submit_comment() {
     },
     controls: $('#discussion .comment-input form').find('textarea, input, button'),
     success: function(c) {
+      // keep the window scrolled such that the input box stays
+      // in the same place -- i.e., the new comment pushes things
+      // up.
+      var y = $('#discussion .comment-input').offset().top - $(window).scrollTop();
+
       $('#discussion .comment-input form textarea').val('');
       render_comment(c)
+
+      // adjust scroll position
+      $(window).scrollTop($('#discussion .comment-input').offset().top - y);
     }
   })
 }
