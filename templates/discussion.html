@@ -5,6 +5,18 @@
 #discussion .comment-thread {
   margin: 1em 0 1.5em 0;
 }
+
+#discussion .comment.author-is-self.panel {
+  border-color: #ddf;
+}
+#discussion .comment.author-is-self .panel-heading {
+  /* copied from bootstrap theme for panel-info */
+  background-image: -webkit-linear-gradient(#d9edf7 0%, #c4e3f3 100%);
+  background-image: -o-linear-gradient(#d9edf7 0%, #c4e3f3 100%);
+  background-image: linear-gradient(#d9edf7 0%, #c4e3f3 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd9edf7', endColorstr='#ffc4e3f3', GradientType=0);
+}
+
 #discussion .comment .username {
   color: black;
 }
