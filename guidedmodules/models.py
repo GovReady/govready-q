@@ -166,7 +166,7 @@ class Task(models.Model):
         if not answers:
             answers = self.get_answers()
         return answers.module.render_output(answers, {
-            "project": self.project.title,
+            "project": self.project.title if self.project else None,
         })
 
     def is_answer_to_unique(self):
