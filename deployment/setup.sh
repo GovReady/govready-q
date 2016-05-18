@@ -77,6 +77,9 @@ sudo -u site mkdir -p ../public_html/static
 # Install dependencies.
 sudo -u site pip3 install -r requirements.txt
 
+# Fetch other dependencies.
+sudo -u site deployment/fetch-vendor-resources.sh
+
 # Create database / migrate database.
 # TODO: Get rid of this in a real production environment because we should
 # not touch the production database unless someone says so.

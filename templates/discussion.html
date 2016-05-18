@@ -1,3 +1,6 @@
+{% load static %}
+<script src="{% static "vendor/push.js" %}"> </script>
+
 <style>
 #discussion .comment-thread {
   margin: 1em 0 1.5em 0;
@@ -171,7 +174,6 @@ function display_discussion(discussion, is_page_load) {
     }
   });
 
-  // start polling
   discussion_poll();
 }
 
@@ -197,13 +199,38 @@ function discussion_poll() {
         },
         success(res) {
           render_events(res);
-          discussion_poll();
+          show_notification(res);
+          discussion_poll(); // poll again
         }
     })
     },
 
     // poll interval (10s)
     10000);
+}
+
+function show_notification(discussion) {
+  function truncate(string) {
+    if (string.length > 60)
+      string = string.substring(0, 57) + "...";
+    return string;
+  }
+
+  var notification = "";
+  discussion.events.forEach(function(item) {
+    notification += truncate(item.notification_text) + "\n\n";
+  })
+
+  // if there's anything to show, show it
+  if (notification.length > 0)
+    Push.create(discussion.discussion.title, {
+      body: notification,
+      /*icon: {
+          x16: 'images/icon-x16.png',
+          x32: 'images/icon-x32.png'
+      },*/
+      timeout: 5000
+  });
 }
 
 function render_comment(item) {

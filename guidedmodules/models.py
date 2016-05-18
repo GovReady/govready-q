@@ -199,15 +199,17 @@ class TaskQuestion(models.Model):
         # display different text.
         import html
         for i, answer in enumerate(self.answers.order_by('id')):
+            vp = ("answered the question" if i == 0 else "changed the answer")
             history.append({
                 "type": "event",
                 "date": answer.created,
                 "html":
                     ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> " 
                     % html.escape(str(answer.answered_by)))
-                    + ("answered the question." if i == 0 else "changed the answer."),
+                    + vp + ".",
                 "who": answer.answered_by,
                 "who_is_in_text": True,
+                "notification_text": str(answer.answered_by) + " " + vp + "."
             })
 
         # Sort.
@@ -324,6 +326,7 @@ class Comment(models.Model):
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
             "text": self.text,
             "text_rendered": CommonMark.commonmark(self.text),
+            "notification_text": str(self.user) + ": " + self.text
         }
 
 def reldate(date, ref):

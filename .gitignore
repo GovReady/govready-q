@@ -1,2 +1,3 @@
 __pycache__/
 local
+siteapp/static/vendor
