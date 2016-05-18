@@ -1,6 +1,8 @@
 from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 from jsonfield import JSONField
 
@@ -63,6 +65,49 @@ class Project(models.Model):
         # names in the email addresses of the admins of this project.
         return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True)))
 
+    def get_invitation_purpose(self, invitation):
+        into_new_task_module_id = invitation.target_info.get('into_new_task_module_id')
+        if into_new_task_module_id:
+            return ("to edit a new module <%s>" % Module.load(into_new_task_module_id).title) \
+                + (" and to join the project team" if invitation.into_project else "")
+        elif invitation.target_info.get('what') == 'join-team':
+            return "to join this project team"
+        raise ValueError()
+
+    def is_invitation_valid(self, invitation):
+        # Invitations to create a new Task remain valid so long as the
+        # inviting user is a member of the project.
+        return ProjectMembership.objects.filter(project=self, user=invitation.from_user).exists()
+
+    def accept_invitation(self, invitation, add_message):
+        # Create a new Task for the user to begin a module.
+        into_new_task_module_id = invitation.target_info.get('into_new_task_module_id')
+        if into_new_task_module_id:
+            from questions import Module
+            from guidedmodules.models import Task
+            m = Module.load(into_new_task_module_id)
+            task = Task.objects.create(
+                project=self,
+                editor=invitation.accepted_user,
+                module_id=into_new_task_module_id,
+                title=m.title,
+            )
+
+            # update the target to point to the created Task so that
+            # we don't lose track of it - it will be saved into inv
+            # by the caller
+            invitation.target = task
+
+            task.invitation_history.add(invitation)
+        
+        else:
+            raise ValueError()
+
+    def get_invitation_redirect_url(self, invitation):
+        # Just for joining a project. For accepting a task, the target
+        # has been updated to that task.
+        return "/"
+
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", help_text="The Project this is defining membership for.")
     user = models.ForeignKey(User, help_text="The user that is a member of the Project.")
@@ -79,15 +124,12 @@ class Invitation(models.Model):
     from_user = models.ForeignKey(User, related_name="invitations_sent", help_text="The User who sent the invitation.")
     from_project = models.ForeignKey(Project, related_name="invitations_sent", help_text="The Project within which the invitation exists.")
     
-    # about what prompted the invitation
-    prompt_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="invitations_prompted", help_text="The Task that prompted the invitation.")
-    prompt_question_id = models.CharField(max_length=64, blank=True, null=True, help_text="The ID of the question that prompted the invitation.")
-
     # what is the recipient being invited to?
     into_project = models.BooleanField(default=False, help_text="Whether the user being invited is being invited to join from_project.")
-    into_new_task_module_id = models.CharField(max_length=128, blank=True, null=True, help_text="The ID of the module that the recipient is being asked to complete, if any.")
-    into_task_editorship = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="invitations_to_take_over", help_text="The Task that the recipient is being invited to take editorship over, if any.")
-    into_discussion = models.ForeignKey('guidedmodules.Discussion', blank=True, null=True, related_name="invitations", help_text="The Discussion that the recipient is being invited to join, if any.")
+    target_content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    target_object_id = models.PositiveIntegerField()
+    target = GenericForeignKey('target_content_type', 'target_object_id')
+    target_info = JSONField(blank=True, help_text="Additional information about the target of the invitation.")
 
     # who is the recipient of the invitation?
     to_user = models.ForeignKey(User, related_name="invitations_received", blank=True, null=True, help_text="The user who the invitation was sent to, if to an existing user.")
@@ -103,7 +145,6 @@ class Invitation(models.Model):
 
     # what resulted from this invitation?
     accepted_user = models.ForeignKey(User, related_name="invitations_accepted", blank=True, null=True, help_text="The user that accepted the invitation (i.e. if the invitation was by email address and an account was created).")
-    accepted_task = models.ForeignKey('guidedmodules.Task', related_name="invitations_received", blank=True, null=True, help_text="The Task generated by accepting the invitation.")
 
     # random string to generate unique code for recipient
     email_invitation_code = models.CharField(max_length=64, blank=True, help_text="For emails, a unique verification code.")
@@ -112,6 +153,14 @@ class Invitation(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    def __str__(self):
+        # for the admin
+        return "invitation from %s to %s %s on %s" % (
+            self.from_user,
+            self.to_display(),
+            self.purpose(),
+            self.created)
 
     @staticmethod
     def generate_email_invitation_code():
@@ -131,28 +180,12 @@ class Invitation(models.Model):
         return str(self.to_user) if self.to_user else self.to_email
 
     def purpose(self):
-        if self.into_new_task_module_id:
-            return ("to edit a new module <%s>" % Module.load(self.into_new_task_module_id).title) \
-                + (" and to join the project team" if self.into_project else "")
-        elif self.into_task_editorship:
-            return ("to take over editing <%s>" % self.into_task_editorship.title) \
-                + (" and to join the project team" if self.into_project else "")
-        elif self.into_discussion:
-            return ("to join the discussion <%s>" % self.into_discussion.title) \
-                + (" and to join the project team" if self.into_project else "")
-        elif self.into_project:
-            return "to join this project team"
-        else:
-            raise Exception()
+        return self.target.get_invitation_purpose(self)
 
     def get_acceptance_url(self):
         from django.core.urlresolvers import reverse
         return settings.SITE_ROOT_URL \
             + reverse('accept_invitation', kwargs={'code': self.email_invitation_code})
-
-    @property
-    def into_new_task_module_title(self):
-        return Module.load(self.into_new_task_module_id).title
 
     def send(self):
         # Send and mark as sent.
@@ -168,17 +201,22 @@ class Invitation(models.Model):
         Invitation.objects.filter(id=self.id).update(sent_at=timezone.now())
 
     def is_expired(self):
+        # Return true if there is any reason why this invitation cannot be
+        # accepted.
+
+        if self.revoked_at:
+            return True
+
         from datetime import timedelta
-        return self.sent_at and timezone.now() > (self.sent_at + timedelta(days=10))
+        if self.sent_at and timezone.now() > (self.sent_at + timedelta(days=10)):
+            return True
+
+        if not self.target.is_invitation_valid(self):
+            return False
+
+        return False
     is_expired.boolean = True
 
     def get_redirect_url(self):
-        if self.accepted_task:
-            return self.accepted_task.get_absolute_url() + "/start"
-        elif self.into_task_editorship:
-            return self.into_task_editorship.get_absolute_url() + "/start"
-        elif self.into_discussion:
-            return self.into_discussion.for_question.get_absolute_url()
-        else:
-            return "/"
+        return self.target.get_invitation_redirect_url(self)
 

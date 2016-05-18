@@ -19,6 +19,8 @@ class Task(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
+    invitation_history = models.ManyToManyField('siteapp.Invitation', blank=True, help_text="The history of accepted invitations that had this Task as a target.")
+
     class Meta:
         index_together = [
             ('project', 'editor', 'module_id'),
@@ -117,15 +119,28 @@ class Task(models.Model):
             return True
         return False
 
-    def get_active_invitation_to_transfer_editorship(self, user):
-        inv = self.invitations_to_take_over.filter(from_user=user, accepted_at=None).order_by('-created').first()
-        if inv and not inv.is_expired():
-            return inv
-        return None
+    def get_invitation_purpose(self, invitation):
+        if invitation.target_info.get("what") == "editor":
+            return ("to take over editing <%s>" % self.title) \
+                + (" and to join the project team" if invitation.into_project else "")
+        else:
+            return ("to begin editing <%s>" % self.title) \
+                + (" and to join the project team" if invitation.into_project else "")
 
-    def get_source_invitation(self, user):
-        return self.invitations_to_take_over.filter(accepted_user=user).order_by('-created').first() \
-            or self.invitations_received.filter(accepted_user=user).order_by('-created').first()
+    def is_invitation_valid(self, invitation):
+        # Invitation remains valid only if the user that sent it is still
+        # the editor.
+        return self.editor == invitation.from_user
+
+    def accept_invitation(self, invitation, add_message):
+        # Make this user the new editor.
+        self.editor = invitation.accepted_user
+        self.save(update_fields=['editor'])
+        add_message('You are now the editor for module %s.' % self.title)
+        self.invitation_history.add(invitation)
+
+    def get_invitation_redirect_url(self, invitation):
+        return self.get_absolute_url() + "/start"
 
     def get_output(self, answers=None):
         if not answers:
@@ -256,6 +271,29 @@ class Discussion(models.Model):
 
     def can_invite_guests(self, user):
         return ProjectMembership.objects.filter(project=self.project, user=user).exists()
+
+    def get_invitation_purpose(self, invitation):
+        return ("to join the discussion <%s>" % self.title) \
+            + (" and to join the project team" if invitation.into_project else "")
+
+    def is_invitation_valid(self, invitation):
+        # Invitation remains valid only if the user that sent it is still
+        # able to invite guests.
+        return self.can_invite_guests(invitation.from_user)
+
+    def accept_invitation(self, invitation, add_message):
+        if self.is_participant(invitation.accepted_user):
+            # user is already a participant --- possibly because they were just invited
+            # and now added into the project, which gives them access to the discussion
+            # --- so just redirect to it.
+            return
+        else:
+            # add the user to the external_participants list for the discussion. 
+            self.external_participants.add(invitation.accepted_user)
+            add_message('You are now a participant in the discussion on %s.' % self.title)
+
+    def get_invitation_redirect_url(self, invitation):
+        return self.for_question.get_absolute_url()
 
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", help_text="The Discussion that this comment is attached to.")

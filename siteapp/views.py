@@ -7,7 +7,7 @@ from django.db import transaction
 
 import json
 
-from .models import User, Invitation
+from .models import User, Project, Invitation
 from guidedmodules.models import Task, ProjectMembership
 from questions import Module
 
@@ -136,55 +136,65 @@ def send_invitation(request):
         if request.POST['user_email']:
             email_validator.validate_email(request.POST['user_email'])
 
-        from guidedmodules.models import Project, Discussion
+        # Validate.
+        from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
+        into_project = (request.POST.get("add_to_team", "") != "") and ProjectMembership.objects.filter(project=from_project, user=request.user, is_admin=True).exists()
 
-        # Get and validate authorization to transfer a task's editor.
-        into_task_editorship = None
-        if request.POST.get("into_task_editorship"):
-            into_task_editorship = Task.objects.get(id=request.POST["into_task_editorship"])
-            if into_task_editorship.editor != request.user:
+        # Target.
+        if request.POST.get("into_new_task_module_id"):
+            target = from_project
+            target_info = {
+                "into_new_task_module_id": request.POST.get("into_new_task_module_id"),
+            }
+
+        elif request.POST.get("into_task_editorship"):
+            target = Task.objects.get(id=request.POST["into_task_editorship"])
+            if target.editor != request.user:
                 raise HttpResponseForbidden()
-
-        # Validate that the user is a team member of the project or if the user
-        # is transferring ownership of a task that that's the project
-        if into_task_editorship:
-            # in this case, ignore the POST data
-            from_project = into_task_editorship.project
-        else:
-            # get and validate that the user is a member
-            from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
-
-        # if a discussion is given, validate that the requesting user is a participant
-        # able to invite guests
-        into_discussion = None
-        if "into_discussion" in request.POST:
-            into_discussion = get_object_or_404(Discussion, id=request.POST["into_discussion"])
-            if not into_discussion.can_invite_guests(request.user):
+            if from_project and target.project != from_project:
                 return HttpResponseForbidden()
+
+            # from_project may be None if the requesting user isn't a project
+            # member, but they may transfer editorship and so in that case we'll
+            # set from_project to the Task's project
+            from_project = target.project
+            target_info =  {
+                "what": "editor",
+            }
+
+        elif "into_discussion" in request.POST:
+            from guidedmodules.models import Discussion
+            target = get_object_or_404(Discussion, id=request.POST["into_discussion"])
+            if not target.can_invite_guests(request.user):
+                return HttpResponseForbidden()
+            target_info = {
+                "what": "invite-guest",
+            }
+
+        else:
+            target = from_project
+            target_info = {
+                "what": "join-team",
+            }
 
         inv = Invitation.objects.create(
             # who is sending the invitation?
             from_user=request.user,
             from_project=from_project,
 
-            # what prompted this invitation?
-            prompt_task=Task.objects.get(id=request.POST["prompt_task"], editor=request.user) if request.POST.get("prompt_task") else None,
-            prompt_question_id=request.POST.get("prompt_question_id"),
-
             # what is the recipient being invited to? validate that the user is an admin of this project
             # or an editor of the task being reassigned.
-            into_project=(request.POST.get("add_to_team", "") != "") and ProjectMembership.objects.filter(project=from_project, user=request.user, members__is_admin=True).exists(),
-            into_new_task_module_id=request.POST.get("into_new_task_module_id"),
-            into_task_editorship=into_task_editorship,
-            into_discussion=into_discussion,
+            into_project=into_project,
+            target=target,
+            target_info=target_info,
 
             # who is the recipient of the invitation?
             to_user=User.objects.get(id=request.POST["user_id"]) if request.POST.get("user_id") else None,
             to_email=request.POST.get("user_email"),
 
             # personalization
-            text = request.POST.get("message", ""),
-            email_invitation_code = Invitation.generate_email_invitation_code(),
+            text=request.POST.get("message", ""),
+            email_invitation_code=Invitation.generate_email_invitation_code(),
         )
 
         inv.send() # TODO: Move this into an asynchronous queue.
@@ -221,13 +231,7 @@ def accept_invitation(request, code=None):
 
     # Can't accept if this object has expired. Warn the user but
     # send them to the homepage.
-    if inv.is_expired() or inv.revoked_at:
-        messages.add_message(request, messages.ERROR, 'The invitation you wanted to accept has expired.')
-        return HttpResponseRedirect("/")
-
-    # Other ways this invitation may not be valid.
-    if inv.into_task_editorship and inv.into_task_editorship.editor != inv.from_user:
-        # Only a task's editor can invite other users to take over.
+    if inv.is_expired():
         messages.add_message(request, messages.ERROR, 'The invitation you wanted to accept has expired.')
         return HttpResponseRedirect("/")
 
@@ -286,7 +290,11 @@ def accept_invitation(request, code=None):
     # The user is now logged in and able to accept the invitation.
     with transaction.atomic():
 
-        task = None
+        inv.accepted_at = timezone.now()
+        inv.accepted_user = request.user
+
+        def add_message(message):
+            messages.add_message(request, messages.INFO, message)
 
         # Add user to a project team.
         if inv.into_project:
@@ -294,45 +302,12 @@ def accept_invitation(request, code=None):
                 project=inv.from_project,
                 user=request.user,
                 )
-            messages.add_message(request, messages.INFO, 'You have joined the team %s.' % inv.from_project.title)
+            add_message('You have joined the team %s.' % inv.from_project.title)
 
-        # Create a new Task for the user to begin a module.
-        if inv.into_new_task_module_id:
-            from questions import Module
-            m = Module.load(inv.into_new_task_module_id)
-            task = Task.objects.create(
-                project=inv.from_project,
-                editor=request.user,
-                module_id=inv.into_new_task_module_id,
-                title=m.title,
-            )
-            redirect_to = task.get_absolute_url() + "/start"
-
-        # Make this user the new editor of the Task.
-        if inv.into_task_editorship:
-            # Make this user the new editor.
-            inv.into_task_editorship.editor = request.user
-            inv.into_task_editorship.save(update_fields=['editor'])
-            # TODO: Create a notification that the editor changed?
-            messages.add_message(request, messages.INFO, 'You are now the editor for module %s.' % inv.into_task_editorship.title)
-
-        # Add this user into a discussion.
-        if inv.into_discussion:
-            if inv.into_discussion.is_participant(request.user):
-                # user is already a participant --- possibly because they were just invited
-                # and now added into the project, which gives them access to the discussion
-                # --- so just redirect to it.
-                pass
-            else:
-                # add the user to the external_participants list for the discussion. 
-                inv.into_discussion.external_participants.add(request.user)
-                messages.add_message(request, messages.INFO, 'You are now a participant in the discussion on %s.'
-                    % inv.into_discussion.title)
+        # Run the target's invitation accept function.
+        inv.target.accept_invitation(inv, add_message)
 
         # Update this invitation.
-        inv.accepted_at = timezone.now()
-        inv.accepted_user = request.user
-        inv.accepted_task = task
         inv.save()
 
         # TODO: Notify inv.from_user that the invitation was accepted.

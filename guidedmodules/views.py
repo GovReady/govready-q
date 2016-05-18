@@ -189,9 +189,6 @@ def next_question(request, taskid, taskslug, intropage=None):
     context = {
         "task": task,
         "write_priv": write_priv,
-        "active_invitation_to_transfer_editorship": task.get_active_invitation_to_transfer_editorship(request.user),
-        "source_invitation": task.get_source_invitation(request.user),
-
         "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)) if task.project else None,
     }
 

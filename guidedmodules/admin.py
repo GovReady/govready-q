@@ -5,7 +5,7 @@ from .models import Task, TaskQuestion, TaskAnswer
 class TaskAdmin(admin.ModelAdmin):
 	list_display = ('title', 'project', 'editor', '_module', 'is_finished', 'submodule_of', 'created')
 	raw_id_fields = ('project', 'editor',)
-	readonly_fields = ('module_id',)
+	readonly_fields = ('module_id', 'invitation_history')
 	def _module(self, obj): return obj.load_module().title + " (" + obj.module_id + ")"
 	def submodule_of(self, obj):
 		ans = obj.is_answer_to_unique()
