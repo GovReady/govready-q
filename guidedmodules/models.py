@@ -106,8 +106,6 @@ class Task(models.Model):
             return True
         if ProjectMembership.objects.filter(project=self.project, user=user).exists():
             return True
-        if Discussion.objects.filter(for_question__task=self, external_participants=user).exists():
-            return True
         return False
 
     def has_write_priv(self, user):
@@ -192,6 +190,8 @@ class TaskQuestion(models.Model):
         return self.answers.order_by('-id').first()
 
     def get_history(self):
+        from discussion.models import reldate
+
         history = []
 
         # Get the answers. Their serial order follows their primary
@@ -226,6 +226,11 @@ class TaskQuestion(models.Model):
 
         return history
 
+    # required to attach a Discussion to it
+    @property
+    def project(self):
+        return self.task.project
+
 
 class TaskAnswer(models.Model):
     question = models.ForeignKey(TaskQuestion, related_name="answers", help_text="The TaskQuestion that this is an aswer to.")
@@ -255,120 +260,3 @@ class TaskAnswer(models.Model):
     def get_answer_display(self):
         return repr(self.value or self.answered_by_task)
 
-class Discussion(models.Model):
-    project = models.ForeignKey(Project, help_text="The Project that this Discussion exists within.")
-    for_question = models.OneToOneField(TaskQuestion, blank=True, related_name="discussion", help_text="The TaskQuestion that this discussion thread is for.")
-
-    external_participants = models.ManyToManyField(User, blank=True, help_text="Additional Users who are participating in this chat, besides those that are members of the Project that contains the Discussion.")
-
-    @property
-    def title(self):
-        return self.for_question.get_question().title
-
-    def is_participant(self, user):
-        return (ProjectMembership.objects.filter(project=self.project, user=user)) \
-            or (user in self.external_participants.all())
-
-    def can_invite_guests(self, user):
-        return ProjectMembership.objects.filter(project=self.project, user=user).exists()
-
-    def get_invitation_purpose(self, invitation):
-        return ("to join the discussion <%s>" % self.title) \
-            + (" and to join the project team" if invitation.into_project else "")
-
-    def is_invitation_valid(self, invitation):
-        # Invitation remains valid only if the user that sent it is still
-        # able to invite guests.
-        return self.can_invite_guests(invitation.from_user)
-
-    def accept_invitation(self, invitation, add_message):
-        if self.is_participant(invitation.accepted_user):
-            # user is already a participant --- possibly because they were just invited
-            # and now added into the project, which gives them access to the discussion
-            # --- so just redirect to it.
-            return
-        else:
-            # add the user to the external_participants list for the discussion. 
-            self.external_participants.add(invitation.accepted_user)
-            add_message('You are now a participant in the discussion on %s.' % self.title)
-
-    def get_invitation_redirect_url(self, invitation):
-        return self.for_question.get_absolute_url()
-
-class Comment(models.Model):
-    discussion = models.ForeignKey(Discussion, related_name="comments", help_text="The Discussion that this comment is attached to.")
-    replies_to = models.ForeignKey('self', blank=True, null=True, related_name="replies", help_text="If this is a reply to a Comment, the Comment that this is in reply to.")
-    user = models.ForeignKey(User, help_text="The user making a comment.")
-
-    emojis = models.CharField(max_length=256, blank=True, null=True, help_text="A comma-separated list of emoji names that the user is reacting with.")
-    text = models.TextField(blank=True, help_text="The text of the user's comment.")
-    proposed_answer = JSONField(blank=True, null=True, help_text="A proposed answer to the question that this discussion is about.")
-    deleted = models.BooleanField(default=False, help_text="Set to true if the comment has been 'deleted'.")
-
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
-    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
-
-    class Meta:
-        index_together = [
-            ('discussion', 'user'),
-        ]
-
-    def can_edit(self, user):
-        # If the comment has been deleted, it becomes locked for editing. This
-        # shouldn't have a user-visible effect, since no one can see it anyway.
-        if self.deleted:
-            return False
-
-        # Is the user permitted to edit this comment? If a user is no longer
-        # a participant in a discussion, they can't edit their comments in that
-        # discussion.
-        return self.user == user and self.discussion.is_participant(user)
-
-    def render_context_dict(self):
-        if self.deleted:
-            raise ValueError()
-
-        import CommonMark
-
-        def get_user_role():
-            if self.user == self.discussion.for_question.task.editor:
-                return "editor"
-            if ProjectMembership.objects.filter(
-                project=self.discussion.project,
-                user=self.user,
-                is_admin=True):
-                return "team admin"
-            if self.user in self.discussion.external_participants.all():
-                return "guest"
-            if ProjectMembership.objects.filter(
-                project=self.discussion.project,
-                user=self.user):
-                return "project member"
-            return "former participant"
-
-        return {
-            "type": "comment",
-            "id": self.id,
-            "replies_to": self.replies_to_id,
-            "user": self.user.render_context_dict(),
-            "user_role": get_user_role(),
-            "date_relative": reldate(self.created, timezone.now()) + " ago",
-            "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
-            "text": self.text,
-            "text_rendered": CommonMark.commonmark(self.text),
-            "notification_text": str(self.user) + ": " + self.text
-        }
-
-def reldate(date, ref):
-    import dateutil.relativedelta
-    rd = dateutil.relativedelta.relativedelta(ref, date)
-    def r(n, unit):
-        return str(n) + " " + unit + ("s" if n != 1 else "")
-    def c(*rs):
-        return ", ".join(r(*s) for s in rs)
-    if rd.months >= 1: return c((rd.months, "month"), (rd.days, "day"))
-    if rd.days >= 7: return c((rd.days, "day"),)
-    if rd.days >= 1: return c((rd.days, "day"), (rd.hours, "hour"))
-    if rd.hours >= 1: return c((rd.hours, "hour"), (rd.minutes, "minute"))
-    return c((rd.minutes, "minute"),)

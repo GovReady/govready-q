@@ -8,6 +8,7 @@ INSTALLED_APPS += [
 
     'siteapp',
     'guidedmodules',
+    'discussion',
 ]
 
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend', 'siteapp.betteruser.DirectLoginBackend']

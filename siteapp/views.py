@@ -163,7 +163,7 @@ def send_invitation(request):
             }
 
         elif "into_discussion" in request.POST:
-            from guidedmodules.models import Discussion
+            from discussion.models import Discussion
             target = get_object_or_404(Discussion, id=request.POST["into_discussion"])
             if not target.can_invite_guests(request.user):
                 return HttpResponseForbidden()

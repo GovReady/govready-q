@@ -10,6 +10,7 @@ urlpatterns = [
 
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
+    url(r"^discussion/", include("discussion.urls")),
 
     # invitations
     url(r'invitation/_send$', views.send_invitation, name="send_invitation"),
