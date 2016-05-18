@@ -15,12 +15,22 @@ class Project(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
+    def __str__(self):
+        # For the admin.
+        return self.title + " [" + self.get_owner_domains() + "]"
+
     def __repr__(self):
+        # For debugging.
         return "<Project %d %s>" % (self.id, self.title[0:30])
 
     def get_absolute_url(self):
         from django.utils.text import slugify
         return "/tasks/projects/%d/%s" % (self.id, slugify(self.title))
+
+    def get_owner_domains(self):
+        # Utility function for the admin/debugging to quickly see the domain
+        # names in the email addresses of the admins of this project.
+        return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True)))
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", help_text="The Project this is defining membership for.")
@@ -49,7 +59,12 @@ class Task(models.Model):
             ('project', 'editor', 'module_id'),
         ]
 
+    def __str__(self):
+        # For the admin.
+        return self.title + " (" + self.module_id + ")"
+
     def __repr__(self):
+        # For debugging.
         return "<Task [%d] %s %s>" % (self.id, self.title[0:30], repr(self.project))
 
     @staticmethod
@@ -177,7 +192,12 @@ class TaskQuestion(models.Model):
     class Meta:
         unique_together = [('task', 'question_id')]
 
+    def __str__(self):
+        # For the admin.
+        return self.get_question().title + " | " + self.task.title + " (" + self.task.module_id + "." + self.question_id + ")"
+
     def __repr__(self):
+        # For debugging.
         return "<TaskQuestion %s in %s>" % (self.question_id, repr(self.task))
 
     def get_absolute_url(self):
@@ -241,11 +261,19 @@ class TaskAnswer(models.Model):
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     def __repr__(self):
+        # For debugging.
         return "<TaskAnswer %s>" % (repr(self.question),)
 
     @property
     def is_answered(self):
-        return self.value or self.answered_by_task
+        return bool(self.value or self.answered_by_task)
+
+    def is_latest(self):
+        # Is this the most recent --- the current --- answer for a TaskQuestion.
+        return self.question.get_answer() == self
+
+    def get_answer_display(self):
+        return repr(self.value or self.answered_by_task)
 
 class Discussion(models.Model):
     project = models.ForeignKey(Project, help_text="The Project that this Discussion exists within.")
