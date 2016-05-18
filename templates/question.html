@@ -224,7 +224,7 @@ $(function() {
         return undefined;
     }
 
-    {% elif q.type == "choice" or q.type == "module" %}
+    {% elif q.type == "choice" or q.type == "yesno" or q.type == "module" %}
     function validate_answer() {
         var val = $('#question input[type="radio"]:checked').val();
         if (!val)
