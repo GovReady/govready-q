@@ -156,6 +156,14 @@ function display_discussion(discussion, is_page_load) {
     else if (item.type == "comment")
         render_comment(item);
   });
+
+  // add event handlers
+  $('#discussion-your-comment').keydown(function (e) {
+    if ((e.ctrlKey || e.metaKey) && (e.keyCode == 13 || e.keyCode == 10)) {
+      // Ctrl-Enter pressed
+      $('#discussion form').submit();
+    }
+  });
 }
 
 function render_comment(item) {
