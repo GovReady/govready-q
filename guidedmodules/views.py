@@ -2,12 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.db import transaction
 from django.utils import timezone
 
 from questions import Module
-from .models import Project, ProjectMembership, Task, TaskQuestion, TaskAnswer, Invitation, Discussion, Comment
-from siteapp.models import User
+from .models import Project, ProjectMembership, Task, TaskQuestion, TaskAnswer, Discussion, Comment
+from siteapp.models import User, Invitation
 
 @login_required
 def new_project(request):
@@ -230,70 +229,6 @@ def next_question(request, taskid, taskslug, intropage=None):
             "answer_answered_by_task_can_write": answer.answered_by_task.has_write_priv(request.user) if answer and answer.answered_by_task else None,
         })
         return render(request, "question.html", context)
-
-@login_required
-def send_invitation(request):
-    import email_validator
-    if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
-    try:
-        if not request.POST['user_id'] and not request.POST['user_email']:
-            raise ValueError("Select a team member or enter an email address.")
-
-        # if a discussion is given, validate that the requesting user is a participant
-        # able to invite guests
-        into_discussion = None
-        if "into_discussion" in request.POST:
-            into_discussion = get_object_or_404(Discussion, id=request.POST["into_discussion"])
-            if not into_discussion.can_invite_guests(request.user):
-                return HttpResponseForbidden()
-
-        inv = Invitation.objects.create(
-            # who is sending the invitation?
-            from_user=request.user,
-            from_project=Project.objects.filter(id=request.POST["project"], members__user=request.user).first(), # validate that the user is a team member
-            
-            # what prompted this invitation?
-            prompt_task=Task.objects.get(id=request.POST["prompt_task"], editor=request.user) if request.POST.get("prompt_task") else None,
-            prompt_question_id=request.POST.get("prompt_question_id"),
-
-            # what is the recipient being invited to? validate that the user is an admin of this project
-            # or an editor of the task being reassigned.
-            into_project=(request.POST.get("add_to_team", "") != "") and Project.objects.filter(id=request.POST["project"], members__user=request.user, members__is_admin=True).exists(),
-            into_new_task_module_id=request.POST.get("into_new_task_module_id"),
-            into_task_editorship=Task.objects.get(id=request.POST["into_task_editorship"], editor=request.user) if request.POST.get("into_task_editorship") else None,
-            into_discussion=into_discussion,
-
-            # who is the recipient of the invitation?
-            to_user=User.objects.get(id=request.POST["user_id"]) if request.POST.get("user_id") else None,
-            to_email=request.POST.get("user_email"),
-
-            # personalization
-            text = request.POST.get("message", ""),
-            email_invitation_code = Invitation.generate_email_invitation_code(),
-        )
-
-        inv.send() # TODO: Move this into an asynchronous queue.
-
-        return JsonResponse({ "status": "ok" })
-
-    except ValueError as e:
-        return JsonResponse({ "status": "error", "message": str(e) })
-    except Exception as e:
-        import sys
-        sys.stderr.write(str(e) + "\n")
-        return JsonResponse({ "status": "error", "message": "There was a problem -- sorry!" })
-
-def accept_invitation(request, code=None):
-    assert code.strip() != ""
-    inv = get_object_or_404(Invitation, email_invitation_code=code)
-    return inv.accept(request)
-
-@login_required
-def cancel_invitation(request):
-    inv = get_object_or_404(Invitation, id=request.POST['id'], from_user=request.user)
-    inv.revoked_at = timezone.now()
-    inv.save(update_fields=['revoked_at'])
-    return JsonResponse({ "status": "ok" })
 
 @login_required
 def start_a_discussion(request):
