@@ -2,7 +2,7 @@ from django.contrib import admin
 
 import django.contrib.auth.admin as contribauthadmin
 
-from .models import User
+from .models import User, Project, ProjectMembership
 
 def all_user_fields_still_exist(fieldlist):
     for f in fieldlist:
@@ -21,4 +21,16 @@ class UserAdmin(contribauthadmin.UserAdmin):
 
     pass
 
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('title', 'owner_domains', 'created')
+    def owner_domains(self, obj):
+        return obj.get_owner_domains()
+
+class ProjectMembershipAdmin(admin.ModelAdmin):
+    list_display = ('project', 'user', 'is_admin', 'created')
+    raw_id_fields = ('project', 'user',)
+
 admin.site.register(User, UserAdmin)
+admin.site.register(Project, ProjectAdmin)
+admin.site.register(ProjectMembership, ProjectMembershipAdmin)
+

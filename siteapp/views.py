@@ -173,7 +173,7 @@ def send_invitation(request):
 
             # what is the recipient being invited to? validate that the user is an admin of this project
             # or an editor of the task being reassigned.
-            into_project=(request.POST.get("add_to_team", "") != "") and Project.objects.filter(id=request.POST["project"], members__user=request.user, members__is_admin=True).exists(),
+            into_project=(request.POST.get("add_to_team", "") != "") and ProjectMembership.objects.filter(project=from_project, user=request.user, members__is_admin=True).exists(),
             into_new_task_module_id=request.POST.get("into_new_task_module_id"),
             into_task_editorship=into_task_editorship,
             into_discussion=into_discussion,

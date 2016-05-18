@@ -37,12 +37,47 @@ class User(UserBase):
             "id": self.id,
             "name": str(self),
         }
-        
+
+class Project(models.Model):
+    title = models.CharField(max_length=256, help_text="The title of this Project.")
+    notes = models.TextField(blank=True, help_text="Notes about this Project for Project members.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    def __str__(self):
+        # For the admin.
+        return self.title + " [" + self.get_owner_domains() + "]"
+
+    def __repr__(self):
+        # For debugging.
+        return "<Project %d %s>" % (self.id, self.title[0:30])
+
+    def get_absolute_url(self):
+        from django.utils.text import slugify
+        return "/tasks/projects/%d/%s" % (self.id, slugify(self.title))
+
+    def get_owner_domains(self):
+        # Utility function for the admin/debugging to quickly see the domain
+        # names in the email addresses of the admins of this project.
+        return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True)))
+
+class ProjectMembership(models.Model):
+    project = models.ForeignKey(Project, related_name="members", help_text="The Project this is defining membership for.")
+    user = models.ForeignKey(User, help_text="The user that is a member of the Project.")
+    is_admin = models.BooleanField(default=False, help_text="Is the user an administrator of the Project?")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        unique_together = [('project', 'user')]
+
 
 class Invitation(models.Model):
     # who is sending the invitation
     from_user = models.ForeignKey(User, related_name="invitations_sent", help_text="The User who sent the invitation.")
-    from_project = models.ForeignKey('guidedmodules.Project', related_name="invitations_sent", help_text="The Project within which the invitation exists.")
+    from_project = models.ForeignKey(Project, related_name="invitations_sent", help_text="The Project within which the invitation exists.")
     
     # about what prompted the invitation
     prompt_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="invitations_prompted", help_text="The Task that prompted the invitation.")

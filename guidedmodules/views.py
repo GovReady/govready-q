@@ -3,6 +3,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
+from django.db import transaction
 
 from questions import Module
 from .models import Project, ProjectMembership, Task, TaskQuestion, TaskAnswer, Discussion, Comment

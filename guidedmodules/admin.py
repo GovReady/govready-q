@@ -1,15 +1,6 @@
 from django.contrib import admin
 
-from .models import Project, ProjectMembership, Task, TaskQuestion, TaskAnswer
-
-class ProjectAdmin(admin.ModelAdmin):
-	list_display = ('title', 'owner_domains', 'created')
-	def owner_domains(self, obj):
-		return obj.get_owner_domains()
-
-class ProjectMembershipAdmin(admin.ModelAdmin):
-	list_display = ('project', 'user', 'is_admin', 'created')
-	raw_id_fields = ('project', 'user',)
+from .models import Task, TaskQuestion, TaskAnswer
 
 class TaskAdmin(admin.ModelAdmin):
 	list_display = ('title', 'project', 'editor', '_module', 'is_finished', 'submodule_of', 'created')
@@ -49,8 +40,6 @@ class TaskAnswerAdmin(admin.ModelAdmin):
 	             (None, { "fields": ('extra',) }) ]
 	def answer(self, obj): return obj.get_answer_display()
 
-admin.site.register(Project, ProjectAdmin)
-admin.site.register(ProjectMembership, ProjectMembershipAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(TaskQuestion, TaskQuestionAdmin)
 admin.site.register(TaskAnswer, TaskAnswerAdmin)
