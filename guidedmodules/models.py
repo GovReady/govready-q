@@ -307,6 +307,7 @@ class Comment(models.Model):
             "user_role": get_user_role(),
             "date_relative": reldate(self.created, timezone.now()) + " ago",
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
+            "text": self.text,
             "text_rendered": CommonMark.commonmark(self.text),
         }
 

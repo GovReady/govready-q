@@ -18,10 +18,10 @@
 #discussion .comment .commands {
   margin: 0 -15px -15px -15px;
   padding: 10px 15px;
-  background-color: #EEE;
+  border-top: 1px solid #EEE;
   font-size: 11px;
 }
-#discussion .comment .commands button {
+#discussion .comment .commands a {
   margin-right: 1em;
 }
 #discussion .comment .ifeditpriv { display: none; }
@@ -73,6 +73,13 @@
     </div>
     <div class="panel-body">
       <div class="comment-text"> </div>
+      <form class="comment-edit clearfix" style="display: none" onsubmit="do_comment_save(this); return false;">
+        <textarea class="form-control" style="width: 100%;"> </textarea>
+        <div style="margin: 1em 0; float: right">
+          <button type="submit" class="btn btn-cancel" onclick="return close_comment_edit(this);">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
 
       {% comment %}
       <div class="proposed-answer">
@@ -90,16 +97,16 @@
       {% endcomment %}
 
       <div class="commands">
-          <button title="Edit your comment" class="ifeditpriv">
+          <a title="Edit your comment" class="ifeditpriv" href="#" onclick="return begin_comment_edit(this);">
             <i class="glyphicon glyphicon-pencil"></i>
-          </button>
-          <button title="React to this comment with an emoji" class="ifnotauthor">
+          </a>
+          <a title="React to this comment with an emoji" class="ifnotauthor">
             <i class="glyphicon glyphicon-plus"></i>
             <i class="glyphicon glyphicon-heart"></i>
-          </button>
-          <button title="Delete this comment" class="ifeditpriv">
+          </a>
+          <a title="Delete this comment" class="ifeditpriv">
             <i class="glyphicon glyphicon-trash"></i>
-          </button>
+          </a>
       </div>
     </div>
   </div>
@@ -158,10 +165,10 @@ function display_discussion(discussion, is_page_load) {
   });
 
   // add event handlers
-  $('#discussion-your-comment').keydown(function (e) {
+  $('#discussion textarea').keydown(function (e) {
     if ((e.ctrlKey || e.metaKey) && (e.keyCode == 13 || e.keyCode == 10)) {
       // Ctrl-Enter pressed
-      $('#discussion form').submit();
+      $(this).parents('form').submit();
     }
   });
 }
@@ -169,12 +176,14 @@ function display_discussion(discussion, is_page_load) {
 function render_comment(item) {
   // Create and fill in a DOM node.
   var n = $('#comment-template > div').clone();
+  n.attr('data-id', item.id);
   n.attr('data-sort-order', item.date_posix);
   n.find('.comment-author').text(item.user.name);
   n.find('.comment-date').text(item.date_relative);
   n.find('.comment-date').attr('title', new Date(item.date_posix * 1000));
   n.find('.comment-author-role').text(item.user_role);
   n.find('.comment-text').html(item.text_rendered);
+  n.attr('data-text', item.text);
   if (item.user.id == {{request.user.id}}) // TODO: admins too
     n.addClass('has-edit-priv');
   if (item.user.id == {{request.user.id}})
@@ -200,25 +209,59 @@ function render_event(item) {
 }
 
 function submit_comment() {
-  function disable_enable_controls(state) {
-    var disable_ctrls = $('#discussion .comment-input form');
-    disable_ctrls.find('textarea, input, button').prop("disabled", state);
-  }
-  disable_enable_controls(true);
-
   ajax_with_indicator({
-    url: "{% url 'submit-comment' %}",
+    url: "{% url 'discussion-comment-create' %}",
     method: "POST",
     data: {
       discussion: discussion_info.id,
       text: $('#discussion .comment-input form textarea').val()
     },
-    complete: function() {
-      disable_enable_controls(false);
-    },
+    controls: $('#discussion .comment-input form').find('textarea, input, button'),
     success: function(c) {
       $('#discussion .comment-input form textarea').val('');
       render_comment(c)
+    }
+  })
+}
+
+function get_comment_from_command_elem(command_elem) {
+  var c = $(command_elem).parents(".comment");
+  if (c.length == 0) throw "something went wrong";
+  return c;
+}
+
+function begin_comment_edit(command_elem) {
+  var c = get_comment_from_command_elem(command_elem);
+  c.find('.commands').hide();
+  c.find('.comment-edit textarea').css({ minHeight: c.find('.comment-text').height()+30 });
+  c.find('.comment-edit textarea').val(c.attr('data-text'));
+  c.find('.comment-text').hide();
+  c.find('.comment-edit').show();
+  return false;
+}
+
+function close_comment_edit(command_elem) {
+  var c = get_comment_from_command_elem(command_elem);
+  c.find('.commands').show();
+  c.find('.comment-text').show();
+  c.find('.comment-edit').hide();
+  return false;
+}
+
+function do_comment_save(command_elem) {
+  var c = get_comment_from_command_elem(command_elem);
+  ajax_with_indicator({
+    url: "{% url 'discussion-comment-edit' %}",
+    method: "POST",
+    data: {
+      id: c.attr('data-id'),
+      text: c.find('.comment-edit textarea').val()
+    },
+    controls: c.find('textarea, input, button'),
+    success: function(res) {
+      c.attr('data-text', res.text);
+      c.find('.comment-text').html(res.text_rendered);
+      close_comment_edit(command_elem);
     }
   })
 }

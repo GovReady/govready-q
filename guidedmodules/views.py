@@ -373,3 +373,29 @@ def submit_discussion_comment(request):
 
     # Return the comment for display.
     return JsonResponse(comment.render_context_dict())
+
+@login_required
+def edit_discussion_comment(request):
+    # get object
+    comment = get_object_or_404(Comment, id=request.POST['id'])
+
+    # can edit? must still be a participant of the discussion, to
+    # prevent editing things that you are no longer able to see
+    if comment.user != request.user or not comment.discussion.is_participant(request.user):
+        return HttpResponseForbidden()
+
+    # record edit history
+    if not isinstance(comment.extra, dict): comment.extra = { }
+    comment.extra.setdefault("history", []).append({
+        "when": timezone.now().isoformat(), # make JSON-serializable
+        "previous-text": comment.text,
+    })
+
+    # edit
+    comment.text = request.POST['text']
+
+    # save
+    comment.save()
+
+    # return new comment info
+    return JsonResponse(comment.render_context_dict())

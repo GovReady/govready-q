@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'_cancel_invitation$', guidedmodules.views.cancel_invitation, name="cancel_invitation"),
     url(r'accept-invitation/(?P<code>.*)$', guidedmodules.views.accept_invitation, name="accept_invitation"),
     url(r'start-discussion', guidedmodules.views.start_a_discussion, name="start_a_discussion"),
-    url(r'submit-comment', guidedmodules.views.submit_discussion_comment, name="submit-comment"),
+    url(r'_discussion_comment_create', guidedmodules.views.submit_discussion_comment, name="discussion-comment-create"),
+    url(r'_discussion_comment_edit', guidedmodules.views.edit_discussion_comment, name="discussion-comment-edit"),
 ]
 
