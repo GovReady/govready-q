@@ -330,8 +330,17 @@ def start_a_discussion(request):
 
     # Build the event history.
     events = []
-    events.extend(tq.get_history())
-    events.extend([ comment.render_context_dict() for comment in discussion.comments.filter(deleted=False) ])
+    events.extend([
+        event
+        for event in tq.get_history()
+        if event["date_posix"] > float(request.POST.get("event_since", "0"))
+    ])
+    events.extend([
+        comment.render_context_dict()
+        for comment in discussion.comments.filter(
+            id__gt=request.POST.get("comment_since", "0"),
+            deleted=False)
+    ])
     events.sort(key = lambda item : item["date_posix"])
 
     # Get the initial state of the discussion to populate the HTML.

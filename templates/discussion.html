@@ -155,14 +155,13 @@ function display_discussion(discussion, is_page_load) {
     $('#discussion .fillin-guests').text(text);
   }
 
-  // show events
+  // for polling, what did we last see
+  discussion_info.max_comment_id = 0;
+  discussion_info.max_event_time = 0;
+
+  // render events
   $('#discussion .comment-thread').html('');
-  discussion.events.forEach(function(item) {
-    if (item.type == "event")
-        render_event(item)
-    else if (item.type == "comment")
-        render_comment(item);
-  });
+  render_events(discussion);
 
   // add event handlers
   $('#discussion textarea').keydown(function (e) {
@@ -171,6 +170,40 @@ function display_discussion(discussion, is_page_load) {
       $(this).parents('form').submit();
     }
   });
+
+  // start polling
+  discussion_poll();
+}
+
+function render_events(discussion) {
+  discussion.events.forEach(function(item) {
+    if (item.type == "event")
+        render_event(item)
+    else if (item.type == "comment")
+        render_comment(item);
+  });
+}
+
+function discussion_poll() {
+  setTimeout(function() {
+    $.ajax({
+        url: "{% url 'start_a_discussion' %}",
+        method: "POST",
+        data: {
+            task: {{task.id}},
+            question: "{{q.id|escapejs}}",
+            comment_since: discussion_info.max_comment_id,
+            event_since: discussion_info.max_event_time
+        },
+        success(res) {
+          render_events(res);
+          discussion_poll();
+        }
+    })
+    },
+
+    // poll interval (10s)
+    10000);
 }
 
 function render_comment(item) {
@@ -192,6 +225,10 @@ function render_comment(item) {
   // Add to the DOM.
   var c = $('#discussion .comment-thread');
   c.append(n);
+
+  // Remember the last comment we've seen, for polling.
+  if (item.id > discussion_info.max_comment_id)
+    discussion_info.max_comment_id = item.id;
 }
 
 function render_event(item) {
@@ -206,6 +243,11 @@ function render_event(item) {
 
   var c = $('#discussion .comment-thread')
   c.append(n);
+
+
+  // Remember the last event we've seen, for polling.
+  if (item.date_posix > discussion_info.max_event_time)
+    discussion_info.max_event_time = item.date_posix;
 }
 
 function submit_comment() {
