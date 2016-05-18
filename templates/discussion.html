@@ -104,7 +104,7 @@
             <i class="glyphicon glyphicon-plus"></i>
             <i class="glyphicon glyphicon-heart"></i>
           </a>
-          <a title="Delete this comment" class="ifeditpriv">
+          <a title="Delete this comment" class="ifeditpriv" href="#" onclick="return do_delete_comment(this);">
             <i class="glyphicon glyphicon-trash"></i>
           </a>
       </div>
@@ -264,6 +264,27 @@ function do_comment_save(command_elem) {
       close_comment_edit(command_elem);
     }
   })
+}
+
+function do_delete_comment(command_elem) {
+  var c = get_comment_from_command_elem(command_elem);
+  show_modal_confirm(
+    "Delete Comment",
+    "Are you sure you want to delete that comment?",
+    "Delete",
+    function() {
+      ajax_with_indicator({
+        url: "{% url 'discussion-comment-delete' %}",
+        method: "POST",
+        data: {
+          id: c.attr('data-id')
+        },
+        success: function(res) {
+          c.slideUp();
+        }
+      })
+    });
+  return false;
 }
 
 function invite_user_to_discussion() {

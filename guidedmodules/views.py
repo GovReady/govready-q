@@ -331,7 +331,7 @@ def start_a_discussion(request):
     # Build the event history.
     events = []
     events.extend(tq.get_history())
-    events.extend([ comment.render_context_dict() for comment in discussion.comments.all() ])
+    events.extend([ comment.render_context_dict() for comment in discussion.comments.filter(deleted=False) ])
     events.sort(key = lambda item : item["date_posix"])
 
     # Get the initial state of the discussion to populate the HTML.
@@ -381,7 +381,7 @@ def edit_discussion_comment(request):
 
     # can edit? must still be a participant of the discussion, to
     # prevent editing things that you are no longer able to see
-    if comment.user != request.user or not comment.discussion.is_participant(request.user):
+    if not comment.can_edit(request.user):
         return HttpResponseForbidden()
 
     # record edit history
@@ -399,3 +399,20 @@ def edit_discussion_comment(request):
 
     # return new comment info
     return JsonResponse(comment.render_context_dict())
+
+@login_required
+def delete_discussion_comment(request):
+    # get object
+    comment = get_object_or_404(Comment, id=request.POST['id'])
+
+    # can edit? must still be a participant of the discussion, to
+    # prevent editing things that you are no longer able to see
+    if not comment.can_edit(request.user):
+        return HttpResponseForbidden()
+
+    # mark deleted
+    comment.deleted = True
+    comment.save()
+
+    # return new comment info
+    return JsonResponse({ "status": "ok" })

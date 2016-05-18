@@ -270,6 +270,7 @@ class Comment(models.Model):
     emojis = models.CharField(max_length=256, blank=True, null=True, help_text="A comma-separated list of emoji names that the user is reacting with.")
     text = models.TextField(blank=True, help_text="The text of the user's comment.")
     proposed_answer = JSONField(blank=True, null=True, help_text="A proposed answer to the question that this discussion is about.")
+    deleted = models.BooleanField(default=False, help_text="Set to true if the comment has been 'deleted'.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -280,7 +281,21 @@ class Comment(models.Model):
             ('discussion', 'user'),
         ]
 
+    def can_edit(self, user):
+        # If the comment has been deleted, it becomes locked for editing. This
+        # shouldn't have a user-visible effect, since no one can see it anyway.
+        if self.deleted:
+            return False
+
+        # Is the user permitted to edit this comment? If a user is no longer
+        # a participant in a discussion, they can't edit their comments in that
+        # discussion.
+        return self.user == user and self.discussion.is_participant(user)
+
     def render_context_dict(self):
+        if self.deleted:
+            raise ValueError()
+
         import CommonMark
 
         def get_user_role():
