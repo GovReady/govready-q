@@ -9,3 +9,4 @@ git+https://github.com/if-then-fund/django-html-emailer
 
 django==1.9
 jsonfield
+django-bootstrap-form
