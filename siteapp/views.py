@@ -103,18 +103,18 @@ def homepage(request):
         projects = { }
 
         def add_project(project):
-        	return projects.setdefault(project, {
-        		"project": project,
-        		"tasks": [],
-        		"others_tasks": [],
-        		"discussions": [],
+            return projects.setdefault(project, {
+                "project": project,
+                "tasks": [],
+                "others_tasks": [],
+                "discussions": [],
                 "open_invitations": Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
-                	if project else None,
+                    if project else None,
                 "startable_modules": Module.get_anserable_modules()
-                	if project else None,
+                    if project else None,
                 "send_invitation": json.dumps(Invitation.form_context_dict(request.user, project))
-                	if project else None,
-        	})
+                    if project else None,
+            })
 
         # Add all of the Projects the user is a member of. These should show up even
         # if the user has no Tasks within them.
@@ -125,20 +125,20 @@ def homepage(request):
         # in projects that the user is not a member of.
         seen_tasks = set()
         for task in Task.get_all_tasks_readable_by(request.user).order_by('-created'):
-        	add_project(task.project)[
-        		"tasks" if task.editor == request.user else "others_tasks"
-        	].append(task)
-        	seen_tasks.add(task)
+            add_project(task.project)[
+                "tasks" if task.editor == request.user else "others_tasks"
+            ].append(task)
+            seen_tasks.add(task)
 
         # Including tasks the user is participating in a discussion about
         # (but would not otherwise have read permission).
         for d in Discussion.objects.filter(external_participants=request.user).order_by('-created'):
-        	if not d.attached_to.task.has_read_priv(request.user) \
-        		and d.attached_to.task not in seen_tasks:
-	        	add_project(d.attached_to.task.project)["discussions"].append(d)
+            if not d.attached_to.task.has_read_priv(request.user) \
+                and d.attached_to.task not in seen_tasks:
+                add_project(d.attached_to.task.project)["discussions"].append(d)
 
         projects = list(projects.values())
-        	
+            
         return render(request, "home.html", {
             "projects": projects,
         })
