@@ -101,6 +101,12 @@ class Task(models.Model):
         else:
             return "Finished on " + self.updated.strftime("%x %X")
 
+    @staticmethod
+    def get_all_tasks_readable_by(user):
+        # symmetric with has_read_priv
+        return (Task.objects.filter(editor=user)
+               | Task.objects.filter(project__members__user=user)).distinct()
+
     def has_read_priv(self, user):
         if self.has_write_priv(user):
             return True

@@ -57,6 +57,13 @@ Home
       {% endfor %}
     {% endif %}
 
+    {% if item.discussions|length %}
+      <h4>Discussions you are participating in as a guest</h4>
+      {% for discussion in item.discussions %}
+        <p><a href="{{discussion.get_absolute_url}}">{{discussion.title}}</a></p>
+      {% endfor %}
+    {% endif %}
+
     {% if item.project %}
       {# can only start a new module within a project #}
       <hr>

@@ -9,6 +9,7 @@ import json
 
 from .models import User, Project, Invitation
 from guidedmodules.models import Task, ProjectMembership
+from discussion.models import Discussion
 from questions import Module
 
 def login_view(request, invitation=None):
@@ -99,27 +100,40 @@ def homepage(request):
 
     else:
         # Ok, show user what they can do.
-        projects = [ ]
-        for mbr in ProjectMembership.objects.filter(user=request.user).order_by('-project__created'):
-            projects.append({
-                "project": mbr.project,
-                "tasks": Task.objects.filter(editor=request.user, project=mbr.project).order_by('-updated'),
-                "others_tasks": Task.objects.filter(project=mbr.project).exclude(editor=request.user).order_by('-updated'),
-                "open_invitations": Invitation.objects.filter(from_user=request.user, from_project=mbr.project, accepted_at=None, revoked_at=None).order_by('-created'),
+        projects = { }
 
-                "startable_modules": Module.get_anserable_modules(),
-                "send_invitation": json.dumps(Invitation.form_context_dict(request.user, mbr.project)),
-            })
+        def add_project(project):
+        	return projects.setdefault(project, {
+        		"project": project,
+        		"tasks": [],
+        		"others_tasks": [],
+        		"discussions": [],
+                "open_invitations": Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
+                	if project else None,
+                "startable_modules": Module.get_anserable_modules()
+                	if project else None,
+                "send_invitation": json.dumps(Invitation.form_context_dict(request.user, project))
+                	if project else None,
+        	})
 
-        # Add a fake project for system modules for this user.
-        system_tasks = Task.objects.filter(editor=request.user, project=None)
-        if len(system_tasks):
-            projects.append({
-                "tasks": system_tasks
-            })
+        # Collect all of the tasks the user can see.
+        seen_tasks = set()
+        for task in Task.get_all_tasks_readable_by(request.user).order_by('-created'):
+        	add_project(task.project)[
+        		"tasks" if task.editor == request.user else "others_tasks"
+        	].append(task)
+        	seen_tasks.add(task)
 
+        # Including tasks the user is participating in a discussion about
+        # (but would not otherwise have read permission).
+        for d in Discussion.objects.filter(external_participants=request.user).order_by('-created'):
+        	if not d.attached_to.task.has_read_priv(request.user) \
+        		and d.attached_to.task not in seen_tasks:
+	        	add_project(d.attached_to.task.project)["discussions"].append(d)
+
+        projects = list(projects.values())
+        	
         return render(request, "home.html", {
-            "answerable_modules": Module.get_anserable_modules(),
             "projects": projects,
         })
 
@@ -163,7 +177,6 @@ def send_invitation(request):
             }
 
         elif "into_discussion" in request.POST:
-            from discussion.models import Discussion
             target = get_object_or_404(Discussion, id=request.POST["into_discussion"])
             if not target.can_invite_guests(request.user):
                 return HttpResponseForbidden()

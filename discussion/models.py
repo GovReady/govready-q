@@ -36,9 +36,12 @@ class Discussion(models.Model):
         # for the admin
         return str(self.attached_to)
 
+    def get_absolute_url(self):
+        return self.attached_to.get_absolute_url() + "#discussion"
+
     @property
     def title(self):
-        return self.attached_to.get_question().title
+        return self.attached_to.task.title + ": " + self.attached_to.get_question().title
 
     def is_participant(self, user):
         return (ProjectMembership.objects.filter(project=self.attached_to.project, user=user)) \
