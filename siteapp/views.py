@@ -116,7 +116,13 @@ def homepage(request):
                 	if project else None,
         	})
 
-        # Collect all of the tasks the user can see.
+        # Add all of the Projects the user is a member of. These should show up even
+        # if the user has no Tasks within them.
+        for pm in ProjectMembership.objects.filter(user=request.user):
+            add_project(pm.project)
+
+        # Collect all of the tasks the user can see. That may include tasks that are
+        # in projects that the user is not a member of.
         seen_tasks = set()
         for task in Task.get_all_tasks_readable_by(request.user).order_by('-created'):
         	add_project(task.project)[
