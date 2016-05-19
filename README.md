@@ -29,3 +29,7 @@ If this is truly on a new machine, it will create a new Sqlite database. You'll 
 
 You can copy the `secret-key` from what you see --- it was generated to be unique.
 
+# Credits / License
+
+Emoji icons by http://emojione.com/developers/.
+

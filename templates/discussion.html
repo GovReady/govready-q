@@ -1,4 +1,7 @@
 {% load static %}
+<script src="https://cdn.jsdelivr.net/emojione/2.1.4/lib/js/emojione.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/emojione/2.1.4/assets/css/emojione.min.css"/>
+
 <script src="{% static "vendor/push.js" %}"> </script>
 
 <style>
@@ -39,9 +42,18 @@
 #discussion .comment .commands a {
   margin-right: 1em;
 }
+#discussion .comment .commands .react-with-emoji {
+  color: #999;
+}
+  #discussion .comment .commands .react-with-emoji:hover {
+    color: #00A;
+  }
 #discussion .comment .ifeditpriv { display: none; }
 #discussion .comment.has-edit-priv .ifeditpriv { display: inline; }
 #discussion .comment.author-is-self .ifnotauthor { display: none; }
+#discussion .comment .reply {
+  margin-top: 1.25em;
+}
 #discussion .event {
   margin: 15px 0;
 }
@@ -54,6 +66,19 @@
   padding-bottom: 5px;
   border-top: 1px solid #AAA;
 }
+
+#emoji-selector .emoji {
+  display: inline-block;
+  margin-right: 1px;
+  cursor: pointer;
+  padding: 3px;
+}
+  .emojione { margin: 0; }
+  #emoji-selector .emoji.active {
+    padding: 2px;
+    border: 1px solid #DDE;
+    background-color: #EEF;
+  }
 </style>
 
 <div id="discussion" style="display: none;">
@@ -115,7 +140,9 @@
           <a title="Edit your comment" class="ifeditpriv" href="#" onclick="return begin_comment_edit(this);">
             <i class="glyphicon glyphicon-pencil"></i>
           </a>
-          <a title="React to this comment with an emoji" class="ifnotauthor">
+          <span class="emoji-reactions">
+          </span>
+          <a title="React to this comment with an emoji" class="ifnotauthor react-with-emoji" href="#" onclick="return begin_emoji_reaction(event, this);">
             <i class="glyphicon glyphicon-plus"></i>
             <i class="glyphicon glyphicon-heart"></i>
           </a>
@@ -123,7 +150,20 @@
             <i class="glyphicon glyphicon-trash"></i>
           </a>
       </div>
+
+      <div class="reactions">
+      </div>
     </div>
+  </div>
+</div>
+
+<div id="reply-template" style="display: none">
+  <div class="reply">
+    <span class="comment-author">...</span>
+    <span class="comment-author-role"></span>
+    reacted
+    <span class="comment-emojis"></span>
+    <span class="comment-date"></span>
   </div>
 </div>
 
@@ -141,10 +181,54 @@
   </div>
 </div>
 
+<div id="emoji-selector" style="display: none; border-top: 10px solid rgba(255,255,255, .5); border-left: 10px solid rgba(255,255,255, .5);">
+  <div class="panel panel-default" style="margin: 0">
+    <div class="panel-heading" style="padding: 5px 15px;">
+      <button type="button" class="close" aria-label="Close" onclick="save_emoji_reaction()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <b>React with an emoji</b>
+    </div>
+    <div class="panel-body">
+      <div>
+      </div>  
+      <div>
+        <div class="emoji" title="React with a heart!">heart</div>
+        <div class="emoji" title="React with a thumbs-up!">thumbsup</div>
+        <div class="emoji" title="React with a thumbs-down!">thumbsdown</div>
+        <div class="emoji" title="React with a smiley face!">smile</div>
+        <div class="emoji" title="React with a frowning face!">slight_frown</div>
+      </div>
+    </div>
+    </div>
+  </div>
+
 <script>
+
+function init_discussion_html() {
+  // Clicks outside of the emoji-selector trigger closing & saving the dialog.
+  $(document).click(save_emoji_reaction);
+  $('#emoji-selector').click(function(event) { event.stopPropagation(); });
+  $('#emoji-selector .emoji').each(function() {
+    // Initialize - replace text in markup with images.
+    var shortname = $(this).text();
+    $(this)
+      .html(emojione.toImage(":" + shortname + ":"))
+      .click(function() { $(this).toggleClass('active'); })
+      .attr('data-emoji-name', shortname);
+  });
+};
+
 var discussion_info = null;
 
 function display_discussion(discussion, is_page_load) {
+  // first time initialization
+  if (window.init_discussion_html)
+    init_discussion_html();
+  else
+    delete window.init_discussion_html;
+
+  // remember what discussion is displayed
   discussion_info = discussion.discussion;
 
   // show the discussion
@@ -246,8 +330,22 @@ function show_notification(discussion) {
 }
 
 function render_comment(item) {
-  // Create and fill in a DOM node.
-  var n = $('#comment-template > div').clone();
+  // Update existing DOM node?
+  var n = $('#discussion .comment[data-id=ID], #discussion .reply[data-id=ID]'.replace(/ID/g, item.id));
+  var isnew = false;
+  if (n.length == 0) {
+    // Create and fill in a DOM node.
+    n = (!item.replies_to ? $('#comment-template') : $('#reply-template')).find('> div').clone();
+    isnew = true;
+  }
+
+  // Skip if the reaction is empty, i.e. if the emojis were edited-away.
+  if (item.replies_to && !item.emojis) {
+    n.remove();
+    return;
+  }
+
+  // Fill in.
   n.attr('data-id', item.id);
   n.attr('data-sort-order', item.date_posix);
   n.find('.comment-author').text(item.user.name);
@@ -260,10 +358,26 @@ function render_comment(item) {
     n.addClass('has-edit-priv');
   if (item.user.id == {{request.user.id}})
     n.addClass('author-is-self');
+  n.find('.comment-emojis').html('');
+  if (item.emojis) {
+    n.attr('data-emojis', item.emojis.join(','));
+    item.emojis.forEach(function(item) {
+      n.find('.comment-emojis').append(emojione.toImage(":" + item + ":"))
+    })
+  }
+
+  // The rest is only if we're seeing a new comment.
+  if (!isnew)
+    return;
 
   // Add to the DOM.
-  var c = $('#discussion .comment-thread');
-  c.append(n);
+  if (!item.replies_to) {
+    var c = $('#discussion .comment-thread');
+    c.append(n);
+  } else {
+    var parent = $('#discussion .comment[data-id=' + item.replies_to + ']');
+    parent.find('.reactions').append(n);
+  }
 
   // Remember the last comment we've seen, for polling.
   if (item.id > discussion_info.max_comment_id)
@@ -348,8 +462,8 @@ function do_comment_save(command_elem) {
     },
     controls: c.find('textarea, input, button'),
     success: function(res) {
-      c.attr('data-text', res.text);
-      c.find('.comment-text').html(res.text_rendered);
+      // update UI
+      render_comment(res);
       close_comment_edit(command_elem);
     }
   })
@@ -374,6 +488,73 @@ function do_delete_comment(command_elem) {
       })
     });
   return false;
+}
+
+var current_emoji_reaction = null;
+
+function begin_emoji_reaction(event, command_elem) {
+  // We have a click handler on the document to close the
+  // reaction dialog. But clicking on the button to open
+  // the dialog should not propagate and trigger that.
+  event.stopPropagation();
+
+  // Save any emoji reaction currently being edited.
+  if (current_emoji_reaction)
+    save_emoji_reaction();
+
+  // Initialize and show.
+  var c = get_comment_from_command_elem(command_elem);
+  current_emoji_reaction = c;
+  var et = c.find('.commands .react-with-emoji');
+  var es = $('#emoji-selector');
+
+  // reset state to previously reacted emojis
+  es.find('.emoji').removeClass('active');
+  var emojis = c.find('.reactions .author-is-self').attr('data-emojis');
+  if (emojis) {
+    emojis.split(',').forEach(function(shortname) {
+      es.find('.emoji').each(function() {
+        if (this.getAttribute('data-emoji-name') == shortname)
+          $(this).addClass('active');
+      });
+    });
+  }
+
+  es.css({
+    display: 'block',
+    position: 'absolute',
+    width: '20em',
+    left: et.position().left + et.width() + 5, // using position() rather than offset() because we're witihn a relatively positioned column (and the pop-up is defined within the same col, so that's ok)
+    top: et.position().top - 30
+  })
+  return false;
+}
+
+function save_emoji_reaction() {
+  var es = $('#emoji-selector').hide();
+  if (!current_emoji_reaction)
+    return;
+
+  // what emojis are selected
+  var emojis = [];
+  es.find('.emoji.active').each(function() {
+    emojis.push($(this).attr('data-emoji-name'));
+  })
+
+  // update db
+  ajax_with_indicator({
+    url: "{% url 'discussion-comment-react' %}",
+    method: "POST",
+    data: {
+      id: current_emoji_reaction.attr('data-id'),
+      emojis: emojis.join(",")
+    },
+    success: function(res) {
+      // updates UI
+      render_comment(res);
+    }
+  })
+  current_emoji_reaction = null;
 }
 
 function invite_user_to_discussion() {

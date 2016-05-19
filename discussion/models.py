@@ -92,6 +92,11 @@ class Comment(models.Model):
             ('discussion', 'user'),
         ]
 
+    def can_see(self, user):
+        if self.deleted:
+            return False
+        return self.discussion.is_participant(user)
+
     def can_edit(self, user):
         # If the comment has been deleted, it becomes locked for editing. This
         # shouldn't have a user-visible effect, since no one can see it anyway.
@@ -102,6 +107,14 @@ class Comment(models.Model):
         # a participant in a discussion, they can't edit their comments in that
         # discussion.
         return self.user == user and self.discussion.is_participant(user)
+
+    def push_history(self, field):
+        if not isinstance(self.extra, dict):
+            self.extra = { }
+        self.extra.setdefault("history", []).append({
+            "when": timezone.now().isoformat(), # make JSON-serializable
+            "previous-" + field: getattr(self, field),
+        })
 
     def render_context_dict(self):
         if self.deleted:
@@ -135,7 +148,8 @@ class Comment(models.Model):
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
             "text": self.text,
             "text_rendered": CommonMark.commonmark(self.text),
-            "notification_text": str(self.user) + ": " + self.text
+            "notification_text": str(self.user) + ": " + self.text,
+            "emojis": self.emojis.split(",") if self.emojis else None,
         }
 
 def reldate(date, ref):

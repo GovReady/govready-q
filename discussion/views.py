@@ -105,11 +105,7 @@ def edit_discussion_comment(request):
         return HttpResponseForbidden()
 
     # record edit history
-    if not isinstance(comment.extra, dict): comment.extra = { }
-    comment.extra.setdefault("history", []).append({
-        "when": timezone.now().isoformat(), # make JSON-serializable
-        "previous-text": comment.text,
-    })
+    comment.push_history('text')
 
     # edit
     comment.text = request.POST['text']
@@ -136,3 +132,31 @@ def delete_discussion_comment(request):
 
     # return new comment info
     return JsonResponse({ "status": "ok" })
+
+@login_required
+def save_reaction(request):
+    # get comment that is being reacted *to*
+    comment = get_object_or_404(Comment, id=request.POST['id'])
+
+    # can see it?
+    if not comment.can_see(request.user):
+        return HttpResponseForbidden()
+
+    # get the Comment that *reacts* to it
+    comment, is_new = Comment.objects.get_or_create(
+        discussion=comment.discussion,
+        replies_to=comment,
+        user=request.user,
+    )
+
+    # record edit history
+    comment.push_history('emojis')
+
+    # edit
+    comment.emojis = request.POST['emojis']
+
+    # save
+    comment.save()
+
+    # return new comment info
+    return JsonResponse(comment.render_context_dict())
