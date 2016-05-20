@@ -91,13 +91,6 @@ def homepage(request):
         return HttpResponseRedirect(Task.get_task_for_module(request.user, "account_settings").get_absolute_url()
             + "/start")
 
-    elif not Task.objects.filter(editor=request.user).exclude(project=None).exists() \
-        and not ProjectMembership.objects.filter(user=request.user).exists():
-        # Second task: Start a project if the user is not a member of any project
-        # *and* the user is not editing any modules (they could be editing a module
-        # in a project they are not a member of).
-        return HttpResponseRedirect("/tasks/new-project")
-
     else:
         # Ok, show user what they can do.
         projects = { }
@@ -144,7 +137,7 @@ def homepage(request):
                 add_project(d.attached_to.task.project)["discussions"].append(d)
 
         projects = list(projects.values())
-            
+
         return render(request, "home.html", {
             "projects": projects,
         })
