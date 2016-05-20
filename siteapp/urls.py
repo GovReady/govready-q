@@ -12,6 +12,9 @@ urlpatterns = [
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),
 
+    # projects
+    url(r'projects/(?:(\d+)/(?:[\w\-]+)|system)?$', views.project),
+
     # invitations
     url(r'invitation/_send$', views.send_invitation, name="send_invitation"),
     url(r'invitation/_cancel$', views.cancel_invitation, name="cancel_invitation"),

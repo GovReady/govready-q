@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block head %}
+<style>
+.task.deleted span {
+  color: #DDD;
+  text-decoration: line-through;
+}
+.task .delete-task {
+	display: none;
+	color: #F66;
+	cursor: pointer;
+  text-decoration: none;
+}
+	.task:hover .delete-task {
+		display: inline;
+	}
+  .task.deleted .delete-task:after {
+    content: "(undo)";
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div style="margin-bottom: 2em">
+  <h1 style="margin: 1em 0 0 0">{{title}}</h1>
+
+  {% if project %}
+  <div class="admins small" style="margin-top: 3px">
+    owners:
+    {% for user in project.get_admins %}
+      {{user}}
+    {% empty %}
+      (none) {# well that's odd #}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+{% if open_invitations %}
+  <h2>Invitations waiting for a response...</h2>
+  <div class="invitation-list">
+  {% for inv in open_invitations %}
+    <p data-id="{{inv.id}}" title="{{inv.text}}">
+      On {{inv.created|date}} you invited {{inv.to_display}} {{inv.purpose}}.
+      (<a href="javascript:cancel_invitation({{inv.id}});">cancel</a>)
+    </p>
+  {% endfor %}
+  </div>
+{% endif %}
+
+<h2>
+  {% if project %}Modules you are editing
+  {% else %}Modules{% endif %}
+</h2>
+{% for task in tasks %}
+  <p class="task" data-id="{{task.id}}">
+    <span>
+  	 <a href="{{task.get_absolute_url}}{% if not task.is_finished %}/start{% endif %}">{{task.title}}</a> ({{task.get_status_display}})
+    </span>
+  	<i class="delete-task glyphicon glyphicon-trash"></i>
+  </p>
+{% empty %}
+  <p>You have not started any modules in this project.</p>
+{% endfor %}
+
+{% if others_tasks|length %}
+  <h2>Other modules in this project (edited by others)</h2>
+  {% for task in others_tasks %}
+    <p class="task" data-id="{{task.id}}">
+      <span>
+      	<a href="{{task.get_absolute_url}}">{{task.title}}</a> (edited by {{task.editor}}; {{task.get_status_display}})
+      </span>
+    	{% if is_admin %}<i class="delete-task glyphicon glyphicon-trash"></i>{% endif %}
+    </p>
+  {% endfor %}
+{% endif %}
+
+{% if discussions|length %}
+  <h2>Discussions you are participating in as a guest</h2>
+  {% for discussion in discussions %}
+    <p><a href="{{discussion.get_absolute_url}}">{{discussion.title}}</a></p>
+  {% endfor %}
+{% endif %}
+
+{% if project and is_admin %}
+  {# can only start a new module within a project you are the admin of #}
+  <hr>
+
+  <form class="form-inline" method="get" action="/tasks/start" onsubmit="if ($('#start-module-{{project.id}}').val() == '') { alert('Select a module.'); return false; }">
+    <input type="hidden" name="project" value="{{project.id}}"/>
+    {% csrf_token %}
+    <div class="form-group" style="margin-right: 1em">
+      <label for="start-module-{{project.id}}">Start answering a new module...</label>
+      <br>
+      <select id="start-module-{{project.id}}" class="form-control" name="module">
+        <option value="">Select...</option>
+        {% for m in startable_modules %}
+          <option value="{{m.id}}">{{m.title}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin-right: 1em">
+      <script>var project_invitation_info_{{project.id}} = {{send_invitation|safe}};</script>
+      <label></label>
+      <br>
+      <button type="submit" class="btn btn-primary">Start Module</button>
+      <button class="btn btn-warning" onclick="return invite_user_to_start_module(project_invitation_info_{{project.id}});">Invite to Answer ...</button>
+    </div>
+  </form>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function() {
+	$('.task .delete-task').click(function() {
+    var task_node = $(this).parent('p');
+		var task_id = task_node.attr('data-id');
+    var task_is_deleted = task_node.hasClass('deleted');
+    ajax_with_indicator({
+     url: '{% url "task_change_state" %}',
+     method: "POST",
+     data: {
+      id: task_id,
+      state: (task_is_deleted ? 'undelete' : 'delete')
+     },
+     success: function(res) {
+       task_node.toggleClass('deleted', !task_is_deleted);
+     }
+    });		
+	})
+})
+
+function invite_user_to_start_module(info) {
+  var m = $('#start-module-' + info.project_id);
+  if (m.val() == '') {
+    alert('Select a module.');
+    return false;
+  }
+
+  var mt = m.find('option[value=' + m.val() + ']').text();
+
+  show_invite_modal(
+    'Start a Module (' + info.project_title + ')',
+    'Invite a colleague to answer the module ' + mt + '.',
+    info,
+    'Can you give me a hand completing the module ' + mt + ' for ' + info.project_title + '?',
+    {
+      project: info.project_id,
+      into_new_task_module_id: m.val()
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function cancel_invitation(invid) {
+  ajax_with_indicator({
+   url: '{% url "cancel_invitation" %}',
+   method: "POST",
+   data: {
+    id: invid
+   },
+   success: function(res) {
+     show_modal_error("Cancel Invitation", "The invitation has been canceled.");
+     var n = $('.invitation-list p[data-id=' + invid + ']');
+     n.slideUp(function() { n.remove(); })
+   }
+  });
+}
+</script>
+{% endblock %}

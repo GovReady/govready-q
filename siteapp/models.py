@@ -58,7 +58,7 @@ class Project(models.Model):
 
     def get_absolute_url(self):
         from django.utils.text import slugify
-        return "/tasks/projects/%d/%s" % (self.id, slugify(self.title))
+        return "/projects/%d/%s" % (self.id, slugify(self.title))
 
     def get_admins(self):
         return User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
@@ -68,6 +68,25 @@ class Project(models.Model):
         # names in the email addresses of the admins of this project.
         return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True)))
 
+    def has_read_priv(self, user):
+        # Who can see this project? Team members + anyone editing a task within
+        # this project + anyone that's a guest in dicussion within this project.
+        from guidedmodules.models import Task
+        if ProjectMembership.objects.filter(project=self, user=user).exists():
+            return True
+        if Task.objects.filter(editor=user, project=self).exists():
+            return True
+        for d in self.get_discussions_in_project_as_guest(user):
+            return True
+        return False
+
+    def get_discussions_in_project_as_guest(self, user):
+        from discussion.models import Discussion
+        for d in Discussion.objects.filter(external_participants=user):
+            if d.attached_to.task.project == self:
+                if not d.attached_to.task.deleted_at:
+                    yield d
+    
     def get_invitation_purpose(self, invitation):
         into_new_task_module_id = invitation.target_info.get('into_new_task_module_id')
         if into_new_task_module_id:

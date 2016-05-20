@@ -92,55 +92,73 @@ def homepage(request):
             + "/start")
 
     else:
-        # Ok, show user what they can do.
-        projects = { }
+        # Ok, show user what they can do --- list the projects they
+        # are involved with.
+        projects = set()
 
-        def add_project(project):
-            return projects.setdefault(project, {
-                "project": project,
-                "tasks": [],
-                "others_tasks": [],
-                "discussions": [],
-                "open_invitations": [
-                    inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
-                    if not inv.is_expired() ]
-                    if project else None,
-                "startable_modules": Module.get_anserable_modules()
-                    if project else None,
-                "send_invitation": json.dumps(Invitation.form_context_dict(request.user, project))
-                    if project else None,
-            })
-
-        # Add all of the Projects the user is a member of. These should show up even
-        # if the user has no Tasks within them.
+        # Add all of the Projects the user is a member of.
         for pm in ProjectMembership.objects.filter(user=request.user):
-            add_project(pm.project)
+            projects.add(pm.project)
+            if pm.is_admin:
+                # Annotate with whether the user is an admin of the project.
+                pm.project.user_is_admin = True
 
-        # Collect all of the tasks the user can see. That may include tasks that are
-        # in projects that the user is not a member of.
-        seen_tasks = set()
+        # Add projects that the user is the editor of a task in, even if
+        # the user isn't a team member of that project.
         for task in Task.get_all_tasks_readable_by(request.user).order_by('-created'):
-            add_project(task.project)[
-                "tasks" if task.editor == request.user else "others_tasks"
-            ].append(task)
-            seen_tasks.add(task)
+            projects.add(task.project)
 
-            # Annotate task object with whether the user has write priv
-            # on it - because the user can delete these.
-            task.user_has_write_priv = task.has_write_priv(request.user)
+        # Add projects that the user is participating in a Discussion in
+        # as a guest.
+        for d in Discussion.objects.filter(external_participants=request.user):
+            projects.add(d.attached_to.task.project)
 
-        # Including tasks the user is participating in a discussion about
-        # (but would not otherwise have read permission).
-        for d in Discussion.objects.filter(external_participants=request.user).order_by('-created'):
-            if not d.attached_to.task.has_read_priv(request.user) \
-                and d.attached_to.task not in seen_tasks:
-                add_project(d.attached_to.task.project)["discussions"].append(d)
-
-        projects = list(projects.values())
+        # Sort.
+        projects = sorted(projects, key = lambda x : (x is not None, x.updated if x else None), reverse=True)
 
         return render(request, "home.html", {
             "projects": projects,
         })
+
+
+@login_required
+def project(request, project_id=None):
+    if project_id != None:
+        project = get_object_or_404(Project, id=project_id)
+    else:
+        # The "None" project represents the container for the user's
+        # system account modules.
+        project = None
+
+    if project:
+        # Check authorization.
+        if not project.has_read_priv(request.user):
+            return HttpResponseForbidden()
+
+        # Redirect if slug is not canonical. We do this after checking for
+        # read privs so that we don't reveal the task's slug to unpriv'd users.
+        if request.path != project.get_absolute_url():
+            return HttpResponseRedirect(task.get_absolute_url())
+
+    ret = {
+        "is_admin": not project or request.user in project.get_admins(),
+        "project": project,
+        "title": project.title if project else "System Account",
+        "tasks": Task.get_all_tasks_readable_by(request.user).filter(editor=request.user, project=project),
+        "others_tasks": Task.get_all_tasks_readable_by(request.user).filter(project=project).exclude(editor=request.user),
+    }
+
+    if project:
+        ret.update({
+            "discussions": list(project.get_discussions_in_project_as_guest(request.user)),
+            "open_invitations": [
+                inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
+                if not inv.is_expired() ],
+            "startable_modules": Module.get_anserable_modules(),
+            "send_invitation": json.dumps(Invitation.form_context_dict(request.user, project)),
+        })
+
+    return render(request, "project.html", ret)
 
 # INVITATIONS
 

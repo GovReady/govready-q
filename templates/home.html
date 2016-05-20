@@ -6,21 +6,14 @@ Home
 
 {% block head %}
 <style>
-.task.deleted span {
-  color: #DDD;
-  text-decoration: line-through;
+.project {
+  margin: 1em 0;
+  background-color: #EEF;
+  border-radius: 10px;
+  padding: 15px;
 }
-.task .delete-task {
-	display: none;
-	color: #F66;
-	cursor: pointer;
-  text-decoration: none;
-}
-	.task:hover .delete-task {
-		display: inline;
-	}
-  .task.deleted .delete-task:after {
-    content: "(undo)";
+  .project a {
+    font-weight: bold;
   }
 </style>
 {% endblock %}
@@ -29,7 +22,7 @@ Home
 <h1 style="margin: 1em 0">Home</h1>
 
 <div style="margin: 2em 0">
-<p>You can continue working on a module you have already started or start a new module.</p>
+<p>You can continue working on a project you have already started or start a new one.</p>
 </div>
 
 <div style="float: right; margin-bottom: 1em">
@@ -37,164 +30,27 @@ Home
 </div>
 <div class="clearfix"> </div>
 
-{% for item in projects %}
-<div class="panel panel-primary">
-  <div class="panel-heading">
-    <h3 style="margin: 0">
-      {% if item.project %}
-        {{item.project.title}}
-      {% else %}
-        Account Modules
-      {% endif %}
-    </h3>
-    {% if item.project %}
-    <div class="admins small" style="margin-top: 3px">
-      owners:
-      {% for user in item.project.get_admins %}
-        {{user}}
-      {% empty %}
-        (none) {# well that's odd #}
-      {% endfor %}
-    </div>
+{% for project in projects %}
+<div class="project">
+  <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
+    {% if project %}
+      {{project.title}}
+    {% else %}
+      Account Modules
     {% endif %}
+  </a>
+
+  {% if project %}
+  <div class="admins small" style="margin-top: 3px">
+    owners:
+    {% for user in project.get_admins %}
+      {{user}}
+    {% empty %}
+      (none) {# well that's odd #}
+    {% endfor %}
   </div>
-  <div class="panel-body">
-    {% if item.open_invitations %}
-      <h4>Invitations waiting for a response...</h4>
-      <div class="invitation-list">
-      {% for inv in item.open_invitations %}
-        <p data-id="{{inv.id}}" title="{{inv.text}}">
-          On {{inv.created|date}} you invited {{inv.to_display}} {{inv.purpose}}.
-          (<a href="javascript:cancel_invitation({{inv.id}});">cancel</a>)
-        </p>
-      {% endfor %}
-      </div>
-    {% endif %}
-
-    {% if item.project %}<h4>Modules you are editing</h4>{% endif %}
-    {% if item.tasks|length %}
-      {% for task in item.tasks %}
-        <p class="task" data-id="{{task.id}}">
-          <span>
-        	 <a href="{{task.get_absolute_url}}{% if not task.is_finished %}/start{% endif %}">{{task.title}}</a> ({{task.get_status_display}})
-          </span>
-        	{% if task.user_has_write_priv %}<i class="delete-task glyphicon glyphicon-trash"></i>{% endif %}
-        </p>
-      {% endfor %}
-    {% endif %}
-    {% if item.tasks|length == 0 %}
-      <p>You have not started any modules in this project.</p>
-    {% endif %}
-
-    {% if item.others_tasks|length %}
-      <h4>Other modules in this project (edited by others)</h4>
-      {% for task in item.others_tasks %}
-        <p class="task" data-id="{{task.id}}">
-          <span>
-          	<a href="{{task.get_absolute_url}}">{{task.title}}</a> (edited by {{task.editor}}; {{task.get_status_display}})
-          </span>
-        	{% if task.user_has_write_priv %}<i class="delete-task glyphicon glyphicon-trash"></i>{% endif %}
-        </p>
-      {% endfor %}
-    {% endif %}
-
-    {% if item.discussions|length %}
-      <h4>Discussions you are participating in as a guest</h4>
-      {% for discussion in item.discussions %}
-        <p><a href="{{discussion.get_absolute_url}}">{{discussion.title}}</a></p>
-      {% endfor %}
-    {% endif %}
-
-    {% if item.project %}
-      {# can only start a new module within a project #}
-      <hr>
-
-      <form class="form-inline" method="get" action="/tasks/start" onsubmit="if ($('#start-module-{{item.project.id}}').val() == '') { alert('Select a module.'); return false; }">
-        <input type="hidden" name="project" value="{{item.project.id}}"/>
-        {% csrf_token %}
-        <div class="form-group" style="margin-right: 1em">
-          <label for="start-module-{{item.project.id}}">Start answering a new module...</label>
-          <br>
-          <select id="start-module-{{item.project.id}}" class="form-control" name="module">
-            <option value="">Select...</option>
-            {% for m in item.startable_modules %}
-              <option value="{{m.id}}">{{m.title}}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-group" style="margin-right: 1em">
-          <script>var project_invitation_info_{{item.project.id}} = {{item.send_invitation|safe}};</script>
-          <label></label>
-          <br>
-          <button type="submit" class="btn btn-primary">Start Module</button>
-          <button class="btn btn-warning" onclick="return invite_user_to_start_module(project_invitation_info_{{item.project.id}});">Invite to Answer ...</button>
-        </div>
-      </form>
-    {% endif %}
-  </div>
+  {% endif %}
 </div>
 {% endfor %}
 
-{% endblock %}
-
-{% block scripts %}
-<script>
-$(function() {
-	$('.task .delete-task').click(function() {
-    var task_node = $(this).parent('p');
-		var task_id = task_node.attr('data-id');
-    var task_is_deleted = task_node.hasClass('deleted');
-    ajax_with_indicator({
-     url: '{% url "task_change_state" %}',
-     method: "POST",
-     data: {
-      id: task_id,
-      state: (task_is_deleted ? 'undelete' : 'delete')
-     },
-     success: function(res) {
-       task_node.toggleClass('deleted', !task_is_deleted);
-     }
-    });		
-	})
-})
-
-function invite_user_to_start_module(info) {
-  var m = $('#start-module-' + info.project_id);
-  if (m.val() == '') {
-    alert('Select a module.');
-    return false;
-  }
-
-  var mt = m.find('option[value=' + m.val() + ']').text();
-
-  show_invite_modal(
-    'Start a Module (' + info.project_title + ')',
-    'Invite a colleague to answer the module ' + mt + '.',
-    info,
-    'Can you give me a hand completing the module ' + mt + ' for ' + info.project_title + '?',
-    {
-      project: info.project_id,
-      into_new_task_module_id: m.val()
-    },
-    function() { window.location.reload() }
-  );
-
-  return false;
-}
-
-function cancel_invitation(invid) {
-  ajax_with_indicator({
-   url: '{% url "cancel_invitation" %}',
-   method: "POST",
-   data: {
-    id: invid
-   },
-   success: function(res) {
-     show_modal_error("Cancel Invitation", "The invitation has been canceled.");
-     var n = $('.invitation-list p[data-id=' + invid + ']');
-     n.slideUp(function() { n.remove(); })
-   }
-  });
-}
-</script>
 {% endblock %}

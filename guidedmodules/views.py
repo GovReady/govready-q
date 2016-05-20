@@ -41,12 +41,6 @@ def new_project(request):
         "form": form,
     })
 
-def x():
-    p = Project.objects.create(
-        title="New Project",
-        notes="Description of your new project.")
-    ProjectMembership.objects.create(project=p, user=request.user, is_admin=True)
-    return HttpResponseRedirect(p.get_absolute_url())
 
 @login_required
 def new_task(request):
@@ -55,8 +49,12 @@ def new_task(request):
     # Validate that the module ID is valid.
     m = Module.load(request.GET['module'])
 
-    # Validate that the user is permitted to create a task within the indicated Project.
-    project = get_object_or_404(Project, id=request.GET["project"], members__user=request.user)
+    # Get the project.
+    project = get_object_or_404(Project, id=request.GET["project"])
+
+    # Can the user create a task within this project?
+    if request.user not in project.get_admins():
+        return HttpResponseForbidden()
 
     # Create and redirect to start it.
     task = Task.objects.create(
