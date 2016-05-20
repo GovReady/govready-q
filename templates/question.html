@@ -11,6 +11,9 @@ Next Question: {{q.title}}
 #question form {
   margin: 2em 0;
 }
+  #question form.disabled label {
+    color: #777;
+  }
 
 #question-prompt {
   font-weight: bold;
@@ -23,7 +26,7 @@ Next Question: {{q.title}}
     {% include "task-header.html" with col_width="4" col_active="questions" %}
 
     <div id="question" style="margin: 2em 0">
-        <form method="post">
+        <form method="post" {% if not write_priv %}class="disabled"{% endif %}>
             {% csrf_token %}
 
             <input type="hidden" name="question" value="{{q.id}}">
@@ -153,14 +156,16 @@ Next Question: {{q.title}}
 
             {% endif %}
 
-            <button type="submit" class="btn btn-success" {% if not write_priv %}disabled title="Only the editor can change the answer to this question."{% endif %}>
+            {% if write_priv %}
+            <button type="submit" class="btn btn-success">
               {% if not request.GET.q %}Next{% else %}Submit{% endif %}
               &raquo;
             </button>
 
-            {% if answer.is_answered and write_priv %}
+            {% if answer.is_answered %}
               <button type="submit" class="btn btn-danger btn-sm"
                 onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
+            {% endif %}
             {% endif %}
         </form>
 
@@ -208,7 +213,12 @@ Next Question: {{q.title}}
 {% block scripts %}
 <script>
 $(function() {
-    $('#inputctrl').focus();
+    {% if write_priv %}
+      $('#inputctrl').focus();
+    {% else %}
+      $('#question form input').prop('disabled', true);
+    {% endif %}
+
     {% if discussion %}
     {# a discussion already exists, so show it #}
     start_a_discussion(true); // is idempotent
