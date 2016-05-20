@@ -58,17 +58,17 @@ def login_view(request, invitation=None):
             new_user_form = AuthenticationForm(request.POST)
             if not new_user_form.errors:
                 from email_validator import EmailNotValidError
+                from .betteruser import CreateUserException
                 try:
                     # Create account.
-                    user = User.get_or_create(new_user_form.cleaned_data['email'])
-                    user.set_password(new_user_form.cleaned_data['password'])
+                    user = User.create(new_user_form.cleaned_data['email'], new_user_form.cleaned_data['password'])
                     user.save()
 
                     # Log user in.
                     user = authenticate(user_object=user)
                     login(request, user)
                     return HttpResponseRedirect(redirect_to)
-                except EmailNotValidError as e:
+                except (EmailNotValidError, CreateUserException) as e:
                     new_user_form.errors["email"] = [str(e)]
 
     # Render.

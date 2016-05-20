@@ -30,6 +30,10 @@ class IncorrectCredentials(LoginException):
 	def __str__(self):
 		return "The email address and password did not match an account here."
 
+class CreateUserException(Exception):
+	"""A call to User.create failed."""
+	pass
+
 class UserManagerBase(models.Manager):
 	def _get_user_class(self):
 		return User
@@ -68,45 +72,43 @@ class UserBase(AbstractBaseUser, PermissionsMixin):
 	# must set it to a Manager that knows what class this is for.
 
 	@classmethod # first argument is the concrete User class
-	def get_or_create(User, email):
+	def create(User, email, password):
 		# Normalize the email address prior to checking if it is in the database.
 		# See the email validation library's README for why that's important,
 		# particularly for internationalized addresses.
 		#
 		# If the email address is not valid, raise an EmailNotValidError.
-		email = validate_email(email, check_deliverability=False)["email"]
+		email = validate_email(email, check_deliverability=settings.VALIDATE_EMAIL_DELIVERABILITY)\
+			["email"]
 
-		# Fetch an existing User for this email address, if present.
+		# Create a new user.
 		try:
-			# Does the user exist?
-			return User.objects.get(email=email)
-		except User.DoesNotExist:
-			# Create a new user.
+			# In order to recover from an IntegrityError
+			# we must wrap the error-prone part in a
+			# transaction. Otherwise we can't execute
+			# further queries from the except block.
+			# Not sure why. Occurs w/ Sqlite.
+			with transaction.atomic():
+				# Try to create it.
+				user = User(email=email)
+				user.set_password(password)
+				user.save()
+				return user
+		except IntegrityError:
+			# Creation failed (unique key violation on username).
+			# It might be because of a race condition --- the user
+			# might have just been created in another thread. Or
+			# because a user already exists with that email address.
+			# If the credentials match, which would happen in a
+			# race condition, just return the existing user.
+			user = authenticate(email=email, password=password)
+			if user:
+				return user
 
-			# We've already validated the email address's syntax and normalized it.
-			# If we're configured to also check deliverability, do that now. We skip
-			# that during login. This raises an EmailNotValidError (in particlar a
-			# EmailUndeliverableError) on failure.
-			if settings.VALIDATE_EMAIL_DELIVERABILITY:
-				validate_email(email, check_deliverability=True)
+			# Otherwise, there is a user with that email and the
+			# credentials don't match.
+			raise CreateUserException("A user with that email address already exists.")
 
-			try:
-				# In order to recover from an IntegrityError
-				# we must wrap the error-prone part in a
-				# transaction. Otherwise we can't execute
-				# further queries from the except block.
-				# Not sure why. Occurs w/ Sqlite.
-				with transaction.atomic():
-					# Try to create it.
-					user = User(email=email)
-					user.set_unusable_password()
-					user.save()
-					return user
-			except IntegrityError:
-				# Creation failed (unique key violation on username),
-				# so try to get it again. If this fails, something
-				# weird happened --- just raise an exception then.
-				return User.objects.get(email=email)
 
 	@classmethod # first argument is the concrete User class
 	def authenticate(User, email, password):
