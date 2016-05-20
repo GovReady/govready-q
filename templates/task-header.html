@@ -3,6 +3,9 @@
   margin: 2em 0 5px 0;
   color: #888;
 }
+  #project-name a {
+    color: #666;
+  }
 h1 { margin: 0; }
 #progress-context {
   margin-top: 10px;
@@ -22,10 +25,12 @@ h1 { margin: 0; }
 </style>
 
 <div id="project-name">
-  {{task.project.title}}
+  {% if task.project %}
+    <a href="{{task.project.get_absolute_url}}">{{task.project.title}}</a>
+  {% endif %}
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule %}
-      (submodule of {{supermodule.question.task.title}})
+      (submodule of <a href="{{supermodule.question.get_absolute_url}}">{{supermodule.question.task.title}})</a>
     {% endif %}
   {% endwith %}
 </div>
