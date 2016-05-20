@@ -48,16 +48,14 @@ h1 { margin: 0; }
 {% if task.editor == request.user %}
 
 {% else %}
-<div class="panel panel-danger" style="margin-top: 30px">
-  <div class="panel-heading">Someone else is editing this module</div>
-  <div class="panel-body">
-    This module is being edited by {{task.editor}}.
+<div class="text-danger small" style="margin-top: 30px">
+    <i class="glyphicon glyphicon-alert" style="margin-top: 4px; margin-right: 2px"></i>
+    {{task.editor}} is editing this module.
     {% if write_priv %}
       But you are a project admin so you can edit it.
     {% else %}
       You cannot make changes to it.
     {% endif %}
-  </div>
 </div>
 {% endif %}
 
