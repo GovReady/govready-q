@@ -42,9 +42,11 @@ questions:
         text: Intranet or public web page
       - key: git
         text: Git repo like GitHub or GitLab
+      - key: NA
+        text: Not applicable.
     impute:
       - condition: pol_q1 == 'no'
-        value: NA
+        value: ~
 
   - id: pol_q3
     title:  Less likely policies exist?
@@ -58,7 +60,7 @@ questions:
     type: yesno
     impute:
       - condition: pol_q1 == 'no'
-        value: don't know
+        value: ~
 
 output:
   - format: markdown
