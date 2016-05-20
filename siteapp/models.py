@@ -60,6 +60,9 @@ class Project(models.Model):
         from django.utils.text import slugify
         return "/tasks/projects/%d/%s" % (self.id, slugify(self.title))
 
+    def get_admins(self):
+        return User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+
     def get_owner_domains(self):
         # Utility function for the admin/debugging to quickly see the domain
         # names in the email addresses of the admins of this project.

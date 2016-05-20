@@ -47,6 +47,16 @@ Home
         Account Modules
       {% endif %}
     </h3>
+    {% if item.project %}
+    <div class="admins small" style="margin-top: 3px">
+      owners:
+      {% for user in item.project.get_admins %}
+        {{user}}
+      {% empty %}
+        (none) {# well that's odd #}
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
   <div class="panel-body">
     {% if item.open_invitations %}
