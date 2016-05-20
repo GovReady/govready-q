@@ -422,7 +422,7 @@ class RenderedAnswer:
 
     def __str__(self):
         if self.question.type == "yesno":
-            return "Yes" if self.answer else "No"
+            return "Yes" if self.answer == "yes" else "No"
         if self.question.type == "choice":
             return self.question.get_choice(self.answer)["text"]
         if self.question.type == "multiple-choice":
