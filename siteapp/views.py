@@ -108,7 +108,9 @@ def homepage(request):
                 "tasks": [],
                 "others_tasks": [],
                 "discussions": [],
-                "open_invitations": Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
+                "open_invitations": [
+                    inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
+                    if not inv.is_expired() ]
                     if project else None,
                 "startable_modules": Module.get_anserable_modules()
                     if project else None,
@@ -129,6 +131,10 @@ def homepage(request):
                 "tasks" if task.editor == request.user else "others_tasks"
             ].append(task)
             seen_tasks.add(task)
+
+            # Annotate task object with whether the user has write priv
+            # on it - because the user can delete these.
+            task.user_has_write_priv = task.has_write_priv(request.user)
 
         # Including tasks the user is participating in a discussion about
         # (but would not otherwise have read permission).

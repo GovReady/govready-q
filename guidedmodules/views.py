@@ -182,18 +182,28 @@ def next_question(request, taskid, taskslug, intropage=None):
 
     # Does the user have read privs here?
     def read_priv():
-        if task.has_read_priv(request.user):
+        if task.has_read_priv(request.user, allow_access_to_deleted=True):
+            # See below for checking if the task was deleted.
             return True
         if not taskq:
             return False
         d = Discussion.get_for(taskq)
         if not d:
             return False
-        if request.user in d.external_participants.all():
+        if d.is_participant(request.user):
             return True
         return False
     if not read_priv():
         return HttpResponseForbidden()
+
+    # We skiped the check for whether the Task is deleted above. Now
+    # check for that.
+    if task.deleted_at:
+        # The Task is deleted. If the user would have had access to it,
+        # show a more friendly page than an access denied. Discussion
+        # guests will have been denied above because is_participant
+        # will fail on deleted tasks.
+        return HttpResponse("This module was deleted by its editor or a project administrator.")
 
     # Redirect if slug is not canonical. We do this after checking for
     # read privs so that we don't reveal the task's slug to unpriv'd users.
@@ -245,3 +255,23 @@ def next_question(request, taskid, taskslug, intropage=None):
             "answer_answered_by_task_can_write": answer.answered_by_task.has_write_priv(request.user) if answer and answer.answered_by_task else None,
         })
         return render(request, "question.html", context)
+
+@login_required
+def change_task_state(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    task = get_object_or_404(Task, id=request.POST["id"])
+    if not task.has_write_priv(request.user, allow_access_to_deleted=True):
+        return HttpResponseForbidden()
+
+    if request.POST['state'] == "delete":
+        task.deleted_at = timezone.now()
+    elif request.POST['state'] == "undelete":
+        task.deleted_at = None
+    else:
+        return HttpResponseForbidden()
+
+    task.save(update_fields=["deleted_at"])
+
+    return HttpResponse("ok")

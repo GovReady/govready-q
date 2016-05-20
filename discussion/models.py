@@ -44,6 +44,14 @@ class Discussion(models.Model):
         return self.attached_to.task.title + ": " + self.attached_to.get_question().title
 
     def is_participant(self, user):
+        # No on is a participant of a dicussion attached to (a question
+        # of) a deleted Task.
+        if self.attached_to.task.deleted_at:
+            return False
+
+        # Participants are members of the project team of the task of
+        # the question this Discussion is attached to, plus the Discussion's
+        # external_participants.
         return (ProjectMembership.objects.filter(project=self.attached_to.project, user=user)) \
             or (user in self.external_participants.all())
 

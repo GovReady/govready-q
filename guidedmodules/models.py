@@ -17,6 +17,8 @@ class Task(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
+    deleted_at = models.DateTimeField(blank=True, null=True, db_index=True, help_text="If 'deleted' by a user, the date & time the Task was deleted.")
+
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     invitation_history = models.ManyToManyField('siteapp.Invitation', blank=True, help_text="The history of accepted invitations that had this Task as a target.")
@@ -35,19 +37,27 @@ class Task(models.Model):
         return "<Task [%d] %s %s>" % (self.id, self.title[0:30], repr(self.project))
 
     @staticmethod
-    def has_completed_task(user, module_id, project=None):
-        task = Task.objects.filter(project=project, editor=user, module_id=module_id).first()
-        if task is None:
-            return False
-        return task.is_finished()
+    def has_completed_task(user, module_id):
+        task = Task.get_task_for_module(user, module_id, create=False)
+        return task and task.is_finished()
 
     @staticmethod
-    def get_task_for_module(user, module_id):
+    def get_task_for_module(user, module_id, create=True):
         # Gets a task given a module_id. Use only with system modules
         # where a user can only have one Task for the module.
-        task, isnew = Task.objects.get_or_create(
-            editor=user,
-            module_id=module_id)
+
+        filters = {
+            "editor": user,
+            "module_id": module_id,
+            "project": None,
+            "deleted_at": None,
+        }
+
+        if not create:
+            # Check for existence first. If none exists, return None.
+            return Task.objects.filter(**filters).first()
+
+        task, isnew = Task.objects.get_or_create(**filters)
         if isnew:
             task.title = task.load_module().title
             task.save()
@@ -104,17 +114,24 @@ class Task(models.Model):
     @staticmethod
     def get_all_tasks_readable_by(user):
         # symmetric with has_read_priv
-        return (Task.objects.filter(editor=user)
-               | Task.objects.filter(project__members__user=user)).distinct()
+        return Task.objects.filter(
+            models.Q(editor=user) | models.Q(project__members__user=user),
+            deleted_at=None,
+            )
 
-    def has_read_priv(self, user):
-        if self.has_write_priv(user):
+    def has_read_priv(self, user, allow_access_to_deleted=False):
+        # symmetric get_all_tasks_readable_by has_read_priv
+        if self.deleted_at and not allow_access_to_deleted:
+            return False
+        if self.has_write_priv(user, allow_access_to_deleted=allow_access_to_deleted):
             return True
         if ProjectMembership.objects.filter(project=self.project, user=user).exists():
             return True
         return False
 
-    def has_write_priv(self, user):
+    def has_write_priv(self, user, allow_access_to_deleted=False):
+        if self.deleted_at and not allow_access_to_deleted:
+            return False
         if self.editor == user:
             # The editor.
             return True
@@ -132,9 +149,10 @@ class Task(models.Model):
                 + (" and to join the project team" if invitation.into_project else "")
 
     def is_invitation_valid(self, invitation):
-        # Invitation remains valid only if the user that sent it is still
-        # the editor.
-        return self.editor == invitation.from_user
+        # Invitation remains valid only if the user that sent it still
+        # has write privs to the Task (i.e. task is not deleted, user
+        # is the editor or an admin)
+        return self.has_write_priv(invitation.from_user)
 
     def accept_invitation(self, invitation, add_message):
         # Make this user the new editor.

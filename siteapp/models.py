@@ -212,7 +212,7 @@ class Invitation(models.Model):
             return True
 
         if not self.target.is_invitation_valid(self):
-            return False
+            return True
 
         return False
     is_expired.boolean = True
