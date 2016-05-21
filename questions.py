@@ -55,24 +55,6 @@ class Module(object):
     def __repr__(self):
         return "<Module '%s'>" % (self.title,)
 
-    @staticmethod
-    def get_anserable_modules():
-        import glob, os.path, rtyaml
-        for fn in glob.glob("modules/*.yaml"):
-            m = Module(rtyaml.load(open(fn)))
-            if m.answerable_in_project:
-                yield m
-
-    @staticmethod
-    def load(id):
-        # Sanity check id, since we're going to the filesystem.
-        import re
-        if re.search(r"[^a-z0-9\-_]", id):
-            raise ValueError(id)
-
-        import rtyaml
-        return Module(rtyaml.load(open("modules/%s.yaml" % id)))
-
     def next_question(self, questions_answered):
         # Compute the next question to ask the user, given the user's
         # answers to questions so far.
@@ -104,7 +86,7 @@ class Module(object):
 
         def is_answered(q):
             # Is q answered yet? Yes if the user has provided
-            # an answer, or if one of its skip conditions is
+            # an answer, or if one of its impute conditions is
             # met.
             return q.id in questions_answered.answers \
               or q.impute_answer(questions_answered)

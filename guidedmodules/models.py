@@ -7,10 +7,46 @@ from jsonfield import JSONField
 from questions import Module, ModuleAnswers
 from siteapp.models import User, Project, ProjectMembership
 
+class Module(models.Model):
+    key = models.SlugField(max_length=100, db_index=True, help_text="A slug-like identifier for the Module.")
+
+    visible = models.BooleanField(default=True, db_index=True, help_text="Whether the Module is offered to users.")
+    superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="When a Module is superseded by a new version, this points to the newer version.")
+
+    spec = JSONField(help_text="Module definition data.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __repr__(self):
+        # For debugging.
+        return "<Module [%d] %s%s %s>" % (self.id, "" if not self.superseded_by else "(old) ", self.key, self.spec["title"][0:30])
+
+    def get_questions(self):
+        # Return the ModuleQuestions in definition order.
+        return list(self.questions.order_by('definition_order'))
+
+class ModuleQuestion(models.Model):
+    module = models.ForeignKey(Module, related_name="questions", on_delete=models.PROTECT, help_text="The Module that this ModuleQuestion is a part of.")
+    key = models.SlugField(max_length=100, help_text="A slug-like identifier for the question.")
+
+    definition_order = models.IntegerField(help_text="An integer giving the order in which this question is defined by the Module.")
+    spec = JSONField(help_text="Module definition data.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        unique_together = [("module", "key")]
+
+    def __repr__(self):
+        # For debugging.
+        return "<ModuleQuestion [%d] %s.%s (%s)>" % (self.id, self.module.key, self.key, repr(self.module))
+
 class Task(models.Model):
-    project = models.ForeignKey(Project, blank=True, null=True, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
-    editor = models.ForeignKey(User, help_text="The user that has primary responsibility for completing this Task.")
-    module_id = models.CharField(max_length=128, help_text="The ID of the module being completed.")
+    project = models.ForeignKey(Project, blank=True, null=True, on_delete=models.PROTECT, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
+    editor = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that has primary responsibility for completing this Task.")
+    module = models.ForeignKey(Module, on_delete=models.PROTECT, help_text="The Module that this Task is answering.")
 
     title = models.CharField(max_length=256, help_text="The title of this Task. If the user is performing multiple tasks for the same module, this title would distiguish the tasks.")
     notes = models.TextField(blank=True, help_text="Notes set by the user about why they are completing this task.")
@@ -25,12 +61,12 @@ class Task(models.Model):
 
     class Meta:
         index_together = [
-            ('project', 'editor', 'module_id'),
+            ('project', 'editor', 'module'),
         ]
 
     def __str__(self):
         # For the admin.
-        return self.title + " (" + self.module_id + ")"
+        return self.title + " (" + str(self.module) + ")"
 
     def __repr__(self):
         # For debugging.
@@ -48,7 +84,7 @@ class Task(models.Model):
 
         filters = {
             "editor": user,
-            "module_id": module_id,
+            "module__key": module_id,
             "project": None,
             "deleted_at": None,
         }
@@ -66,10 +102,6 @@ class Task(models.Model):
     def get_absolute_url(self):
         from django.utils.text import slugify
         return "/tasks/%d/%s" % (self.id, slugify(self.title))
-
-    def load_module(self):
-        from questions import Module
-        return Module.load(self.module_id)
 
     def get_answers(self):
         m = self.load_module()
@@ -182,8 +214,8 @@ class Task(models.Model):
         return None
 
 class TaskQuestion(models.Model):
-    task = models.ForeignKey(Task, related_name="questions", help_text="The Task that this TaskQuestion is a part of.")
-    question_id = models.CharField(max_length=128, help_text="The ID of the question (within the Task's module) that this TaskQuestion represents.")
+    task = models.ForeignKey(Task, on_delete=models.PROTECT, related_name="questions", help_text="The Task that this TaskQuestion is a part of.")
+    question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT, help_text="The question (within the Task's module) that this TaskQuestion is answering.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by editors working on this question.")
 
@@ -192,15 +224,15 @@ class TaskQuestion(models.Model):
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     class Meta:
-        unique_together = [('task', 'question_id')]
+        unique_together = [('task', 'question')]
 
     def __str__(self):
         # For the admin.
-        return self.get_question().title + " | " + self.task.title + " (" + self.task.module_id + "." + self.question_id + ")"
+        return str(self.question) + " | " + str(self.task)
 
     def __repr__(self):
         # For debugging.
-        return "<TaskQuestion %s in %s>" % (self.question_id, repr(self.task))
+        return "<TaskQuestion %s in %s>" % (repr(self.question), repr(self.task))
 
     def get_absolute_url(self):
         from urllib.parse import quote
@@ -257,11 +289,11 @@ class TaskQuestion(models.Model):
 
 
 class TaskAnswer(models.Model):
-    question = models.ForeignKey(TaskQuestion, related_name="answers", help_text="The TaskQuestion that this is an aswer to.")
+    question = models.ForeignKey(TaskQuestion, related_name="answers", on_delete=models.PROTECT, help_text="The TaskQuestion that this is an aswer to.")
 
-    answered_by = models.ForeignKey(User, help_text="The user that provided this answer.")
+    answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
     value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
-    answered_by_task = models.ForeignKey(Task, blank=True, null=True, related_name="is_answer_to", help_text="A Task that supplies the answer for this question.")
+    answered_by_task = models.ForeignKey(Task, blank=True, null=True, related_name="is_answer_to", on_delete=models.PROTECT, help_text="A Task that supplies the answer for this question.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswer.")
 
