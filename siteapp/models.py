@@ -7,7 +7,6 @@ from django.contrib.contenttypes.models import ContentType
 from jsonfield import JSONField
 
 from .betteruser import UserBase, UserManagerBase
-from questions import Module
 
 
 class UserManager(UserManagerBase):
@@ -20,10 +19,10 @@ class User(UserBase):
     def __str__(self):
         from guidedmodules.models import TaskAnswer
         name = TaskAnswer.objects.filter(
-            question__task=self.get_settings_task(),
-            question__question_id="name").first()
+            task=self.get_settings_task(),
+            question__key="name").first()
         if name:
-            return name.value #+ " <" + self.email + ">"
+            return name.get_current_answer().value #+ " <" + self.email + ">"
         else:
             return self.email
 
@@ -32,7 +31,7 @@ class User(UserBase):
         return Task.objects.filter(
             editor=self,
             project=None,
-            module_id="account_settings").first()
+            module__key="account_settings").first()
 
     def render_context_dict(self):
         return {
@@ -90,7 +89,8 @@ class Project(models.Model):
     def get_invitation_purpose(self, invitation):
         into_new_task_module_id = invitation.target_info.get('into_new_task_module_id')
         if into_new_task_module_id:
-            return ("to edit a new module <%s>" % Module.load(into_new_task_module_id).title) \
+            from guidedmodules.models import Module
+            return ("to edit a new module <%s>" % Module.objects.get(id=into_new_task_module_id).title) \
                 + (" and to join the project team" if invitation.into_project else "")
         elif invitation.target_info.get('what') == 'join-team':
             return "to join this project team"
@@ -105,13 +105,12 @@ class Project(models.Model):
         # Create a new Task for the user to begin a module.
         into_new_task_module_id = invitation.target_info.get('into_new_task_module_id')
         if into_new_task_module_id:
-            from questions import Module
-            from guidedmodules.models import Task
-            m = Module.load(into_new_task_module_id)
+            from guidedmodules.models import Module, Task
+            m = Module.objects.get(id=into_new_task_module_id)
             task = Task.objects.create(
                 project=self,
                 editor=invitation.accepted_user,
-                module_id=into_new_task_module_id,
+                module=m,
                 title=m.title,
             )
 

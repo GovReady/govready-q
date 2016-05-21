@@ -30,7 +30,7 @@ h1 { margin: 0; }
   {% endif %}
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule %}
-      (submodule of <a href="{{supermodule.question.get_absolute_url}}">{{supermodule.question.task.title}})</a>
+      (submodule of <a href="{{supermodule.get_absolute_url}}">{{supermodule.task.title}})</a>
     {% endif %}
   {% endwith %}
 </div>

@@ -46,7 +46,7 @@ questions:
         text: Not applicable.
     impute:
       - condition: pol_q1 == 'no'
-        value: ~
+        value: NA
 
   - id: pol_q3
     title:  Less likely policies exist?
@@ -60,7 +60,7 @@ questions:
     type: yesno
     impute:
       - condition: pol_q1 == 'no'
-        value: ~
+        value: no
 
 output:
   - format: markdown

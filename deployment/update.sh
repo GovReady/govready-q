@@ -12,5 +12,8 @@ python3 manage.py migrate &&
 # Extract static assets.
 python3 manage.py collectstatic --noinput &&
 
+# Load updated modules into database.
+python3 manage.py load_modules &&
+
 # Kick the uWSGI process to reload modules.
 killall -HUP uwsgi_python3

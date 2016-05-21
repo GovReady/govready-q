@@ -2,7 +2,7 @@
 {% load q %}
 
 {% block title %}
-Next Question: {{q.title}}
+Next Question: {{q.spec.title}}
 {% endblock %}
 
 {% block body %}
@@ -36,32 +36,32 @@ Next Question: {{q.title}}
               {{prompt|safe}}
             </div>
 
-            {% if q.type == "text" %}
+            {% if q.spec.type == "text" %}
               <div class="form-group">
-                <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
-                <p class="help-block">{{q.help}}</p>
+                <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <p class="help-block">{{q.spec.help}}</p>
               </div>
 
-            {% elif q.type == "email" %}
+            {% elif q.spec.type == "email" %}
               <div class="form-group">
                 <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if answer.value %}value="{{answer.value}}"{% endif %}>
-                <p class="help-block">{{q.help}}</p>
+                <p class="help-block">{{q.spec.help}}</p>
               </div>
 
-            {% elif q.type == "password" %}
+            {% elif q.spec.type == "password" %}
               <div class="form-group">
                 <input name="value" type="password" class="form-control" id="inputctrl" placeholder="password">
-                <p class="help-block">{{q.help}}</p>
+                <p class="help-block">{{q.spec.help}}</p>
               </div>
 
-            {% elif q.type == "longtext" %}
+            {% elif q.spec.type == "longtext" %}
               <div class="form-group">
                 <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if answer.value %}{{answer.value}}{% endif %}</textarea>
-                <p class="help-block">{{q.help}}</p>
+                <p class="help-block">{{q.spec.help}}</p>
               </div>
 
-            {% elif q.type == "choice" %}
-              {% for choice in q.choices %}
+            {% elif q.spec.type == "choice" %}
+              {% for choice in q.spec.choices %}
               <div class="radio">
                 <label>
                   <input name="value" value="{{choice.key}}" type="radio" {% if answer.value == choice.key %}checked{% endif %}> {{choice.text}}
@@ -70,7 +70,7 @@ Next Question: {{q.title}}
               </div>
               {% endfor %}
 
-            {% elif q.type == "yesno" %}
+            {% elif q.spec.type == "yesno" %}
               <div class="radio">
                 <label>
                   <input name="value" value="no"  type="radio" {% if answer.value == "no" %}checked{% endif %}> No
@@ -81,10 +81,10 @@ Next Question: {{q.title}}
                   <input name="value" value="yes" type="radio" {% if answer.value == "yes" %}checked{% endif %}> Yes
                 </label>
               </div>
-              <p class="help-block">{{q.help}}</p>
+              <p class="help-block">{{q.spec.help}}</p>
 
-            {% elif q.type == "multiple-choice" %}
-              {% for choice in q.choices %}
+            {% elif q.spec.type == "multiple-choice" %}
+              {% for choice in q.spec.choices %}
               <div class="checkbox">
                 <label>
                   <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer.value %}checked{% endif %}> {{choice.text}}
@@ -93,13 +93,13 @@ Next Question: {{q.title}}
               </div>
               {% endfor %}
 
-              {% if q.choice_selection_min > 0 %}
-                  <p class="help-block">You must choose at least {{q.choice_selection_min}} {% if q.choice_selection_max %}and at most {{q.choice_selection_max}}{% endif %} options.</p>
-              {% elif q.choice_selection_max %}
-                  <p class="help-block">You may choose at most {{q.choice_selection_max}} options.</p>
+              {% if q.spec.min > 0 %}
+                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} options.</p>
+              {% elif q.spec.max %}
+                  <p class="help-block">You may choose at most {{q.spec.max}} options.</p>
               {% endif %}
 
-            {% elif q.type == "module" and answer_tasks|length == 0 %}
+            {% elif q.spec.type == "module" and answer_tasks|length == 0 %}
               {# The user must choose or start a module, but there is nothing to choose from, so show a simplified interface. #}
 
               <p>You will next begin the module {{answer_module.title}}.</p>
@@ -107,7 +107,7 @@ Next Question: {{q.title}}
               {# must be a radio so the client-side validation passes, but we hide it #}
               <input type="radio" name="value" value="__new" checked style="display: none"/>
 
-            {% elif q.type == "module" %}
+            {% elif q.spec.type == "module" %}
               {% if answer.answered_by_task %}
                 <p>A module has already been selected to provide the information. You can keep your selection{% if answer_tasks|length > 1 %}, select a different module,{% endif %} or start a new one.</p>
                 <div class="radio">
@@ -149,10 +149,10 @@ Next Question: {{q.title}}
                 </label>
               </div>
 
-              <p class="help-block">{{q.help}}</p>
+              <p class="help-block">{{q.spec.help}}</p>
 
             {% else %}
-                {{q.type}}
+                {{q.spec.type}}
 
             {% endif %}
 
@@ -183,7 +183,7 @@ Next Question: {{q.title}}
           {% if task.can_transfer_owner %}
             <li>
               {% if write_priv %}
-                <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this {% if q.type == "module" %}{{module.title}}{% endif %} module</a>
+                <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this {% if q.spec.type == "module" %}{{module.title}}{% endif %} module</a>
               {% else %}
                 The editor of this module can ask a colleague to finish this module
               {% endif %}
@@ -204,7 +204,7 @@ Next Question: {{q.title}}
   |
   module: <b>{{module.id}}</b>
   |
-  question: <b>{{q.id}}</b>
+  question: <b>{{q.key}}</b>
 </p>
 {% endif %}
 
@@ -226,7 +226,7 @@ $(function() {
     show_static_history({{history|json}});
     {% endif %}
 
-    {% if q.type == "text" or q.type == "password" or q.type == "email" or q.type == "longtext" %}
+    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email" or q.spec.type == "longtext" %}
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
@@ -234,7 +234,7 @@ $(function() {
         return undefined;
     }
 
-    {% elif q.type == "choice" or q.type == "yesno" or q.type == "module" %}
+    {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
     function validate_answer() {
         var val = $('#question input[type="radio"]:checked').val();
         if (!val)
@@ -242,18 +242,18 @@ $(function() {
         return undefined;
     }
 
-    {% elif q.type == "multiple-choice" %}
+    {% elif q.spec.type == "multiple-choice" %}
     function validate_answer() {
         // Collect the checked values.
         var vals = [];
         $('#question input[type="checkbox"]:checked').each(function() {
             vals.push($(this).val());
         });
-        if (vals.length < {{q.choice_selection_min}})
-            return "You must choose at least {{q.choice_selection_min}} options.";
-        {% if q.choice_selection_max %}
-        if (vals.length > {{q.choice_selection_max}})
-            return "You must choose at most {{q.choice_selection_max}} options.";
+        if (vals.length < {{q.spec.min}})
+            return "You must choose at least {{q.spec.min}} options.";
+        {% if q.spec.max %}
+        if (vals.length > {{q.spec.max}})
+            return "You must choose at most {{q.spec.max}} options.";
         {% endif %}
         return undefined;
     }

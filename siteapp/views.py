@@ -8,9 +8,8 @@ from django.db import transaction
 import json
 
 from .models import User, Project, Invitation
-from guidedmodules.models import Task, ProjectMembership
+from guidedmodules.models import Module, Task, ProjectMembership
 from discussion.models import Discussion
-from questions import Module
 
 def login_view(request, invitation=None):
     # when coming via an invitation confirmation page
@@ -154,7 +153,7 @@ def project(request, project_id=None):
             "open_invitations": [
                 inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
                 if not inv.is_expired() ],
-            "startable_modules": Module.get_anserable_modules(),
+            "startable_modules": Module.get_startable_modules(),
             "send_invitation": json.dumps(Invitation.form_context_dict(request.user, project)),
         })
 
@@ -181,7 +180,7 @@ def send_invitation(request):
         if request.POST.get("into_new_task_module_id"):
             target = from_project
             target_info = {
-                "into_new_task_module_id": request.POST.get("into_new_task_module_id"),
+                "into_new_task_module_id": Module.objects.filter(id=request.POST.get("into_new_task_module_id")).first().id,
             }
 
         elif request.POST.get("into_task_editorship"):

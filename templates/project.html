@@ -91,7 +91,7 @@
   {# can only start a new module within a project you are the admin of #}
   <hr>
 
-  <form class="form-inline" method="get" action="/tasks/start" onsubmit="if ($('#start-module-{{project.id}}').val() == '') { alert('Select a module.'); return false; }">
+  <form class="form-inline" method="post" action="/tasks/start" onsubmit="if ($('#start-module-{{project.id}}').val() == '') { alert('Select a module.'); return false; }">
     <input type="hidden" name="project" value="{{project.id}}"/>
     {% csrf_token %}
     <div class="form-group" style="margin-right: 1em">

@@ -41,7 +41,7 @@ class Discussion(models.Model):
 
     @property
     def title(self):
-        return self.attached_to.task.title + ": " + self.attached_to.get_question().title
+        return self.attached_to.title
 
     def is_participant(self, user):
         # No on is a participant of a dicussion attached to (a question

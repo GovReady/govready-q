@@ -5,10 +5,10 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 
-from questions import Module
-from .models import Project, ProjectMembership, Task, TaskQuestion, TaskAnswer
+from .models import Module, Task, TaskAnswer, TaskAnswerHistory
+import guidedmodules.module_logic as module_logic
 from discussion.models import Discussion
-from siteapp.models import User, Invitation
+from siteapp.models import User, Invitation, Project, ProjectMembership
 
 @login_required
 def new_project(request):
@@ -47,10 +47,10 @@ def new_task(request):
     # Create a new task.
 
     # Validate that the module ID is valid.
-    m = Module.load(request.GET['module'])
+    m = get_object_or_404(Module, id=request.POST['module'])
 
     # Get the project.
-    project = get_object_or_404(Project, id=request.GET["project"])
+    project = get_object_or_404(Project, id=request.POST["project"])
 
     # Can the user create a task within this project?
     if request.user not in project.get_admins():
@@ -60,17 +60,14 @@ def new_task(request):
     task = Task.objects.create(
         editor=request.user,
         project=project,
-        module_id=m.id,
-        title=m.title)
+        module=m,
+        title=m.spec["title"])
     return HttpResponseRedirect(task.get_absolute_url() + "/start")
 
 @login_required
 def next_question(request, taskid, taskslug, intropage=None):
     # Get the Task.
     task = get_object_or_404(Task, id=taskid)
-
-    # Load the questions module.
-    m = task.load_module()
 
     # Load the answers the user has saved so far.
     answered = task.get_answers()
@@ -85,17 +82,14 @@ def next_question(request, taskid, taskslug, intropage=None):
             return HttpResponseForbidden()
 
         # validate question
-        q = request.POST.get("question")
-        if q not in m.questions_by_id:
-            return HttpResponse("invalid question id", status=400)
-        q = m.questions_by_id[q]
+        q = task.module.questions.get(id=request.POST.get("question"))
 
         # validate and parse value
         if request.POST.get("method") == "clear":
             value = None
         else:
             # parse
-            if q.type == "multiple-choice":
+            if q.spec["type"] == "multiple-choice":
                 # multiple items submitted
                 value = request.POST.getlist("value")
             else:
@@ -104,15 +98,15 @@ def next_question(request, taskid, taskslug, intropage=None):
 
             # validate
             try:
-                value = q.validate(value)
+                value = module_logic.validator.validate(q, value)
             except ValueError as e:
                 # client side validation should have picked this up
                 return HttpResponse("invalid value: " + str(e), status=400)
 
-        # save answer - get the TaskQuestion instance first
-        question, isnew = TaskQuestion.objects.get_or_create(
+        # save answer - get the TaskAnswer instance first
+        question, isnew = TaskAnswer.objects.get_or_create(
             task=task,
-            question_id=q.id,
+            question=q,
         )
 
         # normal redirect - reload the page
@@ -120,17 +114,17 @@ def next_question(request, taskid, taskslug, intropage=None):
 
         # fetch the task that answers this question
         answered_by_task = None
-        if q.type == "module":
+        if q.spec["type"] == "module":
             if value == None:
                 # answer is being cleared
                 t = None
             elif value == "__new":
                 # Create a new task, and we'll redirect to it immediately.
-                m1 = Module.load(q.module_id) # validate input
+                m1 = Module.objects.get(id=q.spec["module-id"]) # validate input
                 t = Task.objects.create(
                     editor=request.user,
                     project=task.project,
-                    module_id=m1.id,
+                    module=m1,
                     title=m1.title)
 
                 redirect_to = t.get_absolute_url() + "/start"
@@ -142,11 +136,11 @@ def next_question(request, taskid, taskslug, intropage=None):
             answered_by_task = t
             value = None
 
-        # Create a new TaskAnswer if the answer is actually changing.
-        current_answer = question.get_answer()
+        # Create a new TaskAnswerHistory if the answer is actually changing.
+        current_answer = question.get_current_answer()
         if not current_answer or (value != current_answer.value or answered_by_task != current_answer.answered_by_task):
-            answer = TaskAnswer.objects.create(
-                question=question,
+            answer = TaskAnswerHistory.objects.create(
+                taskanswer=question,
                 answered_by=request.user,
                 value=value,
                 answered_by_task=answered_by_task,
@@ -162,18 +156,15 @@ def next_question(request, taskid, taskslug, intropage=None):
     # Ok this is a GET request....
 
     # What question are we displaying?
-    q = request.GET.get("q")
-    if q:
-        if q not in m.questions_by_id:
-            raise Http404()
-        q = m.questions_by_id[q]
+    if "q" in request.GET:
+        q = task.module.questions.get(key=request.GET["q"])
     else:
         # Display next unanswered question.
-        q = m.next_question(answered)
+        q = module_logic.next_question(task.module, answered)
 
     if q:
-        # Is there a TaskQuestion for this yet?
-        taskq = TaskQuestion.objects.filter(task=task, question_id=q.id).first()
+        # Is there a TaskAnswer for this yet?
+        taskq = TaskAnswer.objects.filter(task=task, question_id=q.id).first()
     else:
         # We're going to show the finished page - there is no question.
         taskq = None
@@ -213,6 +204,7 @@ def next_question(request, taskid, taskslug, intropage=None):
     # Common context variables.
     import json
     context = {
+        "m": task.module,
         "task": task,
         "write_priv": task.has_write_priv(request.user),
         "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)) if task.project else None,
@@ -220,36 +212,42 @@ def next_question(request, taskid, taskslug, intropage=None):
 
     if intropage:
         context.update({
-            "introduction": m.render_introduction(),
+            "introduction": module_logic.render_introduction(task.module),
+            "source_invitation": task.invitation_history.filter(accepted_user=request.user).order_by('-created').first(),
         })
         return render(request, "module-intro.html", context)
 
     elif not q:
         # There is no next question - the module is complete.
         context.update({
-            "m": m,
             "output": task.get_output(answered),
-            "all_questions": filter(lambda q : not q.impute_answer(answered), m.questions),
+            "all_questions": [q for q in task.module.questions.all()
+                if module_logic.impute_answer(q, answered) is None ],
         })
         return render(request, "module-finished.html", context)
 
     else:
         answer = None
         if taskq:
-            answer = taskq.get_answer()
+            answer = taskq.get_current_answer()
+
+        # for "module"-type questions
+        # what Module answers this question?
+        answer_module = Module.objects.get(id=q.spec["module-id"]) if q.spec["type"] == "module" else None
+        # what existing Tasks are of that type?
+        answer_tasks = Task.objects.filter(project=task.project, module=answer_module)
 
         context.update({
             "DEBUG": settings.DEBUG,
-            "module": m,
             "q": q,
-            "prompt": q.render_prompt(task.get_answers()),
+            "prompt": module_logic.render_question_prompt(q, task.get_answers()),
             "history": taskq.get_history() if taskq else None,
             "answer": answer,
             "discussion": Discussion.get_for(taskq) if taskq else None,
 
-            "answer_module": Module.load(q.module_id) if q.module_id else None,
-            "answer_tasks": Task.objects.filter(project=task.project, module_id=q.module_id),
-            "answer_tasks_show_user": Task.objects.filter(project=task.project).exclude(editor=request.user).exists(),
+            "answer_module": answer_module,
+            "answer_tasks": answer_tasks,
+            "answer_tasks_show_user": answer_tasks.exclude(editor=request.user).exists(),
             "answer_answered_by_task_can_write": answer.answered_by_task.has_write_priv(request.user) if answer and answer.answered_by_task else None,
         })
         return render(request, "question.html", context)

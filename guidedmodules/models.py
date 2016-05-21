@@ -4,7 +4,7 @@ from django.conf import settings
 
 from jsonfield import JSONField
 
-from questions import Module, ModuleAnswers
+from .module_logic import ModuleAnswers
 from siteapp.models import User, Project, ProjectMembership
 
 class Module(models.Model):
@@ -18,9 +18,21 @@ class Module(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
+    def __str__(self):
+        # For the admin.
+        return "%s [%d]" % (self.key, self.id)
+
     def __repr__(self):
         # For debugging.
         return "<Module [%d] %s%s %s>" % (self.id, "" if not self.superseded_by else "(old) ", self.key, self.spec["title"][0:30])
+
+    @staticmethod
+    def get_startable_modules():
+        return Module.objects.filter(visible=True, superseded_by=None)
+
+    @property
+    def title(self):
+        return self.spec["title"]
 
     def get_questions(self):
         # Return the ModuleQuestions in definition order.
@@ -38,6 +50,9 @@ class ModuleQuestion(models.Model):
 
     class Meta:
         unique_together = [("module", "key")]
+
+    def __str__(self):
+        return "%s[%d].%s" % (self.module.key, self.module.id, self.key)
 
     def __repr__(self):
         # For debugging.
@@ -82,9 +97,11 @@ class Task(models.Model):
         # Gets a task given a module_id. Use only with system modules
         # where a user can only have one Task for the module.
 
+        module = Module.objects.get(key=module_id)
+
         filters = {
             "editor": user,
-            "module__key": module_id,
+            "module": module,
             "project": None,
             "deleted_at": None,
         }
@@ -95,7 +112,7 @@ class Task(models.Model):
 
         task, isnew = Task.objects.get_or_create(**filters)
         if isnew:
-            task.title = task.load_module().title
+            task.title = module.title
             task.save()
         return task
 
@@ -104,37 +121,37 @@ class Task(models.Model):
         return "/tasks/%d/%s" % (self.id, slugify(self.title))
 
     def get_answers(self):
-        m = self.load_module()
         answered = { }
-        for q in self.questions.all():
-            # Get the latest TaskAnswer instance for this TaskQuestion,
+        for q in self.answers.all():
+            # Get the latest TaskAnswerHistory instance for this TaskAnswer,
             # if there is any (there should be).
-            a = q.get_answer()
+            a = q.get_current_answer()
             if not a:
                 continue
 
             # If this question type is "module", its answer value is stored
             # differently --- and it is a Task instance.
-            if m.questions_by_id[q.question_id].type == "module":
+            if q.question.spec["type"] == "module":
                 if a.answered_by_task_id:
-                    answered[q.question_id] = a.answered_by_task.get_answers()
+                    answered[q.question.key] = a.answered_by_task.get_answers()
             
             # Some answers store None to reflect that an answer has been
             # explicitly cleared. Don't pull those into the returned
             # dict -- they're not answers for the purposes of a Module.
             elif a.value:
-                answered[q.question_id] = a.value
+                answered[q.question.key] = a.value
 
-        return ModuleAnswers(m, answered)
+        return ModuleAnswers(self.module, answered)
 
     def can_transfer_owner(self):
         return self.project is not None
 
     def is_started(self):
-        return self.questions.exists()
+        return self.answers.exists()
 
     def is_finished(self):
-        return self.load_module().next_question(self.get_answers()) == None
+        from .module_logic import next_question
+        return next_question(self.module, self.get_answers()) == None
 
     def get_status_display(self):
         # Is this task done?
@@ -199,23 +216,23 @@ class Task(models.Model):
     def get_output(self, answers=None):
         if not answers:
             answers = self.get_answers()
-        return answers.module.render_output(answers, {
+        return answers.render_output({
             "project": self.project.title if self.project else None,
         })
 
     def is_answer_to_unique(self):
         # Is this Task a submodule of exactly one other Task?
-        # We'd normally check len(self.is_answer_to.all()). But because we use TaskAnswers
-        # to store the history of answers to a TaskQuestion, the uniqueness is on the
-        # TaskQuestion... And then we want to return the current answer for that TaskQuestion.
-        qs = TaskQuestion.objects.filter(answers__answered_by_task=self).distinct()
+        # We'd normally check len(self.is_answer_to.all()). But because we use TaskAnswerHistorys
+        # to store the history of answers to a TaskAnswer, the uniqueness is on the
+        # TaskAnswer... And then we want to return the current answer for that TaskAnswer.
+        qs = TaskAnswer.objects.filter(answer_history__answered_by_task=self).distinct()
         if len(qs) == 1:
-            return qs.first().get_answer()
+            return qs.first()
         return None
 
-class TaskQuestion(models.Model):
-    task = models.ForeignKey(Task, on_delete=models.PROTECT, related_name="questions", help_text="The Task that this TaskQuestion is a part of.")
-    question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT, help_text="The question (within the Task's module) that this TaskQuestion is answering.")
+class TaskAnswer(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.PROTECT, related_name="answers", help_text="The Task that this TaskAnswer is a part of.")
+    question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT, help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by editors working on this question.")
 
@@ -232,18 +249,15 @@ class TaskQuestion(models.Model):
 
     def __repr__(self):
         # For debugging.
-        return "<TaskQuestion %s in %s>" % (repr(self.question), repr(self.task))
+        return "<TaskAnswer %s in %s>" % (repr(self.question), repr(self.task))
 
     def get_absolute_url(self):
         from urllib.parse import quote
-        return self.task.get_absolute_url() + "?q=" + quote(self.question_id)
+        return self.task.get_absolute_url() + "?q=" + quote(self.question.key)
 
-    def get_question(self):
-        return self.task.load_module().questions_by_id[self.question_id]
-
-    def get_answer(self):
+    def get_current_answer(self):
         # The current answer is the one with the highest primary key.
-        return self.answers.order_by('-id').first()
+        return self.answer_history.order_by('-id').first()
 
     def get_history(self):
         from discussion.models import reldate
@@ -254,7 +268,7 @@ class TaskQuestion(models.Model):
         # key. We just want to know which was first so that we can
         # display different text.
         import html
-        for i, answer in enumerate(self.answers.order_by('id')):
+        for i, answer in enumerate(self.answer_history.order_by('id')):
             vp = ("answered the question" if i == 0 else "changed the answer")
             history.append({
                 "type": "event",
@@ -287,15 +301,19 @@ class TaskQuestion(models.Model):
     def project(self):
         return self.task.project
 
+    # required to attach a Discussion to it
+    @property
+    def title(self):
+        return self.question.spec["title"] + " - " + self.task.title
 
-class TaskAnswer(models.Model):
-    question = models.ForeignKey(TaskQuestion, related_name="answers", on_delete=models.PROTECT, help_text="The TaskQuestion that this is an aswer to.")
+class TaskAnswerHistory(models.Model):
+    taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.PROTECT, help_text="The TaskAnswer that this is an aswer to.")
 
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
     value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
     answered_by_task = models.ForeignKey(Task, blank=True, null=True, related_name="is_answer_to", on_delete=models.PROTECT, help_text="A Task that supplies the answer for this question.")
 
-    notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswer.")
+    notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswerHistory.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -303,15 +321,15 @@ class TaskAnswer(models.Model):
 
     def __repr__(self):
         # For debugging.
-        return "<TaskAnswer %s>" % (repr(self.question),)
+        return "<TaskAnswerHistory %s>" % (repr(self.question),)
 
     @property
     def is_answered(self):
         return bool(self.value or self.answered_by_task)
 
     def is_latest(self):
-        # Is this the most recent --- the current --- answer for a TaskQuestion.
-        return self.question.get_answer() == self
+        # Is this the most recent --- the current --- answer for a TaskAnswer.
+        return self.taskanswer.get_current_answer() == self
 
     def get_answer_display(self):
         return repr(self.value or self.answered_by_task)
