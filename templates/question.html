@@ -168,6 +168,7 @@ Next Question: {{q.spec.title}}
             {% endif %}
         </form>
 
+        {% if not is_discussion_guest %}
         {% if task.project or task.can_transfer_owner %}
         <button class="btn btn-default" onclick="$('#need-help').slideToggle();">Get Help From Colleagues</button>
         {% endif %}
@@ -189,6 +190,7 @@ Next Question: {{q.spec.title}}
             </li>
           {% endif %}
         </ul>
+        {% endif %}
 
     </div> <!-- /question -->
 

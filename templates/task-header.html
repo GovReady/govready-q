@@ -61,6 +61,12 @@ h1 { margin: 0; }
       </div>
     {% endfor %}
 
+{% elif is_discussion_guest %}
+
+<div class="text-danger small" style="margin-top: 30px">
+    You are participating in the discussion on this question as a guest.
+</div>
+
 {% else %}
 <div class="text-danger small" style="margin-top: 30px">
     <i class="glyphicon glyphicon-alert" style="margin-top: 4px; margin-right: 2px"></i>

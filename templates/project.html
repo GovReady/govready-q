@@ -53,6 +53,7 @@
   </div>
 {% endif %}
 
+{% if tasks or can_begin_module %} {# dont show if no permission to start a module #}
 <h2>
   {% if project %}Modules you are editing
   {% else %}Modules{% endif %}
@@ -67,6 +68,7 @@
 {% empty %}
   <p>You have not started any modules in this project.</p>
 {% endfor %}
+{% endif %}
 
 {% if others_tasks|length %}
   <h2>Other modules in this project (edited by others)</h2>
@@ -87,7 +89,7 @@
   {% endfor %}
 {% endif %}
 
-{% if project and is_admin %}
+{% if can_begin_module %}
   {# can only start a new module within a project you are the admin of #}
   <hr>
 

@@ -142,6 +142,7 @@ def project(request, project_id=None):
 
     ret = {
         "is_admin": not project or request.user in project.get_admins(),
+        "can_begin_module": project and request.user in project.get_admins(),
         "project_has_members_besides_me": project.members.exclude(user=request.user),
         "project": project,
         "title": project.title if project else "System Account",

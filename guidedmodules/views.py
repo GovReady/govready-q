@@ -206,6 +206,7 @@ def next_question(request, taskid, taskslug, intropage=None):
     context = {
         "m": task.module,
         "task": task,
+        "is_discussion_guest": not task.has_read_priv(request.user), # i.e. only here for discussion
         "write_priv": task.has_write_priv(request.user),
         "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)) if task.project else None,
         "open_invitations": task.get_open_invitations(request.user),
