@@ -219,7 +219,7 @@ function init_discussion_html() {
   });
 };
 
-var discussion_info = null;
+var discussion_info = { max_event_time: 0 };
 
 function display_discussion(discussion, is_page_load) {
   // first time initialization
