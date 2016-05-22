@@ -4,7 +4,7 @@ from .models import Discussion, Comment
 
 class DiscussionAdmin(admin.ModelAdmin):
 	list_display = ('attached_to', 'created')
-	readonly_fields = ('attached_to_content_type', 'attached_to_object_id', 'external_participants', 'extra')
+	readonly_fields = ('attached_to_content_type', 'attached_to_object_id', 'guests', 'extra')
 
 class CommentAdmin(admin.ModelAdmin):
 	list_display = ('discussion', 'user', 'text')

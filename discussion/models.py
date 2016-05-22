@@ -13,7 +13,7 @@ class Discussion(models.Model):
     attached_to_object_id = models.PositiveIntegerField()
     attached_to = GenericForeignKey('attached_to_content_type', 'attached_to_object_id')
 
-    external_participants = models.ManyToManyField(User, blank=True, help_text="Additional Users who are participating in this chat, besides those that are members of the Project that contains the Discussion.")
+    guests = models.ManyToManyField(User, blank=True, help_text="Additional Users who are participating in this chat, besides those that are members of the Project that contains the Discussion.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -51,9 +51,9 @@ class Discussion(models.Model):
 
         # Participants are members of the project team of the task of
         # the question this Discussion is attached to, plus the Discussion's
-        # external_participants.
+        # guests.
         return (ProjectMembership.objects.filter(project=self.attached_to.project, user=user)) \
-            or (user in self.external_participants.all())
+            or (user in self.guests.all())
 
     def can_invite_guests(self, user):
         return ProjectMembership.objects.filter(project=self.attached_to.project, user=user).exists()
@@ -74,8 +74,8 @@ class Discussion(models.Model):
             # --- so just redirect to it.
             return
         else:
-            # add the user to the external_participants list for the discussion. 
-            self.external_participants.add(invitation.accepted_user)
+            # add the user to the guests list for the discussion. 
+            self.guests.add(invitation.accepted_user)
             add_message('You are now a participant in the discussion on %s.' % self.title)
 
     def get_invitation_redirect_url(self, invitation):
@@ -138,7 +138,7 @@ class Comment(models.Model):
                 user=self.user,
                 is_admin=True):
                 return "team admin"
-            if self.user in self.discussion.external_participants.all():
+            if self.user in self.discussion.guests.all():
                 return "guest"
             if ProjectMembership.objects.filter(
                 project=self.discussion.attached_to.project,

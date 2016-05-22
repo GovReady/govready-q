@@ -81,7 +81,7 @@ class Project(models.Model):
 
     def get_discussions_in_project_as_guest(self, user):
         from discussion.models import Discussion
-        for d in Discussion.objects.filter(external_participants=user):
+        for d in Discussion.objects.filter(guests=user):
             if d.attached_to.task.project == self:
                 if not d.attached_to.task.deleted_at:
                     yield d

@@ -109,7 +109,7 @@ def homepage(request):
 
         # Add projects that the user is participating in a Discussion in
         # as a guest.
-        for d in Discussion.objects.filter(external_participants=request.user):
+        for d in Discussion.objects.filter(guests=request.user):
             projects.add(d.attached_to.task.project)
 
         # Sort.
