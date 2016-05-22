@@ -174,9 +174,16 @@ def send_invitation(request):
         if request.POST['user_email']:
             email_validator.validate_email(request.POST['user_email'])
 
-        # Validate.
+        # Validate that the user is a member of from_project. Is None
+        # if user is not a project member.
         from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
-        into_project = (request.POST.get("add_to_team", "") != "") and ProjectMembership.objects.filter(project=from_project, user=request.user, is_admin=True).exists()
+
+        # Authorization for adding invitee to the project team.
+        if not from_project:
+            into_project = False
+        else:
+            inv_ctx = Invitation.form_context_dict(request.user, from_project)
+            into_project = (request.POST.get("add_to_team", "") != "") and inv_ctx["can_add_invitee_to_team"]
 
         # Target.
         if request.POST.get("into_new_task_module_id"):

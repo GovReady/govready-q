@@ -11,6 +11,7 @@ function textarea_ctrlenter_handler(e) {
     $(this).parents('form').submit();
 }
 
+var invite_modal_info_data = { };
 var invite_modal_extra_data = { };
 var invite_modal_callback = function() { };
 function show_invite_modal(title, prompt, info, message_default_text, data, callback) {
@@ -37,12 +38,14 @@ function show_invite_modal(title, prompt, info, message_default_text, data, call
     if (s.val() == data.user_id) // valid?
       s.prop('disabled', true);
   }
-  invite_toggle_mode();
 
   $('#invite-message').text(message_default_text);
 
+  invite_modal_info_data = info;
   invite_modal_extra_data = data;
   invite_modal_callback = callback;
+
+  invite_toggle_mode();
 
   m.modal();
 }
@@ -50,7 +53,9 @@ function invite_toggle_mode() {
   var m = ($('#invite-user-select').val() == '__invite__'); // inviting by email
   $('#invite-user-select').parent().toggle(!m);
   $('#invite-user-email').parent().toggle(m);
-  $('#invite-addtoteam-container').toggle(m);
+  $('#invite-addtoteam-container').toggle(m && invite_modal_info_data.can_add_invitee_to_team);
+  if (!(m && invite_modal_info_data.can_add_invitee_to_team))
+    $('#invite-addtoteam-container input[name="add-to-team"]').prop('checked', false);
 }
 function send_invitation(form) {
   var data = {

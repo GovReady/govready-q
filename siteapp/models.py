@@ -195,6 +195,7 @@ class Invitation(models.Model):
             "project_id": project.id,
             "project_title": project.title,
             "users": [{ "id": pm.user.id, "name": str(pm.user) } for pm in ProjectMembership.objects.filter(project=project).exclude(user=user)],
+            "can_add_invitee_to_team": user in project.get_admins(),
         }
 
     @staticmethod
