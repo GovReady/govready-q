@@ -262,14 +262,6 @@ function display_discussion(discussion, is_page_load) {
   $('#discussion .comment-thread').html('');
   render_events(discussion);
 
-  // add event handlers
-  $('#discussion textarea').keydown(function (e) {
-    if ((e.ctrlKey || e.metaKey) && (e.keyCode == 13 || e.keyCode == 10)) {
-      // Ctrl-Enter pressed
-      $(this).parents('form').submit();
-    }
-  });
-
   discussion_poll();
 }
 
@@ -369,6 +361,9 @@ function render_comment(item) {
   // The rest is only if we're seeing a new comment.
   if (!isnew)
     return;
+
+  // Event handlers.
+  n.find('textarea').keydown(textarea_ctrlenter_handler);
 
   // Add to the DOM.
   if (!item.replies_to) {

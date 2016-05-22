@@ -1,3 +1,16 @@
+$(function() {
+  // General Event Handlers
+
+  // [CTRL/Meta]+Enter in any textarea triggers submission of the form it is
+  // contained in.
+  $('textarea').keydown(textarea_ctrlenter_handler);
+})
+
+function textarea_ctrlenter_handler(e) {
+  if ((e.ctrlKey || e.metaKey) && (e.keyCode == 13 || e.keyCode == 10))
+    $(this).parents('form').submit();
+}
+
 var invite_modal_extra_data = { };
 var invite_modal_callback = function() { };
 function show_invite_modal(title, prompt, info, message_default_text, data, callback) {
