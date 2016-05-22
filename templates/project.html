@@ -45,9 +45,9 @@
   <h2>Invitations waiting for a response...</h2>
   <div class="invitation-list">
   {% for inv in open_invitations %}
-    <p data-id="{{inv.id}}" title="{{inv.text}}">
-      On {{inv.created|date}} you invited {{inv.to_display}} {{inv.purpose}}.
-      (<a href="javascript:cancel_invitation({{inv.id}});">cancel</a>)
+    <p data-invitation-id="{{inv.id}}">
+      You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+      (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
     </p>
   {% endfor %}
   </div>
@@ -161,19 +161,5 @@ function invite_user_to_start_module(info) {
   return false;
 }
 
-function cancel_invitation(invid) {
-  ajax_with_indicator({
-   url: '{% url "cancel_invitation" %}',
-   method: "POST",
-   data: {
-    id: invid
-   },
-   success: function(res) {
-     show_modal_error("Cancel Invitation", "The invitation has been canceled.");
-     var n = $('.invitation-list p[data-id=' + invid + ']');
-     n.slideUp(function() { n.remove(); })
-   }
-  });
-}
 </script>
 {% endblock %}

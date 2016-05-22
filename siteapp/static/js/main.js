@@ -81,3 +81,20 @@ function send_invitation(form) {
 
   return false;
 }
+
+
+function cancel_invitation(elem) {
+  var container = $(elem).parents('[data-invitation-id]');
+  var invid = container.attr('data-invitation-id');
+  ajax_with_indicator({
+   url: '/invitation/_cancel',
+   method: "POST",
+   data: {
+    id: invid
+   },
+   success: function(res) {
+     show_modal_error("Cancel Invitation", "The invitation has been canceled.");
+     container.slideUp(function() { container.remove(); })
+   }
+  });
+}
