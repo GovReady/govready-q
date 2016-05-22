@@ -101,7 +101,7 @@ def next_question(request, taskid, taskslug, intropage=None):
                 value = module_logic.validator.validate(q, value)
             except ValueError as e:
                 # client side validation should have picked this up
-                return HttpResponse("invalid value: " + str(e), status=400)
+                return JsonResponse({ "status": "error", "message": str(e) })
 
         # save answer - get the TaskAnswer instance first
         question, isnew = TaskAnswer.objects.get_or_create(
@@ -151,7 +151,7 @@ def next_question(request, taskid, taskslug, intropage=None):
             question.save(update_fields=[])
 
         # return to a GET request
-        return HttpResponseRedirect(redirect_to)
+        return JsonResponse({ "status": "ok", "redirect": redirect_to })
 
     # Ok this is a GET request....
 

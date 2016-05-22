@@ -26,9 +26,7 @@ Next Question: {{q.spec.title}}
     {% include "task-header.html" with col_width="4" col_active="questions" %}
 
     <div id="question" style="margin: 2em 0">
-        <form method="post" {% if not write_priv %}class="disabled"{% endif %}>
-            {% csrf_token %}
-
+        <form {% if not write_priv %}class="disabled"{% endif %}>
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="set">
 
@@ -42,7 +40,7 @@ Next Question: {{q.spec.title}}
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
-            {% elif q.spec.type == "email" %}
+            {% elif q.spec.type == "email-address" %}
               <div class="form-group">
                 <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if answer.value %}value="{{answer.value}}"{% endif %}>
                 <p class="help-block">{{q.spec.help}}</p>
@@ -157,7 +155,8 @@ Next Question: {{q.spec.title}}
             {% endif %}
 
             {% if write_priv %}
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="btn btn-success"
+              onclick="$('#question > form input[name=method]').val('save')">
               {% if not request.GET.q %}Next{% else %}Submit{% endif %}
               &raquo;
             </button>
@@ -226,7 +225,7 @@ $(function() {
     show_static_history({{history|json}});
     {% endif %}
 
-    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email" or q.spec.type == "longtext" %}
+    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" %}
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
@@ -266,19 +265,29 @@ $(function() {
 
     var form = $("#question > form");
     form.on("submit", function() {
-        // skip client-side validation if user is trying to clear the answer
-        if ($('#question form input[name=method]').val() == "clear")
-          return true;
+        var form = $('#question form');
 
-        // client-side validation, block form if not valid
-        var problem = validate_answer();
-        if (problem) {
-            alert(problem);
-            return false;
+        // skip client-side validation if user is trying to clear the answer
+        if (form.find('input[name=method]').val() != "clear") {
+          // client-side validation, block form if not valid
+          var problem = validate_answer();
+          if (problem) {
+              alert(problem);
+              return false;
+          }
         }
 
-        // ok, submit
-        return true;
+        ajax_with_indicator({
+            url: window.location.pathname,
+            method: "POST",
+            data: form.serialize(),
+            success: function(res) {
+              window.location = res.redirect;
+            }
+        });
+
+        // don't do an actual <form> submit
+        return false;
     });
 })
 

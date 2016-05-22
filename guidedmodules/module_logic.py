@@ -229,10 +229,9 @@ class validator:
             raise ValueError("empty")
         return value
 
-    def validate_email(question, value):
+    def validate_email_address(question, value):
         import email_validator
-        email_validator.validate_email(value)
-        return value
+        return email_validator.validate_email(value)["email"]
 
     def validate_longtext(question, value):
         if value == "":

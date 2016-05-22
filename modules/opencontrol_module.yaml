@@ -37,7 +37,7 @@ questions:
       Compliance Maintainer
     prompt: >
       Enter email of the individual maintaining the compliance documents for {{q1}}.
-    type: text
+    type: email-address
 
 output:
   - format: markdown
@@ -46,7 +46,7 @@ output:
       schema_version: "1.0.0" # 1.0.0 is the current opencontrol.yaml schema version
       name: {{q1}} # Name of the project
       metadata:
-        description: "{q2}}"
+        description: "{{q2}}"
         maintainers:
           - {{q3}}
       components: # A list of paths to components written in the opencontrol format for more information view: https://github.com/opencontrol/schemas
