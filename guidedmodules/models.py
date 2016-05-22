@@ -166,7 +166,7 @@ class Task(models.Model):
         return Task.objects.filter(
             models.Q(editor=user) | models.Q(project__members__user=user),
             deleted_at=None,
-            )
+            ).distinct()
 
     def has_read_priv(self, user, allow_access_to_deleted=False):
         # symmetric get_all_tasks_readable_by has_read_priv
