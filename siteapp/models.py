@@ -197,6 +197,14 @@ class Invitation(models.Model):
             "users": [{ "id": pm.user.id, "name": str(pm.user) } for pm in ProjectMembership.objects.filter(project=project).exclude(user=user)],
         }
 
+    @staticmethod
+    def get_for(object, open_invitations=True):
+        content_type = ContentType.objects.get_for_model(object)
+        ret = Invitation.objects.filter(target_content_type=content_type, target_object_id=object.id)
+        if open_invitations:
+            ret = ret.filter(revoked_at=None, accepted_at=None)
+        return ret
+
     def to_display(self):
         return str(self.to_user) if self.to_user else self.to_email
 

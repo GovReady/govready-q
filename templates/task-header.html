@@ -52,6 +52,15 @@ h1 { margin: 0; }
 
 {% if task.editor == request.user %}
 
+    {% for inv in open_invitations %}
+      <div data-invitation-id="{{inv.id}}" class="panel panel-warning" style="margin-top: 30px">
+        <div class="panel-body">
+          You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+          (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
+        </div>
+      </div>
+    {% endfor %}
+
 {% else %}
 <div class="text-danger small" style="margin-top: 30px">
     <i class="glyphicon glyphicon-alert" style="margin-top: 4px; margin-right: 2px"></i>

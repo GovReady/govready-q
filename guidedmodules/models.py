@@ -213,6 +213,12 @@ class Task(models.Model):
     def get_invitation_redirect_url(self, invitation):
         return self.get_absolute_url() + "/start"
 
+    def get_open_invitations(self, user):
+        # Return the open Invitations for transferring task ownership
+        # elsewhere, sent from the user.
+        from siteapp.models import Invitation
+        return Invitation.get_for(self).filter(from_user=user)
+
     def get_output(self, answers=None):
         if not answers:
             answers = self.get_answers()

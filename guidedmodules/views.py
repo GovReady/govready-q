@@ -208,6 +208,7 @@ def next_question(request, taskid, taskslug, intropage=None):
         "task": task,
         "write_priv": task.has_write_priv(request.user),
         "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)) if task.project else None,
+        "open_invitations": task.get_open_invitations(request.user),
     }
 
     if intropage:
