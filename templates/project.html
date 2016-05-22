@@ -29,7 +29,7 @@
 <div style="margin-bottom: 2em">
   <h1 style="margin: 1em 0 0 0">{{title}}</h1>
 
-  {% if project %}
+  {% if project_has_members_besides_me %}
   <div class="admins small" style="margin-top: 3px">
     owners:
     {% for user in project.get_admins %}

@@ -40,7 +40,7 @@ Home
     {% endif %}
   </a>
 
-  {% if project %}
+  {% if project and any_have_members_besides_me %}
   <div class="admins small" style="margin-top: 3px">
     owners:
     {% for user in project.get_admins %}

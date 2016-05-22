@@ -117,6 +117,7 @@ def homepage(request):
 
         return render(request, "home.html", {
             "projects": projects,
+            "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
         })
 
 
@@ -141,6 +142,7 @@ def project(request, project_id=None):
 
     ret = {
         "is_admin": not project or request.user in project.get_admins(),
+        "project_has_members_besides_me": project.members.exclude(user=request.user),
         "project": project,
         "title": project.title if project else "System Account",
         "tasks": Task.get_all_tasks_readable_by(request.user).filter(editor=request.user, project=project),
