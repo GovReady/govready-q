@@ -3,7 +3,7 @@
 Ok go:
 
 	pip3 install -r requirements.txt
-	deploy/fetch-vendor-resources.sh
+	deployment/fetch-vendor-resources.sh
 	python3 manage.py migrate
 	python3 manage.py runserver
 
