@@ -29,6 +29,17 @@ If this is truly on a new machine, it will create a new Sqlite database. You'll 
 
 You can copy the `secret-key` from what you see --- it was generated to be unique.
 
+To update, run:
+
+	sudo -iu site /home/site/q/deployment/update.sh
+	   (as root, or...)
+
+	~/q/deployment/update.sh
+	   (...as the 'site' user, or...)
+
+	killall -HUP uwsgi_python3
+	   (...to just restart the Python process (works as root & site user))
+
 # Credits / License
 
 Emoji icons by http://emojione.com/developers/.
