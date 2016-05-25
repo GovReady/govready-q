@@ -1,0 +1,66 @@
+id: icam_example
+title: Digital identity and access 
+short_description: Describe how system manages who gets to login with what privileges.
+long_description: >
+  To be completer
+editor_requirements: Person familiar with how login and roles work
+introduction:
+  format: markdown
+  template: |
+    We need to understand how your IT System controls access to data and computing resources.
+
+    We will gather information about how you identify users, issue logins, and manage access.
+
+    Enterprises often refer to this topic as "ICAM" -- Identity, Credentials,  and Access Management.
+
+    This module has less than a dozen questions.
+questions:
+
+  - id: q1
+    title: Number of End Users
+    prompt: >
+      Approximately how many individual end users will use the IT System during a typical year?
+    type: text
+
+  - id: q2
+    title: Number of Authenticated Users
+    prompt: |
+      You said you will have {{q1}} end users.
+
+      Approximately how many these end users will have logins?
+    type: text
+
+  - id: q21
+    title: Single Sign-on
+    prompt: Can users login using an existing Single Sign-on identity?
+    type: yesno
+
+  - id: q22
+    title: PIV Sign-on
+    prompt: Can users login using their PIV smart cards?
+    type: yesno
+
+  - id: q3
+    title: PIV Sign-on q3
+    prompt: Can users login using their PIV smart cards? q3
+    type: yesno
+
+output:
+  - format: markdown
+    template: |
+      ## ICAM Profile
+
+      This document provides details on the users of application XXXXX.
+
+      ### Number of users
+      During a typical year:
+      * {{q1}} end users will use the application
+      * {{q2}} end users will have logins for the application
+
+      ### Authentication support
+      * Single sign-on? {{q21}}
+      * PIV smart card? {{q22}}
+
+      ### Authentication support
+      * PIV Sign-on q3 {{q3}}
+  
