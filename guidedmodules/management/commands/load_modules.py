@@ -3,7 +3,11 @@ from django.db import transaction
 
 from guidedmodules.models import Module, ModuleQuestion, Task
 
-import glob, os.path, yaml, json
+import glob, os.path, yaml, json, sys
+
+class ValidationError(Exception):
+    def __init__(self, file_name, message):
+        super().__init__("There was an error in %s: %s" % (file_name, message))
 
 class CyclicDependency(Exception):
     def __init__(self, path):
@@ -19,13 +23,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Process each YAML file. Because YAML files may refer to
         # other YAML files, we also end up loading them recursively.
+        ok = True
         processed_modules = set()
         for fn in glob.glob("modules/*.yaml"):
             module_id = os.path.splitext(os.path.basename(fn))[0]
             try:
                 self.process_module(module_id, processed_modules, [])
-            except CyclicDependency as e:
-                print("Could not update %s: %s" % (module_id, str(e)))
+            except (ValidationError, CyclicDependency, DependencyError) as e:
+                print(str(e))
+                ok = False
+        if not ok:
+            print("There were some errors updating modules.")
+            sys.exit(1)
 
     @transaction.atomic # there can be an error mid-way through updating a Module
     def process_module(self, module_id, processed_modules, path):
@@ -47,7 +56,7 @@ class Command(BaseCommand):
         with open(fn) as f:
             spec = yaml.load(f)
         if spec["id"] != module_id:
-            raise ValueError("Module 'id' field (%s) doesn't match filename (%s)." % (spec["id"], module_id))
+            raise ValidationError(fn, "Module 'id' field ('%s') doesn't match filename ('%s')." % (spec["id"], module_id))
 
         # Recursively update any modules this module references.
         for m1 in self.get_module_spec_dependencies(spec):
