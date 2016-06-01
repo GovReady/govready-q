@@ -20,7 +20,7 @@ questions:
     title: Number of End Users
     prompt: >
       Approximately how many individual end users will use the IT System during a typical year?
-    type: text
+    type: integer
 
   - id: q2
     title: Number of Authenticated Users
@@ -28,7 +28,7 @@ questions:
       You said you will have {{q1}} end users.
 
       Approximately how many these end users will have logins?
-    type: text
+    type: integer
 
   - id: q21
     title: Single Sign-on
