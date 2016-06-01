@@ -166,12 +166,15 @@ Next Question: {{q.spec.title}}
                 onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
             {% endif %}
             {% endif %}
+
+            {% if not is_discussion_guest %}
+            {% if task.project or task.can_transfer_owner %}
+            <button class="btn btn-default" onclick="$('#need-help').slideToggle();return false;">Get Help From Colleagues</button>
+            {% endif %}
+            {% endif %}
         </form>
 
         {% if not is_discussion_guest %}
-        {% if task.project or task.can_transfer_owner %}
-        <button class="btn btn-default" onclick="$('#need-help').slideToggle();">Get Help From Colleagues</button>
-        {% endif %}
 
         <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em">
           {% if task.project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
