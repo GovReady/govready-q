@@ -4,7 +4,7 @@ from django.conf import settings
 
 from jsonfield import JSONField
 
-from .module_logic import ModuleAnswers
+from .module_logic import ModuleAnswers, render_content
 from siteapp.models import User, Project, ProjectMembership
 
 class Module(models.Model):
@@ -219,12 +219,34 @@ class Task(models.Model):
         from siteapp.models import Invitation
         return Invitation.get_for(self).filter(from_user=user)
 
+    def get_document_additional_context(self):
+        return {
+            "project": self.project.title if self.project else None,
+        }
+
+    def render_introduction(self):
+        return render_content(
+            self.module.spec.get("introduction", ""),
+            ModuleAnswers(self.module, {}),
+            "html",
+            self.get_document_additional_context()
+        )
+
+    def render_question_prompt(self, question):
+        return render_content(
+            {
+                "template": question.spec["prompt"],
+                "format": "markdown",
+            },
+            self.get_answers(),
+            "html",
+            self.get_document_additional_context()
+        )
+
     def get_output(self, answers=None):
         if not answers:
             answers = self.get_answers()
-        return answers.render_output({
-            "project": self.project.title if self.project else None,
-        })
+        return answers.render_output(self.get_document_additional_context())
 
     def is_answer_to_unique(self):
         # Is this Task a submodule of exactly one other Task?

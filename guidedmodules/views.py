@@ -214,7 +214,7 @@ def next_question(request, taskid, taskslug, intropage=None):
 
     if intropage:
         context.update({
-            "introduction": module_logic.render_introduction(task.module),
+            "introduction": task.render_introduction(),
             "source_invitation": task.invitation_history.filter(accepted_user=request.user).order_by('-created').first(),
         })
         return render(request, "module-intro.html", context)
@@ -242,7 +242,7 @@ def next_question(request, taskid, taskslug, intropage=None):
         context.update({
             "DEBUG": settings.DEBUG,
             "q": q,
-            "prompt": module_logic.render_question_prompt(q, task.get_answers()),
+            "prompt": task.render_question_prompt(q),
             "history": taskq.get_history() if taskq else None,
             "answer": answer,
             "discussion": Discussion.get_for(taskq) if taskq else None,

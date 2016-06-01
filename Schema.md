@@ -89,7 +89,7 @@ All document formats are evaluated as [Jinja2 templates](http://jinja.pocoo.org/
 
 Output documents and question prompts have access to the user's answers to questions in question variables. The introduction document does not because questions have not yet been answered.
 
-The output documents also have access to the project title as `{{project}}`.
+All documents also have access to the project title as `{{project}}`.
 
 Questions
 ---------

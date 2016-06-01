@@ -183,21 +183,8 @@ def render_content(content, answers, output_format, additional_context={}):
     output = renderer(output)
     return output
 
-def render_introduction(module):
-    return render_content(module.spec.get("introduction", ""), ModuleAnswers(module, {}), "html")
-
 def get_question_dependencies(question):
     return []
-
-def render_question_prompt(question, answers):
-    return render_content(
-        {
-            "template": question.spec["prompt"],
-            "format": "markdown",
-        },
-        answers,
-        "html"
-    )
 
 def impute_answer(question, answers):
     # Check if any of the impute conditions are met based on
