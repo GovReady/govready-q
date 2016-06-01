@@ -84,7 +84,7 @@ The `introduction` and `output` documents of Modules allow a format to be specif
 
 All document formats are evaluated as [Jinja2 templates](http://jinja.pocoo.org/docs/dev/templates/). That means within your document you can embed special tags that are replaced prior to the document being displayed to the user:
 
-* `{{ question_id }}` will be replaced with the user's answer to the question whose `id` is `question_id`.
+* `{{ question_id }}` will be replaced with the user's answer to the question whose `id` is `question_id`. For choice-type questions, the value is replaced by the choice `key`. Use `{{ question_id.text }}` to get display text. See the question types documentation below for details.
 * `{% if question_id == 'value' %}....{% endif %}` is a conditional block. The contents inside the block (`....`) will be included in the output if the condition is true. In this example, the contents inside the block will be included in the output if the user's answer to `question_id` is `value`.
 
 Output documents and question prompts have access to the user's answers to questions in question variables. The introduction document does not because questions have not yet been answered.
@@ -128,6 +128,8 @@ Example:
 	    placeholder: enter a type of animal
 	    help: Examples: dog, cat, turtle, lion
 
+In document templates and impute conditions, the value of `text` questions is simply the text the user entered.
+
 #### `password`
 
 This type asks the user for a password. It is the same as the `text` question type, except that a password input field is used to mask the input. `placeholder` and `help` can be specified.
@@ -146,6 +148,8 @@ This type asks the user for free-form text using a large text input area that al
 
 `help` text can be specified which provides an additional prompt smaller and below the field input.
 
+In document templates and impute conditions, the value of `longtext` questions is simply the text the user entered.
+
 #### `choice`
 
 This type asks the user to choose one of several options. The options are given as:
@@ -162,7 +166,7 @@ The user must select exactly one choice.
 
 The `help` text is optional. It is displayed smaller and below each choice. (Unlike some other question types, there is no `help` field on the question as a whole.)
 
-The internal value of a `choice` question is the `key` of the selected answer.
+In document templates and impute conditions, the value of `choice` questions is the `key` of the choice selected by the user. Use `questionid.text` to access the display text for the choice.
 
 Removing a choice is an incompatible change (see Updating Modules).
 
@@ -183,7 +187,7 @@ The user _must_ choose either yes or no.
 The `multiple-choice` question type is similar to the `choice` question type except that:
 
 * The user can select multiple choices.
-* The answer value of such questions are a list of keys, rather than a single key. That means that in templates, one can use a `{% for ... in ... %}... {% endfor %}` loop to access choice the user selected.
+* In document templates and impute conditions, the value of `multiple-choice` questions is a list of the `key`s of the choices selected by the user. When used bare, this renders as a comma-separated list of keys. One can use the [`|length` filter](http://jinja.pocoo.org/docs/dev/templates/#length) and `{% for ... in ... %}... {% endfor %}` loops to access the individual choices the user selected. Use `questionid.text` to render a comma-separated list of the display text of the selected choices.
 * `min` and `max` may be specified. If `min` is specified, it must be greater than or equal to zero and requires that the user choose at least that many choices. If `max` is specified, it must be greater than or equal to one (and if `min` is specified, it must be at least `min`) and requires that the user choose at most that number of choices.
 
 Increasing the `min` or decreasing the `max` are incompatible changes (see Updating Modules).
@@ -196,19 +200,24 @@ If `min` and `max` are set, then the value is restricted to that range. If `min`
 
 As with the text question types, `placeholder` and `help` text can also be specified.
 
+In document templates and impute conditions, the value of `integer` questions is the numeric value entered by the user.
+
 #### `real`
 
 This question type asks for a numeric input, allowing for real (floating-point) numbers.
 
 If `min` and `max` are set, then the value is restricted to that range. If `min` is omitted, then negative numbers are allowed!
 
-As with the text question types, `placeholder` and `help` text can also be specified.
+As with the text question types, `placeholder` and `help` text can also be specified and in document templates and impute conditions the value of these questions is the numeric value entered by the user.
+.
 
 #### `module`
 
 This question type prompts the user to select another completed module as the answer to the question. The `module-id` field specifies the ID of another module specification.
 
 Changing the `module-id` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
+
+In document templates and impute conditions, the value of `module` questions is a dictionary of the answers to that module. For example, if `q5` is the ID of a question whose type is `module`, then `{{q5.q1}}` will provide the answer to `q1` within the module the user selected that answers `q5`.
 
 ### Imputing Answers
 
