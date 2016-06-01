@@ -184,6 +184,14 @@ The `multiple-choice` question type is similar to the `choice` question type exc
 
 Increasing the `min` or decreasing the `max` are incompatible changes (see Updating Modules).
 
+#### `integer`
+
+This question type asks for a numeric, integer input.
+
+If `min` and `max` are set, then the value is restricted to that range. If `min` is omitted, then negative numbers are allowed!
+
+As with the text question types, `placeholder` and `help` text can also be specified.
+
 #### `module`
 
 This question type prompts the user to select another completed module as the answer to the question. The `module-id` field specifies the ID of another module specification.

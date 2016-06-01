@@ -97,6 +97,19 @@ Next Question: {{q.spec.title}}
                   <p class="help-block">You may choose at most {{q.spec.max}} options.</p>
               {% endif %}
 
+            {% elif q.spec.type == "integer" %}
+              <div class="form-group">
+                <input name="value" type="number" step="1" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <p class="help-block">{{q.spec.help}}</p>
+                {% if q.spec.min|default_if_none:"NONE" != "NONE" and q.spec.max|default_if_none:"NONE" != "NONE" %}
+                    <p class="help-block">Enter a number from {{q.spec.min}} to {{q.spec.max}}.</p>
+                {% elif q.spec.min|default_if_none:"NONE" != "NONE" %}
+                    <p class="help-block">Enter a number at least {{q.spec.min}}.</p>
+                {% elif q.spec.max|default_if_none:"NONE" != "NONE" %}
+                    <p class="help-block">Enter a number at most {{q.spec.max}}.</p>
+                {% endif %}
+              </div>
+
             {% elif q.spec.type == "module" and answer_tasks|length == 0 %}
               {# The user must choose or start a module, but there is nothing to choose from, so show a simplified interface. #}
 
@@ -227,7 +240,7 @@ $(function() {
     show_static_history({{history|json}});
     {% endif %}
 
-    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" %}
+    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" %}
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))

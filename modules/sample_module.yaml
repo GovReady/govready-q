@@ -17,6 +17,18 @@ questions:
     prompt: Did you ever own a {{q1}}?
     type: yesno
 
+  - id: qb1
+    title: How Many Did You Own
+    prompt: How many {{q1}}s did you own?
+    type: integer
+    help: Think hard!
+    placeholder: enter a number
+    min: 1
+    max: 10
+    impute:
+      - condition: qb == 'no'
+        value: 0
+
   - id: qc
     title: Classify The Animal
     prompt: How would you classify this animal?
@@ -71,6 +83,12 @@ output:
       {{q1}} ( {{q3}} )
 
       Read more about them using [a Wikipedia search](https://en.wikipedia.org/w/index.php?search={{q1|urlencode|safe}}).
+
+      {% if qb == 'no' %}
+      I never owned one.
+      {% else %}
+      I owned {{qb1}}.
+      {% endif %}
 
       {{qc}}
 

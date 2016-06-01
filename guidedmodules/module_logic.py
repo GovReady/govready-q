@@ -251,6 +251,23 @@ class validator:
             raise ValueError("too many choices")
         return value
 
+    def validate_integer(question, value):
+        if value == "":
+            raise ValueError("empty")
+
+        try:
+            value = int(value)
+        except ValueError:
+            # make a nicer error message
+            raise ValueError("Invalid input. Must be a whole number.")
+
+        if "min" in question.spec and value < question.spec["min"]:
+            raise ValueError("Must be at least %d." % question.spec["min"])
+        if "max" in question.spec and value > question.spec["max"]:
+            raise ValueError("Must be at most %d." % question.spec["max"])
+
+        return value
+
     def validate_module(question, value):
         # handled by view function
         return value
