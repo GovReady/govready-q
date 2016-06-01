@@ -136,6 +136,10 @@ This type asks the user for a password. It is the same as the `text` question ty
 
 This type asks the user for an email address. It is the same as the `text` question type, except that the value entered must be a valid email address. `placeholder` and `help` can be specified.
 
+#### `url`
+
+This type asks the user for a web address (a URL). It is the same as the `text` question type, except that the value entered must be a valid web address. `placeholder` and `help` can be specified. The web address is not checked for existence --- only the form (syntax) of the address is checked.
+
 #### `longtext`
 
 This type asks the user for free-form text using a large text input area that allows for multiple lines of text. The text cannot be empty.

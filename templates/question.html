@@ -42,8 +42,14 @@ Next Question: {{q.spec.title}}
 
             {% elif q.spec.type == "email-address" %}
               <div class="form-group">
-                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if answer.value %}value="{{answer.value}}"{% endif %}>
-                <p class="help-block">{{q.spec.help}}</p>
+                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <p class="help-block">{% if q.spec.help %}{{q.spec.help}}{% else %}Enter an email address.{% endif %}</p>
+              </div>
+
+            {% elif q.spec.type == "url" %}
+              <div class="form-group">
+                <input name="value" type="url" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <p class="help-block">{% if q.spec.help %}{{q.spec.help}}{% else %}Paste a web address.{% endif %}</p>
               </div>
 
             {% elif q.spec.type == "password" %}
@@ -240,7 +246,7 @@ $(function() {
     show_static_history({{history|json}});
     {% endif %}
 
-    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" or q.spec.type == "real" %}
+    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))

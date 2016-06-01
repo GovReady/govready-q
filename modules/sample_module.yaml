@@ -70,6 +70,11 @@ questions:
     prompt: "We now must collect information on {{q1}}'s natural habitat."
     type: module
     module-id: sample_two
+
+  - id: q5
+    title: Reference Link
+    prompt: What's a good URL to use to learn more about this animal?
+    type: url
       
 output:
   - name: Document
@@ -82,7 +87,7 @@ output:
       #### Animal:
       {{q1}} ( {{q3}} )
 
-      Read more about them using [a Wikipedia search](https://en.wikipedia.org/w/index.php?search={{q1|urlencode|safe}}).
+      Read more about them at {{q5}} or using [a Wikipedia search](https://en.wikipedia.org/w/index.php?search={{q1|urlencode|safe}}).
 
       {% if qb == 'no' %}
       I never owned one.

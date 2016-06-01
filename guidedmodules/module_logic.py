@@ -225,6 +225,17 @@ class validator:
         import email_validator
         return email_validator.validate_email(value)["email"]
 
+    def validate_url(question, value):
+        if value == "":
+            raise ValueError("empty")
+        from django.core.validators import URLValidator
+        validator = URLValidator()
+        try:
+            validator(value)
+        except:
+            raise ValueError("That is not a valid web address.")
+        return value
+
     def validate_longtext(question, value):
         if value == "":
             raise ValueError("empty")
