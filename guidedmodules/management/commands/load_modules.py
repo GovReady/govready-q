@@ -223,7 +223,7 @@ class Command(BaseCommand):
         # If there are no Tasks started for this Module, then the change is
         # compatible because there is no data consistency to worry about.
         if not Task.objects.filter(module=m).exists():
-            pass # return False
+            return False
 
         # An incompatible change is the removal of a question, the change
         # of a question type, or the removal of choices from a choice
