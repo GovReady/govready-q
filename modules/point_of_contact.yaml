@@ -1,0 +1,82 @@
+id: point_of_contact
+title: Point of Contact
+introduction:
+  format: markdown
+  template: |
+    Welcome to the PoC (Point of Contact) Module. 
+
+    Use this module for each Point of Contact for your project and service providers.
+questions:
+  - id: q1_name
+    title: Name
+    prompt: What is PoC's name?
+    type: text
+
+  - id: q3_ev
+    title: Employee or External
+    prompt: Is {{q1_name}} an employee, contractor, or vendor?
+    type: multiple-choice
+    min: 1
+    max: 1
+    choices:
+      - key: employee
+        text: Employee
+        help: Works at the organization
+      - key: contractor
+        text: Contractor
+        help: Employed by third party
+      - key: vendor
+        text: Vendor
+        help: Employed by an product or service provider
+
+  - id: q4_vco
+    title: Company
+    prompt: Name of {{q1_name}}'s employer?
+    type: text
+    impute:
+      - condition: q3_ev == 'employee'
+        value: My company
+
+  - id: q5_email
+    title: Email
+    prompt: What is {{q1_name}} preferred email?
+    help: 
+    type: text
+
+  - id: q6_work_phone
+    title: Work phone
+    prompt: What is {{q1_name}} work phone?
+    type: text
+    help: 'use "unknown" if not known'
+
+  - id: q7_mobile_phone
+    title: Mobile phone
+    prompt: What is {{q1_name}} mobile phone?
+    type: text
+
+output:
+  - name: Document
+    format: markdown
+    template: |
+      # {{project}} Point of Contact
+
+      #### Contact:
+      {{q1_name}}
+
+      #### Type:
+      {{q3_ev}} working for {{q4_vco}}
+
+      #### Contact:
+      * email: {{q5_email}}
+      * work phone: {{q6_work_phone}}
+      * mobile: {{q7_mobile_phone}}
+  - name: Data
+    format: yaml
+    template:
+      - type: "{{q3_ev}}"
+        company: "{{q4_vco}}"
+        email: "{{q5_email}}"
+        work_phone: "{{q6_work_phone}}"
+        mobile_phone: "{{q7_mobile_phone}}"
+        name: "{{q1_name}}"
+        
