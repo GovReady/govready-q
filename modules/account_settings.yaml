@@ -54,10 +54,10 @@ output:
 
       Title: {{title}}
 
-      Role: {{role}}
+      Role: {{role.text}}
 
       ---
 
       ### Applications
 
-      Chat: {{chat}}
+      Chat: {{chat.text}}

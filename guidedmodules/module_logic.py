@@ -354,17 +354,25 @@ class RenderedAnswer:
         self.question_type = self.question.spec["type"]
 
     def __html__(self):
-        # How the template renders a question variable.
-        return self.escapefunc(str(self))
-
-    def __str__(self):
-        if self.question_type == "yesno":
-            return "Yes" if self.answer == "yes" else "No"
-        if self.question_type == "choice":
-            return get_question_choice(self.question, self.answer)["text"]
+        # How the template renders a question variable used plainly, i.e. {{q0}}.
         if self.question_type == "multiple-choice":
-            return ", ".join(get_question_choice(self.question, c)["text"] for c in self.answer)
-        return str(self.answer)
+            value = ", ".join(self.answer)
+        else:
+            value = str(self.answer)
+        return self.escapefunc(value)
+
+    @property
+    def text(self):
+        # How the template renders {{q0.text}} to get a nice display form of the answer.
+        if self.question_type == "yesno":
+            value = ("Yes" if self.answer == "yes" else "No")
+        elif self.question_type == "choice":
+            value = get_question_choice(self.question, self.answer)["text"]
+        elif self.question_type == "multiple-choice":
+            value = ", ".join(get_question_choice(self.question, c)["text"] for c in self.answer)
+        else:
+            value = str(self.answer)
+        return self.escapefunc(value)
 
     def __bool__(self):
         # How the template converts a question variable to
@@ -386,9 +394,3 @@ class RenderedAnswer:
                 ans, self.escapefunc)
                 for ans in self.answer)
         raise TypeError("Answer of type %s is not iterable." % self.question_type)
-
-    @property # if not @property, it renders as "bound method" by jinja template
-    def key(self):
-        if self.question_type in ("yesno", "choice", "multiple-choice"):
-            return self.answer
-        raise Exception(".key is not a sensible operation for the %s question type." % self.question_type)

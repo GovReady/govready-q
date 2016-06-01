@@ -95,13 +95,13 @@ output:
       I owned {{qb1}}.
       {% endif %}
 
-      {{qc}}
+      {{qc.text}}
 
       #### Habitat:
 
-      Lives on land: {{q4.q1}}
+      Lives on land: {{q4.q1.text}}
 
-      Lives in the sea: {{q4.q2}}
+      Lives in the sea: {{q4.q2.text}}
 
       _Have a nice day!_
   - name: Text Document
@@ -119,7 +119,7 @@ output:
     template: |
       <ul>
       {% for item in qc %}
-        <li>{{item}} <i>{{item.key}}</i></li>
+        <li>{{item.text}} <i>{{item}}</i></li>
       {% endfor %}
       </ul>
   - name: Data

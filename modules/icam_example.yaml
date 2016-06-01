@@ -50,7 +50,7 @@ output:
     template: |
       ## ICAM Profile
 
-      This document provides details on the users of application XXXXX.
+      This document provides details on the users of application {{project}}.
 
       ### Number of users
       During a typical year:
