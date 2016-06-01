@@ -1,4 +1,4 @@
-id: policies 
+id: policies
 title: Policy Module 
 short_description: Document your oganization's policies
 long_description: >
@@ -65,8 +65,8 @@ questions:
 output:
   - format: markdown
     template: |
-      Commonly found policies exist?: {{pol_q1}}
+      Commonly found policies exist?: {{pol_q1.text}}
 
-      Less commonly found  policies exist?: {{pol_q3}}
+      Less commonly found  policies exist?: {{pol_q3.text}}
 
-      Polices and procedures are kept and managed via: {{pol_q2}} ({{pol_q2.key}})
+      Polices and procedures are kept and managed via: {{pol_q2.text}} ({{pol_q2}})

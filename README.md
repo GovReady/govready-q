@@ -5,6 +5,7 @@ Ok go:
 	pip3 install -r requirements.txt
 	deployment/fetch-vendor-resources.sh
 	python3 manage.py migrate
+	python3 manage.py load_modules
 	python3 manage.py runserver
 
 To deploy, on a fresh machine, create a Unix user named "site" and in its home directory run:

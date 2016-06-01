@@ -214,7 +214,7 @@ def next_question(request, taskid, taskslug, intropage=None):
 
     if intropage:
         context.update({
-            "introduction": module_logic.render_introduction(task.module),
+            "introduction": task.render_introduction(),
             "source_invitation": task.invitation_history.filter(accepted_user=request.user).order_by('-created').first(),
         })
         return render(request, "module-intro.html", context)
@@ -237,19 +237,20 @@ def next_question(request, taskid, taskslug, intropage=None):
         # what Module answers this question?
         answer_module = Module.objects.get(id=q.spec["module-id"]) if q.spec["type"] == "module" else None
         # what existing Tasks are of that type?
-        answer_tasks = Task.objects.filter(project=task.project, module=answer_module)
+        answer_tasks = [t for t in Task.objects.filter(project=task.project, module=answer_module)
+            if t.has_read_priv(request.user)]
 
         context.update({
             "DEBUG": settings.DEBUG,
             "q": q,
-            "prompt": module_logic.render_question_prompt(q, task.get_answers()),
+            "prompt": task.render_question_prompt(q),
             "history": taskq.get_history() if taskq else None,
             "answer": answer,
             "discussion": Discussion.get_for(taskq) if taskq else None,
 
             "answer_module": answer_module,
             "answer_tasks": answer_tasks,
-            "answer_tasks_show_user": answer_tasks.exclude(editor=request.user).exists(),
+            "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
             "answer_answered_by_task_can_write": answer.answered_by_task.has_write_priv(request.user) if answer and answer.answered_by_task else None,
         })
         return render(request, "question.html", context)

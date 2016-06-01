@@ -42,8 +42,14 @@ Next Question: {{q.spec.title}}
 
             {% elif q.spec.type == "email-address" %}
               <div class="form-group">
-                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="email address" {% if answer.value %}value="{{answer.value}}"{% endif %}>
-                <p class="help-block">{{q.spec.help}}</p>
+                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <p class="help-block">{% if q.spec.help %}{{q.spec.help}}{% else %}Enter an email address.{% endif %}</p>
+              </div>
+
+            {% elif q.spec.type == "url" %}
+              <div class="form-group">
+                <input name="value" type="url" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <p class="help-block">{% if q.spec.help %}{{q.spec.help}}{% else %}Paste a web address.{% endif %}</p>
               </div>
 
             {% elif q.spec.type == "password" %}
@@ -96,6 +102,19 @@ Next Question: {{q.spec.title}}
               {% elif q.spec.max %}
                   <p class="help-block">You may choose at most {{q.spec.max}} options.</p>
               {% endif %}
+
+            {% elif q.spec.type == "integer" or q.spec.type == "real" %}
+              <div class="form-group">
+                <input name="value" type="number" {% if q.spec.type == "integer" %}step="1"{% else %}step="any"{% endif %} class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <p class="help-block">{{q.spec.help}}</p>
+                {% if q.spec.min|default_if_none:"NONE" != "NONE" and q.spec.max|default_if_none:"NONE" != "NONE" %}
+                    <p class="help-block">Enter a number from {{q.spec.min}} to {{q.spec.max}}.</p>
+                {% elif q.spec.min|default_if_none:"NONE" != "NONE" %}
+                    <p class="help-block">Enter a number at least {{q.spec.min}}.</p>
+                {% elif q.spec.max|default_if_none:"NONE" != "NONE" %}
+                    <p class="help-block">Enter a number at most {{q.spec.max}}.</p>
+                {% endif %}
+              </div>
 
             {% elif q.spec.type == "module" and answer_tasks|length == 0 %}
               {# The user must choose or start a module, but there is nothing to choose from, so show a simplified interface. #}
@@ -230,7 +249,7 @@ $(function() {
     show_static_history({{history|json}});
     {% endif %}
 
-    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" %}
+    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))

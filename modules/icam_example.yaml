@@ -19,7 +19,7 @@ questions:
     title: Number of End Users
     prompt: >
       Approximately how many individual end users will use your application during a typical year?
-    type: text
+    type: integer
     help: "Enter a number (ex: 2000)"
 
   - id: q2
@@ -31,7 +31,7 @@ questions:
   - id: q3
     title: Number of Privileged Users
     prompt: How many these {{q2}} users with logins will be administrators with extensive system privileges?
-    type: text
+    type: integer
     help: "Enter a number (ex: 2000)"
     impute:
       - condition: q2 == '0'
@@ -75,7 +75,7 @@ output:
     template: |
       ## ICAM Profile
 
-      This document provides details on the users of application XXXXX.
+      This document provides details on the users of application {{project}}.
 
       ### Number of users
       During a typical year:
@@ -94,4 +94,3 @@ output:
       * Single sign-on? {{q21}}
       * PIV smart card? {{q22}}
 
-  

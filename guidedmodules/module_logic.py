@@ -32,13 +32,12 @@ def next_question(module, questions_answered):
         # an answer, or if one of its impute conditions is
         # met.
         return q.key in questions_answered.answers \
-          or impute_answer(q, questions_answered)
+          or impute_answer(q, questions_answered) is not None
 
     while len(needs_answer) > 0:
         # Get the next question to look at.
 
         q = needs_answer.pop(0)
-
         if is_answered(q) or q.id in already_processed:
             # This question is already answered or we've already
             # processed its dependencies, so we can skip.
@@ -47,9 +46,11 @@ def next_question(module, questions_answered):
 
         # What unanswered dependencies does it have?
 
-        deps = list(filter(
-            lambda d : not is_answered(d),
-            get_question_dependencies(q)))
+        deps = [ module.questions.get(key=d)
+                 for d in get_question_dependencies(q.spec)
+                 if module.questions.filter(key=d).exists()
+               ]
+        deps = list(filter(lambda d : not is_answered(d), deps))
 
         if len(deps) == 0:
             # All of this question's dependent questions are answered,
@@ -183,27 +184,37 @@ def render_content(content, answers, output_format, additional_context={}):
     output = renderer(output)
     return output
 
-def render_introduction(module):
-    return render_content(module.spec.get("introduction", ""), ModuleAnswers(module, {}), "html")
-
 def get_question_dependencies(question):
-    return []
+    # Returns a set of question IDs that this question is dependent on.
+    ret = set()
+    
+    from jinja2 import meta
+    from jinja2.sandbox import SandboxedEnvironment
+    env = SandboxedEnvironment()
+    def extract_variables(template):
+        return set(meta.find_undeclared_variables(env.parse(template)))
 
-def render_question_prompt(question, answers):
-    return render_content(
-        {
-            "template": question.spec["prompt"],
-            "format": "markdown",
-        },
-        answers,
-        "html"
-    )
+    # All questions mentioned in prompt text become dependencies.
+    ret |= extract_variables(question.get("prompt", ""))
+
+    # All questions mentioned in the impute conditions become dependencies.
+    for rule in question.get("impute", []):
+        ret |= extract_variables(
+                r"{% if " + rule["condition"] + r" %}...{% endif %}"
+                )
+
+    # Other dependencies can just be listed.
+    for qid in question.get("ask-first", []):
+        ret.add(qid)
+
+    return ret
 
 def impute_answer(question, answers):
     # Check if any of the impute conditions are met based on
     # the questions that have been answered so far and return
-    # the imputed value.
-    from jinja2 import meta
+    # the imputed value. Be careful about values like 0 that
+    # are false-y --- must check for "is None" to know if
+    # something was imputed or not.
     from jinja2.sandbox import SandboxedEnvironment
     env = SandboxedEnvironment()
     for rule in question.spec.get("impute", []):
@@ -233,6 +244,17 @@ class validator:
         import email_validator
         return email_validator.validate_email(value)["email"]
 
+    def validate_url(question, value):
+        if value == "":
+            raise ValueError("empty")
+        from django.core.validators import URLValidator
+        validator = URLValidator()
+        try:
+            validator(value)
+        except:
+            raise ValueError("That is not a valid web address.")
+        return value
+
     def validate_longtext(question, value):
         if value == "":
             raise ValueError("empty")
@@ -257,6 +279,34 @@ class validator:
             raise ValueError("not enough choices")
         if question.spec.get("max") and len(value) > question.spec["max"]:
             raise ValueError("too many choices")
+        return value
+
+    def validate_integer(question, value):
+        # First validate as a real so we don't have to duplicate those tests.
+        value = validator.validate_real(question, value)
+
+        # Then ensure is an integer.
+        try:
+            return int(value)
+        except ValueError:
+            # make a nicer error message
+            raise ValueError("Invalid input. Must be a whole number.")
+
+    def validate_real(question, value):
+        if value == "":
+            raise ValueError("empty")
+
+        try:
+            value = float(value)
+        except ValueError:
+            # make a nicer error message
+            raise ValueError("Invalid input. Must be a number.")
+
+        if "min" in question.spec and value < question.spec["min"]:
+            raise ValueError("Must be at least %g." % question.spec["min"])
+        if "max" in question.spec and value > question.spec["max"]:
+            raise ValueError("Must be at most %g." % question.spec["max"])
+
         return value
 
     def validate_module(question, value):
@@ -287,7 +337,7 @@ class ModuleAnswers:
         # defined by next_question.
         for q in self.module.questions.order_by('definition_order'):
             v = impute_answer(q, self)
-            if v:
+            if v is not None:
                 self.answers[q.key] = v
 
     def get_template_context(self, escapefunc = lambda x : x):
@@ -323,17 +373,25 @@ class RenderedAnswer:
         self.question_type = self.question.spec["type"]
 
     def __html__(self):
-        # How the template renders a question variable.
-        return self.escapefunc(str(self))
-
-    def __str__(self):
-        if self.question_type == "yesno":
-            return "Yes" if self.answer == "yes" else "No"
-        if self.question_type == "choice":
-            return get_question_choice(self.question, self.answer)["text"]
+        # How the template renders a question variable used plainly, i.e. {{q0}}.
         if self.question_type == "multiple-choice":
-            return ", ".join(get_question_choice(self.question, c)["text"] for c in self.answer)
-        return str(self.answer)
+            value = ", ".join(self.answer)
+        else:
+            value = str(self.answer)
+        return self.escapefunc(value)
+
+    @property
+    def text(self):
+        # How the template renders {{q0.text}} to get a nice display form of the answer.
+        if self.question_type == "yesno":
+            value = ("Yes" if self.answer == "yes" else "No")
+        elif self.question_type == "choice":
+            value = get_question_choice(self.question, self.answer)["text"]
+        elif self.question_type == "multiple-choice":
+            value = ", ".join(get_question_choice(self.question, c)["text"] for c in self.answer)
+        else:
+            value = str(self.answer)
+        return self.escapefunc(value)
 
     def __bool__(self):
         # How the template converts a question variable to
@@ -355,9 +413,3 @@ class RenderedAnswer:
                 ans, self.escapefunc)
                 for ans in self.answer)
         raise TypeError("Answer of type %s is not iterable." % self.question_type)
-
-    @property # if not @property, it renders as "bound method" by jinja template
-    def key(self):
-        if self.question_type in ("yesno", "choice", "multiple-choice"):
-            return self.answer
-        raise Exception(".key is not a sensible operation for the %s question type." % self.question_type)

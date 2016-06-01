@@ -3,13 +3,13 @@ title: Animal Compliance
 introduction:
   format: markdown
   template: |
-    Welcome to the Animal Compliance module. This module will help you determine if your animal has an authority to operate.
+    Welcome to the Animal Compliance module. This module will help you determine if your animal has an authority to operate within {{project}}.
 
     This module should take you two minutes.
 questions:
   - id: q1
     title: Your Favorite Animal
-    prompt: What's your favorite animal?
+    prompt: What's your favorite animal within the context of {{project}}?
     type: text
 
   - id: qb
@@ -17,9 +17,21 @@ questions:
     prompt: Did you ever own a {{q1}}?
     type: yesno
 
+  - id: qb1
+    title: How Many Did You Own
+    prompt: How many {{q1}}s did you own?
+    type: integer
+    help: Think hard!
+    placeholder: enter a number
+    min: 1
+    max: 10
+    impute:
+      - condition: qb == 'no'
+        value: 0
+
   - id: qc
     title: Classify The Animal
-    prompt: How would you classify this animal?
+    prompt: How would you classify the {{q1}}?
     type: multiple-choice
     min: 2
     max: 3
@@ -58,6 +70,11 @@ questions:
     prompt: "We now must collect information on {{q1}}'s natural habitat."
     type: module
     module-id: sample_two
+
+  - id: q5
+    title: Reference Link
+    prompt: What's a good URL to use to learn more about the {{q1}}?
+    type: url
       
 output:
   - name: Document
@@ -70,15 +87,21 @@ output:
       #### Animal:
       {{q1}} ( {{q3}} )
 
-      Read more about them using [a Wikipedia search](https://en.wikipedia.org/w/index.php?search={{q1|urlencode|safe}}).
+      Read more about them at {{q5}} or using [a Wikipedia search](https://en.wikipedia.org/w/index.php?search={{q1|urlencode|safe}}).
 
-      {{qc}}
+      {% if qb == 'no' %}
+      I never owned one.
+      {% else %}
+      I owned {{qb1}}.
+      {% endif %}
+
+      {{qc.text}}
 
       #### Habitat:
 
-      Lives on land: {{q4.q1}}
+      Lives on land: {{q4.q1.text}}
 
-      Lives in the sea: {{q4.q2}}
+      Lives in the sea: {{q4.q2.text}}
 
       _Have a nice day!_
   - name: Text Document
@@ -96,7 +119,7 @@ output:
     template: |
       <ul>
       {% for item in qc %}
-        <li>{{item}} <i>{{item.key}}</i></li>
+        <li>{{item.text}} <i>{{item}}</i></li>
       {% endfor %}
       </ul>
   - name: Data

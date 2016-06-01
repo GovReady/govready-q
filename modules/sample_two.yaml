@@ -21,6 +21,6 @@ questions:
 output:
   - format: markdown
     template: |
-      Lives on land: {{q1}}
+      Lives on land: {{q1.text}}
 
-      Lives in the sea: {{q2}}
+      Lives in the sea: {{q2.text}}
