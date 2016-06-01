@@ -7,7 +7,9 @@ editor_requirements: Person familiar with how login and roles work
 introduction:
   format: markdown
   template: |
-    This module gathers information about users of your application. Who can login? Who has special privileges?
+    This module gathers information about the users of your application.
+
+    The purpose is to understand who the users are, who can login and who has special privileges.
 
     Enterprises calls this "ICAM" (Identity, Credentials, and Access Management).
 
