@@ -32,13 +32,12 @@ def next_question(module, questions_answered):
         # an answer, or if one of its impute conditions is
         # met.
         return q.key in questions_answered.answers \
-          or impute_answer(q, questions_answered)
+          or impute_answer(q, questions_answered) is not None
 
     while len(needs_answer) > 0:
         # Get the next question to look at.
 
         q = needs_answer.pop(0)
-
         if is_answered(q) or q.id in already_processed:
             # This question is already answered or we've already
             # processed its dependencies, so we can skip.
@@ -189,11 +188,17 @@ def get_question_dependencies(question):
 def impute_answer(question, answers):
     # Check if any of the impute conditions are met based on
     # the questions that have been answered so far and return
-    # the imputed value.
+    # the imputed value. Be careful about values like 0 that
+    # are false-y --- must check for "is None" to know if
+    # something was imputed or not.
     from jinja2 import meta
     from jinja2.sandbox import SandboxedEnvironment
     env = SandboxedEnvironment()
+    if question.id == "qb1":
+        raise ValueError(question.spec)
     for rule in question.spec.get("impute", []):
+        if question.id == "qb1":
+            raise ValueError((rule,answers.answers))
         condition_func = env.compile_expression(rule["condition"])
         if condition_func(answers.answers):
             # The condition is met. Return the imputed value.
@@ -274,7 +279,7 @@ class ModuleAnswers:
         # defined by next_question.
         for q in self.module.questions.order_by('definition_order'):
             v = impute_answer(q, self)
-            if v:
+            if v is not None:
                 self.answers[q.key] = v
 
     def get_template_context(self, escapefunc = lambda x : x):
