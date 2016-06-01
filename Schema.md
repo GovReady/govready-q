@@ -245,9 +245,15 @@ Multiple condition/value blocks can be provided. They are evaluated in order, wi
 Question Order
 --------------
 
-The order in which Questions are asked is determined through an algorithm.
+The order in which Questions are asked is determined through an algorithm. The algorithm determines which questions need to be asked before other questions and which need to be asked in order to generate the output documents.
 
-Only Questions which are mentioned in any of the output templates are asked of the user.
+The only Questions that are asked of the user are those that are mentioned in any of the output templates or other Questions that required to be asked before those mentioned Questions can be answered.
+
+If a Question mentions another question in its prompt text or impute conditions, the other question must be answered first. A Question can also list other Questions that should be answered first as:
+
+	ask-first:
+	 - q1
+	 - q2
 
 Updating Modules
 ----------------

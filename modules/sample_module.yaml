@@ -31,7 +31,7 @@ questions:
 
   - id: qc
     title: Classify The Animal
-    prompt: How would you classify this animal?
+    prompt: How would you classify the {{q1}}?
     type: multiple-choice
     min: 2
     max: 3
@@ -73,7 +73,7 @@ questions:
 
   - id: q5
     title: Reference Link
-    prompt: What's a good URL to use to learn more about this animal?
+    prompt: What's a good URL to use to learn more about the {{q1}}?
     type: url
       
 output:

@@ -46,9 +46,11 @@ def next_question(module, questions_answered):
 
         # What unanswered dependencies does it have?
 
-        deps = list(filter(
-            lambda d : not is_answered(d),
-            get_question_dependencies(q)))
+        deps = [ module.questions.get(key=d)
+                 for d in get_question_dependencies(q.spec)
+                 if module.questions.filter(key=d).exists()
+               ]
+        deps = list(filter(lambda d : not is_answered(d), deps))
 
         if len(deps) == 0:
             # All of this question's dependent questions are answered,
@@ -183,7 +185,29 @@ def render_content(content, answers, output_format, additional_context={}):
     return output
 
 def get_question_dependencies(question):
-    return []
+    # Returns a set of question IDs that this question is dependent on.
+    ret = set()
+    
+    from jinja2 import meta
+    from jinja2.sandbox import SandboxedEnvironment
+    env = SandboxedEnvironment()
+    def extract_variables(template):
+        return set(meta.find_undeclared_variables(env.parse(template)))
+
+    # All questions mentioned in prompt text become dependencies.
+    ret |= extract_variables(question.get("prompt", ""))
+
+    # All questions mentioned in the impute conditions become dependencies.
+    for rule in question.get("impute", []):
+        ret |= extract_variables(
+                r"{% if " + rule["condition"] + r" %}...{% endif %}"
+                )
+
+    # Other dependencies can just be listed.
+    for qid in question.get("ask-first", []):
+        ret.add(qid)
+
+    return ret
 
 def impute_answer(question, answers):
     # Check if any of the impute conditions are met based on
@@ -191,7 +215,6 @@ def impute_answer(question, answers):
     # the imputed value. Be careful about values like 0 that
     # are false-y --- must check for "is None" to know if
     # something was imputed or not.
-    from jinja2 import meta
     from jinja2.sandbox import SandboxedEnvironment
     env = SandboxedEnvironment()
     for rule in question.spec.get("impute", []):
