@@ -237,7 +237,8 @@ def next_question(request, taskid, taskslug, intropage=None):
         # what Module answers this question?
         answer_module = Module.objects.get(id=q.spec["module-id"]) if q.spec["type"] == "module" else None
         # what existing Tasks are of that type?
-        answer_tasks = Task.objects.filter(project=task.project, module=answer_module)
+        answer_tasks = [t for t in Task.objects.filter(project=task.project, module=answer_module)
+            if t.has_read_priv(request.user)]
 
         context.update({
             "DEBUG": settings.DEBUG,
@@ -249,7 +250,7 @@ def next_question(request, taskid, taskslug, intropage=None):
 
             "answer_module": answer_module,
             "answer_tasks": answer_tasks,
-            "answer_tasks_show_user": answer_tasks.exclude(editor=request.user).exists(),
+            "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
             "answer_answered_by_task_can_write": answer.answered_by_task.has_write_priv(request.user) if answer and answer.answered_by_task else None,
         })
         return render(request, "question.html", context)
