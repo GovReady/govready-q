@@ -192,6 +192,14 @@ If `min` and `max` are set, then the value is restricted to that range. If `min`
 
 As with the text question types, `placeholder` and `help` text can also be specified.
 
+#### `real`
+
+This question type asks for a numeric input, allowing for real (floating-point) numbers.
+
+If `min` and `max` are set, then the value is restricted to that range. If `min` is omitted, then negative numbers are allowed!
+
+As with the text question types, `placeholder` and `help` text can also be specified.
+
 #### `module`
 
 This question type prompts the user to select another completed module as the answer to the question. The `module-id` field specifies the ID of another module specification.

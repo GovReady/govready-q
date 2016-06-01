@@ -252,19 +252,30 @@ class validator:
         return value
 
     def validate_integer(question, value):
-        if value == "":
-            raise ValueError("empty")
+        # First validate as a real so we don't have to duplicate those tests.
+        value = validator.validate_real(question, value)
 
+        # Then ensure is an integer.
         try:
-            value = int(value)
+            return int(value)
         except ValueError:
             # make a nicer error message
             raise ValueError("Invalid input. Must be a whole number.")
 
+    def validate_real(question, value):
+        if value == "":
+            raise ValueError("empty")
+
+        try:
+            value = float(value)
+        except ValueError:
+            # make a nicer error message
+            raise ValueError("Invalid input. Must be a number.")
+
         if "min" in question.spec and value < question.spec["min"]:
-            raise ValueError("Must be at least %d." % question.spec["min"])
+            raise ValueError("Must be at least %g." % question.spec["min"])
         if "max" in question.spec and value > question.spec["max"]:
-            raise ValueError("Must be at most %d." % question.spec["max"])
+            raise ValueError("Must be at most %g." % question.spec["max"])
 
         return value
 
