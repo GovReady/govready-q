@@ -194,11 +194,7 @@ def impute_answer(question, answers):
     from jinja2 import meta
     from jinja2.sandbox import SandboxedEnvironment
     env = SandboxedEnvironment()
-    if question.id == "qb1":
-        raise ValueError(question.spec)
     for rule in question.spec.get("impute", []):
-        if question.id == "qb1":
-            raise ValueError((rule,answers.answers))
         condition_func = env.compile_expression(rule["condition"])
         if condition_func(answers.answers):
             # The condition is met. Return the imputed value.
