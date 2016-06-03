@@ -105,7 +105,19 @@ Next Question: {{q.spec.title}}
 
             {% elif q.spec.type == "integer" or q.spec.type == "real" %}
               <div class="form-group">
-                <input name="value" type="number" {% if q.spec.type == "integer" %}step="1"{% else %}step="any"{% endif %} class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                {% comment %}
+                  The HTML5 number input is a bit confusing in how it handles periods and commas.
+                  Browsers seem to currently only support a period or comma as a decimal separator,
+                  depending on the lang attribute on the input or HTML. They do not allow 
+                  thousands-commas. But we should let users type that in.
+                {% endcomment %}
+                {% if q.spec.min > -1000 and q.spec.max < 1000 %}
+                  {# the range doesn't admit thousands, so we don't need to worry about thousands-commmas #}
+                  <input name="value" type="number" {% if q.spec.type == "integer" %}step="1"{% else %}step="any"{% endif %} class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                {% else %}
+                  {# to let users enter thousands-commas by using a plain text field #}
+                  <input name="value" type="text" pattern="[0-9,\.]+" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                {% endif %}
                 <p class="help-block">{{q.spec.help}}</p>
                 {% if q.spec.min|default_if_none:"NONE" != "NONE" and q.spec.max|default_if_none:"NONE" != "NONE" %}
                     <p class="help-block">Enter a number from {{q.spec.min}} to {{q.spec.max}}.</p>

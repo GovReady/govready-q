@@ -283,21 +283,25 @@ class validator:
 
     def validate_integer(question, value):
         # First validate as a real so we don't have to duplicate those tests.
+        # We get back a float.
         value = validator.validate_real(question, value)
 
         # Then ensure is an integer.
-        try:
-            return int(value)
-        except ValueError:
-            # make a nicer error message
+        if value != int(value):
             raise ValueError("Invalid input. Must be a whole number.")
+
+        return int(value)
 
     def validate_real(question, value):
         if value == "":
             raise ValueError("empty")
 
         try:
-            value = float(value)
+            # Use a locale to parse human input since it may have
+            # e.g. thousands-commas.
+            import locale
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8') 
+            value = locale.atof(value)
         except ValueError:
             # make a nicer error message
             raise ValueError("Invalid input. Must be a number.")
