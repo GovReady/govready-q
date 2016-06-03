@@ -67,7 +67,6 @@ function invite_toggle_mode() {
 function send_invitation(form) {
   var data = {
      add_to_team: $('#invitation_modal form input[name=add-to-team]').is(':checked') ? "1" : "",
-     into_new_task_module_id: $('#invitation_modal form select[name=module]').val(),
      user_id: $('#invite-user-select').is(":visible") ? $('#invite-user-select').val() : null,
      user_email: $('#invite-user-email').is(":visible") ? $('#invite-user-email').val() : null,
      message: $('#invite-message').val()
