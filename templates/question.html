@@ -199,7 +199,7 @@ Next Question: {{q.spec.title}}
             {% endif %}
 
             {% if not is_discussion_guest %}
-            {% if task.project or task.can_transfer_owner %}
+            {% if not task.project.is_account_project or task.can_transfer_owner %}
             <button class="btn btn-default" onclick="$('#need-help').slideToggle();return false;">Get Help From Colleagues</button>
             {% endif %}
             {% endif %}
@@ -208,7 +208,7 @@ Next Question: {{q.spec.title}}
         {% if not is_discussion_guest %}
 
         <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em">
-          {% if task.project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
+          {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
             <li id="start-a-discussion">
                 {# if you can see this page, you can start a conversation #}
                 <a href="javascript:start_a_discussion()">Start a team conversation about this question</a>

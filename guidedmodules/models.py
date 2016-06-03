@@ -59,7 +59,7 @@ class ModuleQuestion(models.Model):
         return "<ModuleQuestion [%d] %s.%s (%s)>" % (self.id, self.module.key, self.key, repr(self.module))
 
 class Task(models.Model):
-    project = models.ForeignKey(Project, blank=True, null=True, on_delete=models.PROTECT, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
+    project = models.ForeignKey(Project, on_delete=models.PROTECT, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
     editor = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that has primary responsibility for completing this Task.")
     module = models.ForeignKey(Module, on_delete=models.PROTECT, help_text="The Module that this Task is answering.")
 
@@ -88,18 +88,18 @@ class Task(models.Model):
         return "<Task [%d] %s %s>" % (self.id, self.title[0:30], repr(self.project))
 
     @staticmethod
-    def has_completed_task(user, module_id):
-        task = Task.get_task_for_module(user, module_id, create=False)
+    def has_completed_task(user, project, module_id):
+        task = Task.get_task_for_module(user, project, module_id, create=False)
         return task and task.is_finished()
 
     @staticmethod
-    def get_task_for_module(user, module_id, create=True):
+    def get_task_for_module(user, project, module_id, create=True):
         # Gets a task given a module_id. Use only for modules that the
         # user can only have one of (within a project).
 
         filters = {
             "editor": user,
-            "project": None,
+            "project": project,
             "deleted_at": None,
         }
 
@@ -148,7 +148,7 @@ class Task(models.Model):
         return ModuleAnswers(self.module, answered)
 
     def can_transfer_owner(self):
-        return self.project is not None
+        return not self.project.is_account_project
 
     def is_started(self):
         return self.answers.exists()

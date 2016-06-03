@@ -26,12 +26,31 @@ class User(UserBase):
         else:
             return self.email
 
+    @transaction.atomic
+    def get_account_project(self):
+        # TODO: There's a race condition here.
+
+        # Get an existing account project.
+        pm = ProjectMembership.objects.filter(
+            user=self,
+            project__is_account_project=True).first()
+        if pm:
+            return pm.project
+
+        # Create a new one.
+        p = Project.objects.create(
+            title="Account Settings",
+            is_account_project=True,
+        )
+        ProjectMembership.objects.create(
+            project=p,
+            user=self,
+            is_admin=True)
+        return p
+
     def get_settings_task(self):
         from guidedmodules.models import Task
-        return Task.objects.filter(
-            editor=self,
-            project=None,
-            module__key="account_settings").first()
+        return Task.get_task_for_module(self, self.get_account_project(), "account_settings", create=False)
 
     def render_context_dict(self):
         return {
@@ -42,6 +61,8 @@ class User(UserBase):
 class Project(models.Model):
     title = models.CharField(max_length=256, help_text="The title of this Project.")
     notes = models.TextField(blank=True, help_text="Notes about this Project for Project members.")
+
+    is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -61,6 +82,9 @@ class Project(models.Model):
 
     def get_admins(self):
         return User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+
+    def can_invite_others(self, user):
+        return (not self.is_account_project) and (user in self.get_admins())
 
     def get_owner_domains(self):
         # Utility function for the admin/debugging to quickly see the domain
@@ -200,7 +224,7 @@ class Invitation(models.Model):
             "project_id": project.id,
             "project_title": project.title,
             "users": [{ "id": pm.user.id, "name": str(pm.user) } for pm in ProjectMembership.objects.filter(project=project).exclude(user=user)],
-            "can_add_invitee_to_team": user in project.get_admins(),
+            "can_add_invitee_to_team": project.can_invite_others(user),
         }
 
     @staticmethod

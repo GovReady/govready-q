@@ -83,9 +83,9 @@ def homepage(request):
         # Public homepage.
         return render(request, "index.html")
 
-    elif not Task.has_completed_task(request.user, "account_settings"):
+    elif not Task.has_completed_task(request.user, request.user.get_account_project(), "account_settings"):
         # First task: Fill out your account settings.
-        return HttpResponseRedirect(Task.get_task_for_module(request.user, "account_settings").get_absolute_url()
+        return HttpResponseRedirect(Task.get_task_for_module(request.user, request.user.get_account_project(), "account_settings").get_absolute_url()
             + "/start")
 
     else:
@@ -111,7 +111,7 @@ def homepage(request):
             projects.add(d.attached_to.task.project)
 
         # Sort.
-        projects = sorted(projects, key = lambda x : (x is not None, x.updated if x else None), reverse=True)
+        projects = sorted(projects, key = lambda x : x.updated, reverse=True)
 
         return render(request, "home.html", {
             "projects": projects,
@@ -151,49 +151,38 @@ def new_project(request):
 
 
 @login_required
-def project(request, project_id=None):
-    if project_id != None:
-        project = get_object_or_404(Project, id=project_id)
-    else:
-        # The "None" project represents the container for the user's
-        # system account modules.
-        project = None
+def project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
 
-    if project:
-        # Check authorization.
-        if not project.has_read_priv(request.user):
-            return HttpResponseForbidden()
+    # Check authorization.
+    if not project.has_read_priv(request.user):
+        return HttpResponseForbidden()
 
-        # Redirect if slug is not canonical. We do this after checking for
-        # read privs so that we don't reveal the task's slug to unpriv'd users.
-        if request.path != project.get_absolute_url():
-            return HttpResponseRedirect(task.get_absolute_url())
+    # Redirect if slug is not canonical. We do this after checking for
+    # read privs so that we don't reveal the task's slug to unpriv'd users.
+    if request.path != project.get_absolute_url():
+        return HttpResponseRedirect(task.get_absolute_url())
 
-    ret = {
-        "is_admin": not project or request.user in project.get_admins(),
-        "can_begin_module": project and request.user in project.get_admins(),
+    project_members = list(ProjectMembership.objects.filter(project=project))
+    project_members.sort(key = lambda mbr : (not mbr.is_admin, str(mbr.user)))
+
+    return render(request, "project.html", {
+        "is_admin": request.user in project.get_admins(),
+        "can_begin_module": (request.user in project.get_admins()) and not project.is_account_project,
         "project_has_members_besides_me": project and project.members.exclude(user=request.user),
         "project": project,
-        "title": project.title if project else "System Account",
+        "title": project.title,
         "tasks": Task.get_all_tasks_readable_by(request.user).filter(editor=request.user, project=project),
         "others_tasks": Task.get_all_tasks_readable_by(request.user).filter(project=project).exclude(editor=request.user),
-    }
-
-    if project:
-        project_members = list(ProjectMembership.objects.filter(project=project))
-        project_members.sort(key = lambda mbr : (not mbr.is_admin, str(mbr.user)))
-
-        ret.update({
-            "discussions": list(project.get_discussions_in_project_as_guest(request.user)),
-            "open_invitations": [
-                inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
-                if not inv.is_expired() ],
-            "startable_modules": Module.get_startable_modules(),
-            "send_invitation": Invitation.form_context_dict(request.user, project),
-            "project_members": project_members,
-        })
-
-    return render(request, "project.html", ret)
+        "discussions": list(project.get_discussions_in_project_as_guest(request.user)),
+        "open_invitations": [
+            inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
+            if not inv.is_expired() ],
+        "startable_modules": Module.get_startable_modules(),
+        "send_invitation": Invitation.form_context_dict(request.user, project),
+        "project_members": project_members,
+    })
+    
 
 # INVITATIONS
 

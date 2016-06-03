@@ -41,7 +41,7 @@
 <div class="row">
 
   <div class="col-sm-3 col-sm-push-9">
-    {% if project %}
+    {% if not project.is_account_project %}
     <div class="well">
       {% if project_has_members_besides_me %}
         <div style="margin-bottom: 1em">
@@ -85,7 +85,7 @@
 
     {% if tasks or can_begin_module %} {# dont show if no permission to start a module #}
     <h2>
-      {% if project %}Modules you are editing
+      {% if not project.is_account_project %}Modules you are editing
       {% else %}Modules{% endif %}
     </h2>
     {% for task in tasks %}
