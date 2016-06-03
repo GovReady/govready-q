@@ -29,7 +29,7 @@ h1 { margin: 0; }
     <a href="{{task.project.get_absolute_url}}">{{task.project.title}}</a>
   {% endif %}
   {% with supermodule=task.is_answer_to_unique %}
-    {% if supermodule %}
+    {% if supermodule and supermodule.task != supermodule.project.root_task %}
       (submodule of <a href="{{supermodule.get_absolute_url}}">{{supermodule.task.title}})</a>
     {% endif %}
   {% endwith %}

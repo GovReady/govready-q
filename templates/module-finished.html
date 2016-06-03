@@ -29,7 +29,7 @@
 
 <div style="margin: 2em 0">
   {% with supermodule=task.is_answer_to_unique %}
-    {% if supermodule and supermodule.task.editor == request.user %}
+    {% if supermodule and supermodule.task.editor == request.user and supermodule.task != supermodule.project.root_task %}
       <p class="text-success">This module is complete.</p>
       <p><a href="{{supermodule.task.get_absolute_url}}" class="btn btn-primary">Continue Answering {{supermodule.task.title}} &raquo;</a></p>
     {% elif task.project %}

@@ -1,0 +1,26 @@
+id: project
+title: Project Module
+short_description: The structure of a guidedmodules.Project.
+long_description: >
+  This module provides the structure of a guidedmodules.Project.
+introduction:
+  format: markdown
+  template: |
+    Welcome to GovReady's Compliance Tool, Q.
+
+questions:
+  - id: q99
+    title: Digital Identity
+    type: module
+    module-id: icam_example
+
+  - id: q100
+    title: Select Animal
+    type: module
+    module-id: sample_module
+
+output:
+  - name: Help
+    format: markdown
+    template: |
+      Hi. Maybe we provide some help here.

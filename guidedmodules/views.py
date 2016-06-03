@@ -12,24 +12,17 @@ from siteapp.models import User, Invitation, Project, ProjectMembership
 
 @login_required
 def new_task(request):
-    # Create a new task.
-
-    # Validate that the module ID is valid.
-    m = get_object_or_404(Module, id=request.POST['module'])
-
-    # Get the project.
+    # Create a new task by answering a module question of a project rook task.
     project = get_object_or_404(Project, id=request.POST["project"])
 
     # Can the user create a task within this project?
     if request.user not in project.get_admins():
         return HttpResponseForbidden()
 
-    # Create and redirect to start it.
-    task = Task.objects.create(
-        editor=request.user,
-        project=project,
-        module=m,
-        title=m.spec["title"])
+    # Create the new subtask.
+    task = project.root_task.get_or_create_subtask(request.user, request.POST["question"])
+
+    # Redirect.
     return HttpResponseRedirect(task.get_absolute_url() + "/start")
 
 @login_required

@@ -83,9 +83,10 @@ def homepage(request):
         # Public homepage.
         return render(request, "index.html")
 
-    elif not Task.has_completed_task(request.user, request.user.get_account_project(), "account_settings"):
+    settings_task = request.user.get_settings_task()
+    if not settings_task.is_finished():
         # First task: Fill out your account settings.
-        return HttpResponseRedirect(Task.get_task_for_module(request.user, request.user.get_account_project(), "account_settings").get_absolute_url()
+        return HttpResponseRedirect(settings_task.get_absolute_url()
             + "/start")
 
     else:
@@ -137,7 +138,20 @@ def new_project(request):
         form = NewProjectForm(request.POST)
         if not form.errors:
             with transaction.atomic():
+                # create object
                 project = form.save()
+
+                # set root task
+                m = Module.objects.get(key="project", superseded_by=None)
+                task = Task.objects.create(
+                    project=project,
+                    editor=request.user,
+                    module=m,
+                    title=m.title)
+                project.root_task = task
+                project.save()
+
+                # add user as an admin
                 ProjectMembership.objects.create(
                     project=project,
                     user=request.user,
@@ -163,8 +177,68 @@ def project(request, project_id):
     if request.path != project.get_absolute_url():
         return HttpResponseRedirect(task.get_absolute_url())
 
-    project_members = list(ProjectMembership.objects.filter(project=project))
-    project_members.sort(key = lambda mbr : (not mbr.is_admin, str(mbr.user)))
+    # Get the project team members.
+    project_members = ProjectMembership.objects.filter(project=project)
+    is_project_member = project_members.filter(user=request.user).exists()
+
+    # Get all of the tabs, groups, and modules that the user can work through.
+    tabs = [
+        {
+            "title": "Modules",
+            "groups": [
+                {
+                    "title": "Modules",
+                    "modules": [],
+                }
+            ]
+        }
+    ]
+
+    # Get all of the discussions I'm participating in as a guest in this project.
+    # Meaning, I'm not a member, but I still need access to certain tasks and
+    # certain questions within those tasks.
+    discussions = list(project.get_discussions_in_project_as_guest(request.user))
+
+    # Create all of the module entries.
+    for mq in project.root_task.module.questions.all():
+        if mq.spec.get("type") not in ("module",):
+            continue
+
+        # Is this question answered yet?
+        ans = project.root_task.answers.filter(question=mq).first()
+
+        # What task is it answered with, and does the user have read/write
+        # privs on that task? A user might not have read privs if they are
+        # not a project team member but are an editor of some other task
+        # in this project (in which case they must not see this task) or if
+        # they are a guest of a discussion within this task (in which case
+        # they can see the task listing but can only go directly to the
+        # discussion).
+        task = None
+        has_read_priv = is_project_member
+        has_write_priv = False
+        if ans and ans.get_current_answer() and ans.get_current_answer().answered_by_task:
+            task = ans.get_current_answer().answered_by_task
+            has_read_priv = task.has_read_priv(request.user)
+            has_write_priv = task.has_write_priv(request.user)
+
+        # Guest of any discussions within the task?
+        task_discussions = [d for d in discussions if d.attached_to.task == task]
+
+        # Do not display if user should not be able to see this task.
+        if not has_read_priv and len(task_discussions) == 0:
+            continue
+
+        # Add entry.
+        tabs[0]["groups"][0]["modules"].append({
+            "question": mq,
+            "module": Module.objects.get(id=mq.spec["module-id"]),
+            "answer": ans,
+            "task": task,
+            "has_read_priv": has_read_priv,
+            "has_write_priv": has_write_priv,
+            "discussions": task_discussions,
+        })
 
     return render(request, "project.html", {
         "is_admin": request.user in project.get_admins(),
@@ -172,15 +246,12 @@ def project(request, project_id):
         "project_has_members_besides_me": project and project.members.exclude(user=request.user),
         "project": project,
         "title": project.title,
-        "tasks": Task.get_all_tasks_readable_by(request.user).filter(editor=request.user, project=project),
-        "others_tasks": Task.get_all_tasks_readable_by(request.user).filter(project=project).exclude(editor=request.user),
-        "discussions": list(project.get_discussions_in_project_as_guest(request.user)),
         "open_invitations": [
             inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
             if not inv.is_expired() ],
-        "startable_modules": Module.get_startable_modules(),
         "send_invitation": Invitation.form_context_dict(request.user, project),
-        "project_members": project_members,
+        "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
+        "tabs": tabs,
     })
     
 
@@ -209,10 +280,11 @@ def send_invitation(request):
             into_project = (request.POST.get("add_to_team", "") != "") and inv_ctx["can_add_invitee_to_team"]
 
         # Target.
-        if request.POST.get("into_new_task_module_id"):
+        if request.POST.get("into_new_task_question_id"):
+            # validate the question ID
             target = from_project
             target_info = {
-                "into_new_task_module_id": Module.objects.filter(id=request.POST.get("into_new_task_module_id")).first().id,
+                "into_new_task_question_id": from_project.root_task.module.questions.filter(id=request.POST.get("into_new_task_question_id")).get().id,
             }
 
         elif request.POST.get("into_task_editorship"):

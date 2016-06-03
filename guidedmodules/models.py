@@ -26,10 +26,6 @@ class Module(models.Model):
         # For debugging.
         return "<Module [%d] %s%s %s>" % (self.id, "" if not self.superseded_by else "(old) ", self.key, self.spec["title"][0:30])
 
-    @staticmethod
-    def get_startable_modules():
-        return Module.objects.filter(visible=True, superseded_by=None)
-
     @property
     def title(self):
         return self.spec["title"]
@@ -86,39 +82,6 @@ class Task(models.Model):
     def __repr__(self):
         # For debugging.
         return "<Task [%d] %s %s>" % (self.id, self.title[0:30], repr(self.project))
-
-    @staticmethod
-    def has_completed_task(user, project, module_id):
-        task = Task.get_task_for_module(user, project, module_id, create=False)
-        return task and task.is_finished()
-
-    @staticmethod
-    def get_task_for_module(user, project, module_id, create=True):
-        # Gets a task given a module_id. Use only for modules that the
-        # user can only have one of (within a project).
-
-        filters = {
-            "editor": user,
-            "project": project,
-            "deleted_at": None,
-        }
-
-        # Check for existence first. If none exists, return None.
-        # Because of module versioning, we're looking for tasks
-        # that are for any version of a particular module.
-        task = Task.objects.filter(module__key=module_id, **filters).first()
-        if not create or task:
-            # Return the task if we found one, or None if the caller
-            # doesn't want us to create one.
-            return task
-
-        # Create a new task. Use the most recent version of the module.
-        m = Module.objects.get(key=module_id, superseded_by=None)
-        task = Task.objects.create(
-            module=m,
-            title=m.title,
-            **filters)
-        return task
 
     def get_absolute_url(self):
         from django.utils.text import slugify
@@ -266,6 +229,36 @@ class Task(models.Model):
         if not answers:
             answers = self.get_answers()
         return answers.render_output(self.get_document_additional_context())
+
+    @transaction.atomic
+    def get_or_create_subtask(self, user, question_id):
+        # Get the ModuleQuestion from the question_id.
+        q = self.module.questions.get(key=question_id)
+
+        # Get or create a TaskAnswer for that question.
+        ans, is_new = self.answers.get_or_create(task=self, question=q)
+        
+        # Get or create a TaskAnswerHistory for that TaskAnswer.
+        ansh = ans.get_current_answer()
+        if not ansh or not ansh.answered_by_task:
+            # There is no Task yet. Create it.
+            m = Module.objects.get(id=q.spec["module-id"])
+            task = Task.objects.create(
+                project=self.project,
+                editor=user,
+                module=m,
+                title=m.title)
+
+            # There was no TaskAnswerHistory yet or the existing
+            # one had a null answer. Create a new one.
+            ansh = TaskAnswerHistory.objects.create(
+                taskanswer=ans,
+                answered_by=user,
+                value=None,
+                answered_by_task=task)
+
+        # Return the task that answers that question.
+        return ansh.answered_by_task
 
     def is_answer_to_unique(self):
         # Is this Task a submodule of exactly one other Task?

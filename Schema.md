@@ -16,12 +16,9 @@ The `module_id` must match the file name that the YAML is saved into, without th
 Several optional fields can be specified:
 
 	version: 1
-	type: account
 	instance-name: "Module for {{q1}}"
 
 The `version` field is used only to force changes in the specification to be considered incompatible with any existing user answers (see Updating Modules).
-
-The `type: account` property specifies that a Module is for system account information and cannot be started by the user. Changing the `type` of a Module is an incompatible change (see Updating Modules).
 
 The `instance-name` is a template to generate a dynamic title for in-progress and completed modules. The `instance-name` is rendered like other Module documents but it is always specified in `text` format (see Documents).
 

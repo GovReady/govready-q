@@ -38,6 +38,7 @@ class User(UserBase):
             return pm.project
 
         # Create a new one.
+        from guidedmodules.models import Module, Task
         p = Project.objects.create(
             title="Account Settings",
             is_account_project=True,
@@ -46,11 +47,22 @@ class User(UserBase):
             project=p,
             user=self,
             is_admin=True)
+
+        # Construct the root task.
+        m = Module.objects.get(key="account_settings_project", superseded_by=None)
+        task = Task.objects.create(
+            project=p,
+            editor=self,
+            module=m,
+            title=m.title)
+        p.root_task = task
+        p.save()
         return p
 
+    @transaction.atomic
     def get_settings_task(self):
-        from guidedmodules.models import Task
-        return Task.get_task_for_module(self, self.get_account_project(), "account_settings", create=False)
+        p = self.get_account_project()
+        return p.root_task.get_or_create_subtask(self, "account_settings")
 
     def render_context_dict(self):
         return {
@@ -63,6 +75,11 @@ class Project(models.Model):
     notes = models.TextField(blank=True, help_text="Notes about this Project for Project members.")
 
     is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
+
+        # the root_task has to be nullable because the Task itself has a non-null
+        # field that refers back to this Project, and one must be NULL until the
+        # other instance is created
+    root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of", help_text="The root Task of this Project, which defines the structure of the Project.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -111,10 +128,10 @@ class Project(models.Model):
                     yield d
     
     def get_invitation_purpose(self, invitation):
-        into_new_task_module_id = invitation.target_info.get('into_new_task_module_id')
-        if into_new_task_module_id:
-            from guidedmodules.models import Module
-            return ("to edit a new module <%s>" % Module.objects.get(id=into_new_task_module_id).title) \
+        into_new_task_question_id = invitation.target_info.get('into_new_task_question_id')
+        if into_new_task_question_id:
+            from guidedmodules.models import ModuleQuestion
+            return ("to edit a new module <%s>" % ModuleQuestion.objects.get(id=into_new_task_question_id).spec["title"]) \
                 + (" and to join the project team" if invitation.into_project else "")
         elif invitation.target_info.get('what') == 'join-team':
             return "to join this project team"
@@ -127,16 +144,11 @@ class Project(models.Model):
 
     def accept_invitation(self, invitation, add_message):
         # Create a new Task for the user to begin a module.
-        into_new_task_module_id = invitation.target_info.get('into_new_task_module_id')
-        if into_new_task_module_id:
-            from guidedmodules.models import Module, Task
-            m = Module.objects.get(id=into_new_task_module_id)
-            task = Task.objects.create(
-                project=self,
-                editor=invitation.accepted_user,
-                module=m,
-                title=m.title,
-            )
+        into_new_task_question_id = invitation.target_info.get('into_new_task_question_id')
+        if into_new_task_question_id:
+            from guidedmodules.models import ModuleQuestion, Task
+            mq = ModuleQuestion.objects.get(id=into_new_task_question_id)
+            task = self.root_task.get_or_create_subtask(invitation.accepted_user, mq.key)
 
             # update the target to point to the created Task so that
             # we don't lose track of it - it will be saved into inv

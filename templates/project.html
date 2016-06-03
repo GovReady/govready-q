@@ -36,7 +36,7 @@
 {% endblock %}
 
 {% block body %}
-<h1 style="margin: 1em 0 0 0">{{title}}</h1>
+<h1 style="margin: 1em 0">{{title}}</h1>
 
 <div class="row">
 
@@ -83,67 +83,76 @@
 
   <div class="col-sm-9 col-sm-pull-3">
 
-    {% if tasks or can_begin_module %} {# dont show if no permission to start a module #}
-    <h2>
-      {% if not project.is_account_project %}Modules you are editing
-      {% else %}Modules{% endif %}
-    </h2>
-    {% for task in tasks %}
-      <p class="task" data-id="{{task.id}}">
-        <span>
-      	 <a href="{{task.get_absolute_url}}{% if not task.is_finished %}/start{% endif %}">{{task.render_title}}</a> ({{task.get_status_display}})
-        </span>
-      	<i class="delete-task glyphicon glyphicon-trash"></i>
-      </p>
-    {% empty %}
-      <p>You have not started any modules in this project.</p>
-    {% endfor %}
-    {% endif %}
-
-    {% if others_tasks|length %}
-      <h2>Other modules in this project (edited by others)</h2>
-      {% for task in others_tasks %}
-        <p class="task" data-id="{{task.id}}">
-          <span>
-          	<a href="{{task.get_absolute_url}}">{{task.render_title}}</a> (edited by {{task.editor}}; {{task.get_status_display}})
-          </span>
-        	{% if is_admin %}<i class="delete-task glyphicon glyphicon-trash"></i>{% endif %}
-        </p>
+    <ul class="nav nav-tabs">
+      {% for tab in tabs %}
+        <li role="presentation" {% if forloop.first %}class="active"{% endif %}><a href="#{{forloop.counter}}-{{tab.title|slugify}}" aria-controls="{{forloop.counter}}-{{tab.title|slugify}}" role="tab" data-toggle="tab">{{tab.title}}</a></li>
       {% endfor %}
-    {% endif %}
+    </ul>
 
-    {% if discussions|length %}
-      <h2>Discussions you are participating in as a guest</h2>
-      {% for discussion in discussions %}
-        <p><a href="{{discussion.get_absolute_url}}">{{discussion.title}}</a></p>
-      {% endfor %}
-    {% endif %}
+    <div class="tab-content">
+      {% for tab in tabs %}
+        <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{forloop.counter}}-{{tab.title|slugify}}">
+          <div style="margin: 1em 1em 1em 0">
 
-    {% if can_begin_module %}
-      {# can only start a new module within a project you are the admin of #}
-      <hr>
+            {% for group in tab.groups %}
+              <h3>{{group.title}}</h3>
 
-      <form class="form-inline" method="post" action="/tasks/start" onsubmit="if ($('#start-module').val() == '') { alert('Select a module.'); return false; }">
-        <input type="hidden" name="project" value="{{project.id}}"/>
-        {% csrf_token %}
-        <div class="form-group" style="margin-right: 1em">
-          <label for="start-module">Start answering a new module...</label>
-          <br>
-          <select id="start-module" class="form-control" name="module">
-            <option value="">Select...</option>
-            {% for m in startable_modules %}
-              <option value="{{m.id}}">{{m.title}}</option>
+              {% for rec in group.modules %}
+                <div class="panel panel-default task">
+                  <div class="panel-heading">
+                    {{rec.question.spec.title}}
+                  </div>
+                  <div class="panel-body">
+                    {% if not rec.task %}
+                      {% if can_begin_module %}
+                        {# can only start a new module within a project you are the admin of #}
+                        <form method="post" action="/tasks/start">
+                          {% csrf_token %}
+                          <input type="hidden" name="project" value="{{project.id}}"/>
+                          <input type="hidden" name="question" value="{{rec.question.key}}"/>
+                          <button type="submit" class="btn btn-primary">Start Module</button>
+                        </form>
+                        <button class="btn btn-warning" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});">Invite to Answer ...</button>
+                      {% else %}
+                        Not Started
+                      {% endif %}
+                    {% else %}
+                      {% if not rec.has_read_priv %}
+                        {# empty - just discussions are listed below #}
+                      {% elif rec.task.is_finished %}
+                        <a href="{{rec.task.get_absolute_url}}">review</a>
+                      {% elif rec.task.is_started %}
+                        <a href="{{rec.task.get_absolute_url}}">continue</a>
+                      {% else %}
+                        <a href="{{rec.task.get_absolute_url}}/start">start</a>
+                      {% endif %}
+
+                      {% if rec.has_write_priv and 0 %}
+                        {# tasks are not deletable - they are answers to questions #}
+                        <i class="delete-task glyphicon glyphicon-trash"></i>
+                      {% endif %}
+
+                      {# guest participation in discussions within this task #}
+                      {% if rec.discussions %}
+                      <div>
+                        <div><b>Discussions:</b></div>
+                        {% for d in rec.discussions %}
+                          <div><a href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a></div>
+                        {% endfor %}
+                      </div>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+
             {% endfor %}
-          </select>
+
+          </div>
         </div>
-        <div class="form-group" style="margin-right: 1em">
-          <label></label>
-          <br>
-          <button type="submit" class="btn btn-primary">Start Module</button>
-          <button class="btn btn-warning" onclick="return invite_user_to_start_module();">Invite to Answer ...</button>
-        </div>
-      </form>
-    {% endif %}
+      {% endfor %}
+    </div>
+ 
   </div>
 </div>
 
@@ -189,25 +198,16 @@ function invite_user_into_project() {
   return false;
 }
 
-function invite_user_to_start_module() {
+function invite_user_to_start_module(module_title, question_id) {
   var info = project_invitation_info;
-
-  var m = $('#start-module');
-  if (m.val() == '') {
-    alert('Select a module.');
-    return false;
-  }
-
-  var mt = m.find('option[value=' + m.val() + ']').text();
-
   show_invite_modal(
     'Start a Module (' + info.project_title + ')',
-    'Invite a colleague to answer the module ' + mt + '.',
+    'Invite a colleague to answer the module ' + module_title + '.',
     info,
-    'Can you give me a hand completing the module ' + mt + ' for ' + info.project_title + '?',
+    'Can you give me a hand completing the module ' + module_title + ' for ' + info.project_title + '?',
     {
       project: info.project_id,
-      into_new_task_module_id: m.val()
+      into_new_task_question_id: question_id
     },
     function() { window.location.reload() }
   );

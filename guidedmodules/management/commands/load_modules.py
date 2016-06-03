@@ -120,7 +120,7 @@ class Command(BaseCommand):
         if m.id:
             print("Updating", repr(m))
 
-        m.visible = spec.get("type") != "account"
+        m.visible = True
         m.spec = self.transform_module_spec(spec)
         m.save()
 
@@ -206,8 +206,8 @@ class Command(BaseCommand):
         #           and the database record can be updated in-place.
         #   True => Incompatible change - a new database record is needed.
 
-        if m.visible == (spec.get("type") != "account") \
-            and json.dumps(m.spec, sort_keys=True) == json.dumps(self.transform_module_spec(spec), sort_keys=True) \
+        if \
+                json.dumps(m.spec, sort_keys=True) == json.dumps(self.transform_module_spec(spec), sort_keys=True) \
             and json.dumps([q.spec for q in m.get_questions()], sort_keys=True) \
                 == json.dumps([self.transform_question_spec(m, q) for q in spec.get("questions", [])], sort_keys=True):
             return None
