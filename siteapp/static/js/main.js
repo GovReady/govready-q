@@ -22,9 +22,9 @@ function show_invite_modal(title, prompt, info, message_default_text, data, call
   var s = m.find('form select[name=user]');
   s.prop('disabled', false);
   s.text('');
-  if (info.users.length > 0 && !data.into_discussion) {
-    // The users list only has project members. They are already in the discussion,
-    // so it doesn't make sense to list them if we are doing an invite to a discussion.
+  if (info.users.length > 0 && !data.add_to_team && !data.into_discussion) {
+    // The users list only has project members. They are already in the project/discussion,
+    // so it doesn't make sense to list them if we are doing an invite to a project/discussion.
     s.append($("<option/>").attr('value', '').text('Select team member...'))
     info.users.forEach(function(user) {
       s.append($("<option/>").attr('value', user.id).text(user.name))
@@ -50,10 +50,17 @@ function show_invite_modal(title, prompt, info, message_default_text, data, call
   m.modal();
 }
 function invite_toggle_mode() {
-  var m = ($('#invite-user-select').val() == '__invite__'); // inviting by email
+  // inviting by email ?
+  var m = ($('#invite-user-select').val() == '__invite__');
+
   $('#invite-user-select').parent().toggle(!m);
   $('#invite-user-email').parent().toggle(m);
-  $('#invite-addtoteam-container').toggle(m && invite_modal_info_data.can_add_invitee_to_team);
+
+  // show the Add to Team? checkbox if:
+  //  * we're inviting someone by email (i.e. they're not already in the project)
+  //  * the user has permission to add someone to the team
+  //  * the user didn't click an Invite to Project button, so we already know that's what the user wants
+  $('#invite-addtoteam-container').toggle(m && invite_modal_info_data.can_add_invitee_to_team && !invite_modal_extra_data.add_to_team);
   if (!(m && invite_modal_info_data.can_add_invitee_to_team))
     $('#invite-addtoteam-container input[name="add-to-team"]').prop('checked', false);
 }

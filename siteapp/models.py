@@ -120,8 +120,13 @@ class Project(models.Model):
             invitation.target = task
 
             task.invitation_history.add(invitation)
+
+        elif invitation.into_project:
+            # This was handled by siteapp.views.accept_invitation.
+            pass
         
         else:
+            # What was this invitation for?
             raise ValueError()
 
     def get_invitation_redirect_url(self, invitation):

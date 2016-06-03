@@ -5,8 +5,6 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 
-import json
-
 from .models import User, Project, Invitation
 from guidedmodules.models import Module, Task, ProjectMembership
 from discussion.models import Discussion
@@ -157,7 +155,7 @@ def project(request, project_id=None):
                 inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
                 if not inv.is_expired() ],
             "startable_modules": Module.get_startable_modules(),
-            "send_invitation": json.dumps(Invitation.form_context_dict(request.user, project)),
+            "send_invitation": Invitation.form_context_dict(request.user, project),
         })
 
     return render(request, "project.html", ret)

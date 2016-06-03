@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load q %}
 
 {% block title %}
 {{title}}
@@ -40,6 +41,12 @@
   </div>
   {% endif %}
 </div>
+
+{% if send_invitation.can_add_invitee_to_team %}
+<div style="float: right" class="clearfix">
+  <button class="btn btn-warning" onclick="return invite_user_into_project();">Invite to Project ...</button>
+</div>
+{% endif %}
 
 {% if open_invitations %}
   <h2>Invitations waiting for a response...</h2>
@@ -93,13 +100,13 @@
   {# can only start a new module within a project you are the admin of #}
   <hr>
 
-  <form class="form-inline" method="post" action="/tasks/start" onsubmit="if ($('#start-module-{{project.id}}').val() == '') { alert('Select a module.'); return false; }">
+  <form class="form-inline" method="post" action="/tasks/start" onsubmit="if ($('#start-module').val() == '') { alert('Select a module.'); return false; }">
     <input type="hidden" name="project" value="{{project.id}}"/>
     {% csrf_token %}
     <div class="form-group" style="margin-right: 1em">
-      <label for="start-module-{{project.id}}">Start answering a new module...</label>
+      <label for="start-module">Start answering a new module...</label>
       <br>
-      <select id="start-module-{{project.id}}" class="form-control" name="module">
+      <select id="start-module" class="form-control" name="module">
         <option value="">Select...</option>
         {% for m in startable_modules %}
           <option value="{{m.id}}">{{m.title}}</option>
@@ -107,11 +114,10 @@
       </select>
     </div>
     <div class="form-group" style="margin-right: 1em">
-      <script>var project_invitation_info_{{project.id}} = {{send_invitation|safe}};</script>
       <label></label>
       <br>
       <button type="submit" class="btn btn-primary">Start Module</button>
-      <button class="btn btn-warning" onclick="return invite_user_to_start_module(project_invitation_info_{{project.id}});">Invite to Answer ...</button>
+      <button class="btn btn-warning" onclick="return invite_user_to_start_module();">Invite to Answer ...</button>
     </div>
   </form>
 {% endif %}
@@ -120,6 +126,8 @@
 
 {% block scripts %}
 <script>
+var project_invitation_info = {{send_invitation|json}};
+
 $(function() {
 	$('.task .delete-task').click(function() {
     var task_node = $(this).parent('p');
@@ -139,8 +147,27 @@ $(function() {
 	})
 })
 
-function invite_user_to_start_module(info) {
-  var m = $('#start-module-' + info.project_id);
+function invite_user_into_project() {
+  var info = project_invitation_info;
+  show_invite_modal(
+    'Invite To Project Team (' + info.project_title + ')',
+    'Invite a colleague to join this project team.',
+    info,
+    'Please join the project team for ' + info.project_title + '.',
+    {
+      project: info.project_id,
+      add_to_team: "1"
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function invite_user_to_start_module() {
+  var info = project_invitation_info;
+
+  var m = $('#start-module');
   if (m.val() == '') {
     alert('Select a module.');
     return false;
