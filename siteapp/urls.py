@@ -13,6 +13,7 @@ urlpatterns = [
     url(r"^discussion/", include("discussion.urls")),
 
     # projects
+    url(r'new-project$', views.new_project),
     url(r'projects/(?:(\d+)/(?:[\w\-]+)|system)?$', views.project),
 
     # invitations

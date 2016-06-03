@@ -118,6 +118,37 @@ def homepage(request):
             "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
         })
 
+@login_required
+def new_project(request):
+    from django.forms import ModelForm
+
+    class NewProjectForm(ModelForm):
+        class Meta:
+            model = Project
+            fields = ['title', 'notes']
+            help_texts = {
+                'title': 'Give your project a descriptive name.',
+                'notes': 'Optionally write some notes. If you invite other users to your project team, they\'ll be able to see this too.',
+            }
+
+    form = NewProjectForm()
+    if request.method == "POST":
+        # Save and then go back to the home page to see it.
+        form = NewProjectForm(request.POST)
+        if not form.errors:
+            with transaction.atomic():
+                project = form.save()
+                ProjectMembership.objects.create(
+                    project=project,
+                    user=request.user,
+                    is_admin=True)
+            return HttpResponseRedirect("/")
+
+    return render(request, "new-project.html", {
+        "first": not ProjectMembership.objects.filter(user=request.user).exists(),
+        "form": form,
+    })
+
 
 @login_required
 def project(request, project_id=None):
