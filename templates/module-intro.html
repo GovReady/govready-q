@@ -75,8 +75,6 @@ function invite_user_to_take_over_module() {
     },
     function() { window.location.reload() }
   );
-
-  return false;
 }
 
 function return_to_requestor(user) {
@@ -90,7 +88,6 @@ function return_to_requestor(user) {
       project: {{task.project.id}},
       into_task_editorship: {{task.id}}
     });
-  return false;
 }
 </script>
 {% endblock %}
