@@ -90,7 +90,7 @@ function send_invitation(form) {
 }
 
 
-function cancel_invitation(elem) {
+function cancel_invitation(elem, callback) {
   var container = $(elem).parents('[data-invitation-id]');
   var invid = container.attr('data-invitation-id');
   ajax_with_indicator({
@@ -101,7 +101,10 @@ function cancel_invitation(elem) {
    },
    success: function(res) {
      show_modal_error("Cancel Invitation", "The invitation has been canceled.");
-     container.slideUp(function() { container.remove(); })
+     container.slideUp(function() {
+      container.remove();
+      if (callback) callback();
+     })
    }
   });
 }

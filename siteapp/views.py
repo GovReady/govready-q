@@ -149,6 +149,9 @@ def project(request, project_id=None):
     }
 
     if project:
+        project_members = list(ProjectMembership.objects.filter(project=project))
+        project_members.sort(key = lambda mbr : (not mbr.is_admin, str(mbr.user)))
+
         ret.update({
             "discussions": list(project.get_discussions_in_project_as_guest(request.user)),
             "open_invitations": [
@@ -156,6 +159,7 @@ def project(request, project_id=None):
                 if not inv.is_expired() ],
             "startable_modules": Module.get_startable_modules(),
             "send_invitation": Invitation.form_context_dict(request.user, project),
+            "project_members": project_members,
         })
 
     return render(request, "project.html", ret)
