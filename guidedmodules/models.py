@@ -94,26 +94,30 @@ class Task(models.Model):
 
     @staticmethod
     def get_task_for_module(user, module_id, create=True):
-        # Gets a task given a module_id. Use only with system modules
-        # where a user can only have one Task for the module.
-
-        module = Module.objects.get(key=module_id)
+        # Gets a task given a module_id. Use only for modules that the
+        # user can only have one of (within a project).
 
         filters = {
             "editor": user,
-            "module": module,
             "project": None,
             "deleted_at": None,
         }
 
-        if not create:
-            # Check for existence first. If none exists, return None.
-            return Task.objects.filter(**filters).first()
+        # Check for existence first. If none exists, return None.
+        # Because of module versioning, we're looking for tasks
+        # that are for any version of a particular module.
+        task = Task.objects.filter(module__key=module_id, **filters).first()
+        if not create or task:
+            # Return the task if we found one, or None if the caller
+            # doesn't want us to create one.
+            return task
 
-        task, isnew = Task.objects.get_or_create(**filters)
-        if isnew:
-            task.title = module.title
-            task.save()
+        # Create a new task. Use the most recent version of the module.
+        m = Module.objects.get(key=module_id, superseded_by=None)
+        task = Task.objects.create(
+            module=m,
+            title=m.title,
+            **filters)
         return task
 
     def get_absolute_url(self):
