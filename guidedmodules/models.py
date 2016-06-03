@@ -224,6 +224,21 @@ class Task(models.Model):
             "project": self.project.title if self.project else None,
         }
 
+    def render_title(self):
+        import jinja2
+        try:
+            return render_content(
+                {
+                    "template": self.module.spec["instance-name"],
+                    "format": "text",
+                },
+                self.get_answers(),
+                "text",
+                self.get_document_additional_context()
+            )
+        except (KeyError, jinja2.TemplateError):
+            return self.module.title
+
     def render_introduction(self):
         return render_content(
             self.module.spec.get("introduction", ""),

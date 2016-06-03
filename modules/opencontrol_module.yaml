@@ -1,5 +1,6 @@
 id: opencontrol_module
 title: Open Control YAML starter file 
+instance-name: Open Control YAML starter for {{q1}}
 short_description: Generate starter opencontrol.yaml
 long_description: >
   This module will display a starter `opencontrol.yaml` file

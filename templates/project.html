@@ -91,7 +91,7 @@
     {% for task in tasks %}
       <p class="task" data-id="{{task.id}}">
         <span>
-      	 <a href="{{task.get_absolute_url}}{% if not task.is_finished %}/start{% endif %}">{{task.title}}</a> ({{task.get_status_display}})
+      	 <a href="{{task.get_absolute_url}}{% if not task.is_finished %}/start{% endif %}">{{task.render_title}}</a> ({{task.get_status_display}})
         </span>
       	<i class="delete-task glyphicon glyphicon-trash"></i>
       </p>
@@ -105,7 +105,7 @@
       {% for task in others_tasks %}
         <p class="task" data-id="{{task.id}}">
           <span>
-          	<a href="{{task.get_absolute_url}}">{{task.title}}</a> (edited by {{task.editor}}; {{task.get_status_display}})
+          	<a href="{{task.get_absolute_url}}">{{task.render_title}}</a> (edited by {{task.editor}}; {{task.get_status_display}})
           </span>
         	{% if is_admin %}<i class="delete-task glyphicon glyphicon-trash"></i>{% endif %}
         </p>

@@ -1,3 +1,9 @@
+def get_jinja2_template_vars(template):
+    from jinja2 import meta
+    from jinja2.sandbox import SandboxedEnvironment
+    env = SandboxedEnvironment()
+    return set(meta.find_undeclared_variables(env.parse(template)))
+
 def next_question(module, questions_answered):
     # Compute the next question to ask the user, given the user's
     # answers to questions so far.
@@ -10,15 +16,11 @@ def next_question(module, questions_answered):
 
     # What questions are actually used in the template?
 
-    from jinja2 import meta
-    from jinja2.sandbox import SandboxedEnvironment
-    env = SandboxedEnvironment()
     needs_answer = [ ]
     for d in module.spec["output"]:
-        ast = env.parse(d['template'])
         needs_answer.extend([
             module.questions.get(key=qid)
-            for qid in meta.find_undeclared_variables(ast)
+            for qid in get_jinja2_template_vars(d['template'])
             if module.questions.filter(key=qid).exists()
         ])
 
@@ -175,8 +177,9 @@ def render_content(content, answers, output_format, additional_context={}):
     # we handle it ourselves, we do so using the __html__ method on
     # RenderedAnswer, which relies on autoescaping logic. This also lets
     # the template writer disable autoescaping with "|safe".
+    import jinja2
     from jinja2.sandbox import SandboxedEnvironment
-    env = SandboxedEnvironment(autoescape=True)
+    env = SandboxedEnvironment(autoescape=True, undefined=jinja2.StrictUndefined)
     template = env.from_string(content["template"])
     output = template.render(context)
 
@@ -188,18 +191,12 @@ def get_question_dependencies(question):
     # Returns a set of question IDs that this question is dependent on.
     ret = set()
     
-    from jinja2 import meta
-    from jinja2.sandbox import SandboxedEnvironment
-    env = SandboxedEnvironment()
-    def extract_variables(template):
-        return set(meta.find_undeclared_variables(env.parse(template)))
-
     # All questions mentioned in prompt text become dependencies.
-    ret |= extract_variables(question.get("prompt", ""))
+    ret |= get_jinja2_template_vars(question.get("prompt", ""))
 
     # All questions mentioned in the impute conditions become dependencies.
     for rule in question.get("impute", []):
-        ret |= extract_variables(
+        ret |= get_jinja2_template_vars(
                 r"{% if " + rule["condition"] + r" %}...{% endif %}"
                 )
 

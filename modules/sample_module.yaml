@@ -1,5 +1,6 @@
 id: sample_module
 title: Animal Compliance
+instance-name: Animal Compliance - {{q1}}
 introduction:
   format: markdown
   template: |
