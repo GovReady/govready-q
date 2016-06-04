@@ -181,28 +181,29 @@ def project(request, project_id):
     project_members = ProjectMembership.objects.filter(project=project)
     is_project_member = project_members.filter(user=request.user).exists()
 
-    # Get all of the tabs, groups, and modules that the user can work through.
-    tabs = [
-        {
-            "title": "Modules",
-            "groups": [
-                {
-                    "title": "Modules",
-                    "modules": [],
-                }
-            ]
-        }
-    ]
-
     # Get all of the discussions I'm participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
     # certain questions within those tasks.
     discussions = list(project.get_discussions_in_project_as_guest(request.user))
 
-    # Create all of the module entries.
-    for mq in project.root_task.module.questions.all():
+    # Create all of the module entries in a tabs & groups data structure.
+    from collections import OrderedDict
+    tabs = OrderedDict()
+    for mq in project.root_task.module.questions.all().order_by('definition_order'):
         if mq.spec.get("type") not in ("module",):
             continue
+
+        # Create the tab and group for this.
+        tabname = mq.spec.get("tab", "Modules")
+        tab = tabs.setdefault(tabname, {
+            "title": tabname,
+            "groups": OrderedDict(),
+        })
+        groupname = mq.spec.get("group", "Modules")
+        group = tab["groups"].setdefault(groupname, {
+            "title": groupname,
+            "modules": [],
+        })
 
         # Is this question answered yet?
         ans = project.root_task.answers.filter(question=mq).first()
@@ -230,7 +231,7 @@ def project(request, project_id):
             continue
 
         # Add entry.
-        tabs[0]["groups"][0]["modules"].append({
+        group["modules"].append({
             "question": mq,
             "module": Module.objects.get(id=mq.spec["module-id"]),
             "answer": ans,
@@ -246,12 +247,14 @@ def project(request, project_id):
         "project_has_members_besides_me": project and project.members.exclude(user=request.user),
         "project": project,
         "title": project.title,
+        "intro" : project.root_task.render_introduction() if project.root_task.module.spec.get("introduction") else "",
+        "outputs": project.root_task.render_output_documents() if project.root_task.module.spec.get("output") else [],
         "open_invitations": [
             inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
             if not inv.is_expired() ],
         "send_invitation": Invitation.form_context_dict(request.user, project),
         "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
-        "tabs": tabs,
+        "tabs": list(tabs.values()),
     })
     
 

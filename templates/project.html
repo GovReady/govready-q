@@ -36,7 +36,11 @@
 {% endblock %}
 
 {% block body %}
-<h1 style="margin: 1em 0">{{title}}</h1>
+<h1 style="margin: 1em 0 0 0">{{title}}</h1>
+
+<div style="margin: 2em 0">
+  {{intro|safe}}
+</div>
 
 <div class="row">
 
@@ -84,20 +88,36 @@
   <div class="col-sm-9 col-sm-pull-3">
 
     <ul class="nav nav-tabs">
+      {# question tabs #}
       {% for tab in tabs %}
         <li role="presentation" {% if forloop.first %}class="active"{% endif %}><a href="#{{forloop.counter}}-{{tab.title|slugify}}" aria-controls="{{forloop.counter}}-{{tab.title|slugify}}" role="tab" data-toggle="tab">{{tab.title}}</a></li>
+      {% endfor %}
+
+      {# output document tabs #}
+      {% for document in outputs %}
+        <li role="presentation"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.name}}</a></li>
       {% endfor %}
     </ul>
 
     <div class="tab-content">
+      {# question tabs #}
+
       {% for tab in tabs %}
         <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{forloop.counter}}-{{tab.title|slugify}}">
           <div style="margin: 1em 1em 1em 0">
 
-            {% for group in tab.groups %}
+            {% for group in tab.groups.values %}
               <h3>{{group.title}}</h3>
 
+              <div class="row">
               {% for rec in group.modules %}
+                {% if forloop.counter0|divisibleby:4 %}
+                  <div class="clearfix visible-sm-block"></div>
+                  <div class="clearfix visible-md-block"></div>
+                  <div class="clearfix visible-lg-block"></div>
+                {% endif %}
+
+                <div class="col-sm-3">
                 <div class="panel panel-default task">
                   <div class="panel-heading">
                     {{rec.question.spec.title}}
@@ -142,15 +162,27 @@
                       </div>
                       {% endif %}
                     {% endif %}
-                  </div>
-                </div>
+                  </div> <!-- /panel-body -->
+                </div> <!-- /panel -->
+                </div> <!-- /col -->
               {% endfor %}
+              </div> <!-- /row -->
 
             {% endfor %}
 
           </div>
         </div>
       {% endfor %}
+
+      {# output document tabs #}
+      {% for document in outputs %}
+        <div role="tabpanel" class="tab-pane" id="document-{{forloop.counter}}">
+          <div style="padding: 1em 0">
+            {{document.html|safe}}
+          </div>
+        </div>
+      {% endfor %}
+
     </div>
  
   </div>

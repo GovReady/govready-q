@@ -183,7 +183,7 @@ def next_question(request, taskid, taskslug, intropage=None):
     elif not q:
         # There is no next question - the module is complete.
         context.update({
-            "output": task.get_output(answered),
+            "output": task.render_output_documents(answered),
             "all_questions": [q for q in task.module.questions.all()
                 if module_logic.impute_answer(q, answered) is None ],
         })

@@ -225,8 +225,8 @@ class Task(models.Model):
             self.get_document_additional_context()
         )
 
-    def get_output(self, answers=None):
-        if not answers:
+    def render_output_documents(self, answers=None):
+        if answers is None:
             answers = self.get_answers()
         return answers.render_output(self.get_document_additional_context())
 
