@@ -10,46 +10,46 @@ introduction:
 
 questions:
   - id: q99a
-    title: Digital Identity 1
+    title: Purpose
     type: module
     module-id: icam_example
-    tab: Database
-    group: Identity
+    tab: Basic Info
+    group: About the Project
 
   - id: q99b
-    title: Digital Identity 2
+    title: Systems
     type: module
     module-id: icam_example
-    tab: Web Server
-    group: Identity
+    tab: Basic Info
+    group: About the Project
 
   - id: q99c
-    title: Digital Identity 3
+    title: Users
     type: module
     module-id: icam_example
-    tab: Web Server
-    group: SSL/TLS Certificate
+    tab: Basic Info
+    group: About the Project
 
   - id: q100a
     title: Select Animal 1
     type: module
     module-id: sample_module
-    tab: Database
-    group: Identity
+    tab: Who's Who?
+    group: Government Staff
 
   - id: q100b
     title: Select Animal 2
     type: module
     module-id: sample_module
-    tab: Database
-    group: IaaS Credentials
+    tab: Who's Who?
+    group: Contractors
 
   - id: q100c
     title: Select Animal 3
     type: module
     module-id: sample_module
-    tab: Web Server
-    group: SSL/TLS Certificate
+    tab: Who's Who?
+    group: Vendors
 
 output:
   - name: Help
