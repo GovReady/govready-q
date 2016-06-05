@@ -42,14 +42,17 @@ else:
 # DJANGO SETTINGS #
 ###################
 
+# The SECRET_KEY must be specified in the environment.
 SECRET_KEY = environment["secret-key"]
+
+# The DEBUG flag must be set in the environment.
 DEBUG = environment["debug"]
 
 # Set ALLOWED_HOSTS from the host environment. If it has a port, strip it.
+# The port is used in SITE_ROOT_URL must must be removed from ALLOWED_HOSTS.
 ALLOWED_HOSTS = [environment["host"].split(':')[0]]
 
-# Applications & middleware
-
+# Add standard apps to INSTALLED_APPS.
 INSTALLED_APPS = [
 	'django.contrib.admin',
 	'django.contrib.auth',
@@ -68,6 +71,7 @@ try:
 except ImportError:
 	pass
 
+# Add standard middleware.
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -81,6 +85,8 @@ MIDDLEWARE_CLASSES = [
 if environment["debug"] and os.path.exists(os.path.join(os.path.dirname(__file__), 'helper_middleware.py')):
 	MIDDLEWARE_CLASSES.append(primary_app+'.helper_middleware.DumpErrorsToConsole')
 
+# Load templates for app directories and from a main `templates` directory located
+# at the project root. Add standard context processors.
 TEMPLATES = [
 	{
 		'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -102,16 +108,24 @@ TEMPLATES = [
 		},
 	},
 ]
+
+# When in production, cache the templates once loaded from disk.
 if not DEBUG:
 	# Wrap the template loaders in the cached loader.
 	TEMPLATES[0]['OPTIONS'][loaders] = [
 		('django.template.loaders.cached.Loader', TEMPLATES[0]['OPTIONS'][loaders])
 	]
 
+# Authenticate users using the standard mechanism, but using the
+# User model defined in the project's primary app (the app this
+# file resides in).
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+AUTH_USER_MODEL = primary_app + '.User'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
 
-# Database and Cache
-
+# Use an Sqlite database at local/db.sqlite, until other database
+# settings have been set in the environment.
 DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.sqlite3',
@@ -119,12 +133,17 @@ DATABASES = {
 	}
 }
 if not environment.get('db'):
+	# Ensure the 'local' directory exists for the default Sqlite
+	# database.
 	if not os.path.exists(os.path.dirname(local('.'))):
 		os.mkdir(os.path.dirname(local('.')))
 else:
+	# Enable database connection pooling (unless overridden in the
+	# environment settings).
 	DATABASES['default']['CONN_MAX_AGE'] = 60
 	DATABASES['default'].update(environment['db'])
 
+# Setup the cache. The default is a LocMemCache.
 CACHES = {
 	'default': {
 		'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -132,25 +151,36 @@ CACHES = {
 	}
 }
 if environment.get('memcached'):
+	# But if the 'memcached' environment setting is true,
+	# enable a memcached cache using the default host/port
+	# (see above) *and* enable the cached_db session backend.
 	CACHES['default']['BACKEND'] = 'django.core.cache.backends.memcached.MemcachedCache'
 	SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
-# Settings
+# Settings that have normal values based on the primary app
+# (the app this file resides in).
 
 ROOT_URLCONF = primary_app + '.urls'
 WSGI_APPLICATION = primary_app + '.wsgi.application'
 
-LANGUAGE_CODE = 'en-us'
+# Turn on TZ-aware datetimes. Store times in UTC in the database.
+
 TIME_ZONE = 'UTC'
-USE_I18N = False
-USE_L10N = True
 USE_TZ = True
 
-AUTH_USER_MODEL = primary_app + '.User'
+# Use localization but not internationalization. You probably will
+# want to change these if you are not making a U.S.-focused website.
 
+LANGUAGE_CODE = 'en-us'
+USE_I18N = False
+USE_L10N = True
+
+# Dump outbound emails to the console by default for debugging.
+# If the "email" environment setting is present, it is a dictionary
+# providing an SMTP server to send outbound emails to. TLS is
+# always turned on.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
-
 if environment.get("email"):
 	EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 	EMAIL_HOST = environment["email"]["host"]
@@ -159,23 +189,26 @@ if environment.get("email"):
 	EMAIL_HOST_PASSWORD = environment["email"]["pw"]
 	EMAIL_USE_TLS = True
 
+# If the "https" environment setting is true, set the settings
+# that keep sessions and cookies secure.
 if environment["https"]:
 	SESSION_COOKIE_HTTPONLY = True
 	SESSION_COOKIE_SECURE = True
 	CSRF_COOKIE_HTTPONLY = True
 	CSRF_COOKIE_SECURE = True
 
-# Paths
-
+# Put static files in the virtual path "/static/". When the "static"
+# environment setting is present, then it's a local directory path
+# where "collectstatic" will put static files. The ManifestStaticFilesStorage
+# is activated.
 STATIC_URL = '/static/'
 if environment.get("static"):
 	STATIC_ROOT = environment["static"]
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
 
-# Convenience.
-
+# Add a convenience setting "SITE_ROOT_URL" that stores the root URL
+# of the website, constructed from the "https" and "host" environment
+# settings
 SITE_ROOT_URL = "%s://%s" % (("http" if not environment["https"] else "https"), environment["host"])
 
 # Load all additional settings from settings_application.py.
