@@ -99,8 +99,9 @@ class Task(models.Model):
             # If this question type is "module", its answer value is stored
             # differently --- and it is a Task instance.
             if q.question.spec["type"] == "module":
-                if a.answered_by_task_id:
-                    answered[q.question.key] = a.answered_by_task.get_answers()
+                t = a.answered_by_task.first()
+                if t:
+                    answered[q.question.key] = t.get_answers()
             
             # Some answers store None to reflect that an answer has been
             # explicitly cleared. Don't pull those into the returned
@@ -232,6 +233,8 @@ class Task(models.Model):
 
     @transaction.atomic
     def get_or_create_subtask(self, user, question_id):
+        # Creates a unique subtask for a "module"-type question.
+
         # Get the ModuleQuestion from the question_id.
         q = self.module.questions.get(key=question_id)
 
@@ -240,7 +243,7 @@ class Task(models.Model):
         
         # Get or create a TaskAnswerHistory for that TaskAnswer.
         ansh = ans.get_current_answer()
-        if not ansh or not ansh.answered_by_task:
+        if not ansh or not ansh.answered_by_task.count():
             # There is no Task yet. Create it.
             m = Module.objects.get(id=q.spec["module-id"])
             task = Task.objects.create(
@@ -254,11 +257,11 @@ class Task(models.Model):
             ansh = TaskAnswerHistory.objects.create(
                 taskanswer=ans,
                 answered_by=user,
-                value=None,
-                answered_by_task=task)
+                value=None)
+            ansh.answered_by_task.add(task)
 
         # Return the task that answers that question.
-        return ansh.answered_by_task
+        return ansh.answered_by_task.first()
 
     def is_answer_to_unique(self):
         # Is this Task a submodule of exactly one other Task?
@@ -351,7 +354,7 @@ class TaskAnswerHistory(models.Model):
 
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
     value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
-    answered_by_task = models.ForeignKey(Task, blank=True, null=True, related_name="is_answer_to", on_delete=models.PROTECT, help_text="A Task that supplies the answer for this question.")
+    answered_by_task = models.ManyToManyField(Task, blank=True, related_name="is_answer_to", help_text="A Task or Tasks that supplies the answer for this question (of type 'module' or 'module-set').")
 
     notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswerHistory.")
 
@@ -365,12 +368,12 @@ class TaskAnswerHistory(models.Model):
 
     @property
     def is_answered(self):
-        return bool(self.value or self.answered_by_task)
+        return bool(self.value or self.answered_by_task.count())
 
     def is_latest(self):
         # Is this the most recent --- the current --- answer for a TaskAnswer.
         return self.taskanswer.get_current_answer() == self
 
     def get_answer_display(self):
-        return repr(self.value or self.answered_by_task)
+        return repr(self.value or self.answered_by_task.all())
 

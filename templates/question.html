@@ -137,13 +137,14 @@ Next Question: {{q.spec.title}}
               <input type="radio" name="value" value="__new" checked style="display: none"/>
 
             {% elif q.spec.type == "module" %}
-              {% if answer.answered_by_task %}
+              {% with t=answer.answered_by_task.first %}
+              {% if t %}
                 <p>A module has already been selected to provide the information. You can keep your selection{% if answer_tasks|length > 1 %}, select a different module,{% endif %} or start a new one.</p>
                 <div class="radio">
                   <label>
-                    <input name="value" value="{{answer.answered_by_task.id}}" type="radio" checked>
-                    Use my answers in {{answer.answered_by_task.title}}
-                      (<a href="{{answer.answered_by_task.get_absolute_url}}{% if not answer.answered_by_task.is_finished %}/start{% endif %}">view{% if answer_answered_by_task_can_write %}/edit{% endif %}</a>)
+                    <input name="value" value="{{t.id}}" type="radio" checked>
+                    Use my answers in {{t.title}}
+                      (<a href="{{t.get_absolute_url}}{% if not t.is_finished %}/start{% endif %}">view{% if answer_answered_by_task_can_write %}/edit{% endif %}</a>)
                   </label>
                 </div>
 
@@ -154,11 +155,11 @@ Next Question: {{q.spec.title}}
               {% endif %}
 
               {% for m in answer_tasks %}
-              {% if m != answer.answered_by_task %}
+              {% if m != t %}
                 <div class="radio">
                   <label>
                     <input name="value" value="{{m.id}}" type="radio">
-                      {% if answer.answered_by_task %}Change answers to:<br>{% endif %}
+                      {% if t %}Change answers to:<br>{% endif %}
                       {{m.title}}
                       ({% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}})
                   </label>
@@ -169,7 +170,7 @@ Next Question: {{q.spec.title}}
               <div class="radio">
                 <label>
                   <input name="value" value="__new" type="radio">
-                  {% if answer.answered_by_task %}
+                  {% if t %}
                     Start over by answering
                   {% else %}
                     Start
@@ -179,6 +180,7 @@ Next Question: {{q.spec.title}}
               </div>
 
               <p class="help-block">{{q.spec.help}}</p>
+              {% endwith %}
 
             {% else %}
                 {{q.spec.type}}

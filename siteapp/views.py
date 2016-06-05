@@ -152,8 +152,8 @@ def project(request, project_id):
         task = None
         has_read_priv = is_project_member
         has_write_priv = False
-        if ans and ans.get_current_answer() and ans.get_current_answer().answered_by_task:
-            task = ans.get_current_answer().answered_by_task
+        if ans and ans.get_current_answer() and ans.get_current_answer().answered_by_task.first():
+            task = ans.get_current_answer().answered_by_task.first()
             has_read_priv = task.has_read_priv(request.user)
             has_write_priv = task.has_write_priv(request.user)
 

@@ -74,7 +74,7 @@ def next_question(request, taskid, taskslug, intropage=None):
         redirect_to = request.path
 
         # fetch the task that answers this question
-        answered_by_task = None
+        answered_by_tasks = []
         if q.spec["type"] == "module":
             if value == None:
                 # answer is being cleared
@@ -94,18 +94,18 @@ def next_question(request, taskid, taskslug, intropage=None):
                 # user selects an existing Task (TODO :ensure the user has access to it)
                 t = Task.objects.get(project=task.project, id=int(value))
 
-            answered_by_task = t
+            answered_by_tasks = [t]
             value = None
 
         # Create a new TaskAnswerHistory if the answer is actually changing.
         current_answer = question.get_current_answer()
-        if not current_answer or (value != current_answer.value or answered_by_task != current_answer.answered_by_task):
+        if not current_answer or (value != current_answer.value or set(answered_by_tasks) != set(current_answer.answered_by_task.all())):
             answer = TaskAnswerHistory.objects.create(
                 taskanswer=question,
                 answered_by=request.user,
-                value=value,
-                answered_by_task=answered_by_task,
-            )
+                value=value)
+            for t in answered_by_tasks:
+                answer.answered_by_task.add(t)
 
             # kick the task and questions's updated field
             task.save(update_fields=[])
@@ -212,7 +212,7 @@ def next_question(request, taskid, taskslug, intropage=None):
             "answer_module": answer_module,
             "answer_tasks": answer_tasks,
             "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
-            "answer_answered_by_task_can_write": answer.answered_by_task.has_write_priv(request.user) if answer and answer.answered_by_task else None,
+            "answer_answered_by_task_can_write": answer.answered_by_task.first().has_write_priv(request.user) if answer and answer.answered_by_task.first() else None,
         })
         return render(request, "question.html", context)
 
