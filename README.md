@@ -1,6 +1,14 @@
-# It's like GPS but for... compliance!
+# Q (by GovReady)
 
-Ok go:
+Q is an information gathering platform for people, tuned to the specific needs of information security and compliance professionals.
+
+---
+
+## Development
+
+Q is developed in Python on top of Django.
+
+To develop locally, run the following commands:
 
 	pip3 install -r requirements.txt
 	deployment/fetch-vendor-resources.sh
@@ -8,9 +16,11 @@ Ok go:
 	python3 manage.py load_modules
 	python3 manage.py runserver
 
+## Deployment
+
 To deploy, on a fresh machine, create a Unix user named "site" and in its home directory run:
 
-	git clone https://github.com/GovReady/govready-its-like-gps-but-for-compliance q
+	git clone https://github.com/GovReady/govready-q q
 	cd q
 	mkdir local
 
