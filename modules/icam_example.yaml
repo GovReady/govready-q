@@ -24,13 +24,13 @@ questions:
 
   - id: q2
     title: Number of Authenticated Users
-    prompt: How many these {{q1}} end users will have logins?
+    prompt: How many these {{q1.text}} end users will have logins?
     type: text
     help: "Enter a number (ex: 2000)"
 
   - id: q3
     title: Number of Privileged Users
-    prompt: How many these {{q2}} users with logins will be administrators with extensive system privileges?
+    prompt: How many these {{q2.text}} users with logins will be administrators with extensive system privileges?
     type: integer
     help: "Enter a number (ex: 2000)"
     impute:

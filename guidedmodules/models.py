@@ -225,10 +225,10 @@ class Task(models.Model):
             self.get_document_additional_context()
         )
 
-    def render_output_documents(self, answers=None):
+    def render_output_documents(self, answers=None, hard_fail=True):
         if answers is None:
             answers = self.get_answers()
-        return answers.render_output(self.get_document_additional_context())
+        return answers.render_output(self.get_document_additional_context(), hard_fail=hard_fail)
 
     @transaction.atomic
     def get_or_create_subtask(self, user, question_id):

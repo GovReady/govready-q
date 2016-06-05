@@ -182,7 +182,7 @@ def project(request, project_id):
         "project": project,
         "title": project.title,
         "intro" : project.root_task.render_introduction() if project.root_task.module.spec.get("introduction") else "",
-        "outputs": project.root_task.render_output_documents() if project.root_task.module.spec.get("output") else [],
+        "outputs": project.root_task.render_output_documents(hard_fail=False) if project.root_task.module.spec.get("output") else [],
         "open_invitations": [
             inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
             if not inv.is_expired() ],

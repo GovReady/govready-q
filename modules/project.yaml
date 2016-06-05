@@ -55,4 +55,9 @@ output:
   - name: Help
     format: markdown
     template: |
+      {% if not q99a %}
       Hi. Maybe we provide some help here.
+      {% else %}
+      Hi, I see your site has {{q99a.q1.text}} end users.
+      {% endif %}
+

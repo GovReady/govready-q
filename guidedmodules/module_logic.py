@@ -73,7 +73,7 @@ def next_question(module, questions_answered):
     can_answer.sort(key = lambda q : q.definition_order)
     return can_answer[0]
 
-def render_content(content, answers, output_format, additional_context={}):
+def render_content(content, answers, output_format, additional_context={}, hard_fail=True):
     # Renders content (which is a dict with keys "format" and "template")
     # into HTML, using the ModuleAnswers in answers to provide the template
     # context.
@@ -179,7 +179,14 @@ def render_content(content, answers, output_format, additional_context={}):
     # the template writer disable autoescaping with "|safe".
     import jinja2
     from jinja2.sandbox import SandboxedEnvironment
-    env = SandboxedEnvironment(autoescape=True, undefined=jinja2.StrictUndefined)
+    env = SandboxedEnvironment(
+        autoescape=True,
+
+        # if hard_fail is True, then raise an error if any variable used
+        # in the template is undefined (i.e. answer is not present in
+        # dict), otherwise let it pass through silently
+        undefined=jinja2.StrictUndefined if hard_fail else jinja2.Undefined,
+        )
     template = env.from_string(content["template"])
     output = template.render(context)
 
@@ -354,13 +361,13 @@ class ModuleAnswers:
                 ret[qid] = RenderedAnswer(q, value, escapefunc)
         return ret
 
-    def render_output(self, additional_context):
+    def render_output(self, additional_context, hard_fail=True):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents.
         return [
             {
                 "name": d.get("name", "Document"),
-                "html": render_content(d, self, "html", additional_context)
+                "html": render_content(d, self, "html", additional_context, hard_fail=hard_fail)
             }
             for d in self.module.spec["output"]
         ]
