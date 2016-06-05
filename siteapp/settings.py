@@ -52,6 +52,9 @@ DEBUG = environment["debug"]
 # The port is used in SITE_ROOT_URL must must be removed from ALLOWED_HOSTS.
 ALLOWED_HOSTS = [environment["host"].split(':')[0]]
 
+# allauth requires the use of the sites framework.
+SITE_ID = 1
+
 # Add standard apps to INSTALLED_APPS.
 INSTALLED_APPS = [
 	'django.contrib.admin',
@@ -59,8 +62,14 @@ INSTALLED_APPS = [
 	'django.contrib.contenttypes',
 	'django.contrib.staticfiles',
 	'django.contrib.sessions',
+    'django.contrib.sites', # required by allauth
 	'django.contrib.messages',
 	'django.contrib.humanize',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # add any allauth social providers as you like
 ]
 
 # Add test_without_migrations if it is installed. This provides --nomigrations
@@ -100,6 +109,7 @@ TEMPLATES = [
 				'django.contrib.messages.context_processors.messages',
 				'django.core.context_processors.static',
 				'django.core.context_processors.tz',
+				'django.template.context_processors.request', # allauth
 			],
 			'loaders': [
 					'django.template.loaders.filesystem.Loader',
@@ -116,13 +126,32 @@ if not DEBUG:
 		('django.template.loaders.cached.Loader', TEMPLATES[0]['OPTIONS'][loaders])
 	]
 
-# Authenticate users using the standard mechanism, but using the
-# User model defined in the project's primary app (the app this
-# file resides in).
-AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+# Authentication. Use the User model in the primary
+# app, so that you can attach profile information to it.
+# Use 'allauth', configured to have users log in by
+# username. The email login is broken, like most Django
+# methods, because it allows someone to take over an
+# email address before confirming ownership.
 AUTH_USER_MODEL = primary_app + '.User'
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = "/"
+AUTHENTICATION_BACKENDS = [
+	'django.contrib.auth.backends.ModelBackend',
+	'allauth.account.auth_backends.AuthenticationBackend', # allauth
+	]
+ACCOUNT_ADAPTER = primary_app + '.good_settings_helpers.AllauthAccountAdapter'
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_UNIQUE_EMAIL = False # otherwise unconfirmed addresses may block real users
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = ("http" if not environment["https"] else "https")
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 15 # default of 5 is too low!
+ACCOUNT_LOGOUT_ON_GET = True # allow simplified logout link
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
+ACCOUNT_PASSWORD_MIN_LENGTH = (4 if DEBUG else 6) # in debugging, allow simple passwords
+
+# improve how the allauth forms are rendered using django-bootstrap forms
+from bootstrapform.templatetags.bootstrap import bootstrap#_horizontal
+ALLAUTH_FORM_RENDERER = bootstrap#_horizontal
 
 # Use an Sqlite database at local/db.sqlite, until other database
 # settings have been set in the environment.

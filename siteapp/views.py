@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
@@ -9,74 +10,7 @@ from .models import User, Project, Invitation
 from guidedmodules.models import Module, Task, ProjectMembership
 from discussion.models import Discussion
 
-def login_view(request, invitation=None):
-    # when coming via an invitation confirmation page
-    default_email = None
-    if invitation:
-        default_email = invitation.to_email or invitation.to_user.email
-
-    # form definition (same form for both login and creating an account)
-    import django.forms
-    class AuthenticationForm(django.forms.Form):
-        email = django.forms.EmailField(label='Email address')
-        password = django.forms.CharField(label='Password', widget=django.forms.PasswordInput)
-
-    # default instances
-    new_user_form = AuthenticationForm(initial={
-        "email": default_email
-    })
-    login_form = AuthenticationForm(initial={
-        "email": default_email
-    })
-
-    if request.method == "POST":
-        from django.contrib.auth import login, authenticate
-
-        redirect_to = settings.LOGIN_REDIRECT_URL
-        if invitation:
-            redirect_to = invitation.get_acceptance_url() + "?auth=1"
-        elif request.POST.get("next"):
-            # TODO: Need to validate next?
-            redirect_to = request.POST.get("next")
-
-        if request.POST.get("method") == "login":
-            login_form = AuthenticationForm(request.POST)
-            if not login_form.errors:
-                from .betteruser import LoginException
-                try:
-                    user = User.authenticate(login_form.cleaned_data['email'], login_form.cleaned_data['password'])
-                    login(request, user)
-                    return HttpResponseRedirect(redirect_to)
-                except LoginException as e:
-                    login_form.errors["email"] = [str(e)]
-
-        else:
-            # Create an account.
-            new_user_form = AuthenticationForm(request.POST)
-            if not new_user_form.errors:
-                from email_validator import EmailNotValidError
-                from .betteruser import CreateUserException
-                try:
-                    # Create account.
-                    user = User.create(new_user_form.cleaned_data['email'], new_user_form.cleaned_data['password'])
-                    user.save()
-
-                    # Log user in.
-                    user = authenticate(user_object=user)
-                    login(request, user)
-                    return HttpResponseRedirect(redirect_to)
-                except (EmailNotValidError, CreateUserException) as e:
-                    new_user_form.errors["email"] = [str(e)]
-
-    # Render.
-
-    return render(request, "registration/login.html", {
-        "next": request.GET.get("next"),
-        "login_form": login_form,
-        "new_user_form": new_user_form,
-        "invitation": invitation,
-    })
-
+from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch is loaded
 
 def homepage(request):
     if not request.user.is_authenticated():
@@ -382,7 +316,7 @@ def accept_invitation(request, code=None):
     matched_user = inv.to_user \
         or User.objects.filter(email=inv.to_email).exclude(id=inv.from_user.id).first()
     
-    if request.user.is_authenticated() and request.GET.get("auth") == "1":
+    if request.user.is_authenticated() and request.GET.get("accept-auth") == "1":
         # The user is logged in and the "auth" flag is set, so let the user
         # continue under this account. This code path occurs when the user
         # first reaches this view but is not authenticated as the user that
@@ -421,13 +355,18 @@ def accept_invitation(request, code=None):
 
     else:
         # The invitation was sent to an email address that does not have a matching
-        # User account. Ask the user to log in or sign up, using a redirect to the
-        # login page, with a next URL set to take them back to this step. In the
-        # event the user was logged in (and we didn't handle it above), log them
-        # out and force them to log into a new account.
-        from siteapp.views import login_view
+        # User account (if it did, we would have logged the user in immediately because
+        # they just confirmed ownership of the address). Ask the user to log in or sign up,
+        # redirecting back to this page after with "auth=1" so that we skip the matched
+        # user check and accept whatever account the user just logged into or created.
+        #
+        # In the event the user was already logged into an account that didn't match the
+        # invitation email address, log them out now.
+        from urllib.parse import urlencode
         logout(request)
-        return login_view(request, invitation=inv)
+        return HttpResponseRedirect(reverse("account_login") + "?" + urlencode({
+            "next": request.path + "?accept-auth=1",
+        }))
 
     # The user is now logged in and able to accept the invitation.
     with transaction.atomic():

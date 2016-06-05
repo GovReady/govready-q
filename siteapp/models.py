@@ -1,21 +1,14 @@
 from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
 from jsonfield import JSONField
 
-from .betteruser import UserBase, UserManagerBase
-
-
-class UserManager(UserManagerBase):
-    def _get_user_class(self):
-        return User
-
-class User(UserBase):
-    objects = UserManager()
-
+class User(AbstractUser):
     def __str__(self):
         from guidedmodules.models import TaskAnswer
         name = TaskAnswer.objects.filter(
@@ -24,7 +17,7 @@ class User(UserBase):
         if name:
             return name.get_current_answer().value #+ " <" + self.email + ">"
         else:
-            return self.email
+            return self.email or "Anonymous User"
 
     @transaction.atomic
     def get_account_project(self):
@@ -263,7 +256,7 @@ class Invitation(models.Model):
         from htmlemailer import send_mail
         send_mail(
             "email/invitation",
-            "GovReady Q <q@mg.govready.com>",
+            settings.EMAIL_FROM,
             [self.to_user.email if self.to_user else self.to_email],
             {
                 'invitation': self,

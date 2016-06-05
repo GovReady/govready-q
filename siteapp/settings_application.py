@@ -11,5 +11,4 @@ INSTALLED_APPS += [
     'discussion',
 ]
 
-AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend', 'siteapp.betteruser.DirectLoginBackend']
-VALIDATE_EMAIL_DELIVERABILITY = True
+EMAIL_FROM = "GovReady Q <q@mg.govready.com>"

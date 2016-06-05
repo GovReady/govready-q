@@ -22,8 +22,7 @@ urlpatterns = [
     url(r'invitation/(?P<code>.*)$', views.accept_invitation, name="accept_invitation"),
 
     # auth
-	url('^login/$', views.login_view, name='login'),
-    url('^', include('django.contrib.auth.urls')),
+    url(r'^accounts/', include('allauth.urls')),
 
     # admin site
     url(r'^admin/', include(admin.site.urls)),

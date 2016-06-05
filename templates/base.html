@@ -6,7 +6,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{% block title %}{% endblock %} - GovReady Q</title>
+        <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - GovReady Q</title>
 
         {% comment %}
         <meta property="og:title" content="" />
@@ -84,11 +84,11 @@
                   {% endif %}
                 {% endwith %}
                 <li role="separator" class="divider"></li>
-                <li><a href="/logout">Log Out</a></li>
+                <li><a href="{% url "account_logout" %}">Log Out</a></li>
               </ul>
             </li>
             {% else %}
-            <li><a href="/login">Log In</a></li>
+            <li><a href="{% url "account_login" %}">Log In</a></li>
             {% endif %}
           </ul>          
         </div><!-- /.navbar-collapse -->
@@ -111,6 +111,10 @@
     <div class="container-fluid">
       <div class="container">
       {% block body %}
+      {% endblock %}
+
+      {% block content %}
+        {# allauth uses this block #}
       {% endblock %}
       </div>
 
