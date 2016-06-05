@@ -7,7 +7,7 @@ You or someone else has requested a password for your user account at GovReady Q
 
 Click the link below to reset your password:
 
-{{ password_reset_url }}
+[{{password_reset_url}}]({{password_reset_url}})
 
 {% if username %}Your username is {{ username }}.
 {% endif %}
