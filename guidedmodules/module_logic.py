@@ -376,9 +376,14 @@ class RenderedAnswer:
     def __html__(self):
         # How the template renders a question variable used plainly, i.e. {{q0}}.
         if self.question_type == "multiple-choice":
+            # Render multiple-choice as a comma+space-separated list
+            # of the choice keys.
             value = ", ".join(self.answer)
         else:
+            # For all other question types, just call Python str().
             value = str(self.answer)
+
+        # And in all cases, escape the result.
         return self.escapefunc(value)
 
     @property
@@ -390,6 +395,14 @@ class RenderedAnswer:
             value = get_question_choice(self.question, self.answer)["text"]
         elif self.question_type == "multiple-choice":
             value = ", ".join(get_question_choice(self.question, c)["text"] for c in self.answer)
+        elif self.question_type in ("integer", "real"):
+            # Use a locale to generate nice human-readable numbers.
+            import locale
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+            value = locale.format(
+                "%d" if self.question_type == "integer" else "%g",
+                self.answer,
+                grouping=True)
         else:
             value = str(self.answer)
         return self.escapefunc(value)
