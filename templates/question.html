@@ -144,7 +144,7 @@ Next Question: {{q.spec.title}}
                   <label>
                     <input name="value" value="{{t.id}}" type="radio" checked>
                     Use my answers in {{t.title}}
-                      (<a href="{{t.get_absolute_url}}{% if not t.is_finished %}/start{% endif %}">view{% if answer_answered_by_task_can_write %}/edit{% endif %}</a>)
+                      (<a href="{{t.get_absolute_url}}{% if not t.is_finished %}/start{% endif %}">view{% if t.can_write %}/edit{% endif %}</a>)
                   </label>
                 </div>
 

@@ -357,6 +357,8 @@ class ModuleAnswers:
             q = self.module.questions.get(key=qid)
             if q.spec["type"] == "module":
                 ret[qid] = value.get_template_context(escapefunc)
+            elif q.spec["type"] == "module-set":
+                ret[qid] = [v.get_template_context(escapefunc) for v in value]
             else:
                 ret[qid] = RenderedAnswer(q, value, escapefunc)
         return ret

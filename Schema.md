@@ -211,9 +211,9 @@ If `min` and `max` are set, then the value is restricted to that range. If `min`
 As with the text question types, `placeholder` and `help` text can also be specified and in document templates and impute conditions the value of these questions is the numeric value entered by the user.
 .
 
-#### `module`
+#### `module`, `module-set`
 
-This question type prompts the user to select another completed module as the answer to the question. The `module-id` field specifies the ID of another module specification.
+These question type prompt the user to select another completed module as the answer to the question. The `module-id` field specifies the ID of another module specification. The `module` question type allows for a single other module to answer the question. The `module-set` question type allows for zero or more other modules to answer the question.
 
 Changing the `module-id` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
 

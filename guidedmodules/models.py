@@ -96,12 +96,14 @@ class Task(models.Model):
             if not a:
                 continue
 
-            # If this question type is "module", its answer value is stored
+            # If this question type is "module" or "module-set", its answer value is stored
             # differently --- and it is a Task instance.
             if q.question.spec["type"] == "module":
                 t = a.answered_by_task.first()
                 if t:
                     answered[q.question.key] = t.get_answers()
+            elif q.question.spec["type"] == "module-set":
+                answered[q.question.key] = [t.get_answers() for t in a.answered_by_task.all()]
             
             # Some answers store None to reflect that an answer has been
             # explicitly cleared. Don't pull those into the returned
@@ -233,7 +235,12 @@ class Task(models.Model):
 
     @transaction.atomic
     def get_or_create_subtask(self, user, question_id):
-        # Creates a unique subtask for a "module"-type question.
+        # For "module" type questions, creates a sub-Task for the question,
+        # or if the question has already been answered then returns its
+        # subtask.
+        #
+        # For "module-set" type questions, creates a new sub-Task and appends
+        # it to the set of Tasks that answer the question.
 
         # Get the ModuleQuestion from the question_id.
         q = self.module.questions.get(key=question_id)
@@ -241,10 +248,17 @@ class Task(models.Model):
         # Get or create a TaskAnswer for that question.
         ans, is_new = self.answers.get_or_create(task=self, question=q)
         
-        # Get or create a TaskAnswerHistory for that TaskAnswer.
+        # Get or create a TaskAnswerHistory for that TaskAnswer. For
+        # "module"-type questions that have a sub-Task already, just
+        # return it.
         ansh = ans.get_current_answer()
-        if not ansh or not ansh.answered_by_task.count():
-            # There is no Task yet. Create it.
+        if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count():
+            # We'll re-use the subtask.
+            return ansh.answered_by_task.first()
+
+        else:
+            # There is no Task yet (for "module"-type questions) or
+            # we're creating an appending a new task. Create the Task.
             m = Module.objects.get(id=q.spec["module-id"])
             task = Task.objects.create(
                 project=self.project,
@@ -252,16 +266,24 @@ class Task(models.Model):
                 module=m,
                 title=m.title)
 
-            # There was no TaskAnswerHistory yet or the existing
-            # one had a null answer. Create a new one.
+            # Create a new TaskAnswerHistory instance. We never modify
+            # existing instances!
+            prev_ansh = ansh
             ansh = TaskAnswerHistory.objects.create(
                 taskanswer=ans,
                 answered_by=user,
                 value=None)
+
+            # For "module-set"-type questions, copy in the previous set
+            # of answers.
+            if prev_ansh:
+                for t in prev_ansh.answered_by_task.all():
+                    ansh.answered_by_task.add(t)
+
+            # Add the new task.
             ansh.answered_by_task.add(task)
 
-        # Return the task that answers that question.
-        return ansh.answered_by_task.first()
+            return task
 
     def is_answer_to_unique(self):
         # Is this Task a submodule of exactly one other Task?

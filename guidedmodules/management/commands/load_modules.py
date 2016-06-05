@@ -101,7 +101,7 @@ class Command(BaseCommand):
         # returns a generator that yields the module IDs of the
         # dependencies.
         for question in spec.get("questions", []):
-            if question.get("type") == "module":
+            if question.get("type") in ("module", "module-set"):
                 yield question.get("module-id")
 
 
@@ -182,7 +182,7 @@ class Command(BaseCommand):
         if spec.get("type") == "multiple-choice":
             spec["min"] = int(spec.get("min", "0"))
             spec["max"] = None if ("max" not in spec) else int(spec["max"])
-        elif spec.get("type") == "module":
+        elif spec.get("type") in ("module", "module-set"):
             # Replace the module ID (a string) from the specification with
             # the integer ID of the module instance in the database for
             # the current Module representing that module in the filesystem.
@@ -291,7 +291,7 @@ class Command(BaseCommand):
         # if the references module has been updated. spec has already
         # been transformed so that it stores an integer module database ID
         # rather than the string module ID in the YAML files.
-        if mq.spec["type"] == "module":
+        if mq.spec["type"] in ("module", "module-set"):
             if mq.spec["module-id"] != spec.get("module-id"):
                 return True
 

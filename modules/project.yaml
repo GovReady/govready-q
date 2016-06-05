@@ -31,9 +31,9 @@ questions:
     group: About the Project
 
   - id: q100a
-    title: Select Animal 1
-    type: module
-    module-id: sample_module
+    title: Select Points of Contact
+    type: module-set
+    module-id: point_of_contact
     tab: Who's Who?
     group: Government Staff
 

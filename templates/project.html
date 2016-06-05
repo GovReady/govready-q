@@ -141,34 +141,40 @@
                     {{rec.question.spec.title}}
                   </div>
                   <div class="task-commands">
-                    {% if not rec.task %}
-                      {% if can_begin_module %}
-                        {# can only start a new module within a project you are the admin of #}
+                    {% if is_member %}
+                      {% for t in rec.tasks %}
+                        <div>
+                          <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}">
+                            {% if rec.question.spec.type == "module-set" %}
+                              {{t.render_title}} &mdash;
+                            {% endif %}
+                            {% if t.is_finished or not t.has_write_priv %}
+                              review
+                            {% elif t.is_started %}
+                              continue
+                            {% else %}
+                              start
+                            {% endif %}
+                          </a>
+                        </div>
+                      {% endfor %}
+
+                      {% if can_begin_module and rec.can_start_new_task %}
                         <form method="post" action="/tasks/start">
                           {% csrf_token %}
                           <input type="hidden" name="project" value="{{project.id}}"/>
                           <input type="hidden" name="question" value="{{rec.question.key}}"/>
-                          <button type="submit" class="btn btn-link">Start Module</button>
+                          <button type="submit" class="btn btn-link">
+                            {% if rec.tasks|length == 0 %}
+                              Start Module
+                            {% else %}
+                              Add Module
+                            {% endif %}
+                          </button>
                         </form>
                         <button class="btn btn-link" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});">Invite to Answer</button>
-                      {% else %}
-                        Not Started
                       {% endif %}
-                    {% else %}
-                      {% if not rec.has_read_priv %}
-                        {# empty - just discussions are listed below #}
-                      {% elif rec.task.is_finished %}
-                        <a href="{{rec.task.get_absolute_url}}">review</a>
-                      {% elif rec.task.is_started %}
-                        <a href="{{rec.task.get_absolute_url}}">continue</a>
-                      {% else %}
-                        <a href="{{rec.task.get_absolute_url}}/start">start</a>
-                      {% endif %}
-
-                      {% if rec.has_write_priv and 0 %}
-                        {# tasks are not deletable - they are answers to questions #}
-                        <i class="delete-task glyphicon glyphicon-trash"></i>
-                      {% endif %}
+                    {% endif %}
 
                       {# guest participation in discussions within this task #}
                       {% if rec.discussions %}
@@ -179,7 +185,6 @@
                         {% endfor %}
                       </div>
                       {% endif %}
-                    {% endif %}
                   </div> <!-- /task-commands -->
                 </div> <!-- /task -->
                 </div> <!-- /col -->

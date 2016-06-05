@@ -124,7 +124,7 @@ def project(request, project_id):
     from collections import OrderedDict
     tabs = OrderedDict()
     for mq in project.root_task.module.questions.all().order_by('definition_order'):
-        if mq.spec.get("type") not in ("module",):
+        if mq.spec.get("type") not in ("module", "module-set"):
             continue
 
         # Create the tab and group for this.
@@ -139,44 +139,34 @@ def project(request, project_id):
             "modules": [],
         })
 
-        # Is this question answered yet?
+        # Is this question answered yet? Are there any discussions the user
+        # is a guest of in any of the tasks that answer this question?
+        tasks = []
+        task_discussions = []
         ans = project.root_task.answers.filter(question=mq).first()
-
-        # What task is it answered with, and does the user have read/write
-        # privs on that task? A user might not have read privs if they are
-        # not a project team member but are an editor of some other task
-        # in this project (in which case they must not see this task) or if
-        # they are a guest of a discussion within this task (in which case
-        # they can see the task listing but can only go directly to the
-        # discussion).
-        task = None
-        has_read_priv = is_project_member
-        has_write_priv = False
-        if ans and ans.get_current_answer() and ans.get_current_answer().answered_by_task.first():
-            task = ans.get_current_answer().answered_by_task.first()
-            has_read_priv = task.has_read_priv(request.user)
-            has_write_priv = task.has_write_priv(request.user)
-
-        # Guest of any discussions within the task?
-        task_discussions = [d for d in discussions if d.attached_to.task == task]
+        if ans:
+            ans = ans.get_current_answer()
+            for task in ans.answered_by_task.all():
+                tasks.append(task)
+                task.has_write_priv = task.has_write_priv(request.user)
+                task_discussions.extend([d for d in discussions if d.attached_to.task == task])
 
         # Do not display if user should not be able to see this task.
-        if not has_read_priv and len(task_discussions) == 0:
+        if not is_project_member and len(task_discussions) == 0:
             continue
 
         # Add entry.
         group["modules"].append({
             "question": mq,
             "module": Module.objects.get(id=mq.spec["module-id"]),
-            "answer": ans,
-            "task": task,
-            "has_read_priv": has_read_priv,
-            "has_write_priv": has_write_priv,
+            "tasks": tasks,
+            "can_start_new_task": mq.spec["type"] == "module-set" or len(tasks) == 0,
             "discussions": task_discussions,
         })
 
     return render(request, "project.html", {
         "is_admin": request.user in project.get_admins(),
+        "is_member": is_project_member,
         "can_begin_module": (request.user in project.get_admins()) and not project.is_account_project,
         "project_has_members_besides_me": project and project.members.exclude(user=request.user),
         "project": project,
