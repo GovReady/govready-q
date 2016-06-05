@@ -55,3 +55,4 @@ To update, run:
 
 Emoji icons by http://emojione.com/developers/.
 
+This repository is licensed under the [GNU GPL v3](LICENSE.md).
