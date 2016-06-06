@@ -164,6 +164,18 @@ def project(request, project_id):
             "discussions": task_discussions,
         })
 
+    # Additional tabs of content.
+    additional_tabs = []
+    if project.root_task.module.spec.get("output"):
+    	for doc in project.root_task.render_output_documents(hard_fail=False):
+    		if doc.get("tab") in tabs:
+    			# Assign this to one of the tabs.
+    			tabs[doc["tab"]]["intro"] = doc
+    		else:
+    			# Add tab to end.
+    			additional_tabs.append(doc)
+
+    # Render.
     return render(request, "project.html", {
         "is_admin": request.user in project.get_admins(),
         "is_member": is_project_member,
@@ -172,7 +184,7 @@ def project(request, project_id):
         "project": project,
         "title": project.title,
         "intro" : project.root_task.render_introduction() if project.root_task.module.spec.get("introduction") else "",
-        "outputs": project.root_task.render_output_documents(hard_fail=False) if project.root_task.module.spec.get("output") else [],
+        "additional_tabs": additional_tabs,
         "open_invitations": [
             inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
             if not inv.is_expired() ],

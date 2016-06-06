@@ -7,8 +7,12 @@
 
 {% block head %}
 <style>
+.tab-pane {
+  padding: 1.5em 0;
+}
+
 .task-group {
-  margin-top: 2em;
+  margin-bottom: 2em;
 }
 
 .task {
@@ -111,7 +115,7 @@
       {% endfor %}
 
       {# output document tabs #}
-      {% for document in outputs %}
+      {% for document in additional_tabs %}
         <li role="presentation"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.name}}</a></li>
       {% endfor %}
     </ul>
@@ -121,7 +125,7 @@
 
       {% for tab in tabs %}
         <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{forloop.counter}}-{{tab.title|slugify}}">
-          <div>
+            {{tab.intro.html|safe}}
 
             {% for group in tab.groups.values %}
             <div class="task-group">
@@ -192,16 +196,13 @@
               </div> <!-- /row -->
               </div> <!-- /task-group -->
             {% endfor %}
-          </div>
         </div>
       {% endfor %}
 
       {# output document tabs #}
-      {% for document in outputs %}
+      {% for document in additional_tabs %}
         <div role="tabpanel" class="tab-pane" id="document-{{forloop.counter}}">
-          <div style="padding: 1em 0">
             {{document.html|safe}}
-          </div>
         </div>
       {% endfor %}
 

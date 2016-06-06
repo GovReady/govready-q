@@ -52,6 +52,17 @@ questions:
     group: Vendors
 
 output:
+  - tab: Basic Info
+    format: markdown
+    template: |
+      Start by telling us a little about this project.
+
+  - tab: Who's Who?
+    format: markdown
+    template: |
+      We'll use information about your team to help you sort
+      out who can answer the questions you need to move forward.
+
   - name: Help
     format: markdown
     template: |

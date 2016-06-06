@@ -366,14 +366,12 @@ class ModuleAnswers:
     def render_output(self, additional_context, hard_fail=True):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents.
-        return [
-            {
-                "name": d.get("name", "Document"),
-                "html": render_content(d, self, "html", additional_context, hard_fail=hard_fail)
-            }
-            for d in self.module.spec["output"]
-        ]
-
+        def render_document(d):
+            ret = { }
+            ret.update(d) # keep all original fields (especially 'name', 'tab')
+            ret["html"] = render_content(d, self, "html", additional_context, hard_fail=hard_fail)
+            return ret
+        return [ render_document(d) for d in self.module.spec["output"] ]
 
 class RenderedAnswer:
     def __init__(self, question, answer, escapefunc):
