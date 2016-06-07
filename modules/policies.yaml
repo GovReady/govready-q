@@ -63,7 +63,8 @@ questions:
         value: no
 
 output:
-  - format: markdown
+  - title: Document
+    format: markdown
     template: |
       Commonly found policies exist?: {{pol_q1.text}}
 

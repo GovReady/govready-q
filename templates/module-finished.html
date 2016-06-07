@@ -44,7 +44,7 @@
 <div>
   <ul id="finished-tabs" class="nav nav-tabs" role="tablist">
     {% for document in output %}
-      <li role="presentation" class="{% if forloop.first %}active{% endif %} for-output-document"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.name}}</a></li>
+      <li role="presentation" class="{% if forloop.first %}active{% endif %} for-output-document"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.title}}</a></li>
     {% endfor %}
     <li role="presentation"><a href="#questions" aria-controls="questions" role="tab" data-toggle="tab">Change Answers</a></li>
   </ul>

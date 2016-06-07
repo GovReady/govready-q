@@ -32,14 +32,14 @@ In addition, a Module must have an `introduction` document and a list of one or 
 	    This module should take you two minutes.
 
 	output:
-	  - name: Document 1
+	  - title: Document 1
 	    format: markdown
 	    template: |
 	      # Document for {{project}}
 
 	      Hello! This is the output of the module. You answered {{q1}}.
 
-	  - name: Document 2
+	  - title: Document 2
 	    format: html
 	    template: |
 	      <h1># Document for {{project}}</h1>

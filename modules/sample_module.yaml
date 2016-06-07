@@ -78,7 +78,7 @@ questions:
     type: url
       
 output:
-  - name: Document
+  - title: Document
     format: markdown
     template: |
       # Animal Compliance for {{project}}
@@ -105,7 +105,7 @@ output:
       Lives in the sea: {{q4.q2.text}}
 
       _Have a nice day!_
-  - name: Text Document
+  - title: Text Document
     format: text
     template: |
       {{q1}} {% if q2 %} ( {{q3}} ) {% endif %}
@@ -115,7 +115,7 @@ output:
       Land: {{q4.q1}}
 
       Sea: {{q4.q2}}
-  - name: HTML
+  - title: HTML
     format: html
     template: |
       <ul>
@@ -123,7 +123,7 @@ output:
         <li>{{item.text}} <i>{{item}}</i></li>
       {% endfor %}
       </ul>
-  - name: Data
+  - title: Data
     format: yaml
     template:
       - name: "{{q1}}"

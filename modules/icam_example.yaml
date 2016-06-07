@@ -71,7 +71,8 @@ questions:
 
 
 output:
-  - format: markdown
+  - title: Document
+    format: markdown
     template: |
       ## ICAM Profile
 

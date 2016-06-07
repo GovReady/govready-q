@@ -116,7 +116,7 @@
 
       {# output document tabs #}
       {% for document in additional_tabs %}
-        <li role="presentation"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.name}}</a></li>
+        <li role="presentation"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.title}}</a></li>
       {% endfor %}
     </ul>
 

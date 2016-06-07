@@ -56,7 +56,7 @@ questions:
     type: text
 
 output:
-  - name: Document
+  - title: Document
     format: markdown
     template: |
       # {{project}} Point of Contact
@@ -71,7 +71,7 @@ output:
       * email: {{q5_email}}
       * work phone: {{q6_work_phone}}
       * mobile: {{q7_mobile_phone}}
-  - name: Data
+  - title: Data
     format: yaml
     template:
       - type: "{{q3_ev}}"

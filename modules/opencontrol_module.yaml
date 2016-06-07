@@ -41,7 +41,8 @@ questions:
     type: email-address
 
 output:
-  - format: yaml
+  - title: Document
+    format: yaml
     template:
       schema_version: "1.0.0" # 1.0.0 is the current opencontrol.yaml schema version
       name: "{{q1}}" # Name of the project

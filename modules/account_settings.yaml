@@ -44,7 +44,8 @@ questions:
         text: Skype
         help: We like Skype too.
 output:
-  - format: markdown
+  - title: Your Settings
+    format: markdown
     template: |
       Here are your account settings:
 
