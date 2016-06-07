@@ -127,7 +127,7 @@ def next_question(request, taskid, taskslug, intropage=None):
         q = task.module.questions.get(key=request.GET["q"])
     else:
         # Display next unanswered question.
-        q = module_logic.next_question(task.module, answered)
+        q = module_logic.next_question(answered)
 
     if q:
         # Is there a TaskAnswer for this yet?

@@ -4,7 +4,7 @@ def get_jinja2_template_vars(template):
     env = SandboxedEnvironment()
     return set(meta.find_undeclared_variables(env.parse(template)))
 
-def next_question(module, questions_answered):
+def next_question(questions_answered):
     # Compute the next question to ask the user, given the user's
     # answers to questions so far.
     #
@@ -17,11 +17,11 @@ def next_question(module, questions_answered):
     # What questions are actually used in the template?
 
     needs_answer = [ ]
-    for d in module.spec["output"]:
+    for d in questions_answered.module.spec["output"]:
         needs_answer.extend([
-            module.questions.get(key=qid)
+            questions_answered.module.questions.get(key=qid)
             for qid in get_jinja2_template_vars(d['template'])
-            if module.questions.filter(key=qid).exists()
+            if questions_answered.module.questions.filter(key=qid).exists()
         ])
 
     # Process the questions.
@@ -48,9 +48,9 @@ def next_question(module, questions_answered):
 
         # What unanswered dependencies does it have?
 
-        deps = [ module.questions.get(key=d)
+        deps = [ questions_answered.module.questions.get(key=d)
                  for d in get_question_dependencies(q.spec)
-                 if module.questions.filter(key=d).exists()
+                 if questions_answered.module.questions.filter(key=d).exists()
                ]
         deps = list(filter(lambda d : not is_answered(d), deps))
 

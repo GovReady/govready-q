@@ -108,7 +108,7 @@ class Task(models.Model):
             # Some answers store None to reflect that an answer has been
             # explicitly cleared. Don't pull those into the returned
             # dict -- they're not answers for the purposes of a Module.
-            elif a.value:
+            elif a.value is not None:
                 answered[q.question.key] = a.value
 
         return ModuleAnswers(self.module, answered)
@@ -121,7 +121,7 @@ class Task(models.Model):
 
     def is_finished(self):
         from .module_logic import next_question
-        return next_question(self.module, self.get_answers()) == None
+        return next_question(self.get_answers()) == None
 
     def get_status_display(self):
         # Is this task done?
