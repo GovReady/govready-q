@@ -1,6 +1,6 @@
 id: point_of_contact
 title: Point of Contact
-instance-name: "{{q1_name}} (point of contact)"
+instance-name: "{{q1_name}} ({{q5_email}})"
 introduction:
   format: markdown
   template: |

@@ -1,0 +1,52 @@
+id: demo1_project_name_id_managers
+title: Project Name, ID, and Managers
+introduction:
+  format: markdown
+  template: |
+    Tell us some basic information about the project.
+questions:
+  - id: project_title
+    title: Project Title
+    prompt: What is the title of the project?
+    type: text
+    help: e.g., www.yoursite.gov
+
+  - id: projct_has_identifier
+    title: Project Has Identifier?
+    prompt: Does your organization have an identifier for {{project_title}}?
+    type: yesno
+    help: Choose no if you don't know.
+
+  - id: projct_identifier
+    title: Project Identifier
+    prompt: What is the project identifier for {{project_title}} assigned by your organization?
+    type: yesno
+    impute:
+      - condition: projct_has_identifier == 'no'
+        value: NA
+
+  - id: project_technology_manager
+    title: Technology Manger
+    prompt: Who is the technology manager for {{project_title}}?
+    type: module
+    module-id: point_of_contact
+      
+  - id: project_iss_manager
+    title: Information System Security Manager
+    prompt: Who is the information system security manager for {{project_title}}?
+    type: module
+    module-id: point_of_contact
+
+output:
+  - title: Document
+    format: markdown
+    template: |
+      Here's what you've told us so far:
+
+      Project Title: {{project_title}}
+
+      Project Identifier: {{projct_identifier}}
+
+      Technology Manager: {{project_technology_manager.q1_name}}
+
+      ISSM: {{project_iss_manager.q1_name}}

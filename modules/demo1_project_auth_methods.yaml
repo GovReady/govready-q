@@ -1,0 +1,57 @@
+id: demo1_project_auth_methods
+title: "About The Project: Authentication"
+introduction:
+  format: markdown
+  template: |
+    The questions in this module will ask you about the authentication methods used by your project, authorization, and who has access.
+questions:
+  - id: method_authenticate
+    title: Authenticate Users?
+    prompt: Does the application need to authenticate users and/or uniquely identify users?
+    type: yesno
+
+  - id: method_piv_smart_card
+    title: PIV Smart Cards?
+    prompt: Does the application support Personal Identity Verification (PIV) smart card authentication?
+    type: yesno
+
+  - id: method_single_sign_on
+    title: Single Sign-on?
+    prompt: Does the application support single sign-on technology? 
+    type: yesno
+
+  - id: identity_data_collection
+    title: What Identity Data Is Collected?
+    prompt: What identity information about users is collected by the appication (e.g. first name, last name, email address, network login name)?
+    type: longtext
+
+  - id: authorization
+    title: Authorization
+    prompt: Are there parts of the application that should be restricted to a subset of users (e.g. certain roles or groups)?  
+    type: longtext
+
+  - id: manager
+    title: Authentication and Authorization Manager
+    prompt: Who is responsible for creating, updating, disabling, and deleting accounts and authorizations?
+    type: module
+    module-id: point_of_contact
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      Authenticates users: {{method_authenticate.text}}
+
+      Uses PIV smart cards: {{method_piv_smart_card.text}}
+
+      Uses SSO: {{method_single_sign_on.text}}
+
+      Identity data collected:
+
+      {{identity_data_collection}}
+
+      Authorizations:
+
+      {{authorization}}
+
+      Manager: {{manager.q1_name}}
+      

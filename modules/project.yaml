@@ -8,67 +8,42 @@ introduction:
   template: |
     Welcome to GovReady's Compliance Tool, Q.
 
+    The purpose of Q is to collect the information you need to
+    something something something something.
+
+    *Directions:* Please complete each module in the tabs below.
+
 questions:
-  - id: q99a
-    title: Purpose
+  - id: q_project_name_id_managers
+    title: Project Name, ID, and Managers
     type: module
-    module-id: icam_example
+    module-id: demo1_project_name_id_managers
     tab: Basic Info
     group: About the Project
 
-  - id: q99b
-    title: Systems
+  - id: q_project_need_capabilities
+    title: Project Need and Capabiities
     type: module
-    module-id: icam_example
+    module-id: demo1_project_need_capabilities
     tab: Basic Info
     group: About the Project
 
-  - id: q99c
-    title: Users
+  - id: q_project_user_types
+    title: User Types
     type: module
-    module-id: icam_example
+    module-id: demo1_project_user_types
     tab: Basic Info
-    group: About the Project
+    group: Identity, Credential and Access Management
 
-  - id: q100a
-    title: Select Points of Contact
-    type: module-set
-    module-id: point_of_contact
-    tab: Who's Who?
-    group: Government Staff
-
-  - id: q100b
-    title: Select Animal 2
+  - id: q_project_authentication_methods
+    title: Authentication Methods
     type: module
-    module-id: sample_module
-    tab: Who's Who?
-    group: Contractors
-
-  - id: q100c
-    title: Select Animal 3
-    type: module
-    module-id: sample_module
-    tab: Who's Who?
-    group: Vendors
+    module-id: demo1_project_auth_methods
+    tab: Basic Info
+    group: Identity, Credential and Access Management
 
 output:
   - tab: Basic Info
     format: markdown
     template: |
-      Start by telling us a little about this project.
-
-  - tab: Who's Who?
-    format: markdown
-    template: |
-      We'll use information about your team to help you sort
-      out who can answer the questions you need to move forward.
-
-  - name: Help
-    format: markdown
-    template: |
-      {% if not q99a %}
-      Hi. Maybe we provide some help here.
-      {% else %}
-      Hi, I see your site has {{q99a.q1.text}} end users.
-      {% endif %}
-
+      Start by entering general information about this project.
