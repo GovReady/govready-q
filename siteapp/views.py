@@ -90,7 +90,7 @@ def new_project(request):
                     project=project,
                     user=request.user,
                     is_admin=True)
-            return HttpResponseRedirect("/")
+            return HttpResponseRedirect(project.get_absolute_url())
 
     return render(request, "new-project.html", {
         "first": not ProjectMembership.objects.filter(user=request.user).exists(),
