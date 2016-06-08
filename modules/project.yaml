@@ -42,6 +42,34 @@ questions:
     tab: Basic Info
     group: Identity, Credential and Access Management
 
+  - id: q_system_architecture
+    title: System Architecture
+    type: module
+    module-id: demo1_system_architecture
+    tab: System Architecture
+    group: System Architecture
+
+  - id: q_system_components_software
+    title: Software Components
+    type: module-set
+    module-id: demo1_system_component_software
+    tab: System Architecture
+    group: System Components
+
+  - id: q_system_components_hardware
+    title: Hardware Components
+    type: module-set
+    module-id: demo1_system_component_hardware
+    tab: System Architecture
+    group: System Components
+
+  - id: q_system_network_protocols
+    title: Network Protocols
+    type: module-set
+    module-id: demo1_system_network_protocol
+    tab: System Architecture
+    group: Network Requirements
+
 output:
   - tab: Basic Info
     format: markdown

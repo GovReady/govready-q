@@ -1,0 +1,65 @@
+id: demo1_system_network_protocol
+title: System Architecture Network Protocol
+instance-name: "{{name}}"
+introduction:
+  format: markdown
+  template: |
+    Identify a network service (port/protocol) necessary for communication, either inbound or outbound.
+questions:
+  - id: name
+    title: Service Name
+    prompt: What is the name of the network service?
+    type: text
+  - id: ipprotocol
+    title: IP Protocol Type
+    prompt: What IP protocol type does the service use?
+    type: choice
+    choices:
+      - key: tcp
+        text: TCP
+        help: This is the most common IP protocol. Choose this if you do not know.
+      - key: udp
+        text: UDP
+      - key: other
+        text: Other
+  - id: port
+    title: Network Port
+    prompt: What network port does the service use?
+    type: integer
+    min: 1
+    max: 65535
+    impute:
+      - condition: ipprotocol == 'other'
+        value: 0
+  - id: protocol
+    title: Protocol
+    prompt: What standard network protocol does {{name}} use?
+    type: text
+    help: e.g. HTTP, SMTP
+  - id: direction
+    title: Direction
+    prompt: What direction is the service? Who initiates the session?
+    type: choice
+    choices:
+      - key: inbound
+        text: Inbound (others initiate session)
+      - key: outbound
+        text: Outbound (our system initiates session)
+      - key: both
+        text: Both Inbound/Outbound
+  - id: description
+    title: Description
+    prompt: "Describe {{name}}. Include any necessary configuration such as DNS records, SMTP relays,
+        backup communication, monitoring, etc.  "
+    type: text
+output:
+  - title: Your Answer
+    format: markdown
+    template: |
+      Component: {{name}}
+
+      Protocol: {{ipprotocol}} {{port}} {{protocol}}
+
+      Direction: {{direction}}
+
+      Description: {{description}}

@@ -1,5 +1,5 @@
 id: demo1_project_auth_methods
-title: "About The Project: Authentication"
+title: Authentication
 introduction:
   format: markdown
   template: |
