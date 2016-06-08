@@ -47,6 +47,7 @@ SECRET_KEY = environment["secret-key"]
 
 # The DEBUG flag must be set in the environment.
 DEBUG = environment["debug"]
+ADMINS = environment.get("admins", [])
 
 # Set ALLOWED_HOSTS from the host environment. If it has a port, strip it.
 # The port is used in SITE_ROOT_URL must must be removed from ALLOWED_HOSTS.
@@ -122,8 +123,8 @@ TEMPLATES = [
 # When in production, cache the templates once loaded from disk.
 if not DEBUG:
 	# Wrap the template loaders in the cached loader.
-	TEMPLATES[0]['OPTIONS'][loaders] = [
-		('django.template.loaders.cached.Loader', TEMPLATES[0]['OPTIONS'][loaders])
+	TEMPLATES[0]['OPTIONS']['loaders'] = [
+		('django.template.loaders.cached.Loader', TEMPLATES[0]['OPTIONS']['loaders'])
 	]
 
 # Authentication. Use the User model in the primary

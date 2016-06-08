@@ -11,4 +11,5 @@ INSTALLED_APPS += [
     'discussion',
 ]
 
-EMAIL_FROM = "GovReady Q <q@mg.govready.com>"
+SERVER_EMAIL = "GovReady Q <q@mg.govready.com>"
+DEFAULT_FROM_EMAIL = SERVER_EMAIL

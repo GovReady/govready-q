@@ -6,7 +6,7 @@ class AllauthAccountAdapter(DefaultAccountAdapter):
         from htmlemailer import send_mail
         send_mail(
             template_prefix,
-            settings.EMAIL_FROM,
+            settings.DEFAULT_FROM_EMAIL,
             [email],
             context
         )

@@ -256,7 +256,7 @@ class Invitation(models.Model):
         from htmlemailer import send_mail
         send_mail(
             "email/invitation",
-            settings.EMAIL_FROM,
+            settings.DEFAULT_FROM_EMAIL,
             [self.to_user.email if self.to_user else self.to_email],
             {
                 'invitation': self,

@@ -40,6 +40,12 @@ If this is truly on a new machine, it will create a new Sqlite database. You'll 
 
 You can copy the `secret-key` from what you see --- it was generated to be unique.
 
+For production, set `debug` to false and add:
+
+	"admins": ["some email address"]
+
+for unhandled error emails.
+
 To update, run:
 
 	sudo -iu site /home/site/q/deployment/update.sh
