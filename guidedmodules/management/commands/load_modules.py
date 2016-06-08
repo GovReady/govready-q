@@ -4,6 +4,7 @@ from django.db import transaction
 from guidedmodules.models import Module, ModuleQuestion, Task
 
 import glob, os.path, yaml, json, sys
+import yaml.scanner, yaml.constructor
 
 class ValidationError(Exception):
     def __init__(self, file_name, message):
@@ -54,7 +55,11 @@ class Command(BaseCommand):
         if not os.path.exists(fn):
             raise DependencyError(path[-1], module_id)
         with open(fn) as f:
-            spec = yaml.load(f)
+            try:
+                spec = yaml.load(f)
+            except (yaml.scanner.ScannerError, yaml.constructor.ConstructorError) as e:
+                raise ValidationError(fn, "There was an error parsing the file: " + str(e))
+
         if spec["id"] != module_id:
             raise ValidationError(fn, "Module 'id' field ('%s') doesn't match filename ('%s')." % (spec["id"], module_id))
 
