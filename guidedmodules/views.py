@@ -76,13 +76,15 @@ def next_question(request, taskid, taskslug, intropage=None):
         # fetch the task that answers this question
         answered_by_tasks = []
         if q.spec["type"] in ("module", "module-set"):
+            # get the module that the tasks for this question must use
+            m1 = Module.objects.get(id=q.spec["module-id"])
+
             if value == None:
                 # answer is being cleared
                 pass
 
             elif value == "__new":
                 # Create a new task, and we'll redirect to it immediately.
-                m1 = Module.objects.get(id=q.spec["module-id"]) # validate input
                 t = Task.objects.create(
                     editor=request.user,
                     project=task.project,
@@ -93,11 +95,16 @@ def next_question(request, taskid, taskslug, intropage=None):
                 redirect_to = t.get_absolute_url() + "/start"
 
             else:
-                # user selects existing Tasks (TODO: ensure the user has access to it)
+                # User selects existing Tasks.
+                # Validate that the tasks are of the right type (module) and
+                # the user has read access.
                 answered_by_tasks = [
-                    Task.objects.get(project=task.project, id=int(item))
+                    Task.objects.get(id=int(item))
                     for item in value.split(',')
                     ]
+                for t in answered_by_tasks:
+                    if t.module != m1 or not t.has_read_priv(request.user):
+                        raise ValueError("invalid task ID")
                 if q.spec["type"] == "module" and len(answered_by_tasks) != 1:
                     raise ValueError("did not provide exactly one task ID")
             
