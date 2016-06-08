@@ -91,9 +91,10 @@ class Task(models.Model):
         answered = { }
         for q in self.answers.all():
             # Get the latest TaskAnswerHistory instance for this TaskAnswer,
-            # if there is any (there should be).
+            # if there is any (there should be). If the answer is marked as
+            # cleared, then treat as if it had not been answered.
             a = q.get_current_answer()
-            if not a:
+            if not a or a.cleared:
                 continue
 
             # If this question type is "module" or "module-set", its answer value is stored
@@ -101,14 +102,16 @@ class Task(models.Model):
             if q.question.spec["type"] == "module":
                 t = a.answered_by_task.first()
                 if t:
+                    # fetch answers recursively
                     answered[q.question.key] = t.get_answers()
+                else:
+                    # question is skipped
+                    answered[q.question.key] = None
+
             elif q.question.spec["type"] == "module-set":
                 answered[q.question.key] = [t.get_answers() for t in a.answered_by_task.all()]
             
-            # Some answers store None to reflect that an answer has been
-            # explicitly cleared. Don't pull those into the returned
-            # dict -- they're not answers for the purposes of a Module.
-            elif a.value is not None:
+            else:
                 answered[q.question.key] = a.value
 
         return ModuleAnswers(self.module, answered)
@@ -258,7 +261,7 @@ class Task(models.Model):
 
         else:
             # There is no Task yet (for "module"-type questions) or
-            # we're creating an appending a new task. Create the Task.
+            # we're creating and appending a new task. Create the Task.
             m = Module.objects.get(id=q.spec["module-id"])
             task = Task.objects.create(
                 project=self.project,
@@ -333,8 +336,15 @@ class TaskAnswer(models.Model):
         # key. We just want to know which was first so that we can
         # display different text.
         import html
+        is_cleared = True
         for i, answer in enumerate(self.answer_history.order_by('id')):
-            vp = ("answered the question" if i == 0 else "changed the answer")
+            if answer.cleared:
+                vp = "cleared the answer"
+                is_cleared = True
+            elif is_cleared:
+                vp = "answered the question"
+            else:
+                vp = "changed the answer"
             history.append({
                 "type": "event",
                 "date": answer.created,
@@ -377,6 +387,7 @@ class TaskAnswerHistory(models.Model):
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
     value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
     answered_by_task = models.ManyToManyField(Task, blank=True, related_name="is_answer_to", help_text="A Task or Tasks that supplies the answer for this question (of type 'module' or 'module-set').")
+    cleared = models.BooleanField(default=False, help_text="Set to True to indicate that the user wants to clear their answer. This is different from a null-valued answer, which means not applicable/don't know/skip.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswerHistory.")
 
@@ -388,14 +399,12 @@ class TaskAnswerHistory(models.Model):
         # For debugging.
         return "<TaskAnswerHistory %s>" % (repr(self.question),)
 
-    @property
-    def is_answered(self):
-        return bool(self.value or self.answered_by_task.count())
-
     def is_latest(self):
         # Is this the most recent --- the current --- answer for a TaskAnswer.
         return self.taskanswer.get_current_answer() == self
 
     def get_answer_display(self):
+        if self.cleared:
+            return "[answer cleared]"
         return repr(self.value or self.answered_by_task.all())
 

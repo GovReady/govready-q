@@ -34,7 +34,7 @@ def next_question(questions_answered):
         # an answer, or if one of its impute conditions is
         # met.
         return q.key in questions_answered.answers \
-          or impute_answer(q, questions_answered) is not None
+          or impute_answer(q, questions_answered)
 
     while len(needs_answer) > 0:
         # Get the next question to look at.
@@ -225,7 +225,10 @@ def impute_answer(question, answers):
         condition_func = env.compile_expression(rule["condition"])
         if condition_func(answers.answers):
             # The condition is met. Return the imputed value.
-            return rule["value"]
+            # Since the imputed value may be None, return
+            # the whole thing in a tuple to distinguish from
+            # a None indicating the lack of an imputed value.
+            return (rule["value"],)
     return None
 
 class validator:
@@ -345,8 +348,8 @@ class ModuleAnswers:
         # defined by next_question.
         for q in self.module.questions.order_by('definition_order'):
             v = impute_answer(q, self)
-            if v is not None:
-                self.answers[q.key] = v
+            if v :
+                self.answers[q.key] = v[0]
 
     def get_template_context(self, escapefunc = lambda x : x):
         # Replace values with RenderedAnswer instances which take
@@ -355,9 +358,9 @@ class ModuleAnswers:
         ret = { }
         for qid, value in self.answers.items():
             q = self.module.questions.get(key=qid)
-            if q.spec["type"] == "module":
+            if q.spec["type"] == "module" and value is not None:
                 ret[qid] = value.get_template_context(escapefunc)
-            elif q.spec["type"] == "module-set":
+            elif q.spec["type"] == "module-set" and value is not None:
                 ret[qid] = [v.get_template_context(escapefunc) for v in value]
             else:
                 ret[qid] = RenderedAnswer(q, value, escapefunc)
@@ -382,7 +385,9 @@ class RenderedAnswer:
 
     def __html__(self):
         # How the template renders a question variable used plainly, i.e. {{q0}}.
-        if self.question_type == "multiple-choice":
+        if self.answer is None:
+            value = "<%s>" % self.question.spec['title']
+        elif self.question_type == "multiple-choice":
             # Render multiple-choice as a comma+space-separated list
             # of the choice keys.
             value = ", ".join(self.answer)
@@ -396,7 +401,9 @@ class RenderedAnswer:
     @property
     def text(self):
         # How the template renders {{q0.text}} to get a nice display form of the answer.
-        if self.question_type == "yesno":
+        if self.answer is None:
+            value = "<not answered>"
+        elif self.question_type == "yesno":
             value = ("Yes" if self.answer == "yes" else "No")
         elif self.question_type == "choice":
             value = get_question_choice(self.question, self.answer)["text"]

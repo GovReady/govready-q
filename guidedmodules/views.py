@@ -47,8 +47,14 @@ def next_question(request, taskid, taskslug, intropage=None):
 
         # validate and parse value
         if request.POST.get("method") == "clear":
+            # clear means that the question returns to an unanswered state
             value = None
-        else:
+            cleared = True
+        elif request.POST.get("method") == "skip":
+            # skipped means the question is answered with a null value
+            value = None
+            cleared = False
+        elif request.POST.get("method") == "save":
             # parse
             if q.spec["type"] == "multiple-choice":
                 # multiple items submitted
@@ -64,6 +70,10 @@ def next_question(request, taskid, taskslug, intropage=None):
                 # client side validation should have picked this up
                 return JsonResponse({ "status": "error", "message": str(e) })
 
+            cleared = False
+        else:
+            raise ValueError("invalid 'method' parameter %s" + request.POST.get("method", "<not set>"))
+
         # save answer - get the TaskAnswer instance first
         question, isnew = TaskAnswer.objects.get_or_create(
             task=task,
@@ -75,15 +85,11 @@ def next_question(request, taskid, taskslug, intropage=None):
 
         # fetch the task that answers this question
         answered_by_tasks = []
-        if q.spec["type"] in ("module", "module-set"):
+        if q.spec["type"] in ("module", "module-set") and not cleared:
             # get the module that the tasks for this question must use
             m1 = Module.objects.get(id=q.spec["module-id"])
 
-            if value == None:
-                # answer is being cleared
-                pass
-
-            elif value == "__new":
+            if value == "__new":
                 # Create a new task, and we'll redirect to it immediately.
                 t = Task.objects.create(
                     editor=request.user,
@@ -93,6 +99,10 @@ def next_question(request, taskid, taskslug, intropage=None):
 
                 answered_by_tasks = [t]
                 redirect_to = t.get_absolute_url() + "/start"
+
+            elif value == None:
+                # User is skipping this question.
+                answered_by_tasks = []
 
             else:
                 # User selects existing Tasks.
@@ -112,15 +122,24 @@ def next_question(request, taskid, taskslug, intropage=None):
 
         # Create a new TaskAnswerHistory if the answer is actually changing.
         current_answer = question.get_current_answer()
-        if not current_answer or (value != current_answer.value or set(answered_by_tasks) != set(current_answer.answered_by_task.all())):
+        if not current_answer and cleared:
+            # user is trying to clear but there is no answer yet, so do nothing
+            pass
+
+        elif not current_answer \
+            or value != current_answer.value \
+            or set(answered_by_tasks) != set(current_answer.answered_by_task.all()) \
+            or cleared != current_answer.cleared:
+
             answer = TaskAnswerHistory.objects.create(
                 taskanswer=question,
                 answered_by=request.user,
-                value=value)
+                value=value,
+                cleared=cleared)
             for t in answered_by_tasks:
                 answer.answered_by_task.add(t)
 
-            # kick the task and questions's updated field
+            # kick the Task and TaskAnswer's updated field
             task.save(update_fields=[])
             question.save(update_fields=[])
 
@@ -206,6 +225,9 @@ def next_question(request, taskid, taskslug, intropage=None):
         answer = None
         if taskq:
             answer = taskq.get_current_answer()
+            if answer.cleared:
+                # If the answer is cleared, treat as if it had not been answered.
+                answer = None
 
         # for "module"-type questions
         # what Module answers this question?

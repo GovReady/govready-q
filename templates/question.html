@@ -28,7 +28,7 @@ Next Question: {{q.spec.title}}
     <div id="question" style="margin: 2em 0">
         <form {% if not write_priv %}class="disabled"{% endif %}>
             <input type="hidden" name="question" value="{{q.id}}">
-            <input type="hidden" name="method" value="set">
+            <input type="hidden" name="method" value="save">
 
             <div id="question-prompt">
               {{prompt|safe}}
@@ -188,15 +188,27 @@ Next Question: {{q.spec.title}}
             {% endif %}
 
             {% if write_priv %}
-            <button type="submit" class="btn btn-success"
+            <button id="save-button"
+              type="submit" class="btn btn-success"
               onclick="$('#question > form input[name=method]').val('save')">
               {% if not request.GET.q %}Next{% else %}Submit{% endif %}
               &raquo;
             </button>
 
-            {% if answer.is_answered %}
-              <button type="submit" class="btn btn-danger btn-sm"
-                onclick="$('#question > form input[name=method]').val('clear')">Clear Answer</button>
+            <button id="skip-button"
+              type="submit" class="btn btn-info"
+              onclick="$('#question > form input[name=method]').val('skip')">
+              Skip
+              &raquo;
+            </button>
+
+            {% if answer %}
+              <button id="clear-button"
+                type="submit" class="btn btn-danger"
+                onclick="$('#question > form input[name=method]').val('clear')">
+                  Clear
+                  &raquo;
+                </button>
             {% endif %}
             {% endif %}
 
@@ -270,6 +282,16 @@ $(function() {
             return "You must enter something."
         return undefined;
     }
+    function on_input_changed() {
+      // The save/skip/clear buttons are valid depending on whether
+      // something has been answered (box contains something other than whitespace).
+      var is_answered = /\S/.test($('#inputctrl').val());
+      $('#save-button').prop('disabled', !is_answered);
+      $('#skip-button, #clear-button').prop('disabled', is_answered);
+    }
+    $('#inputctrl').change(on_input_changed);
+    $('#inputctrl').on('keyup', on_input_changed);
+    on_input_changed(); // run handler initally to set disabled states
 
     {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
     function validate_answer() {
@@ -305,8 +327,8 @@ $(function() {
     form.on("submit", function() {
         var form = $('#question form');
 
-        // skip client-side validation if user is trying to clear the answer
-        if (form.find('input[name=method]').val() != "clear") {
+        var method = form.find('input[name=method]').val();
+        if (method == "save") {
           // client-side validation, block form if not valid
           var problem = validate_answer();
           if (problem) {

@@ -9,7 +9,6 @@ questions:
     title: Business Need
     prompt: What is the business need of the project?
     type: longtext
-
   - id: functional_capabilities
     title: Functional Capabilities
     prompt: What are the functions or capabilities of the system and the mission for which those functions or capabilities will be used?

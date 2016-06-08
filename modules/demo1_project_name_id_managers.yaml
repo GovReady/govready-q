@@ -23,7 +23,7 @@ questions:
     type: yesno
     impute:
       - condition: projct_has_identifier == 'no'
-        value: NA
+        value: ~
 
   - id: project_technology_manager
     title: Technology Manger
@@ -47,6 +47,10 @@ output:
 
       Project Identifier: {{projct_identifier}}
 
+      {% if project_technology_manager %}
       Technology Manager: {{project_technology_manager.q1_name}}
+      {% endif %}
 
+      {% if project_iss_manager %}
       ISSM: {{project_iss_manager.q1_name}}
+      {% endif %}

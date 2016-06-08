@@ -5,7 +5,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from .models import Discussion, Comment
-from guidedmodules.models import ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory
+from guidedmodules.models import ModuleQuestion, Task, TaskAnswer
 from siteapp.models import Project, ProjectMembership
 
 @login_required
