@@ -40,9 +40,9 @@ If this is truly on a new machine, it will create a new Sqlite database. You'll 
 
 You can copy the `secret-key` from what you see --- it was generated to be unique.
 
-For production, set `debug` to false and add:
+For production, set `debug` to false and add the administrators for server error emails (a list of pairs of [name, address]):
 
-	"admins": ["some email address"]
+	"admins": [["Name", "email@domain.com"], ...]
 
 for unhandled error emails.
 
