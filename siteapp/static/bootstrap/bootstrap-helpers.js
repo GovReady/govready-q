@@ -137,3 +137,16 @@ function smooth_scroll_to(elem) {
   });
 }
 
+function parse_qs(qs) {
+  // Parse something that looks like a query string. The reverse
+  // of $('form').serialize().
+  // Based on http://stackoverflow.com/a/2880929/125992
+  var match,
+    pl     = /\+/g,  // Regex for replacing addition symbol with a space
+    search = /([^&=]+)=?([^&]*)/g,
+    decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+    ret = {};
+  while (match = search.exec(qs))
+    ret[decode(match[1])] = decode(match[2]);
+  return ret;
+}

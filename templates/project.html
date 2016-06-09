@@ -108,10 +108,10 @@
 
   <div class="col-sm-9 col-sm-pull-3">
 
-    <ul class="nav nav-tabs">
+    <ul id="project-tabs" class="nav nav-tabs">
       {# question tabs #}
       {% for tab in tabs %}
-        <li role="presentation" {% if forloop.first %}class="active"{% endif %}><a href="#{{forloop.counter}}-{{tab.title|slugify}}" aria-controls="{{forloop.counter}}-{{tab.title|slugify}}" role="tab" data-toggle="tab">{{tab.title}}</a></li>
+        <li role="presentation" {% if forloop.first %}class="active"{% endif %}><a href="#{{tab.title|slugify}}" aria-controls="{{forloop.counter}}-{{tab.title|slugify}}" role="tab" data-toggle="tab">{{tab.title}}</a></li>
       {% endfor %}
 
       {# output document tabs #}
@@ -124,7 +124,7 @@
       {# question tabs #}
 
       {% for tab in tabs %}
-        <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{forloop.counter}}-{{tab.title|slugify}}">
+        <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{tab.title|slugify}}">
             {{tab.intro.html|safe}}
 
             {% for group in tab.groups.values %}
@@ -218,6 +218,13 @@
 var project_invitation_info = {{send_invitation|json}};
 
 $(function() {
+  open_tab_from_url_fragment();
+  $(window).on('hashchange', open_tab_from_url_fragment);
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    var tabid = e.target.getAttribute('href').substring(1); // old IE might return absolute URL here?
+    window.location.hash = "#tab=" + encodeURIComponent(tabid);
+  })
+
 	$('.task .delete-task').click(function() {
     var task_node = $(this).parent('p');
 		var task_id = task_node.attr('data-id');
@@ -268,6 +275,17 @@ function invite_user_to_start_module(module_title, question_id) {
   );
 
   return false;
+}
+
+function open_tab_from_url_fragment() {
+  var tabpath = parse_qs(window.location.hash.substring(1)).tab;
+  if (tabpath) {
+    tabpath = tabpath.split('/');
+    var tab = tabpath.shift();
+    if (tab) {
+      $('#project-tabs a[href="#' + tab + '"]').tab("show");
+    }
+  }
 }
 
 </script>

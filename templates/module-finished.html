@@ -29,13 +29,18 @@
 
 <div style="margin: 2em 0">
   {% with supermodule=task.is_answer_to_unique %}
-    {% if supermodule and supermodule.task.editor == request.user and supermodule.task != supermodule.project.root_task %}
+    {% if supermodule and supermodule.task.editor == request.user %}
       <p class="text-success">This module is complete.</p>
-      <p><a href="{{supermodule.task.get_absolute_url}}" class="btn btn-primary">Continue Answering {{supermodule.task.title}} &raquo;</a></p>
-    {% elif task.project %}
-      <p class="text-success">This module is complete. Continue with <a href="{{task.project.get_absolute_url}}">other modules in {{task.project.title}}</a>.</p>
+      {% if supermodule.task == supermodule.project.root_task %}
+        {# return to project #}
+        <p class="text-success">Continue with <a href="{{task.project.get_absolute_url}}#tab={{supermodule.question.spec.tab|slugify}}/{{supermodule.question.spec.group|slugify}}/{{supermodule.question.key|slugify}}/{{task.id}}">other modules in {{task.project.title}}</a>.</p>
+      {% else %}
+        {# return to non-project parent task #}
+        <p><a href="{{supermodule.task.get_absolute_url}}" class="btn btn-primary">Continue Answering {{supermodule.task.title}} &raquo;</a></p>
+      {% endif %}
     {% else %}
-      <p class="text-success">This module is complete. Go to <a href="/">your home</a> to work on other modules.</p>
+      {# every task, except projects, are now subtasks of other tasks, so this only occurs if a task is a subtask to multiple super-tasks #}
+      <p class="text-success">This module is complete. Continue with <a href="{{task.project.get_absolute_url}}">other modules in {{task.project.title}}</a>.</p>
     {% endif %}
   {% endwith %}
 
