@@ -13,14 +13,14 @@ urlpatterns = [
     url(r"^discussion/", include("discussion.urls")),
 
     # projects
-    url(r'new-project$', views.new_project),
-    url(r'projects/(\d+)/_delete$', views.delete_project, name="delete_project"),
-    url(r'projects/(\d+)/(?:[\w\-]+)$', views.project),
+    url(r'^new-project$', views.new_project),
+    url(r'^projects/(\d+)/_delete$', views.delete_project, name="delete_project"),
+    url(r'^projects/(\d+)/(?:[\w\-]+)$', views.project),
 
     # invitations
-    url(r'invitation/_send$', views.send_invitation, name="send_invitation"),
-    url(r'invitation/_cancel$', views.cancel_invitation, name="cancel_invitation"),
-    url(r'invitation/(?P<code>.*)$', views.accept_invitation, name="accept_invitation"),
+    url(r'^invitation/_send$', views.send_invitation, name="send_invitation"),
+    url(r'^invitation/_cancel$', views.cancel_invitation, name="cancel_invitation"),
+    url(r'^invitation/(?P<code>.*)$', views.accept_invitation, name="accept_invitation"),
 
     # auth
     url(r'^accounts/', include('allauth.urls')),
