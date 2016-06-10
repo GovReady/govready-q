@@ -55,7 +55,7 @@ class ModuleQuestion(models.Model):
         return "<ModuleQuestion [%d] %s.%s (%s)>" % (self.id, self.module.key, self.key, repr(self.module))
 
 class Task(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.PROTECT, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
     editor = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that has primary responsibility for completing this Task.")
     module = models.ForeignKey(Module, on_delete=models.PROTECT, help_text="The Module that this Task is answering.")
 
@@ -299,7 +299,7 @@ class Task(models.Model):
         return None
 
 class TaskAnswer(models.Model):
-    task = models.ForeignKey(Task, on_delete=models.PROTECT, related_name="answers", help_text="The Task that this TaskAnswer is a part of.")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="answers", help_text="The Task that this TaskAnswer is a part of.")
     question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT, help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by editors working on this question.")
@@ -382,7 +382,7 @@ class TaskAnswer(models.Model):
         return self.question.spec["title"] + " - " + self.task.title
 
 class TaskAnswerHistory(models.Model):
-    taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.PROTECT, help_text="The TaskAnswer that this is an aswer to.")
+    taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
 
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
     value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
