@@ -23,7 +23,17 @@ $(function() {
     if (global_modal_state == null) global_modal_state = 1; // cancel if the user hit ESC or clicked outside of the modal
     if (global_modal_funcs && global_modal_funcs[global_modal_state])
       global_modal_funcs[global_modal_state]();
-  })  
+  })
+
+  // Before a tab is shown, ensure that the tab-content div won't
+  // shrink in size, which when you're scrolled down can cause a
+  // jarring up-scroll, by setting a min height to the tab-content's
+  // current height.
+  $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+    $('.tab-content').each(function() {
+      $(this).css({ minHeight: $('.tab-content').innerHeight() });
+    })
+  })
 })
 
 function show_modal_error(title, message, callback) {
