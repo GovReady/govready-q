@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from django.views.decorators.http import require_http_methods
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -192,7 +193,17 @@ def project(request, project_id):
         "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
         "tabs": list(tabs.values()),
     })
-    
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    if request.user not in  project.get_admins():
+        return HttpResponseForbidden()
+    project.delete()
+    return JsonResponse({ "status": "ok" })
+
 
 # INVITATIONS
 

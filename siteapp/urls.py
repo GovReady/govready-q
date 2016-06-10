@@ -14,6 +14,7 @@ urlpatterns = [
 
     # projects
     url(r'new-project$', views.new_project),
+    url(r'projects/(\d+)/_delete$', views.delete_project, name="delete_project"),
     url(r'projects/(\d+)/(?:[\w\-]+)$', views.project),
 
     # invitations

@@ -185,8 +185,8 @@
       {% endif %}
 
       {% if send_invitation.can_add_invitee_to_team %}
-        <div>
-          <button class="btn btn-warning" onclick="return invite_user_into_project();">Invite to Project ...</button>
+        <div style="margin: 1em 0">
+          <button class="btn btn-success" onclick="return invite_user_into_project();">Invite Colleague to Join Project ...</button>
         </div>
       {% endif %}
 
@@ -203,6 +203,11 @@
           </div>
         </div>
       {% endif %}
+
+      <div style="margin: 1em 0">
+        <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button>
+      </div>
+
     </div> <!-- /tab-panel -->
     {% endif %}
 
@@ -287,5 +292,22 @@ function open_tab_from_url_fragment() {
   }
 }
 
+function delete_project() {
+  show_modal_confirm(
+    "Delete Project",
+    "Are you sure you want to delete this project? All information will be permanently deleted.",
+    "Delete",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "delete_project" project.id %}',
+       method: "POST",
+       success: function() {
+         // redirect to home to see other projects
+         window.location = "/";
+       }
+      });
+    }
+  )
+}
 </script>
 {% endblock %}
