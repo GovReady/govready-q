@@ -102,24 +102,32 @@ def render_content(content, answers, output_format, additional_context={}, hard_
             return "".join(("\\" if c in escape_chars else "") + c for c in s)
         def renderer(output):
             if output_format == "html":
-                # Convert CommonMark to HTML.
+                # Convert CommonMark to HTML. Use a custom renderer.
                 import CommonMark
-                output = CommonMark.commonmark(output)
-
-                # Demote all <h#> tags by one level since a top-level
-                # heading in the template should not conflict with a
-                # page title.
-                import re
-                output = re.sub(
-                    r"<(/?)[hH]([1-5])([^>]*)>",
-                    lambda m : "<{slash}h{level}{attrs}>".format(
-                        slash=m.group(1),
-                        level=int(m.group(2))+1,
-                        attrs=m.group(3),
-                    ),
-                    output
-                )
-
+                class q_renderer(CommonMark.HtmlRenderer):
+                    def heading(self, node, entering):
+                        # Generate <h#> tags with one level down from
+                        # what would be normal since they should not
+                        # conflict with the page <h1>.
+                        if entering:
+                            node.level += 1
+                        super().heading(node, entering)
+                    def link(self, node, entering):
+                        # Rewrite the target URL to be within the app's
+                        # static virtual path.
+                        if entering:
+                            self.rewrite_url(node)
+                        super().image(node, entering)
+                    def image(self, node, entering):
+                        # Rewrite the image URL to be within the app's
+                        # static virtual path.
+                        if entering:
+                            self.rewrite_url(node)
+                        super().image(node, entering)
+                    def rewrite_url(self, node):
+                        import urllib.parse
+                        node.destination = urllib.parse.urljoin("/static/module-assets/", node.destination)
+                output = q_renderer().render(CommonMark.Parser().parse(output))
                 return output
             raise ValueError("Can't render Markdown template as %s." % output_format)
 

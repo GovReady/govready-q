@@ -14,7 +14,9 @@ questions:
     prompt: |
       # What is a component?
 
-      A component is a thing.
+      A component is a thing. This image should explain it:
+
+        ![A picture of a computer.](testimage.png)
 
       We'll tell you all about it here.
     type: interstitial
