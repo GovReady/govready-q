@@ -219,6 +219,13 @@ Changing the `module-id` is considered an incompatible change (see Updating Modu
 
 In document templates and impute conditions, the value of `module` questions is a dictionary of the answers to that module. For example, if `q5` is the ID of a question whose type is `module`, then `{{q5.q1}}` will provide the answer to `q1` within the module the user selected that answers `q5`.
 
+#### `interstitial`
+
+An `interstitial` question is not really a question at all! The `prompt` contains template content, as with other questions, but it is typically longer content with deeper explanatory text. The user is not asked to enter any information.
+
+In document templates and impute conditions, the value of `interstitial` questions is always a null value.
+
+
 ### Imputing Answers
 
 The answer to one question may provide the answer to another. In such cases, the latter question is said to have an imputed value and the user is not asked to answer the question. To imput a value, specify on the question whose value is being imputed:

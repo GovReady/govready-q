@@ -15,6 +15,12 @@ Next Question: {{q.spec.title}}
     color: #777;
   }
 
+{% if q.spec.type == "interstitial" %}
+#question-prompt {
+  margin: 20px 0;
+}
+{% endif %}
+
 </style>
 
 
@@ -179,6 +185,10 @@ Next Question: {{q.spec.title}}
               <p class="help-block">{{q.spec.help}}</p>
               {% endwith %}
 
+            {% elif q.spec.type == "interstitial" %}
+              {# no other content but an empty value #}
+              <input type="hidden" name="value" value=""/>
+
             {% else %}
                 {{q.spec.type}}
 
@@ -188,9 +198,19 @@ Next Question: {{q.spec.title}}
             <button id="save-button"
               type="submit" class="btn btn-success"
               onclick="$('#question > form input[name=method]').val('save')">
-              {% if not request.GET.q %}Next{% else %}Submit{% endif %}
+              {% if q.spec.type == "interstitial" %}
+                Got it
+              {% elif not request.GET.q %}
+                {# user is proceeding through the questions in order #}
+                Next
+              {% else %}
+                {# user has returned to a particular question #}
+                Submit
+              {% endif %}
               &raquo;
             </button>
+
+            {% if q.spec.type != "interstitial" %}
 
             <button id="skip-button"
               type="submit" class="btn btn-info"
@@ -207,13 +227,16 @@ Next Question: {{q.spec.title}}
                   &raquo;
                 </button>
             {% endif %}
-            {% endif %}
 
             {% if not is_discussion_guest %}
             {% if not task.project.is_account_project or task.can_transfer_owner %}
             <button class="btn btn-default" onclick="$('#need-help').slideToggle();return false;">Get Help From Colleagues</button>
             {% endif %}
             {% endif %}
+
+            {% endif %} {# not interstitial #}
+
+            {% endif %} {# write_priv #}
         </form>
 
         {% if not is_discussion_guest %}

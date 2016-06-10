@@ -9,10 +9,23 @@ introduction:
     You will be asked to name the component, to describe why it is needed (what
     functional requirement it fulfills), and to describe the component.
 questions:
+  - id: whats_a_component
+    title: What is a component?
+    prompt: |
+      # What is a component?
+
+      A component is a thing.
+
+      We'll tell you all about it here.
+    type: interstitial
+
   - id: name
     title: Component Name
     prompt: What is the name of the component?
     type: text
+    ask-first:
+      - whats_a_component
+
   - id: requirement
     title: Functional Requirements
     prompt: What functional requirements does {{name}} fulfill?

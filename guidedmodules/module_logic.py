@@ -104,7 +104,23 @@ def render_content(content, answers, output_format, additional_context={}, hard_
             if output_format == "html":
                 # Convert CommonMark to HTML.
                 import CommonMark
-                return CommonMark.commonmark(output)
+                output = CommonMark.commonmark(output)
+
+                # Demote all <h#> tags by one level since a top-level
+                # heading in the template should not conflict with a
+                # page title.
+                import re
+                output = re.sub(
+                    r"<(/?)[hH]([1-5])([^>]*)>",
+                    lambda m : "<{slash}h{level}{attrs}>".format(
+                        slash=m.group(1),
+                        level=int(m.group(2))+1,
+                        attrs=m.group(3),
+                    ),
+                    output
+                )
+
+                return output
             raise ValueError("Can't render Markdown template as %s." % output_format)
 
     elif content["format"] == "text":
@@ -323,6 +339,13 @@ class validator:
     def validate_module(question, value):
         # handled by view function
         return value
+
+    def validate_interstitial(question, value):
+        # interstitials have no actual answer - we should always
+        # get "".
+        if value != "":
+            raise ValueError("Invalid input.")
+        return None # store it as null
 
 def get_question_choice(question, key):
     for choice in question.spec["choices"]:
