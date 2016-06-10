@@ -17,7 +17,7 @@ def next_question(questions_answered):
     # What questions are actually used in the template?
 
     needs_answer = [ ]
-    for d in questions_answered.module.spec["output"]:
+    for d in questions_answered.module.spec.get("output", []):
         needs_answer.extend([
             questions_answered.module.questions.get(key=qid)
             for qid in get_jinja2_template_vars(d['template'])
@@ -374,7 +374,7 @@ class ModuleAnswers:
             ret.update(d) # keep all original fields (especially 'name', 'tab')
             ret["html"] = render_content(d, self, "html", additional_context, hard_fail=hard_fail)
             return ret
-        return [ render_document(d) for d in self.module.spec["output"] ]
+        return [ render_document(d) for d in self.module.spec.get("output", []) ]
 
 class RenderedAnswer:
     def __init__(self, question, answer, escapefunc):
