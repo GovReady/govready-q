@@ -61,10 +61,9 @@ def new_project(request):
     class NewProjectForm(ModelForm):
         class Meta:
             model = Project
-            fields = ['title', 'notes']
+            fields = ['title']
             help_texts = {
                 'title': 'Give your project a descriptive name.',
-                'notes': 'Optionally write some notes. If you invite other users to your project team, they\'ll be able to see this too.',
             }
 
     form = NewProjectForm()

@@ -65,7 +65,6 @@ class User(AbstractUser):
 
 class Project(models.Model):
     title = models.CharField(max_length=256, help_text="The title of this Project.")
-    notes = models.TextField(blank=True, help_text="Notes about this Project for Project members.")
 
     is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
 

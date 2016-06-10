@@ -6,9 +6,9 @@ New Project
 {% endblock %}
 
 {% block body %}
-<h1>New Project</h1>
+<h1 style="margin: 60px 0 30px 0">New Project</h1>
 
-<div style="margin: 2em 0">
+<div style="margin: 30px 0">
   {% if first %}
     <p>Create your first project.</p>
   {% else %}
@@ -20,7 +20,7 @@ New Project
     {% csrf_token %}
     {{ form|bootstrap }}
     <div class="form-group">
-      <button type="submit" class="btn btn-primary">Create</button>
+      <button type="submit" class="btn btn-primary">Create &raquo;</button>
     </div>
 </form>
 
