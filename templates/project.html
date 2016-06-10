@@ -63,50 +63,6 @@
   {{intro|safe}}
 </div>
 
-<div class="row">
-
-  <div class="col-sm-3 col-sm-push-9">
-    {% if not project.is_account_project %}
-    <div class="well">
-      {% if project_has_members_besides_me %}
-        <div style="margin-bottom: 1em">
-          <h3 style="margin: 0 0 .5em 0">Members</h3>
-          <div id="project-members">
-            {% for pmbr in project_members %}
-              <div>
-                {{pmbr.user}}
-                {% if pmbr.is_admin %}<span class="admin">admin</span>{% endif %}
-                {% if pmbr.user == request.user %}<span class="you">you</span>{% endif %}
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      {% endif %}
-
-      {% if send_invitation.can_add_invitee_to_team %}
-        <div>
-          <button class="btn btn-warning" onclick="return invite_user_into_project();">Invite to Project ...</button>
-        </div>
-      {% endif %}
-
-      {% if open_invitations %}
-        <div id="open-invitations-container">
-          <h3>Invitations waiting for a response...</h3>
-          <div class="invitation-list">
-          {% for inv in open_invitations %}
-            <p data-invitation-id="{{inv.id}}">
-              You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
-              (<a href="#" onclick="return cancel_invitation(this, function() { if ($('#open-invitations-container .invitation-list p').length == 0) { $('#open-invitations-container').remove(); } });">cancel</a>)
-            </p>
-          {% endfor %}
-          </div>
-        </div>
-      {% endif %}
-    </div>
-    {% endif %}
-  </div>
-
-  <div class="col-sm-9 col-sm-pull-3">
 
     <ul id="project-tabs" class="nav nav-tabs">
       {# question tabs #}
@@ -118,6 +74,11 @@
       {% for document in additional_tabs %}
         <li role="presentation"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.title}}</a></li>
       {% endfor %}
+
+      {% if not project.is_account_project %}
+        <li role="presentation"><a href="#project-settings" aria-controls="project-settings" role="tab" data-toggle="tab"><i class="glyphicon glyphicon-wrench"></i> Settings</a></li>
+      {% endif %}
+
     </ul>
 
     <div class="tab-content">
@@ -206,8 +167,46 @@
         </div>
       {% endfor %}
 
+    {% if not project.is_account_project %}
+    <div role="tabpanel" class="tab-pane" id="project-settings">
+      {% if project_has_members_besides_me %}
+        <div style="margin-bottom: 1em">
+          <h3 style="margin: 0 0 .5em 0">Members</h3>
+          <div id="project-members">
+            {% for pmbr in project_members %}
+              <div>
+                {{pmbr.user}}
+                {% if pmbr.is_admin %}<span class="admin">admin</span>{% endif %}
+                {% if pmbr.user == request.user %}<span class="you">you</span>{% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if send_invitation.can_add_invitee_to_team %}
+        <div>
+          <button class="btn btn-warning" onclick="return invite_user_into_project();">Invite to Project ...</button>
+        </div>
+      {% endif %}
+
+      {% if open_invitations %}
+        <div id="open-invitations-container">
+          <h3>Invitations waiting for a response...</h3>
+          <div class="invitation-list">
+          {% for inv in open_invitations %}
+            <p data-invitation-id="{{inv.id}}">
+              You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+              (<a href="#" onclick="return cancel_invitation(this, function() { if ($('#open-invitations-container .invitation-list p').length == 0) { $('#open-invitations-container').remove(); } });">cancel</a>)
+            </p>
+          {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div> <!-- /tab-panel -->
+    {% endif %}
+
     </div>
- 
   </div>
 </div>
 
