@@ -109,7 +109,7 @@
 
     {% block body-wide %}
     <div class="container-fluid">
-      <div class="container">
+      <div class="container" style="min-height: 80%;">
       {% block body %}
       {% endblock %}
 
@@ -121,7 +121,11 @@
       <hr>
       <footer>
         <div class="container">
+          <div class="row">
+            <div class="col-sm-push-2 col-sm-8">
           <p>&copy; GovReady 2016</p>
+            </div>
+          </div>
         </div>
       </footer>
     </div> <!-- /container -->
