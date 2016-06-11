@@ -6,11 +6,6 @@ long_description: >
 introduction:
   format: markdown
   template: |
-    Welcome to GovReady's Compliance Tool, Q.
-
-    The purpose of Q is to collect the information you need to
-    something something something something.
-
     *Directions:* Please complete each module in the tabs below.
 
 questions:

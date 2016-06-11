@@ -8,6 +8,9 @@ import siteapp.views as views
 urlpatterns = [
     url(r"^$", views.homepage),
 
+    # misc
+    url(r"^about/", views.aboutpage),
+    
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),

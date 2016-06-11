@@ -54,6 +54,10 @@ def homepage(request):
             "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
         })
 
+def aboutpage(request):
+    # About page
+    return render(request, "about.html")
+
 @login_required
 def new_project(request):
     from django.forms import ModelForm
