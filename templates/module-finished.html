@@ -30,7 +30,7 @@
 <div style="margin: 2em 0">
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule and supermodule.task.editor == request.user %}
-      <p class="text-success"><span class="glyphicon glyphicon-ok"></span> Module complete.</p>
+      <p class="text-">...and we're done <span class="glyphicon glyphicon-ok"></p>
 
     {% else %}
       {# every task, except projects, are now subtasks of other tasks, so this only occurs if a task is a subtask to multiple super-tasks #}
