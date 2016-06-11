@@ -234,7 +234,7 @@ Next Question: {{q.spec.title}}
 
             {% if not is_discussion_guest %}
             {% if not task.project.is_account_project or task.can_transfer_owner %}
-            <button class="btn btn-default" onclick="$('#need-help').slideToggle();return false;">Get Help From Colleagues</button>
+            <button class="btn btn-default" onclick="$('#need-help').slideToggle();return false;">Ask team</button>
             {% endif %}
             {% endif %}
 
@@ -249,13 +249,13 @@ Next Question: {{q.spec.title}}
           {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
             <li id="start-a-discussion">
                 {# if you can see this page, you can start a conversation #}
-                <a href="javascript:start_a_discussion()">Start a team conversation about this question</a>
+                <a href="javascript:start_a_discussion()">Start team conversation to decide answer</a>
             </li>
           {% endif %}
           {% if task.can_transfer_owner %}
             <li>
               {% if write_priv %}
-                <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this {% if q.spec.type == "module" %}{{module.title}}{% endif %} module</a>
+                <a href="javascript:invite_to_transfer_editor()">Ask team member to finish this {% if q.spec.type == "module" %}{{module.title}}{% endif %} module</a>
               {% else %}
                 The editor of this module can ask a colleague to finish this module
               {% endif %}
