@@ -16,13 +16,23 @@
 }
 
 .task {
-  border: 1px solid #ABA;
-  border-radius: 8px;
-  background-color: #F3FAF3;
+  border: 2px solid #ABA;
+  /*border-radius: 8px;*/
+  /*background-color: #F3FAF3;*/
+  background-color: #fff;
   padding: .75em .9em;
+  width: 180px;
+  height: 150px;
+  max-height: 150px;
+  position: relative;
 }
   .task .task-title {
-    margin-bottom: 1em;
+    /*margin-bottom: 1em;*/
+    text-align: center;
+  }
+  .task-title {
+    font-weight: bold;
+    height: 50px;
   }
   .task .task-commands button {
     padding-left: 0;
@@ -45,6 +55,20 @@
     content: "(undo)";
   }
 
+.task_finished {
+  background-color: #dfd;
+  /*background-image: url('/static/module-assets/govready-check-small.png');
+  background-repeat: no-repeat;
+  background-position: center;*/
+}
+
+.task img {
+  position: absolute;
+  left: 50px;
+  top: 30px;
+    opacity: 0.4;
+}
+
 #project-members .admin {
   font-style: italic;
   font-size: 85%;
@@ -65,7 +89,6 @@
 <div style="margin: 2em 0">
   {{intro|safe}}
 </div>
-
 
     <ul id="project-tabs" class="nav nav-tabs">
       {# question tabs #}
@@ -104,26 +127,34 @@
                 {% endif %}
 
                 <div class="col-sm-3">
-                <div class="task">
+                <div class="task {% if is_member %}{% for t in rec.tasks %}{% if t.is_finished %}task_finished{% endif %}{% endfor %}{% endif %}">
+
                   <div class="task-title">
                     {{rec.question.spec.title}}
+
                   </div>
                   <div class="task-commands">
                     {% if is_member %}
                       {% for t in rec.tasks %}
                         <div>
-                          <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}">
+                          <!-- <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}"> -->
                             {% if rec.question.spec.type == "module-set" %}
                               {{t.render_title}} &mdash;
                             {% endif %}
                             {% if t.is_finished or not t.has_write_priv %}
-                              review
+                              <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}">
+                                <span class="glyphicon glyphicon-check"></span>
+                                Completed </a>
                             {% elif t.is_started %}
-                              continue
+                              <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}">
+                                <span class="glyphicon glyphicon-edit"></span>
+                              In Progress </a>
                             {% else %}
-                              start
+                              <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}">
+                              <span class="glyphicon glyphicon-edit"></span>
+                              Viewed </a>
                             {% endif %}
-                          </a>
+                          <!-- </a> -->
                         </div>
                       {% endfor %}
 
@@ -134,13 +165,13 @@
                           <input type="hidden" name="question" value="{{rec.question.key}}"/>
                           <button type="submit" class="btn btn-link">
                             {% if rec.tasks|length == 0 %}
-                              Start Module
+                              <span class="glyphicon glyphicon-unchecked"></span> Start module
                             {% else %}
                               Add Module
                             {% endif %}
                           </button>
                         </form>
-                        <button class="btn btn-link" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});">Invite to Answer</button>
+                        <button class="btn btn-link" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign team member</button>
                       {% endif %}
                     {% endif %}
 

@@ -27,14 +27,14 @@ questions:
     title: User Types
     type: module
     module-id: demo1_project_user_types
-    tab: Basic Info
+    tab: Description of Users
     group: Identity, Credential and Access Management
 
   - id: q_project_authentication_methods
     title: Authentication Methods
     type: module
     module-id: demo1_project_auth_methods
-    tab: Basic Info
+    tab: Description of Users
     group: Identity, Credential and Access Management
 
   - id: q_system_architecture
@@ -49,14 +49,14 @@ questions:
     type: module-set
     module-id: demo1_system_component_software
     tab: System Architecture
-    group: System Components
+    group: System Architecture
 
   - id: q_system_components_hardware
     title: Hardware Components
     type: module-set
     module-id: demo1_system_component_hardware
     tab: System Architecture
-    group: System Components
+    group: System Architecture
 
   - id: q_system_network_protocols
     title: Network Protocols
@@ -69,4 +69,14 @@ output:
   - tab: Basic Info
     format: markdown
     template: |
-      Start by entering general information about this project.
+      General information about {{project}}.
+
+  - tab: Description of Users
+    format: markdown
+    template: |
+      Details about the users of {{project}} and access control.
+
+  - tab: System Architecture
+    format: markdown
+    template: |
+      Information about the technical design of {{project}}.
