@@ -127,6 +127,7 @@ def project(request, project_id):
     # Create all of the module entries in a tabs & groups data structure.
     from collections import OrderedDict
     tabs = OrderedDict()
+    question_dict = { }
     for mq in project.root_task.module.questions.all().order_by('definition_order'):
         if mq.spec.get("type") not in ("module", "module-set"):
             continue
@@ -160,13 +161,33 @@ def project(request, project_id):
             continue
 
         # Add entry.
-        group["modules"].append({
+        d = {
             "question": mq,
             "module": Module.objects.get(id=mq.spec["module-id"]),
             "tasks": tasks,
             "can_start_new_task": mq.spec["type"] == "module-set" or len(tasks) == 0,
             "discussions": task_discussions,
-        })
+            "invitations": [], # filled in below
+        }
+        question_dict[mq.id] = d
+        group["modules"].append(d)
+
+    # Find any open invitations and if they are for particular modules,
+    # display them with the module.
+    other_open_invitations = []
+    for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created'):
+        if inv.is_expired():
+            continue
+        if inv.target == project:
+            into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
+            if into_new_task_question_id:
+                if into_new_task_question_id in question_dict: # should always be True
+                    question_dict[into_new_task_question_id]["invitations"].append(inv)
+                    continue
+
+        # If the invitation didn't get put elsewhere, display in the
+        # other list.                
+        other_open_invitations.append(inv)
 
     # Additional tabs of content.
     additional_tabs = []
@@ -189,9 +210,7 @@ def project(request, project_id):
         "title": project.title,
         "intro" : project.root_task.render_introduction() if project.root_task.module.spec.get("introduction") else "",
         "additional_tabs": additional_tabs,
-        "open_invitations": [
-            inv for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created')
-            if not inv.is_expired() ],
+        "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project),
         "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
         "tabs": list(tabs.values()),

@@ -39,6 +39,10 @@
   .task .task-commands button {
     padding-left: 0;
   }
+  .task .invitation {
+    font-size: 14px;
+    line-height: 128%;
+  }
 
 .task.deleted span {
   color: #DDD;
@@ -176,6 +180,13 @@
                         <button class="btn btn-link" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign team member</button>
                       {% endif %}
                     {% endif %}
+
+                    {% for inv in rec.invitations %}
+                      <p class="invitation" data-invitation-id="{{inv.id}}">
+                        You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+                        (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
+                      </p>
+                    {% endfor %}
 
                       {# guest participation in discussions within this task #}
                       {% if rec.discussions %}
