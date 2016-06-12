@@ -143,20 +143,19 @@
                     {% if is_member %}
                       {% for t in rec.tasks %}
                         <div>
-                          <!-- <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}"> -->
                             {% if rec.question.spec.type == "module-set" %}
                               {{t.render_title}} &mdash;
                             {% endif %}
                             {% if t.is_finished or not t.has_write_priv %}
-                              <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}">
+                              <a href="{{t.get_absolute_url}}">
                                 <span class="glyphicon glyphicon-check"></span>
                                 Completed </a>
                             {% elif t.is_started %}
-                              <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}">
+                              <a href="{{t.get_absolute_url}}">
                                 <span class="glyphicon glyphicon-edit"></span>
                               In Progress </a>
                             {% else %}
-                              <a href="{{t.get_absolute_url}}{% if not t.is_started %}/start {% endif %}">
+                              <a href="{{t.get_absolute_url}}">
                               <span class="glyphicon glyphicon-edit"></span>
                               Viewed </a>
                             {% endif %}

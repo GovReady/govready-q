@@ -187,7 +187,7 @@ class Task(models.Model):
         self.invitation_history.add(invitation)
 
     def get_invitation_redirect_url(self, invitation):
-        return self.get_absolute_url() + "/start"
+        return self.get_absolute_url()
 
     def get_open_invitations(self, user):
         # Return the open Invitations for transferring task ownership

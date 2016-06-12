@@ -23,10 +23,10 @@ def new_task(request):
     task = project.root_task.get_or_create_subtask(request.user, request.POST["question"])
 
     # Redirect.
-    return HttpResponseRedirect(task.get_absolute_url() + "/start")
+    return HttpResponseRedirect(task.get_absolute_url())
 
 @login_required
-def next_question(request, taskid, taskslug, intropage=None):
+def next_question(request, taskid, taskslug):
     # Get the Task.
     task = get_object_or_404(Task, id=taskid)
 
@@ -35,9 +35,6 @@ def next_question(request, taskid, taskslug, intropage=None):
 
     # Process form data.
     if request.method == "POST":
-        if intropage:
-            return HttpResponseForbidden()
-
         # does user have write privs?
         if not task.has_write_priv(request.user):
             return HttpResponseForbidden()
@@ -98,7 +95,7 @@ def next_question(request, taskid, taskslug, intropage=None):
                     title=m1.title)
 
                 answered_by_tasks = [t]
-                redirect_to = t.get_absolute_url() + "/start"
+                redirect_to = t.get_absolute_url()
 
             elif value == None:
                 # User is skipping this question.
@@ -189,7 +186,7 @@ def next_question(request, taskid, taskslug, intropage=None):
 
     # Redirect if slug is not canonical. We do this after checking for
     # read privs so that we don't reveal the task's slug to unpriv'd users.
-    if request.path != task.get_absolute_url() + (intropage or ""):
+    if request.path != task.get_absolute_url():
         return HttpResponseRedirect(task.get_absolute_url())
 
     # Display requested question.
@@ -205,14 +202,7 @@ def next_question(request, taskid, taskslug, intropage=None):
         "open_invitations": task.get_open_invitations(request.user),
     }
 
-    if intropage:
-        context.update({
-            "introduction": task.render_introduction(),
-            "source_invitation": task.invitation_history.filter(accepted_user=request.user).order_by('-created').first(),
-        })
-        return render(request, "module-intro.html", context)
-
-    elif not q:
+    if not q:
         # There is no next question - the module is complete.
         context.update({
             "output": task.render_output_documents(answered),

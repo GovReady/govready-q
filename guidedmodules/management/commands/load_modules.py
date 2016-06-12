@@ -67,6 +67,10 @@ class Command(BaseCommand):
         for m1 in self.get_module_spec_dependencies(spec):
             self.process_module(m1, processed_modules, path + [spec["id"]])
 
+        # Pre-process the module.
+
+        self.preprocess_module_spec(spec)
+
         # Ok now actually do the database update for this module...
 
         # Get the most recent version of this module in the database,
@@ -109,6 +113,19 @@ class Command(BaseCommand):
             if question.get("type") in ("module", "module-set"):
                 yield question.get("module-id")
 
+    def preprocess_module_spec(self, spec):
+        # 'introduction' fields are an alias for an interstitial
+        # question that all questions depend on.
+        if "introduction" in spec:
+            q = {
+                "id": "_introduction",
+                "title": "Introduction",
+                "type": "interstitial",
+                "prompt": spec["introduction"]["template"],
+            }
+            for q1 in spec.get("questions", []):
+                q1.setdefault("ask-first", []).append(q["id"])
+            spec.setdefault("questions", []).insert(0, q)
 
     def create_module(self, spec):
         # Create a new Module instance.

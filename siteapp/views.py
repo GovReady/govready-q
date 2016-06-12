@@ -21,8 +21,7 @@ def homepage(request):
     settings_task = request.user.get_settings_task()
     if not settings_task.is_finished():
         # First task: Fill out your account settings.
-        return HttpResponseRedirect(settings_task.get_absolute_url()
-            + "/start")
+        return HttpResponseRedirect(settings_task.get_absolute_url())
 
     else:
         # Ok, show user what they can do --- list the projects they
