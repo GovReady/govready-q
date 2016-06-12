@@ -225,7 +225,7 @@ def next_question(request, taskid, taskslug, intropage=None):
         answer = None
         if taskq:
             answer = taskq.get_current_answer()
-            if answer.cleared:
+            if answer and answer.cleared:
                 # If the answer is cleared, treat as if it had not been answered.
                 answer = None
 
