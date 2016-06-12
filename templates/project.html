@@ -133,7 +133,7 @@
                 {% endif %}
 
                 <div class="col-sm-3">
-                <div class="task {% if is_member %}{% for t in rec.tasks %}{% if t.is_finished %}task_finished{% endif %}{% endfor %}{% endif %}">
+                <div class="task {% if is_member and rec.is_finished %}task_finished{% endif %}">
 
                   <div class="task-title">
                     {{rec.question.spec.title}}

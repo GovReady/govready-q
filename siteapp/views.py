@@ -145,6 +145,7 @@ def project(request, project_id):
 
         # Is this question answered yet? Are there any discussions the user
         # is a guest of in any of the tasks that answer this question?
+        is_finished = None
         tasks = []
         task_discussions = []
         ans = project.root_task.answers.filter(question=mq).first()
@@ -154,6 +155,14 @@ def project(request, project_id):
                 tasks.append(task)
                 task.has_write_priv = task.has_write_priv(request.user)
                 task_discussions.extend([d for d in discussions if d.attached_to.task == task])
+                if not task.is_finished():
+                    # If any task is unfinished, the whole question
+                    # is marked as unfinished.
+                    is_finished = False
+                elif is_finished is None:
+                    # If all tasks are finished, the whole question
+                    # is marked as finished.
+                    is_finished = True
 
         # Do not display if user should not be able to see this task.
         if not is_project_member and len(task_discussions) == 0:
@@ -163,6 +172,7 @@ def project(request, project_id):
         d = {
             "question": mq,
             "module": Module.objects.get(id=mq.spec["module-id"]),
+            "is_finished": is_finished,
             "tasks": tasks,
             "can_start_new_task": mq.spec["type"] == "module-set" or len(tasks) == 0,
             "discussions": task_discussions,
