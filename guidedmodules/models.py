@@ -54,6 +54,9 @@ class ModuleQuestion(models.Model):
         # For debugging.
         return "<ModuleQuestion [%d] %s.%s (%s)>" % (self.id, self.module.key, self.key, repr(self.module))
 
+    def get_answer_module(self):
+        return Module.objects.get(id=self.spec.get('module-id'))
+
 class Task(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
     editor = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that has primary responsibility for completing this Task.")

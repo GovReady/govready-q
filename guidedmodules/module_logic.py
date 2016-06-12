@@ -383,18 +383,14 @@ class ModuleAnswers:
                 self.answers[q.key] = v[0]
 
     def get_template_context(self, escapefunc = lambda x : x):
-        # Replace values with RenderedAnswer instances which take
-        # care of converting raw data values into what we want for
-        # rendering in templates.
+        # Replace the internal Pythonic/JSON-able values with
+        # RenderedAnswer instances which take care of converting
+        # raw data values into how they are rendered in templates
+        # (escaping, iteration, property accessors).
         ret = { }
         for qid, value in self.answers.items():
             q = self.module.questions.get(key=qid)
-            if q.spec["type"] == "module" and value is not None:
-                ret[qid] = value.get_template_context(escapefunc)
-            elif q.spec["type"] == "module-set" and value is not None:
-                ret[qid] = [v.get_template_context(escapefunc) for v in value]
-            else:
-                ret[qid] = RenderedAnswer(q, value, escapefunc)
+            ret[qid] = RenderedAnswer(q, value, escapefunc)
         return ret
 
     def render_output(self, additional_context, hard_fail=True):
@@ -449,17 +445,29 @@ class RenderedAnswer:
                 self.answer,
                 grouping=True)
         else:
+            # For all other question types, just call Python str().
             value = str(self.answer)
         return self.escapefunc(value)
 
     def __bool__(self):
         # How the template converts a question variable to
         # a boolean within an expression (i.e. within an if).
+        # true.
         if self.question_type == "yesno":
+            # yesno questions are true if they are answered as yes.
             return self.answer == "yes"
-        return bool(self.answer)
+        else:
+            # Other question types are true if they are answered.
+            # (It would be bad to use Python bool() because it might
+            # give unexpected results for e.g. integer/real zero.)
+            return self.answer is not None
 
     def __iter__(self):
+        if self.answer is None:
+            # If the question was skipped, return a generator that
+            # yields nothing --- there is nothing to iterate over.
+            return (None for _ in [])
+
         if self.question_type == "multiple-choice":
             # Iterate by creating a RenderedAnswer for each choice key
             # with a made-up Question instance.
@@ -471,4 +479,39 @@ class RenderedAnswer:
                     }),
                 ans, self.escapefunc)
                 for ans in self.answer)
+        
+        elif self.question_type == "module-set":
+            # Iterate over the sub-tasks' answers.
+            return (
+                v.get_template_context(self.escapefunc)
+                for v in self.answer)
+
         raise TypeError("Answer of type %s is not iterable." % self.question_type)
+
+    def __getattr__(self, item):
+        # For module-type questions, provide the answers of the
+        # sub-task as properties of this context variable.
+        if self.question_type == "module":
+            # If property is a valid question ID of the sub-module,
+            # then return *something*. Don't raise an exception,
+            # even if the question was skipped (self.answer is None)
+            # or the sub-question corresponding to the property was
+            # skipped (self.answer...[property] is None).
+
+            # Check if this is a valid queston ID.
+            q = self.question.get_answer_module().questions.filter(key=item).first()
+            if q:
+                # If the question was not skipped...
+                if self.answer is not None:
+                    # And the inner question has been answered...
+                    c = self.answer.get_template_context(self.escapefunc)
+                    if item in c:
+                        # Return that inner RenderedAnswer.
+                        return c[item]
+
+                # Return a RenderedAnswer representing the skipped question.
+                return RenderedAnswer(q, None, self.escapefunc)
+
+        # For other types of questions, or items that are not question
+        # IDs of the subtask, just do normal Python behavior.
+        return super().__getattr__(self, property)
