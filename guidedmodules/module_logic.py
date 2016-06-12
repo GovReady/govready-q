@@ -447,7 +447,17 @@ class RenderedAnswer:
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)
-        return self.escapefunc(value)
+
+        # Wrap the value in something that provides a __html__
+        # method to override Jinja2 escaping so we can use our
+        # own function.
+        class SafeString:
+            def __init__(self, value, escapefunc):
+                self.value = value
+                self.escapefunc = escapefunc
+            def __html__(self):
+                return self.escapefunc(value)
+        return SafeString(value, self.escapefunc)
 
     def __bool__(self):
         # How the template converts a question variable to

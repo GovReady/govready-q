@@ -47,11 +47,11 @@ output:
 
       Identity data collected:
 
-      {{identity_data_collection}}
+      {{identity_data_collection.text}}
 
       Authorizations:
 
-      {{authorization}}
+      {{authorization.text}}
 
-      Manager: {{manager.q1_name}}
+      Manager: {{manager.q1_name.text}}
       
