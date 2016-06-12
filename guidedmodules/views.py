@@ -16,7 +16,7 @@ def new_task(request):
     project = get_object_or_404(Project, id=request.POST["project"])
 
     # Can the user create a task within this project?
-    if request.user not in project.get_admins():
+    if not project.can_start_task(request.user):
         return HttpResponseForbidden()
 
     # Create the new subtask.

@@ -213,7 +213,7 @@ def project(request, project_id):
     return render(request, "project.html", {
         "is_admin": request.user in project.get_admins(),
         "is_member": is_project_member,
-        "can_begin_module": (request.user in project.get_admins()) and not project.is_account_project,
+        "can_begin_module": project.can_start_task(request.user),
         "project_has_members_besides_me": project and project.members.exclude(user=request.user),
         "project": project,
         "title": project.title,
