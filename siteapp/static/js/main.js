@@ -106,4 +106,5 @@ function cancel_invitation(elem, callback) {
      })
    }
   });
+  return false;
 }
