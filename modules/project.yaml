@@ -9,10 +9,10 @@ introduction:
     *Directions:* Please complete each module in the tabs below.
 
 questions:
-  - id: q_project_name_id_managers
-    title: Project Name, ID, and Managers
+  - id: q_project_details
+    title: Project Details
     type: module
-    module-id: demo1_project_name_id_managers
+    module-id: demo2_project_details
     tab: Basic Info
     group: About the Project
 

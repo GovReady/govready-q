@@ -11,26 +11,32 @@ questions:
     type: text
     help: e.g., www.yoursite.gov
 
-  - id: projct_has_identifier
+  - id: project_has_identifier
     title: Project Has Identifier?
     prompt: Does your organization have an identifier for {{project_title}}?
     type: yesno
     help: Choose no if you don't know.
 
-  - id: projct_identifier
+  - id: project_identifier
     title: Project Identifier
     prompt: What is the project identifier for {{project_title}} assigned by your organization?
     type: yesno
     impute:
-      - condition: projct_has_identifier == 'no'
+      - condition: project_has_identifier == 'no'
         value: ~
+
+  - id: project_manager
+    title: Project Manger
+    prompt: Who is the Project Manager for {{project_title}}?
+    type: module
+    module-id: point_of_contact
 
   - id: project_technology_manager
     title: Technology Manger
-    prompt: Who is the technology manager for {{project_title}}?
+    prompt: Who is the Technology Manager for {{project_title}}?
     type: module
     module-id: point_of_contact
-      
+
   - id: project_iss_manager
     title: Information System Security Manager
     prompt: Who is the information system security manager for {{project_title}}?
@@ -38,14 +44,14 @@ questions:
     module-id: point_of_contact
 
 output:
-  - title: Document
+  - title: Project Names
     format: markdown
     template: |
       Here's what you've told us so far:
 
       Project Title: {{project_title}}
 
-      Project Identifier: {{projct_identifier}}
+      Project Identifier: {{project_identifier}}
 
       {% if project_technology_manager %}
       Technology Manager: {{project_technology_manager.q1_name}}
