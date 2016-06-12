@@ -4,7 +4,7 @@ def get_jinja2_template_vars(template):
     env = SandboxedEnvironment()
     return set(meta.find_undeclared_variables(env.parse(template)))
 
-def next_question(questions_answered):
+def next_question(questions_answered, required=False):
     # Compute the next question to ask the user, given the user's
     # answers to questions so far.
     #
@@ -33,8 +33,18 @@ def next_question(questions_answered):
         # Is q answered yet? Yes if the user has provided
         # an answer, or if one of its impute conditions is
         # met.
-        return q.key in questions_answered.answers \
-          or impute_answer(q, questions_answered)
+        if impute_answer(q, questions_answered):
+            # Do this first because it has precedence over
+            # the required question check.
+            return True
+        if q.key in questions_answered.answers:
+            # If q is a required question and the required
+            # argument is true, then require that it not
+            # be skipped.
+            if q.spec.get("required") and required and questions_answered.answers[q.key] is None:
+                return False
+            return True
+        return False
 
     while len(needs_answer) > 0:
         # Get the next question to look at.

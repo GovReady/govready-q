@@ -27,15 +27,19 @@ questions:
     type: text
     ask-first:
       - whats_a_component
+    required: true
 
   - id: requirement
     title: Functional Requirements
     prompt: What functional requirements does {{name}} fulfill?
     type: text
+    required: true
+
   - id: description
     title: Description
     prompt: Describe {{name}}.
     type: text
+
 output:
   - title: Your Answer
     format: markdown

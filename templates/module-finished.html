@@ -30,7 +30,11 @@
 <div style="margin: 2em 0">
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule and supermodule.task.editor == request.user %}
-      <p class="text-">...and we're done <span class="glyphicon glyphicon-ok"></p>
+      {% if task.is_finished %}
+        <p class="text-">...and we're done <span class="glyphicon glyphicon-ok"></span></p>
+      {% else %}
+        <p class="text-">You skipped some required questions.</p>
+      {% endif %}
 
     {% else %}
       {# every task, except projects, are now subtasks of other tasks, so this only occurs if a task is a subtask to multiple super-tasks #}
@@ -58,8 +62,15 @@
 
     <div role="tabpanel" class="tab-pane" id="questions">
         <p>Click on any question to change your answer.</p>
-        {% for q in all_questions %}
-            <p><a href="?q={{q.key}}">{{q.spec.title}}</a></p>
+        {% for rec in all_questions %}
+            <p>
+              {% if not rec.skipped %}
+                <span class="glyphicon glyphicon-ok"> </span>
+              {% else %}
+                <span class="glyphicon glyphicon-remove"> </span>
+              {% endif %}
+              <a href="?q={{rec.question.key}}">{{rec.question.spec.title}}</a>
+            </p>
         {% endfor %}        
     </div>
   </div>

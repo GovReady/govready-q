@@ -126,8 +126,11 @@ class Task(models.Model):
         return self.answers.exists()
 
     def is_finished(self):
+        # Check that all questions that need an answer have
+        # an answer, and that no required questions have been
+        # skipped.
         from .module_logic import next_question
-        return next_question(self.get_answers()) == None
+        return next_question(self.get_answers(), required=True) == None
 
     def get_status_display(self):
         # Is this task done?

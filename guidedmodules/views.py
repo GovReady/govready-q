@@ -206,7 +206,12 @@ def next_question(request, taskid, taskslug):
         # There is no next question - the module is complete.
         context.update({
             "output": task.render_output_documents(answered),
-            "all_questions": [q for q in task.module.questions.all().order_by('definition_order')
+            "all_questions": [
+                {
+                    "question": q,
+                    "skipped": q.spec.get("required") and (answered.answers.get(q.key) is None),
+                }
+                for q in task.module.questions.all().order_by('definition_order')
                 if module_logic.impute_answer(q, answered) is None ],
         })
         return render(request, "module-finished.html", context)
