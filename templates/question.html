@@ -8,7 +8,7 @@ Next Question: {{q.spec.title}}
 {% block body %}
 
 <style>
-#question form {
+#question {
   margin: 2em 0;
 }
   #question form.disabled label {
@@ -32,7 +32,23 @@ Next Question: {{q.spec.title}}
   <div class="col-sm-push-2 col-sm-8">
     {% include "task-header.html" with col_width="4" col_active="questions" %}
 
-    <div id="question" style="margin: 2em 0">
+    {% if source_invitation %}
+      <div style="margin-top: 1.5em">
+        <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
+          <a href="#" onclick="$('#source-invitation').fadeIn(); $('#source-invitation-show').hide(); return false;" style="color: #448; font-size: 85%">
+            Show Invitation from {{source_invitation.from_user}}
+          </a>
+        </div>
+        
+        <div id="source-invitation" class="alert alert-warning alert-dismissible" {% if task.is_started %}style="display: none"{% endif %} role="alert">
+          <button type="button" class="close" aria-label="Close" onclick="$('#source-invitation').hide(); $('#source-invitation-show').show();"><span aria-hidden="true">&times;</span></button>
+          <strong>Invitation from {{source_invitation.from_user}}:</strong>
+          {{source_invitation.text}}
+        </div>
+      </div>
+    {% endif %}
+
+    <div id="question">
         <form {% if not write_priv %}class="disabled"{% endif %}>
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="save">

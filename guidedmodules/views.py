@@ -200,6 +200,7 @@ def next_question(request, taskid, taskslug):
         "write_priv": task.has_write_priv(request.user),
         "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project)),
         "open_invitations": task.get_open_invitations(request.user),
+        "source_invitation": task.invitation_history.filter(accepted_user=request.user).order_by('-created').first(),
     }
 
     if not q:
