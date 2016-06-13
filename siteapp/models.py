@@ -63,6 +63,16 @@ class User(AbstractUser):
             "name": str(self),
         }
 
+from django.contrib.auth.backends import ModelBackend
+class DirectLoginBackend(ModelBackend):
+    # Register in settings.py!
+    # Django can't log a user in without their password. In views::accept_invitation
+    # we log a user in when they demonstrate ownership of an email address.
+    supports_object_permissions = False
+    supports_anonymous_user = False
+    def authenticate(self, user_object=None):
+        return user_object
+
 class Project(models.Model):
     title = models.CharField(max_length=256, help_text="The title of this Project.")
 
