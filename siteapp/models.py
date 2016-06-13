@@ -238,12 +238,14 @@ class Invitation(models.Model):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(24))
 
     @staticmethod
-    def form_context_dict(user, project):
+    def form_context_dict(user, project, exclude_users):
         from guidedmodules.models import ProjectMembership
         return {
             "project_id": project.id,
             "project_title": project.title,
-            "users": [{ "id": pm.user.id, "name": str(pm.user) } for pm in ProjectMembership.objects.filter(project=project).exclude(user=user)],
+            "users": [{ "id": pm.user.id, "name": str(pm.user) }
+                for pm in ProjectMembership.objects.filter(project=project)\
+                    .exclude(user__in=exclude_users)],
             "can_add_invitee_to_team": project.can_invite_others(user),
         }
 

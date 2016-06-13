@@ -220,7 +220,7 @@ def project(request, project_id):
         "intro" : project.root_task.render_introduction() if project.root_task.module.spec.get("introduction") else "",
         "additional_tabs": additional_tabs,
         "open_invitations": other_open_invitations,
-        "send_invitation": Invitation.form_context_dict(request.user, project),
+        "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
         "tabs": list(tabs.values()),
     })
@@ -257,7 +257,7 @@ def send_invitation(request):
         if not from_project:
             into_project = False
         else:
-            inv_ctx = Invitation.form_context_dict(request.user, from_project)
+            inv_ctx = Invitation.form_context_dict(request.user, from_project, [])
             into_project = (request.POST.get("add_to_team", "") != "") and inv_ctx["can_add_invitee_to_team"]
 
         # Target.
@@ -270,8 +270,8 @@ def send_invitation(request):
 
         elif request.POST.get("into_task_editorship"):
             target = Task.objects.get(id=request.POST["into_task_editorship"])
-            if target.editor != request.user:
-                raise HttpResponseForbidden()
+            if not target.has_write_priv(request.user):
+                return HttpResponseForbidden()
             if from_project and target.project != from_project:
                 return HttpResponseForbidden()
 
