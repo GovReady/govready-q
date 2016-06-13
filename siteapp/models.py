@@ -93,7 +93,7 @@ class Project(models.Model):
         return User.objects.filter(projectmembership__project=self)
 
     def get_admins(self):
-        return self.get_members().filter(projectmembership__is_admin=True)
+        return User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
 
     def can_start_task(self, user):
         return (not self.is_account_project) and (user in self.get_members())
