@@ -423,7 +423,7 @@ def accept_invitation(request, code=None):
 
         # Add user to a project team.
         if inv.into_project:
-            ProjectMembership.objects.create(
+            ProjectMembership.objects.get_or_create( # is unique, so test first
                 project=inv.from_project,
                 user=request.user,
                 )
