@@ -37,6 +37,12 @@ class Command(BaseCommand):
             print("There were some errors updating modules.")
             sys.exit(1)
 
+        # Mark any still-visible modules that are no longer on disk as not visible.
+        obsoleted_modules = Module.objects.filter(visible=True).exclude(key__in=processed_modules)
+        if len(obsoleted_modules) > 0:
+            print("Marking modules as obsoleted: ", obsoleted_modules)
+            obsoleted_modules.update(visible=False)
+
     @transaction.atomic # there can be an error mid-way through updating a Module
     def process_module(self, module_id, processed_modules, path):
         # Prevent cyclic dependencies between modules.
@@ -101,6 +107,7 @@ class Command(BaseCommand):
                 # previous Module as superseded so that it is no longer used
                 # on new Tasks.
                 m1 = self.create_module(spec)
+                m.visible = False
                 m.superseded_by = m1
                 m.save()
 

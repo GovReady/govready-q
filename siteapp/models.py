@@ -42,7 +42,7 @@ class User(AbstractUser):
             is_admin=True)
 
         # Construct the root task.
-        m = Module.objects.get(key="account_settings_project", superseded_by=None)
+        m = Module.objects.get(key="account_settings_project", visible=True)
         task = Task.objects.create(
             project=p,
             editor=self,

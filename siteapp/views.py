@@ -79,7 +79,7 @@ def new_project(request):
                 project = form.save()
 
                 # set root task
-                m = Module.objects.get(key="project", superseded_by=None)
+                m = Module.objects.get(key="project", visible=True)
                 task = Task.objects.create(
                     project=project,
                     editor=request.user,
