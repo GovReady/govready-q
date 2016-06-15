@@ -15,8 +15,11 @@ The `module_id` must match the file name that the YAML is saved into, without th
 
 Several optional fields can be specified:
 
+	type: project
 	version: 1
 	instance-name: "Module for {{q1}}"
+
+The `type` field is set to `project` just when the Module is to be offered to users when they start a new Project.
 
 The `version` field is used only to force changes in the specification to be considered incompatible with any existing user answers (see Updating Modules).
 

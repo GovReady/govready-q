@@ -59,8 +59,16 @@ def aboutpage(request):
 
 @login_required
 def new_project(request):
-    from django.forms import ModelForm
+    from django.forms import ModelForm, ChoiceField, RadioSelect
 
+    # Get the list of project modules.
+    project_modules = sorted(set(
+        (m.id, m.title)
+        for m in Module.objects.filter(visible=True)
+        if m.spec.get("type") == "project"),
+        key = lambda m : m[1])
+
+    # The form.
     class NewProjectForm(ModelForm):
         class Meta:
             model = Project
@@ -68,6 +76,7 @@ def new_project(request):
             help_texts = {
                 'title': 'Give your project a descriptive name.',
             }
+        module_id = ChoiceField(choices=project_modules, label="Why are you creating this project?", widget=RadioSelect)
 
     form = NewProjectForm()
     if request.method == "POST":
@@ -78,8 +87,15 @@ def new_project(request):
                 # create object
                 project = form.save()
 
-                # set root task
-                m = Module.objects.get(key="project", visible=True)
+                # get root task module
+                try:
+                    m = Module.objects.get(id=form.cleaned_data["module_id"], visible=True)
+                except Module.DoesNotExist:
+                    return HttpResponseForbidden("invalid module id")
+                if m.spec.get("type") != "project":
+                    return HttpResponseForbidden("invalid module")
+
+                # create root task and set it as the project root task
                 task = Task.objects.create(
                     project=project,
                     editor=request.user,
