@@ -1,0 +1,7 @@
+id: demo2_project
+title: I need to inventory all of the systems I manage.
+type: project
+introduction:
+  format: markdown
+  template: |
+    This project will help you inventory all of the systems you manage.
