@@ -89,7 +89,9 @@
     </div>
     <div class="comment-input active-discussion-only" style="display: none">
       <form onsubmit="submit_comment(); return false;">
-        <label for="discussion-your-comment">Help answer this question:</label>
+        <label id="discussion-your-comment-label" for="discussion-your-comment">
+          ...
+        </label>
         <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder="Enter your message here."></textarea>
         <div style="margin-top: 1em; text-align: right">
           {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
@@ -97,6 +99,10 @@
         </div>
       </form>
     </div>
+
+    <p id="discussion-you-are-alone" style="display: none" class="text-danger">
+      You are the only person in this conversation so far. <a href="javascript:invite_user_to_discussion()" class="btn btn-link btn-default">Invite a colleague</a> to join you.
+    </p>
 
     <p class="small active-discussion-only" style="display: none">
       Who can see this conversation? <span class="fillin-project_name"></span> members<span class="fillin-guests"></span>.
@@ -220,6 +226,8 @@ function init_discussion_html() {
 };
 
 var discussion_info = { max_event_time: 0 };
+var discussion_has_any_comment = false;
+var discussion_has_any_comment_from_someone_else = false;
 
 function display_discussion(discussion, is_page_load) {
   // first time initialization
@@ -234,7 +242,9 @@ function display_discussion(discussion, is_page_load) {
   // show the discussion
   $('#discussion').show();
   $('#discussion .active-discussion-only').show();
-  $('#discussion #invite-guest').toggle(discussion.discussion.can_invite);
+  $('#discussion-your-comment-label').text("Start the team conversation with a question or comment:")
+  $('#discussion #invite-guest').toggle(discussion_info.can_invite);
+  if (!is_page_load) $('#discussion-your-comment').focus();
 
   // fill in the context block on the right side
   $('#discussion .fillin-project_name').text(discussion_info.project.title);
@@ -361,6 +371,15 @@ function render_comment(item) {
   // The rest is only if we're seeing a new comment.
   if (!isnew)
     return;
+
+  // Update state - if any comments are present, change label.
+  $('#discussion-your-comment-label').text("Add your comment:")
+  discussion_has_any_comment = true;
+  if (item.user.id != {{request.user.id}})
+    discussion_has_any_comment_from_someone_else = true;
+  var show_youre_alone = discussion_has_any_comment && !discussion_has_any_comment_from_someone_else;
+  $('#discussion-you-are-alone').toggle(show_youre_alone && discussion_info.can_invite);
+  $('#discussion #invite-guest').toggle(!show_youre_alone && discussion_info.can_invite);
 
   // Event handlers.
   n.find('textarea').keydown(textarea_ctrlenter_handler);
