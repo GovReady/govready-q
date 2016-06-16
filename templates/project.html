@@ -8,53 +8,38 @@
 {% block head %}
 <style>
 .tab-pane {
-  /*padding: 1.5em 0;*/
-/*  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;*/
-  /*padding: 10px 15px;*/
-  padding: 4px 0px 0px 0px;
-  /*background-color: #FBF6F4;*/
-  /*background-color: rgb(250,250,250);*/
-  min-height: 600px;
-  border-radius: 3px;
+  padding-top: 1.5em;
 }
 
-.nav-tabs>li.active>a, .nav-tabs>li.active>a:hover {
-  /*background-color: #FBF6F4;*/
-  /*background-color: rgb(250,250,250);*/
+/* TODO: Move into side-wide stylesheet. The !important is here
+   because something on hover is canceling out the border. */
+.nav-tabs>li.active>a {
   font-weight: bold;
-  border-top: 3px solid rgb(19,144,50);
+  border-top: 3px solid rgb(19,144,50) !important;
 }
 
 .task-group {
-  margin-bottom: 2em;
-  /*border: 1px solid #ABA;*/
+  margin: 1.5em 0;
+  padding: 1em;
   border: 1px solid rgb(200,200,200);
   border-radius: 4px;
   background-color: #FFF;
 }
 
 .task-group-title {
+  margin: -1em -1em 0 -1em;
   font-weight:bold;
   background-color:rgb(230,230,230);
   border-bottom:1px solid rgb(200,200,200);
-  padding:8px;
+  padding: 8px 18px;
 }
 
 .task {
   border: 1px solid rgb(200,200,200);
   border-radius: 4px;
-  /*background-color: #F3FAF3;*/
   background-color: rgb(240,240,240);
-  /*background-color: #FDFBF9;*/
-  padding: .5em .7em;
-  /*width: 170px;*/
-  height: 70px;
-  max-height: 140px;
-  position: relative;
-  overflow: scroll;
-  margin: 12px 12px 0px 0px;
+  padding: 1em;
+  margin-top: 1em;
   text-align:center;
 }
 .task:hover {
@@ -62,19 +47,21 @@
 }
 
   .task .task-title {
-    /*margin-bottom: 1em;*/
+    margin-bottom: .25em;
     text-align: center;
-  }
-  .task-title {
     font-weight: bold;
     color: #666;
   }
-  .task .task-commands button {
-    padding-left: 0;
+  .task .task-commands a {
+    display: inline-block;
+    padding: 0 .25em;
   }
   .task .invitation {
     font-size: 14px;
     line-height: 128%;
+  }
+  .task .task-item {
+    margin: .5em 0;
   }
 
 .task.deleted span {
@@ -157,7 +144,7 @@
             <div class="task-group">
               <div class="task-group-title">{{group.title}}</div>
 
-              <div class="row" style="padding:12px;">
+              <div class="row">
               {% for rec in group.modules %}
                 {% if forloop.counter0|divisibleby:4 %}
                   <div class="clearfix visible-sm-block"></div>
@@ -172,10 +159,10 @@
                     {{rec.question.spec.title}}
 
                   </div>
-                  <div class="task-commands">
+                  <div>
                     {% if is_member %}
                       {% for t in rec.tasks %}
-                        <div>
+                        <div class="task-item">
                             {% if rec.question.spec.type == "module-set" %}
                               {{t.render_title}} &mdash;
                             {% endif %}
@@ -196,19 +183,21 @@
                       {% endfor %}
 
                       {% if can_begin_module and rec.can_start_new_task %}
+                      <div class="task-commands">
                         <form method="post" action="/tasks/start" style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="project" value="{{project.id}}"/>
                           <input type="hidden" name="question" value="{{rec.question.key}}"/>
-                          <button type="submit" class="btn btn-link">
+                          <a href="#" onclick="$(this).parent('form').submit(); return false;">
                             {% if rec.tasks|length == 0 %}
                               <span class="glyphicon glyphicon-unchecked"></span> Start
                             {% else %}
                               <span class="glyphicon glyphicon-unchecked"></span> Start
                             {% endif %}
-                          </button>
+                          </a>
                         </form>
-                        <button class="btn btn-link" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign</button>
+                        <a href="#" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign</a>
+                      </div> <!-- /task-commands -->
                       {% endif %}
                     {% endif %}
 
@@ -229,7 +218,7 @@
                         {% endfor %}
                       </div>
                       {% endif %}
-                  </div> <!-- /task-commands -->
+                  </div>
                 </div> <!-- /task -->
                 </div> <!-- /col -->
               {% endfor %}
