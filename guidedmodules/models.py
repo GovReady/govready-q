@@ -86,6 +86,25 @@ class Task(models.Model):
         # For debugging.
         return "<Task [%d] %s %s>" % (self.id, self.title[0:30], repr(self.project))
 
+    @staticmethod
+    @transaction.atomic
+    def create(parent_task_answer=None, **kwargs):
+        # Creates a Task and also creates the required task-create
+        # instrumentation event.
+        task = Task.objects.create(**kwargs)
+
+        # Add instrumentation event.
+        InstrumentationEvent.objects.create(
+            user=kwargs["editor"],
+            event_type="task-create",
+            module=task.module,
+            project=task.project,
+            task=task,
+            answer=parent_task_answer, # the TaskAnswer that the new Task is an answer to
+        )
+
+        return task
+
     def get_absolute_url(self):
         from django.utils.text import slugify
         return "/tasks/%d/%s" % (self.id, slugify(self.title))
@@ -259,7 +278,7 @@ class Task(models.Model):
         
         # Get or create a TaskAnswerHistory for that TaskAnswer. For
         # "module"-type questions that have a sub-Task already, just
-        # return it.
+        # return the existing sub-Task.
         ansh = ans.get_current_answer()
         if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count():
             # We'll re-use the subtask.
@@ -269,7 +288,8 @@ class Task(models.Model):
             # There is no Task yet (for "module"-type questions) or
             # we're creating and appending a new task. Create the Task.
             m = Module.objects.get(id=q.spec["module-id"])
-            task = Task.objects.create(
+            task = Task.create(
+                parent_task_answer=ans, # for instrumentation only, doesn't go into Task instance
                 project=self.project,
                 editor=user,
                 module=m,
@@ -414,3 +434,24 @@ class TaskAnswerHistory(models.Model):
             return "[answer cleared]"
         return repr(self.value or self.answered_by_task.all())
 
+class InstrumentationEvent(models.Model):
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+
+    event_time = models.DateTimeField(auto_now_add=True, db_index=True)
+    event_type = models.CharField(max_length=32)
+    event_value = models.FloatField(null=True)
+
+    module = models.ForeignKey(Module, blank=True, null=True, on_delete=models.SET_NULL)
+    question = models.ForeignKey(ModuleQuestion, blank=True, null=True, on_delete=models.SET_NULL)
+    project = models.ForeignKey(Project, blank=True, null=True, on_delete=models.SET_NULL)
+    task = models.ForeignKey(Task, blank=True, null=True, on_delete=models.SET_NULL)
+    answer = models.ForeignKey(TaskAnswer, blank=True, null=True, on_delete=models.SET_NULL)
+
+    extra = JSONField(help_text="Additional un-indexed data.")
+
+    class Meta:
+        index_together = [
+            ('event_type', 'event_time'),
+            ('project', 'event_type', 'event_time'),
+            ('module', 'event_type', 'event_time'),
+        ]

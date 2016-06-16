@@ -302,10 +302,12 @@ Next Question: {{q.spec.title}}
 {% block scripts %}
 <script>
 $(function() {
+    var form = $("#question > form");
+
     {% if write_priv %}
       $('#inputctrl').focus();
     {% else %}
-      $('#question form input').prop('disabled', true);
+      form.find('input').prop('disabled', true);
     {% endif %}
 
     {% if discussion %}
@@ -322,16 +324,20 @@ $(function() {
             return "You must enter something."
         return undefined;
     }
-    function on_input_changed() {
+    function update_save_skip_clear_state() {
       // The save/skip/clear buttons are valid depending on whether
       // something has been answered (box contains something other than whitespace).
       var is_answered = /\S/.test($('#inputctrl').val());
       $('#save-button').prop('disabled', !is_answered);
       $('#skip-button, #clear-button').prop('disabled', is_answered);
     }
+    function on_input_changed() {
+      update_save_skip_clear_state();
+      record_interaction();
+    }
     $('#inputctrl').change(on_input_changed);
     $('#inputctrl').on('keyup', on_input_changed);
-    on_input_changed(); // run handler initally to set disabled states
+    update_save_skip_clear_state(); // run handler initally to set disabled states
 
     {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
     function validate_answer() {
@@ -340,12 +346,13 @@ $(function() {
             return "You must make a selection."
         return undefined;
     }
+    form.find('input').click(record_interaction);
 
     {% elif q.spec.type == "multiple-choice" %}
     function validate_answer() {
         // Collect the checked values.
         var vals = [];
-        $('#question input[type="checkbox"]:checked').each(function() {
+        form.find('input[type="checkbox"]:checked').each(function() {
             vals.push($(this).val());
         });
         if (vals.length < {{q.spec.min}})
@@ -356,6 +363,7 @@ $(function() {
         {% endif %}
         return undefined;
     }
+    form.find('input').click(record_interaction);
 
     {% else %}
 
@@ -363,7 +371,6 @@ $(function() {
     
     {% endif %}
 
-    var form = $("#question > form");
     form.on("submit", function() {
         var form = $('#question form');
 
@@ -419,6 +426,21 @@ function show_static_history(history) {
   history.forEach(function(item) {
       render_event(item)
     });
+}
+
+var sent_first_interaction = false;
+function record_interaction() {
+  if (sent_first_interaction)
+    return;
+  $.ajax({
+    url: "{% url 'task_instrumentation_record_interaction' %}",
+    method: "POST",
+    data: {
+      task: {{task.id}},
+      question: {{q.id}}
+    }
+  })
+  sent_first_interaction = true;
 }
 </script>
 {% endblock %}

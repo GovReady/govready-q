@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Task, TaskAnswer, TaskAnswerHistory
+from .models import Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 
 class TaskAdmin(admin.ModelAdmin):
 	list_display = ('title', 'project', 'editor', 'module', 'is_finished', 'submodule_of', 'created')
@@ -27,6 +27,12 @@ class TaskAnswerHistoryAdmin(admin.ModelAdmin):
 	             (None, { "fields": ('extra',) }) ]
 	def answer(self, obj): return obj.get_answer_display()
 
+class InstrumentationEventAdmin(admin.ModelAdmin):
+	list_display = ('event_time', 'event_type', 'user', 'event_value', 'task')
+	raw_id_fields = ('user', 'module', 'question', 'task', 'answer')
+	readonly_fields = ('event_time', 'event_type', 'event_value', 'user', 'module', 'question', 'task', 'answer')
+
 admin.site.register(Task, TaskAdmin)
 admin.site.register(TaskAnswer, TaskAnswerAdmin)
 admin.site.register(TaskAnswerHistory, TaskAnswerHistoryAdmin)
+admin.site.register(InstrumentationEvent, InstrumentationEventAdmin)

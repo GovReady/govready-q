@@ -5,7 +5,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 
-from .models import Module, Task, TaskAnswer, TaskAnswerHistory
+from .models import Module, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 import guidedmodules.module_logic as module_logic
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
@@ -47,10 +47,14 @@ def next_question(request, taskid, taskslug):
             # clear means that the question returns to an unanswered state
             value = None
             cleared = True
+            instrumentation_event_type = "clear"
+        
         elif request.POST.get("method") == "skip":
             # skipped means the question is answered with a null value
             value = None
             cleared = False
+            instrumentation_event_type = "skip"
+        
         elif request.POST.get("method") == "save":
             # parse
             if q.spec["type"] == "multiple-choice":
@@ -68,11 +72,13 @@ def next_question(request, taskid, taskslug):
                 return JsonResponse({ "status": "error", "message": str(e) })
 
             cleared = False
+            instrumentation_event_type = "answer"
+
         else:
             raise ValueError("invalid 'method' parameter %s" + request.POST.get("method", "<not set>"))
 
         # save answer - get the TaskAnswer instance first
-        question, isnew = TaskAnswer.objects.get_or_create(
+        question, _ = TaskAnswer.objects.get_or_create(
             task=task,
             question=q,
         )
@@ -88,7 +94,8 @@ def next_question(request, taskid, taskslug):
 
             if value == "__new":
                 # Create a new task, and we'll redirect to it immediately.
-                t = Task.objects.create(
+                t = Task.create(
+                    parent_task_answer=question, # for instrumentation only, doesn't go into Task instance
                     editor=request.user,
                     project=task.project,
                     module=m1,
@@ -139,6 +146,41 @@ def next_question(request, taskid, taskslug):
             # kick the Task and TaskAnswer's updated field
             task.save(update_fields=[])
             question.save(update_fields=[])
+
+            # Use a different event_type string for a change of answer 
+            if instrumentation_event_type == "answer" and current_answer is not None:
+                instrumentation_event_type = "change"
+
+        else:
+            # user re-submitted the same answer that already is given,
+            # so do nothing
+            instrumentation_event_type = "keep"
+
+
+        # Add instrumentation event.
+        # --------------------------
+        # How long was it since the question was initially viewed? That gives us
+        # how long it took to answer the question.
+        i_task_question_view = InstrumentationEvent.objects\
+            .filter(user=request.user, event_type="task-question-show", task=task, question=q)\
+            .order_by('event_time')\
+            .first()
+        i_event_value = (timezone.now() - i_task_question_view.event_time).total_seconds() \
+            if i_task_question_view else None
+        # Save.
+        InstrumentationEvent.objects.create(
+            user=request.user,
+            event_type="task-question-" + instrumentation_event_type,
+            event_value=i_event_value,
+            module=task.module,
+            question=q,
+            project=task.project,
+            task=task,
+            answer=question,
+            extra={
+                "answer_value": value,
+            }
+        )
 
         # return to a GET request
         return JsonResponse({ "status": "ok", "redirect": redirect_to })
@@ -205,6 +247,29 @@ def next_question(request, taskid, taskslug):
 
     if not q:
         # There is no next question - the module is complete.
+
+        # Add instrumentation event.
+        # Has the user been here before?
+        i_task_done = InstrumentationEvent.objects\
+            .filter(user=request.user, event_type="task-done", task=task)\
+            .exists()
+        # How long since the task was created?
+        i_task_create = InstrumentationEvent.objects\
+            .filter(user=request.user, event_type="task-create", task=task)\
+            .first()
+        i_event_value = (timezone.now() - i_task_create.event_time).total_seconds() \
+            if i_task_create else None
+        # Save.
+        InstrumentationEvent.objects.create(
+            user=request.user,
+            event_type="task-done" if not i_task_done else "task-review",
+            event_value=i_event_value,
+            module=task.module,
+            project=task.project,
+            task=task,
+        )
+
+        # Construct the page.
         context.update({
             "output": task.render_output_documents(answered),
             "all_questions": [
@@ -218,6 +283,9 @@ def next_question(request, taskid, taskslug):
         return render(request, "module-finished.html", context)
 
     else:
+        # A question is going to be shown to the user.
+
+        # Is there an answer already?
         answer = None
         if taskq:
             answer = taskq.get_current_answer()
@@ -234,6 +302,25 @@ def next_question(request, taskid, taskslug):
         for t in answer_tasks:
             t.can_write = t.has_write_priv(request.user)
 
+        # Add instrumentation event.
+        # How many times has this question been shown?
+        i_prev_view = InstrumentationEvent.objects\
+            .filter(user=request.user, event_type="task-question-show", task=task, question=q)\
+            .order_by('-event_time')\
+            .first()
+        # Save.
+        InstrumentationEvent.objects.create(
+            user=request.user,
+            event_type="task-question-show",
+            event_value=(i_prev_view.event_value+1) if i_prev_view else 1,
+            module=task.module,
+            question=q,
+            project=task.project,
+            task=task,
+            answer=taskq,
+        )
+
+        # Construct the page.
         context.update({
             "DEBUG": settings.DEBUG,
             "q": q,
@@ -247,6 +334,58 @@ def next_question(request, taskid, taskslug):
             "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
         })
         return render(request, "question.html", context)
+
+@login_required
+def instrumentation_record_interaction(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    # Get event variables.
+    
+    task = get_object_or_404(Task, id=request.POST["task"])
+    if not task.has_read_priv(request.user):
+        return HttpResponseForbidden()
+
+    from django.core.exceptions import ObjectDoesNotExist
+    try:
+        question = task.module.questions.get(id=request.POST.get("question"))
+    except ObjectDoesNotExist:
+        return HttpResponseForbidden()
+
+    answer = TaskAnswer.objects.filter(task=task, question=question).first()
+
+    # We're recording the *first* interaction, so we'll
+    # stop if an interaction has already been recorded.
+
+    if InstrumentationEvent.objects.filter(
+        user=request.user, event_type="task-question-interact-first",
+        task=task, question=question).exists():
+        return HttpResponse("ok")
+
+    # When was the question first viewed? We'll use that
+    # to compute the time to first interaction.
+
+    i_task_question_view = InstrumentationEvent.objects\
+        .filter(user=request.user, event_type="task-question-show", task=task, question=question)\
+        .order_by('event_time')\
+        .first()
+    event_value = (timezone.now() - i_task_question_view.event_time).total_seconds() \
+        if i_task_question_view else None
+
+    # Save.
+
+    InstrumentationEvent.objects.create(
+        user=request.user,
+        event_type="task-question-interact-first",
+        event_value=event_value,
+        module=task.module,
+        question=question,
+        project=task.project,
+        task=task,
+        answer=answer,
+    )
+
+    return HttpResponse("ok")
 
 @login_required
 def change_task_state(request):
