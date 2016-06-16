@@ -6,19 +6,9 @@
 
 {% block body %}
 <style>
-#finished-tabs-panels .tab-pane {
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-  padding: 30px 15px;
-}
-
 .output-document {
   background-color: #FBF6F4;
   color: black;
-}
-#finished-tabs .active.for-output-document a {
-  background-color: #FBF6F4;
 }
 </style>
 
@@ -44,23 +34,38 @@
 
 </div>
 
-<div>
-  <ul id="finished-tabs" class="nav nav-tabs" role="tablist">
-    {% for document in output %}
-      <li role="presentation" class="{% if forloop.first %}active{% endif %} for-output-document"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.title}}</a></li>
-    {% endfor %}
-    <li role="presentation"><a href="#questions" aria-controls="questions" role="tab" data-toggle="tab">Change Answers</a></li>
-  </ul>
+<div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
+  {# output documents #}
 
-  <!-- Tab panes -->
-  <div id="finished-tabs-panels" class="tab-content">
-    {% for document in output %}
-      <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %} output-document" id="document-{{forloop.counter}}">
-          {{document.html|safe}}
+  {% for document in output %}
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="document-{{forloop.counter}}-title">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{forloop.counter}}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{forloop.counter}}-body">
+            {{document.title}}
+          </a>
+        </h4>
       </div>
-    {% endfor %}
+      <div id="document-{{forloop.counter}}-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %}" role="tabpanel" aria-labelledby="document-{{forloop.counter}}-title">
+        <div class="panel-body output-document">
+          {{document.html|safe}}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
 
-    <div role="tabpanel" class="tab-pane" id="questions">
+  {# change answers #}
+
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="changeanswers-title">
+      <h4 class="panel-title">
+        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#changeanswers-body" aria-expanded="false" aria-controls="changeanswers-body">
+          Change Answers
+        </a>
+      </h4>
+    </div>
+    <div id="changeanswers-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="changeanswers-title">
+      <div class="panel-body">
         <p>Click on any question to change your answer.</p>
         {% for rec in all_questions %}
             <p>
@@ -72,9 +77,9 @@
               <a href="?q={{rec.question.key}}">{{rec.question.spec.title}}</a>
             </p>
         {% endfor %}        
+      </div>
     </div>
   </div>
-
 </div>
 
 <div style="margin: 2em 0">
