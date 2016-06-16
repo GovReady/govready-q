@@ -14,20 +14,16 @@ questions:
     max: 1
     choices:
       - key: web site
-        text: web site
-      - key: web app
-        text: web application
-      - key: web app large
-        text: very large web site
-      - key: native app
-        text: Native application
+        text: Web site / application
+        help: software used via a browser
+      - key: installed-software
+        text: Installed software
         help: Software you download and install locally
       - key: SaaS
-        text: Platform as a Service or Software as a Service
-      - key: IaaS
-        text: Intrastructure as a Service
-      - key: security app
-        text: security software
+        text: Software as a Service
+        help: Online software that feels like a native application
+      - key: IaaS or PaaS
+        text: Intrastructure as a Service, Platform as a Service
       - key: other
         text: Other
         help: (Anything not listed above)

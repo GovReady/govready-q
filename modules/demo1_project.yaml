@@ -7,7 +7,7 @@ long_description: >
 introduction:
   format: markdown
   template: |
-    *Directions:* Please complete each module in the tabs below.
+    Complete each module in below sections.
 
 questions:
   - id: q_project_details
@@ -70,14 +70,20 @@ output:
   - tab: Basic Info
     format: markdown
     template: |
+      # Basic Info
+
       General information about {{project}}.
 
   - tab: Description of Users
     format: markdown
     template: |
+      # Description of Users
+
       Details about the users of {{project}} and access control.
 
   - tab: System Architecture
     format: markdown
     template: |
+      # System Architecture
+
       Information about the technical design of {{project}}.

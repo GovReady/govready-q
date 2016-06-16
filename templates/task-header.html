@@ -1,7 +1,7 @@
 <style>
 #project-name {
   margin: 2em 0 5px 0;
-  color: #888;
+  color: #666;
 }
   #project-name a {
     color: #666;
@@ -26,7 +26,7 @@ h1 { margin: 0; }
 
 <div id="project-name">
   {% if task.project %}
-    <a href="{{task.project.get_absolute_url}}">{{task.project.title}}</a>
+    <h1><a href="{{task.project.get_absolute_url}}"><span class="glyphicon glyphicon-hdd"></span> {{task.project.title}}</a></h1>
   {% endif %}
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule and supermodule.task != supermodule.project.root_task %}
@@ -34,7 +34,7 @@ h1 { margin: 0; }
     {% endif %}
   {% endwith %}
 </div>
-<h1>{{task.title}}</h1>
+<h2>{{task.title}}</h2>
 
 <div id="progress-context" class="row">
   <div class="col-sm-{{col_width}} {% if col_active == "start" %}active{% endif %}">

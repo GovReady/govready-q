@@ -8,7 +8,17 @@
 {% block head %}
 <style>
 .tab-pane {
-  padding: 1.5em 0;
+  /*padding: 1.5em 0;*/
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  padding: 10px 15px;
+  /*background-color: #FBF6F4;*/
+  min-height: 600px;
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:hover {
+  /*background-color: #FBF6F4;*/
 }
 
 .task-group {
@@ -19,7 +29,8 @@
   border: 2px solid #ABA;
   /*border-radius: 8px;*/
   /*background-color: #F3FAF3;*/
-  background-color: #fff;
+  /*background-color: #fff;*/
+  background-color: #FDFBF9;
   padding: .75em .9em;
   width: 180px;
   height: 140px;
@@ -88,9 +99,9 @@
 
 {% block body %}
 <div class="row">
-  <div class="col-sm-push-2 col-sm-8">
+  <div class="col-sm-push-1 col-sm-9">
 
-<h1 style="margin: 1em 0 0 0">{{title}}</h1>
+<h1 style="margin: 1em 0 0 0;color: #666;"><span class="glyphicon glyphicon-hdd"></span> {{title}}</h1>
 
 <div style="margin: 2em 0">
   {{intro|safe}}

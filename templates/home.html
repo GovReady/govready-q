@@ -8,9 +8,9 @@ Home
 <style>
 .project {
   margin: 1em 0;
-  background-color: #EEF;
+  /*background-color: #EEF;
   border-radius: 10px;
-  padding: 15px;
+  padding: 15px;*/
 }
   .project a {
     font-weight: bold;
@@ -20,7 +20,7 @@ Home
 
 {% block body %}
 <div class="row">
-  <div class="col-sm-push-2 col-sm-8">
+  <div class="col-sm-push-1 col-sm-9">
     
 <h1 style="margin: 1em 0">My Projects</h1>
 
@@ -37,7 +37,7 @@ Home
 <div class="project">
   <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
     {% if project %}
-      {{project.title}}
+      <span class="glyphicon glyphicon-hdd"></span> {{project.title}}
     {% else %}
       Account Modules
     {% endif %}
