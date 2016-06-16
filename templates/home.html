@@ -17,6 +17,9 @@ Home
   .project a {
     font-weight: bold;
   }
+  .project a:hover { text-decoration: none; }
+  .project a:hover span { text-decoration: underline; }
+  .project a:hover span.glyphicon { text-decoration: none; }
 .project:hover{
   background-color: rgb(250,250,250); 
 }
@@ -43,9 +46,10 @@ Home
 <div class="project">
   <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
     {% if project %}
-      <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> {{project.title}}
+      <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
+      <span>{{project.title}}</span>
     {% else %}
-      Account Modules
+      <span>Account Modules</span>
     {% endif %}
   </a>
 

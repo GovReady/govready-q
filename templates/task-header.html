@@ -7,6 +7,9 @@
     color: #666;
   }
 h1 { margin: 0; }
+h1 a:hover { text-decoration: none; }
+h1 a:hover span { text-decoration: underline; }
+h1 a:hover span.glyphicon { text-decoration: none; }
 #progress-context {
   margin-top: 10px;
 }
@@ -26,7 +29,12 @@ h1 { margin: 0; }
 
 <div id="project-name">
   {% if task.project %}
-    <h1><a href="{{task.project.get_absolute_url}}"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> {{task.project.title}}</a></h1>
+    <h1>
+      <a href="{{task.project.get_absolute_url}}">
+        <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
+        <span>{{task.project.title}}</span>
+      </a>
+    </h1>
   {% endif %}
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule and supermodule.task != supermodule.project.root_task %}
