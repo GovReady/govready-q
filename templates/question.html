@@ -307,7 +307,7 @@ $(function() {
     {% if write_priv %}
       $('#inputctrl').focus();
     {% else %}
-      form.find('input').prop('disabled', true);
+      form.find('input, textarea').prop('disabled', true);
     {% endif %}
 
     {% if discussion %}
