@@ -37,9 +37,9 @@
 
 .task-group-title {
   font-weight:bold;
-  background-color:rgb(240,240,240);
+  background-color:rgb(230,230,230);
   border-bottom:1px solid rgb(200,200,200);
-  padding:12px;
+  padding:8px;
 }
 
 .task {
@@ -48,21 +48,26 @@
   /*background-color: #F3FAF3;*/
   background-color: rgb(240,240,240);
   /*background-color: #FDFBF9;*/
-  padding: .75em .9em;
-  width: 180px;
-  height: 140px;
+  padding: .5em .7em;
+  /*width: 170px;*/
+  height: 70px;
   max-height: 140px;
   position: relative;
   overflow: scroll;
   margin: 12px 12px 0px 0px;
+  text-align:center;
 }
+.task:hover {
+  background-color: rgb(230,230,230);
+}
+
   .task .task-title {
     /*margin-bottom: 1em;*/
     text-align: center;
   }
   .task-title {
     font-weight: bold;
-    height: 50px;
+    color: #666;
   }
   .task .task-commands button {
     padding-left: 0;
@@ -160,7 +165,7 @@
                   <div class="clearfix visible-lg-block"></div>
                 {% endif %}
 
-                <div class="col-sm-3">
+                <div class="col-sm-12">
                 <div class="task {% if is_member and rec.is_finished %}task_finished{% endif %}">
 
                   <div class="task-title">
@@ -177,13 +182,13 @@
                             <a href="{{t.get_absolute_url}}">
                             {% if t.is_finished %}
                                 <span class="glyphicon glyphicon-check"></span>
-                                Completed
+                                Done
                             {% elif t.is_started %}
                                 <span class="glyphicon glyphicon-edit"></span>
-                              In Progress
+                              Continue
                             {% else %}
                               <span class="glyphicon glyphicon-edit"></span>
-                              Viewed
+                              Continue
                             {% endif %}
                             </a>
                           <!-- </a> -->
@@ -191,19 +196,19 @@
                       {% endfor %}
 
                       {% if can_begin_module and rec.can_start_new_task %}
-                        <form method="post" action="/tasks/start">
+                        <form method="post" action="/tasks/start" style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="project" value="{{project.id}}"/>
                           <input type="hidden" name="question" value="{{rec.question.key}}"/>
                           <button type="submit" class="btn btn-link">
                             {% if rec.tasks|length == 0 %}
-                              <span class="glyphicon glyphicon-unchecked"></span> Start module
+                              <span class="glyphicon glyphicon-unchecked"></span> Start
                             {% else %}
-                              Add Module
+                              <span class="glyphicon glyphicon-unchecked"></span> Start
                             {% endif %}
                           </button>
                         </form>
-                        <button class="btn btn-link" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign team member</button>
+                        <button class="btn btn-link" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign</button>
                       {% endif %}
                     {% endif %}
 
@@ -216,6 +221,7 @@
 
                       {# guest participation in discussions within this task #}
                       {% if rec.discussions %}
+
                       <div>
                         <div><b>Discussions:</b></div>
                         {% for d in rec.discussions %}
