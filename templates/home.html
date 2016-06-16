@@ -37,7 +37,7 @@ Home
 <div class="project">
   <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
     {% if project %}
-      <span class="glyphicon glyphicon-hdd"></span> {{project.title}}
+      <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> {{project.title}}
     {% else %}
       Account Modules
     {% endif %}

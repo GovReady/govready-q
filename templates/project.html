@@ -9,28 +9,45 @@
 <style>
 .tab-pane {
   /*padding: 1.5em 0;*/
-  border-left: 1px solid #ddd;
+/*  border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-  padding: 10px 15px;
+  border-bottom: 1px solid #ddd;*/
+  /*padding: 10px 15px;*/
+  padding: 4px 0px 0px 0px;
   /*background-color: #FBF6F4;*/
+  /*background-color: rgb(250,250,250);*/
   min-height: 600px;
+  border-radius: 3px;
 }
 
 .nav-tabs>li.active>a, .nav-tabs>li.active>a:hover {
   /*background-color: #FBF6F4;*/
+  /*background-color: rgb(250,250,250);*/
+  font-weight: bold;
+  border-top: 3px solid rgb(19,144,50);
 }
 
 .task-group {
   margin-bottom: 2em;
+  /*border: 1px solid #ABA;*/
+  border: 1px solid rgb(200,200,200);
+  border-radius: 4px;
+  background-color: #FFF;
+}
+
+.task-group-title {
+  font-weight:bold;
+  background-color:rgb(240,240,240);
+  border-bottom:1px solid rgb(200,200,200);
+  padding:12px;
 }
 
 .task {
-  border: 2px solid #ABA;
-  /*border-radius: 8px;*/
+  border: 1px solid rgb(200,200,200);
+  border-radius: 4px;
   /*background-color: #F3FAF3;*/
-  /*background-color: #fff;*/
-  background-color: #FDFBF9;
+  background-color: rgb(240,240,240);
+  /*background-color: #FDFBF9;*/
   padding: .75em .9em;
   width: 180px;
   height: 140px;
@@ -101,7 +118,7 @@
 <div class="row">
   <div class="col-sm-push-1 col-sm-9">
 
-<h1 style="margin: 1em 0 0 0;color: #666;"><span class="glyphicon glyphicon-hdd"></span> {{title}}</h1>
+<h1 style="margin: 1em 0 0 0;color: #666;"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> {{title}}</h1>
 
 <div style="margin: 2em 0">
   {{intro|safe}}
@@ -133,9 +150,9 @@
 
             {% for group in tab.groups.values %}
             <div class="task-group">
-              <h3>{{group.title}}</h3>
+              <div class="task-group-title">{{group.title}}</div>
 
-              <div class="row">
+              <div class="row" style="padding:12px;">
               {% for rec in group.modules %}
                 {% if forloop.counter0|divisibleby:4 %}
                   <div class="clearfix visible-sm-block"></div>
@@ -225,44 +242,56 @@
 
     {% if not project.is_account_project %}
     <div role="tabpanel" class="tab-pane" id="project-settings">
-      {% if project_has_members_besides_me %}
-        <div style="margin-bottom: 1em">
-          <h3 style="margin: 0 0 .5em 0">Members</h3>
-          <div id="project-members">
-            {% for pmbr in project_members %}
-              <div>
-                {{pmbr.user}}
-                {% if pmbr.is_admin %}<span class="admin">admin</span>{% endif %}
-                {% if pmbr.user == request.user %}<span class="you">you</span>{% endif %}
+
+      <h1>Settings</h1>
+
+      <div class="task-group">
+        <div class="task-group-title">Project Team</div>
+          <div class="row" style="padding:12px;margin:0 0 0 0;">
+
+            {% if project_has_members_besides_me %}
+              <div style="margin-bottom: 1em">
+                <!-- <h3 style="margin: 0 0 .5em 0">Members</h3> -->
+                <div id="project-members">
+                  {% for pmbr in project_members %}
+                    <div>
+                      {% if pmbr.user == request.user %}<b>{{pmbr.user}}</b>{% else %}{{pmbr.user}}{% endif %}
+                      {% if pmbr.is_admin %}<span class="admin">admin</span>{% endif %}
+                    </div>
+                  {% endfor %}
+                </div>
               </div>
-            {% endfor %}
+            {% endif %}
+
+            {% if send_invitation.can_add_invitee_to_team %}
+              <div style="margin: 1em 0">
+                <button class="btn btn-success" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Invite Colleague to Join Project ...</button>
+              </div>
+            {% endif %}
+
+            {% if open_invitations %}
+              <div id="open-invitations-container">
+                <h3>Invitations waiting for a response...</h3>
+                <div class="invitation-list">
+                {% for inv in open_invitations %}
+                  <p data-invitation-id="{{inv.id}}">
+                    You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+                    (<a href="#" onclick="return cancel_invitation(this, function() { if ($('#open-invitations-container .invitation-list p').length == 0) { $('#open-invitations-container').remove(); } });">cancel</a>)
+                  </p>
+                {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            </div>
+        </div>
+
+      <div class="task-group">
+        <div class="task-group-title">Caution!</div>
+          <div class="row" style="padding:12px;margin:0 0 0 0;">
+              <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button> 
           </div>
         </div>
-      {% endif %}
-
-      {% if send_invitation.can_add_invitee_to_team %}
-        <div style="margin: 1em 0">
-          <button class="btn btn-success" onclick="return invite_user_into_project();">Invite Colleague to Join Project ...</button>
-        </div>
-      {% endif %}
-
-      {% if open_invitations %}
-        <div id="open-invitations-container">
-          <h3>Invitations waiting for a response...</h3>
-          <div class="invitation-list">
-          {% for inv in open_invitations %}
-            <p data-invitation-id="{{inv.id}}">
-              You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
-              (<a href="#" onclick="return cancel_invitation(this, function() { if ($('#open-invitations-container .invitation-list p').length == 0) { $('#open-invitations-container').remove(); } });">cancel</a>)
-            </p>
-          {% endfor %}
-          </div>
-        </div>
-      {% endif %}
-
-      <div style="margin: 1em 0">
-        <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button>
-      </div>
 
     </div> <!-- /tab-panel -->
     {% endif %}
