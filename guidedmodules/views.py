@@ -406,3 +406,60 @@ def change_task_state(request):
     task.save(update_fields=["deleted_at"])
 
     return HttpResponse("ok")
+
+@login_required
+def analytics(request):
+    from django.db.models import Avg
+
+    from guidedmodules.models import ModuleQuestion
+
+    def compute_table(opt):
+        qs = InstrumentationEvent.objects\
+            .filter(event_type=opt["event_type"])\
+            .values(opt["field"])
+
+        overall = qs.aggregate(avg_value=Avg('event_value'))["avg_value"]
+        
+        rows = qs\
+            .exclude(**{opt["field"]: None})\
+            .annotate(avg_value=Avg('event_value'))\
+            .exclude(avg_value=None)\
+            .order_by('-avg_value')\
+            [0:10]
+        
+        bulk_objs = opt['model'].objects.in_bulk(r[opt['field']] for r in rows)
+
+        opt.update({
+            "overall": round(overall),
+            "rows": [(bulk_objs[v[opt['field']]], round(v['avg_value']))
+                for v in rows ],
+        })
+        return opt
+
+    return render(request, "analytics.html", {
+        "tables": [
+            compute_table({
+                "model": Module,
+                "event_type": "task-done",
+                "field": "module",
+                "title": "Hardest Modules",
+                "quantity": "Time To Finish (sec)"
+            }),
+
+            compute_table({
+                "model": ModuleQuestion,
+                "event_type": "task-question-answer",
+                "title": "Hardest Questions",
+                "field": "question",
+                "quantity": "Time To Answer (sec)"
+            }),
+
+            compute_table({
+                "model": ModuleQuestion,
+                "event_type": "task-question-interact-first",
+                "title": "Longest Time to First Interaction",
+                "field": "question",
+                "quantity": "Time To First Interaction (sec)"
+            }),
+        ]
+    })

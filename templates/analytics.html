@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+Analytics
+{% endblock %}
+
+{% block head %}
+<style>
+h1 {
+	margin-top: 1em;
+}
+h2 {
+	margin-top: 1em;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+	<h1>Analytics</h1>
+
+	{% for table in tables %}
+
+		<h2>{{table.title}}</h2>
+
+		<table class="table">
+		<thead>
+			<tr>
+				<th width="75%">{{table.field}}</th>
+				<th>{{table.quantity}}</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr style="font-weight: bold; background-color: #F7F7F7;">
+				<td>Overall</td>
+				<td>{{table.overall}}</td>
+			</tr>
+			{% for row in table.rows %}
+				<tr>
+					<td>{{row.0}}</td>
+					<td>{{row.1}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+		</table>
+
+	{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
