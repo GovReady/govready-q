@@ -131,14 +131,14 @@ def next_question(request, taskid, taskslug):
             pass
 
         elif not current_answer \
-            or value != current_answer.value \
+            or value != current_answer.stored_value \
             or set(answered_by_tasks) != set(current_answer.answered_by_task.all()) \
             or cleared != current_answer.cleared:
 
             answer = TaskAnswerHistory.objects.create(
                 taskanswer=question,
                 answered_by=request.user,
-                value=value,
+                stored_value=value,
                 cleared=cleared)
             for t in answered_by_tasks:
                 answer.answered_by_task.add(t)

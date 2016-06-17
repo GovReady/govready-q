@@ -119,22 +119,8 @@ class Task(models.Model):
             if not a or a.cleared:
                 continue
 
-            # If this question type is "module" or "module-set", its answer value is stored
-            # differently --- and it is a Task instance.
-            if q.question.spec["type"] == "module":
-                t = a.answered_by_task.first()
-                if t:
-                    # fetch answers recursively
-                    answered[q.question.key] = t.get_answers()
-                else:
-                    # question is skipped
-                    answered[q.question.key] = None
-
-            elif q.question.spec["type"] == "module-set":
-                answered[q.question.key] = [t.get_answers() for t in a.answered_by_task.all()]
-            
-            else:
-                answered[q.question.key] = a.value
+            # Get the value of that answer.
+            answered[q.question.key] = a.get_value()
 
         return ModuleAnswers(self.module, answered)
 
@@ -301,7 +287,7 @@ class Task(models.Model):
             ansh = TaskAnswerHistory.objects.create(
                 taskanswer=ans,
                 answered_by=user,
-                value=None)
+                stored_value=None)
 
             # For "module-set"-type questions, copy in the previous set
             # of answers.
@@ -411,7 +397,7 @@ class TaskAnswerHistory(models.Model):
     taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
 
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
-    value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
+    stored_value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
     answered_by_task = models.ManyToManyField(Task, blank=True, related_name="is_answer_to", help_text="A Task or Tasks that supplies the answer for this question (of type 'module' or 'module-set').")
     cleared = models.BooleanField(default=False, help_text="Set to True to indicate that the user wants to clear their answer. This is different from a null-valued answer, which means not applicable/don't know/skip.")
 
@@ -429,10 +415,38 @@ class TaskAnswerHistory(models.Model):
         # Is this the most recent --- the current --- answer for a TaskAnswer.
         return self.taskanswer.get_current_answer() == self
 
+    def get_value(self):
+        # Get the ModuleQuestion that defines the type of the question
+        # that this answer is for.
+        q = self.taskanswer.question
+
+        # If this question type is "module" or "module-set", its answer
+        # is stored in the answered_by_task M2M field and the stored_value
+        # field is not used.
+        if q.spec["type"] == "module":
+            t = self.answered_by_task.first()
+            if not t:
+                # The question is skipped.
+                return None
+            # Fetch value recursively (TODO: Prevent circular references that
+            # lead to infinite recursion.)
+            return t.get_answers()
+
+        elif q.spec["type"] == "module-set":
+            return [t.get_answers() for t in self.answered_by_task.all()]
+        
+        # For all other question types, the value is stored in the stored_value
+        # field.
+        else:
+            return self.stored_value
+
     def get_answer_display(self):
         if self.cleared:
             return "[answer cleared]"
-        return repr(self.value or self.answered_by_task.all())
+        if q.spec["type"] in ("module", "module-set"):
+            return repr(self.answered_by_task.all())
+        else:
+            return repr(self.get_value())
 
 class InstrumentationEvent(models.Model):
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)

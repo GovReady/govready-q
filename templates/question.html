@@ -59,19 +59,19 @@ Next Question: {{q.spec.title}}
 
             {% if q.spec.type == "text" %}
               <div class="form-group">
-                <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.get_value %}value="{{answer.get_value}}"{% endif %}>
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
             {% elif q.spec.type == "email-address" %}
               <div class="form-group">
-                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.get_value %}value="{{answer.get_value}}"{% endif %}>
                 <p class="help-block">{% if q.spec.help %}{{q.spec.help}}{% else %}Enter an email address.{% endif %}</p>
               </div>
 
             {% elif q.spec.type == "url" %}
               <div class="form-group">
-                <input name="value" type="url" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                <input name="value" type="url" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.get_value %}value="{{answer.get_value}}"{% endif %}>
                 <p class="help-block">{% if q.spec.help %}{{q.spec.help}}{% else %}Paste a web address.{% endif %}</p>
               </div>
 
@@ -83,7 +83,7 @@ Next Question: {{q.spec.title}}
 
             {% elif q.spec.type == "longtext" %}
               <div class="form-group">
-                <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if answer.value %}{{answer.value}}{% endif %}</textarea>
+                <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if answer.get_value %}{{answer.get_value}}{% endif %}</textarea>
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
@@ -91,7 +91,7 @@ Next Question: {{q.spec.title}}
               {% for choice in q.spec.choices %}
               <div class="radio">
                 <label>
-                  <input name="value" value="{{choice.key}}" type="radio" {% if answer.value == choice.key %}checked{% endif %}> {{choice.text}}
+                  <input name="value" value="{{choice.key}}" type="radio" {% if answer.get_value == choice.key %}checked{% endif %}> {{choice.text}}
                   <p class="help-block">{{choice.help}}</p>
                 </label>
               </div>
@@ -100,12 +100,12 @@ Next Question: {{q.spec.title}}
             {% elif q.spec.type == "yesno" %}
               <div class="radio">
                 <label>
-                  <input name="value" value="no"  type="radio" {% if answer.value == "no" %}checked{% endif %}> No
+                  <input name="value" value="no"  type="radio" {% if answer.get_value == "no" %}checked{% endif %}> No
                 </label>
               </div>
               <div class="radio">
                 <label>
-                  <input name="value" value="yes" type="radio" {% if answer.value == "yes" %}checked{% endif %}> Yes
+                  <input name="value" value="yes" type="radio" {% if answer.get_value == "yes" %}checked{% endif %}> Yes
                 </label>
               </div>
               <p class="help-block">{{q.spec.help}}</p>
@@ -114,7 +114,7 @@ Next Question: {{q.spec.title}}
               {% for choice in q.spec.choices %}
               <div class="checkbox">
                 <label>
-                  <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer.value %}checked{% endif %}> {{choice.text}}
+                  <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer.get_value %}checked{% endif %}> {{choice.text}}
                   <p class="help-block">{{choice.help}}</p>
                 </label>
               </div>
@@ -136,10 +136,10 @@ Next Question: {{q.spec.title}}
                 {% endcomment %}
                 {% if q.spec.min > -1000 and q.spec.max < 1000 %}
                   {# the range doesn't admit thousands, so we don't need to worry about thousands-commmas #}
-                  <input name="value" type="number" {% if q.spec.type == "integer" %}step="1"{% else %}step="any"{% endif %} class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                  <input name="value" type="number" {% if q.spec.type == "integer" %}step="1"{% else %}step="any"{% endif %} class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.get_value %}value="{{answer.get_value}}"{% endif %}>
                 {% else %}
                   {# to let users enter thousands-commas by using a plain text field #}
-                  <input name="value" type="text" pattern="[0-9,\.]+" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.value %}value="{{answer.value}}"{% endif %}>
+                  <input name="value" type="text" pattern="[0-9,\.]+" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer.get_value %}value="{{answer.get_value}}"{% endif %}>
                 {% endif %}
                 <p class="help-block">{{q.spec.help}}</p>
                 {% if q.spec.min|default_if_none:"NONE" != "NONE" and q.spec.max|default_if_none:"NONE" != "NONE" %}

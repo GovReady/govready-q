@@ -15,7 +15,7 @@ class User(AbstractUser):
             task=self.get_settings_task(),
             question__key="name").first()
         if name:
-            return name.get_current_answer().value #+ " <" + self.email + ">"
+            return name.get_current_answer().get_value() #+ " <" + self.email + ">"
         else:
             return self.email or "Anonymous User"
 
