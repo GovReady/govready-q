@@ -13,6 +13,9 @@ h1 {
 h2 {
 	margin-top: 1em;
 }
+table tr *:nth-child(2), table tr *:nth-child(3) {
+	text-align: center;
+}
 </style>
 {% endblock %}
 
@@ -27,19 +30,22 @@ h2 {
 		<table class="table">
 		<thead>
 			<tr>
-				<th width="75%">{{table.field}}</th>
-				<th>{{table.quantity}}</th>
+				<th width="70%">{{table.field}}</th>
+				<th width="22%">{{table.quantity}}</th>
+				<th>Count</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr style="font-weight: bold; background-color: #F7F7F7;">
 				<td>Overall</td>
 				<td>{{table.overall}}</td>
+				<td>{{table.n}}</td>
 			</tr>
 			{% for row in table.rows %}
 				<tr>
-					<td>{{row.0}}</td>
-					<td>{{row.1}}</td>
+					<td>{{row.obj}}</td>
+					<td>{{row.value}}</td>
+					<td>{{row.n}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

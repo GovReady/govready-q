@@ -409,7 +409,7 @@ def change_task_state(request):
 
 @login_required
 def analytics(request):
-    from django.db.models import Avg
+    from django.db.models import Avg, Count
 
     from guidedmodules.models import ModuleQuestion
 
@@ -421,11 +421,17 @@ def analytics(request):
             .filter(event_type=opt["event_type"])\
             .values(opt["field"])
 
-        overall = qs.aggregate(avg_value=Avg('event_value'))["avg_value"]
+        overall = qs.aggregate(
+                avg_value=Avg('event_value'),
+                count=Count('event_value'),
+            )
         
         rows = qs\
             .exclude(**{opt["field"]: None})\
-            .annotate(avg_value=Avg('event_value'))\
+            .annotate(
+                avg_value=Avg('event_value'),
+                count=Count('event_value'),
+            )\
             .exclude(avg_value=None)\
             .order_by('-avg_value')\
             [0:10]
@@ -433,8 +439,13 @@ def analytics(request):
         bulk_objs = opt['model'].objects.in_bulk(r[opt['field']] for r in rows)
 
         opt.update({
-            "overall": round(overall),
-            "rows": [(bulk_objs[v[opt['field']]], round(v['avg_value']))
+            "overall": round(overall['avg_value']),
+            "n": overall['count'],
+            "rows": [{
+                    "obj": bulk_objs[v[opt['field']]],
+                    "n": v['count'],
+                    "value": round(v['avg_value']),
+                }
                 for v in rows ],
         })
         return opt
