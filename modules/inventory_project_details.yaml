@@ -1,0 +1,128 @@
+id: inventory_project_details
+title: Project Details
+version: 3
+introduction:
+  format: markdown
+  template: |
+    Tell us some basic information about {{project}}.
+questions:
+
+  - id: type_web_site
+    title: Web Site Project
+    prompt: Is {{project}} a website or web application?
+    type: choice
+    choices:
+        - key: website
+          text: website
+          help: a site defined primarily by its content
+        - key: web app
+          text: web app
+          help: a site defined primarily by user interactions
+        - key: neither
+          text: neither  
+
+  - id: type_web_live
+    title: Live Site
+    prompt: Is {{project}} currently available at a public URL?
+    type: yesno
+    impute:
+      - condition: type_web_site == 'neither'
+        value: no
+    ask-first:
+        - type_web_site
+
+  - id: type_web_live_url
+    title: Live Site URL
+    prompt: What is URL of the live web site?
+    type: url
+    help: e.g., http://www.yoursite.gov
+    ask-first:
+        - type_web_site
+    impute:
+      - condition: type_web_site == 'neither'
+        value: N/A
+      - condition: type_web_live == 'no'
+        value: N/A
+
+# It would be great to visit site and use wappelizer to determine details of the site
+
+  - id: type_web_preview
+    title: Site Preview
+    prompt: Is there a preview version of the site on the web?
+    type: yesno
+    ask-first:
+        - type_web_live
+    impute:
+      - condition: type_web_site == 'neither'
+        value: no
+
+  - id: type_web_preview_url
+    title: Site Preview
+    prompt: What's the URL for the preview version of the site?
+    type: url
+    ask-first:
+        - type_web_preview
+    help: e.g., http://www.yoursite.gov
+    impute:
+        - condition: type_web_site == 'neither'
+          value: N/A
+        - condition: type_web_preview == 'no'
+          value: N/A 
+
+  - id: type_pc_software
+    title: Traditional Software
+    prompt: Is {{project}} traditional PC software or PC software as a service?
+    type: yesno
+    impute:
+      - condition: type_web_site == 'website'
+        value: no
+      - condition: type_web_site == 'web app'
+        value: no
+
+  - id: type_mobile_software
+    title: Native Mobile App
+    prompt: Is {{project}} a native mobile app?
+    type: yesno
+    impute:
+      - condition: type_web_site == 'website'
+        value: no
+      - condition: type_web_site == 'web app'
+        value: no
+      - condition: type_pc_software == 'yes'
+        value: no
+
+  - id: type_enterprise_itservice
+    title: Enterprise IT service
+    prompt: Is {{project}} an enterprise IT service?
+    type: yesno
+    help:  Projects like desktop computing, networking, enterprise identity management, enterprise backup, network monitoring
+    impute:
+      - condition: type_web_site == 'website'
+        value: no
+      - condition: type_web_site == 'web app'
+        value: no
+      - condition: type_pc_software == 'yes'
+        value: no
+      - condition: type_mobile_software == 'yes'
+        value: no
+
+output:
+  - title: Project Details for Inventory
+    format: markdown
+    template: |
+      
+      web site {{type_web_site}} 
+
+      site live {{type_web_live}}
+      live url: {{type_web_live_url}}
+
+
+      software {{type_pc_software}}
+
+      mobile software {{type_mobile_software}}
+
+       web preview? {{type_web_preview}}
+      preview url: {{type_web_preview_url}}
+
+      enterprise service {{type_enterprise_itservice}}
+
