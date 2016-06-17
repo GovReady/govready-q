@@ -1,3 +1,5 @@
+from datetime import datetime
+
 def sample_function(question, existing_answers):
 	url = existing_answers.get("project_url")
 	if not url:
@@ -11,6 +13,9 @@ def sample_function(question, existing_answers):
 		raise ValueError(str(e))
 
 	return {
+		"scan_date": datetime.now().isoformat(),
+		"url": url,
+		
 		"server": headers['Server'],
 		"hsts": 'Strict-Transport-Security' in headers,
 	}

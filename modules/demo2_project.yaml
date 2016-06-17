@@ -23,11 +23,11 @@ questions:
     group: Identity, Credential and Access Management
 
   - id: q_scan
-    title: Run a System Scan
+    title: Analyze the Site
     type: module
-    module-id: demo2_run_server_scan
-    tab: Scans
-    group: Scans
+    module-id: demo2_analyze_site
+    tab: Analyze
+    group: Analyze Site
     pass:
       project_url: q_project_details.type_web_live_url
 
