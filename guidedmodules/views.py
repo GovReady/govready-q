@@ -413,6 +413,9 @@ def analytics(request):
 
     from guidedmodules.models import ModuleQuestion
 
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
     def compute_table(opt):
         qs = InstrumentationEvent.objects\
             .filter(event_type=opt["event_type"])\
