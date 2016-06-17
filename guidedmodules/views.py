@@ -71,6 +71,13 @@ def next_question(request, taskid, taskslug):
                 # client side validation should have picked this up
                 return JsonResponse({ "status": "error", "message": str(e) })
 
+            # run external functions
+            if q.spec['type'] == "external-function":
+                try:
+                    value = module_logic.run_external_function(q.spec, answered.answers)
+                except ValueError as e:
+                    return JsonResponse({ "status": "error", "message": str(e) })
+
             cleared = False
             instrumentation_event_type = "answer"
 

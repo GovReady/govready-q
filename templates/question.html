@@ -209,6 +209,10 @@ Next Question: {{q.spec.title}}
               {# no other content but an empty value #}
               <input type="hidden" name="value" value=""/>
 
+            {% elif q.spec.type == "external-function" %}
+              {# no other content but an empty value #}
+              <input type="hidden" name="value" value=""/>
+
             {% else %}
                 {{q.spec.type}}
 

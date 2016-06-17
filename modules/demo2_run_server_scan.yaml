@@ -12,8 +12,24 @@ questions:
     type: url
     help: e.g., http://www.yoursite.gov
 
+  - id: scan_result
+    title: Scan Result
+    prompt: We will now gather some information.
+    type: external-function
+    function: guidedmodules.sample_external_functions.sample_function
+    ask-first:
+      - project_url
+
 output:
   - title: Scan Result
     format: markdown
     template: |
       Scanned Website: {{project_url}}
+
+      {% if not scan_result %}
+      Not yet scanned.
+      {% else %}
+      Server: {{scan_result.server}}
+
+      HTTPS with HSTS: {{scan_result.hsts}}
+      {% endif %}

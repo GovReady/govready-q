@@ -235,6 +235,17 @@ An `interstitial` question is not really a question at all! The `prompt` contain
 
 In document templates and impute conditions, the value of `interstitial` questions is always a null value.
 
+#### `external-function`
+
+An `external-function` question is not really a question at all but instead runs some Python code and stores the result as the value of the question. The `prompt` is displayed to the user as normal. The function is run when the user clicks the Submit button.
+
+The function is specified as
+
+    type: external-function
+    function: guidedmodules.sample_external_functions.sample_function
+
+where `sample_function` is a method defined in the Python module `guidedmodules.sample_external_functions`, which must be installed/available. The function is called with two arguments, a dict containing the question's specification and a dict of module answers mapping question IDs to answers already present.
+
 
 ### Imputing Answers
 

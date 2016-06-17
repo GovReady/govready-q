@@ -365,6 +365,12 @@ class validator:
             raise ValueError("Invalid input.")
         return None # store it as null
 
+    def validate_external_function(question, value):
+        # the user doesn't answer these directly
+        if value != "":
+            raise ValueError("Invalid input.")
+        return None # doesn't matter
+
 def get_question_choice(question, key):
     for choice in question.spec["choices"]:
         if choice["key"] == key:
@@ -532,6 +538,24 @@ class RenderedAnswer:
                 # Return a RenderedAnswer representing the skipped question.
                 return RenderedAnswer(q, None, self.escapefunc)
 
+        # For external-function questions, we can directly access member data.
+        elif self.question_type == "external-function":
+            return self.answer[item]
+
         # For other types of questions, or items that are not question
         # IDs of the subtask, just do normal Python behavior.
-        return super().__getattr__(self, property)
+        return super().__getattr__(self, item)
+
+def run_external_function(question, existing_answers):
+    # Split the function name into the module path and function name.
+    function_name = question.get("function", "").rsplit(".", 1)
+    if len(function_name) != 2:
+        raise Exception("Invalid function name.") # not trapped / not user-visible error
+
+    # Import the module and get the method.
+    import importlib
+    module = importlib.import_module(function_name[0])
+    method = getattr(module, function_name[1])
+
+    # Run the method.
+    return method(question, existing_answers)
