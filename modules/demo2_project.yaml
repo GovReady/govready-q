@@ -22,6 +22,15 @@ questions:
     tab: Description of Users
     group: Identity, Credential and Access Management
 
+  - id: q_scan
+    title: Run a System Scan
+    type: module
+    module-id: demo2_run_server_scan
+    tab: Scans
+    group: Scans
+    pass:
+      project_url: q_project_details.type_web_live_url
+
 output:
   - tab: Basic Info
     format: markdown

@@ -1,0 +1,19 @@
+id: demo2_run_server_scan
+title: Run a Server Scan
+introduction:
+  format: markdown
+  template: |
+    We will now run a scan for {{project}}.
+
+questions:
+  - prompt: What is the url of the project?
+    id: project_url
+    title: URL
+    type: url
+    help: e.g., http://www.yoursite.gov
+
+output:
+  - title: Scan Result
+    format: markdown
+    template: |
+      Scanned Website: {{project_url}}
