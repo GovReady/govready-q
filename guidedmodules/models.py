@@ -79,8 +79,8 @@ class Task(models.Model):
         ]
 
     def __str__(self):
-        # For the admin.
-        return self.title + " (" + str(self.module) + ")"
+        # For the admin, notification strings.
+        return self.title
 
     def __repr__(self):
         # For debugging.
@@ -221,13 +221,21 @@ class Task(models.Model):
             return True
         return False
 
-    def get_invitation_purpose(self, invitation):
+    def get_invitation_verb_inf(self, invitation):
         if invitation.target_info.get("what") == "editor":
-            return ("to take over editing <%s>" % self.title) \
-                + (" and to join the project team" if invitation.into_project else "")
+            return "to take over editing"
         else:
-            return ("to begin editing <%s>" % self.title) \
-                + (" and to join the project team" if invitation.into_project else "")
+            # invitation.target was initially a Project but upon
+            # being accepted it was rewritten to be this task
+            return "to begin editing"
+
+    def get_invitation_verb_past(self, invitation):
+        if invitation.target_info.get("what") == "editor":
+            return "became the editor of"
+        else:
+            # invitation.target was initially a Project but upon
+            # being accepted it was rewritten to be this task
+            return "began"
 
     def is_invitation_valid(self, invitation):
         # Invitation remains valid only if the user that sent it still
@@ -250,6 +258,9 @@ class Task(models.Model):
         # elsewhere, sent from the user.
         from siteapp.models import Invitation
         return Invitation.get_for(self).filter(from_user=user)
+
+    def get_notification_watchers(self):
+        return self.project.get_members()
 
     def get_document_additional_context(self):
         return {

@@ -31,3 +31,9 @@ urlpatterns = [
     # admin site
     url(r'^admin/', include(admin.site.urls)),
 ]
+
+import notifications.urls
+urlpatterns += [
+    url('^user/notifications/', include(notifications.urls, namespace='notifications')),
+    url('^_mark_notifications_as_read', views.mark_notifications_as_read),
+]

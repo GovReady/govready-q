@@ -33,8 +33,8 @@ class Discussion(models.Model):
             return Discussion.objects.get(attached_to_content_type=content_type, attached_to_object_id=object.id)
 
     def __str__(self):
-        # for the admin
-        return str(self.attached_to)
+        # for the admin, notification strings
+        return self.title
 
     def get_absolute_url(self):
         return self.attached_to.get_absolute_url() + "#discussion"
@@ -44,7 +44,7 @@ class Discussion(models.Model):
         return self.attached_to.title
 
     def is_participant(self, user):
-        # No on is a participant of a dicussion attached to (a question
+        # No one is a participant of a dicussion attached to (a question
         # of) a deleted Task.
         if self.attached_to.task.deleted_at:
             return False
@@ -58,9 +58,11 @@ class Discussion(models.Model):
     def can_invite_guests(self, user):
         return ProjectMembership.objects.filter(project=self.attached_to.project, user=user).exists()
 
-    def get_invitation_purpose(self, invitation):
-        return ("to join the discussion <%s>" % self.title) \
-            + (" and to join the project team" if invitation.into_project else "")
+    def get_invitation_verb_inf(self, invitation):
+        return "to join the discussion"
+
+    def get_invitation_verb_past(self, invitation):
+        return "joined the discussion"
 
     def is_invitation_valid(self, invitation):
         # Invitation remains valid only if the user that sent it is still
@@ -80,6 +82,14 @@ class Discussion(models.Model):
 
     def get_invitation_redirect_url(self, invitation):
         return self.attached_to.get_absolute_url()
+
+    def get_notification_watchers(self):
+        if self.attached_to.task.deleted_at:
+            return []
+        return \
+            list(mbr.user for mbr in ProjectMembership.objects.filter(project=self.attached_to.project)) \
+            + list(self.guests.all())
+
 
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", help_text="The Discussion that this comment is attached to.")
