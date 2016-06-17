@@ -31,7 +31,7 @@ questions:
   - prompt: What is the url of the project?
     id: project_url
     title: URL
-    type: text
+    type: url
     help: e.g., http://www.yoursite.gov
 
   - prompt: Name of the organization that owns project {{project}}?
