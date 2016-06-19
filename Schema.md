@@ -220,13 +220,31 @@ These question type prompt the user to select another completed module as the an
 
 Changing the `module-id` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
 
-In document templates and impute conditions, the value of `module` questions is a dictionary of the answers to that module. For example, if `q5` is the ID of a question whose type is `module`, then `{{q5.q1}}` will provide the answer to `q1` within the module the user selected that answers `q5`.
+In document templates and impute conditions, the value of `module` questions is a dictionary of the answers to that module. For example, if `q5` is the ID of a question whose type is `module`, then `{{q5.q1}}` will provide the answer to `q1` within the module the user selected that answers `q5`. 
+
+These questions may also "pass" answers to questions in the sub-module. The `pass` field is a dictionary where the keys are the IDs of questions in the sub-module whose answers are being pre-set and the values are a question ID in the current module or a dot-delimited path to access a question in a (different) sub-module. The pre-set answer is stored by reference so that a change in the value also causes a change in the answer in the sub-module. For example:
+
+    pass:
+      project_url: q_project_details.type_web_live_url
+
+This will pre-set the `project_url` question of the sub-module with the answer to the `type_web_live_url` question in the sub-module that answers the question `q_project_details` in this module.
 
 #### `interstitial`
 
 An `interstitial` question is not really a question at all! The `prompt` contains template content, as with other questions, but it is typically longer content with deeper explanatory text. The user is not asked to enter any information.
 
 In document templates and impute conditions, the value of `interstitial` questions is always a null value.
+
+#### `external-function`
+
+An `external-function` question is not really a question at all but instead runs some Python code and stores the result as the value of the question. The `prompt` is displayed to the user as normal. The function is run when the user clicks the Submit button.
+
+The function is specified as
+
+    type: external-function
+    function: guidedmodules.sample_external_functions.sample_function
+
+where `sample_function` is a method defined in the Python module `guidedmodules.sample_external_functions`, which must be installed/available. The function is called with two arguments, a dict containing the question's specification and a dict of module answers mapping question IDs to answers already present.
 
 
 ### Imputing Answers

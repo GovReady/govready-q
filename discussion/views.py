@@ -90,6 +90,13 @@ def submit_discussion_comment(request):
         text=text
         )
 
+    # Issue a notification.
+    from siteapp.views import issue_notification
+    issue_notification(
+        request.user,
+        "commented on",
+        discussion)
+
     # Return the comment for display.
     return JsonResponse(comment.render_context_dict())
 

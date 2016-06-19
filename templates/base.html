@@ -1,4 +1,5 @@
 {% load static %}
+{% load notifications_tags %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -87,6 +88,21 @@
                 <li><a href="{% url "account_logout" %}">Log Out</a></li>
               </ul>
             </li>
+
+            {% notifications_unread as unread_count %}
+            {% if unread_count %}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" onclick="mark_notifications_read({{request.user.notifications.unread.0.id}})"><span class="badge">{{ unread_count }}</span> <span class="caret">
+              <ul class="dropdown-menu">
+                {% for n in request.user.notifications.unread %}
+                  <li><a href="{% if n.target %}{{n.target.get_absolute_url}}{% else %}javascript:false;{% endif %}">
+                    {{n}}
+                  </a></li>
+                {% endfor %}
+              </ul>
+            </li>
+            {% endif %}
+
             {% else %}
             <li><a href="{% url "account_login" %}">Log In</a></li>
             {% endif %}

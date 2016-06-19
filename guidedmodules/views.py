@@ -71,6 +71,13 @@ def next_question(request, taskid, taskslug):
                 # client side validation should have picked this up
                 return JsonResponse({ "status": "error", "message": str(e) })
 
+            # run external functions
+            if q.spec['type'] == "external-function":
+                try:
+                    value = module_logic.run_external_function(q.spec, answered.answers)
+                except ValueError as e:
+                    return JsonResponse({ "status": "error", "message": str(e) })
+
             cleared = False
             instrumentation_event_type = "answer"
 
@@ -95,7 +102,7 @@ def next_question(request, taskid, taskslug):
             if value == "__new":
                 # Create a new task, and we'll redirect to it immediately.
                 t = Task.create(
-                    parent_task_answer=question, # for instrumentation only, doesn't go into Task instance
+                    parent_task_answer=question,
                     editor=request.user,
                     project=task.project,
                     module=m1,
@@ -131,14 +138,14 @@ def next_question(request, taskid, taskslug):
             pass
 
         elif not current_answer \
-            or value != current_answer.value \
+            or value != current_answer.stored_value \
             or set(answered_by_tasks) != set(current_answer.answered_by_task.all()) \
             or cleared != current_answer.cleared:
 
             answer = TaskAnswerHistory.objects.create(
                 taskanswer=question,
                 answered_by=request.user,
-                value=value,
+                stored_value=value,
                 cleared=cleared)
             for t in answered_by_tasks:
                 answer.answered_by_task.add(t)
@@ -292,6 +299,10 @@ def next_question(request, taskid, taskslug):
             if answer and answer.cleared:
                 # If the answer is cleared, treat as if it had not been answered.
                 answer = None
+
+        # If the answer is a reference, then we block all edits.
+        if answer and answer.answered_by_reference:
+            context["write_priv"] = False
 
         # for "module"-type questions
         # what Module answers this question?

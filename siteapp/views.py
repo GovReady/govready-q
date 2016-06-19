@@ -451,7 +451,48 @@ def accept_invitation(request, code=None):
         # Update this invitation.
         inv.save()
 
-        # TODO: Notify inv.from_user that the invitation was accepted.
-        #       Create other notifications?
+        # Issue a notification - first to the user who sent the invitation.
+        issue_notification(
+            request.user,
+            "accepted your invitation " + inv.purpose_verb(),
+            inv.target,
+            recipients=[inv.from_user])
+
+        # - then to other watchers of the target objects (excluding the
+        # user who sent the invitation and the user who accepted it).
+        issue_notification(
+            request.user,
+            inv.target.get_invitation_verb_past(inv),
+            inv.target,
+            recipients=[u for u in inv.target.get_notification_watchers()
+                if u not in (inv.from_user, inv.accepted_user)])
 
         return HttpResponseRedirect(inv.get_redirect_url())
+
+def issue_notification(acting_user, verb, target, recipients='WATCHERS', **notification_kwargs):
+    # Create a notification *from* acting_user *to*
+    # all users who are watching target.
+    from notifications.signals import notify
+    if recipients == 'WATCHERS':
+        recipients = target.get_notification_watchers()
+    for user in recipients:
+        # Don't notify the acting user about an
+        # action they took.
+        if user == acting_user:
+            continue
+
+        # Create the notification.
+        notify.send(
+            acting_user, verb=verb, target=target,
+            recipient=user,
+            **notification_kwargs)
+
+@login_required
+def mark_notifications_as_read(request):
+    # Mark all of the user's notifications as read up to
+    # the one with id upto_id. This ensures that if a 
+    # notification was generated after the client-side UI
+    # displayed the last batch of notifications, that we
+    # won't clear out something the user hasn't seen.
+    request.user.notifications.filter(id__lte=request.POST['upto_id']).mark_all_as_read()
+    return JsonResponse({ "status": "ok" })

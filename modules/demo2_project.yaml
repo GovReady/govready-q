@@ -29,6 +29,15 @@ questions:
     tab: Basic Info
     group: About the Project
 
+  - id: q_scan
+    title: Analyze the Site
+    type: module
+    module-id: demo2_analyze_site
+    tab: Analyze
+    group: Analyze Site
+    pass:
+      project_url: q_project_details.type_web_live_url
+
 output:
   - tab: Basic Info
     format: markdown

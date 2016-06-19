@@ -5,6 +5,7 @@ from .settings import *
 INSTALLED_APPS += [
     'bootstrapform',
     'htmlemailer',
+    'notifications',
 
     'siteapp',
     'guidedmodules',

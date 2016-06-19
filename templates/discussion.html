@@ -101,12 +101,12 @@
     </div>
 
     <p id="discussion-you-are-alone" style="display: none" class="text-danger">
-      You are the only person in this conversation so far. <a href="javascript:invite_user_to_discussion()" class="btn btn-link btn-default">Invite a colleague</a> to join you.
+      You are the only person in this conversation so far. <a href="#" onclick="return invite_user_to_discussion()" class="btn btn-link btn-default">Invite a colleague</a> to join you.
     </p>
 
     <p class="small active-discussion-only" style="display: none">
       Who can see this conversation? <span class="fillin-project_name"></span> members<span class="fillin-guests"></span>.
-      <a id="invite-guest" href="javascript:invite_user_to_discussion()">Invite Colleague</a>
+      <a id="invite-guest" href="#" onclick="return invite_user_to_discussion()">Invite Colleague</a>
     </p>
 </div>
 
@@ -582,7 +582,6 @@ function invite_user_to_discussion() {
       into_discussion: discussion_info.id
     }
   );
-
   return false;
 }
 </script>

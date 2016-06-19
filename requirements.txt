@@ -11,3 +11,4 @@ django==1.9
 django-allauth
 jsonfield
 django-bootstrap-form
+django-notifications-hq

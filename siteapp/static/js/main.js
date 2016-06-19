@@ -108,3 +108,13 @@ function cancel_invitation(elem, callback) {
   });
   return false;
 }
+
+function mark_notifications_read(upto_id) {
+  $.ajax({
+   url: '/_mark_notifications_as_read',
+   method: "POST",
+   data: {
+    upto_id: upto_id
+   }
+  });
+}

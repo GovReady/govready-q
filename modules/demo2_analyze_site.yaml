@@ -1,0 +1,37 @@
+id: demo2_analyze_site
+title: Analyze Site
+introduction:
+  format: markdown
+  template: |
+    We will now analyze {{project}}.
+
+questions:
+  - prompt: What is the url of the project?
+    id: project_url
+    title: URL
+    type: url
+    help: e.g., http://www.yoursite.gov
+
+  - id: analysis
+    title: Analyze
+    prompt: We will analyze {{project_url}}.
+    type: external-function
+    function: guidedmodules.sample_external_functions.sample_function
+    ask-first:
+      - project_url
+
+output:
+  - title: Analysis Result
+    format: markdown
+    template: |
+      {% if not analysis %}
+      Not yet analyzed.
+      {% else %}
+      URL: {{analysis.url}}
+
+      Date: {{analysis.scan_date}}
+
+      Server: {{analysis.server}}
+
+      HTTPS with HSTS: {{analysis.hsts}}
+      {% endif %}

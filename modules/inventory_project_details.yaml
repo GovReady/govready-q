@@ -40,9 +40,9 @@ questions:
         - type_web_site
     impute:
       - condition: type_web_site == 'neither'
-        value: N/A
+        value: ~
       - condition: type_web_live == 'no'
-        value: N/A
+        value: ~
 
 # It would be great to visit site and use wappelizer to determine details of the site
 
@@ -65,9 +65,9 @@ questions:
     help: e.g., http://www.yoursite.gov
     impute:
         - condition: type_web_site == 'neither'
-          value: N/A
+          value: ~
         - condition: type_web_preview == 'no'
-          value: N/A 
+          value: ~
 
   - id: type_pc_software
     title: Traditional Software

@@ -15,7 +15,7 @@ class User(AbstractUser):
             task=self.get_settings_task(),
             question__key="name").first()
         if name:
-            return name.get_current_answer().value #+ " <" + self.email + ">"
+            return name.get_current_answer().get_value() #+ " <" + self.email + ">"
         else:
             return self.email or "Anonymous User"
 
@@ -88,8 +88,8 @@ class Project(models.Model):
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     def __str__(self):
-        # For the admin.
-        return self.title + " [" + self.get_owner_domains() + "]"
+        # For the admin, notification strings
+        return self.title
 
     def __repr__(self):
         # For debugging.
@@ -135,14 +135,21 @@ class Project(models.Model):
                 if not d.attached_to.task.deleted_at:
                     yield d
     
-    def get_invitation_purpose(self, invitation):
+    def get_invitation_verb_inf(self, invitation):
         into_new_task_question_id = invitation.target_info.get('into_new_task_question_id')
         if into_new_task_question_id:
             from guidedmodules.models import ModuleQuestion
-            return ("to edit a new module <%s>" % ModuleQuestion.objects.get(id=into_new_task_question_id).spec["title"]) \
-                + (" and to join the project team" if invitation.into_project else "")
+            return ("to edit a new module <%s> in" % ModuleQuestion.objects.get(id=into_new_task_question_id).spec["title"])
         elif invitation.target_info.get('what') == 'join-team':
-            return "to join this project team"
+            return "to join the project"
+        raise ValueError()
+
+    def get_invitation_verb_past(self, invitation):
+        into_new_task_question_id = invitation.target_info.get('into_new_task_question_id')
+        if into_new_task_question_id:
+            pass # because .target is rewritten to the task, this never occurs
+        elif invitation.target_info.get('what') == 'join-team':
+            return "joined the project"
         raise ValueError()
 
     def is_invitation_valid(self, invitation):
@@ -177,6 +184,9 @@ class Project(models.Model):
         # Just for joining a project. For accepting a task, the target
         # has been updated to that task.
         return "/"
+
+    def get_notification_watchers(self):
+        return self.get_members()
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", help_text="The Project this is defining membership for.")
@@ -260,8 +270,13 @@ class Invitation(models.Model):
     def to_display(self):
         return str(self.to_user) if self.to_user else self.to_email
 
+    def purpose_verb(self):
+        return \
+              ("to join the project team and " if (self.into_project and (not isinstance(self.target, Project) or self.target_info.get('what') != 'join-team')) else "") \
+            + self.target.get_invitation_verb_inf(self)
+
     def purpose(self):
-        return self.target.get_invitation_purpose(self)
+        return self.purpose_verb() + self.target.title
 
     def get_acceptance_url(self):
         from django.core.urlresolvers import reverse
