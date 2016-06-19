@@ -1,0 +1,65 @@
+id: inventory_org_details
+title: Organization Details
+version: 1
+introduction:
+  format: markdown
+  template: |
+    Tell us some basic information about the organization responsible for {{project}}.
+questions:
+
+# intersticial about organization
+
+  - id: org_name
+    title: Project Organization Name
+    prompt: What is name of organization that owns {{project}}?
+    type: text
+
+  - id: type_org
+    title: Project Organization
+    prompt: What type of organization is {{org_name}}?
+    type: choice
+    choices:
+        - key: company
+          text: company
+        - key: government agency
+          text: government agency
+        - key: individual
+          text: individual  
+        - key: multiple owners
+          text: multiple owners
+        - key: non-profit
+          text: non-profit
+        - key: other
+          text: other
+
+  - id: user_employee
+    title: user_employee
+    prompt: Are you an employee of {{org_name}}?
+    type: yesno
+
+  - id: user_relationship
+    title: user_relationship
+    prompt: What is your relationship to {{org_name}}?
+    type: choice
+    choices:
+        - key: employee
+          text: employee
+        - key: consultant
+          text: consultant
+        - key: vendor
+          text: vendor  
+        - key: other
+          text: other
+    impute:
+        - condition: user_employee == 'yes'
+          value: employee
+
+output:
+  - title: Organization Details
+    format: markdown
+    template: |
+      # Organization Details
+
+      {{org_name}} is a {{type_org}}.
+
+      The user's relationship to {{org_name}} is {{user_relationship}}.
