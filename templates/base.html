@@ -41,6 +41,13 @@
                 overflow-y: scroll;
                 font-family: 'Hind', sans-serif;
             }
+
+            img#govreadyqlogo {
+              width:267px;
+              position: relative;
+              top: -10px;
+              left: -30px;
+            }
         </style>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" integrity="sha256-VBrFgheoreGl4pKmWgZh3J23pJrhNlSUOBek+8Z2Gv0=" crossorigin="anonymous">
@@ -67,7 +74,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/about">GovReady Q</a>
+          <a class="navbar-brand" href="/about"><img id="govreadyqlogo" alt="GovReady Q logo" src="/static/module-assets/govready-q_logo-tp-sm.png"></a>
         </div>
 
         <div id="navbar-collapse-target" class="collapse navbar-collapse">
@@ -112,7 +119,7 @@
     </nav>
 
     {% if messages %}
-    <div class="container" style="margin-top: 1em">
+    <div class="container" style="margin-top: 1em;">
       {% for message in messages %}
         {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
         <div class="alert fade in alert-{% if message.level_tag == "error" %}danger{% elif message.level_tag == "debug" %}info{% else %}{{message.level_tag}}{% endif %}">
@@ -125,7 +132,7 @@
 
     {% block body-wide %}
     <div class="container-fluid">
-      <div class="container" style="min-height: 80%;">
+      <div class="container" style="min-height: 80%; margin-top: 2em;">
       {% block body %}
       {% endblock %}
 
