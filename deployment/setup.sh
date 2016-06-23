@@ -22,6 +22,7 @@ fi
 
 # Install packages.
 apt-get install -y \
+	unzip \
 	python3 python-virtualenv python3-pip \
 	python3-yaml \
 	nginx uwsgi-plugin-python3 supervisor \
