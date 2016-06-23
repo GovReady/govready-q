@@ -117,4 +117,6 @@ function mark_notifications_read(upto_id) {
     upto_id: upto_id
    }
   });
+  $('.notification.unread').removeClass('unread');
+  return false;
 }
