@@ -31,7 +31,7 @@
         <meta property="fb:app_id" content="#######"/>
         {% endcomment %}
 
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}">
         <style>
             @import url(https://fonts.googleapis.com/css?family=Hind:400,700);
             body {
@@ -49,8 +49,8 @@
               width: 201px;
             }
         </style>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" integrity="sha256-VBrFgheoreGl4pKmWgZh3J23pJrhNlSUOBek+8Z2Gv0=" crossorigin="anonymous">
+        <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
+        <link rel="stylesheet" href="{% static "vendor/fontawesome/css/font-awesome.min.css" %}">
 
         <link rel="stylesheet" href="{% static "css/main.css" %}">
 
@@ -203,11 +203,11 @@
   </div>
 </div>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js" integrity="sha256-lZFHibXzMHo3GGeehn1hudTAP3Sc0uKXBXAzHX1sjtk=" crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+        <script src="{% static "vendor/jquery.js" %}"></script>
+        <script src="{% static "vendor/bootstrap/js/bootstrap.min.js" %}"></script>
 
         <script src="{% static "js/main.js" %}"></script>
-        <script src="{% static "bootstrap/bootstrap-helpers.js" %}"></script>
+        <script src="{% static "vendor/bootstrap-helpers.js" %}"></script>
         <script>
         $(document).ajaxSend(function(event, xhr, settings) { if (!/^https?:.*/.test(settings.url)) xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); });
         </script>
