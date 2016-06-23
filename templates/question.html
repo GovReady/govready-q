@@ -297,19 +297,17 @@ Next Question: {{q.spec.title}}
   </div> <!-- /col -->
 </div> <!-- /row -->
 
-{% if DEBUG and 0 %}
-<p style="margin: 1em 0 2em 0">
-  user: <b>{{user}}</b>
-  |
-  module: <b>{{module.id}}</b>
-  |
-  question: <b>{{q.key}}</b>
-</p>
-{% endif %}
-
 {% endblock %}
 
 {% block scripts %}
+{% if DEBUG %}
+<div class="container" style="color: #999; font-size: 80%; margin-top: 50px">
+<p>
+  module: {{m.key}} {% if not m.visible %}(obsolete){% endif %} | question: {{q.key}}
+</p>
+{% endif %}
+</div>
+
 <script>
 $(function() {
     var form = $("#question > form");
