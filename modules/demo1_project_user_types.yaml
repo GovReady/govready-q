@@ -59,7 +59,7 @@ output:
 
       Trusted External Partners: {{usertype_partners.text}}
 
-      General Public: {{usertype_partners.text}}
+      General Public: {{usertype_generalpublic.text}}
 
       Other Computer Systems: {{usertype_systems.text}}
 
