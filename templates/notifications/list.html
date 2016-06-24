@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+Notifications
+{% endblock %}
+
+{% block head %}
+<style>
+.notification.unread { font-weight: bold; }
+</style>
+{% endblock %}
+
+{% block body %}
+<h1>Notifications</h1>
+
+<div style="margin: 1em; text-align: right;">
+    <a href="#"
+       onclick="return mark_notifications_read({ upto_id: {{notifications.0.id}} })">Mark All Read</a>
+</div>
+
+<div class="notifications">
+  {% for notice in notifications %}
+    {% include 'notifications/notice.html' %}
+  {% empty %}
+    <p>You have no notifications yet.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

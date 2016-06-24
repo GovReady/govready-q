@@ -109,14 +109,20 @@ function cancel_invitation(elem, callback) {
   return false;
 }
 
-function mark_notifications_read(upto_id) {
+function mark_notifications_read(data, callback) {
+  // ajax call
   $.ajax({
    url: '/_mark_notifications_as_read',
    method: "POST",
-   data: {
-    upto_id: upto_id
-   }
+   data: data,
+   complete: callback
   });
-  $('.notification.unread').removeClass('unread');
+
+  // update DOM (all .notification's or just those
+  // that match the given ID)
+  var f = "";
+  if (data.id)
+    f = "[data-notification-id=" + data.id + "]";
+  $('.notification.unread' + f).removeClass('unread');
   return false;
 }

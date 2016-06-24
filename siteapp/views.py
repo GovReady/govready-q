@@ -489,10 +489,21 @@ def issue_notification(acting_user, verb, target, recipients='WATCHERS', **notif
 
 @login_required
 def mark_notifications_as_read(request):
-    # Mark all of the user's notifications as read up to
-    # the one with id upto_id. This ensures that if a 
-    # notification was generated after the client-side UI
-    # displayed the last batch of notifications, that we
-    # won't clear out something the user hasn't seen.
-    request.user.notifications.filter(id__lte=request.POST['upto_id']).mark_all_as_read()
-    return JsonResponse({ "status": "ok" })
+	# Mark one or all of the user's notifications as read.
+
+	notifs = request.user.notifications
+
+	if "upto_id" in request.POST:
+		# Mark up to the one with id upto_id. This ensures that if a 
+		# notification was generated after the client-side UI
+		# displayed the last batch of notifications, that we
+		# won't clear out something the user hasn't seen.
+		notifs = notifs.filter(id__lte=request.POST['upto_id'])
+	
+	elif "id" in request.POST:
+		# Mark a single notification as read.
+		notifs = notifs.filter(id=request.POST['id'])
+
+	notifs.mark_all_as_read()
+
+	return JsonResponse({ "status": "ok" })
