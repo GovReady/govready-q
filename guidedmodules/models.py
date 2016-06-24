@@ -419,8 +419,10 @@ class TaskAnswer(models.Model):
                 is_cleared = True
             elif is_cleared:
                 vp = "answered the question"
+                is_cleared = False
             else:
                 vp = "changed the answer"
+                is_cleared = False
             history.append({
                 "type": "event",
                 "date": answer.created,
