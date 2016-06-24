@@ -512,6 +512,9 @@ class RenderedAnswer:
                 v.get_template_context(self.escapefunc)
                 for v in self.answer)
 
+        elif self.question_type == "external-function":
+            return iter(self.answer)
+
         raise TypeError("Answer of type %s is not iterable." % self.question_type)
 
     def __getattr__(self, item):
