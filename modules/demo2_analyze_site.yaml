@@ -31,7 +31,21 @@ output:
 
       Date: {{analysis.scan_date}}
 
-      Server: {{analysis.server}}
+      {% if 'expires' in analysis.result.domain %}
+      Domain Name Expiration Date: {{analysis.result.domain.expires}}
+      {% endif %}
 
-      HTTPS with HSTS: {{analysis.hsts}}
+      {% if not analysis.result.domain.ssl.allowed %}
+      TLS (SSL): Not available on this website.
+      {% else %}
+      TLS (SSL) Certificate Expiration Date: {{analysis.result.domain.ssl.expires}}
+      {% endif %}
+
+      {% if analysis.result.wappalyzer %}
+      Uses:
+      {% for item in analysis.result.wappalyzer.values() %}
+      * {{item.app}} {{item.version}}
+      {% endfor %}
+      {% endif %}
+
       {% endif %}
