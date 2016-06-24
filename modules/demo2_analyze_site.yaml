@@ -27,6 +27,9 @@ output:
       {% if not analysis %}
       Not yet analyzed.
 
+      {% elif analysis.url != project_url %}
+      Analysis results are out of date because the project URL has changed. Please re-scan.
+
       {% elif analysis.schema != 1 %}
       Analysis results are out of date because a new analysis is available. Please re-scan.
 

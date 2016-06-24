@@ -546,6 +546,11 @@ class RenderedAnswer:
         # IDs of the subtask, just do normal Python behavior.
         return super().__getattr__(self, item)
 
+    def __eq__(self, other):
+        if isinstance(other, RenderedAnswer):
+            other = other.answer
+        return self.answer == other
+
 def run_external_function(question, existing_answers):
     # Split the function name into the module path and function name.
     function_name = question.get("function", "").rsplit(".", 1)

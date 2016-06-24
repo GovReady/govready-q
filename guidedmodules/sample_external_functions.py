@@ -28,7 +28,7 @@ def sample_function(question, existing_answers):
     return {
         "schema": 1,
         "scan_date": datetime.now().isoformat(),
-        "url": url,
+        "url": project_url,
         "result": resp
     }
 
