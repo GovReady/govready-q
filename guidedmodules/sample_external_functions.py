@@ -26,6 +26,7 @@ def sample_function(question, existing_answers):
         raise ValueError("There was an error running the analysis: " + str(e))
 
     return {
+        "schema": 1,
         "scan_date": datetime.now().isoformat(),
         "url": url,
         "result": resp

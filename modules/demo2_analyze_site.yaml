@@ -26,6 +26,10 @@ output:
     template: |
       {% if not analysis %}
       Not yet analyzed.
+
+      {% elif analysis.schema != 1 %}
+      Analysis results are out of date because a new analysis is available. Please re-scan.
+
       {% else %}
       URL: {{analysis.url}}
 
