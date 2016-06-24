@@ -22,6 +22,11 @@
     {% endif %}
   </a>
 
+  {% if notice.description %}
+    <br>
+    {{notice.description}}
+  {% endif %}
+
   <br>
 
   <span style="font-size: 85%">{{ notice.timesince }} ago</span>

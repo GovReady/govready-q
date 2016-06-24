@@ -92,10 +92,12 @@ def submit_discussion_comment(request):
 
     # Issue a notification.
     from siteapp.views import issue_notification
+    from django.utils.text import Truncator
     issue_notification(
         request.user,
         "commented on",
-        discussion)
+        discussion,
+        description="“" + Truncator(text).words(15) + "”")
 
     # Return the comment for display.
     return JsonResponse(comment.render_context_dict())
