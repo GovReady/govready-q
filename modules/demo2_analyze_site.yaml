@@ -48,7 +48,7 @@ output:
       TLS (SSL) Certificate Expiration Date: {{analysis.result.domain.ssl.expires}}
       {% endif %}
 
-      {% if analysis.result.wappalyzer %}
+      {% if 'wappalyzer' in analysis.result %}
       Uses:
       {% for item in analysis.result.wappalyzer.values() %}
       * {{item.app}} {{item.version}}
