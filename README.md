@@ -40,11 +40,13 @@ If this is truly on a new machine, it will create a new Sqlite database. You'll 
 
 You can copy the `secret-key` from what you see --- it was generated to be unique.
 
-For production, set `debug` to false and add the administrators for server error emails (a list of pairs of [name, address]):
+For production you might also want to make other changes to the `environment.json` file:
+
+* Set `debug` to false.
+* Set the `modules-path` key to a path to the YAML module files (the default is "modules" to use the built-in modules). 
+* Add the administrators for unhandled server error emails (a list of pairs of [name, address]):
 
 	"admins": [["Name", "email@domain.com"], ...]
-
-for unhandled error emails.
 
 To update, run:
 

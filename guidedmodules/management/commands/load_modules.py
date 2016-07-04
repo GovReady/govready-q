@@ -1,10 +1,10 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.conf import settings
 
 from guidedmodules.models import Module, ModuleQuestion, Task
 
-import glob, os.path, yaml, json, sys
-import yaml.scanner, yaml.constructor
+import sys, json
 
 class ValidationError(Exception):
     def __init__(self, file_name, message):
@@ -26,8 +26,7 @@ class Command(BaseCommand):
         # other YAML files, we also end up loading them recursively.
         ok = True
         processed_modules = set()
-        for fn in glob.glob("modules/*.yaml"):
-            module_id = os.path.splitext(os.path.basename(fn))[0]
+        for module_id in self.iter_modules():
             try:
                 self.process_module(module_id, processed_modules, [])
             except (ValidationError, CyclicDependency, DependencyError) as e:
@@ -43,6 +42,27 @@ class Command(BaseCommand):
             print("Marking modules as obsoleted: ", obsoleted_modules)
             obsoleted_modules.update(visible=False)
 
+    def iter_modules(self):
+        # Returns a generator over all module IDs in YAML files on disk.
+        import glob, os.path
+        for fn in glob.glob(os.path.join(settings.MODULES_PATH, "*.yaml")):
+            module_id = os.path.splitext(os.path.basename(fn))[0]
+            yield module_id
+
+    def open_module(self, module_id, referenced_by_module_id):
+        # Returns the parsed YAML content of the module file on
+        # disk for module_id.
+        import os.path
+        import yaml, yaml.scanner, yaml.constructor
+        fn = os.path.join(settings.MODULES_PATH, module_id + ".yaml")
+        if not os.path.exists(fn):
+            raise DependencyError(referenced_by_module_id, module_id)
+        with open(fn) as f:
+            try:
+                return yaml.load(f)
+            except (yaml.scanner.ScannerError, yaml.constructor.ConstructorError) as e:
+                raise ValidationError(fn, "There was an error parsing the file: " + str(e))
+
     @transaction.atomic # there can be an error mid-way through updating a Module
     def process_module(self, module_id, processed_modules, path):
         # Prevent cyclic dependencies between modules.
@@ -57,15 +77,7 @@ class Command(BaseCommand):
         processed_modules.add(module_id)
 
         # Load the module's YAML file.
-        fn = os.path.join("modules", module_id + ".yaml")
-        if not os.path.exists(fn):
-            raise DependencyError(path[-1], module_id)
-        with open(fn) as f:
-            try:
-                spec = yaml.load(f)
-            except (yaml.scanner.ScannerError, yaml.constructor.ConstructorError) as e:
-                raise ValidationError(fn, "There was an error parsing the file: " + str(e))
-
+        spec = self.open_module(module_id, (path[-1] if len(path) > 0 else None))
         if spec["id"] != module_id:
             raise ValidationError(fn, "Module 'id' field ('%s') doesn't match filename ('%s')." % (spec["id"], module_id))
 
