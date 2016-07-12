@@ -1,0 +1,15 @@
+---
+driver:
+  name: vagrant
+  network:
+    - ["forwarded_port", {guest: 8000, host: 8080}]
+
+provisioner:
+  name: shell
+  log_level: debug
+
+platforms:
+  - name: ubuntu-14.04
+
+suites:
+  - name: default

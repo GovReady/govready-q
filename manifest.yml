@@ -1,0 +1,11 @@
+---
+applications:
+- name: govready-q
+  env:
+    DEBUG: true
+    HOST: "localhost:8000"
+    HTTPS: false
+    SECRET-KEY: "@-uks6_6r$e6qp2*7irerq5%l2a8vbtxv#fd4nfjyd%(fz85x4"
+    GOVREADY_CMS_API_AUTH: "none"
+    govready_cms_api_auth: "none"
+    STATIC_ROOT: "/root/public_html"
