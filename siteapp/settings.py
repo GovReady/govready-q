@@ -62,24 +62,43 @@ EMAIL         = os.getenv('EMAIL', environment.get('email'))
 # uses that path:
 STATIC        = os.getenv('STATIC', environment.get('static'))
 
+################ DATABASE SETUP ##############
 # Use an Sqlite database at local/db.sqlite, until other database
 # settings have been set in the environment.
+#
+# when DATABASE_URL='mysql2://myuser:mypass@myhost:3306/my_database_name'
+# then DATABASES['default'] =
+#    {'USER': 'myuser', 'NAME': 'my_database_name', 'HOST': 'myhost', 'PASSWORD': 'mypass', 'PORT': 3306, 'ENGINE': 'django.db.backends.mysql'}
+# else DATABASES['default'] =
+#    {'ENGINE': 'django.db.backends.sqlite3', 'PASSWORD': None, 'USER': None, 'NAME': 'local/db.sqlite3', 'PORT': None, 'HOST': None}
+
+from urllib.parse import urlparse
+url = urlparse(
+        os.environ.get(
+            'DATABASE_URL',
+            'sqlite3:///db.sqlite3'
+            )
+        )
 DATABASES = {
-	'default': {
-		'ENGINE': 'django.db.backends.sqlite3',
-		'NAME': local('db.sqlite3'),
-	}
+    'default': {
+        'ENGINE': 'django.db.backends.mysql' if 'mysql' in url.scheme else 'django.db.backends.sqlite3',
+        'NAME': url.path[1:] if url.scheme == 'mysql2' else local(url.path[1:]),
+	    'CONN_MAX_AGE': 60 if url.scheme != 'sqlite3' else None,
+        'USER': url.username,
+        'PASSWORD': url.password,
+        'HOST': url.hostname,
+        'PORT': url.port,
+    }
 }
-if not environment.get('db'):
-	# Ensure the 'local' directory exists for the default Sqlite
-	# database.
+print("Using DB: %s", DATABASES['default'])
+
+# Ensure the 'local' directory exists for the default Sqlite
+# database.
+if 'sqlite3' in DATABASES['default']['NAME']:
 	if not os.path.exists(os.path.dirname(local('.'))):
+		print("Making local dir for SQLite3 DB")
 		os.mkdir(os.path.dirname(local('.')))
-else:
-	# Enable database connection pooling (unless overridden in the
-	# environment settings).
-	DATABASES['default']['CONN_MAX_AGE'] = 60
-	DATABASES['default'].update(environment['db'])
+################ FINI DATABASE SETUP ##############
 
 # allauth requires the use of the sites framework.
 SITE_ID = 1
