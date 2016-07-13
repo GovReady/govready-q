@@ -71,5 +71,10 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
-
+## Testing and CF deployment
 .kitchen/
+.migration_done
+## We don't CFignore the vendor'd stuff; we need it in CF
+## although we do .gitignore it.
+vendor/
+siteapp/staticfiles

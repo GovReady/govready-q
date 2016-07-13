@@ -7,13 +7,19 @@ STATIC = siteapp/static/vendor/done
 all: clean requirements migrate run
 
 migrate: ./.migration_done
+	echo "****************************************"
+	echo "Pending MySQL; migrate also runs the app"
+	echo "****************************************"
 
 ./.migration_done:	requirements
 	cf push -i 1 -c './init_db.sh' $(MYAPP)
 	touch $@
 
 run: migrate
-	cf push $(MYAPP)
+	echo "****************************************"
+	echo "Pending MySQL; migrate also runs the app"
+	echo "****************************************"
+	#cf push $(MYAPP)
 
 requirements: $(VENDOR) $(STATIC)
 

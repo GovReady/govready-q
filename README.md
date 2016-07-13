@@ -20,7 +20,15 @@ To develop locally, run the following commands:
 
 Q can be tested within test-kitchen + vagrant with Ubuntu 14.04. As this approach is not currently in use the files have been moved [to a GitHub Gist](https://gist.github.com/pburkholder/bee382bb366346ae5a5cba7286e68e11) to keep this repository less cluttered.
 
+## Cloud Foundry (under development)
 
+Steps for staging and running the app in PCF are in the Makefile.  Try:
+
+```
+make all
+```
+
+Then visit site at https://govready-q.cfapps.io
 
 ## Deployment
 
