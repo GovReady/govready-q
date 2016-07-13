@@ -16,6 +16,12 @@ To develop locally, run the following commands:
 	python3 manage.py load_modules
 	python3 manage.py runserver
 
+## Test kitchen
+
+Q can be tested within test-kitchen + vagrant with Ubuntu 14.04. As this approach is not currently in use the files have been moved [to a GitHub Gist](https://gist.github.com/pburkholder/bee382bb366346ae5a5cba7286e68e11) to keep this repository less cluttered.
+
+
+
 ## Deployment
 
 To deploy, on a fresh machine, create a Unix user named "site" and in its home directory run:
@@ -43,7 +49,7 @@ You can copy the `secret-key` from what you see --- it was generated to be uniqu
 For production you might also want to make other changes to the `environment.json` file:
 
 * Set `debug` to false.
-* Set the `modules-path` key to a path to the YAML module files (the default is "modules" to use the built-in modules). 
+* Set the `modules-path` key to a path to the YAML module files (the default is "modules" to use the built-in modules).
 * Add the administrators for unhandled server error emails (a list of pairs of [name, address]):
 
 	"admins": [["Name", "email@domain.com"], ...]
