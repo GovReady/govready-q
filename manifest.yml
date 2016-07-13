@@ -3,6 +3,8 @@ memory: 1G
 instances: 1
 applications:
 - name: govready-q
+  services:
+     - cf-govready-q-mysql
   env:
     DEBUG: true
     HOST: "localhost:8000"

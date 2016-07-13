@@ -13,6 +13,7 @@ jsonfield
 django-bootstrap-form
 django-notifications-hq
 
+mysqlclient
 
 whitenoise==1.0.6  #manages static assets
 dj-database-url==0.3.0 #grabs environment variables and dumps them into a Django settings file

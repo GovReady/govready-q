@@ -22,13 +22,33 @@ Q can be tested within test-kitchen + vagrant with Ubuntu 14.04. As this approac
 
 ## Cloud Foundry (under development)
 
-Steps for staging and running the app in PCF are in the Makefile.  Try:
+Initially, you'll need to login to CF and create a mysql service:
 
 ```
-make all
+cf login -a https://api.run.pivotal.io
+cf create-service cleardb spark cf-govready-q-mysql # spark is the free tier
+```
+
+Then ensure the name above, `cf-govready-q-mysql`, matches the name in `manifest.yml` e.g.,:
+
+```yaml
+applications:
+- name: govready-q
+  services:
+     - cf-govready-q-mysql
+# ... other stuff as follows ...
+```
+
+To launch, use the `make` targets, generally
+
+```
+make clean migrate
+make run
 ```
 
 Then visit site at https://govready-q.cfapps.io
+
+Note: To vendor all of the requirements with `pip` it seems you have to have MySQL installed locally (shrug). Try `brew install mysql` on OsX. 
 
 ## Deployment
 
