@@ -5,6 +5,3 @@ python manage.py migrate --noinput
 
 echo "------------- Load modules"
 python manage.py load_modules
-
-echo "------------- Starting Gunicorn"
-gunicorn siteapp.wsgi

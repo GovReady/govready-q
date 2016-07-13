@@ -48,7 +48,9 @@ make run
 
 Then visit site at https://govready-q.cfapps.io
 
-Note: To vendor all of the requirements with `pip` it seems you have to have MySQL installed locally (shrug). Try `brew install mysql` on OsX. 
+Notes:
+* To vendor all of the requirements with `pip` it seems you have to have MySQL installed locally (shrug). Try `brew install mysql` on OsX.
+* Suggestions for migrations at: https://docs.cloudfoundry.org/devguide/services/migrate-db.html
 
 ## Deployment
 

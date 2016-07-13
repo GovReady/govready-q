@@ -1,25 +1,20 @@
 MYAPP = govready-q
 VENDOR = vendor/done
 STATIC = siteapp/static/vendor/done
+MIGRATION = .migration_done
 
-.PHONY: migrate run requirements
+.PHONY: run
 
 all: clean requirements migrate run
 
-migrate: ./.migration_done
-	echo "****************************************"
-	echo "Pending MySQL; migrate also runs the app"
-	echo "****************************************"
+migrate: $(MIGRATION)
 
-./.migration_done:	requirements
+./.migration_done:
 	cf push -i 1 -c './init_db.sh' $(MYAPP)
 	touch $@
 
-run: migrate
-	echo "****************************************"
-	echo "Pending MySQL; migrate also runs the app"
-	echo "****************************************"
-	#cf push $(MYAPP)
+run: $(MIGRATION)
+	cf push -i 2 $(MYAPP) -c 'null'
 
 requirements: $(VENDOR) $(STATIC)
 
