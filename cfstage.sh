@@ -4,7 +4,7 @@
 
 vendor_requirements() {
   mkdir -p vendor
-  pip download --dest vendor -r requirements.txt
+  pip3 download --dest vendor -r requirements.txt
 }
 
 static_requirements() {

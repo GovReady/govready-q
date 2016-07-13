@@ -38,7 +38,7 @@ else:
 
 	print("Create a local/environment.json file! It should contain something like this:")
 	print(json.dumps(environment, sort_keys=True, indent=2))
-	
+
 # DJANGO SETTINGS #
 ###################
 
@@ -232,9 +232,12 @@ if environment["https"]:
 # where "collectstatic" will put static files. The ManifestStaticFilesStorage
 # is activated.
 STATIC_URL = '/static/'
-if environment.get("static"):
-	STATIC_ROOT = environment["static"]
-	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
+#if environment.get("static"):
+#	STATIC_ROOT = environment["static"]
+#	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # Add a convenience setting "SITE_ROOT_URL" that stores the root URL
 # of the website, constructed from the "https" and "host" environment

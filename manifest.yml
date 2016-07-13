@@ -1,4 +1,6 @@
 ---
+memory: 1G
+instances: 1
 applications:
 - name: govready-q
   env:
@@ -9,3 +11,4 @@ applications:
     GOVREADY_CMS_API_AUTH: "none"
     govready_cms_api_auth: "none"
     STATIC_ROOT: "/root/public_html"
+    static: "staticfiles"
