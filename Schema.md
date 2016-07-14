@@ -78,12 +78,46 @@ Documents
 
 Documents occur as `introduction` and `output` documents of Modules as well as Question prompts.
 
+### Document Format
+
 The `introduction` and `output` documents of Modules allow a format to be specified. The document formats are:
 
 * `markdown` --- The document is entered in [CommonMark](http://commonmark.org/) ([quick guide](http://commonmark.org/help/)) in the specification file, but it will be rendered into a richly formatted presentation on screen.
 * `html` --- The document is given in raw HTML, but it will be rendered on screen.
 * `text` --- The document is given in plain text, and it will display as preformatted (fixed-width) text on screen.
 * `json`, `yaml` --- Experimental.
+
+#### Additional Markdown Notes
+
+Documents specified in `markdown` format are rendered according to the [CommonMark 0.25 specification](http://commonmark.org/).
+
+Note that for some things like tables, it is necessary to insert raw HTML right into the document, which is acceptable CommonMark. To create a table:
+
+	<table><thead><th>
+
+	Col 1
+
+	</th>
+	<th>
+
+	Col 2
+
+	</th>
+	</thead>
+	<tbody><tr><td>
+
+	Some [commonmark](http://www.google.com) within the cell.
+
+	</td>
+	<td>
+
+	More *content.*
+
+	</td></tr></tbody></table>
+
+Some of the newlines are necessary to get CommonMark to go out of raw HTML mode and back into parsing CommonMark.
+
+### Document Templating
 
 All document formats are evaluated as [Jinja2 templates](http://jinja.pocoo.org/docs/dev/templates/). That means within your document you can embed special tags that are replaced prior to the document being displayed to the user:
 
