@@ -12,3 +12,9 @@ django-allauth
 jsonfield
 django-bootstrap-form
 django-notifications-hq
+
+
+whitenoise==1.0.6  #manages static assets
+dj-database-url==0.3.0 #grabs environment variables and dumps them into a Django settings file
+#waitress==0.8.9 #
+gunicorn
