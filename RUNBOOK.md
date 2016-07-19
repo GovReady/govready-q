@@ -2,7 +2,7 @@
 
 ## Intentions:
 
-This document assesses what's need to operationalize Q, and other GovReady apps, in a manner that supports the following in a cloud provider:
+This document assesses what's needed to operationalize Q, and other GovReady apps, in a manner that supports the following in a cloud provider:
 - [Releases](#releases): frequent, automated releases of small batches (push-button or scripts)
 - [Availablity](#availability): general availability of (app).govready.com and (app).dev.govready.com
   - in most cases we'll run apps on single instances (with autorestart/scaling to make sure that instance is always up), and allow releases to impose downtime
