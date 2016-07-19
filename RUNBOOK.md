@@ -181,7 +181,7 @@ PWS provides SSL for hosted domains: https://docs.run.pivotal.io/marketplace/piv
 
 Should we desire CDN integration, see https://docs.run.pivotal.io/marketplace/integrations/cloudflare/index.html
 
-**ToDo**
+**ToDo**:
 
 - [ ] Enable HTTPS for https://qq.govready.com DNS test once that's complete
 - [ ] Document process (or add tooling) for additional apps.
@@ -190,7 +190,7 @@ Should we desire CDN integration, see https://docs.run.pivotal.io/marketplace/in
 
 It seems that GSA/18f has done [due diligence for the CF UAA](https://github.com/opencontrol/cf-compliance/blob/master/UAA/component.yaml) Looks good.
 
-**ToDo**
+**ToDo**:
 - [ ] Set up root account and share with Greg
 - [ ] Add Josh and Peter and Greg as users
 - [ ] Document user deactivation
