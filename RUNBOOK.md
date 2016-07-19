@@ -2,7 +2,7 @@
 
 ## Intentions:
 
-This document is a guide to running Q, and other GovReady apps, in a manner that supports:
+This document assesses what's need to operationalize Q, and other GovReady apps, in a manner that supports the following in a cloud provider:
 - [Releases](#releases): frequent, automated releases of small batches (push-button or scripts)
 - [Availablity](#availability): general availability of (app).govready.com and (app).dev.govready.com
   - in most cases we'll run apps on single instances (with autorestart/scaling to make sure that instance is always up), and allow releases to impose downtime
@@ -22,15 +22,22 @@ This document is a guide to running Q, and other GovReady apps, in a manner that
 - [RBAC](#rbac): Role-based authentication -- GovReady team members should each have their own credentials, preferably with a single provider, to access all operational entities.
 
 
-Further, the runbook should consider on-premise releases of GovReady applications. Esp.
+
+As such, it's not yet a formal runbook, but can be the basis for one as the missing pieces are fleshed out.
+
+Further, this guide (or future iterations) should consider on-premise releases of GovReady applications. Esp.
 distribution of apps for release as standalone installs in other environments that are not publicly available
 and possibly don't have access to Internet resources.
 
 ### Hosting strategies:
 
+As of this writing, we are looking at two main paths for running Q in a Cloud Service Provider:
+
 **Pivotal Web Services (PWS)***
 
 Pivotal's implementation of Cloud Foundry as a service is PWS: Pivotal Web Services.  In this doc PWS refers to this platform, and CF or Foundry refers to any implementation of Cloud Foundry.
+
+This doc, as of July 2016, is focussed on operationalizing Q for PWS.
 
 **AWS**
 
@@ -42,11 +49,11 @@ Writing an AWS runbook is a secondary goal to having a solid platform in PWS
 
 Cloud Foundry is designed for frequent release with the `cf push` API command. The `Makefile` with this app demonstrates how to stage prerequisite resources and push those to the new instances running the applications.
 
-**ToDo**
+**ToDo**:
 
-[ ] Harden scripted release process for repeatability
-[ ] Acceptance and Production releases should only occur from a centralized location (see CI/CD below)
-[ ] Acceptance and Production releases should be logged/published/displayed
+- [ ] Harden scripted release process for repeatability
+- [ ] Acceptance and Production releases should only occur from a centralized location (see CI/CD below)
+- [ ] Acceptance and Production releases should be logged/published/displayed
 
 ## <a name="availability"></a>Availability
 
@@ -67,9 +74,9 @@ Q should run with a single instance, and PWS set to auto-scale a new instance if
 
 **ToDo**
 
-[ ] Determine Q if can support live migrations; if so then perhaps a faster Blue/maintenance/Green release can happen, or even just Blue/Green zerodowntime.
-[ ] Test PWS autoscale/autorestart
-[ ] Write the above-described release process.
+- [ ] Determine Q if can support live migrations; if so then perhaps a faster Blue/maintenance/Green release can happen, or even just Blue/Green zerodowntime.
+- [ ] Test PWS autoscale/autorestart
+- [ ] Write the above-described release process.
 
 
 ## <a name="persistence"></a>Persistence
@@ -78,8 +85,8 @@ PWS offloads data persistence to 3rd-party partners in the _Marketplace_. The My
 
 **ToDo**
 
-[ ] Test restore from backups
-[ ] Document migration off PWS
+- [ ] Test restore from backups
+- [ ] Document migration off PWS
 
 ## <a name="pricing"></a>Pricing
 
@@ -87,7 +94,7 @@ PWS itself is priced simply by Gb of memory. Nothing else.  If Q has 3 versions 
 
 **ToDo**
 
-[ ] Determine acceptance memory size for Q (512MB? 128?....)
+- [ ] Determine acceptance memory size for Q (512MB? 128?....)
 
 ## <a name="performance"></a>Performance
 
@@ -95,7 +102,7 @@ PWS seems to offer no tunables in terms of network, i/o or CPU. They do have int
 
 **ToDo**
 
-[ ] Ask Pivotal Support for more information on performance tuning
+- [ ] Ask Pivotal Support for more information on performance tuning
 
 ## <a name="backups"></a>backups
 
@@ -110,7 +117,7 @@ There's no immediately available resource on dumping logs. The log docs only dis
 
 **ToDo**
 
-[ ] Investigate dumping all of the above periodically. Open support ticket.
+- [ ] Investigate dumping all of the above periodically. Open support ticket.
 
 ## <a name="ci"></a>CI
 
@@ -139,8 +146,8 @@ Options via GitHub integrations:
 
 **ToDo**
 
-[ ] Evaluate pipeline with Concourse via [blog/tutorial](https://blog.pivotal.io/pivotal-cloud-foundry/products/continuous-deployment-from-github-to-pws-via-concourse)
-[ ] Write a test harness
+- [ ] Evaluate pipeline with Concourse via [blog/tutorial](https://blog.pivotal.io/pivotal-cloud-foundry/products/continuous-deployment-from-github-to-pws-via-concourse)
+- [ ] Write a test harness
 
 ## <a name="logging"></a> Logging/Monitoring/Metrics
 
@@ -154,10 +161,10 @@ For monitoring, we should use synthetic monitors to test site availability and f
 
 **Todo**
 
-[ ] Q needs application level Logging -- add this
-[ ] Logging: Use Loggregator until we have log retention guidelines
-[ ] Metrics: Use PWS metrics until more functionality is needed
-[ ] Monitoring: Read and digest this page: https://docs.pivotal.io/pivotalcf/1-7/opsguide/metrics.html
+- [ ] Q needs application level Logging -- add this
+- [ ] Logging: Use Loggregator until we have log retention guidelines
+- [ ] Metrics: Use PWS metrics until more functionality is needed
+- [ ] Monitoring: Read and digest this page: https://docs.pivotal.io/pivotalcf/1-7/opsguide/metrics.html
 
 ## <a name="dns"></a>DNS
 
@@ -165,8 +172,8 @@ PWS supports routing for 'private domains', e.g. routing traffic for `q.govready
 
 **ToDo**
 
-[ ] Test routing `qq.govready.com` to the prerelease
-[ ] Document the process for mapping DNS and routes to apps
+- [ ] Test routing `qq.govready.com` to the prerelease
+- [ ] Document the process for mapping DNS and routes to apps
 
 ## <a name="certs"></a>Certs
 
@@ -176,14 +183,14 @@ Should we desire CDN integration, see https://docs.run.pivotal.io/marketplace/in
 
 **ToDo**
 
-[ ] Enable HTTPS for https://qq.govready.com DNS test once that's complete
-[ ] Document process (or add tooling) for additional apps.
+- [ ] Enable HTTPS for https://qq.govready.com DNS test once that's complete
+- [ ] Document process (or add tooling) for additional apps.
 
 ## <a name="rbac"></a>RBAC
 
 It seems that GSA/18f has done [due diligence for the CF UAA](https://github.com/opencontrol/cf-compliance/blob/master/UAA/component.yaml) Looks good.
 
 **ToDo**
-[ ] Set up root account and share with Greg
-[ ] Add Josh and Peter and Greg as users
-[ ] Document user deactivation
+- [ ] Set up root account and share with Greg
+- [ ] Add Josh and Peter and Greg as users
+- [ ] Document user deactivation
