@@ -42,17 +42,20 @@ applications:
 To launch, use the `make` targets, generally
 
 ```
-make clean migrate
-make run
+make clean run
 ```
 
-Then visit site at https://govready-q.cfapps.io
+The above step will always do the migrations as they are idempotent (not changing the database unless there are new changes), then start the app. This is not designed for running with multiple instances. As Q is a pre-release application there's no need to scale to multiple instances (https://gettingreal.37signals.com/ch04_Scale_Later.php), although the app should be stateless to support running as across multiple instances later (e.g. following 12-factor principals)
+
+Once the `cf push` step of `make run` is complete, visit the site at https://govready-q.cfapps.io
 
 Notes:
 * To vendor all of the requirements with `pip` it seems you have to have MySQL installed locally (shrug). Try `brew install mysql` on OsX.
 * Suggestions for migrations at: https://docs.cloudfoundry.org/devguide/services/migrate-db.html
 
-## Deployment
+
+
+## Interactive Deployment
 
 To deploy, on a fresh machine, create a Unix user named "site" and in its home directory run:
 
