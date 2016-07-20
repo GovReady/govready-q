@@ -1,8 +1,12 @@
 # from https://raw.githubusercontent.com/if-then-fund/django-good-settings/master/settings.py
 
 ################################################################
-# Good defaults for a setttings.py, plus logic for bringing    #
-# in settings from various normal places you might store them. #
+# Good defaults for a setttings.py:
+#   - reads environment/local.json, if available
+#   - sets values in order of:
+#     1. env value
+#     2. environment/local.json value
+#     3. default value
 ################################################################
 
 import os, os.path, json
@@ -37,13 +41,15 @@ else:
 		"https": False,
 	}
 
+#    if  os.getenv('SECRET_KEY') == None:
 	print("Create a local/environment.json file! It should contain something like this:")
 	print(json.dumps(environment, sort_keys=True, indent=2))
 
 # DJANGO SETTINGS #
 ###################
 
-# Check environment vars, then the local/environment.json settings
+# Check system environment vars, then the local/environment.json settings
+
 # Required settings
 # The SECRET_KEY must be specified in the environment.
 SECRET_KEY    = os.getenv('SECRET_KEY', environment["secret-key"])
@@ -51,10 +57,11 @@ DEBUG         = os.getenv('DEBUG', environment['debug'])
 # Set ALLOWED_HOSTS from the host environment. If it has a port, strip it.
 # The port is used in SITE_ROOT_URL must must be removed from ALLOWED_HOSTS.
 HOST          = os.getenv('HOST', environment['host'])
-ALLOWED_HOSTS = HOST.split(':')[0]
+#ALLOWED_HOSTS = HOST.split(':')[0]
+ALLOWED_HOSTS = "localhost:800".split(':')[0]
 HTTPS         = os.getenv('HTTPS',environment["https"])
 
-## Optional settings either from local/environment.json or env vars
+## Optional settings either from env variables or local/environment.json
 ADMINS        = os.getenv('ADMINS', environment.get("admins", []))
 USE_MEMCACHED = os.getenv('USE_MEMCACHED', environment.get('memcached'))
 EMAIL         = os.getenv('EMAIL', environment.get('email'))
@@ -74,10 +81,10 @@ STATIC        = os.getenv('STATIC', environment.get('static'))
 
 from urllib.parse import urlparse
 url = urlparse(
-        os.environ.get(
+		os.environ.get(
             'DATABASE_URL',
             'sqlite3:///db.sqlite3'
-            )
+			)
         )
 DATABASES = {
     'default': {
@@ -90,8 +97,8 @@ DATABASES = {
         'PORT': url.port,
     }
 }
-print("Using DB: %s", DATABASES['default'])
 
+# print("Using DB: %s", (DATABASES['default']))
 # Ensure the 'local' directory exists for the default Sqlite
 # database.
 if 'sqlite3' in DATABASES['default']['NAME']:
