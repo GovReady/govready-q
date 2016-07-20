@@ -11,6 +11,10 @@ def sample_function(question, existing_answers):
         raise ValueError("The website URL is not set.")
 
     # Get authentication credentials for the GovReady CMS API.
+    if not settings.GOVREADY_CMS_API_AUTH:
+        # No authentication credentials are supplied.
+        raise ValueError("This instance of Q is not configured with authentication credentials for the GovReady CMS API.")
+
     auth_user, auth_pw = settings.GOVREADY_CMS_API_AUTH
 
     # Ask the GovReady CMS API for informationa about the website.
