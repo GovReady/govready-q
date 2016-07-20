@@ -1,0 +1,8 @@
+## Testing and CF deployment
+.kitchen/
+
+.git/
+*.pyc
+
+deployment/
+local/

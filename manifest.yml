@@ -1,0 +1,13 @@
+---
+memory: 1G
+instances: 1
+applications:
+- name: govready-q
+  services:
+     - cf-govready-q-mysql
+  env:
+    DEBUG: true
+    HOST: "localhost:8000"
+    HTTPS: false
+    SECRET-KEY: "@-uks6_6r$e6qp2*7irerq5%l2a8vbtxv#fd4nfjyd%(fz85x4"
+    STATIC: True
