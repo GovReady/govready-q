@@ -22,7 +22,6 @@ class TestDefaultSettings(SimpleTestCase):
         self.assertEqual(settings.ALLOWED_HOSTS, ['*'], "This seems like a bug")
         self.assertListEqual(settings.ADMINS,[])
 
-#    @skip("Skip CloudFormation tests until later")
     def test_only_cf_settings(self):
         self.assertEqual(settings.HTTPS, False)
         self.assertEqual(settings.HOST, "localhost:8000")
