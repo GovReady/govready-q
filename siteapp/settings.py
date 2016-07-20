@@ -41,7 +41,6 @@ else:
 		"https": False,
 	}
 
-#    if  os.getenv('SECRET_KEY') == None:
 	print("Create a local/environment.json file! It should contain something like this:")
 	print(json.dumps(environment, sort_keys=True, indent=2))
 
@@ -51,14 +50,10 @@ else:
 # Check system environment vars, then the local/environment.json settings
 
 # Required settings
-# The SECRET_KEY must be specified in the environment.
 SECRET_KEY    = os.getenv('SECRET_KEY', environment["secret-key"])
 DEBUG         = os.getenv('DEBUG', environment['debug'])
-# Set ALLOWED_HOSTS from the host environment. If it has a port, strip it.
-# The port is used in SITE_ROOT_URL must must be removed from ALLOWED_HOSTS.
 HOST          = os.getenv('HOST', environment['host'])
-#ALLOWED_HOSTS = HOST.split(':')[0]
-ALLOWED_HOSTS = "localhost:800".split(':')[0]
+ALLOWED_HOSTS = HOST.split(':')[0]
 HTTPS         = os.getenv('HTTPS',environment["https"])
 
 ## Optional settings either from env variables or local/environment.json
@@ -70,7 +65,7 @@ EMAIL         = os.getenv('EMAIL', environment.get('email'))
 STATIC        = os.getenv('STATIC', environment.get('static'))
 
 ################ DATABASE SETUP ##############
-# Use an Sqlite database at local/db.sqlite, until other database
+# Use an Sqlite database at local/db.sqlite, unless other database
 # settings have been set in the environment.
 #
 # when DATABASE_URL='mysql2://myuser:mypass@myhost:3306/my_database_name'

@@ -41,4 +41,4 @@ class TestDefaultSettings(SimpleTestCase):
         self.assertFalse(settings.SESSION_COOKIE_SECURE, "Based on environment[https]")
         self.assertIsNone(settings.STATIC_ROOT, "Based on environment.get('static')")
         self.assertEqual(settings.SITE_ROOT_URL, "http://localhost:8000", "Based on environment[https]")
-
+        self.assertEqual(settings.ACCOUNT_DEFAULT_HTTP_PROTOCOL, "http")
