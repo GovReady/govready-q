@@ -60,9 +60,7 @@ HTTPS         = os.getenv('HTTPS',environment["https"])
 ADMINS        = os.getenv('ADMINS', environment.get("admins", []))
 USE_MEMCACHED = os.getenv('USE_MEMCACHED', environment.get('memcached'))
 EMAIL         = os.getenv('EMAIL', environment.get('email'))
-# STATIC True (as for CF deploys) uses a relative path, STATIC "path"
-# uses that path:
-STATIC        = os.getenv('STATIC', environment.get('static'))
+STATIC        = os.getenv('STATIC', environment.get('static')) # path for static files
 
 ################ DATABASE SETUP ##############
 # Use an Sqlite database at local/db.sqlite, unless other database
@@ -259,16 +257,11 @@ if HTTPS:
 	CSRF_COOKIE_SECURE = True
 
 # Put static files in the virtual path "/static/". When the "static"
-# environment setting is set to a string, then it's a local directory path
-# where "collectstatic" will put static files. If "static" is simply True, use a
-# relative path.
-# The ManifestStaticFilesStorage is activated.
+# environment setting is present, then it's a local directory path
+# where "collectstatic" will put static files. The ManifestStaticFilesStorage
+# is activated.
 STATIC_URL = '/static/'
-if STATIC in ['True', 'true', True]:
-	PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-	STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
-	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-elif STATIC:
+if STATIC:
 	STATIC_ROOT = STATIC
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 

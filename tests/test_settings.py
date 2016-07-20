@@ -24,6 +24,7 @@ class TestEnv(unittest.TestCase):
             'DATABASE_URL',
              'mysql2://myuser:mypass@myhost:3306/my_database_name'
              )
+        self.env.set('STATIC', '/path/to/static')
 
     def test_secret_key(self):
         from siteapp import settings
@@ -41,4 +42,15 @@ class TestEnv(unittest.TestCase):
         self.assertEqual(
             settings.DATABASES['default']['NAME'],
             'my_database_name'
+            )
+
+    def test_static(self):
+        from siteapp import settings
+        self.assertEqual(
+            settings.STATIC_ROOT,
+            '/path/to/static'
+            )
+        self.assertEqual(
+        	settings.STATICFILES_STORAGE,
+            'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
             )

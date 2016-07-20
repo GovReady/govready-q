@@ -40,5 +40,7 @@ class TestDefaultSettings(SimpleTestCase):
         self.assertEqual(settings.EMAIL_BACKEND, 'django.core.mail.backends.locmem.EmailBackend', "Based on environment.get('email')")
         self.assertFalse(settings.SESSION_COOKIE_SECURE, "Based on environment[https]")
         self.assertIsNone(settings.STATIC_ROOT, "Based on environment.get('static')")
+        self.assertFalse(settings.STATIC, "Based on environment.get('static') or STATIC env setting")
         self.assertEqual(settings.SITE_ROOT_URL, "http://localhost:8000", "Based on environment[https]")
         self.assertEqual(settings.ACCOUNT_DEFAULT_HTTP_PROTOCOL, "http")
+        self.assertEqual(settings.STATICFILES_STORAGE, 'django.contrib.staticfiles.storage.StaticFilesStorage')
