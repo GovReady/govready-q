@@ -18,8 +18,6 @@ class TestDefaultSettings(SimpleTestCase):
 
     def test_misc_local_settings(self):
         self.assertEqual(settings.DEBUG, False)
-#        self.assertEqual(settings.HTTPS, False)
-#        self.assertEqual(settings.HOST, "localhost:8000")
 
     def test_misc_default_settings(self):
         self.assertEqual(settings.ALLOWED_HOSTS, ['*'], "This seems like a bug")
@@ -28,6 +26,8 @@ class TestDefaultSettings(SimpleTestCase):
     @skip("Skip CloudFormation tests until later")
     def test_only_cf_settings(self):
         skipTest("Not yet")
+        self.assertEqual(settings.HTTPS, False)
+        self.assertEqual(settings.HOST, "localhost:8000")
         self.assertIsNone(settings.USE_MEMCACHED)
         self.assertIsNone(settings.EMAIL)
         self.assertIsNone(settings.STATIC)
