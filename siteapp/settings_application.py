@@ -19,4 +19,4 @@ DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 MODULES_PATH = environment.get('modules-path', 'modules')
 
-GOVREADY_CMS_API_AUTH = environment['govready_cms_api_auth']
+GOVREADY_CMS_API_AUTH = environment.get('govready_cms_api_auth')
