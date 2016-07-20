@@ -22,7 +22,7 @@ class TestDefaultSettings(SimpleTestCase):
 #        self.assertEqual(settings.HOST, "localhost:8000")
 
     def test_misc_default_settings(self):
-        self.assertEqual(settings.ALLOWED_HOSTS, ['*'])
+        self.assertEqual(settings.ALLOWED_HOSTS, ['*'], "This seems like a bug")
         self.assertListEqual(settings.ADMINS,[])
 
     @skip("Skip CloudFormation tests until later")
@@ -38,7 +38,8 @@ class TestDefaultSettings(SimpleTestCase):
             'django.core.cache.backends.locmem.LocMemCache',
             "Default is to use LocMemCache, unless explictly using 'memcached'"
         )
-        self.assertRegexpMatches(settings.EMAIL_SUBJECT_PREFIX, '[localhost:8000]')
-        self.assertFalse(settings.SESSION_COOKIE_SECURE)
-        self.assertIsNone(settings.STATIC_ROOT)
-        self.assertEqual(settings.SITE_ROOT_URL, "http://localhost:8000")
+        self.assertRegexpMatches(settings.EMAIL_SUBJECT_PREFIX, '[localhost:8000]', "Uses environment[host]")
+        self.assertEqual(settings.EMAIL_BACKEND, 'django.core.mail.backends.locmem.EmailBackend', "Based on environment.get('email')")
+        self.assertFalse(settings.SESSION_COOKIE_SECURE, "Based on environment[https]")
+        self.assertIsNone(settings.STATIC_ROOT, "Based on environment.get('static')")
+        self.assertEqual(settings.SITE_ROOT_URL, "http://localhost:8000", "Based on environment[https]")
