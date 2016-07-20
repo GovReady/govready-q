@@ -1,5 +1,8 @@
 # Q (by GovReady)
 
+[![Build Status](https://travis-ci.com/GovReady/govready-q.svg?token=tqxfXNLktb4qXp6NmyW7&branch=master)](https://travis-ci.com/GovReady/govready-q)
+
+
 Q is an information gathering platform for people, tuned to the specific needs of information security and compliance professionals.
 
 ---
