@@ -264,6 +264,8 @@ class Command(BaseCommand):
                         .id
             except Module.DoesNotExist:
                 raise DependencyError(m.key, spec.get("module-id"))
+        elif spec.get("type") == None:
+            raise ValidationError(m.spec['id'], "Question %s is missing a type." % spec['id'])
         return spec
 
 
