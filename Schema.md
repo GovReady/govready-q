@@ -11,7 +11,7 @@ Each file is a Module. A Module has the following required fields:
 	id: module_id
 	title: Your Title Here
 
-The `module_id` must match the file name that the YAML is saved into, without the file extension.
+The `module_id` must match the file name that the YAML is saved into, without the path or file extension.
 
 Several optional fields can be specified:
 
@@ -251,6 +251,8 @@ As with the text question types, `placeholder` and `help` text can also be speci
 #### `module`, `module-set`
 
 These question type prompt the user to select another completed module as the answer to the question. The `module-id` field specifies the ID of another module specification. The `module` question type allows for a single other module to answer the question. The `module-set` question type allows for zero or more other modules to answer the question.
+
+The `module-id` field specifies a module ID as it occurs in the `id` field of another YAML file, if referring to a module in the same directory as the YAML file containing this question.
 
 Changing the `module-id` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
 

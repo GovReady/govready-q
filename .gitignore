@@ -1,5 +1,6 @@
 __pycache__/
-local
+/local
+/modules/local
 siteapp/static/vendor
 
 # generated files

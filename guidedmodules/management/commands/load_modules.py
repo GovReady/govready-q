@@ -42,15 +42,30 @@ class Command(BaseCommand):
             print("Marking modules as obsoleted: ", obsoleted_modules)
             obsoleted_modules.update(visible=False)
 
-    def iter_modules(self):
+    def iter_modules(self, path=[]):
         # Returns a generator over all module IDs in YAML files on disk.
-        import glob, os.path
-        for fn in glob.glob(os.path.join(settings.MODULES_PATH, "*.yaml")):
-            module_id = os.path.splitext(os.path.basename(fn))[0]
-            yield module_id
+        import os, os.path
+        for fn in sorted(os.listdir(os.path.join(settings.MODULES_PATH, *path))):
+            fullpath = os.path.join(*[settings.MODULES_PATH] + path + [fn])
+            if os.path.isfile(fullpath):
+                # If this is  a file that ends in .yaml, it is a module file.
+                # Strip the extension and construct a module ID that concatenates
+                # the path on disk and the file name.
+                fn_name, fn_ext = os.path.splitext(fn)
+                if fn_ext == ".yaml":
+                    yield "/".join(path + [fn_name])
+            elif fn == "assets":
+                # Don't recurisvely walk into directories named 'assets'. These
+                # directories provide static assets that go along with the modules
+                # in that directory.
+                pass
+            else:
+                # Recursively walk directories.
+                for module_id in self.iter_modules(path=path+[fn]):
+                    yield module_id
 
     def open_module(self, module_id, referenced_by_module_id):
-        # Returns the parsed YAML content of the module file on
+        # Returns the file name and parsed YAML content of the module file on
         # disk for module_id.
         import os.path
         import yaml, yaml.scanner, yaml.constructor
@@ -59,7 +74,7 @@ class Command(BaseCommand):
             raise DependencyError(referenced_by_module_id, module_id)
         with open(fn) as f:
             try:
-                return yaml.load(f)
+                return (fn, yaml.load(f))
             except (yaml.scanner.ScannerError, yaml.constructor.ConstructorError) as e:
                 raise ValidationError(fn, "There was an error parsing the file: " + str(e))
 
@@ -77,9 +92,16 @@ class Command(BaseCommand):
         processed_modules.add(module_id)
 
         # Load the module's YAML file.
-        spec = self.open_module(module_id, (path[-1] if len(path) > 0 else None))
-        if spec["id"] != module_id:
+        (fn, spec) = self.open_module(module_id, (path[-1] if len(path) > 0 else None))
+
+        # Sanity check that the 'id' in the YAML file matches just the last
+        # part of the path of the module_id. This allows the IDs to be 
+        # relative to the path in which the module is found.
+        if spec["id"] != module_id.split('/')[-1]:
             raise ValidationError(fn, "Module 'id' field ('%s') doesn't match filename ('%s')." % (spec["id"], module_id))
+
+        # Replace spec["id"] with the full module_id.
+        spec["id"] = module_id
 
         # Recursively update any modules this module references.
         for m1 in self.get_module_spec_dependencies(spec):
@@ -130,7 +152,12 @@ class Command(BaseCommand):
         # dependencies.
         for question in spec.get("questions", []):
             if question.get("type") in ("module", "module-set"):
-                yield question.get("module-id")
+                yield self.resolve_relative_module_id(spec, question.get("module-id"))
+
+    def resolve_relative_module_id(self, within_module, module_id):
+        # Module IDs specified in the YAML are relative to the directory in which
+        # they are found.
+        return "/".join(within_module["id"].split("/")[:-1] + [module_id])
 
     def preprocess_module_spec(self, spec):
         # 'introduction' fields are an alias for an interstitial
@@ -227,10 +254,12 @@ class Command(BaseCommand):
             # Replace the module ID (a string) from the specification with
             # the integer ID of the module instance in the database for
             # the current Module representing that module in the filesystem.
+            # Since dependencies are processed first, we know that the current
+            # one in the database is the one that the YAML file meant to reference.
             try:
                 spec["module-id"] = \
                     Module.objects.get(
-                        key=spec.get("module-id"),
+                        key=self.resolve_relative_module_id(m.spec, spec.get("module-id")),
                         superseded_by=None)\
                         .id
             except Module.DoesNotExist:
