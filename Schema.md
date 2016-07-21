@@ -305,6 +305,12 @@ Multiple condition/value blocks can be provided. They are evaluated in order, wi
       - condition: q1 == 'yes'
         value: I do know.
 
+The `value` field can be evaluated as a [Jinja2 expression](http://jinja.pocoo.org/docs/dev/templates/#expressions), just like the condition, if `value-mode` is set to `expression`. This can be used to pull forward the answers of previous questions:
+
+    impute:
+      - condition: q1 == 'same-as-q0'
+        value: q0
+        value-mode: expression
 
 Question Order
 --------------

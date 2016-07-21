@@ -258,11 +258,19 @@ def impute_answer(question, answers):
     for rule in question.spec.get("impute", []):
         condition_func = env.compile_expression(rule["condition"])
         if condition_func(answers.answers):
-            # The condition is met. Return the imputed value.
+            # The condition is met. Compute the imputed value.
+            if rule.get("value-mode", "raw") == "raw":
+                # Imputed value is the raw YAML value.
+                value = rule["value"]
+            elif rule.get("value-mode", "raw") == "expression":
+                value = env.compile_expression(rule["value"])(answers.answers)
+            else:
+                raise ValueError("Invalid impute condition value-mode.")
+
             # Since the imputed value may be None, return
             # the whole thing in a tuple to distinguish from
             # a None indicating the lack of an imputed value.
-            return (rule["value"],)
+            return (value,)
     return None
 
 class validator:
