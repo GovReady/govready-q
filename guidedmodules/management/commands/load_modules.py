@@ -309,7 +309,7 @@ class Command(BaseCommand):
             # Is there an incompatible change in the question? (If there
             # is a change that is compatible, we will return that the
             # module is changed anyway at the end of this method.)
-            q = self.transform_question_spec(mq, q)
+            q = self.transform_question_spec(mq.module, q)
             if self.is_question_changed(mq, definition_order, q) is True:
                 return True
 
