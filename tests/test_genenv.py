@@ -29,7 +29,8 @@ class TestFullEnv(unittest.TestCase):
         'HOST': 'myhost',
         'PASSWORD': 'mypass',
         'PORT': 3306,
-        'ENGINE': 'django.db.backends.mysql'
+        'ENGINE': 'django.db.backends.mysql',
+        'CONN_MAX_AGE': 60,
     }
 
     def setUp(self):
@@ -63,6 +64,6 @@ class TestEmptyEnv(unittest.TestCase):
     def setUp(self):
         self.env = EnvironmentVarGuard()
         self.env.clear()
-        
+
     def test_populate_all(self):
         self.assertDictEqual(genenv.all(), {})

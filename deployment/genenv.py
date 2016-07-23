@@ -58,7 +58,7 @@ def populate_db():
     '''
     if not os.getenv('DATABASE_URL'):
         return {}
-    db = dj_database_url.config()
+    db = dj_database_url.config(conn_max_age=60)
     return db
 
 def all():
