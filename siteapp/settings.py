@@ -38,7 +38,7 @@ else:
 
 	print("Create a local/environment.json file! It should contain something like this:")
 	print(json.dumps(environment, sort_keys=True, indent=2))
-
+	
 # DJANGO SETTINGS #
 ###################
 
