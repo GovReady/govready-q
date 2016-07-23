@@ -1,7 +1,6 @@
-import unittest
+import unittest, os
 from test.support import EnvironmentVarGuard
 from deployment import genenv
-
 
 class TestFullEnv(unittest.TestCase):
     # in order of appearance in settings.py
@@ -34,21 +33,17 @@ class TestFullEnv(unittest.TestCase):
     }
 
     def setUp(self):
-        self.env = EnvironmentVarGuard()
-        self.env.set('SECRET_KEY', 'xoxox')
-        self.env.set('DEBUG', 'True')
-        self.env.set('HOST', 'localhost:8000')
-        self.env.set('HTTPS', 'True')
-        self.env.set('ADMINS', 'aaa:bbbb:cc')
-        self.env.set('MEMCACHED', 'true')
-        self.env.set('STATIC', '/path/to/static')
-
-        self.env.set('MODULES_PATH', 'some/path/for/modules')
-        self.env.set('GOVREADY_CMS_API_AUTH', 'https://mycms.com/')
-        self.env.set('EMAIL', 'email://eric:allman@mailhost:465')
-
-        self.env.set('DATABASE_URL',
-                     'mysql://myuser:mypass@myhost:3306/my_database_name')
+        os.environ['SECRET_KEY'] = 'xoxox'
+        os.environ['DEBUG'] = 'True'
+        os.environ['HOST'] = 'localhost:8000'
+        os.environ['HTTPS'] = 'True'
+        os.environ['ADMINS'] = 'aaa:bbbb:cc'
+        os.environ['MEMCACHED'] = 'true'
+        os.environ['STATIC'] = '/path/to/static'
+        os.environ['MODULES_PATH'] = 'some/path/for/modules'
+        os.environ['GOVREADY_CMS_API_AUTH'] = 'https://mycms.com/'
+        os.environ['EMAIL'] = 'email://eric:allman@mailhost:465'
+        os.environ['DATABASE_URL'] = 'mysql://myuser:mypass@myhost:3306/my_database_name'
 
     def test_populate_env(self):
         e = genenv.populate_env(genenv.env_dict())
