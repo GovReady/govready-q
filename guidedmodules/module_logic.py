@@ -24,6 +24,11 @@ def next_question(questions_answered, required=False):
             if questions_answered.module.questions.filter(key=qid).exists()
         ])
 
+    # Add imputed question. Since an imputed answer can lead to the
+    # imuputing of another question, they all have to be evaluated
+    # up front.
+    questions_answered.add_imputed_answers()
+
     # Process the questions.
 
     can_answer = []
@@ -32,11 +37,7 @@ def next_question(questions_answered, required=False):
     def is_answered(q):
         # Is q answered yet? Yes if the user has provided
         # an answer, or if one of its impute conditions is
-        # met.
-        if impute_answer(q, questions_answered):
-            # Do this first because it has precedence over
-            # the required question check.
-            return True
+        # met. In either case, the answer will be set already.
         if q.key in questions_answered.answers:
             # If q is a required question and the required
             # argument is true, then require that it not
