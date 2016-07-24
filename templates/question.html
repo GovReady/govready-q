@@ -88,6 +88,7 @@ Next Question: {{q.spec.title}}
               </div>
 
             {% elif q.spec.type == "choice" %}
+              <div style="margin-top: 1em">
               {% for choice in q.spec.choices %}
               <div class="radio">
                 <label>
@@ -96,8 +97,10 @@ Next Question: {{q.spec.title}}
                 </label>
               </div>
               {% endfor %}
+              </div>
 
             {% elif q.spec.type == "yesno" %}
+              <div style="margin-top: 1em">
               <div class="radio">
                 <label>
                   <input name="value" value="no"  type="radio" {% if answer.get_value == "no" %}checked{% endif %}> No
@@ -109,8 +112,10 @@ Next Question: {{q.spec.title}}
                 </label>
               </div>
               <p class="help-block">{{q.spec.help}}</p>
+              </div>
 
             {% elif q.spec.type == "multiple-choice" %}
+              <div style="margin-top: 1em">
               {% for choice in q.spec.choices %}
               <div class="checkbox">
                 <label>
@@ -125,6 +130,7 @@ Next Question: {{q.spec.title}}
               {% elif q.spec.max %}
                   <p class="help-block">You may choose at most {{q.spec.max}} options.</p>
               {% endif %}
+              </div>
 
             {% elif q.spec.type == "integer" or q.spec.type == "real" %}
               <div class="form-group">
