@@ -237,10 +237,15 @@ def get_question_dependencies(question):
     ret |= get_jinja2_template_vars(question.get("prompt", ""))
 
     # All questions mentioned in the impute conditions become dependencies.
+    # And when impute values are expressions, then similarly for those.
     for rule in question.get("impute", []):
         ret |= get_jinja2_template_vars(
                 r"{% if " + rule["condition"] + r" %}...{% endif %}"
                 )
+        if rule.get("value-type") == "expression":
+            ret |= get_jinja2_template_vars(
+                    r"{% if " + rule["value"] + r" %}...{% endif %}"
+                    )
 
     # Other dependencies can just be listed.
     for qid in question.get("ask-first", []):
