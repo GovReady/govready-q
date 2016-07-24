@@ -1,8 +1,8 @@
 import os, json, sys
 import dj_database_url
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-APP_NAME = "siteapp"
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(PROJECT_ROOT)
 
 def env_dict():
     '''
@@ -16,7 +16,6 @@ def env_dict():
         'HTTPS': ('https',  bool),
         'ADMINS': ('admins',  list),
         'MEMCACHED': ('memcached', bool),
-        'STATIC': ('static',  str),
         'MODULES_PATH': ('modules', str),
         'GOVREADY_CMS_API_AUTH': ('govready_cms_api_auth', str)
     }
@@ -35,6 +34,17 @@ def populate_env(input_dict):
                 # convert to str or bool, as needed
                 environment[input_dict[key][0]] = input_dict[key][1](os.environ[key])
     return (environment)
+
+def populate_static():
+    # when static is true, we'll use the recommended settings from
+    # https://devcenter.heroku.com/articles/django-assets
+    # https://docs.djangoproject.com/en/1.9/howto/static-files/
+    # and set statifiles path to siteapp/staticfiles
+    if not os.getenv('STATIC'):
+        return None
+    if os.getenv('STATIC') not in ['True', 'true']:
+        return None
+    return os.path.join(PROJECT_ROOT, 'staticfiles')
 
 def populate_email():
     '''
@@ -67,6 +77,8 @@ def all():
     so we can test for empty environment
     '''
     environment = populate_env(env_dict())
+    static = populate_static()
+    if static: environment['static'] = static
     em = populate_email()
     if em.keys(): environment['email'] = em
     db = populate_db()

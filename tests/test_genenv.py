@@ -1,6 +1,6 @@
 import unittest, os
 from test.support import EnvironmentVarGuard
-from deployment import genenv
+from siteapp import genenv
 
 class TestFullEnv(unittest.TestCase):
     # in order of appearance in settings.py
@@ -11,7 +11,6 @@ class TestFullEnv(unittest.TestCase):
         'https': True,
         'admins': ['aaa','bbbb', 'cc'],
         'memcached': True,
-        'static': '/path/to/static',
         # for settings_application.py
         'modules': 'some/path/for/modules',
         'govready_cms_api_auth': 'https://mycms.com/'
@@ -39,11 +38,15 @@ class TestFullEnv(unittest.TestCase):
         os.environ['HTTPS'] = 'True'
         os.environ['ADMINS'] = 'aaa:bbbb:cc'
         os.environ['MEMCACHED'] = 'true'
-        os.environ['STATIC'] = '/path/to/static'
+        os.environ['STATIC'] = 'true'
         os.environ['MODULES_PATH'] = 'some/path/for/modules'
         os.environ['GOVREADY_CMS_API_AUTH'] = 'https://mycms.com/'
         os.environ['EMAIL'] = 'email://eric:allman@mailhost:465'
         os.environ['DATABASE_URL'] = 'mysql://myuser:mypass@myhost:3306/my_database_name'
+
+    def test_populate_static(self):
+        self.assertRegex(genenv.populate_static(),
+                         'govready-q/siteapp/staticfiles$')
 
     def test_populate_env(self):
         e = genenv.populate_env(genenv.env_dict())
@@ -59,6 +62,9 @@ class TestEmptyEnv(unittest.TestCase):
     def setUp(self):
         self.env = EnvironmentVarGuard()
         self.env.clear()
+
+    def test_populate_static(self):
+        self.assertIsNone(genenv.populate_static())
 
     def test_populate_all(self):
         self.assertDictEqual(genenv.all(), {})
