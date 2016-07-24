@@ -550,8 +550,9 @@ class RenderedAnswer:
                 # Return a RenderedAnswer representing the skipped question.
                 return RenderedAnswer(q, None, self.escapefunc)
 
-        # For external-function questions, we can directly access member data.
-        elif self.question_type == "external-function":
+        # For external-function and "raw" question types, the answer value is any
+        # JSONable Python data structure. Forward the getattr request onto the value.
+        elif self.question_type in ("external-function", "raw"):
             return self.answer[item]
 
         # For other types of questions, or items that are not question

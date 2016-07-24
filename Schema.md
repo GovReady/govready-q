@@ -282,6 +282,12 @@ The function is specified as
 
 where `sample_function` is a method defined in the Python module `guidedmodules.sample_external_functions`, which must be installed/available. The function is called with two arguments, a dict containing the question's specification and a dict of module answers mapping question IDs to answers already present.
 
+#### `raw`
+
+This type is meant for questions that are always imputed (i.e. that are never presented to the user) and where the answer value can be any JSON-serializable Python data structure, as given by the impute value (see Imputing Answers below).
+
+This question type should be avoided if one of the other question types specifies a more narrow data type. For instance, if the imputed value is always a string, the `text` or `longtext` question types should be used instead.
+
 
 ### Imputing Answers
 
