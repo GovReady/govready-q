@@ -88,7 +88,7 @@ Next Question: {{q.spec.title}}
               </div>
 
             {% elif q.spec.type == "choice" %}
-              <div style="margin-top: 1em">
+              <div style="margin: 1em 0 1.5em 0">
               {% for choice in q.spec.choices %}
               <div class="radio">
                 <label>
@@ -100,7 +100,7 @@ Next Question: {{q.spec.title}}
               </div>
 
             {% elif q.spec.type == "yesno" %}
-              <div style="margin-top: 1em">
+              <div style="margin: 1em 0 1.5em 0">
               <div class="radio">
                 <label>
                   <input name="value" value="no"  type="radio" {% if answer.get_value == "no" %}checked{% endif %}> No
@@ -115,7 +115,7 @@ Next Question: {{q.spec.title}}
               </div>
 
             {% elif q.spec.type == "multiple-choice" %}
-              <div style="margin-top: 1em">
+              <div style="margin: 1em 0 1.5em 0">
               {% for choice in q.spec.choices %}
               <div class="checkbox">
                 <label>
