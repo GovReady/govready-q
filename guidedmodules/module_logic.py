@@ -128,7 +128,7 @@ def render_content(content, answers, output_format, additional_context={}, hard_
                         # static virtual path.
                         if entering:
                             self.rewrite_url(node)
-                        super().image(node, entering)
+                        super().link(node, entering)
                     def image(self, node, entering):
                         # Rewrite the image URL to be within the app's
                         # static virtual path.
