@@ -75,16 +75,16 @@ def all():
 
 def write_local(e):
     '''
-    Hardcoded to write to ./siteapp/local/environment.json
+    Hardcoded to write to ./local/environment.json
     '''
-    local_dir = os.path.join(BASE_DIR, APP_NAME, 'local')
+    local_dir = os.path.join(BASE_DIR, 'local')
     json_path = os.path.join(local_dir, 'environment.json')
     if e != {}:
         if not os.path.exists(local_dir):
             os.mkdir(local_dir)
         with open(json_path, 'w') as f:
             json.dump(e, f, indent=2, sort_keys=True)
-            f.close()
+        print("Wrote %d keys to %s\n" % (len(e.keys()), json_path), file=sys.stderr)
     else:
         print("Empty environ, not writing any file", file=sys.stderr)
 

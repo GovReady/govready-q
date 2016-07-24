@@ -23,6 +23,9 @@ class TestDefaultSettings(SimpleTestCase):
         self.assertEqual(settings.ALLOWED_HOSTS, ['*'], "This seems like a bug")
         self.assertListEqual(settings.ADMINS,[])
 
+    # it may not be possible as
+    #    manage.py test siteapp
+    # initializes all the setting before processing any of this.
     @skip("Skip CloudFormation tests until later")
     def test_only_cf_settings(self):
         skipTest("Not yet")
