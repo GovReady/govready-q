@@ -408,9 +408,16 @@ class ModuleAnswers:
         # imputations. TODO: This should follow the dependency chain
         # defined by next_question.
         for q in self.module.questions.order_by('definition_order'):
-            v = impute_answer(q, self)
-            if v :
-                self.answers[q.key] = v[0]
+            import jinja2.exceptions
+            try:
+                v = impute_answer(q, self)
+                if v :
+                    self.answers[q.key] = v[0]
+            except jinja2.exceptions.UndefinedError:
+                # If a variable is undefined, then we may be trying to
+                # impute the answer to a question that depends on a question
+                # that hasn't been answered yet.
+                continue
 
     def get_template_context(self, escapefunc = lambda x : x):
         # Replace the internal Pythonic/JSON-able values with
