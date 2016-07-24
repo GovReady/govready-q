@@ -16,3 +16,4 @@ django-bootstrap-form
 django-notifications-hq
 
 selenium
+gunicorn
