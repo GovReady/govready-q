@@ -619,6 +619,7 @@ class RenderedAnswer:
                 # If the question was not skipped...
                 if self.answer is not None:
                     # And the inner question has been answered...
+                    self.answer.add_imputed_answers()
                     c = self.answer.get_template_context(self.escapefunc)
                     if item in c:
                         # Return that inner RenderedAnswer.
