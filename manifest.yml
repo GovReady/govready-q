@@ -9,5 +9,5 @@ applications:
     SECRET_KEY: "@-uks6_6r$e6qp2*7irerq5%l2a8vbtxv#fd4nfjyd%(fz85x4"
     STATIC: 'true'
     HTTPS: False
-    DEBUG: True
+    DEBUG: False
     HOST: "localhost:8000"

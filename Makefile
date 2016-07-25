@@ -20,7 +20,9 @@ $(STATIC):
 	./deployment/fetch-vendor-resources.sh
 	touch $@
 
+key := $(shell cat /dev/urandom | head -c 50 | base64)
 run: requirements
+	cf set-env $(MYAPP) SECRET_KEY $(key)
 	cf push -i 1 $(MYAPP)
 
 clean:
