@@ -354,11 +354,11 @@ class Command(BaseCommand):
         # Constriction of valid number of choices to a multiple-choice
         # (min is increased or max is newly set or decreased).
         if mq.spec["type"] == "multiple-choice":
-            if spec.get("min", 0) > mq.spec.get("min", 0):
+            if spec['min'] > mq.spec['min']:
                 return True
-            if mq.spec["max"] is None and "max" in spec:
+            if mq.spec["max"] is None and spec["max"] is not None:
                 return True
-            if mq.spec["max"] is not None and "max" in spec and spec["max"] < mq.spec["max"]:
+            if mq.spec["max"] is not None and spec["max"] is not None and spec["max"] < mq.spec["max"]:
                 return True
 
         # Change in the module type if a module-type question, including
