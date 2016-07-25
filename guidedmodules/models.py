@@ -170,7 +170,7 @@ class Task(models.Model):
             # Get the value of that answer.
             answered[q.question.key] = a.get_value()
 
-        return ModuleAnswers(self.module, answered)
+        return ModuleAnswers(self.module, self, answered)
 
     def can_transfer_owner(self):
         return not self.project.is_account_project
@@ -264,7 +264,6 @@ class Task(models.Model):
 
     def get_document_additional_context(self):
         return {
-            "project": self.project.title if self.project else None,
         }
 
     def render_title(self):
@@ -285,7 +284,7 @@ class Task(models.Model):
     def render_introduction(self):
         return render_content(
             self.module.spec.get("introduction", ""),
-            ModuleAnswers(self.module, {}),
+            ModuleAnswers(self.module, self, {}),
             "html",
             self.get_document_additional_context()
         )

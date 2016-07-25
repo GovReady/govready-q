@@ -421,8 +421,9 @@ def get_question_choice(question, key):
     raise KeyError(repr(key) + " is not a choice")
 
 class ModuleAnswers:
-    def __init__(self, module, answers):
+    def __init__(self, module, task, answers):
         self.module = module
+        self.task = task
         self.answers = answers
 
     def add_imputed_answers(self):
@@ -457,6 +458,10 @@ class ModuleAnswers:
         for qid, value in self.answers.items():
             q = self.module.questions.get(key=qid)
             ret[qid] = RenderedAnswer(q, value, escapefunc)
+
+        # Add the Project too.
+        ret['project'] = RenderedProject(self.task.project, escapefunc)
+
         return ret
 
     def render_output(self, additional_context, hard_fail=True):
@@ -468,6 +473,25 @@ class ModuleAnswers:
             ret["html"] = render_content(d, self, "html", additional_context, hard_fail=hard_fail)
             return ret
         return [ render_document(d) for d in self.module.spec.get("output", []) ]
+
+class RenderedProject:
+    def __init__(self, project, escapefunc):
+        self.project = project
+        self.escapefunc = escapefunc
+
+    def __html__(self):
+        return self.escapefunc(self.project.title)
+
+    def __getattr__(self, item):
+        task = self.project.root_task
+        answrs = task.get_answers().get_template_context(escapefunc=self.escapefunc)
+        if item in answrs:
+            # Return the RenderedAnswer provided by the root task.
+            return answrs[item]
+        else:
+            # Return a RenderedAnswer representing the skipped question.
+            q = task.module.questions.filter(key=item).first()
+            return RenderedAnswer(q, None, self.escapefunc)
 
 class RenderedAnswer:
     def __init__(self, question, answer, escapefunc):
