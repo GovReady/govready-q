@@ -315,6 +315,26 @@ class validator:
             raise ValueError("empty")
         return value
 
+    def validate_date(question, value):
+        # Validate that we have a valid date in YYYY-MM-DD format. A client-side
+        # tool should be responsible for ensuring that the user entry is translated
+        # into this format.
+        import re, datetime
+        if value == "":
+            raise ValueError("empty")
+        m = re.match("(\d\d\d\d)-(\d\d)-(\d\d)$", value)
+        if not m:
+            raise ValueError("Date is not in YYYY-MM-DD format.")
+        # Convert to ints, raising ValueError if they are not.
+        try:
+            year, month, date = [int(x) for x in m.groups()]
+        except ValueError:
+            raise ValueError("Date is not in YYYY-MM-DD format.")
+        # Instantiate a datetime.date object. It will raise a ValueError if the
+        # year, month, or day is out of range.
+        datetime.date(year, month, date)
+        return value
+
     def validate_choice(question, value):
         if value not in { choice['key'] for choice in question.spec["choices"] }:
             raise ValueError("invalid choice")

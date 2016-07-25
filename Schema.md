@@ -187,6 +187,14 @@ This type asks the user for free-form text using a large text input area that al
 
 In document templates and impute conditions, the value of `longtext` questions is simply the text the user entered.
 
+#### `date`
+
+This type asks the user for a date.
+
+`help` text can be specified which provides an additional prompt smaller and below the field input.
+
+In document templates and impute conditions, the value of `date` questions is a text string in YYYY-MM-DD format.
+
 #### `choice`
 
 This type asks the user to choose one of several options. The options are given as:

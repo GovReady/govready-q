@@ -85,6 +85,15 @@ Next Question: {{q.spec.title}}
               <div class="form-group">
                 <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if answer.get_value %}{{answer.get_value}}{% endif %}</textarea>
                 <p class="help-block">{{q.spec.help}}</p>
+
+              </div>
+
+            {% elif q.spec.type == "date" %}
+              {# need a shim for most browsers #}
+              <div class="form-group">
+                <input name="value" type="date" class="form-control" id="inputctrl" style="width: auto"
+                   {% if answer.get_value %}value="{{answer.get_value}}"{% endif %}>
+                <p class="help-block">{{q.spec.help}}</p>
               </div>
 
             {% elif q.spec.type == "choice" %}
@@ -331,7 +340,7 @@ $(function() {
     show_static_history({{history|json}});
     {% endif %}
 
-    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
+    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" or q.spec.type == "date" %}
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
