@@ -266,7 +266,7 @@ def get_question_dependencies(question):
 
     return ret
 
-def impute_answer(question, answers):
+def impute_answer(question, context):
     # Check if any of the impute conditions are met based on
     # the questions that have been answered so far and return
     # the imputed value. Be careful about values like 0 that
@@ -276,13 +276,16 @@ def impute_answer(question, answers):
     env = SandboxedEnvironment()
     for rule in question.spec.get("impute", []):
         condition_func = env.compile_expression(rule["condition"])
-        if condition_func(answers.answers):
+        if condition_func(context):
             # The condition is met. Compute the imputed value.
             if rule.get("value-mode", "raw") == "raw":
                 # Imputed value is the raw YAML value.
                 value = rule["value"]
             elif rule.get("value-mode", "raw") == "expression":
-                value = env.compile_expression(rule["value"])(answers.answers)
+                value = env.compile_expression(rule["value"])(context)
+                if isinstance(value, RenderedAnswer):
+                    # Unwrap.
+                    value =  value.answer
             else:
                 raise ValueError("Invalid impute condition value-mode.")
 
@@ -441,10 +444,11 @@ class ModuleAnswers:
         # Proceed in order (?) in case there are dependencies between
         # imputations. TODO: This should follow the dependency chain
         # defined by next_question.
+        context = self.get_template_context()
         for q in self.module.questions.order_by('definition_order'):
             import jinja2.exceptions
             try:
-                v = impute_answer(q, self)
+                v = impute_answer(q, context)
                 if v :
                     self.answers[q.key] = v[0]
             except jinja2.exceptions.UndefinedError:
