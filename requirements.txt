@@ -17,3 +17,5 @@ django-notifications-hq
 
 selenium
 gunicorn
+psycopg2
+whitenoise==1.0.6

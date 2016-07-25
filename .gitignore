@@ -76,4 +76,8 @@ target/
 # Local development files
 modules/dev
 
-
+# Local build/test files
+siteapp/staticfiles
+vendor
+.cfignore
+.kitchen
