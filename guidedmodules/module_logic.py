@@ -512,6 +512,8 @@ class RenderedAnswer:
             # Render multiple-choice as a comma+space-separated list
             # of the choice keys.
             value = ", ".join(self.answer)
+        elif self.question_type == "module":
+            return self.text
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)
@@ -538,6 +540,8 @@ class RenderedAnswer:
                 "%d" if self.question_type == "integer" else "%g",
                 self.answer,
                 grouping=True)
+        elif self.question_type == "module":
+            return self.answer.task.render_title()
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)
