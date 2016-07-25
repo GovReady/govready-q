@@ -15,7 +15,7 @@ primary_app = os.path.basename(os.path.dirname(__file__))
 #############################
 
 if os.getenv('VCAP_APPLICATION') and os.getenv('SECRET_KEY'):
-	from deployment import genenv
+	from siteapp import genenv
 	print("Creating local env from env vars")
 	genenv.main()
 
