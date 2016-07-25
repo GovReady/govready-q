@@ -42,6 +42,9 @@ class Command(BaseCommand):
             print("Marking modules as obsoleted: ", obsoleted_modules)
             obsoleted_modules.update(visible=False)
 
+        # Build static assets directory.
+        self.build_static_assets()
+
     def iter_modules(self, path=[]):
         # Returns a generator over all module IDs in YAML files on disk.
         import os, os.path
@@ -63,6 +66,22 @@ class Command(BaseCommand):
                 # Recursively walk directories.
                 for module_id in self.iter_modules(path=path+[fn]):
                     yield module_id
+
+    def iter_assets_dirs(self, path=[]):
+        # Returns a generator over all relative paths to directories containing
+        # module static assets.
+        import os, os.path
+        for fn in sorted(os.listdir(os.path.join(settings.MODULES_PATH, *path))):
+            fullpath = os.path.join(*[settings.MODULES_PATH] + path + [fn])
+            if os.path.isfile(fullpath):
+                pass
+            elif fn == "assets":
+                # This is a static assets directory.
+                yield "/".join(path + [fn])
+            else:
+                # Recursively walk directories.
+                for d in self.iter_assets_dirs(path=path+[fn]):
+                    yield d
 
     def open_module(self, module_id, referenced_by_module_id):
         # Returns the file name and parsed YAML content of the module file on
@@ -371,3 +390,23 @@ class Command(BaseCommand):
 
         # The changes to this question do not create a data inconsistency.
         return False
+
+    def build_static_assets(self):
+        # Copy the contents of each 'assets' directory to a corresponding
+        # path at a publicly accessible URL. Make hardlinks instead of
+        # copies.
+        import shutil, os, os.path
+
+        target_root = os.path.join("siteapp", "static", "module-assets")
+
+        # Clean out existing files because copytree will raise an exception
+        # if any target directory exists.
+        shutil.rmtree(target_root)
+
+        # Copy.
+        for assets_dir in self.iter_assets_dirs():
+            target_dir = os.path.join(target_root, *assets_dir.split(os.sep)[:-1])
+            shutil.copytree(
+                os.path.join(settings.MODULES_PATH, assets_dir),
+                target_dir,
+                copy_function=os.link)

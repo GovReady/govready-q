@@ -146,7 +146,11 @@ def render_content(content, answers, output_format, additional_context={}, hard_
                         super().image(node, entering)
                     def rewrite_url(self, node):
                         import urllib.parse
-                        node.destination = urllib.parse.urljoin("/static/module-assets/", node.destination)
+                        base_path = "/static/module-assets/"
+                        if not node.destination.startswith("/"):
+                            # Assets are relative to the module's 'path'.
+                            base_path += "/".join(answers.module.key.split("/")[0:-1]) + "/"
+                        node.destination = urllib.parse.urljoin(base_path, node.destination)
                 output = q_renderer().render(CommonMark.Parser().parse(output))
                 return output
             raise ValueError("Can't render Markdown template as %s." % output_format)
