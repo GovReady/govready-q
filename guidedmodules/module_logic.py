@@ -98,8 +98,17 @@ def render_content(content, answers, output_format, additional_context={}, hard_
             # the escaping ourself because Jinja2 can't handle escaping for
             # other formats, and we use the __html__ method on RenderedAnswer
             # to provide pre-escaped content.
-            import html
-            return html.escape(s)
+            #
+            # The obvious thing to do would be to just use html.escape:
+            if "\n" not in s:
+                import html
+                return html.escape(s)
+            else:
+                # But long-form text entries by the user should be rendered as
+                # if the input was Markdown, maybe?
+                import CommonMark
+                return CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(s))
+
         def renderer(output):
             if output_format == "html":
                 # It's already HTML.
