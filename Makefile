@@ -20,8 +20,9 @@ $(STATIC):
 	./deployment/fetch-vendor-resources.sh
 	touch $@
 
+
 key := $(shell cat /dev/urandom | head -c 50 | base64)
-cf_secret :=$(shell cf env $(MYAPP) | (grep -q SECRET_FILE && echo "yes" || echo "no"))
+cf_secret :=$(shell cf env $(MYAPP) | (grep -q SECRET_KEY && echo "yes" || echo "no"))
 
 key:
 ifeq ($(cf_secret),yes)
