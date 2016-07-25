@@ -356,7 +356,9 @@ class Command(BaseCommand):
         if mq.spec["type"] == "multiple-choice":
             if spec.get("min", 0) > mq.spec.get("min", 0):
                 return True
-            if "max" in spec and ("max" not in mq.spec or spec["max"] < mq.spec["max"]):
+            if mq.spec["max"] is None and "max" in spec:
+                return True
+            if mq.spec["max"] is not None and "max" in spec and spec["max"] < mq.spec["max"]:
                 return True
 
         # Change in the module type if a module-type question, including
