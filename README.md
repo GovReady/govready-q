@@ -31,6 +31,8 @@ Then run:
 
 	sudo deployment/setup.sh
 
+(If you get a gateway error from nginx, you may need to `sudo service supervisor restart` to start the uWSGI process.)
+
 If this is truly on a new machine, it will create a new Sqlite database. You'll also see some output instructing you to create a file named `local/environment.json` containing:
 
 	{
