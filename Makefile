@@ -32,7 +32,7 @@ ifeq ($(cf_secret),yes)
 else
 	@echo setting new secret key
 	cf push $(MYAPP) --no-start
-	cf set-env $(MYAPP) SECRET_KEY $(key)
+	@cf set-env $(MYAPP) SECRET_KEY $(key)
 endif
 
 run: requirements key
