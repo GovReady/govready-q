@@ -22,7 +22,7 @@ test:
   post:
     - cf api https://api.run.pivotal.io
     - cf auth $PWS_USER $PWS_PASSWORD
-    - cf target -o $PWS_USER -s dev
+    - cf target -o GovReadyPDB -s development
     - cf a
 
 deployment:
