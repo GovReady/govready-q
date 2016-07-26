@@ -21,3 +21,9 @@ test:
   override:
     - python manage.py test
     - python -m unittest discover tests
+
+deployment:
+  development: # just a label; label names are completely up to you
+    branch: cfdev
+      commands:
+        - make -n run

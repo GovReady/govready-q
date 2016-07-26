@@ -4,7 +4,9 @@ instances: 1
 applications:
 - name: govready-q
   services:
-     - cf-govready-q-pgsql
+     - cf-govready-q-pgsql # needs provisioning between deployments
+  host: dev-govready-q # this will change between deployments
+  domain: cfapps.io
   env:
     STATIC: 'true'
     HTTPS: False
