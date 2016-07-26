@@ -43,7 +43,8 @@ def homepage(request):
         # Add projects that the user is participating in a Discussion in
         # as a guest.
         for d in Discussion.objects.filter(guests=request.user):
-            projects.add(d.attached_to.task.project)
+            if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
+                projects.add(d.attached_to.task.project)
 
         # Sort.
         projects = sorted(projects, key = lambda x : x.updated, reverse=True)
