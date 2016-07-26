@@ -44,14 +44,7 @@ Home
 
 {% for project in projects %}
 <div class="project">
-  <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
-    {% if project %}
-      <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
-      <span>{{project.title}}</span>
-    {% else %}
-      <span>Account Modules</span>
-    {% endif %}
-  </a>
+
 
   {% if project and any_have_members_besides_me %}
   <div class="admins small" style="margin-top: 3px">

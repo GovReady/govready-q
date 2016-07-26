@@ -41,7 +41,12 @@ class Discussion(models.Model):
 
     @property
     def title(self):
-        return self.attached_to.title
+        if self.attached_to is not None:
+            return self.attached_to.title
+        else:
+            # Dangling - because it's a generic relation, there is no
+            # delete protection and attached_to can get reset to None.
+            return "<Deleted Discussion>"
 
     def is_participant(self, user):
         # No one is a participant of a dicussion attached to (a question
@@ -82,6 +87,12 @@ class Discussion(models.Model):
 
     def get_invitation_redirect_url(self, invitation):
         return self.attached_to.get_absolute_url()
+
+    @property
+    def supress_link_from_notifications(self):
+        # Dangling - because it's a generic relation, there is no
+        # delete protection and attached_to can get reset to None.
+        return self.attached_to is None
 
     def get_notification_watchers(self):
         if self.attached_to.task.deleted_at:
