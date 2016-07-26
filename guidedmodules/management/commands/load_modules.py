@@ -401,7 +401,8 @@ class Command(BaseCommand):
 
         # Clean out existing files because copytree will raise an exception
         # if any target directory exists.
-        shutil.rmtree(target_root)
+        if os.path.exists(target_root):
+            shutil.rmtree(target_root)
 
         # Copy.
         for assets_dir in self.iter_assets_dirs():
