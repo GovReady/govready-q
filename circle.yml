@@ -9,6 +9,8 @@ dependencies:
     - sudo dpkg -i cf-cli_amd64.deb
     - cf -v
 
+# maching build images (Ubuntu version) are set in Project Settings, not
+# in this configuration file.
 machine:
   python:
     version: 3.4.4
