@@ -561,6 +561,14 @@ class RenderedAnswer:
                 return self.escapefunc(value)
         return SafeString(value, self.escapefunc)
 
+    def rendered_outputs(self):
+        if self.question_type == "module":
+            try:
+                return self.answer.task.render_output_documents(hard_fail=False)
+            except:
+                return []
+        raise AttributeError()
+
     def __bool__(self):
         # How the template converts a question variable to
         # a boolean within an expression (i.e. within an if).
