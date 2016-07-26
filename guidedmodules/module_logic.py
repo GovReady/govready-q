@@ -602,9 +602,10 @@ class RenderedAnswer:
         
         elif self.question_type == "module-set":
             # Iterate over the sub-tasks' answers.
-            return (
-                v.get_template_context(self.escapefunc)
-                for v in self.answer)
+            def get_module(m):
+                m.add_imputed_answers()
+                return m.get_template_context(self.escapefunc)
+            return (get_module(v) for v in self.answer)
 
         elif self.question_type == "external-function":
             return iter(self.answer)
