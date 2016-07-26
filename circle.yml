@@ -25,5 +25,5 @@ test:
 deployment:
   development: # just a label; label names are completely up to you
     branch: cfdev
-      commands:
-        - make -n run
+    commands:
+      - make -n run
