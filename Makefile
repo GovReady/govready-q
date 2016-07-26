@@ -53,4 +53,6 @@ ifeq ($(CFSPACE),undefined)
 else
 	@echo cf target -s $(CFSPACE)
 	@echo cf create-service elephantsql turtle cf-$(MYAPP)-pgsql
+	# PWS seems to require email/oauth, the command below fails with 'Insufficent scope'
+	@echo cf create-user circleci $(CIPASSWORD)
 endif
