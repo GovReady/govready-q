@@ -175,6 +175,40 @@ PWS supports routing for 'private domains', e.g. routing traffic for `q.govready
 - [ ] Test routing `qq.govready.com` to the prerelease
 - [ ] Document the process for mapping DNS and routes to apps
 
+### DNS implementation and testing notes:
+
+Create route from http://govready.pburkholder.com to app `govready-q` in space `sandbox`.
+
+First, create a cname:
+```
+govready.pburkholder.com. 59	IN	CNAME	govready-q.cfapps.io.
+```
+Then:
+
+```
+$ cf target -s sandbox
+$ cf create-domain GovReadyPDB pburkholder.com
+Creating domain pburkholder.com for org GovReadyPDB as pburkholder+govready@pobox.com...
+OK
+$ cf map-route govready-q pburkholder.com --hostname govready
+Creating route govready.pburkholder.com for org GovReadyPDB / space sandbox as pburkholder+govready@pobox.com...
+OK
+Adding route govready.pburkholder.com to app govready-q in org GovReadyPDB / space sandbox as pburkholder+govready@pobox.com...
+OK
+```
+
+for the development branch, changed manifest.yml to have:
+
+```
+---
+applications:
+- name: govready-q
+  services:
+     - cf-govready-q-pgsql # needs provisioning between deployments
+  domain: dev.pburkholder.com
+```
+
+
 ## <a name="certs"></a>Certs
 
 PWS provides SSL for hosted domains: https://docs.run.pivotal.io/marketplace/pivotal-ssl.html
