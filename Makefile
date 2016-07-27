@@ -32,13 +32,13 @@ ifeq ($(cf_secret),yes)
 	@echo secret key already set
 else
 	@echo Attempting to provision secret key with nostart push:
-	$(CFPUSH)--no-start
+	$(CFPUSH) --no-start
 	@echo Running: cf set-env $(MYAPP) SECRET_KEY __new_secret__
 	@cf set-env $(MYAPP) SECRET_KEY $(key) 1>/dev/null
 endif
 
 run: requirements key
-	$(CFPUSH)--no-start
+	$(CFPUSH)
 
 clean:
 	/bin/rm -rf $(STATIC)
