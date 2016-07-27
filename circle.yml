@@ -32,4 +32,4 @@ deployment:
     branch: cfdev
     commands:
       - make requirements
-      - make run
+      - CFOPTS="-d dev.pburkholder.com" make run

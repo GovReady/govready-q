@@ -32,12 +32,12 @@ ifeq ($(cf_secret),yes)
 else
 	@echo Attempting to provision secret key with nostart push:
 	cf push $(MYAPP) --no-start
-	@echo Running: cf set-env $(MYAPP) SECRET_KEY __new_secret__ 
+	@echo Running: cf set-env $(MYAPP) SECRET_KEY __new_secret__
 	@cf set-env $(MYAPP) SECRET_KEY $(key) 1>/dev/null
 endif
 
 run: requirements key
-	cf push -i 1 $(MYAPP)
+	cf push -i 1 $(CFOPTS) $(MYAPP)
 
 clean:
 	/bin/rm -rf $(STATIC)
@@ -54,6 +54,7 @@ ifeq ($(CFSPACE),undefined)
 else
 	@echo cf target -s $(CFSPACE)
 	@echo cf create-service elephantsql turtle cf-$(MYAPP)-pgsql
+	@echo cf create-route development dev.pburkholder.com # Example
 	# PWS seems to require email/oauth, the command below fails with 'Insufficent scope'
 	@echo cf create-user circleci $(CIPASSWORD)
 endif

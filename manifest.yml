@@ -5,7 +5,6 @@ applications:
 - name: govready-q
   services:
      - cf-govready-q-pgsql # needs provisioning between deployments
-  domain: dev.pburkholder.com
   env:
     STATIC: 'true'
     HTTPS: False
