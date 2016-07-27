@@ -30,9 +30,10 @@ key:
 ifeq ($(cf_secret),yes)
 	@echo secret key already set
 else
-	@echo setting new secret key
+	@echo Attempting to provision secret key with nostart push:
 	cf push $(MYAPP) --no-start
-	@cf set-env $(MYAPP) SECRET_KEY $(key)
+	@echo Running: cf set-env $(MYAPP) SECRET_KEY __new_secret__ 
+	@cf set-env $(MYAPP) SECRET_KEY $(key) 1>/dev/null
 endif
 
 run: requirements key
