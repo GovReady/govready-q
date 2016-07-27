@@ -1,5 +1,5 @@
 ---
-memory: 1G
+memory: 512MB
 instances: 1
 applications:
 - name: govready-q
