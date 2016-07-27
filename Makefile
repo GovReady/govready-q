@@ -1,14 +1,15 @@
-test:
-	python3 manage.py test siteapp
-	python3 -m unittest discover tests
-
 
 MYAPP = govready-q
+CFPUSH = cf push -i 1 $(CFOPTS) $(MYAPP)
 VENDOR = vendor/done
 STATIC = siteapp/static/vendor/done
 PIP = $(shell which pip3 || which pip)
 
 .PHONY: run key
+
+test:
+	python3 manage.py test siteapp
+	python3 -m unittest discover tests
 
 all: clean requirements migrate run
 
@@ -31,13 +32,13 @@ ifeq ($(cf_secret),yes)
 	@echo secret key already set
 else
 	@echo Attempting to provision secret key with nostart push:
-	cf push $(MYAPP) --no-start
+	$(CFPUSH)--no-start
 	@echo Running: cf set-env $(MYAPP) SECRET_KEY __new_secret__
 	@cf set-env $(MYAPP) SECRET_KEY $(key) 1>/dev/null
 endif
 
 run: requirements key
-	cf push -i 1 $(CFOPTS) $(MYAPP)
+	$(CFPUSH)--no-start
 
 clean:
 	/bin/rm -rf $(STATIC)
