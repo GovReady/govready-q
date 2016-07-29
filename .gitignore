@@ -2,6 +2,7 @@ __pycache__/
 /local
 /modules/local
 siteapp/static/vendor
+siteapp/static/module-assets
 
 # generated files
 .bash_history
