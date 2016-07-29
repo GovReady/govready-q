@@ -25,7 +25,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('subdomain', 'name')
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'owner_domains', 'created')
+    list_display = ('organization', 'title', 'owner_domains', 'created')
     def owner_domains(self, obj):
         return obj.get_owner_domains()
 

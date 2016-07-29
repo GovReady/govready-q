@@ -44,12 +44,6 @@
                 font-size: 16px;
             }
 
-            .navbar-brand {
-              padding: 1px;
-            }
-            .navbar-brand img {
-              width: 201px;
-            }
             .navbar .notification.unread a span {
                 font-weight: bold;
             }
@@ -79,7 +73,14 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/about"><img alt="GovReady Q logo" src="{% static "img/brand/navbar-logo.png" %}"></a>
+          <a class="navbar-brand" href="/">
+            {# The login page is accessible to unauthenticated users. We should only leak the org's name to authenticated users. #}
+            {% if request.organization %}
+              {{request.organization.name}}
+            {% else %}
+              {{request.get_host}}
+            {% endif %}
+          </a>
         </div>
 
         <div id="navbar-collapse-target" class="collapse navbar-collapse pull-right">
@@ -91,11 +92,9 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{request.user}} <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                {% with settings_task=request.user.get_settings_task %}
-                  {% if settings_task %}
-                    <li><a href="{{settings_task.get_absolute_url}}">Settings</a></li>
-                  {% endif %}
-                {% endwith %}
+                {% if user.user_settings_task %}
+                  <li><a href="{{user.user_settings_task.get_absolute_url}}">Settings</a></li>
+                {% endif %}
                 <li role="separator" class="divider"></li>
                 <li><a href="{% url "account_logout" %}">Log Out</a></li>
               </ul>

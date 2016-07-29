@@ -10,22 +10,29 @@ from jsonfield import JSONField
 
 class User(AbstractUser):
     def __str__(self):
-        from guidedmodules.models import TaskAnswer
-        name = TaskAnswer.objects.filter(
-            task=self.get_settings_task(),
-            question__key="name").first()
-        if name:
-            return name.get_current_answer().get_value() #+ " <" + self.email + ">"
-        else:
-            return self.email or "Anonymous User"
+        settings_task = getattr(self, 'user_settings_task', None)
+        if settings_task:
+            from guidedmodules.models import TaskAnswer
+            name = TaskAnswer.objects.filter(
+                task=settings_task,
+                question__key="name").first()
+            if name:
+                return name.get_current_answer().get_value() #+ " <" + self.email + ">"
+
+        # User has not entered their name.
+        return self.email or "Anonymous User"
+
+    def localize_to_org(self, org):
+        self.user_settings_task = self.get_settings_task(org)
 
     @transaction.atomic
-    def get_account_project(self):
+    def get_account_project(self, org):
         # TODO: There's a race condition here.
 
         # Get an existing account project.
         pm = ProjectMembership.objects.filter(
             user=self,
+            project__organization=org,
             project__is_account_project=True).first()
         if pm:
             return pm.project
@@ -33,6 +40,7 @@ class User(AbstractUser):
         # Create a new one.
         from guidedmodules.models import Module, Task
         p = Project.objects.create(
+            organization=org,
             title="Account Settings",
             is_account_project=True,
         )
@@ -53,8 +61,8 @@ class User(AbstractUser):
         return p
 
     @transaction.atomic
-    def get_settings_task(self):
-        p = self.get_account_project()
+    def get_settings_task(self, org):
+        p = self.get_account_project(org)
         return p.root_task.get_or_create_subtask(self, "account_settings")
 
     def render_context_dict(self):
@@ -80,10 +88,26 @@ class Organization(models.Model):
     def __str__(self):
         return self.name
 
+    def can_read(self, user):
+        # A user can see an Organization when they have read permission on
+        # any Project within the Organization or are a guest in any Discussion
+        # in the Organization.
+        from discussion.models import Discussion
+        return ProjectMembership.objects.filter(user=user, project__organization=self).exists() \
+            or Discussion.objects.filter(guests=user).exists()
+
+    def get_organization_project(self):
+        prj, isnew = Project.objects.get_or_create(organization=self, is_organization_project=True,
+            defaults = { "title": "Organization" })
+        return prj
+
 class Project(models.Model):
+    organization = models.ForeignKey(Organization, related_name="projects", help_text="The Organization that this project belongs to.")
+    is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
+
     title = models.CharField(max_length=256, help_text="The title of this Project.")
 
-    is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
+    is_account_project = models.BooleanField(default=False, help_text="Each User has one Project per Organization for account Tasks.")
 
         # the root_task has to be nullable because the Task itself has a non-null
         # field that refers back to this Project, and one must be NULL until the
@@ -93,6 +117,9 @@ class Project(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    class Meta:
+        unique_together = [('organization', 'is_organization_project')] # ensures only one can be true
 
     def __str__(self):
         # For the admin, notification strings
@@ -111,6 +138,9 @@ class Project(models.Model):
 
     def get_admins(self):
         return User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+
+    def is_deletable(self):
+        return not self.is_organization_project and not self.is_account_project
 
     def can_start_task(self, user):
         return (not self.is_account_project) and (user in self.get_members())
@@ -207,6 +237,8 @@ class ProjectMembership(models.Model):
 
 
 class Invitation(models.Model):
+    organization = models.ForeignKey(Organization, related_name="invitations", help_text="The Organization that this Invitation belongs to.")
+
     # who is sending the invitation
     from_user = models.ForeignKey(User, related_name="invitations_sent", help_text="The User who sent the invitation.")
     from_project = models.ForeignKey(Project, related_name="invitations_sent", help_text="The Project within which the invitation exists.")
@@ -286,9 +318,20 @@ class Invitation(models.Model):
         return self.purpose_verb() + self.target.title
 
     def get_acceptance_url(self):
+        # The settings.SITE_ROOT_URL tells us the scheme and domain of the main Q landing site.
+        # (In testing it's http://localhost; in production it's https://q.govready.com.)
+        # The invitation must be sent using the subdomain of the organization it is
+        # a part of.
+        import urllib.parse
         from django.core.urlresolvers import reverse
-        return settings.SITE_ROOT_URL \
-            + reverse('accept_invitation', kwargs={'code': self.email_invitation_code})
+        s = urllib.parse.urlsplit(settings.SITE_ROOT_URL)
+        return urllib.parse.urlunsplit((
+            s[0], # scheme
+            self.organization.subdomain + '.' + s[1], # host
+            reverse('accept_invitation', kwargs={'code': self.email_invitation_code}), # path
+            '', # query
+            '' # fragment
+            ))
 
     def send(self):
         # Send and mark as sent.

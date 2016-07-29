@@ -13,7 +13,7 @@ from siteapp.models import User, Invitation, Project, ProjectMembership
 @login_required
 def new_task(request):
     # Create a new task by answering a module question of a project rook task.
-    project = get_object_or_404(Project, id=request.POST["project"])
+    project = get_object_or_404(Project, id=request.POST["project"], organization=request.organization)
 
     # Can the user create a task within this project?
     if not project.can_start_task(request.user):
@@ -28,7 +28,7 @@ def new_task(request):
 @login_required
 def next_question(request, taskid, taskslug):
     # Get the Task.
-    task = get_object_or_404(Task, id=taskid)
+    task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
 
     # Load the answers the user has saved so far.
     answered = task.get_answers()
@@ -215,7 +215,7 @@ def next_question(request, taskid, taskslug):
             return True
         if not taskq:
             return False
-        d = Discussion.get_for(taskq)
+        d = Discussion.get_for(request.organization, taskq)
         if not d:
             return False
         if d.is_participant(request.user):
@@ -338,7 +338,7 @@ def next_question(request, taskid, taskslug):
             "prompt": task.render_question_prompt(q),
             "history": taskq.get_history() if taskq else None,
             "answer": answer,
-            "discussion": Discussion.get_for(taskq) if taskq else None,
+            "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
 
             "answer_module": answer_module,
             "answer_tasks": answer_tasks,
@@ -353,7 +353,7 @@ def instrumentation_record_interaction(request):
 
     # Get event variables.
     
-    task = get_object_or_404(Task, id=request.POST["task"])
+    task = get_object_or_404(Task, id=request.POST["task"], project__organization=request.organization)
     if not task.has_read_priv(request.user):
         return HttpResponseForbidden()
 
@@ -403,7 +403,7 @@ def change_task_state(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    task = get_object_or_404(Task, id=request.POST["id"])
+    task = get_object_or_404(Task, id=request.POST["id"], project__organization=request.organization)
     if not task.has_write_priv(request.user, allow_access_to_deleted=True):
         return HttpResponseForbidden()
 

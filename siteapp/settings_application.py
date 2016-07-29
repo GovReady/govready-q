@@ -12,6 +12,10 @@ INSTALLED_APPS += [
     'discussion',
 ]
 
+MIDDLEWARE_CLASSES += [
+	'siteapp.middleware.OrganizationSubdomainMiddleware',
+]
+
 AUTHENTICATION_BACKENDS += ['siteapp.models.DirectLoginBackend']
 
 SERVER_EMAIL = "GovReady Q <q@mg.govready.com>"
