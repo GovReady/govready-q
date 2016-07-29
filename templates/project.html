@@ -234,7 +234,7 @@
         </div>
       {% endfor %}
 
-    {% if not project.is_account_project %}
+    {% if not project.is_account_project or project.is_deletable %}
     <div role="tabpanel" class="tab-pane" id="project-settings">
 
       <h1>Settings</h1>
@@ -280,12 +280,15 @@
             </div>
         </div>
 
+      {% if project.is_deletable %}
       <div class="task-group">
         <div class="task-group-title">Caution!</div>
           <div class="row" style="padding:12px;margin:0 0 0 0;">
               <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button> 
           </div>
         </div>
+      </div>
+      {% endif %}
 
     </div> <!-- /tab-panel -->
     {% endif %}

@@ -30,14 +30,14 @@ def start_a_discussion(request):
         # Get the TaskAnswer for this task. It may not exist yet.
         tq, isnew = TaskAnswer.objects.get_or_create(**tq_filter)
 
-    discussion = Discussion.get_for(tq)
+    discussion = Discussion.get_for(request.organization, tq)
     if not discussion:
         # Validate user can create discussion.
         if not task.has_read_priv(request.user):
             return JsonResponse({ "status": "error", "message": "You do not have permission!" })
 
         # Get the Discussion.
-        discussion = Discussion.get_for(tq, create=True)
+        discussion = Discussion.get_for(request.organization, tq, create=True)
 
     # Build the event history.
     events = []
@@ -72,7 +72,7 @@ def start_a_discussion(request):
 
 @login_required
 def submit_discussion_comment(request):
-    discussion = get_object_or_404(Discussion, id=request.POST['discussion'])
+    discussion = get_object_or_404(Discussion, id=request.POST['discussion'], organization=request.organization)
 
     # Does user have write privs?
     if not discussion.is_participant(request.user):
@@ -105,7 +105,7 @@ def submit_discussion_comment(request):
 @login_required
 def edit_discussion_comment(request):
     # get object
-    comment = get_object_or_404(Comment, id=request.POST['id'])
+    comment = get_object_or_404(Comment, id=request.POST['id'], discussion__organization=request.organization)
 
     # can edit? must still be a participant of the discussion, to
     # prevent editing things that you are no longer able to see
@@ -127,7 +127,7 @@ def edit_discussion_comment(request):
 @login_required
 def delete_discussion_comment(request):
     # get object
-    comment = get_object_or_404(Comment, id=request.POST['id'])
+    comment = get_object_or_404(Comment, id=request.POST['id'], discussion__organization=request.organization)
 
     # can edit? must still be a participant of the discussion, to
     # prevent editing things that you are no longer able to see
@@ -144,7 +144,7 @@ def delete_discussion_comment(request):
 @login_required
 def save_reaction(request):
     # get comment that is being reacted *to*
-    comment = get_object_or_404(Comment, id=request.POST['id'])
+    comment = get_object_or_404(Comment, id=request.POST['id'], discussion__organization=request.organization)
 
     # can see it?
     if not comment.can_see(request.user):

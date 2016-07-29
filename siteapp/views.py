@@ -18,7 +18,7 @@ def homepage(request):
         # Public homepage.
         return render(request, "index.html")
 
-    settings_task = request.user.get_settings_task()
+    settings_task = request.user.get_settings_task(request.organization)
     if not settings_task.is_finished():
         # First task: Fill out your account settings.
         return HttpResponseRedirect(settings_task.get_absolute_url())
@@ -28,8 +28,9 @@ def homepage(request):
         # are involved with.
         projects = set()
 
-        # Add all of the Projects the user is a member of.
-        for pm in ProjectMembership.objects.filter(user=request.user):
+        # Add all of the Projects the user is a member of within the Organization
+        # that the user is on the subdomain of.
+        for pm in ProjectMembership.objects.filter(project__organization=request.organization, user=request.user):
             projects.add(pm.project)
             if pm.is_admin:
                 # Annotate with whether the user is an admin of the project.
@@ -37,12 +38,12 @@ def homepage(request):
 
         # Add projects that the user is the editor of a task in, even if
         # the user isn't a team member of that project.
-        for task in Task.get_all_tasks_readable_by(request.user).order_by('-created'):
+        for task in Task.get_all_tasks_readable_by(request.user, request.organization).order_by('-created'):
             projects.add(task.project)
 
         # Add projects that the user is participating in a Discussion in
         # as a guest.
-        for d in Discussion.objects.filter(guests=request.user):
+        for d in Discussion.objects.filter(organization=request.organization, guests=request.user):
             if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
                 projects.add(d.attached_to.task.project)
 
@@ -53,10 +54,6 @@ def homepage(request):
             "projects": projects,
             "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
         })
-
-def aboutpage(request):
-    # About page
-    return render(request, "about.html")
 
 @login_required
 def new_project(request):
@@ -86,7 +83,9 @@ def new_project(request):
         if not form.errors:
             with transaction.atomic():
                 # create object
-                project = form.save()
+                project = form.save(commit=False)
+                project.organization = request.organization
+                project.save()
 
                 # get root task module
                 try:
@@ -120,7 +119,7 @@ def new_project(request):
 
 @login_required
 def project(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
+    project = get_object_or_404(Project, id=project_id, organization=request.organization)
 
     # Check authorization.
     if not project.has_read_priv(request.user):
@@ -129,7 +128,7 @@ def project(request, project_id):
     # Redirect if slug is not canonical. We do this after checking for
     # read privs so that we don't reveal the task's slug to unpriv'd users.
     if request.path != project.get_absolute_url():
-        return HttpResponseRedirect(task.get_absolute_url())
+        return HttpResponseRedirect(project.get_absolute_url())
 
     # Get the project team members.
     project_members = ProjectMembership.objects.filter(project=project)
@@ -246,9 +245,11 @@ def project(request, project_id):
 @login_required
 @require_http_methods(["POST"])
 def delete_project(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
+    project = get_object_or_404(Project, id=project_id, organization=request.organization)
     if request.user not in  project.get_admins():
         return HttpResponseForbidden()
+    if not project.is_deletable():
+        return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
     project.delete()
     return JsonResponse({ "status": "ok" })
 
@@ -268,7 +269,7 @@ def send_invitation(request):
 
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
-        from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
+        from_project = Project.objects.filter(id=request.POST["project"], organization=request.organization, members__user=request.user).first()
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -286,7 +287,7 @@ def send_invitation(request):
             }
 
         elif request.POST.get("into_task_editorship"):
-            target = Task.objects.get(id=request.POST["into_task_editorship"])
+            target = Task.objects.get(id=request.POST["into_task_editorship"], project__organization=request.organization)
             if not target.has_write_priv(request.user):
                 return HttpResponseForbidden()
             if from_project and target.project != from_project:
@@ -301,7 +302,7 @@ def send_invitation(request):
             }
 
         elif "into_discussion" in request.POST:
-            target = get_object_or_404(Discussion, id=request.POST["into_discussion"])
+            target = get_object_or_404(Discussion, id=request.POST["into_discussion"], organization=request.organization)
             if not target.can_invite_guests(request.user):
                 return HttpResponseForbidden()
             target_info = {
@@ -315,6 +316,8 @@ def send_invitation(request):
             }
 
         inv = Invitation.objects.create(
+            organization=request.organization,
+
             # who is sending the invitation?
             from_user=request.user,
             from_project=from_project,
@@ -347,14 +350,18 @@ def send_invitation(request):
 
 @login_required
 def cancel_invitation(request):
-    inv = get_object_or_404(Invitation, id=request.POST['id'], from_user=request.user)
+    inv = get_object_or_404(Invitation, id=request.POST['id'], organization=request.organization, from_user=request.user)
     inv.revoked_at = timezone.now()
     inv.save(update_fields=['revoked_at'])
     return JsonResponse({ "status": "ok" })
 
 def accept_invitation(request, code=None):
+    # This route is handled specially by the siteapp.middleware.OrganizationSubdomainMiddleware that
+    # guards access to the subdomain. The user may not be authenticated and may not be a member
+    # of the Organization whose subdomain they are visiting.
+
     assert code.strip() != ""
-    inv = get_object_or_404(Invitation, email_invitation_code=code)
+    inv = get_object_or_404(Invitation, organization=request.organization, email_invitation_code=code)
 
     from django.contrib.auth import authenticate, login, logout
     from django.contrib import messages
@@ -483,6 +490,7 @@ def issue_notification(acting_user, verb, target, recipients='WATCHERS', **notif
             continue
 
         # Create the notification.
+        # TODO: Associate this notification with an organization?
         notify.send(
             acting_user, verb=verb, target=target,
             recipient=user,
@@ -492,6 +500,7 @@ def issue_notification(acting_user, verb, target, recipients='WATCHERS', **notif
 def mark_notifications_as_read(request):
 	# Mark one or all of the user's notifications as read.
 
+    # TODO: Filter for notifications relevant to the organization site the user is on.
 	notifs = request.user.notifications
 
 	if "upto_id" in request.POST:

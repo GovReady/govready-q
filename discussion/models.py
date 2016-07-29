@@ -9,6 +9,8 @@ from jsonfield import JSONField
 from siteapp.models import User, ProjectMembership
 
 class Discussion(models.Model):
+    organization = models.ForeignKey('siteapp.Organization', related_name="discussions", help_text="The Organization that this Discussion belongs to.")
+
     attached_to_content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     attached_to_object_id = models.PositiveIntegerField()
     attached_to = GenericForeignKey('attached_to_content_type', 'attached_to_object_id')
@@ -23,14 +25,14 @@ class Discussion(models.Model):
       unique_together = (('attached_to_content_type', 'attached_to_object_id'))
 
     @staticmethod
-    def get_for(object, create=False, must_exist=False):
+    def get_for(org, object, create=False, must_exist=False):
         content_type = ContentType.objects.get_for_model(object)
         if create:
-            return Discussion.objects.get_or_create(attached_to_content_type=content_type, attached_to_object_id=object.id)[0]
+            return Discussion.objects.get_or_create(organization=org, attached_to_content_type=content_type, attached_to_object_id=object.id)[0]
         elif not must_exist:
-            return Discussion.objects.filter(attached_to_content_type=content_type, attached_to_object_id=object.id).first()
+            return Discussion.objects.filter(organization=org, attached_to_content_type=content_type, attached_to_object_id=object.id).first()
         else:
-            return Discussion.objects.get(attached_to_content_type=content_type, attached_to_object_id=object.id)
+            return Discussion.objects.get(organization=org, attached_to_content_type=content_type, attached_to_object_id=object.id)
 
     def __str__(self):
         # for the admin, notification strings

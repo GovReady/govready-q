@@ -24,8 +24,36 @@ class UserAdmin(contribauthadmin.UserAdmin):
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('subdomain', 'name')
 
+    def save_model(self, request, obj, form, change):
+        # When creating a new Organization, add the admin user to it
+        # so that that user can then invite others.
+        was_new = not obj.id
+        obj.save()
+        if was_new:
+            self.add_me_as_admin(request, Organization.objects.filter(id=obj.id))
+
+    def add_me_as_admin(self, request, queryset):
+        for org in queryset:
+            mb, isnew = ProjectMembership.objects.get_or_create(
+                user=request.user,
+                project=org.get_organization_project(),
+                )
+
+            from django.contrib import messages
+            if isnew or not mb.is_admin:
+                messages.add_message(request, messages.INFO, 'You are now an admin of %s.' % org)
+            else:
+                messages.add_message(request, messages.INFO, 'You were already an admin of %s.' % org)
+
+            mb.is_admin = True
+            mb.save()
+
+    add_me_as_admin.short_description = "Add me as an administrator to the organization"
+
+    actions = [add_me_as_admin]
+
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'owner_domains', 'created')
+    list_display = ('organization', 'title', 'owner_domains', 'created')
     def owner_domains(self, obj):
         return obj.get_owner_domains()
 

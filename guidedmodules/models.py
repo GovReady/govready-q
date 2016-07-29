@@ -193,10 +193,11 @@ class Task(models.Model):
             return "Finished on " + self.updated.strftime("%x %X")
 
     @staticmethod
-    def get_all_tasks_readable_by(user):
+    def get_all_tasks_readable_by(user, org):
         # symmetric with has_read_priv
         return Task.objects.filter(
             models.Q(editor=user) | models.Q(project__members__user=user),
+            project__organization=org,
             deleted_at=None,
             ).distinct()
 
