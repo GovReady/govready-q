@@ -14,6 +14,11 @@ primary_app = os.path.basename(os.path.dirname(__file__))
 # LOAD ENVIRONMENT SETTINGS #
 #############################
 
+if os.getenv('VCAP_APPLICATION') and os.getenv('SECRET_KEY'):
+	from siteapp import genenv
+	print("Creating local env from env vars")
+	genenv.main()
+
 # shortcut function for getting a file in a 'local' subdirectory
 # of the main Django project path (one up for this directory).
 def local(fn):
@@ -36,9 +41,9 @@ else:
 		"https": False,
 	}
 
-	print("Create a local/environment.json file! It should contain something like this:")
+	print("Create a %s file! It should contain something like this:" % local("environment.json"))
 	print(json.dumps(environment, sort_keys=True, indent=2))
-	
+
 # DJANGO SETTINGS #
 ###################
 
