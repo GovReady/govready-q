@@ -73,6 +73,13 @@ class DirectLoginBackend(ModelBackend):
     def authenticate(self, user_object=None):
         return user_object
 
+class Organization(models.Model):
+    name = models.CharField(max_length=256, help_text="The display name of the Organization.")
+    subdomain = models.CharField(max_length=256, help_text="The subdomain of q.govready.com that this Organization exists at.")
+
+    def __str__(self):
+        return self.name
+
 class Project(models.Model):
     title = models.CharField(max_length=256, help_text="The title of this Project.")
 
