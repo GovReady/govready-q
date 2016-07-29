@@ -2,7 +2,6 @@ from django.conf import settings
 from django.test import SimpleTestCase
 from unittest import skip
 
-
 # Would be nice to run this without setting up a DB
 # see: http://stackoverflow.com/questions/5917587/django-unit-tests-without-a-db
 # however, we can test settings w/o having to worry about mysql
@@ -23,9 +22,7 @@ class TestDefaultSettings(SimpleTestCase):
         self.assertEqual(settings.ALLOWED_HOSTS, ['*'], "This seems like a bug")
         self.assertListEqual(settings.ADMINS,[])
 
-    @skip("Skip CloudFormation tests until later")
     def test_only_cf_settings(self):
-        skipTest("Not yet")
         self.assertEqual(settings.HTTPS, False)
         self.assertEqual(settings.HOST, "localhost:8000")
         self.assertIsNone(settings.USE_MEMCACHED)
@@ -42,4 +39,7 @@ class TestDefaultSettings(SimpleTestCase):
         self.assertEqual(settings.EMAIL_BACKEND, 'django.core.mail.backends.locmem.EmailBackend', "Based on environment.get('email')")
         self.assertFalse(settings.SESSION_COOKIE_SECURE, "Based on environment[https]")
         self.assertIsNone(settings.STATIC_ROOT, "Based on environment.get('static')")
+        self.assertFalse(settings.STATIC, "Based on environment.get('static') or STATIC env setting")
         self.assertEqual(settings.SITE_ROOT_URL, "http://localhost:8000", "Based on environment[https]")
+        self.assertEqual(settings.ACCOUNT_DEFAULT_HTTP_PROTOCOL, "http")
+        self.assertEqual(settings.STATICFILES_STORAGE, 'django.contrib.staticfiles.storage.StaticFilesStorage')
