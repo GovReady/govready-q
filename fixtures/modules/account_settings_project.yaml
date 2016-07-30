@@ -1,0 +1,8 @@
+id: account_settings_project
+title: Account Settings Project
+short_description: The structure of the account settings Project.
+questions:
+  - id: account_settings
+    title: Account Settings
+    type: module
+    module-id: account_settings

@@ -14,3 +14,5 @@ django-allauth
 jsonfield
 django-bootstrap-form
 django-notifications-hq
+
+selenium

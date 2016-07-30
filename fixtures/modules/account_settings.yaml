@@ -1,0 +1,17 @@
+id: account_settings
+title: GovReady Account Settings
+type: account
+introduction:
+  format: markdown
+  template: |
+    Hi. Welcome to your user profile.
+questions:
+  - id: name
+    title: Your Name
+    prompt: What is your name?
+    type: text
+output:
+  - title: Your Profile
+    format: markdown
+    template: |
+      Name: {{name}}

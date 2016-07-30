@@ -111,11 +111,15 @@ class Organization(models.Model):
             ))
 
     def can_read(self, user):
-        # A user can see an Organization when they have read permission on
-        # any Project within the Organization or are a guest in any Discussion
-        # in the Organization.
+        # A user can see an Organization if:
+        # * they have read permission on any Project within the Organization
+        # * they are an editor of a Task within a Project within the Organization (but might not otherwise be a Project member)
+        # * they are a guest in any Discussion on TaskQuestion in a Task in a Project in the Organization
+        from guidedmodules.models import Task
         from discussion.models import Discussion
-        return ProjectMembership.objects.filter(user=user, project__organization=self).exists() \
+        return \
+               ProjectMembership.objects.filter(user=user, project__organization=self).exists() \
+            or Task.objects.filter(editor=user, project__organization=self).exists() \
             or Discussion.objects.filter(guests=user).exists()
 
     def get_organization_project(self):
@@ -242,7 +246,7 @@ class Project(models.Model):
     def get_invitation_redirect_url(self, invitation):
         # Just for joining a project. For accepting a task, the target
         # has been updated to that task.
-        return "/"
+        return self.get_absolute_url()
 
     def get_notification_watchers(self):
         return self.get_members()
