@@ -152,7 +152,7 @@
                 {% endif %}
 
                 <div class="col-sm-12">
-                <div class="task {% if is_member and rec.is_finished %}task_finished{% endif %}">
+                <div id="question-{{rec.question.key}}" class="task {% if is_member and rec.is_finished %}task_finished{% endif %}">
 
                   <div class="task-title">
                     {{rec.question.spec.title}}

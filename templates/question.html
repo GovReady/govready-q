@@ -275,7 +275,7 @@ Next Question: {{q.spec.title}}
 
             {% if not is_discussion_guest %}
             {% if not task.project.is_account_project or task.can_transfer_owner %}
-            <button class="btn btn-default" onclick="$('#need-help').slideToggle();return false;">Ask team</button>
+            <button id="ask-team-show-options" class="btn btn-default" onclick="$('#need-help').slideToggle(); return false;">Ask team</button>
             {% endif %}
             {% endif %}
 

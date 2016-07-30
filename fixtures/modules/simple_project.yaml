@@ -1,0 +1,9 @@
+id: simple_project
+type: project
+title: I want to answer some questions on Q.
+short_description: A simple project.
+questions:
+  - id: simple_module
+    title: Simple Module
+    type: module
+    module-id: simple

@@ -1,0 +1,20 @@
+id: simple
+title: A Simple Module
+introduction:
+  format: markdown
+  template: |
+    Hi. Welcome to this simple module.
+questions:
+  - id: q1
+    title: The Question
+    prompt: What is the meaning of life, the universe, and _everything_?
+    type: text
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      The Answer: {{q1}}
+
+      {% if q1 != "42" %}
+      No, the answer is *42*, of course.
+      {% endif %}
