@@ -9,7 +9,7 @@ git+https://github.com/if-then-fund/django-html-emailer
 
 dj-database-url==0.4.1
 
-django==1.9
+django==1.9.8
 django-allauth
 jsonfield
 django-bootstrap-form
