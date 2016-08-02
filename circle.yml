@@ -30,8 +30,8 @@ deployment:
     branch: cfdev
     commands:
       - cf api https://api.run.pivotal.io
-      - cf auth $PWS_USER $PWS_PASSWORD
+      - cf auth $PWS_USER $PWS_PASS
       - cf target -o GovReady -s dev
       - cf target # echo space to confirm ok
       - make requirements
-      - CFENV="dev" make run
+      - CFENV=dev make run
