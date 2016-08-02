@@ -1,8 +1,6 @@
 # Q (by GovReady)
 
 [![Build Status](https://travis-ci.com/GovReady/govready-q.svg?token=tqxfXNLktb4qXp6NmyW7&branch=master)](https://travis-ci.com/GovReady/govready-q)
-[![CodeShip
-Status](https://codeship.com/projects/e12ccaf0-34db-0134-1e4d-42ca23b991c6/status?branch=master)](https://codeship.com/projects/165088)
 
 TODO:
 - [ ] Move psycop install `pip install -r pgsql.txt` so local installs don't need PostgreSQL
