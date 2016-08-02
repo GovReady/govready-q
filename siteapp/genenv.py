@@ -30,9 +30,11 @@ def populate_env(input_dict):
             if (input_dict[key][1] == list):
                 # split lists at the : character
                 environment[input_dict[key][0]] = os.environ[key].split(':')
-            else:
+            elif (input_dict[key][1] == bool):
                 # convert to str or bool, as needed
-                environment[input_dict[key][0]] = input_dict[key][1](os.environ[key])
+                environment[input_dict[key][0]] = os.environ[key] in ['True', 'true', 't', 'T']
+            else:
+                environment[input_dict[key][0]] = os.environ[key]
     return (environment)
 
 def populate_static():
