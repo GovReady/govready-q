@@ -108,6 +108,14 @@ ifneq ($(APEX),null)
 	cf map-route $(MYAPP) $(APEX) --hostname \*
 endif
 
+unprovision wipe:
+	cf delete $(MYAPP)
+	cf delete-service pgsql-q
+ifneq ($(APEX),null)
+	cf delete-route $(APEX) --hostname \*
+	cf delete-domain $(APEX)
+endif
+
 # This would be used just once on foundry `space` to enable
 # a mapping for all applications in that space. This is
 # here for documentation purposes.
