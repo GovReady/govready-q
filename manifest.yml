@@ -8,5 +8,5 @@ applications:
   env:
     STATIC: 'true'
     HTTPS: true
-    DEBUG: false   # False for production
+    DEBUG: true
     HOST: "localhost:8000"
