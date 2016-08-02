@@ -4,9 +4,9 @@ instances: 1
 applications:
 - name: govready-q
   services:
-     - cf-govready-q-pgsql # needs provisioning between deployments
+    - pgsql-q # -dev space name not needed since service names are uniq to spaces
   env:
     STATIC: 'true'
-    HTTPS: False
+    HTTPS: true
     DEBUG: False   # False for production
     HOST: "localhost:8000"

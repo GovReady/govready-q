@@ -4,6 +4,8 @@
 [![CodeShip
 Status](https://codeship.com/projects/e12ccaf0-34db-0134-1e4d-42ca23b991c6/status?branch=master)](https://codeship.com/projects/165088)
 
+TODO:
+- [ ] Move psycop install `pip install -r pgsql.txt` so local installs don't need PostgreSQL
 
 Q is an information gathering platform for people, tuned to the specific needs of information security and compliance professionals.
 
@@ -21,7 +23,45 @@ To develop locally, run the following commands:
 	python3 manage.py load_modules
 	python3 manage.py runserver
 
-## Deployment
+## Test kitchen (not on this branch)
+
+Q can be tested within test-kitchen + vagrant with Ubuntu 14.04. Assuming you've installed `kitchen` (chefdk can be useful) and Vagrant, then:
+
+```
+kitchen converge
+```
+
+will bring up your instance.  Try `curl http://localhost:8000` to see it. Then login with:
+
+```
+kitchen login
+```
+
+
+## Cloud Foundry (under development)
+
+To launch, use the `make` targets, generally, for the `dev` space
+
+```
+CFENV=dev make clean provision run
+```
+
+or for a sandbox deployment not using a domain apex:
+
+```
+make clean provision run
+```
+
+The above steps will always do the migrations as they are idempotent (not changing the database unless there are new changes), then start the app. This is not designed for running with multiple instances. As Q is a pre-release application there's no need to scale to multiple instances (https://gettingreal.37signals.com/ch04_Scale_Later.php), although the app should be stateless to support running as across multiple instances later (e.g. following 12-factor principals)
+
+Once the `cf push` step of `make run` is complete, visit the site at https://govready-q.cfapps.io
+
+Notes:
+* To vendor all of the requirements with `pip` it seems you have to have PostgreSQL installed locally (shrug). Try `brew install postgresql` on OsX.
+* Suggestions for migrations at: https://docs.cloudfoundry.org/devguide/services/migrate-db.html
+
+
+## Interactive Deployment
 
 To deploy, on a fresh machine, create a Unix user named "site" and in its home directory run:
 
@@ -51,7 +91,7 @@ You can copy the `secret-key` from what you see --- it was generated to be uniqu
 For production you might also want to make other changes to the `environment.json` file:
 
 * Set `debug` to false.
-* Set the `modules-path` key to a path to the YAML module files (the default is "modules" to use the built-in modules). 
+* Set the `modules-path` key to a path to the YAML module files (the default is "modules" to use the built-in modules).
 * Add the administrators for unhandled server error emails (a list of pairs of [name, address]):
 
 	"admins": [["Name", "email@domain.com"], ...]
