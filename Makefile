@@ -103,7 +103,6 @@ ifneq ($(APEX),null)
 	cf create-domain $(CFORG) $(APEX)
 endif
 	$(CFPUSH) --no-start
-	# Deploy app with no-hostname, see also
 ifneq ($(APEX),null)
 	# associate wildcard with this app and domain:
 	cf map-route $(MYAPP) $(APEX) --hostname \*
