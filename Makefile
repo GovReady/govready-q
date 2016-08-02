@@ -7,11 +7,11 @@ MYAPP = govready-q
 # Set up provisioning details for 'dev', 'prod'
 # use --no-hostname for APEX, see
 #   https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html#nohosts
-ifeq ($(CFENV),"prod")
-CFSPACE ="prod"
-CFORG   ="GovReady"
-APEX    ="q.govready.com"
-CFOPTS  = "-d $(APEX) --no-hostname"
+ifeq ($(CFENV),prod)
+CFSPACE = prod
+CFORG   = GovReady
+APEX    = q.govready.com
+CFOPTS  = -d $(APEX) --no-hostname
 else ifeq ($(CFENV),dev)
 CFSPACE = dev
 CFORG   = GovReady
@@ -29,7 +29,7 @@ VENDOR = vendor/done
 STATIC = siteapp/static/vendor/done
 PIP = $(shell which pip3 || which pip)
 
-.PHONY: run key
+.PHONY: run key dburl provision wipe test
 
 test:
 	python3 manage.py test siteapp
