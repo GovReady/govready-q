@@ -1,0 +1,84 @@
+id: organization_classification
+title: Organization Classification
+introduction:
+  format: markdown
+  template: |
+    Tell us a little bit about your organization so that we can tailor the questions in later modules.
+questions:
+  - id: organization_type
+    title: What type of organization is it?
+    prompt: What type of organization is it?
+    type: choice
+    choices:
+      - key: individual
+        text: Individual / Sole Proprietorship
+      - key: smbiz
+        text: Small Business
+      - key: smresearch
+        text: Small Research Organization
+      - key: localagency
+        text: Local Government Agency
+      - key: federalagency
+        text: Federal Government Agency
+
+  - id: organization_size
+    title: What is the size of your organization?
+    prompt: What is the size of your organization?
+    type: choice
+    choices:
+      - key: single-person
+        text: One Person
+      - key: micro
+        text: Micro (employee range TBD)
+      - key: small
+        text: Small (employee range TBD)
+      - key: medium
+        text: Medium (employee range TBD)
+      - key: large
+        text: Large (employee range TBD)
+
+  - id: it_staff_size
+    title: What is the size of your information technology staff?
+    prompt: What is the size of your information technology staff?
+    type: choice
+    choices:
+      - key: none
+        text: We do not have dedicated information technology staff.
+      - key: micro
+        text: Micro (employee range TBD)
+      - key: small
+        text: Small (employee range TBD)
+      - key: medium
+        text: Medium (employee range TBD)
+      - key: large
+        text: Large (employee range TBD)
+
+  - id: it_systems_size
+    title: How many information technology systems does your organization run?
+    prompt: How many information technology systems does your organization run?
+    type: choice
+    choices:
+      - key: none
+        text: We do not run any information technology systems.
+      - key: one
+        text: Just One
+      - key: micro
+        text: Micro (range TBD)
+      - key: small
+        text: Small (range TBD)
+      - key: medium
+        text: Medium (range TBD)
+      - key: large
+        text: Large (range TBD)
+
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      Organization Type: {{organization_type.text}}
+
+      Organization Size: {{organization_size.text}}
+
+      IT Staff Size: {{it_staff_size.text}}
+
+      Number of IT Systems: {{it_systems_size.text}}

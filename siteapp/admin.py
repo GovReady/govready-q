@@ -25,12 +25,15 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('subdomain', 'name')
 
     def save_model(self, request, obj, form, change):
-        # When creating a new Organization, add the admin user to it
-        # so that that user can then invite others.
         was_new = not obj.id
         obj.save()
         if was_new:
+            # When creating a new Organization, add the admin user to it
+            # so that that user can then invite others.
             self.add_me_as_admin(request, Organization.objects.filter(id=obj.id))
+
+            # And initialize the root Task.
+            obj.get_organization_project().set_root_task("organization", request.user)
 
     def add_me_as_admin(self, request, queryset):
         for org in queryset:

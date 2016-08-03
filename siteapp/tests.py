@@ -179,11 +179,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         u.save()
         ProjectMembership.objects.get_or_create(user=u, project=org.get_organization_project())
 
+        # And initialize the root Task of the Organization with this user as its editor.
+        org.get_organization_project().set_root_task("organization", u)
+
     def url(self, path):
         # Within this test, we only generate URLs for the organization subdomain.
         return super().url("testorg", path)
     
-    def _login(self, is_first_time=True):
+    def _login(self, is_first_time_user=True, is_first_time_org=False):
         # Fill in the login form and submit.
         self.browser.get(self.url("/")) # redirects to /accounts/login/
 
@@ -194,9 +197,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # If this is the user's first login, then we are now at the
         # user account settings task. Proceed through those questions.
-        if is_first_time:
+        if is_first_time_user:
             sleep(.5) # wait for page to load
-            self.assertIn("Introduction", self.browser.title)
+            self.assertIn("Introduction | GovReady Account Settings", self.browser.title)
 
             # - The user is looking at the Introduction page.
             self.click_element("#save-button")
@@ -204,6 +207,24 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
             # - Now at the what is your name page?
             self.fill_field("#inputctrl", "John Doe")
+            self.click_element("#save-button")
+            sleep(.5) # wait for page to load
+
+            # - We're on the module finished page.
+            self.browser.get(self.url("/"))
+
+        if is_first_time_org:
+            # The first time we hit an Organization home, we are
+            # taken to its org info task.
+            sleep(.5) # wait for page to load
+            self.assertIn("Introduction | Organization Classification", self.browser.title)
+
+            # - The user is looking at the Introduction page.
+            self.click_element("#save-button")
+            sleep(.5) # wait for page to load
+
+            # - Now at the 'what kind of org is it' page?
+            self.click_element("input[value='smbiz']")
             self.click_element("#save-button")
             sleep(.5) # wait for page to load
 
@@ -263,13 +284,13 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log in as a new user, log out, then log in a second time.
         # We should only get the account settings questions on the
         # first login.
-        self._login(is_first_time=True)
+        self._login(is_first_time_user=True, is_first_time_org=True)
         self.browser.get(self.url("/accounts/logout/"))
-        self._login(is_first_time=False)
+        self._login(is_first_time_user=False)
 
     def test_simple_module(self):
         # Log in and create a new project and start its task.
-        self._login(is_first_time=True)
+        self._login(is_first_time_user=True, is_first_time_org=True)
         self._new_project()
         self._start_task()
 
@@ -293,7 +314,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test a bunch of invitations.
 
         # Log in and create a new project.
-        self._login(is_first_time=True)
+        self._login(is_first_time_user=True, is_first_time_org=True)
         self._new_project()
         project_page = self.browser.current_url
         
@@ -323,7 +344,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         def reset_login():
             # Log out and back in as the original user.
             self.browser.get(self.url("/accounts/logout/"))
-            self._login(is_first_time=False)
+            self._login(is_first_time_user=False)
             self.browser.get(project_page)
 
         # Test an invitation to that project.
@@ -362,7 +383,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def test_discussion(self):
         # Log in and create a new project.
-        self._login(is_first_time=True)
+        self._login(is_first_time_user=True, is_first_time_org=True)
         self._new_project()
         self._start_task()
 
@@ -377,6 +398,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         sleep(.5) # wait for options to slideDown
         self.click_element("#start-a-discussion a")
         self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
+        sleep(.5) # wait for options to slideDown
         self.click_element("#discussion .comment-input button.btn-primary")
 
         # Invite a guest to join.
@@ -410,7 +432,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log back in as the original user.
         discussion_page = self.browser.current_url
         self.browser.get(self.url("/accounts/logout/"))
-        self._login(is_first_time=False)
+        self._login(is_first_time_user=False)
         self.browser.get(discussion_page)
 
         # Test that we can see the comment and the reaction.

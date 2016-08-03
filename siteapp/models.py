@@ -191,6 +191,41 @@ class Project(models.Model):
             return True
         return False
 
+
+    def set_root_task(self, module_id, editor):
+        from guidedmodules.models import Module, Task, ProjectMembership
+
+        # create task and set it as the project root task
+        if not self.id:
+            raise Exception("Project must be saved first")
+
+        # get the Module and validate that it is a project-type module
+        # module_id can be either an int for a database primary key or
+        # it can be a string key to specify a module ID from the YAML files
+        try:
+            M = Module.objects.filter(visible=True)
+            if isinstance(module_id, int):
+                m = M.get(id=module_id)
+            elif isinstance(module_id, str):
+                m = M.get(key=module_id)
+            else:
+                raise ValueError("invalid argument")
+        except Module.DoesNotExist:
+            raise ValueError("invalid module id %s" % str(module_id))
+        if m.spec.get("type") != "project":
+            raise ValueError("invalid module")
+
+        # create the task
+        task = Task.objects.create(
+            project=self,
+            editor=editor,
+            module=m,
+            title=m.title)
+
+        # update the project
+        self.root_task = task
+        self.save()
+
     def get_discussions_in_project_as_guest(self, user):
         from discussion.models import Discussion
         for d in Discussion.objects.filter(guests=user):
@@ -250,6 +285,7 @@ class Project(models.Model):
 
     def get_notification_watchers(self):
         return self.get_members()
+
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", help_text="The Project this is defining membership for.")
