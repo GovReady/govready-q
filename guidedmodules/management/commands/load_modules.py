@@ -20,8 +20,19 @@ class DependencyError(Exception):
 
 class Command(BaseCommand):
     help = 'Upadates the modules in the database using the YAML specifications in the filesystem.'
+    args = '{force}'
 
     def handle(self, *args, **options):
+        # If "force" is given on the command line, then always update
+        # modules with the YAML data even if there were incompatible
+        # changes. Only use this in off-line testing, since it could
+        # result in an inconsistent database state with answers to
+        # questions that are not valid given the question's type,
+        # choices, or restrictions. And since changes in modules can
+        # trigger the updating of other modules, this could have a
+        # large unintended impact.
+        self.force_update = "force" in args
+
         # Process each YAML file. Because YAML files may refer to
         # other YAML files, we also end up loading them recursively.
         ok = True
@@ -303,18 +314,23 @@ class Command(BaseCommand):
                 == json.dumps([self.transform_question_spec(m, q) for q in spec.get("questions", [])], sort_keys=True):
             return None
 
+        # Define some symbols.
+
+        compatible_change = False
+        incompatible_chane = True if (not self.force_update) else False
+
         # Now we're just checking if the change is compatible or not with
         # the existing database record.
 
         if m.spec.get("version") != spec.get("version"):
             # The module writer can force a bump by changing the version
             # field.
-            return True
+            return incompatible_chane
 
         # If there are no Tasks started for this Module, then the change is
         # compatible because there is no data consistency to worry about.
         if not Task.objects.filter(module=m).exists():
-            return False
+            return compatible_change
 
         # An incompatible change is the removal of a question, the change
         # of a question type, or the removal of choices from a choice
@@ -332,7 +348,7 @@ class Command(BaseCommand):
             # module is changed anyway at the end of this method.)
             q = self.transform_question_spec(mq.module, q)
             if self.is_question_changed(mq, definition_order, q) is True:
-                return True
+                return incompatible_chane
 
             # Remember that we saw this question.
             qs.add(mq)
@@ -340,10 +356,10 @@ class Command(BaseCommand):
         # Were any questions removed?
         for q in m.questions.all():
             if q not in qs:
-                return True
+                return incompatible_chane
 
         # The changes will not create any data inconsistency.
-        return False
+        return compatible_change
 
     def is_question_changed(self, mq, definition_order, spec):
         # Returns whether a question specification has changed since
