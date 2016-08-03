@@ -98,14 +98,14 @@ class Command(BaseCommand):
         # Returns the file name and parsed YAML content of the module file on
         # disk for module_id.
         import os.path
-        import yaml, yaml.scanner, yaml.constructor
+        import yaml, yaml.scanner, yaml.parser, yaml.constructor
         fn = os.path.join(settings.MODULES_PATH, module_id + ".yaml")
         if not os.path.exists(fn):
             raise DependencyError(referenced_by_module_id, module_id)
         with open(fn) as f:
             try:
                 return (fn, yaml.load(f))
-            except (yaml.scanner.ScannerError, yaml.constructor.ConstructorError) as e:
+            except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
                 raise ValidationError(fn, "There was an error parsing the file: " + str(e))
 
     @transaction.atomic # there can be an error mid-way through updating a Module
