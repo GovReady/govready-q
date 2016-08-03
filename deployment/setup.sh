@@ -34,16 +34,14 @@ rm -f /etc/nginx/sites-enabled/default
 # Put in our nginx site config.
 ln -sf `pwd`/deployment/nginx.conf /etc/nginx/sites-enabled/$DOMAIN
 
-# Create a self-signed certificate so that nginx can start.
+# Create a new TLS private key if we don't have one yet.
 if [ ! -f /etc/ssl/local/ssl_certificate.key ]; then
 	# Set the umask so the key file is never world-readable.
 	(umask 077;
 		openssl genrsa -out /etc/ssl/local/ssl_certificate.key 2048)
 fi
 
-# Generate a self-signed SSL certificate because things like nginx, dovecot,
-# etc. won't even start without some certificate in place, and we need nginx
-# so we can offer the user a control panel to install a better certificate.
+# Generate a self-signed SSL certificate so that nginx can start.
 if [ ! -f /etc/ssl/local/ssl_certificate.pem ]; then
 	# Generate a certificate signing request.
 	CSR=/tmp/ssl_cert_sign_req-$$.csr
@@ -58,16 +56,6 @@ if [ ! -f /etc/ssl/local/ssl_certificate.pem ]; then
 	# Delete the certificate signing request because it has no other purpose.
 	rm -f $CSR
 fi
-
-# Install TLS cert provisioning tool.
-apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip
-pip3 install free_tls_certificates
-cat > /etc/cron.daily/letsencrypt <<EOF;
-free_tls_certificate $DOMAIN /etc/ssl/local/ssl_certificate.key /tmp/le_certificate.crt /home/ubuntu/public_html /home/ubuntu/acme-le-account \
-	&& sudo mv /tmp/le_certificate.crt /etc/ssl/local/ssl_certificate.crt \
-	&& sudo service nginx restart
-rm -f /tmp/le_certificate.crt
-EOF
 
 # OUR SITE
 ##########
@@ -100,5 +88,3 @@ service supervisor restart
 # Restart nginx.
 service nginx restart
 
-# Procure real TLS certificate now that nginx is up.
-bash /etc/cron.daily/letsencrypt
