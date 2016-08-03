@@ -177,7 +177,7 @@ class Project(models.Model):
     def get_owner_domains(self):
         # Utility function for the admin/debugging to quickly see the domain
         # names in the email addresses of the admins of this project.
-        return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True)))
+        return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True) if m.user.email and "@" in m.user.email))
 
     def has_read_priv(self, user):
         # Who can see this project? Team members + anyone editing a task within
