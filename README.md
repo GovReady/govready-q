@@ -21,6 +21,12 @@ To develop locally, run the following commands:
 	python3 manage.py load_modules
 	python3 manage.py runserver
 
+### Testing
+
+To run the integration tests you'll also need to install `chromedriver` e.g., `brew install chromedriver`
+
+The test suite is run with: `make test`
+
 ## Test kitchen (not on this branch)
 
 Q can be tested within test-kitchen + vagrant with Ubuntu 14.04. Assuming you've installed `kitchen` (chefdk can be useful) and Vagrant, then:
