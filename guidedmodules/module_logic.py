@@ -219,7 +219,7 @@ def render_content(content, answers, output_format, additional_context={}, hard_
     context = dict(additional_context) # clone
 
     # Add rendered answers to it.
-    context.update(answers.get_template_context(escapefunc))
+    context.update(TemplateContext(answers, escapefunc))
 
     # Evaluate the template. Ensure autoescaping is turned on. Even though
     # we handle it ourselves, we do so using the __html__ method on
@@ -428,10 +428,13 @@ def get_question_choice(question, key):
     raise KeyError(repr(key) + " is not a choice")
 
 class ModuleAnswers:
+    """Represents a set of answers to a Task."""
+
     def __init__(self, module, task, answers):
         self.module = module
         self.task = task
         self.answers = answers
+        self.has_imputed_answers = False
 
     def add_imputed_answers(self):
         # Set (and override) any answers with inputed answers. Imputed
@@ -444,33 +447,22 @@ class ModuleAnswers:
         # Proceed in order (?) in case there are dependencies between
         # imputations. TODO: This should follow the dependency chain
         # defined by next_question.
-        context = self.get_template_context()
+        if self.has_imputed_answers: return # already done
+        self.was_imputed = set()
+        context = TemplateContext(self, str)
         for q in self.module.questions.order_by('definition_order'):
             import jinja2.exceptions
             try:
                 v = impute_answer(q, context)
                 if v :
                     self.answers[q.key] = v[0]
+                    self.was_imputed.add(q.key)
             except jinja2.exceptions.UndefinedError:
                 # If a variable is undefined, then we may be trying to
                 # impute the answer to a question that depends on a question
                 # that hasn't been answered yet.
                 continue
-
-    def get_template_context(self, escapefunc = lambda x : x):
-        # Replace the internal Pythonic/JSON-able values with
-        # RenderedAnswer instances which take care of converting
-        # raw data values into how they are rendered in templates
-        # (escaping, iteration, property accessors).
-        ret = { }
-        for qid, value in self.answers.items():
-            q = self.module.questions.get(key=qid)
-            ret[qid] = RenderedAnswer(q, value, escapefunc)
-
-        # Add the Project too.
-        ret['project'] = RenderedProject(self.task.project, escapefunc)
-
-        return ret
+        self.has_imputed_answers = True
 
     def render_output(self, additional_context, hard_fail=True):
         # Now that all questions have been answered, generate this
@@ -482,24 +474,67 @@ class ModuleAnswers:
             return ret
         return [ render_document(d) for d in self.module.spec.get("output", []) ]
 
-class RenderedProject:
+from collections.abc import Mapping
+class TemplateContext(Mapping):
+    """Provides Jinja2 template and expression variables."""
+
+    def __init__(self, module_answers, escapefunc):
+        self.module_answers = module_answers
+        self.escapefunc = escapefunc
+        self._cache = { }
+
+    def __getitem__(self, item):
+        if item not in self._cache:
+            self._cache[item] = self.getitem(item)
+        return self._cache[item]
+
+    def getitem(self, item):
+        # If 'item' matches a question ID, wrap the internal Pythonic/JSON-able value
+        # with a RenderedAnswer instance which take care of converting raw data values
+        # into how they are rendered in templates (escaping, iteration, property accessors)
+        # and evaluated in expressions.
+        question = self.module_answers.module.questions.filter(key=item).first()
+        if question:
+            # The question might or might not be answered. If not, its value is None.
+            answer = self.module_answers.answers.get(item, None)
+            return RenderedAnswer(question, answer, self.escapefunc)
+
+        # Unless the keys are question IDs, then the context also provides the project and
+        # organization that the Task belongs to.
+        if item == "project":
+            return RenderedProject(self.module_answers.task.project, self.escapefunc)
+        if item == "organization":
+            return RenderedOrganization(self.module_answers.task.project.organization, self.escapefunc)
+
+        # The item is not something found in the context.
+        raise AttributeError(item)
+
+    def __iter__(self):
+        seen_keys = set()
+        for q in self.module_answers.task.module.questions.order_by('definition_order'):
+            seen_keys.add(q.key)
+            yield q.key
+        if "project" not in q.key: yield "project"
+        if "organization" not in q.key: yield "organization"
+
+    def __len__(self):
+        return len([x for x in self])
+
+class RenderedProject(TemplateContext):
     def __init__(self, project, escapefunc):
         self.project = project
-        self.escapefunc = escapefunc
+        super().__init__(project.root_task.get_answers(), escapefunc)
 
     def __html__(self):
         return self.escapefunc(self.project.title)
 
-    def __getattr__(self, item):
-        task = self.project.root_task
-        answrs = task.get_answers().get_template_context(escapefunc=self.escapefunc)
-        if item in answrs:
-            # Return the RenderedAnswer provided by the root task.
-            return answrs[item]
-        else:
-            # Return a RenderedAnswer representing the skipped question.
-            q = task.module.questions.filter(key=item).first()
-            return RenderedAnswer(q, None, self.escapefunc)
+class RenderedOrganization(TemplateContext):
+    def __init__(self, organization, escapefunc):
+        self.organization = organization
+        super().__init__(organization.get_organization_project().root_task.get_answers(), escapefunc)
+
+    def __html__(self):
+        return self.escapefunc(self.organization.name)
 
 class RenderedAnswer:
     def __init__(self, question, answer, escapefunc):
@@ -604,7 +639,7 @@ class RenderedAnswer:
             # Iterate over the sub-tasks' answers.
             def get_module(m):
                 m.add_imputed_answers()
-                return m.get_template_context(self.escapefunc)
+                return TemplateContext(m, self.escapefunc)
             return (get_module(v) for v in self.answer)
 
         elif self.question_type == "external-function":
@@ -616,31 +651,25 @@ class RenderedAnswer:
         # For module-type questions, provide the answers of the
         # sub-task as properties of this context variable.
         if self.question_type == "module":
-            # If property is a valid question ID of the sub-module,
-            # then return *something*. Don't raise an exception,
-            # even if the question was skipped (self.answer is None)
-            # or the sub-question corresponding to the property was
-            # skipped (self.answer...[property] is None).
-
-            # Check if this is a valid queston ID.
-            q = self.question.get_answer_module().questions.filter(key=item).first()
-            if q:
-                # If the question was not skipped...
-                if self.answer is not None:
-                    # And the inner question has been answered...
-                    self.answer.add_imputed_answers()
-                    c = self.answer.get_template_context(self.escapefunc)
-                    if item in c:
-                        # Return that inner RenderedAnswer.
-                        return c[item]
-
-                # Return a RenderedAnswer representing the skipped question.
-                return RenderedAnswer(q, None, self.escapefunc)
+            # If the question was not skipped, then we have the ModuleAnswers for it.
+            if self.answer is not None:
+                # Pass through via a temporary TemplateContext.
+                self.answer.add_imputed_answers()
+                return TemplateContext(self.answer, self.escapefunc)[item]
+            else:
+                # The question was skipped -- i.e. we have no ModuleAnswers for
+                # the question that this RenderedAnswer represents. But we want
+                # to gracefully represent the item attribute as skipped to.
+                q = self.question.get_answer_module().questions.filter(key=item).first()
+                if q:
+                    # 'item' is a valid question.
+                    return RenderedAnswer(q, None, self.escapefunc)
 
         # For external-function and "raw" question types, the answer value is any
         # JSONable Python data structure. Forward the getattr request onto the value.
         elif self.question_type in ("external-function", "raw"):
-            return self.answer[item]
+            if self.answer is not None:
+                return self.answer[item]
 
         # For other types of questions, or items that are not question
         # IDs of the subtask, just do normal Python behavior.

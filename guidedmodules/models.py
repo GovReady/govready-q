@@ -4,6 +4,8 @@ from django.conf import settings
 
 from jsonfield import JSONField
 
+from collections import OrderedDict
+
 from .module_logic import ModuleAnswers, render_content
 from siteapp.models import User, Project, ProjectMembership
 
@@ -158,8 +160,10 @@ class Task(models.Model):
         return "/tasks/%d/%s" % (self.id, slugify(self.title))
 
     def get_answers(self):
-        answered = { }
-        for q in self.answers.all():
+        # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
+        # The internal dict of answers is ordered to preserve the question definition order.
+        answered = OrderedDict()
+        for q in self.answers.all().order_by("question__definition_order"):
             # Get the latest TaskAnswerHistory instance for this TaskAnswer,
             # if there is any (there should be). If the answer is marked as
             # cleared, then treat as if it had not been answered.
