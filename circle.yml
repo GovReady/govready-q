@@ -16,6 +16,8 @@ machine:
     version: 3.4.4
 
 test:
+  pre:
+    - deployment/fetch-vendor-resources.sh
   override:
     - python manage.py test
     - python -m unittest discover tests
