@@ -1,0 +1,27 @@
+id: organization_classification
+title: Organization Classification
+introduction:
+  format: markdown
+  template: |
+    Tell us a little bit about your organization so that we can tailor the questions in later modules.
+questions:
+  - id: organization_type
+    title: What type of organization is it?
+    prompt: What type of organization is it?
+    type: choice
+    choices:
+      - key: individual
+        text: Individual / Sole Proprietorship
+      - key: smbiz
+        text: Small Business
+      - key: smresearch
+        text: Small Research Organization
+      - key: localagency
+        text: Local Government Agency
+      - key: federalagency
+        text: Federal Government Agency
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      Organization Type: {{organization_type.text}}

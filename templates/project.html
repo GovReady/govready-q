@@ -127,7 +127,7 @@
       {% endfor %}
 
       {% if not project.is_account_project %}
-        <li role="presentation"><a href="#project-settings" aria-controls="project-settings" role="tab" data-toggle="tab"><i class="glyphicon glyphicon-wrench"></i> Settings</a></li>
+        <li id="project-settings-tab" role="presentation"><a href="#project-settings" aria-controls="project-settings" role="tab" data-toggle="tab"><i class="glyphicon glyphicon-wrench"></i> Settings</a></li>
       {% endif %}
 
     </ul>
@@ -183,7 +183,7 @@
 
                       {% if can_begin_module and rec.can_start_new_task %}
                       <div class="task-commands">
-                        <form method="post" action="/tasks/start" style="display:inline;">
+                        <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
                           {% csrf_token %}
                           <input type="hidden" name="project" value="{{project.id}}"/>
                           <input type="hidden" name="question" value="{{rec.question.key}}"/>
@@ -195,7 +195,7 @@
                             {% endif %}
                           </a>
                         </form>
-                        <a href="#" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign</a>
+                        <a href="#" class="assign-task" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign</a>
                       </div> <!-- /task-commands -->
                       {% endif %}
                     {% endif %}
@@ -259,7 +259,7 @@
 
             {% if send_invitation.can_add_invitee_to_team %}
               <div style="margin: 1em 0">
-                <button class="btn btn-success" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Invite Colleague to Join Project ...</button>
+                <button id="invite-user-to-project" class="btn btn-success" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Invite Colleague to Join Project ...</button>
               </div>
             {% endif %}
 

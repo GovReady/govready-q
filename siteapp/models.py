@@ -88,12 +88,38 @@ class Organization(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        # Return a URL with a hostname. That's unusual.
+        return self.get_root_url()
+
+    def get_root_url(self):
+        # Construct the base URL of the root page of the site for this organization.
+        # settings.SITE_ROOT_URL tells us the scheme, host, and port of the main Q landing site.
+        # In testing it's http://localhost:8000, and in production it's https://q.govready.com.
+        # Combine the scheme and port with settings.ORGANIZATION_PARENT_DOMAIN to form the
+        # base URL for this Organization.
+        import urllib.parse
+        s = urllib.parse.urlsplit(settings.SITE_ROOT_URL)
+        scheme, host = (s[0], s[1])
+        port = '' if (':' not in host) else (':'+host.split(':')[1])
+        return urllib.parse.urlunsplit((
+            scheme, # scheme
+            self.subdomain + '.' + settings.ORGANIZATION_PARENT_DOMAIN + port, # host
+            '', # path
+            '', # query
+            '' # fragment
+            ))
+
     def can_read(self, user):
-        # A user can see an Organization when they have read permission on
-        # any Project within the Organization or are a guest in any Discussion
-        # in the Organization.
+        # A user can see an Organization if:
+        # * they have read permission on any Project within the Organization
+        # * they are an editor of a Task within a Project within the Organization (but might not otherwise be a Project member)
+        # * they are a guest in any Discussion on TaskQuestion in a Task in a Project in the Organization
+        from guidedmodules.models import Task
         from discussion.models import Discussion
-        return ProjectMembership.objects.filter(user=user, project__organization=self).exists() \
+        return \
+               ProjectMembership.objects.filter(user=user, project__organization=self).exists() \
+            or Task.objects.filter(editor=user, project__organization=self).exists() \
             or Discussion.objects.filter(guests=user).exists()
 
     def get_organization_project(self):
@@ -151,7 +177,7 @@ class Project(models.Model):
     def get_owner_domains(self):
         # Utility function for the admin/debugging to quickly see the domain
         # names in the email addresses of the admins of this project.
-        return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True)))
+        return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True) if m.user.email and "@" in m.user.email))
 
     def has_read_priv(self, user):
         # Who can see this project? Team members + anyone editing a task within
@@ -164,6 +190,41 @@ class Project(models.Model):
         for d in self.get_discussions_in_project_as_guest(user):
             return True
         return False
+
+
+    def set_root_task(self, module_id, editor):
+        from guidedmodules.models import Module, Task, ProjectMembership
+
+        # create task and set it as the project root task
+        if not self.id:
+            raise Exception("Project must be saved first")
+
+        # get the Module and validate that it is a project-type module
+        # module_id can be either an int for a database primary key or
+        # it can be a string key to specify a module ID from the YAML files
+        try:
+            M = Module.objects.filter(visible=True)
+            if isinstance(module_id, int):
+                m = M.get(id=module_id)
+            elif isinstance(module_id, str):
+                m = M.get(key=module_id)
+            else:
+                raise ValueError("invalid argument")
+        except Module.DoesNotExist:
+            raise ValueError("invalid module id %s" % str(module_id))
+        if m.spec.get("type") != "project":
+            raise ValueError("invalid module")
+
+        # create the task
+        task = Task.objects.create(
+            project=self,
+            editor=editor,
+            module=m,
+            title=m.title)
+
+        # update the project
+        self.root_task = task
+        self.save()
 
     def get_discussions_in_project_as_guest(self, user):
         from discussion.models import Discussion
@@ -220,10 +281,11 @@ class Project(models.Model):
     def get_invitation_redirect_url(self, invitation):
         # Just for joining a project. For accepting a task, the target
         # has been updated to that task.
-        return "/"
+        return self.get_absolute_url()
 
     def get_notification_watchers(self):
         return self.get_members()
+
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", help_text="The Project this is defining membership for.")
@@ -318,20 +380,13 @@ class Invitation(models.Model):
         return self.purpose_verb() + self.target.title
 
     def get_acceptance_url(self):
-        # The settings.SITE_ROOT_URL tells us the scheme and domain of the main Q landing site.
-        # (In testing it's http://localhost; in production it's https://q.govready.com.)
         # The invitation must be sent using the subdomain of the organization it is
         # a part of.
         import urllib.parse
         from django.core.urlresolvers import reverse
-        s = urllib.parse.urlsplit(settings.SITE_ROOT_URL)
-        return urllib.parse.urlunsplit((
-            s[0], # scheme
-            self.organization.subdomain + '.' + s[1], # host
-            reverse('accept_invitation', kwargs={'code': self.email_invitation_code}), # path
-            '', # query
-            '' # fragment
-            ))
+        return urllib.parse.urljoin(
+            self.organization.get_root_url(),
+            reverse('accept_invitation', kwargs={'code': self.email_invitation_code}))
 
     def send(self):
         # Send and mark as sent.

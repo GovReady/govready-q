@@ -33,11 +33,12 @@ Then run:
 
 (If you get a gateway error from nginx, you may need to `sudo service supervisor restart` to start the uWSGI process.)
 
-If this is truly on a new machine, it will create a new Sqlite database. You'll also see some output instructing you to create a file named `local/environment.json` containing:
+If this is truly on a new machine, it will create a new Sqlite database. You'll also see some output instructing you to create a file named `local/environment.json`. Make it look like this:
 
 	{
 	  "debug": true,
 	  "host": "q.govready.com",
+	  "organization-parent-domain": "govready.com",
 	  "https": true,
 	  "secret-key": "something random here",
 	  "static": "/root/public_html"

@@ -1,0 +1,21 @@
+id: organization
+title: About the Organization
+type: project
+hidden: true
+version: 1
+long_description: >
+  This module is used for the main Project of each Organization.
+
+introduction:
+  format: markdown
+  template: |
+    Tell us about your organization.
+
+questions:
+  - id: organization_details
+    title: Organization Details
+    type: module
+    module-id: organization_classification
+    tab: Basic Info
+    group: About the Project
+

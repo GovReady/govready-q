@@ -7,3 +7,7 @@ questions:
     title: Simple Module
     type: module
     module-id: simple
+  - id: simple_module_two
+    title: Another Simple Module
+    type: module
+    module-id: simple

@@ -58,6 +58,7 @@ h1 a:hover span.glyphicon { text-decoration: none; }
   </div>
 </div>
 
+<div id="auth-status">
 {% if task.editor == request.user %}
 
     {% for inv in open_invitations %}
@@ -86,6 +87,7 @@ h1 a:hover span.glyphicon { text-decoration: none; }
     {% endif %}
 </div>
 {% endif %}
+</div>
 
 <script>
 function invite_to_transfer_editor() {

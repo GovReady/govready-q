@@ -19,9 +19,15 @@ def homepage(request):
         return render(request, "index.html")
 
     settings_task = request.user.get_settings_task(request.organization)
+    organization_task = request.organization.get_organization_project().root_task.get_or_create_subtask(request.user, "organization_details")
+
     if not settings_task.is_finished():
         # First task: Fill out your account settings.
         return HttpResponseRedirect(settings_task.get_absolute_url())
+
+    elif not organization_task.is_finished():
+        # First task: Fill out your account settings.
+        return HttpResponseRedirect(organization_task.get_absolute_url())
 
     else:
         # Ok, show user what they can do --- list the projects they
@@ -63,7 +69,7 @@ def new_project(request):
     project_modules = sorted(set(
         (m.id, m.title)
         for m in Module.objects.filter(visible=True)
-        if m.spec.get("type") == "project"),
+        if m.spec.get("type") == "project" and not m.spec.get("hidden", False)),
         key = lambda m : m[1])
 
     # The form.
@@ -87,22 +93,12 @@ def new_project(request):
                 project.organization = request.organization
                 project.save()
 
-                # get root task module
+                # assign root task module from the given module_id
                 try:
-                    m = Module.objects.get(id=form.cleaned_data["module_id"], visible=True)
-                except Module.DoesNotExist:
-                    return HttpResponseForbidden("invalid module id")
-                if m.spec.get("type") != "project":
-                    return HttpResponseForbidden("invalid module")
-
-                # create root task and set it as the project root task
-                task = Task.objects.create(
-                    project=project,
-                    editor=request.user,
-                    module=m,
-                    title=m.title)
-                project.root_task = task
-                project.save()
+                    project.set_root_task(int(form.cleaned_data["module_id"]), request.user)
+                except ValueError as e:
+                    # module_id is invalid or doesn't refer to a project-type module
+                    return HttpResponseForbidden(str(e))
 
                 # add user as an admin
                 ProjectMembership.objects.create(
