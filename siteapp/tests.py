@@ -5,7 +5,13 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from unittest import skip
 
 import re
-from time import sleep
+
+def var_sleep(float):
+    '''
+    Tweak sleep globally by multple, a fraction, or depend on env
+    '''
+    from time import sleep
+    sleep(float)
 
 # Would be nice to run this without setting up a DB
 # see: http://stackoverflow.com/questions/5917587/django-unit-tests-without-a-db
@@ -198,17 +204,18 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # If this is the user's first login, then we are now at the
         # user account settings task. Proceed through those questions.
         if is_first_time_user:
-            sleep(.5) # wait for page to load
+            var_sleep(.5) # wait for page to load
             self.assertIn("Introduction | GovReady Account Settings", self.browser.title)
 
             # - The user is looking at the Introduction page.
             self.click_element("#save-button")
-            sleep(.5) # wait for page to load
+            var_sleep(.5) # wait for page to load
 
             # - Now at the what is your name page?
+            var_sleep(20)
             self.fill_field("#inputctrl", "John Doe")
             self.click_element("#save-button")
-            sleep(.5) # wait for page to load
+            var_sleep(.5) # wait for page to load
 
             # - We're on the module finished page.
             self.browser.get(self.url("/"))
@@ -216,17 +223,17 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         if is_first_time_org:
             # The first time we hit an Organization home, we are
             # taken to its org info task.
-            sleep(.5) # wait for page to load
+            var_sleep(.5) # wait for page to load
             self.assertIn("Introduction | Organization Classification", self.browser.title)
 
             # - The user is looking at the Introduction page.
             self.click_element("#save-button")
-            sleep(.5) # wait for page to load
+            var_sleep(.5) # wait for page to load
 
             # - Now at the 'what kind of org is it' page?
             self.click_element("input[value='smbiz']")
             self.click_element("#save-button")
-            sleep(.5) # wait for page to load
+            var_sleep(.5) # wait for page to load
 
             # - We're on the module finished page.
             self.browser.get(self.url("/"))
@@ -239,12 +246,12 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_title", "My Simple Project")
         self.click_element("#id_module_id_0")
         self.click_element("button[type=submit]")
-        sleep(1)
+        var_sleep(1)
         self.assertRegex(self.browser.title, "My Simple Project")
 
     def _start_task(self):
         # Assumes _new_project() just finished.
-        
+
         # Start the task.
         self.click_element('#question-simple_module .task-commands form.start-task a')
 
@@ -265,13 +272,13 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # unique, since a test may create multiple users.
         self.assertRegex(self.browser.title, "Sign In")
         self.click_element("p a") # This isn't a very good targetting of the "sign up" link.
-        sleep(.5) # wait for page to load
+        var_sleep(.5) # wait for page to load
         self.fill_field("#id_username", "test+%d@q.govready.com" % random.randint(10000, 99999))
         self.fill_field("#id_email", email)
         self.fill_field("#id_password1", "1234")
         self.fill_field("#id_password2", "1234")
         self.click_element("form.signup button") # This isn't a very good targetting of the "sign up" link.
-        sleep(.5) # wait for next page to load
+        var_sleep(.5) # wait for next page to load
 
         # Test that an allauth confirmation email was sent.
         self.assertIn("Please confirm your email address at GovReady Q by following this link", self.pop_email().body)
@@ -299,13 +306,13 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        sleep(.5)
+        var_sleep(.5)
 
         # Text question.
         self.assertRegex(self.browser.title, "Next Question: The Question")
         self.fill_field("#inputctrl", "This is some text.")
         self.click_element("#save-button")
-        sleep(.5)
+        var_sleep(.5)
 
         # Finished.
         self.assertRegex(self.browser.title, "^A Simple Module - GovReady Q$")
@@ -317,25 +324,25 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self._login(is_first_time_user=True, is_first_time_org=True)
         self._new_project()
         project_page = self.browser.current_url
-        
+
         # And create a new task.
         self._start_task()
         task_page = self.browser.current_url
 
         # But now go back to the project page.
         self.browser.get(project_page)
-        
+
         def do_invitation(email):
             # Fill out the invitation modal.
-            sleep(.5) # wait for modal to show
+            var_sleep(.5) # wait for modal to show
 
             # in case there are other team members and the select box is showing,
-            # choose 
+            # choose
             self.select_option('#invite-user-select', '__invite__')
 
             self.fill_field("#invitation_modal #invite-user-email", email)
             self.click_element("#invitation_modal button.btn-submit")
-            sleep(1) # wait for invitation to be sent
+            var_sleep(1) # wait for invitation to be sent
 
             # Log out and accept the invitation as an anonymous user.
             self.browser.get(self.url("/accounts/logout/"))
@@ -360,14 +367,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # Test an invitation to take over editing a task but without joining the project.
         self.click_element('#question-simple_module .task-item a') # go to the task page
-        sleep(.5) # wait for page to load
+        var_sleep(.5) # wait for page to load
         self.click_element("#save-button") # pass over the Introductory question because the Ask Team button is suppressed on interstitials
-        sleep(.5) # wait for page to load
+        var_sleep(.5) # wait for page to load
         self.click_element("#ask-team-show-options")
-        sleep(.5) # wait for options to slideDown
+        var_sleep(.5) # wait for options to slideDown
         self.click_element('#transfer-editorship a')
         do_invitation("test+editor@q.govready.com")
-        sleep(10)
+        var_sleep(10)
         self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
         self.assertNodeNotVisible("#auth-status .text-danger")
 
@@ -390,24 +397,24 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Move past the introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        sleep(.5) # wait for page to reload
+        var_sleep(.5) # wait for page to reload
 
         # We're now on the first actual question.
         # Start a team conversation.
         self.click_element("#ask-team-show-options")
-        sleep(.5) # wait for options to slideDown
+        var_sleep(.5) # wait for options to slideDown
         self.click_element("#start-a-discussion a")
         self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
-        sleep(.5) # wait for options to slideDown
+        var_sleep(.5) # wait for options to slideDown
         self.click_element("#discussion .comment-input button.btn-primary")
 
         # Invite a guest to join.
-        sleep(.5) # wait for the you-are-alone div to show
+        var_sleep(.5) # wait for the you-are-alone div to show
         self.click_element("#discussion-you-are-alone a")
-        sleep(.5) # wait for modal to show
+        var_sleep(.5) # wait for modal to show
         self.fill_field("#invitation_modal #invite-user-email", "invited-user@q.govready.com")
         self.click_element("#invitation_modal button.btn-submit")
-        sleep(1) # wait for invitation to be sent
+        var_sleep(1) # wait for invitation to be sent
 
         # Now we become that guest. Log out.
         # Then accept the invitation as an anonymous user.
@@ -418,16 +425,16 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Leave a comment.
         self.fill_field("#discussion-your-comment", "Yes it's me!\n\nI am here with you.")
         self.click_element("#discussion .comment-input button.btn-primary")
-        sleep(.5) # wait for it to submit
+        var_sleep(.5) # wait for it to submit
 
         # Leave an emoji reaction on the initial user's comment.
         self.click_element("#react-with-emoji")
-        sleep(.5) # emoji selector shows
+        var_sleep(.5) # emoji selector shows
         self.click_element("#emoji-selector .emoji[data-emoji-name=heart]") # makes active
         self.click_element("body") # closes emoji panel and submits via ajax
-        sleep(.5) # emoji reaction submitted
+        var_sleep(.5) # emoji reaction submitted
 
-        sleep(5)
+        var_sleep(5)
 
         # Log back in as the original user.
         discussion_page = self.browser.current_url
@@ -438,4 +445,3 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test that we can see the comment and the reaction.
         self.assertInNodeText("Yes it's me!", "#discussion .comment:not(.author-is-self) .comment-text")
         self.assertInNodeText("reacted", "#discussion .reactions .reply[data-emojis=heart]")
-        
