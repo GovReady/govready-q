@@ -212,7 +212,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             var_sleep(.5) # wait for page to load
 
             # - Now at the what is your name page?
-            var_sleep(20)
             self.fill_field("#inputctrl", "John Doe")
             self.click_element("#save-button")
             var_sleep(.5) # wait for page to load
@@ -374,7 +373,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5) # wait for options to slideDown
         self.click_element('#transfer-editorship a')
         do_invitation("test+editor@q.govready.com")
-        var_sleep(10)
+        var_sleep(5)
         self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
         self.assertNodeNotVisible("#auth-status .text-danger")
 

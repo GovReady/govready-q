@@ -31,7 +31,7 @@ PIP = $(shell which pip3 || which pip)
 
 .PHONY: run key dburl provision wipe test
 
-test:
+test: static
 	python3 manage.py test siteapp
 	python3 -m unittest discover tests
 
@@ -39,8 +39,10 @@ all: clean requirements migrate run
 
 requirements: $(VENDOR) $(STATIC)
 
+static: $(STATIC)
+
 $(VENDOR): requirements.txt
-	mkdir -p vendor
+	mkdir -p vendor/
 	$(PIP) download --dest vendor -r $< --exists-action i
 	touch $@
 
@@ -87,8 +89,8 @@ run: requirements key
 	$(CFPUSH)
 
 clean:
-	/bin/rm -rf $(STATIC)
-	/bin/rm -rf $(VENDOR)
+	/bin/rm -rf vendor
+	/bin/rm -rf siteapp/static/vendor
 
 ##################### notes on provisioning/one-time commands ###########
 # The only user in the 'prod' space is 'circleci' so
