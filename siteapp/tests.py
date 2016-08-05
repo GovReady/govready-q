@@ -197,7 +197,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # If this is the user's first login, then we are now at the
         # user account settings task. Proceed through those questions.
-
         if is_first_time_user:
             sleep(.5) # wait for page to load
             self.assertIn("Introduction | GovReady Account Settings", self.browser.title)
@@ -399,7 +398,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         sleep(.5) # wait for options to slideDown
         self.click_element("#start-a-discussion a")
         self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
-
         sleep(.5) # wait for options to slideDown
         self.click_element("#discussion .comment-input button.btn-primary")
 
