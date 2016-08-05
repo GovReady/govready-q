@@ -7,21 +7,21 @@ MYAPP = govready-q
 # Set up provisioning details for 'dev', 'prod'
 # use --no-hostname for APEX, see
 #   https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html#nohosts
+CFORG   = GovReady
 ifeq ($(CFENV),prod)
-CFSPACE = prod
-CFORG   = GovReady
-APEX    = q.govready.com
-CFOPTS  = -d $(APEX) --no-hostname
+  CFSPACE = prod
+  APEX    = q.govready.com
+  CFOPTS  = -d $(APEX) --no-hostname
 else ifeq ($(CFENV),dev)
-CFSPACE = dev
-CFORG   = GovReady
-APEX    = qdev.govready.com
-CFOPTS  = -d $(APEX) --no-hostname
+  CFSPACE = dev
+  APEX    = qdev.govready.com
+  CFOPTS  = -d $(APEX) --no-hostname
+  LOGSERVICE=dev-pws-papertrail
+  LOGDRAIN=syslog-tls://logs4.papertrailapp.com:42856
 else
-CFSPACE = sandbox
-CFORG   = GovReady
-APEX    = null
-CFOPTS  = --hostname $(MYAPP)-$(CFSPACE)
+  CFSPACE = sandbox
+  APEX    = null
+  CFOPTS  = --hostname $(MYAPP)-$(CFSPACE)
 endif
 
 CFPUSH = cf push -i 1 $(CFOPTS) $(MYAPP)
@@ -84,7 +84,6 @@ else
 	cf set-env $(MYAPP) DATABASE_URL $(DATABASE_URL)
 endif
 
-
 run: requirements key
 	$(CFPUSH)
 
@@ -95,35 +94,34 @@ clean:
 ##################### notes on provisioning/one-time commands ###########
 # The only user in the 'prod' space is 'circleci' so
 # noone else will deploy to name govready-q
-CFSPACE ?= undefined
-provision:
+provision: provision-space
 	cf target -s $(CFSPACE)
 	# This create-service should be in a conditional .... (todo)
-	cf create-service elephantsql turtle pgsql-q
-ifneq ($(APEX),null)
-	# In org 'GovReady' add domain 'qdev.govready.com'
-	cf create-domain $(CFORG) $(APEX)
-endif
 	$(CFPUSH) --no-start
 ifneq ($(APEX),null)
 	# associate wildcard with this app and domain:
 	cf map-route $(MYAPP) $(APEX) --hostname \*
 endif
-
-unprovision wipe:
-	cf delete $(MYAPP)
-	cf delete-service pgsql-q
-ifneq ($(APEX),null)
-	cf delete-route $(APEX) --hostname \*
-	cf delete-domain $(APEX)
+ifneq ($(LOGSERVICE),null)
+	cf bind-service $(MYAPP) $(LOGSERVICE)
 endif
 
-# This would be used just once on foundry `space` to enable
-# a mapping for all applications in that space. This is
-# here for documentation purposes.
-# To map all apps in a space 'dev' to `appname.dev.govready.com`
-mapall:
-	@echo cf create-domain GovReady dev.govready.com
-	@echo cf create-route dev dev.govready.com
-	# ^^ also need to create wildcard DNS:
-	#  *.dev.govready.com CNAME foo.cfapps.io
+provision-space:
+	cf target -s $(CFSPACE)
+	cf create-service elephantsql turtle pgsql-q
+ifneq ($(APEX),null)
+	# In org 'GovReady' add domain 'qdev.govready.com'
+	cf create-domain $(CFORG) $(APEX)
+endif
+	cf cups $(LOGSERVICE) -l $(LOGDRAIN)
+
+unprovision:
+	cf delete $(MYAPP)
+ifneq ($(APEX),null)
+	cf delete-route $(APEX) --hostname \*
+endif
+
+unprovision-space: unprovision
+	cf delete-service pgsql-q
+	cf delete-service $(LOGSERVICE)
+	cf delete-domain $(APEX)
