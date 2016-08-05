@@ -4,7 +4,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 import siteapp.views_landing as views_landing
-import guidedmodules
+import guidedmodules.views
 
 urlpatterns = [
     url(r"^$", views_landing.homepage),
