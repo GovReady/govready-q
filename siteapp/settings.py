@@ -38,7 +38,6 @@ else:
 		"secret-key": make_secret_key(),
 		"debug": True,
 		"host": "localhost:8000",
-		"static": "project_root/siteapp/staticfiles",
 		"https": False,
 	}
 
