@@ -276,16 +276,22 @@ def next_question(request, taskid, taskslug):
             task=task,
         )
 
+        # Computed imputed answers because any user answers that are overridden by imputed
+        # values supress the listing of the question.
+        answered.add_imputed_answers()
+
         # Construct the page.
         context.update({
             "output": task.render_output_documents(answered),
+
+            # List all questions answered by the user - skipping any answers that were imputed.
             "all_questions": [
                 {
-                    "question": q,
-                    "skipped": q.spec.get("required") and (answered.answers.get(q.key) is None),
+                    "question": task.module.questions.get(key=key),
+                    "skipped": task.module.questions.get(key=key).spec.get("required") and (answered.answers.get(q.key) is None),
                 }
-                for q in task.module.questions.all().order_by('definition_order')
-                if module_logic.impute_answer(q, answered.get_template_context()) is None ],
+                for key in answered.answers
+                if not key in answered.was_imputed ],
         })
         return render(request, "module-finished.html", context)
 

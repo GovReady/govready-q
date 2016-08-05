@@ -135,12 +135,23 @@ def project(request, project_id):
     # certain questions within those tasks.
     discussions = list(project.get_discussions_in_project_as_guest(request.user))
 
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    root_task_answers = project.root_task.get_answers()
+    root_task_answers.add_imputed_answers()
+
     # Create all of the module entries in a tabs & groups data structure.
     from collections import OrderedDict
     tabs = OrderedDict()
     question_dict = { }
     for mq in project.root_task.module.questions.all().order_by('definition_order'):
+        # Display module/module-set questions only. Other question types in a project
+        # module are not valid.
         if mq.spec.get("type") not in ("module", "module-set"):
+            continue
+
+        # Skip questions that are imputed.
+        if mq.key in root_task_answers.was_imputed:
             continue
 
         # Create the tab and group for this.
@@ -160,10 +171,16 @@ def project(request, project_id):
         is_finished = None
         tasks = []
         task_discussions = []
-        ans = project.root_task.answers.filter(question=mq).first()
-        if ans:
-            ans = ans.get_current_answer()
-            for task in ans.answered_by_task.all():
+        ans = root_task_answers.answers.get(mq.key)
+        if ans is not None:
+            if mq.spec["type"] == "module":
+                # Convert a ModuleAnswers instance ot an array containing just itself.
+                ans = [ans]
+            elif mq.spec["type"] == "module-set":
+                # ans is already a list of ModuleAnswers instances.
+                pass
+            for module_answers in ans:
+                task = module_answers.task
                 tasks.append(task)
                 task.has_write_priv = task.has_write_priv(request.user)
                 task_discussions.extend([d for d in discussions if d.attached_to.task == task])
