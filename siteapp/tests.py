@@ -185,7 +185,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def url(self, path):
         # Within this test, we only generate URLs for the organization subdomain.
         return super().url("testorg", path)
-    
 
     def _login(self, is_first_time_user=True, is_first_time_org=False):
         # Fill in the login form and submit.
