@@ -80,7 +80,7 @@ def new_project(request):
             help_texts = {
                 'title': 'Give your project a descriptive name.',
             }
-        module_id = ChoiceField(choices=project_modules, label="Why are you creating this project?", widget=RadioSelect)
+        module_id = ChoiceField(choices=project_modules, label="Select a playbook", widget=RadioSelect)
 
     form = NewProjectForm()
     if request.method == "POST":

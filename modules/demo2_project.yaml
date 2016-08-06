@@ -1,5 +1,5 @@
 id: demo2_project
-title: I need to add this project to the inventory of systems I manage.
+title: Simple system inventory
 type: project
 version: 2
 introduction:
@@ -18,7 +18,7 @@ questions:
   - id: q_project_user_types
     title: User Types
     type: module
-    module-id: demo1_project_user_types
+    module-id: demo2_project_user_types
     tab: Description of Users
     group: Identity, Credential and Access Management
 
