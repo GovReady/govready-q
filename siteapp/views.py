@@ -78,9 +78,9 @@ def new_project(request):
             model = Project
             fields = ['title']
             help_texts = {
-                'title': 'Give your project a descriptive name.',
+                'title': 'Give your web property, application or other IT system a descriptive name.',
             }
-        module_id = ChoiceField(choices=project_modules, label="Select a playbook", widget=RadioSelect)
+        module_id = ChoiceField(choices=project_modules, label="What do you want to do?", widget=RadioSelect)
 
     form = NewProjectForm()
     if request.method == "POST":
