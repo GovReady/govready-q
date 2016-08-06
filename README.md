@@ -1,13 +1,12 @@
 # Q (by GovReady)
 
-[![Build Status](https://travis-ci.com/GovReady/govready-q.svg?token=tqxfXNLktb4qXp6NmyW7&branch=master)](https://travis-ci.com/GovReady/govready-q)
-
-TODO:
-- [ ] Move psycop install `pip install -r pgsql.txt` so local installs don't need PostgreSQL
-
 Q is an information gathering platform for people, tuned to the specific needs of information security and compliance professionals.
 
 ---
+
+## TODO
+TODO:
+- [ ] Move psycop install `pip install -r pgsql.txt` so local installs don't need PostgreSQL
 
 ## Development
 
