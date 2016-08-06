@@ -111,6 +111,14 @@ To update, run:
 	killall -HUP uwsgi_python3
 	   (...to just restart the Python process (works as root & site user))
 
+# Adding Module Content
+
+GovReady Q content is stored in YAML files inside the `modules` directory. 
+
+See (Schema.md) for documentation on writing question and answer modules.
+
+The recommended approach to adding new modules is by symbolic link from within `modules` to a separate directory containing your content modules.
+
 # Credits / License
 
 Emoji icons by http://emojione.com/developers/.
