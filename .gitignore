@@ -80,3 +80,4 @@ modules/dev
 siteapp/staticfiles
 vendor
 .kitchen
+requirements.txt

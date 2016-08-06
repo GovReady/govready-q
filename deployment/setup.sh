@@ -64,7 +64,7 @@ fi
 sudo -u site mkdir -p ../public_html/static
 
 # Install dependencies.
-sudo -u site pip3 install -r requirements.txt
+sudo -u site pip3 install -r dev_requirements.txt
 
 # Fetch other dependencies.
 sudo -u site deployment/fetch-vendor-resources.sh
