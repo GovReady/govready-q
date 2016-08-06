@@ -41,9 +41,9 @@ requirements: $(VENDOR) $(STATIC)
 
 static: $(STATIC)
 
-$(VENDOR): requirements.txt
+$(VENDOR): requirements.txt cf_requirements.txt
 	mkdir -p vendor/
-	$(PIP) download --dest vendor -r $< --exists-action i
+	for f in $^; do $(PIP) download --dest vendor -r $$f --exists-action i; done
 	touch $@
 
 $(STATIC): ./deployment/fetch-vendor-resources.sh
