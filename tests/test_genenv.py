@@ -6,11 +6,11 @@ class TestFullEnv(unittest.TestCase):
     # in order of appearance in settings.py
     output_env = {
         'secret-key': 'xoxox',
-        'debug': True,
+        'debug': False,
         'host': 'localhost:8000',
         'https': True,
         'admins': ['aaa','bbbb', 'cc'],
-        'memcached': True,
+        'memcached': False,
         # for settings_application.py
         'modules': 'some/path/for/modules',
         'govready_cms_api_auth': 'https://mycms.com/'
@@ -33,11 +33,11 @@ class TestFullEnv(unittest.TestCase):
 
     def setUp(self):
         os.environ['SECRET_KEY'] = 'xoxox'
-        os.environ['DEBUG'] = 'True'
+        os.environ['DEBUG'] = "false"
         os.environ['HOST'] = 'localhost:8000'
         os.environ['HTTPS'] = 'True'
         os.environ['ADMINS'] = 'aaa:bbbb:cc'
-        os.environ['MEMCACHED'] = 'true'
+        os.environ['MEMCACHED'] = 'False'
         os.environ['STATIC'] = 'true'
         os.environ['MODULES_PATH'] = 'some/path/for/modules'
         os.environ['GOVREADY_CMS_API_AUTH'] = 'https://mycms.com/'

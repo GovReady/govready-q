@@ -172,8 +172,78 @@ PWS supports routing for 'private domains', e.g. routing traffic for `q.govready
 
 **ToDo**
 
-- [ ] Test routing `qq.govready.com` to the prerelease
-- [ ] Document the process for mapping DNS and routes to apps
+- [x] Test routing `qq.govready.com` to the prerelease
+- [x] Document the process for mapping DNS and routes to apps
+
+### DNS implementation and testing notes:
+
+#### govready.pburkholder.com
+
+Create route from http://govready.pburkholder.com to app `govready-q` in space `sandbox`.
+
+First, create a cname:
+```
+govready.pburkholder.com. 59	IN	CNAME	govready-q.cfapps.io.
+```
+Then:
+
+```
+$ cf target -s sandbox
+$ cf create-domain GovReadyPDB pburkholder.com
+Creating domain pburkholder.com for org GovReadyPDB as pburkholder+govready@pobox.com...
+OK
+$ cf map-route govready-q pburkholder.com --hostname govready
+Creating route govready.pburkholder.com for org GovReadyPDB / space sandbox as pburkholder+govready@pobox.com...
+OK
+Adding route govready.pburkholder.com to app govready-q in org GovReadyPDB / space sandbox as pburkholder+govready@pobox.com...
+OK
+```
+
+#### APP.dev.pburkholder.com
+
+For the development branch, changed manifest.yml to have:
+
+```
+---
+applications:
+- name: govready-q
+  services:
+     - cf-govready-q-pgsql # needs provisioning between deployments
+```
+
+and created a generic route mapping from the `development` space to `dev.pburkholder.com`:
+
+```
+cf create-route development dev.pburkholder.com
+```
+
+and then launch the app with:
+
+```
+cf push -d dev.pburkholder.com
+```
+
+To test routes independent of DNS, use Curl directly against the http endpoint:
+
+```
+curl -vs http://52.72.73.102 -H "Host: govready-q.dev.pburkholder.com"
+```
+
+In DNS, I've configured the wildcard \*.dev.pburkholder.com is a CNAME to foo.cfapps.io
+
+```
+      {
+            "ResourceRecords": [
+                {
+                    "Value": "foo.cfapps.io"
+                }
+            ],
+            "Type": "CNAME",
+            "Name": "\\052.dev.pburkholder.com.",
+            "TTL": 60
+        },
+```
+
 
 ## <a name="certs"></a>Certs
 

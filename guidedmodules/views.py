@@ -438,6 +438,11 @@ def analytics(request):
             .filter(event_type=opt["event_type"])\
             .values(opt["field"])
 
+        # When we look at the analytics page in an organization domain,
+        # we only pull instrumentation for projects within that organization.
+        if hasattr(request, "organization"):
+            qs = qs.filter(project__organization=request.organization)
+
         overall = qs.aggregate(
                 avg_value=Avg('event_value'),
                 count=Count('event_value'),
@@ -468,6 +473,7 @@ def analytics(request):
         return opt
 
     return render(request, "analytics.html", {
+        "base_template": "base.html" if hasattr(request, "organization") else "base-landing.html",
         "tables": [
             compute_table({
                 "model": Module,

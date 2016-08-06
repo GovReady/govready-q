@@ -77,3 +77,8 @@ target/
 modules/dev
 modules/ssp
 
+# Local build/test files
+siteapp/staticfiles
+vendor
+.kitchen
+requirements.txt

@@ -1,0 +1,12 @@
+---
+memory: 512MB
+instances: 1
+applications:
+- name: govready-q
+  services:
+    - pgsql-q # -dev space name not needed since service names are uniq to spaces
+  env:
+    STATIC: 'true'
+    HTTPS: true
+    DEBUG: true   # should be false for production/security
+    HOST: "localhost:8000"

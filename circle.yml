@@ -18,6 +18,21 @@ machine:
 test:
   pre:
     - deployment/fetch-vendor-resources.sh
+    - pip install -r dev_requirements.txt
   override:
     - python manage.py test
     - python -m unittest discover tests
+
+# Before deploying, set up
+# PWS_USER and PWS_PASSWORD as env vars in CircleCI
+# provision DATABASE_URL, if needed, and SECRET_KEY via local release
+deployment:
+  development: # just a label; label names are completely up to you
+    branch: master
+    commands:
+      - cf api https://api.run.pivotal.io
+      - cf auth $PWS_USER $PWS_PASS
+      - cf target -o GovReady -s dev
+      - cf target # echo space to confirm ok
+      - make requirements
+      - CFENV=dev make run
