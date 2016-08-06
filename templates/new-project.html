@@ -2,20 +2,20 @@
 {% load bootstrap %}
 
 {% block title %}
-New Project
+Add System
 {% endblock %}
 
 {% block body %}
 <div class="row">
   <div class="col-sm-push-1 col-sm-9">
 
-<h1 style="margin: 60px 0 30px 0"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> New Project</h1>
+<h1 style="margin: 60px 0 30px 0"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> New System</h1>
 
 <div style="margin: 30px 0">
   {% if first %}
-    <p>Create your first project.</p>
+    <p>Add your first system.</p>
   {% else %}
-    <p>Create a new project.</p>
+    <p>Add new system.</p>
   {% endif %}
 </div>
 
@@ -23,7 +23,7 @@ New Project
     {% csrf_token %}
     {{ form|bootstrap }}
     <div class="form-group">
-      <button type="submit" class="btn btn-primary">Create &raquo;</button>
+      <button type="submit" class="btn btn-primary">Add &raquo;</button>
     </div>
 </form>
 

@@ -31,18 +31,21 @@ Home
 <div class="row">
   <div class="col-sm-push-1 col-sm-9">
     
-<h1 style="margin: 1em 0">My Projects</h1>
+<h1 style="margin: 1em 0">System Catalog</h1>
 
 <div style="margin: 2em 0">
-<p>You can continue working on a project you have already started or start a new one.</p>
+<p>Your organization's list of web properties, major applications, and general IT systems.</p>
+
 </div>
 
 <div style="float: right; margin-bottom: 1em">
-  <a id="new-project" href="/new-project" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> New Project</a>
+  <a id="new-project" href="/new-project" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system</a>
 </div>
 <div class="clearfix"> </div>
 
+<!-- List sytem projects -->
 {% for project in projects %}
+{% if project.title != "Account Settings" and project.title != "Organization" %}
 <div class="project">
   <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
     {% if project %}
@@ -64,8 +67,24 @@ Home
   </div>
   {% endif %}
 </div>
+{% endif %}
 {% endfor %}
 
+<!-- List special account settings and organization projects -->
+<div class="acct_org_projects" style="margin-top:20px">
+{% for project in projects %}
+{% if project.title == "Account Settings" or project.title == "Organization" %}
+<div class="projectx">
+  <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
+    {% if project %}
+      <span>{{project.title}}</span>
+    {% else %}
+      <span>Account Modules</span>
+    {% endif %}
+  </a>
+</div>
+{% endif %}
+{% endfor %}
   </div>
 </div>
 {% endblock %}
