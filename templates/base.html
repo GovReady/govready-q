@@ -43,10 +43,12 @@
             body, blockquote {
                 font-size: 16px;
             }
-
+            .navbar-brand { padding: 1px; }
+            .navbar-brand img { width: 201px; }
             .navbar .notification.unread a span {
                 font-weight: bold;
             }
+            .glyphicon { color: #888; }
         </style>
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
         <link rel="stylesheet" href="{% static "vendor/fontawesome/css/font-awesome.min.css" %}">
@@ -73,14 +75,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/">
-            {# The login page is accessible to unauthenticated users. We should only leak the org's name to authenticated users. #}
-            {% if request.organization %}
-              {{request.organization.name}}
-            {% else %}
-              {{request.get_host}}
-            {% endif %}
-          </a>
+          <a class="navbar-brand" href="/"><img alt="GovReady Q logo" src="{% static "img/brand/navbar-logo.png" %}"></a>
         </div>
 
         <div id="navbar-collapse-target" class="collapse navbar-collapse pull-right">
@@ -142,6 +137,15 @@
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container-fluid -->
     </nav>
+
+    <div class="container" style="margin-top: 1em;">
+            {# The login page is accessible to unauthenticated users. We should only leak the org's name to authenticated users. #}
+            {% if request.organization %}
+              <span class="glyphicon glyphicon-globe"></span>&nbsp;<a href="/" style="color:black; font-size:1.1em; font-weight:bold;">{{request.organization.name}}</a>
+            {% else %}
+              {{request.get_host}}
+            {% endif %}
+    </div>
 
     {% if messages %}
     <div class="container" style="margin-top: 1em;">
