@@ -37,13 +37,16 @@ test: static
 
 all: clean requirements migrate run
 
-requirements: $(VENDOR) $(STATIC)
+requirements: $(STATIC) $(VENDOR)
 
 static: $(STATIC)
 
-$(VENDOR): requirements.txt cf_requirements.txt
+requirements.txt: dev_requirements.txt cf_requirements.txt
+	cat $^ > $@
+
+$(VENDOR): requirements.txt
 	mkdir -p vendor/
-	for f in $^; do $(PIP) download --dest vendor -r $$f --exists-action i; done
+	$(PIP) download --dest vendor -r $< --exists-action i
 	touch $@
 
 $(STATIC): ./deployment/fetch-vendor-resources.sh
@@ -59,7 +62,6 @@ ifeq ($(cf_app),no)
 else
 	@echo App, $(MYAPP), already exists
 endif
-
 
 key := $(shell cat /dev/urandom | head -c 50 | base64)
 cf_secret :=$(shell cf env $(MYAPP) | (grep -q SECRET_KEY && echo "yes" || echo "no"))
@@ -88,6 +90,7 @@ run: requirements key
 	$(CFPUSH)
 
 clean:
+	/bin/rm -f requirements.txt
 	/bin/rm -rf vendor
 	/bin/rm -rf siteapp/static/vendor
 

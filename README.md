@@ -15,7 +15,7 @@ Q is developed in Python on top of Django.
 
 To develop locally, run the following commands:
 
-	pip3 install -r requirements.txt
+	pip3 install -r dev_requirements.txt
 	deployment/fetch-vendor-resources.sh
 	python3 manage.py migrate
 	python3 manage.py load_modules
