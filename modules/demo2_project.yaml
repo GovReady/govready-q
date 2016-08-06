@@ -22,13 +22,6 @@ questions:
     tab: Description of Users
     group: Identity, Credential and Access Management
 
-  - id: q_org_details
-    title: Organization Details
-    type: module
-    module-id: inventory_org_details
-    tab: Basic Info
-    group: About the Project
-
   - id: q_scan
     title: Analyze the Site
     type: module

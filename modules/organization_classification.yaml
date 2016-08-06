@@ -3,19 +3,21 @@ title: Organization Classification
 introduction:
   format: markdown
   template: |
-    Tell us a little bit about your organization so that we can tailor the questions in later modules.
+    Let's gather information your organization so that we can tailor the questions in later modules.
 questions:
   - id: organization_type
     title: What type of organization is it?
     prompt: What type of organization is it?
     type: choice
     choices:
+      - key: startup
+        text: Startup
       - key: individual
         text: Individual / Sole Proprietorship
       - key: smbiz
         text: Small Business
       - key: smresearch
-        text: Small Research Organization
+        text: Research Organization
       - key: localagency
         text: Local Government Agency
       - key: federalagency
@@ -27,58 +29,61 @@ questions:
     type: choice
     choices:
       - key: single-person
-        text: One Person
+        text: "1"
       - key: micro
-        text: Micro (employee range TBD)
+        text: 2 - 5
       - key: small
-        text: Small (employee range TBD)
+        text: 6 - 25
       - key: medium
-        text: Medium (employee range TBD)
+        text: 26 to 100
       - key: large
-        text: Large (employee range TBD)
+        text: 100+
 
   - id: it_staff_size
     title: What is the size of your information technology staff?
-    prompt: What is the size of your information technology staff?
+    prompt: How many employees are dedicated information technology-related staff?
     type: choice
+    help: "Count anyone whose primary job is to support web sites, software/application administrators, and computer networks."
     choices:
       - key: none
-        text: We do not have dedicated information technology staff.
+        text: None
       - key: micro
-        text: Micro (employee range TBD)
+        text: 1 - 5
       - key: small
-        text: Small (employee range TBD)
+        text: 5 - 15
       - key: medium
-        text: Medium (employee range TBD)
+        text: 15 - 50
       - key: large
-        text: Large (employee range TBD)
+        text: 50+
 
   - id: it_systems_size
     title: How many information technology systems does your organization run?
-    prompt: How many information technology systems does your organization run?
+    prompt: "How many systems (web properties, major applications and general IT systems in your organizations system catalog?"
     type: choice
     choices:
       - key: none
-        text: We do not run any information technology systems.
+        text: None
       - key: one
-        text: Just One
+        text: "1"
       - key: micro
-        text: Micro (range TBD)
+        text: 2 - 5
       - key: small
-        text: Small (range TBD)
+        text: 5 - 15
       - key: medium
-        text: Medium (range TBD)
+        text: 15 - 50
       - key: large
-        text: Large (range TBD)
+        text: 50+
 
 output:
   - title: Your Answers
     format: markdown
     template: |
-      Organization Type: {{organization_type.text}}
+      Organization Profile
+      --------------------
 
-      Organization Size: {{organization_size.text}}
+      {{organization}} is a {{organization_type.text}} of {{organization_size.text}} employees.
 
-      IT Staff Size: {{it_staff_size.text}}
+      {{organization}}'s technology portfolio consists of {{it_systems_size.text}} systems.
 
-      Number of IT Systems: {{it_systems_size.text}}
+      {{organization}}'s technology portfolio is supported by {{it_staff_size.text}} dedicated staff.
+
