@@ -46,17 +46,12 @@ Home
 </div>
 <div class="clearfix"> </div>
 
-<!-- List sytem projects -->
+<!-- List projects -->
 {% for project in projects %}
-{% if project.title != "Account Settings" and project.title != "Organization" %}
 <div class="project">
   <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
-    {% if project %}
-      <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
-      <span>{{project.title}}</span>
-    {% else %}
-      <span>Account Modules</span>
-    {% endif %}
+    <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
+    <span>{{project.title}}</span>
   </a>
 
   {% if project and any_have_members_besides_me %}
@@ -70,24 +65,20 @@ Home
   </div>
   {% endif %}
 </div>
-{% endif %}
 {% endfor %}
 
 <!-- List special account settings and organization projects -->
 <div class="acct_org_projects" style="margin-top:20px">
-{% for project in projects %}
-{% if project.title == "Account Settings" or project.title == "Organization" %}
+{% for project in system_projects %}
 <div class="projectx">
   <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
-    {% if project %}
-      <span>{{project.title}}</span>
-    {% else %}
-      <span>Account Modules</span>
-    {% endif %}
+   <span>{{project.title}}</span>
   </a>
 </div>
-{% endif %}
 {% endfor %}
-  </div>
 </div>
+
+  </div> <!-- col -->
+</div> <!-- /row -->
+
 {% endblock %}

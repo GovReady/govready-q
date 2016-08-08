@@ -53,11 +53,16 @@ def homepage(request):
             if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
                 projects.add(d.attached_to.task.project)
 
+        # Move system projects into a separate set.
+        system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
+        projects -= system_projects
+
         # Sort.
         projects = sorted(projects, key = lambda x : x.updated, reverse=True)
 
         return render(request, "home.html", {
             "projects": projects,
+            "system_projects": system_projects,
             "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
         })
 
