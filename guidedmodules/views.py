@@ -310,14 +310,30 @@ def next_question(request, taskid, taskslug):
         if answer and answer.answered_by_reference:
             context["write_priv"] = False
 
-        # for "module"-type questions
-        # what Module answers this question?
+        # For "module"-type questions, get the Module instance of the tasks that can
+        # be an answer to this question, and get the existing Tasks that the user can
+        # choose as an answer.
         answer_module = Module.objects.get(id=q.spec["module-id"]) if q.spec["type"] in ("module", "module-set") else None
-        # what existing Tasks are of that type?
-        answer_tasks = [t for t in Task.objects.filter(project=task.project, module=answer_module)
-            if t.has_read_priv(request.user)]
-        for t in answer_tasks:
-            t.can_write = t.has_write_priv(request.user)
+        answer_tasks = []
+        if answer_module:
+            # The user can choose from any Task instances they have read permission on
+            # and that are of the correct Module type.
+            answer_tasks = Task.get_all_tasks_readable_by(request.user, request.organization)\
+                .filter(module=answer_module)
+
+            # Annotate the instances with whether the user also has write permission.
+            for t in answer_tasks:
+                t.can_write = t.has_write_priv(request.user)
+
+            # Sort the instances:
+            #  first: the current answer, if any
+            #  then: tasks defined in the same project as this task
+            #  last: everything else
+            current_answer = answer.answered_by_task.first() if answer else None
+            answer_tasks = sorted(answer_tasks, key = lambda t : (
+                not (t == current_answer),
+                not (t.project == task.project),
+                ))
 
         # Add instrumentation event.
         # How many times has this question been shown?

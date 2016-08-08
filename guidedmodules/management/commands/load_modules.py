@@ -186,7 +186,9 @@ class Command(BaseCommand):
 
     def resolve_relative_module_id(self, within_module, module_id):
         # Module IDs specified in the YAML are relative to the directory in which
-        # they are found.
+        # they are found. Unless they start with '/'.
+        if module_id.startswith("/"):
+            return module_id[1:]
         return "/".join(within_module["id"].split("/")[:-1] + [module_id])
 
     def preprocess_module_spec(self, spec):

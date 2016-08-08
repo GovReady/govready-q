@@ -41,14 +41,12 @@ questions:
   - id: q5_email
     title: Email
     prompt: What is {{q1_name}} preferred email?
-    help: 
     type: text
 
   - id: q6_work_phone
     title: Work phone
     prompt: What is {{q1_name}} work phone?
     type: text
-    help: 'use "unknown" if not known'
 
   - id: q7_mobile_phone
     title: Mobile phone

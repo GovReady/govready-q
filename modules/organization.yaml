@@ -19,3 +19,10 @@ questions:
     tab: Basic Info
     group: About the Project
 
+  - id: point_of_contacts
+    title: Points of Contact
+    type: module-set
+    module-id: point_of_contact
+    tab: Basic Info
+    group: Define Points of Contact
+

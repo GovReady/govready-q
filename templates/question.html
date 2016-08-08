@@ -175,40 +175,27 @@ Next Question: {{q.spec.title}} | {{task.title}}
               <input type="radio" name="value" value="__new" checked style="display: none"/>
 
             {% elif q.spec.type == "module" %}
-              {% with t=answer.answered_by_task.first %}
-              {% if t %}
-                <p>A module has already been selected to provide the information. You can keep your selection{% if answer_tasks|length > 1 %}, select a different module,{% endif %} or start a new one.</p>
-                <div class="radio">
-                  <label>
-                    <input name="value" value="{{t.id}}" type="radio" checked>
-                    Use my answers in {{t.render_title}}
-                      (<a href="{{t.get_absolute_url}}">view{% if t.can_write %}/edit{% endif %}</a>)
-                  </label>
-                </div>
-
-              {% else %}
-
-                <p>Select an existing set of answers or start a new {{answer_module.title}}.</p>
-
-              {% endif %}
+              {% with current_answer=answer.answered_by_task.first %}
 
               {% for m in answer_tasks %}
-              {% if m != t %}
                 <div class="radio">
                   <label>
-                    <input name="value" value="{{m.id}}" type="radio">
-                      {% if t %}Change answers to:<br>{% endif %}
+                    <input name="value" value="{{m.id}}" type="radio" {% if m == current_answer %}checked{% endif %}>
                       {{m.render_title}}
+                      <span style="color: #777">
                       ({% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}})
+                      </span>
+                      {% if m == current_answer %}
+                        <div class="text-info small">(current answer)</div>
+                      {% endif %}
                   </label>
                 </div>
-              {% endif %}
               {% endfor %}
 
               <div class="radio">
                 <label>
                   <input name="value" value="__new" type="radio">
-                  {% if t %}
+                  {% if current_answer %}
                     Start over and create
                   {% else %}
                     Create
