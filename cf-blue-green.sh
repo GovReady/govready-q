@@ -39,7 +39,9 @@ cf create-app-manifest $BLUE -p $MANIFEST
 # http://stackoverflow.com/a/185900/358804
 trap on_fail ERR
 
-DOMAIN=${B_DOMAIN:-$(cat $MANIFEST | grep domain: | awk '{print $2}')}
+#DOMAIN=${B_DOMAIN:-$(cat $MANIFEST | grep domain: | awk '{print $2}')}
+DOMAIN=qdev.govready.com
+
 
 # create the GREEN application
 cf push $GREEN -f $MANIFEST -n $GREEN
