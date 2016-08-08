@@ -1,10 +1,10 @@
 #!/bin/bash
 
 echo "Setting env variables from .profile.  These will not be"
-echo "available from `cf env` or when connected via `cf ssh`"
+echo "available from 'cf env' or when connected via 'cf ssh'"
 
 NEW_RELIC_LICENSE_KEY=$(
-  echo $VCAP_SERVICES | jq '.newrelic[0].credentials.licenseKey')
+  echo $VCAP_SERVICES | jq -r '.newrelic[0].credentials.licenseKey')
 export NEW_RELIC_LICENSE_KEY
 echo "added env variable NEW_RELIC_LICENSE_KEY: $NEW_RELIC_LICENSE_KEY"
 
