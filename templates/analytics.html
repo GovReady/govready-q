@@ -13,8 +13,12 @@ h1 {
 h2 {
 	margin-top: 1em;
 }
-table tr *:nth-child(2), table tr *:nth-child(3) {
+table tr > *:nth-child(2), table tr > *:nth-child(3) {
 	text-align: center;
+}
+table .detail {
+	font-size: 90%;
+	color: #555;
 }
 </style>
 {% endblock %}
@@ -37,13 +41,16 @@ table tr *:nth-child(2), table tr *:nth-child(3) {
 		</thead>
 		<tbody>
 			<tr style="font-weight: bold; background-color: #F7F7F7;">
-				<td>Overall</td>
+				<td><i>overall</i></td>
 				<td>{{table.overall}}</td>
 				<td>{{table.n}}</td>
 			</tr>
 			{% for row in table.rows %}
-				<tr>
-					<td>{{row.obj}}</td>
+				<tr data-ref="{{row.obj}}">
+					<td>
+						<div class='title'>{{row.label}}</div>
+						<div class='detail'>{{row.detail}}</div>
+					</td>
 					<td>{{row.value}}</td>
 					<td>{{row.n}}</td>
 				</tr>

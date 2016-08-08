@@ -464,7 +464,9 @@ def analytics(request):
             "overall": round(overall['avg_value']),
             "n": overall['count'],
             "rows": [{
-                    "obj": bulk_objs[v[opt['field']]],
+                    "obj": str(bulk_objs[v[opt['field']]]),
+                    "label": opt['label']( bulk_objs[v[opt['field']]] ),
+                    "detail": opt['detail']( bulk_objs[v[opt['field']]] ),
                     "n": v['count'],
                     "value": round(v['avg_value']),
                 }
@@ -480,7 +482,9 @@ def analytics(request):
                 "event_type": "task-done",
                 "field": "module",
                 "title": "Hardest Modules",
-                "quantity": "Time To Finish (sec)"
+                "quantity": "Time To Finish (sec)",
+                "label": lambda m : m.title,
+                "detail": lambda m : "version id %d" % m.id,
             }),
 
             compute_table({
@@ -488,7 +492,9 @@ def analytics(request):
                 "event_type": "task-question-answer",
                 "title": "Hardest Questions",
                 "field": "question",
-                "quantity": "Time To Answer (sec)"
+                "quantity": "Time To Answer (sec)",
+                "label": lambda q : q.spec['title'],
+                "detail": lambda q : "%s, version id %d" % (q.module.title, q.module.id),
             }),
 
             compute_table({
@@ -496,7 +502,9 @@ def analytics(request):
                 "event_type": "task-question-interact-first",
                 "title": "Longest Time to First Interaction",
                 "field": "question",
-                "quantity": "Time To First Interaction (sec)"
+                "quantity": "Time To First Interaction (sec)",
+                "label": lambda q : q.spec['title'],
+                "detail": lambda q : "%s, version id %d" % (q.module.title, q.module.id),
             }),
         ]
     })
