@@ -54,8 +54,12 @@ Home
     <span>{{project.title}}</span>
   </a>
 
+  <div class="small" style="margin-top: .5em">
+    {{project.root_task.module.title}}
+  </div>
+
   {% if project and any_have_members_besides_me %}
-  <div class="admins small" style="margin-top: 3px">
+  <div class="admins small" style="margin-top: .5em">
     owners:
     {% for user in project.get_admins %}
       {{user}}
