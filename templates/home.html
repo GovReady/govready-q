@@ -64,6 +64,14 @@ Home
     {% endfor %}
   </div>
   {% endif %}
+
+  {% with snippet=project.render_snippet %}
+    {% if snippet %}
+      <div class="admins small" style="margin-top: .5em">
+        {{project.render_snippet|safe}}
+      </div>
+    {% endif %}
+  {% endwith %}
 </div>
 {% endfor %}
 

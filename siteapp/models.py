@@ -226,6 +226,9 @@ class Project(models.Model):
         self.root_task = task
         self.save()
 
+    def render_snippet(self):
+        return self.root_task.render_snippet()
+
     def get_discussions_in_project_as_guest(self, user):
         from discussion.models import Discussion
         for d in Discussion.objects.filter(guests=user):

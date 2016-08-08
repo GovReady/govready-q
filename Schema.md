@@ -128,6 +128,15 @@ Output documents and question prompts have access to the user's answers to quest
 
 All documents also have access to the project title as `{{project}}`.
 
+### Project Documents
+
+In addition to the `output` documents described above, a project module may also have a `snippet` that defines how a project appears in the project listing page:
+
+	snippet:
+	  format: markdown
+	  template: |
+	    Project {{name}}
+
 Questions
 ---------
 

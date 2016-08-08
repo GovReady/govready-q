@@ -303,6 +303,15 @@ class Task(models.Model):
             answers = self.get_answers()
         return answers.render_output({}, hard_fail=hard_fail)
 
+    def render_snippet(self):
+        snippet = self.module.spec.get("snippet")
+        if not snippet: return None
+        return render_content(
+            snippet,
+            self.get_answers(),
+            "html",
+        )
+
     @transaction.atomic
     def get_or_create_subtask(self, user, question_id):
         # For "module" type questions, creates a sub-Task for the question,
