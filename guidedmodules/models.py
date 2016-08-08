@@ -267,10 +267,6 @@ class Task(models.Model):
     def get_notification_watchers(self):
         return self.project.get_members()
 
-    def get_document_additional_context(self):
-        return {
-        }
-
     def render_title(self):
         import jinja2
         try:
@@ -280,8 +276,7 @@ class Task(models.Model):
                     "format": "text",
                 },
                 self.get_answers(),
-                "text",
-                self.get_document_additional_context()
+                "text"
             )
         except (KeyError, jinja2.TemplateError):
             return self.module.title
@@ -290,8 +285,7 @@ class Task(models.Model):
         return render_content(
             self.module.spec.get("introduction", ""),
             ModuleAnswers(self.module, self, {}),
-            "html",
-            self.get_document_additional_context()
+            "html"
         )
 
     def render_question_prompt(self, question):
@@ -301,14 +295,13 @@ class Task(models.Model):
                 "format": "markdown",
             },
             self.get_answers(),
-            "html",
-            self.get_document_additional_context()
+            "html"
         )
 
     def render_output_documents(self, answers=None, hard_fail=True):
         if answers is None:
             answers = self.get_answers()
-        return answers.render_output(self.get_document_additional_context(), hard_fail=hard_fail)
+        return answers.render_output({}, hard_fail=hard_fail)
 
     @transaction.atomic
     def get_or_create_subtask(self, user, question_id):
