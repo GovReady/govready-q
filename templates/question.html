@@ -411,6 +411,7 @@ $(function() {
             url: window.location.pathname,
             method: "POST",
             data: form.serialize(),
+            keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
             success: function(res) {
               window.location = res.redirect;
             }
