@@ -35,4 +35,5 @@ deployment:
       - cf target -o GovReady -s dev
       - cf target # echo space to confirm ok
       - make requirements
-      - CFENV=dev make run
+      - cf-blue-green.sh govready-q
+      - cf logout
