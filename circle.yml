@@ -35,5 +35,5 @@ deployment:
       - cf target -o GovReady -s dev
       - cf target # echo space to confirm ok
       - make requirements
-      - cf-blue-green.sh govready-q
+      - ./cf-blue-green.sh govready-q
       - cf logout
