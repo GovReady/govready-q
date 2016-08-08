@@ -58,7 +58,7 @@ questions:
 
   - id: it_systems_size
     title: How many information technology systems does your organization run?
-    prompt: "How many systems (web properties, major applications and general IT systems in your organizations system catalog?"
+    prompt: "How many systems (web properties, major applications, and general IT systems) are in your organization's system catalog?"
     type: choice
     choices:
       - key: none
