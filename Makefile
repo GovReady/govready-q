@@ -21,6 +21,7 @@ else ifeq ($(CFENV),dev)
 else
   CFSPACE = sandbox
   APEX    = null
+  LOGSERVICE=null
   CFOPTS  = --hostname $(MYAPP)-$(CFSPACE)
 endif
 
@@ -107,6 +108,7 @@ ifneq ($(APEX),null)
 endif
 ifneq ($(LOGSERVICE),null)
 	cf bind-service $(MYAPP) $(LOGSERVICE)
+	cf bind-service $(MYAPP) $(CFSPACE)-pws-newrelic
 endif
 
 provision-space:
@@ -116,7 +118,10 @@ ifneq ($(APEX),null)
 	# In org 'GovReady' add domain 'qdev.govready.com'
 	cf create-domain $(CFORG) $(APEX)
 endif
+ifneq ($(LOGSERVICE),null)
 	cf cups $(LOGSERVICE) -l $(LOGDRAIN)
+	cf create-service newrelic standard $(CFSPACE)-pws-newrelic
+endif
 
 unprovision:
 	cf delete $(MYAPP)
@@ -127,4 +132,5 @@ endif
 unprovision-space: unprovision
 	cf delete-service pgsql-q
 	cf delete-service $(LOGSERVICE)
+	cf delete-service newrelic-$(CFSPACE)
 	cf delete-domain $(APEX)
