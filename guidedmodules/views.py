@@ -359,7 +359,8 @@ def next_question(request, taskid, taskslug):
             "q": q,
             "prompt": task.render_question_prompt(q),
             "history": taskq.get_history() if taskq else None,
-            "answer": answer,
+            "answer_obj": answer,
+            "answer": answer.get_value() if (answer and not answer.cleared) else None,
             "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
 
             "answer_module": answer_module,
