@@ -17,7 +17,11 @@ class User(AbstractUser):
                 task=settings_task,
                 question__key="name").first()
             if name:
-                return name.get_current_answer().get_value() #+ " <" + self.email + ">"
+                name = name.get_current_answer()
+                if not name.cleared:
+                    name = name.get_value()
+                    if name: # question might be skipped
+                        return name
 
         # User has not entered their name.
         return self.email or "Anonymous User"
