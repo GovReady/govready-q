@@ -423,6 +423,9 @@ class TaskAnswer(models.Model):
             if answer.cleared:
                 vp = "cleared the answer"
                 is_cleared = True
+            elif answer.get_value() is None:
+                vp = "skipped the question"
+                is_cleared = False
             elif is_cleared:
                 vp = "answered the question"
                 is_cleared = False
