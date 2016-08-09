@@ -503,7 +503,7 @@ function start_a_discussion(is_page_load) {
             task: {{task.id}},
             question: "{{q.id|escapejs}}"
         },
-        success(res) {
+        success: function(res) {
           // replace link that starts discussion with static text
           $('#start-a-discussion').text('Team conversation has been started: see below!');
 

@@ -295,7 +295,7 @@ function discussion_poll() {
             comment_since: discussion_info.max_comment_id,
             event_since: discussion_info.max_event_time
         },
-        success(res) {
+        success: function(res) {
           render_events(res);
           show_notification(res);
           discussion_poll(); // poll again
