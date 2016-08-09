@@ -72,6 +72,7 @@ INSTALLED_APPS = [
 	'django.contrib.messages',
 	'django.contrib.humanize',
 
+    'bootstrap3',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -155,9 +156,10 @@ ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
 ACCOUNT_PASSWORD_MIN_LENGTH = (4 if DEBUG else 6) # in debugging, allow simple passwords
 
-# improve how the allauth forms are rendered using django-bootstrap forms
-from bootstrapform.templatetags.bootstrap import bootstrap#_horizontal
-ALLAUTH_FORM_RENDERER = bootstrap#_horizontal
+# improve how the allauth forms are rendered using django-bootstrap forms,
+# in combination with a monkeypatch run elsewhere
+import bootstrap3.templatetags.bootstrap3
+ALLAUTH_FORM_RENDERER = bootstrap3.templatetags.bootstrap3.bootstrap_form
 
 # Use an Sqlite database at local/db.sqlite, until other database
 # settings have been set in the environment.

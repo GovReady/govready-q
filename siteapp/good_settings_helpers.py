@@ -12,7 +12,7 @@ class AllauthAccountAdapter(DefaultAccountAdapter):
         )
 
 if settings.ALLAUTH_FORM_RENDERER:
-    # Monkey-patch allauth to return forms that render with django-bootstrap-form.
+    # Monkey-patch allauth to return forms that render with django-bootstrap3.
     import allauth.account.views
     allauth_get_form_class_original = allauth.account.views.get_form_class
     def allauth_get_form_class_patch(*args, **kwargs):
