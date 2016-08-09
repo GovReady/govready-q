@@ -254,8 +254,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
                 {# user is proceeding through the questions in order #}
                 Next
               {% else %}
-                {# user has returned to a particular question #}
-                Submit
+                Update
               {% endif %}
               &raquo;
             </button>
@@ -265,7 +264,11 @@ Next Question: {{q.spec.title}} | {{task.title}}
             <button id="skip-button"
               type="submit" class="btn btn-info"
               onclick="$('#question > form input[name=method]').val('skip')">
+              {% if not answer %}
               Skip
+              {% else %}
+              Clear
+              {% endif %}
               &raquo;
             </button>
 
@@ -273,7 +276,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
               <button id="clear-button"
                 type="submit" class="btn btn-danger"
                 onclick="$('#question > form input[name=method]').val('clear')">
-                  Clear
+                  Reset
                   &raquo;
                 </button>
             {% endif %}
@@ -348,6 +351,13 @@ $(function() {
     // BUTTON STATE
 
     function update_save_skip_clear_state() {
+      {% if answer %}
+      // If the answer is unchanged, change the submit button text.
+      $('#save-button').text(
+        (!is_answer_unchanged() ? "Update »" : "Keep »")
+      );
+      {% endif %}
+
       // The save/skip/clear buttons are enabled depending on whether
       // something valid has been entered.
       var ok = (typeof validate_answer()) == "undefined";
@@ -384,6 +394,17 @@ $(function() {
       $('#inputctrl').change(handler);
       $('#inputctrl').on('keyup', handler);
     }
+    {% if q.spec.type == "text" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "url" %}
+    function is_answer_unchanged() {
+      var val = $('#inputctrl').val();
+      if (val == "{{answer|escapejs}}")
+        return true;
+    }
+    {# TODO: for integer, real, and date questions, we need to parse the value #}
+    {% else %}
+    {# dont reval for password-type questions #}
+    function is_answer_unchanged() { }
+    {% endif %}
 
     {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
 
@@ -396,6 +417,7 @@ $(function() {
     function on_input_changed(handler) {
       form.find('input').click(handler);
     }
+    function is_answer_unchanged() { }
 
     {% elif q.spec.type == "multiple-choice" %}
 
@@ -416,6 +438,7 @@ $(function() {
     function on_input_changed(handler) {
       form.find('input').click(handler);
     }
+    function is_answer_unchanged() { }
 
     {% elif q.spec.type == "file" %}
 
@@ -439,11 +462,17 @@ $(function() {
       // form state is reset.
       $('form input[type=reset]').click(function() { setTimeout(handler, 0); });
     }
+    function is_answer_unchanged() {
+      var ctrl = $('#inputctrl')[0];
+      if (ctrl.files.length == 0)
+        return true;
+    }
 
     {% else %}
 
     // other question types are considered always valid
     function validate_answer() { }
+    function is_answer_unchanged() { }
     function on_input_changed(handler) { }
 
     {% endif %}
