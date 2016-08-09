@@ -472,10 +472,13 @@ class TaskAnswerHistory(models.Model):
 
     stored_value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
     answered_by_task = models.ManyToManyField(Task, blank=True, related_name="is_answer_to", help_text="A Task or Tasks that supplies the answer for this question (of type 'module' or 'module-set').")
+    answered_by_file = models.FileField(upload_to='q/files', blank=True, null=True)
     cleared = models.BooleanField(default=False, help_text="Set to True to indicate that the user wants to clear their answer. This is different from a null-valued answer, which means not applicable/don't know/skip.")
     answered_by_reference = models.ForeignKey(TaskAnswer, blank=True, null=True, on_delete=models.SET_NULL, help_text="The answer to this question is determined by looking at the value of the current answer to the referenced question.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswerHistory.")
+
+    thumbnail = models.FileField(upload_to='q/thumbnails', blank=True, null=True)
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -490,6 +493,9 @@ class TaskAnswerHistory(models.Model):
         return self.taskanswer.get_current_answer() == self
 
     def get_value(self):
+        if self.cleared:
+            raise RuntimeError("get_value cannot be called on a cleared answer")
+
         # If this answer found through a reference to another answer,
         # then recursively get the value. Update our cached copy if
         # the value has changed.
@@ -509,7 +515,7 @@ class TaskAnswerHistory(models.Model):
 
         # If this question type is "module" or "module-set", its answer
         # is stored in the answered_by_task M2M field and the stored_value
-        # field is not used.
+        # field is not used. The return value is a ModuleAnswers instance.
         if q.spec["type"] == "module":
             t = self.answered_by_task.first()
             if not t:
@@ -521,6 +527,20 @@ class TaskAnswerHistory(models.Model):
 
         elif q.spec["type"] == "module-set":
             return [t.get_answers() for t in self.answered_by_task.all()]
+
+        # The "file" question type is answered by a blob that is uploaded
+        # by the user. The stored_value field is not used. Instead the
+        # answered_by_file field points to the blob. The returned data is
+        # a dict about the blob.
+        elif q.spec["type"] == "file":
+            blob = self.answered_by_file
+            if not blob.name:
+                # Question was skipped.
+                return None
+            return {
+                "url": settings.SITE_ROOT_URL + blob.url,
+                "size": blob.size,
+            }
         
         # For all other question types, the value is stored in the stored_value
         # field.

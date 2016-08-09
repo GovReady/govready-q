@@ -26,7 +26,7 @@ mv /tmp/font-awesome-4.6.3 $VENDOR/fontawesome
 rm -f /tmp/fontawesome.zip
 
 wget -O $VENDOR/bootstrap-helpers.js \
-        https://raw.githubusercontent.com/JoshData/html5-stub/e28d8e68b1cd9c0d10695b38490590a225eba1f1/static/js/bootstrap-helpers.js
+        https://raw.githubusercontent.com/JoshData/html5-stub/3b9b623a0969a030ca9a5657b4be9fabb9fca43d/static/js/bootstrap-helpers.js
 
 wget -O $VENDOR/push.js \
         https://raw.githubusercontent.com/Nickersoft/push.js/9bad48df41a640baa29a19e9a6de02b4f45ddad4/push.js

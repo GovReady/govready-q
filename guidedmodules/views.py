@@ -56,12 +56,17 @@ def next_question(request, taskid, taskslug):
             instrumentation_event_type = "skip"
         
         elif request.POST.get("method") == "save":
-            # parse
+            # load the answer from the HTTP request
             if q.spec["type"] == "multiple-choice":
-                # multiple items submitted
+                # Checkboxes come through as a list.
                 value = request.POST.getlist("value")
+            elif q.spec["type"] == "file":
+                # File uploads come through request.FILES.
+                # But if the user is preserving an existing value,
+                # then it will be missing.
+                value = request.FILES.get("value")
             else:
-                # single item submitted
+                # A regular, single item is submitted.
                 value = request.POST.get("value", "").strip()
 
             # validate
@@ -142,10 +147,32 @@ def next_question(request, taskid, taskslug):
             or set(answered_by_tasks) != set(current_answer.answered_by_task.all()) \
             or cleared != current_answer.cleared:
 
+            # When value is a File, then we have to change how the
+            # answer is stored. Note that value is always a FileUpload
+            # instance and so it will never be equal to current_answer.stored_value,
+            # which means the above if test always results in true.
+            # Unless the user is preserving an existing value, in which case
+            # value is null, the stored_value will be none, and the if block
+            # will correctly believe that this is the user not changing the
+            # answer.
+            if q.spec["type"] == "file":
+                if value is None:
+                    # Sanity check that something was uploaded.
+                    return JsonResponse({ "status": "error", "message": "No file uploaded." })
+
+                # Don't save the File into the stored_value field in the database.
+                # Instead put it in answered_by_file.
+                answered_by_file = value
+                value = None
+
+            else:
+                answered_by_file = None
+
             answer = TaskAnswerHistory.objects.create(
                 taskanswer=question,
                 answered_by=request.user,
                 stored_value=value,
+                answered_by_file=answered_by_file,
                 cleared=cleared)
             for t in answered_by_tasks:
                 answer.answered_by_task.add(t)

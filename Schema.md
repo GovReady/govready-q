@@ -265,6 +265,14 @@ If `min` and `max` are set, then the value is restricted to that range. If `min`
 As with the text question types, `placeholder` and `help` text can also be specified and in document templates and impute conditions the value of these questions is the numeric value entered by the user.
 .
 
+#### `file`
+
+This question type asks the user to upload a file.
+
+`help` text can also be specified, as in the text question types.
+
+In document templates and impute conditions, the value of these questions is a Python dict (JSON object) containing `url` (a download URL) and `size` (in bytes) fields.
+
 #### `module`, `module-set`
 
 These question type prompt the user to select another completed module as the answer to the question. The `module-id` field specifies the ID of another module specification. The `module` question type allows for a single other module to answer the question. The `module-set` question type allows for zero or more other modules to answer the question.

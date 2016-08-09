@@ -166,6 +166,24 @@ Next Question: {{q.spec.title}} | {{task.title}}
                 {% endif %}
               </div>
 
+            {% elif q.spec.type == "file" %}
+              {# When there is an existing answer, the UI shows a thumbnail of it. If the user doesn't choose a new file, the existing value is kept. #}
+              {% if answer %}
+              <div>
+                <p>The following file is uploaded:</p>
+                <p>{{answer}}</p>
+                <p>Select a new file if you would like to replace it:</p>
+              </div>
+              {% endif %}
+
+              <div class="form-group">
+                <input name="value" type="file" id="inputctrl" class="form-control"
+                  style="width: auto; border:  none; padding: 0; display: inline-block"/>
+                <input type="reset" value="x" style="font-size: 14px;">
+                <p class="help-block">{{q.spec.help}}</p>
+              </div>
+
+
             {% elif q.spec.type == "module" and answer_tasks|length == 0 %}
               {# The user must choose or start a module, but there is nothing to choose from, so show a simplified interface. #}
 
@@ -216,7 +234,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
               <input type="hidden" name="value" value=""/>
 
             {% else %}
-                {{q.spec.type}}
+              <p class="text-danger">QUESTION TYPE NOT IMPLEMENTED: {{q.spec.type}}</p>
 
             {% endif %}
 
@@ -327,38 +345,60 @@ $(function() {
     show_static_history({{history|json}});
     {% endif %}
 
+    // BUTTON STATE
+
+    function update_save_skip_clear_state() {
+      // The save/skip/clear buttons are enabled depending on whether
+      // something valid has been entered.
+      var ok = (typeof validate_answer()) == "undefined";
+      $('#save-button').prop('disabled', !ok);
+
+      // If there is an existing answer, the skip/clear buttons remain
+      // enabled always so that the answer can be cleared. Some question
+      // types don't have an unanswered/invalid state that would otherwise
+      // make these buttons enabled.
+      {% if answer %}ok = false;{% endif %}
+      $('#skip-button').prop('disabled', ok);
+      $('#clear-button').prop('disabled', ok);
+    }
+
+    on_input_changed(update_save_skip_clear_state); // register event handler
+    update_save_skip_clear_state(); // run initially
+
+    // INSTRUMENTATION
+
+    // register event handler
+    on_input_changed(record_interaction);
+
+    // VALIDATION
+
     {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" or q.spec.type == "date" %}
+    
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
             return "You must enter something."
         return undefined;
     }
-    function update_save_skip_clear_state() {
-      // The save/skip/clear buttons are valid depending on whether
-      // something has been answered (box contains something other than whitespace).
-      var is_answered = /\S/.test($('#inputctrl').val());
-      $('#save-button').prop('disabled', !is_answered);
-      $('#skip-button, #clear-button').prop('disabled', is_answered);
+    function on_input_changed(handler) {
+      $('#inputctrl').change(handler);
+      $('#inputctrl').on('keyup', handler);
     }
-    function on_input_changed() {
-      update_save_skip_clear_state();
-      record_interaction();
-    }
-    $('#inputctrl').change(on_input_changed);
-    $('#inputctrl').on('keyup', on_input_changed);
-    update_save_skip_clear_state(); // run handler initally to set disabled states
 
     {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
+
     function validate_answer() {
         var val = $('#question input[type="radio"]:checked').val();
         if (!val)
             return "You must make a selection."
         return undefined;
     }
-    form.find('input').click(record_interaction);
+    function on_input_changed(handler) {
+      form.find('input').click(handler);
+    }
 
     {% elif q.spec.type == "multiple-choice" %}
+
     function validate_answer() {
         // Collect the checked values.
         var vals = [];
@@ -373,17 +413,46 @@ $(function() {
         {% endif %}
         return undefined;
     }
-    form.find('input').click(record_interaction);
+    function on_input_changed(handler) {
+      form.find('input').click(handler);
+    }
+
+    {% elif q.spec.type == "file" %}
+
+    function validate_answer() {
+      {% if answer %}
+      // There is an existing uploaded file. If the user doesn't
+      // choose a new file, then Submit just keeps the old value.
+      return undefined;
+      {% endif %}
+      var ctrl = $('#inputctrl')[0];
+      if (ctrl.files.length == 0)
+        return "Select a file to upload.";
+      return undefined;
+    }
+    function on_input_changed(handler) {
+      // Add the handler to the file input control.
+      $('#inputctrl').change(handler);
+
+      // Add the handler to the reset button, but it has to be
+      // run after this event is finished to occur after the
+      // form state is reset.
+      $('form input[type=reset]').click(function() { setTimeout(handler, 0); });
+    }
 
     {% else %}
 
+    // other question types are considered always valid
     function validate_answer() { }
-    
+    function on_input_changed(handler) { }
+
     {% endif %}
 
     form.on("submit", function() {
+        // Get the <form> element.
         var form = $('#question form');
 
+        // Run client-side validation.
         var method = form.find('input[name=method]').val();
         if (method == "save") {
           // client-side validation, block form if not valid
@@ -394,10 +463,27 @@ $(function() {
           }
         }
 
+        // Assemble the form submission data.
+        //
+        // While this would normally work:
+        //
+        // var data = form.serialize();
+        //
+        // it does not handle file uploads. For file uploads
+        // we must use a FormData object. We could assemble
+        // the FormData instance by hand:
+        //
+        // var form_fields = form.serializeArray();
+        // for (var i in form_fields)
+        //  data.append(form_fields[i].name, form_fields[i].value);
+        // data.append('value', $('#inputctrl')[0].files[0]);
+        //
+        // But there's a constructor that does this for us:
+        var data = new FormData($('form')[0]);
         ajax_with_indicator({
             url: window.location.pathname,
             method: "POST",
-            data: form.serialize(),
+            data: data,
             keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
             success: function(res) {
               window.location = res.redirect;

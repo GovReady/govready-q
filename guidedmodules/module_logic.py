@@ -404,6 +404,17 @@ class validator:
 
         return value
 
+    def validate_file(question, value):
+        # None is an acceptable value: It means to preserve
+        # an existing answer.
+        if value is None:
+            return value
+
+        # Otherwise, the file must have content.
+        if value.size == 0:
+            raise ValueError("File is empty.")
+        return value
+
     def validate_module(question, value):
         # handled by view function
         return value
@@ -667,9 +678,13 @@ class RenderedAnswer:
 
         # For external-function and "raw" question types, the answer value is any
         # JSONable Python data structure. Forward the getattr request onto the value.
-        elif self.question_type in ("external-function", "raw"):
+        # Similarly for file questions.
+        elif self.question_type in ("external-function", "raw", "file"):
             if self.answer is not None:
                 return self.answer[item]
+            else:
+                # Avoid attribute errors.
+                return None
 
         # For other types of questions, or items that are not question
         # IDs of the subtask, just do normal Python behavior.

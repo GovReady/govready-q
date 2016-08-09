@@ -24,6 +24,9 @@ urlpatterns = [
 
     # auth
     url(r'^accounts/', include('allauth.urls')),
+
+    # has to be repeated here for the reverse() to work
+    url(r'^user-media', include('dbstorage.urls')),
 ]
 
 import notifications.urls

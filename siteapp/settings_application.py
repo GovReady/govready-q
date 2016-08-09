@@ -5,6 +5,7 @@ from .settings import *
 INSTALLED_APPS += [
     'htmlemailer',
     'notifications',
+    'dbstorage',
 
     'siteapp',
     'guidedmodules',
@@ -25,6 +26,7 @@ ALLOWED_HOSTS += ['.' + ORGANIZATION_PARENT_DOMAIN]
 
 SERVER_EMAIL = "GovReady Q <q@mg.govready.com>"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
+DEFAULT_FILE_STORAGE = 'dbstorage.storage.DatabaseStorage'
 
 MODULES_PATH = environment.get('modules-path', 'modules')
 

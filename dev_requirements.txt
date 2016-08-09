@@ -6,6 +6,7 @@ email_validator
 
 git+https://github.com/JoshData/commonmark-py-plaintext
 git+https://github.com/if-then-fund/django-html-emailer
+git+https://github.com/if-then-fund/django-database-storage
 
 dj-database-url==0.4.1
 

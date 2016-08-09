@@ -12,12 +12,19 @@ introduction:
     Tell us about your organization.
 
 questions:
+  - id: organization_profile
+    title: Organization Profile
+    type: module
+    module-id: organization_profile
+    tab: Basic Info
+    group: About the Organization
+
   - id: organization_details
     title: Organization Details
     type: module
     module-id: organization_classification
     tab: Basic Info
-    group: About the Project
+    group: About the Organization
 
   - id: point_of_contacts
     title: Points of Contact
