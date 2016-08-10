@@ -271,6 +271,24 @@ This question type asks the user to upload a file.
 
 `help` text can also be specified, as in the text question types.
 
+The `file-type` field can be used to validate that the uploaded file is of a particular type. Supported types are:
+
+* `image`: Ensures the file is an image. The uploaded file is converted to PNG format internally.
+
+If `file-type` is `image`, then some image transformation can be run, e.g.:
+
+	- id: logo
+	  title: Logo
+	  prompt: Upload a logo.
+	  type: file
+	  file-type: image
+	  image:
+	    max-size:
+	      width: 60
+	      height: 60
+
+If `image->max-size` is given, then the image will be resized prior to being saved internally so that its width and height do not exceed the given dimensions.
+
 In document templates and impute conditions, the value of these questions is a Python dict (JSON object) containing `url` (a download URL) and `size` (in bytes) fields.
 
 #### `module`, `module-set`

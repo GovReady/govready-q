@@ -413,6 +413,37 @@ class validator:
         # Otherwise, the file must have content.
         if value.size == 0:
             raise ValueError("File is empty.")
+
+        # If the file is expected to be an image, then load it to ensre it is
+        # a valid image, and sanitize it by round-tripping it through Pillow.
+        # This purposefully is intended to lose image metadata, to protect
+        # the user. (TODO: Test that it actually drops XMP metadata.)
+        if question.spec.get("file-type") == "image":
+            # Load the image.
+            from PIL import Image
+            try:
+                im = Image.open(value.file)
+            except:
+                raise ValueError("That's not an image file.")
+
+            imspec = question.spec.get("image", {})
+            
+            # Apply a size constraint and resize the image in-place.
+            if imspec.get("max-size"):
+                # TODO: Validate the size width/height fields are integers.
+                size = imspec["max-size"]
+                im.thumbnail(( size.get("width", im.size[0]), size.get("width", im.size[1])  ))
+
+            # Write the image back to a new Django ContentFile instance.
+            from io import BytesIO
+            buf = BytesIO()
+            im.save(buf, "PNG")
+
+            from django.core.files.base import ContentFile
+            value = ContentFile(buf.getvalue())
+            value.name = "image.png" # needs a name for the storage backend?
+
+
         return value
 
     def validate_module(question, value):
