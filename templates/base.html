@@ -101,6 +101,10 @@
                 {% if user.user_settings_task %}
                   <li><a href="{{user.user_settings_task.get_absolute_url}}">Account Settings</a></li>
                 {% endif %}
+                {% if user.is_staff %}
+                  <li role="separator" class="divider"></li>
+                  <li><a href="{% url "guidedmodules_analytics" %}">Analytics</a></li>
+                {% endif %}
                 <li role="separator" class="divider"></li>
                 <li><a href="{% url "account_logout" %}">Log Out</a></li>
               </ul>
