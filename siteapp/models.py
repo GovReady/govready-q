@@ -81,13 +81,11 @@ class User(AbstractUser):
         return self._get_setting("picture")
 
     def render_context_dict(self, organization):
-        profile = self.get_settings_task(organization).get_answers()
-
-        return {
+        profile = self.get_settings_task(organization).get_answers().answers
+        profile.update({
             "id": self.id,
-            "name": str(self),
-            "picture": profile.answers.get("picture"),
-        }
+        })
+        return profile
 
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):

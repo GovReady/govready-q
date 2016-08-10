@@ -441,14 +441,18 @@ class TaskAnswer(models.Model):
             else:
                 vp = "changed the answer"
                 is_cleared = False
+
+            # get a dict with information about the user
+            who = answer.answered_by.render_context_dict(self.task.project.organization)
+
             history.append({
                 "type": "event",
                 "date": answer.created,
                 "html":
                     ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> " 
-                    % html.escape(str(answer.answered_by)))
+                    % html.escape(who['name']))
                     + vp + ".",
-                "who": answer.answered_by,
+                "who": who,
                 "who_is_in_text": True,
                 "notification_text": str(answer.answered_by) + " " + vp + "."
             })
@@ -458,9 +462,6 @@ class TaskAnswer(models.Model):
 
         # render events for easier client-side processing
         for item in history:
-            if "who" in item:
-                item["who"] = item["who"].render_context_dict(self.task.project.organization)
-
             item["date_relative"] = reldate(item["date"], timezone.now()) + " ago"
             item["date_posix"] = item["date"].timestamp()
             del item["date"] # not JSON serializable
