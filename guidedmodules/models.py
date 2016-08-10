@@ -312,8 +312,11 @@ class Task(models.Model):
             "html",
         )
 
+    def get_subtask(self, question_id):
+        return self.get_or_create_subtask(None, question_id, create=False)
+
     @transaction.atomic
-    def get_or_create_subtask(self, user, question_id):
+    def get_or_create_subtask(self, user, question_id, create=True):
         # For "module" type questions, creates a sub-Task for the question,
         # or if the question has already been answered then returns its
         # subtask.
@@ -325,7 +328,10 @@ class Task(models.Model):
         q = self.module.questions.get(key=question_id)
 
         # Get or create a TaskAnswer for that question.
-        ans, is_new = self.answers.get_or_create(task=self, question=q)
+        if create:
+            ans, is_new = self.answers.get_or_create(question=q)
+        else:
+            ans = self.answers.get(question=q)
         
         # Get or create a TaskAnswerHistory for that TaskAnswer. For
         # "module"-type questions that have a sub-Task already, just
@@ -334,6 +340,9 @@ class Task(models.Model):
         if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count():
             # We'll re-use the subtask.
             return ansh.answered_by_task.first()
+
+        elif not create:
+            return None
 
         else:
             # There is no Task yet (for "module"-type questions) or

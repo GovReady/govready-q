@@ -142,6 +142,13 @@ class Organization(models.Model):
             defaults = { "title": "Organization" })
         return prj
 
+    def get_logo(self):
+        prj_task = self.get_organization_project().root_task
+        profile_task = prj_task.get_subtask("organization_profile")
+        profile = profile_task.get_answers()
+        return profile.answers.get("logo")
+
+
 class Project(models.Model):
     organization = models.ForeignKey(Organization, related_name="projects", help_text="The Organization that this project belongs to.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")

@@ -9,6 +9,12 @@ questions:
     title: Logo
     prompt: Upload a logo.
     type: file
+    file-type: image
+    image:
+      max-size:
+        width: 640
+        height: 640
+
 
 output:
   - title: Your Answers
