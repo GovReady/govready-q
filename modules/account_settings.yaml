@@ -32,6 +32,16 @@ questions:
       - key: pm
         text: Project Manager
 
+  - id: picture
+    title: Picture
+    prompt: Optionally upload a photo of yourself.
+    type: file
+    file-type: image
+    image:
+      max-size:
+        width: 640
+        height: 640
+
   - id: chat
     title: Your Chat Application
     prompt: What chat application would you like to use to discuss your answers with your colleagues?
@@ -50,6 +60,10 @@ output:
       Here are your account settings:
 
       ### About You
+
+      {% if picture %}
+      ![Your Picture]({{picture.url}})
+      {% endif %}
 
       Name: {{name}}
 

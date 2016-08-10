@@ -87,7 +87,16 @@
           <ul class="nav navbar-nav navbar-right">
             {% if request.user.is_authenticated %}
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{request.user}} <span class="caret"></span></a>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                {% with picture=request.user.get_profile_picture %}
+                  {% if picture %}
+                    <img src="{{picture.url}}" height="20" alt="Profile Picture"
+                      style="margin-right: .5em;">
+                  {% endif %}
+                {% endwith %}
+                {{request.user}}
+                <span class="caret"></span>
+              </a>
               <ul class="dropdown-menu">
                 {% if user.user_settings_task %}
                   <li><a href="{{user.user_settings_task.get_absolute_url}}">Account Settings</a></li>

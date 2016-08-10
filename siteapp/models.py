@@ -10,24 +10,32 @@ from jsonfield import JSONField
 
 class User(AbstractUser):
     def __str__(self):
-        settings_task = getattr(self, 'user_settings_task', None)
-        if settings_task:
-            from guidedmodules.models import TaskAnswer
-            name = TaskAnswer.objects.filter(
-                task=settings_task,
-                question__key="name").first()
-            if name:
-                name = name.get_current_answer()
-                if not name.cleared:
-                    name = name.get_value()
-                    if name: # question might be skipped
-                        return name
+        name = self._get_setting("name")
+        if name: # question might be skipped
+            return name
 
         # User has not entered their name.
         return self.email or "Anonymous User"
 
     def localize_to_org(self, org):
         self.user_settings_task = self.get_settings_task(org)
+
+    def _get_settings_task(self):
+        return getattr(self, 'user_settings_task', None)
+
+    def _get_setting(self, key):
+        if not self._get_settings_task():
+            return None
+        from guidedmodules.models import TaskAnswer
+        ans = TaskAnswer.objects.filter(
+            task=self._get_settings_task(),
+            question__key=key).first()
+        if not ans:
+            return None
+        ans = ans.get_current_answer()
+        if ans.cleared:
+            return None
+        return ans.get_value()
 
     @transaction.atomic
     def get_account_project(self, org):
@@ -68,6 +76,9 @@ class User(AbstractUser):
     def get_settings_task(self, org):
         p = self.get_account_project(org)
         return p.root_task.get_or_create_subtask(self, "account_settings")
+
+    def get_profile_picture(self):
+        return self._get_setting("picture")
 
     def render_context_dict(self):
         return {
