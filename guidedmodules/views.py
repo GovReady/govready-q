@@ -135,6 +135,17 @@ def next_question(request, taskid, taskslug):
                     raise ValueError("did not provide exactly one task ID")
             
             value = None
+            answered_by_file = None
+
+        elif q.spec["type"] == "file" and not cleared:
+            # Don't save the File into the stored_value field in the database.
+            # Instead put it in answered_by_file. value may be None if the user
+            # is skipping the question.
+            answered_by_file = value
+            value = None
+
+        else:
+            answered_by_file = None
 
         # Create a new TaskAnswerHistory if the answer is actually changing.
         current_answer = question.get_current_answer()
@@ -145,28 +156,9 @@ def next_question(request, taskid, taskslug):
         elif not current_answer \
             or value != current_answer.stored_value \
             or set(answered_by_tasks) != set(current_answer.answered_by_task.all()) \
-            or cleared != current_answer.cleared:
-
-            # When value is a File, then we have to change how the
-            # answer is stored. Note that value is always a FileUpload
-            # instance and so it will never be equal to current_answer.stored_value,
-            # which means the above if test always results in true.
-            # Unless the user is preserving an existing value, in which case
-            # value is null, the stored_value will be none, and the if block
-            # will correctly believe that this is the user not changing the
-            # answer.
-            if q.spec["type"] == "file":
-                if value is None:
-                    # Sanity check that something was uploaded.
-                    return JsonResponse({ "status": "error", "message": "No file uploaded." })
-
-                # Don't save the File into the stored_value field in the database.
-                # Instead put it in answered_by_file.
-                answered_by_file = value
-                value = None
-
-            else:
-                answered_by_file = None
+            or cleared != current_answer.cleared \
+            or current_answer.answered_by_file.name \
+            or answered_by_file:
 
             answer = TaskAnswerHistory.objects.create(
                 taskanswer=question,
