@@ -536,13 +536,20 @@ class TaskAnswerHistory(models.Model):
         # answered_by_file field points to the blob. The returned data is
         # a dict about the blob.
         elif q.spec["type"] == "file":
+            # Get the Django File object instance.
             blob = self.answered_by_file
             if not blob.name:
                 # Question was skipped.
                 return None
+
+            # Get the dbstorage.models.StoredFile instance which holds
+            # an auto-detected mime type.
+            from dbstorage.models import StoredFile
+            sf = StoredFile.objects.get(path=blob.name)
             return {
                 "url": settings.SITE_ROOT_URL + blob.url,
                 "size": blob.size,
+                "type": sf.mime_type,
             }
         
         # For all other question types, the value is stored in the stored_value

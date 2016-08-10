@@ -169,9 +169,16 @@ Next Question: {{q.spec.title}} | {{task.title}}
             {% elif q.spec.type == "file" %}
               {# When there is an existing answer, the UI shows a thumbnail of it. If the user doesn't choose a new file, the existing value is kept. #}
               {% if answer %}
-              <div>
+              <div style="margin: 1em 0">
                 <p>The following file is uploaded:</p>
-                <p>{{answer}}</p>
+                {% if answer.type|slice:"0:6" == "image/" %}
+                	<div style="margin: 1em 0;">
+                		<img src="{{answer.url}}" class="img-responsive" style="border: 1px solid black"/>
+                	</div>
+                {% else %}
+                	<p><a href="{{answer.url}}">Download</a></p>
+                {% endif %}
+                <p>Size: {{answer.size|filesizeformat}}</p>
                 <p>Select a new file if you would like to replace it:</p>
               </div>
               {% endif %}
