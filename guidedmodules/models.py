@@ -459,7 +459,7 @@ class TaskAnswer(models.Model):
         # render events for easier client-side processing
         for item in history:
             if "who" in item:
-                item["who"] = item["who"].render_context_dict()
+                item["who"] = item["who"].render_context_dict(self.task.project.organization)
 
             item["date_relative"] = reldate(item["date"], timezone.now()) + " ago"
             item["date_posix"] = item["date"].timestamp()

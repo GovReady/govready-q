@@ -20,6 +20,12 @@
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd9edf7', endColorstr='#ffc4e3f3', GradientType=0);
 }
 
+#discussion .comment .comment-avatar {
+  border: 1px solid #CCC;
+  margin-right: .5em;
+  max-width: 25px;
+  max-height: 25px; /* same as line height */
+}
 #discussion .comment .username {
   color: black;
 }
@@ -57,6 +63,15 @@
 #discussion .event {
   margin: 15px 0;
 }
+#discussion .event .event-icon {
+  float: left;
+}
+  #discussion .event .event-icon img {
+    max-width: 37px;
+    max-height: 37px; /* same as the height of the rest of the event */
+    border: 1px solid #CCC;
+    margin: 0 .75em .5em 0;
+  }
 #discussion .event .event-info {
   font-size: 85%;
   color: #555;
@@ -113,9 +128,10 @@
 <div id="comment-template" style="display: none">
   <div class="comment panel panel-default">
     <div class="panel-heading">
+      <img class="comment-avatar" style="display: none">
       <span class="comment-author">...</span>
-      commented <span class="comment-date"></span>
       <span class="comment-author-role"></span>
+      commented <span class="comment-date"></span>
     </div>
     <div class="panel-body">
       <div class="comment-text"> </div>
@@ -175,6 +191,7 @@
 
 <div id="event-template" style="display: none">
   <div class="event">
+    <div class="event-icon"><img style="display: none"></div>
     <div class="body"> </div>
     <div>
       <div class="event-info">
@@ -350,6 +367,10 @@ function render_comment(item) {
   // Fill in.
   n.attr('data-id', item.id);
   n.attr('data-sort-order', item.date_posix);
+  if (item.user && item.user.picture)
+    n.find('.comment-avatar').attr('src', item.user.picture.url).show();
+  else
+    n.find('.comment-avatar').hide();
   n.find('.comment-author').text(item.user.name);
   n.find('.comment-date').text(item.date_relative);
   n.find('.comment-date').attr('title', new Date(item.date_posix * 1000));
@@ -407,6 +428,8 @@ function render_event(item) {
   n.find('.event-date').attr('title', new Date(item.date_posix * 1000));
   if (item.who && !item.who_is_in_text)
     n.find('.event-who').text("by " + item.who.name);
+  if (item.who && item.who.picture)
+    n.find('.event-icon img').attr('src', item.who.picture.url).show();
 
   var c = $('#discussion .comment-thread')
   c.append(n);

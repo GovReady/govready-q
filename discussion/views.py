@@ -66,7 +66,7 @@ def start_a_discussion(request):
             },
             "can_invite": discussion.can_invite_guests(request.user),
         },
-        "guests": [ user.render_context_dict() for user in discussion.guests.all() ],
+        "guests": [ user.render_context_dict(request.organization) for user in discussion.guests.all() ],
         "events": events,
     })
 

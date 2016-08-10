@@ -80,10 +80,13 @@ class User(AbstractUser):
     def get_profile_picture(self):
         return self._get_setting("picture")
 
-    def render_context_dict(self):
+    def render_context_dict(self, organization):
+        profile = self.get_settings_task(organization).get_answers()
+
         return {
             "id": self.id,
             "name": str(self),
+            "picture": profile.answers.get("picture"),
         }
 
 from django.contrib.auth.backends import ModelBackend

@@ -173,7 +173,7 @@ class Comment(models.Model):
             "type": "comment",
             "id": self.id,
             "replies_to": self.replies_to_id,
-            "user": self.user.render_context_dict(),
+            "user": self.user.render_context_dict(self.discussion.organization),
             "user_role": get_user_role(),
             "date_relative": reldate(self.created, timezone.now()) + " ago",
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
