@@ -18,9 +18,6 @@ def application_redirect(environ, start_response, http_host):
     start_response('302 OK', headers)
     yield ''
 
-def application_normal(environ, start_response):
-    return django_application(environ, start_response)
-
 def application(environ, start_response):
     http_host = environ.get('HTTP_HOST')
 
