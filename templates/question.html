@@ -365,18 +365,9 @@ $(function() {
       );
       {% endif %}
 
-      // The save/skip/clear buttons are enabled depending on whether
-      // something valid has been entered.
+      // The save button is enabled just when the input is valid.
       var ok = (typeof validate_answer()) == "undefined";
       $('#save-button').prop('disabled', !ok);
-
-      // If there is an existing answer, the skip/clear buttons remain
-      // enabled always so that the answer can be cleared. Some question
-      // types don't have an unanswered/invalid state that would otherwise
-      // make these buttons enabled.
-      {% if answer %}ok = false;{% endif %}
-      $('#skip-button').prop('disabled', ok);
-      $('#clear-button').prop('disabled', ok);
     }
 
     on_input_changed(update_save_skip_clear_state); // register event handler
