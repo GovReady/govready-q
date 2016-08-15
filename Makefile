@@ -46,15 +46,14 @@ static: $(STATIC)
 requirements.txt: dev_requirements.txt cf_requirements.txt
 	cat $^ > $@
 
-PILLOW=Pillow-3.3.0-cp34-cp34m-manylinux1_x86_64.whl:
-vendor/$(PILLOW)
+# Need to get the linux wheel to push to CF:
+PILLOW=Pillow-3.3.0-cp34-cp34m-manylinux1_x86_64.whl
+vendor/$(PILLOW):
 	mkdir -p vendor/
 	curl -o $@ https://pypi.python.org/packages/36/2f/addd63c3bce5b5aa33ec6d2895a41d41480bd3b03f61da76b236f61f19b6/Pillow-3.3.0-cp34-cp34m-manylinux1_x86_64.whl
 
 $(VENDOR): requirements.txt vendor/$(PILLOW)
 	$(PIP) download --dest vendor -r $< --exists-action i
-	@echo Need linux for PWS:
-	cd vendor && https://pypi.python.org/packages/36/2f/addd63c3bce5b5aa33ec6d2895a41d41480bd3b03f61da76b236f61f19b6/Pillow-3.3.0-cp34-cp34m-manylinux1_x86_64.whl
 	cf push -i 1 --hostname govready-q-sandbox govready-q
 	touch $@
 
