@@ -8,21 +8,22 @@ MYAPP = govready-q
 # use --no-hostname for APEX, see
 #   https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html#nohosts
 CFORG   = GovReady
+LOG_SERVICE =$(CFENV)-pws-papertrail
+SSL_SERVICE =$(CFENV)-pws-ssl
+NR_SERVICE  =$(CFENV)-pws-newrelic
+
 ifeq ($(CFENV),prod)
-  CFSPACE = prod
   APEX    = q.govready.com
   CFOPTS  = -d $(APEX) --no-hostname
 else ifeq ($(CFENV),dev)
-  CFSPACE = dev
   APEX    = qdev.govready.com
   CFOPTS  = -d $(APEX) --no-hostname
-  LOGSERVICE=dev-pws-papertrail
   LOGDRAIN=syslog-tls://logs4.papertrailapp.com:42856
 else
-  CFSPACE = sandbox
+  CFENV   = sandbox
   APEX    = null
-  LOGSERVICE=null
-  CFOPTS  = --hostname $(MYAPP)-$(CFSPACE)
+  LOG_SERVICE=null
+  CFOPTS  = --hostname $(MYAPP)-$(CFENV)
 endif
 
 CFPUSH = cf push -i 1 $(CFOPTS) $(MYAPP)
@@ -45,9 +46,16 @@ static: $(STATIC)
 requirements.txt: dev_requirements.txt cf_requirements.txt
 	cat $^ > $@
 
-$(VENDOR): requirements.txt
+PILLOW=Pillow-3.3.0-cp34-cp34m-manylinux1_x86_64.whl:
+vendor/$(PILLOW)
 	mkdir -p vendor/
+	curl -o $@ https://pypi.python.org/packages/36/2f/addd63c3bce5b5aa33ec6d2895a41d41480bd3b03f61da76b236f61f19b6/Pillow-3.3.0-cp34-cp34m-manylinux1_x86_64.whl
+
+$(VENDOR): requirements.txt vendor/$(PILLOW)
 	$(PIP) download --dest vendor -r $< --exists-action i
+	@echo Need linux for PWS:
+	cd vendor && https://pypi.python.org/packages/36/2f/addd63c3bce5b5aa33ec6d2895a41d41480bd3b03f61da76b236f61f19b6/Pillow-3.3.0-cp34-cp34m-manylinux1_x86_64.whl
+	cf push -i 1 --hostname govready-q-sandbox govready-q
 	touch $@
 
 $(STATIC): ./deployment/fetch-vendor-resources.sh
@@ -99,28 +107,30 @@ clean:
 # The only user in the 'prod' space is 'circleci' so
 # noone else will deploy to name govready-q
 provision: provision-space
-	cf target -s $(CFSPACE)
+	cf target -s $(CFENV)
 	# This create-service should be in a conditional .... (todo)
 	$(CFPUSH) --no-start
 ifneq ($(APEX),null)
 	# associate wildcard with this app and domain:
 	cf map-route $(MYAPP) $(APEX) --hostname \*
 endif
-ifneq ($(LOGSERVICE),null)
-	cf bind-service $(MYAPP) $(LOGSERVICE)
-	cf bind-service $(MYAPP) $(CFSPACE)-pws-newrelic
+ifneq ($(LOG_SERVICE),null)
+	cf bind-service $(MYAPP) $(LOG_SERVICE)
+	cf bind-service $(MYAPP) $(NR_SERVICE)
+#	cf bind-service $(MYAPP) $(SSL_SERVICE)
 endif
 
 provision-space:
-	cf target -s $(CFSPACE)
+	cf target -s $(CFENV)
 	cf create-service elephantsql turtle pgsql-q
 ifneq ($(APEX),null)
 	# In org 'GovReady' add domain 'qdev.govready.com'
 	cf create-domain $(CFORG) $(APEX)
 endif
-ifneq ($(LOGSERVICE),null)
-	cf cups $(LOGSERVICE) -l $(LOGDRAIN)
-	cf create-service newrelic standard $(CFSPACE)-pws-newrelic
+ifneq ($(LOG_SERVICE),null)
+	cf cups $(LOG_SERVICE) -l $(LOGDRAIN)
+	cf create-service newrelic standard $(NR_SERVICE)
+	cf create-service ssl basic $(SSL_SERVICE)
 endif
 
 unprovision:
@@ -131,6 +141,7 @@ endif
 
 unprovision-space: unprovision
 	cf delete-service pgsql-q
-	cf delete-service $(LOGSERVICE)
-	cf delete-service newrelic-$(CFSPACE)
+	cf delete-service $(LOG_SERVICE)
+	cf delete-service $(NR_SERVICE)
+	cf delete-service $(SSL_SERVICE)
 	cf delete-domain $(APEX)
