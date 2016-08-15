@@ -15,7 +15,7 @@ echo "added env variable NEW_RELIC_APP_NAME: $NEW_RELIC_APP_NAME"
 export NEW_RELIC_LOG="stdout"
 echo "added env var NEW_RELIC_LOG: $NEW_RELIC_LOG"
 
-if [ "$NEW_RELIC_LICENSE_KEY" = null ] || [ -z "$NEW_RELIC_LICENSE_KEY"]; then
+if [ "$NEW_RELIC_LICENSE_KEY" = null ] || [ -z "$NEW_RELIC_LICENSE_KEY" ]; then
   export NEW_RELIC_START=""
 else
   export NEW_RELIC_START="newrelic-admin run-program"
