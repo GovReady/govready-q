@@ -54,7 +54,6 @@ vendor/$(PILLOW):
 
 $(VENDOR): requirements.txt vendor/$(PILLOW)
 	$(PIP) download --dest vendor -r $< --exists-action i
-	cf push -i 1 --hostname govready-q-sandbox govready-q
 	touch $@
 
 $(STATIC): ./deployment/fetch-vendor-resources.sh
