@@ -14,8 +14,9 @@ class CfSpaceUsers < Inspec.resource(1)
   "
 
   example "
-    describe cf_space_roles do
-      its('managers') { should eq[a@b, c@d]
+    describe cf_space_roles('prod') do
+      its('managers') { should eq['pburkholder@govready.com','consulting@joshdata.me','gregelin@govready.com']
+      its('developers') { should include('secdevops+pivotalprodrelease@govready.com')}
       its('file_size') { should > 1 }
     end
   "
