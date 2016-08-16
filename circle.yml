@@ -30,10 +30,13 @@ deployment:
   development: # just a label; label names are completely up to you
     branch: master
     commands:
+      - export APPNAME=govready-q
+      - export AUTOPILOT=https://github.com/contraband/autopilot/releases/download/0.0.2/autopilot-linux
       - cf api https://api.run.pivotal.io
       - cf auth $PWS_USER $PWS_PASS
       - cf target -o GovReady -s dev
       - cf target # echo space to confirm ok
+      - cf install-plugin -f $AUTOPILOT
       - make requirements
-      - ./cf-blue-green.sh govready-q
+      - ./cf-blue-green.sh $APPNAME
       - cf logout
