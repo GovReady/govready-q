@@ -15,6 +15,7 @@ NR_SERVICE  =$(CFENV)-pws-newrelic
 ifeq ($(CFENV),prod)
   APEX    = q.govready.com
   CFOPTS  = -d $(APEX) --no-hostname
+  LOGDRAIN=syslog-tls://logs4.papertrailapp.com:31862
 else ifeq ($(CFENV),dev)
   APEX    = qdev.govready.com
   CFOPTS  = -d $(APEX) --no-hostname
@@ -123,7 +124,7 @@ provision-space:
 	cf create-service elephantsql turtle pgsql-q
 ifneq ($(APEX),null)
 	# In org 'GovReady' add domain 'qdev.govready.com'
-	cf create-domain $(CFORG) $(APEX)
+	-cf create-domain $(CFORG) $(APEX)
 endif
 ifneq ($(LOG_SERVICE),null)
 	cf cups $(LOG_SERVICE) -l $(LOGDRAIN)
@@ -141,5 +142,6 @@ unprovision-space: unprovision
 	cf delete-service pgsql-q
 	cf delete-service $(LOG_SERVICE)
 	cf delete-service $(NR_SERVICE)
-	cf delete-service $(SSL_SERVICE)
+	@echo not deleting ssl: $(SSL_SERVICE) to save 20 bucks
+	@echo cf delete-service $(SSL_SERVICE)
 	cf delete-domain $(APEX)
