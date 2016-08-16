@@ -10,7 +10,7 @@ fi
 APPNAME=$1
 
 finally () {
-  rm -f ${APP_NAME}_manifest.yml
+  rm -f ${APPNAME}_manifest.yml
 }
 
 on_fail () {
