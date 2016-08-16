@@ -42,3 +42,14 @@ deployment:
       - CFENV=dev make requirements
       - ./cf-blue-green.sh $APPNAME
       - cf logout
+  production: # just a label; label names are completely up to you
+    branch: prodXX
+    commands:
+      - cf api https://api.run.pivotal.io
+      - cf auth $PWS_USER $PWS_PASS
+      - cf target -o GovReady -s prod
+      - cf target # echo space to confirm ok
+      - cf install-plugin -f $AUTOPILOT
+      - CFENV=prod make requirements
+      - ./cf-blue-green.sh $APPNAME
+      - cf logout
