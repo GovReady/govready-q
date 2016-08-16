@@ -46,7 +46,7 @@ deployment:
     branch: prodXX
     commands:
       - cf api https://api.run.pivotal.io
-      - cf auth $PWS_USER $PWS_PASS
+      - cf auth $PWS_PROD_USER $PWS_PROD_PASS
       - cf target -o GovReady -s prod
       - cf target # echo space to confirm ok
       - cf install-plugin -f $AUTOPILOT
