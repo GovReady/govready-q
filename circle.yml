@@ -43,7 +43,7 @@ deployment:
       - ./cf-blue-green.sh $APPNAME
       - cf logout
   production: # just a label; label names are completely up to you
-    branch: prodXX
+    branch: prod
     commands:
       - cf api https://api.run.pivotal.io
       - cf auth $PWS_PROD_USER $PWS_PROD_PASS
