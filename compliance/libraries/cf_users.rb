@@ -37,7 +37,6 @@ class CfSpaceUsers < Inspec.resource(1)
     @info = {}
     @info[:type] = 'cf_space_roles'
     @info[:installed] = true
-    @info[:developers] = ['secdevops+pivotalprodrelease@govready.com']
     @info
   end
 

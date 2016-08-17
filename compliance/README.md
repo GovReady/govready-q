@@ -20,10 +20,13 @@ $ inspec check compliance
 To run all **supported** controls on a local machine use `inspec exec /path/to/profile`.
 
 ```bash
-
 $ inspec exec compliance
-..
 
-Finished in 0.0025 seconds (files took 0.12449 seconds to load)
-8 examples, 0 failures
+Profile: Cloud Foundry Compliance Profile (cloudfoundry)
+Version: 1.0.0
+Target:  local://
+
+  ✔  cf-1.0: tbd
+
+Summary: 3 successful, 0 failures, 0 skipped
 ```
