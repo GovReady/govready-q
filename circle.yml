@@ -8,6 +8,8 @@ dependencies:
     - curl -v -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'
     - sudo dpkg -i cf-cli_amd64.deb
     - cf -v
+  cache_directories:
+    - compliance/vendor
 
 # maching build images (Ubuntu version) are set in Project Settings, not
 # in this configuration file.
