@@ -42,13 +42,13 @@ class CfSpaceUsers < Inspec.resource(1)
   end
 
   def managers
-    m=[]
+    list=[]
     cmd = inspec.command("cf curl v2/spaces/#{guid}/managers")
     mh=JSON.parse(cmd.stdout, :symbolize_names => true)
-    mh[:resources].each do |entity|
-      m << entity[:entity][:username]
+    mh[:resources].each do |resource|
+      list << resource[:entity][:username]
     end
-    return m
+    return list
   end
 
   def developers

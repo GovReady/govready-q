@@ -13,9 +13,8 @@ control 'cf-1.0' do
 
   describe cf_space_roles('prod') do
     its('managers') {
-      should eq(['pburkholder@govready.com','consulting@joshdata.me','gregelin@govready.com'])
+      should contain_exactly('pburkholder@govready.com','consulting@joshdata.me','gregelin@govready.com')
     }
     its('developers') { should include('secdevops+pivotalprodrelease@govready.com')}
-    its('guid') { should eq('secdevops+pivotalprodrelease@govready.com')}
   end
 end
