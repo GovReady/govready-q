@@ -1,0 +1,10 @@
+name: cloudfoundry
+title: Cloud Foundry Compliance Profile
+maintainer: GovReady PBC
+copyright: GovReady PBC
+copyright_email: ops@govready.com
+license: Apache 2 license
+summary: Checks compliance of cloudfoundry installs
+version: 1.0.0
+supports:
+  - os-family: unix
