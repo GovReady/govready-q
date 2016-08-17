@@ -9,7 +9,9 @@ dependencies:
     - sudo dpkg -i cf-cli_amd64.deb
     - cf -v
   cache_directories:
+    - vendor
     - compliance/vendor
+    - siteapp/static/vendor
 
 # maching build images (Ubuntu version) are set in Project Settings, not
 # in this configuration file.
@@ -25,9 +27,11 @@ test:
   pre:
     - deployment/fetch-vendor-resources.sh
     - pip install -r dev_requirements.txt
+    - bundle install --gemfile compliance/Gemfile --path vendor/bundle
   override:
     - python manage.py test
     - python -m unittest discover tests
+    - compliance/run.sh
 
 # Before deploying, set up
 # PWS_USER and PWS_PASSWORD as env vars in CircleCI
