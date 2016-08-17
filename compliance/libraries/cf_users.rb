@@ -25,6 +25,12 @@ class CfSpaceUsers < Inspec.resource(1)
     @space = space
   end
 
+  def guid
+    return @guid if defined?(@guid)
+    @guid = inspec.command("cf space #{@space} --guid").stdout.chomp
+    @guid
+  end
+
   def info
     return @info if defined?(@info)
 
@@ -36,7 +42,13 @@ class CfSpaceUsers < Inspec.resource(1)
   end
 
   def managers
-    return ['pburkholder@govready.com','consulting@joshdata.me','gregelin@govready.com']
+    m=[]
+    cmd = inspec.command("cf curl v2/spaces/#{guid}/managers")
+    mh=JSON.parse(cmd.stdout, :symbolize_names => true)
+    mh[:resources].each do |entity|
+      m << entity[:entity][:username]
+    end
+    return m
   end
 
   def developers
