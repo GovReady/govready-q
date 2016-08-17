@@ -41,18 +41,16 @@ class CfSpaceUsers < Inspec.resource(1)
     @info
   end
 
-  def managers
-    list=[]
-    cmd = inspec.command("cf curl v2/spaces/#{guid}/managers")
-    mh=JSON.parse(cmd.stdout, :symbolize_names => true)
-    mh[:resources].each do |resource|
-      list << resource[:entity][:username]
+  ["managers", "developers", "auditors"].each do |action|
+    define_method(action) do
+      list=[]
+      cmd = inspec.command("cf curl v2/spaces/#{guid}/#{action}")
+      mh=JSON.parse(cmd.stdout, :symbolize_names => true)
+      mh[:resources].each do |resource|
+        list << resource[:entity][:username]
+      end
+      return list
     end
-    return list
-  end
-
-  def developers
-    return info[:developers]
   end
 
   # Expose all info parameters

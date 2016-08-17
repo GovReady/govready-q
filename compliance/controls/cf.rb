@@ -16,5 +16,6 @@ control 'cf-1.0' do
       should contain_exactly('pburkholder@govready.com','consulting@joshdata.me','gregelin@govready.com')
     }
     its('developers') { should include('secdevops+pivotalprodrelease@govready.com')}
+    its('auditors') { should be_empty }
   end
 end
