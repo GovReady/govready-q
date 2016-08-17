@@ -31,7 +31,6 @@ test:
   override:
     - python manage.py test
     - python -m unittest discover tests
-    - compliance/run.sh
 
 # Before deploying, set up
 # PWS_USER and PWS_PASSWORD as env vars in CircleCI
@@ -47,6 +46,7 @@ deployment:
       - cf install-plugin -f $AUTOPILOT
       - CFENV=dev make requirements
       - ./cf-blue-green.sh $APPNAME
+      - compliance/circle.sh # compliance runs after release instead of with tests FIX?
       - cf logout
   production: # just a label; label names are completely up to you
     branch: prod
@@ -58,4 +58,5 @@ deployment:
       - cf install-plugin -f $AUTOPILOT
       - CFENV=prod make requirements
       - ./cf-blue-green.sh $APPNAME
+      - compliance/circle.sh # compliance runs after release instead of with tests FIX?
       - cf logout
