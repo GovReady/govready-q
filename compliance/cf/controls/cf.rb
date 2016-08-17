@@ -7,9 +7,8 @@ title 'CloudFoundry PWS Compliance'
 control 'cf-prod-roles' do
   impact 0.7
   title 'Ensure roles for spaces are appropriate'
-  desc 'tb'
-  tag 'cf'
-  ref 'CF Requirements 1.0', uri: 'http://...'
+  desc 'Enforce role-based access control the CF functions on space'
+  tag nist: 'AC-3(7)'
 
   describe cf_space_roles('prod') do
     its('managers') {
@@ -31,9 +30,8 @@ end
 control 'cf-dev-roles' do
   impact 0.7
   title 'Ensure roles for dev space is appropriate'
-  desc 'tb'
-  tag 'cf'
-  ref 'CF Requirements 1.0', uri: 'http://...'
+  desc 'Enforce role-based access control the CF functions on space'
+  tag nist: 'AC-3(7)'
 
   describe cf_space_roles('dev') do
     its('managers') {
@@ -59,9 +57,8 @@ end
 control 'cf-sandbox-roles' do
   impact 0.7
   title 'Ensure roles for sandbox space is appropriate'
-  desc 'tb'
-  tag 'cf'
-  ref 'CF Requirements 1.0', uri: 'http://...'
+  desc 'Enforce role-based access control the CF functions on space'
+  tag nist: 'AC-3(7)'
 
   describe cf_space_roles('dev') do
     its('managers') {
