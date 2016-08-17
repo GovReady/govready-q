@@ -1,10 +1,10 @@
-name: profile
-title: InSpec Example Profile
-maintainer: Chef Software, Inc.
-copyright: Chef Software, Inc.
-copyright_email: support@chef.io
+name: cloudfoundry
+title: Cloud Foundry Compliance Profile
+maintainer: GovReady PBC
+copyright: GovReady PBC
+copyright_email: ops@govready.com
 license: Apache 2 license
-summary: Demonstrates the use of InSpec Compliance Profile
+summary: Checks compliance of cloudfoundry installs
 version: 1.0.0
 supports:
   - os-family: unix

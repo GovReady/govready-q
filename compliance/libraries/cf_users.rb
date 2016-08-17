@@ -1,59 +1,50 @@
-# There are no up-to-date ruby gmes for cloudfoundry:
+# encoding: utf-8
+# author: Peter Burkholder
+#
+# There are no up-to-date ruby gems for cloudfoundry:
 #  - https://github.com/frodenas/cloudfoundry-client - obsolete
 #  - https://github.com/cloudfoundry-attic/cfoundry - obsolete
 #  - https://github.com/cloudfoundry/cf-uaa-lib - for UAA interaction
 #  - https://github.com/cloudfoundry/cf-app-utils-ruby - for ruby apps _IN_ CF to get services, etc.
+# so having to use inspec.cmd to `cf curl`
+
+require 'json'
 
 # Custom resource based on the InSpec resource DSL
 class CfSpaceUsers < Inspec.resource(1)
   name 'cf_space_roles'
-
-
-  desc "
-   parse `cf space-users` to audit who are managers, developers, auditors
-  "
-
+  desc 'parse `cf space-users` to audit who are managers, developers, auditors'
   example "
     describe cf_space_roles('prod') do
       its('managers') { should eq['pburkholder@govready.com','consulting@joshdata.me','gregelin@govready.com']
       its('developers') { should include('secdevops+pivotalprodrelease@govready.com')}
-      its('file_size') { should > 1 }
     end
   "
 
-  # Load the configuration file on initialization
-  def initialize
-    @params = {}
-    @path = '/tmp/gordon/config.yaml'
-    @file = inspec.file(@path)
-    return skip_resource "Can't find file \"#{@path}\"" if !@file.file?
-
-    # Protect from invalid YAML content
-    begin
-      @params = YAML.load(@file.content)
-      # Add two extra matchers
-      @params['file_size'] = @file.size
-      @params['file_path'] = @path
-      @params['ruby'] = 'RUBY IS HERE TO HELP ME!'
-    rescue Exception
-      return skip_resource "#{@file}: #{$!}"
-    end
+  def initialize(space)
+    @space = space
   end
 
-  # Example method called by 'it { should exist }'
-  # Returns true or false from the 'File.exists?' method
-  def exists?
-    return File.exists?(@path)
+  def info
+    return @info if defined?(@info)
+
+    @info = {}
+    @info[:type] = 'cf_space_roles'
+    @info[:installed] = true
+    @info[:developers] = ['secdevops+pivotalprodrelease@govready.com']
+    @info
   end
 
-  # Example matcher for the number of commas in the file
-  def comma_count
-    text = @file.content
-    return text.count(',')
+  def managers
+    return ['pburkholder@govready.com','consulting@joshdata.me','gregelin@govready.com']
   end
 
-  # Expose all parameters
+  def developers
+    return info[:developers]
+  end
+
+  # Expose all info parameters
   def method_missing(name)
-    return @params[name.to_s]
+    return info[name.to_s]
   end
 end

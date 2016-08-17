@@ -11,9 +11,10 @@ control 'cf-1.0' do
   tag 'cf'
   ref 'CF Requirements 1.0', uri: 'http://...'
 
-  # Test using the custom gordon_config Inspec resource
-  # Find the resource content here: ../libraries/
-  describe cf_users do
-    it { should exist }
+  describe cf_space_roles('prod') do
+    its('managers') {
+      should eq(['pburkholder@govready.com','consulting@joshdata.me','gregelin@govready.com'])
+    }
+    its('developers') { should include('secdevops+pivotalprodrelease@govready.com')}
   end
 end

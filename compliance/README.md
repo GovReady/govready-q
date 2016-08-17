@@ -1,26 +1,18 @@
-# Example InSpec Profile
+# CloudFoundry compliance
 
-This example shows the implementation of an InSpec [profile](../../docs/profiles.rst).
+This profile assumes you have already authenticated to an api endpoint, e.g.:
 
+```bash
+$ cf api https://api.run.pivotal.io
+$ cf auth $PWS_USER $PWS_PASS
+$ cf target -o GovReady -s prod
+```
 ## Verify a profile
 
 InSpec ships with built-in features to verify a profile structure.
 
 ```bash
-$ inspec check examples/profile
-Summary
--------
-Location: examples/profile
-Profile: profile
-Controls: 4
-Timestamp: 2016-03-24T16:20:21+00:00
-Valid: true
-
-Errors
-------
-
-Warnings
---------
+$ inspec check compliance
 ```
 
 ## Execute a profile
@@ -28,21 +20,10 @@ Warnings
 To run all **supported** controls on a local machine use `inspec exec /path/to/profile`.
 
 ```bash
-$ inspec exec examples/profile
+
+$ inspec exec compliance
 ..
 
 Finished in 0.0025 seconds (files took 0.12449 seconds to load)
 8 examples, 0 failures
-```
-
-## Execute a specific control from a profile
-
-To run one control from the profile use `inspec exec /path/to/profile --controls name`.
-
-```bash
-$ inspec exec examples/profile --controls tmp-1.0
-.
-
-Finished in 0.0025 seconds (files took 0.12449 seconds to load)
-1 examples, 0 failures
 ```
