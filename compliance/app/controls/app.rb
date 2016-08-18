@@ -15,3 +15,35 @@ control 'papertrail-logging' do
     }
   end
 end
+
+control 'listening-ports' do
+  title 'Enumerate listening ports'
+  desc 'only SSH and our python apps should be listening'
+  impact 0.7
+
+  describe port(2222) do
+    its('processes') { should contain_exactly('diego-sshd') }
+    it { should be_listening }
+  end
+
+  describe port.where { protocol =~ /tcp/ && port >= 8000  && port < 9000 } do
+    its('processes') { should contain_exactly('python') }
+    it { should  be_listening }
+  end
+end
+
+control 'non-listening-ports' do
+  title 'Ensure no other ports/processes'
+  desc 'only SSH and our python apps should be listening'
+  impact 0.7
+
+  describe port.where { protocol =~ /tcp/ && port > 0 && port < 2222 } do
+    it { should_not be_listening }
+  end
+  describe port.where { protocol =~ /tcp/ && port > 2222 && port < 8000 } do
+    it { should_not be_listening }
+  end
+  describe port.where { protocol =~ /tcp/ && port >= 9000 } do
+    it { should_not be_listening }
+  end
+end

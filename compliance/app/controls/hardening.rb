@@ -10,6 +10,8 @@ end
 
 include_controls('os-hardening') do
   # Pivotal's Ubuntu incluces several SUID/SGID binaries:
+  skip_control "os-02"
+  skip_control "os-05"
   skip_control "os-06"
 
   # And some sysctl controls don't apply:
