@@ -46,7 +46,8 @@ deployment:
       - cf install-plugin -f $AUTOPILOT
       - CFENV=dev make requirements
       - ./cf-blue-green.sh $APPNAME
-      - compliance/circle.sh # compliance runs after release instead of with tests FIX?
+      - compliance/remote.sh # needs developer access to run SSH
+      - compliance/circle.sh # compliance runs after release with PWS_AUDITOR_USER
       - cf logout
   production: # just a label; label names are completely up to you
     branch: prod
@@ -58,5 +59,6 @@ deployment:
       - cf install-plugin -f $AUTOPILOT
       - CFENV=prod make requirements
       - ./cf-blue-green.sh $APPNAME
-      - compliance/circle.sh # compliance runs after release instead of with tests FIX?
+      - compliance/remote.sh # needs developer access to run SSH
+      - compliance/circle.sh # compliance runs after release with PWS_AUDITOR_USER
       - cf logout
