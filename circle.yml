@@ -10,7 +10,6 @@ dependencies:
     - cf -v
   cache_directories:
     - vendor
-    - compliance/vendor
     - siteapp/static/vendor
 
 # maching build images (Ubuntu version) are set in Project Settings, not
@@ -27,7 +26,7 @@ test:
   pre:
     - deployment/fetch-vendor-resources.sh
     - pip install -r dev_requirements.txt
-    - bundle install --gemfile compliance/Gemfile --path vendor/bundle
+    - bundle install --gemfile compliance/Gemfile
   override:
     - python manage.py test
     - python -m unittest discover tests
