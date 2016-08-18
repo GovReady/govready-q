@@ -8,6 +8,3 @@ summary: Checks compliance of cloudfoundry application containers
 version: 1.0.0
 supports:
   - os-family: unix
-depends:
-  - name: os-hardening
-    path: ../tests-os-hardening
