@@ -21,5 +21,5 @@ cf auth $PWS_AUDITOR_USER $PWS_AUDITOR_PASS
 
 cf target -o GovReady -s $space
 
-cd compliance &&
-  bundle exec inspec exec . --controls $control
+[ $(basename $PWD) = "compliance" ] || cd compliance
+bundle exec inspec exec ./cf --controls $control

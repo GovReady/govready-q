@@ -2,3 +2,4 @@ source "https://rubygems.org"
 
 gem 'inspec'
 gem 'json'
+gem 'pry-coolline'
