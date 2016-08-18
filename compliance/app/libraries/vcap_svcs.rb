@@ -19,17 +19,17 @@ class CfVcapServices < Inspec.resource(1)
     begin
       @params = {}
       cmd = inspec.command('echo $VCAP_SERVICES')
-      @params = JSON.parse(cmd.stdout, :symbolize_names => true)
+      @params = JSON.parse(cmd.stdout)
     rescue Exception
       return skip_resource "Cannot parse var VCAP_SERVICES: #{$!}"
     end
   end
 
-  def exists?
-    true
+  def user_provided
+    return @params['user-provided'].shift
   end
 
   def method_missing(name)
-    return params[name.to_s]
+    return params[name]
   end
 end
