@@ -137,6 +137,11 @@ class Command(BaseCommand):
         for m1 in self.get_module_spec_dependencies(spec):
             self.process_module(m1, processed_modules, path + [spec["id"]])
 
+        # Run some validation.
+
+        if not isinstance(spec.get("questions"), list):
+            raise ValidationError(fn, "Invalid value for 'questions'.")
+
         # Pre-process the module.
 
         self.preprocess_module_spec(spec)
@@ -180,7 +185,9 @@ class Command(BaseCommand):
         # Scans a module YAML specification for any dependencies and
         # returns a generator that yields the module IDs of the
         # dependencies.
-        for question in spec.get("questions", []):
+        questions = spec.get("questions")
+        if not isinstance(questions, list): questions = []
+        for question in questions:
             if question.get("type") in ("module", "module-set"):
                 yield self.resolve_relative_module_id(spec, question.get("module-id"))
 
