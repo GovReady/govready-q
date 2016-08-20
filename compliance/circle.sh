@@ -16,10 +16,15 @@ esac
 
 control=cf-$space-roles
 
-cf api https://api.run.pivotal.io
-cf auth $PWS_AUDITOR_USER $PWS_AUDITOR_PASS
-
-cf target -o GovReady -s $space
+if cf target; then
+  : # already logged incf api https://api.run.pivotal.io
+else
+  cf auth $PWS_AUDITOR_USER $PWS_AUDITOR_PASS
+  cf target -o GovReady -s $space
+fi
 
 [ $(basename $PWD) = "compliance" ] || cd compliance
-bundle exec inspec exec ./cf --controls $control
+bundle exec inspec exec ./cf \
+  --controls $control # use --controls to only test a subset
+  # for additional test detail, add the switch:
+  #  --format=documentation

@@ -46,11 +46,12 @@ deployment:
       - CFENV=dev make requirements
       - ./cf-blue-green.sh $APPNAME
       - compliance/remote.sh # needs developer access to run SSH
+      - cf logout # let circle.sh run as another user
       - compliance/circle.sh # compliance runs after release with PWS_AUDITOR_USER
       - cf logout
   production: # just a label; label names are completely up to you
     branch: prod
-    commands:
+    commands: # ToDo: bundle all this into a script, too much copypasta
       - cf api https://api.run.pivotal.io
       - cf auth $PWS_PROD_USER $PWS_PROD_PASS
       - cf target -o GovReady -s prod
@@ -59,5 +60,6 @@ deployment:
       - CFENV=prod make requirements
       - ./cf-blue-green.sh $APPNAME
       - compliance/remote.sh # needs developer access to run SSH
+      - cf logout # let circle.sh run as another user
       - compliance/circle.sh # compliance runs after release with PWS_AUDITOR_USER
       - cf logout
