@@ -1,6 +1,7 @@
 ---
 memory: 512MB
 instances: 1
+buildpack: python_buildpack
 applications:
 - name: govready-q
   services:
