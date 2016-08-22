@@ -444,3 +444,214 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test that we can see the comment and the reaction.
         self.assertInNodeText("Yes it's me!", "#discussion .comment:not(.author-is-self) .comment-text")
         self.assertInNodeText("reacted", "#discussion .reactions .reply[data-emojis=heart]")
+
+    def test_questions_text(self):
+        # Log in and create a new project.
+        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._new_project()
+        self.click_element('#question-question_types_text .task-commands form.start-task a')
+
+        # Introduction screen.
+        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # text
+        self.assertRegex(self.browser.title, "Next Question: text")
+        self.fill_field("#inputctrl", "This is some text.")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # password
+        self.assertRegex(self.browser.title, "Next Question: password")
+        self.fill_field("#inputctrl", "th1s1z@p@ssw0rd!")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # email-address
+        import random
+        self.assertRegex(self.browser.title, "Next Question: email-address")
+        self.fill_field("#inputctrl", "test+%d@q.govready.com" % random.randint(10000, 99999))
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # url
+        self.assertRegex(self.browser.title, "Next Question: url")
+        self.fill_field("#inputctrl", "https://q.govready.com")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # longtext
+        self.assertRegex(self.browser.title, "Next Question: longtext")
+        self.fill_field("#inputctrl", "This is a paragraph.\n\nThis is another paragraph.")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # date
+        # The UI for <input type=date> varies by browser. The chromedriver
+        # gives a box that the user can type mm/dd/yyyy format into (at
+        # least on my desktop...).
+        self.assertRegex(self.browser.title, "Next Question: date")
+        self.fill_field("#inputctrl", "08222016")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # Finished.
+        self.assertRegex(self.browser.title, "^Test The Text Input Question Types - GovReady Q$")
+
+    def test_questions_choice(self):
+        # Log in and create a new project.
+        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._new_project()
+        self.click_element('#question-question_types_choice .task-commands form.start-task a')
+
+        # Introduction screen.
+        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # choice
+        self.assertRegex(self.browser.title, "Next Question: choice")
+        self.click_element('#question input[name="value"][value="choice2"]')
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # yesno
+        self.assertRegex(self.browser.title, "Next Question: yesno")
+        self.click_element('#question input[name="value"][value="yes"]')
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # multiple-choice
+        self.assertRegex(self.browser.title, "Next Question: multiple-choice")
+        self.click_element('#question input[name="value"][value="choice1"]')
+        self.click_element('#question input[name="value"][value="choice3"]')
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # Finished.
+        self.assertRegex(self.browser.title, "^Test The Choice Question Types - GovReady Q$")
+
+    def test_questions_numeric(self):
+        # Log in and create a new project.
+        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._new_project()
+        self.click_element('#question-question_types_numeric .task-commands form.start-task a')
+
+        # Introduction screen.
+        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # integer
+        self.assertRegex(self.browser.title, "Next Question: integer")
+        self.fill_field("#inputctrl", "5000")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # real
+        self.assertRegex(self.browser.title, "Next Question: real")
+        self.fill_field("#inputctrl", "0.050")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # Finished.
+        self.assertRegex(self.browser.title, "^Test The Numeric Question Types - GovReady Q$")
+    
+    def test_questions_media(self):
+        # Log in and create a new project.
+        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._new_project()
+        self.click_element('#question-question_types_media .task-commands form.start-task a')
+
+        # Introduction screen.
+        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # file
+        # TODO: Test an actual file upload. For now we're just skipping
+        # the question.
+        self.assertRegex(self.browser.title, "Next Question: file")
+        self.click_element("#skip-button")
+        var_sleep(.5)
+
+        # interstitial
+        # nothing to really test in terms of functionality, but we could check that
+        # page elements are present
+        self.assertRegex(self.browser.title, "Next Question: interstitial")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # external-function
+        # There is nothing to really test in terms of functionality here, but
+        # the template result should show the output of the sample_external_function
+        # method defined below.
+        self.assertRegex(self.browser.title, "Next Question: external-function")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # Finished.
+        self.assertRegex(self.browser.title, "^Test The Media Question Types - GovReady Q$")
+
+    def test_questions_module(self):
+        # Log in and create a new project.
+        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._new_project()
+        self.click_element('#question-question_types_module .task-commands form.start-task a')
+
+        # Introduction screen.
+        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # "You will now begin a module."
+        self.assertRegex(self.browser.title, "Next Question: module")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        def do_submodule(answer_text):
+            # We're now at the intro screen for the simple sub-module.
+            self.assertRegex(self.browser.title, "Next Question: Introduction")
+            self.click_element("#save-button")
+            var_sleep(.5)
+            self.assertRegex(self.browser.title, "Next Question: The Question")
+            self.fill_field("#inputctrl", answer_text)
+            self.click_element("#save-button")
+            var_sleep(.5)
+            self.assertRegex(self.browser.title, "^A Simple Module - GovReady Q$")
+
+            # Return to the main module.
+            self.click_element("#return-to-supertask")
+            var_sleep(.5)
+
+        do_submodule("My first answer.")
+        self.assertRegex(self.browser.title, "^Test The Module Question Types - GovReady Q$")
+
+        # Go back to the question and start a second answer.
+        def change_answer():
+            self.click_element("#changeanswers-title a")
+            var_sleep(.5)
+            self.click_element("#change-answer-q_module")
+            var_sleep(.5)
+        change_answer()
+        self.assertRegex(self.browser.title, "Next Question: module")
+        self.click_element('#question input[name="value"][value="__new"]')
+        self.click_element("#save-button")
+        var_sleep(.5)
+        do_submodule("My second answer.")
+        self.assertRegex(self.browser.title, "^Test The Module Question Types - GovReady Q$")
+
+        # Go back and change the answer to the first one again.
+        # We don't know what the ID of that other module was but I'm hard-coding
+        # '7' now, which works today.
+        change_answer()
+        self.assertRegex(self.browser.title, "Next Question: module")
+        self.click_element('#question input[name="value"][value="7"]')
+        self.click_element("#save-button")
+        var_sleep(.5)
+        self.assertRegex(self.browser.title, "^Test The Module Question Types - GovReady Q$")
+
+def sample_external_function(question, existing_answers):
+    # For test_questions_media's module.
+    return repr((question, existing_answers))

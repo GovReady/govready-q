@@ -1,0 +1,29 @@
+id: question_types_numeric
+title: Test The Numeric Question Types
+introduction:
+  format: markdown
+  template: |
+    This module tests the functionality of the numeric question types.
+questions:
+  - id: q_integer
+    title: integer
+    prompt: Enter a whole number.
+    type: integer
+    # TODO: test min, max
+    placeholder: 123
+    help: This is some help text.
+
+  - id: q_real
+    title: real
+    prompt: Enter a fractional number.
+    type: real
+    # TODO: test min, max
+    placeholder: 123.456
+    help: This is some help text.
+
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      {{q_integer}}
+      {{q_real}}

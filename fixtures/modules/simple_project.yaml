@@ -2,12 +2,35 @@ id: simple_project
 type: project
 title: I want to answer some questions on Q.
 short_description: A simple project.
+
 questions:
+
   - id: simple_module
     title: Simple Module
     type: module
     module-id: simple
   - id: simple_module_two
-    title: Another Simple Module
+    title: Another Simple Module (for invitation test)
     type: module
     module-id: simple
+
+  - id: question_types_text
+    title: Test The Text Input Question Types
+    type: module
+    module-id: question_types_text
+  - id: question_types_choice
+    title: Test The Choice Question Types
+    type: module
+    module-id: question_types_choice
+  - id: question_types_numeric
+    title: Test The Numeric Question Types
+    type: module
+    module-id: question_types_numeric
+  - id: question_types_media
+    title: Test The Media Question Types
+    type: module
+    module-id: question_types_media
+  - id: question_types_module
+    title: Test The Module Question Types
+    type: module
+    module-id: question_types_module

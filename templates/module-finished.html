@@ -79,7 +79,7 @@ thead {
               {% else %}
                 <span class="glyphicon glyphicon-remove"> </span>
               {% endif %}
-              <a href="?q={{rec.question.key}}">{{rec.question.spec.title}}</a>
+              <a id="change-answer-{{rec.question.key}}" href="?q={{rec.question.key}}">{{rec.question.spec.title}}</a>
             </p>
         {% endfor %}        
       </div>
@@ -97,7 +97,7 @@ thead {
         </a></p>
       {% else %}
         {# return to non-project parent task #}
-        <p><a href="{{supermodule.task.get_absolute_url}}" class="btn btn-success">
+        <p><a id="return-to-supertask" href="{{supermodule.task.get_absolute_url}}" class="btn btn-success">
           Continue Answering {{supermodule.task.title}} &raquo;
         </a></p>
       {% endif %}

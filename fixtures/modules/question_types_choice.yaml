@@ -1,0 +1,50 @@
+id: question_types_choice
+title: Test The Choice Question Types
+introduction:
+  format: markdown
+  template: |
+    This module tests the functionality of the choice question types.
+questions:
+  - id: q_choice
+    title: choice
+    prompt: Choose one.
+    type: choice
+    choices:
+      - key: choice1
+        text: Choice 1
+        help: This is some help text for choice 1.
+      - key: choice2
+        text: Choice 2
+        help: This is some help text for choice 2.
+      - key: choice3
+        text: Choice 3
+        help: This is some help text for choice 3.
+
+  - id: q_yesno
+    title: yesno
+    prompt: Choose yes or no.
+    type: yesno
+
+  - id: q_multiple_choice
+    title: multiple-choice
+    prompt: Choose some.
+    type: multiple-choice
+    # TODO: test min, max
+    choices:
+      - key: choice1
+        text: Choice 1
+        help: This is some help text for choice 1.
+      - key: choice2
+        text: Choice 2
+        help: This is some help text for choice 2.
+      - key: choice3
+        text: Choice 3
+        help: This is some help text for choice 3.
+
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      {{q_choice}}
+      {{q_yesno}}
+      {{q_multiple_choice}}

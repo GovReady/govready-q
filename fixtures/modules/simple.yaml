@@ -1,5 +1,6 @@
 id: simple
 title: A Simple Module
+instance-name: "{{q1}}"
 introduction:
   format: markdown
   template: |

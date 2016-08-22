@@ -1,0 +1,23 @@
+id: question_types_module
+title: Test The Module Question Types
+introduction:
+  format: markdown
+  template: |
+    This module tests the functionality of the module question types.
+questions:
+  - id: q_module
+    title: module
+    prompt: Start a sub-module.
+    type: module
+    module-id: simple
+
+  # TODO: Test module-set questions. This question type only
+  # applies within projects right now --- it can't be used
+  # within regular modules.
+
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      {{q_module}}
+      

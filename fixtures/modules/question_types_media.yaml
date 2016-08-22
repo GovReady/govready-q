@@ -1,0 +1,31 @@
+id: question_types_media
+title: Test The Media Question Types
+introduction:
+  format: markdown
+  template: |
+    This module tests the functionality of the media question types.
+questions:
+  - id: q_file
+    title: file
+    prompt: Upload a file!
+    type: file
+    # TODO: test file-type and image fields
+
+  - id: q_interstitial
+    title: interstitial
+    prompt: This is an interstitial.
+    type: interstitial
+
+  - id: q_external_function
+    title: external-function
+    prompt: I'm going to run a Python function.
+    type: external-function
+    function: siteapp.tests.sample_external_function
+
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      {{q_file}}
+      {{q_interstitial}}
+      {{q_external_function}}

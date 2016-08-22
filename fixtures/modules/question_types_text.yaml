@@ -1,0 +1,52 @@
+id: question_types_text
+title: Test The Text Input Question Types
+introduction:
+  format: markdown
+  template: |
+    This module tests the functionality of the text input question types.
+questions:
+  - id: q_text
+    title: text
+    prompt: Enter some text.
+    type: text
+    placeholder: this is placeholder text
+    help: This is help text.
+  - id: q_password
+    title: password
+    prompt: Enter a password.
+    type: password
+    placeholder: this is placeholder text
+    help: This is help text.
+  - id: q_email_address
+    title: email-address
+    prompt: Enter an email address.
+    type: email-address
+    placeholder: this is placeholder text
+    help: This is help text.
+  - id: q_url
+    title: url
+    prompt: Enter a web address.
+    type: url
+    placeholder: this is placeholder text
+    help: This is help text.
+  - id: q_longtext
+    title: longtext
+    prompt: Enter some text.
+    type: longtext
+    help: This is help text.
+  - id: q_date
+    title: date
+    prompt: Choose a date.
+    type: date
+    help: This is help text.
+
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      {{q_text}}
+      {{q_password}}
+      {{q_email_address}}
+      {{q_url}}
+      {{q_longtext}}
+      {{q_date}}
