@@ -610,8 +610,15 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#save-button")
         var_sleep(.5)
 
+        # We're now at the intro screen for the simple sub-module.
+        # Grab the page URL here so we can figure out the ID of this task
+        # so that we can select it again later.
+        import urllib.parse
+        s = urllib.parse.urlsplit(self.browser.current_url)
+        m = re.match(r"/tasks/(\d+)/a-simple-module", s[2])
+        task_id = int(m.group(1))
+
         def do_submodule(answer_text):
-            # We're now at the intro screen for the simple sub-module.
             self.assertRegex(self.browser.title, "Next Question: Introduction")
             self.click_element("#save-button")
             var_sleep(.5)
@@ -643,11 +650,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.assertRegex(self.browser.title, "^Test The Module Question Types - GovReady Q$")
 
         # Go back and change the answer to the first one again.
-        # We don't know what the ID of that other module was but I'm hard-coding
-        # '7' now, which works today.
         change_answer()
         self.assertRegex(self.browser.title, "Next Question: module")
-        self.click_element('#question input[name="value"][value="7"]')
+        self.click_element('#question input[name="value"][value="%d"]' % task_id)
         self.click_element("#save-button")
         var_sleep(.5)
         self.assertRegex(self.browser.title, "^Test The Module Question Types - GovReady Q$")
