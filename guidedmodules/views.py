@@ -101,17 +101,14 @@ def next_question(request, taskid, taskslug):
         # fetch the task that answers this question
         answered_by_tasks = []
         if q.spec["type"] in ("module", "module-set") and not cleared:
-            # get the module that the tasks for this question must use
-            m1 = Module.objects.get(id=q.spec["module-id"])
-
             if value == "__new":
                 # Create a new task, and we'll redirect to it immediately.
                 t = Task.create(
                     parent_task_answer=question,
                     editor=request.user,
                     project=task.project,
-                    module=m1,
-                    title=m1.title)
+                    module=q.answer_type_module,
+                    title=q.answer_type_module.title)
 
                 answered_by_tasks = [t]
                 redirect_to = t.get_absolute_url()
@@ -129,7 +126,7 @@ def next_question(request, taskid, taskslug):
                     for item in value.split(',')
                     ]
                 for t in answered_by_tasks:
-                    if t.module != m1 or not t.has_read_priv(request.user):
+                    if t.module != q.answer_type_module or not t.has_read_priv(request.user):
                         raise ValueError("invalid task ID")
                 if q.spec["type"] == "module" and len(answered_by_tasks) != 1:
                     raise ValueError("did not provide exactly one task ID")
@@ -332,7 +329,7 @@ def next_question(request, taskid, taskslug):
         # For "module"-type questions, get the Module instance of the tasks that can
         # be an answer to this question, and get the existing Tasks that the user can
         # choose as an answer.
-        answer_module = Module.objects.get(id=q.spec["module-id"]) if q.spec["type"] in ("module", "module-set") else None
+        answer_module = q.answer_type_module
         answer_tasks = []
         if answer_module:
             # The user can choose from any Task instances they have read permission on

@@ -254,13 +254,15 @@ class Command(BaseCommand):
         spec = self.transform_question_spec(m, spec)
 
         # Create/update database record.
+        field_values = {
+            "definition_order": definition_order,
+            "spec": spec,
+            "answer_type_module": Module.objects.get(id=spec["module-id"]) if spec.get("module-id") else None,
+        }
         q, isnew = ModuleQuestion.objects.get_or_create(
             module=m,
             key=spec["id"],
-            defaults={
-                "definition_order": definition_order,
-                "spec": spec,
-            })
+            defaults=field_values)
 
         if isnew:
             print("Added", repr(q))
@@ -270,9 +272,9 @@ class Command(BaseCommand):
             # is identifical to what's already stored.
             if self.is_question_changed(q, definition_order, spec) is not None:
                 print("Updated", repr(q))
-                q.definition_order = definition_order
-                q.spec = spec
-                q.save()
+                for k, v in field_values.items():
+                    setattr(q, k, v)
+                q.save(update_fields=field_values.keys())
 
         return q
 

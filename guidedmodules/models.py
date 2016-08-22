@@ -42,6 +42,7 @@ class ModuleQuestion(models.Model):
 
     definition_order = models.IntegerField(help_text="An integer giving the order in which this question is defined by the Module.")
     spec = JSONField(help_text="Module definition data.")
+    answer_type_module = models.ForeignKey(Module, blank=True, null=True, related_name="is_type_of_answer_to", on_delete=models.PROTECT, help_text="For module and module-set typed questions, this is the Module that Tasks that answer this question must be for.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -55,9 +56,6 @@ class ModuleQuestion(models.Model):
     def __repr__(self):
         # For debugging.
         return "<ModuleQuestion [%d] %s.%s (%s)>" % (self.id, self.module.key, self.key, repr(self.module))
-
-    def get_answer_module(self):
-        return Module.objects.get(id=self.spec.get('module-id'))
 
 class Task(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
@@ -347,13 +345,12 @@ class Task(models.Model):
         else:
             # There is no Task yet (for "module"-type questions) or
             # we're creating and appending a new task. Create the Task.
-            m = Module.objects.get(id=q.spec["module-id"])
             task = Task.create(
                 parent_task_answer=ans,
                 project=self.project,
                 editor=user,
-                module=m,
-                title=m.title)
+                module=q.answer_type_module,
+                title=q.answer_type_module.title)
 
             # Create a new TaskAnswerHistory instance. We never modify
             # existing instances!

@@ -702,7 +702,7 @@ class RenderedAnswer:
                 # The question was skipped -- i.e. we have no ModuleAnswers for
                 # the question that this RenderedAnswer represents. But we want
                 # to gracefully represent the item attribute as skipped to.
-                q = self.question.get_answer_module().questions.filter(key=item).first()
+                q = self.question.answer_type_module.questions.filter(key=item).first()
                 if q:
                     # 'item' is a valid question.
                     return RenderedAnswer(q, None, self.escapefunc)

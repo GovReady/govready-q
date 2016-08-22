@@ -205,7 +205,7 @@ def project(request, project_id):
         # Add entry.
         d = {
             "question": mq,
-            "module": Module.objects.get(id=mq.spec["module-id"]),
+            "module": mq.answer_type_module,
             "is_finished": is_finished,
             "tasks": tasks,
             "can_start_new_task": mq.spec["type"] == "module-set" or len(tasks) == 0,
