@@ -17,4 +17,6 @@ jsonfield
 django-bootstrap3
 django-notifications-hq
 
+graphviz
+
 selenium

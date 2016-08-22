@@ -26,7 +26,8 @@ apt-get install -y \
 	python3 python-virtualenv python3-pip \
 	python3-yaml \
 	nginx uwsgi-plugin-python3 supervisor \
-	memcached
+	memcached \
+	graphviz
 
 # Turn off nginx's default website.
 rm -f /etc/nginx/sites-enabled/default

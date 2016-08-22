@@ -36,6 +36,79 @@ class Module(models.Model):
         # Return the ModuleQuestions in definition order.
         return list(self.questions.order_by('definition_order'))
 
+    @staticmethod
+    def BuildNetworkDiagram(start_nodes, config):
+        # Build a network diagram by recursively evaluating
+        # node edges.
+        from graphviz import Digraph
+        g = Digraph()
+        seen_nodes = set()
+        stack = list(start_nodes)
+        node_id = lambda node : str((type(node), node.id))
+        while len(stack) > 0:
+            # pop the next node
+            node = stack.pop()
+            if node in seen_nodes: continue # already did this node
+            seen_nodes.add(node) # mark as visited
+
+            # Create the node.
+            g.node(
+                node_id(node),
+                label=config[type(node)]['label'](node),
+                **config[type(node)]['attrs'](node))
+
+            # Create the edges.
+            edges = config[type(node)]['edges'](node)
+            for edge_type, nodes in edges.items():
+                for n in nodes:
+                    g.edge(node_id(node), node_id(n), label=edge_type)
+                    stack.append(n)
+        
+        if not seen_nodes:
+            return None
+        
+        svg = g.pipe(format='svg')
+
+        # strip off <? xml ... <!DOCTYPE ...
+        import re
+        svg = re.search(b"<svg .*", svg, re.S).group(0)
+        return svg
+
+    def module_usage_hierarchy(self):
+        # For the admin.
+        return Module.BuildNetworkDiagram(
+            [self],
+            {
+                Module: {
+                    "label": lambda node : str(node),
+                    "edges": lambda node : { "answer-to": node.is_type_of_answer_to.all() },
+                    "attrs": lambda node : { "color": "red" },
+                },
+                ModuleQuestion: {
+                    "label": lambda node : node.key,
+                    "edges": lambda node : { "in": [node.module] },
+                    "attrs": lambda node : { "color": "blue" },
+                }
+            })
+
+    def questions_dependencies(self):
+        # For the admin.
+        from .module_logic import get_questions_used_in_output, get_question_dependencies_with_type
+        def get_question_dependencies(node):
+            ret = { }
+            for edge_type, n2 in get_question_dependencies_with_type(node):
+                ret.setdefault(edge_type, []).append(n2)
+            return ret
+        return Module.BuildNetworkDiagram(
+            get_questions_used_in_output(self),
+            {
+                ModuleQuestion: {
+                    "label": lambda node : node.key,
+                    "edges": lambda node : get_question_dependencies(node),
+                    "attrs": lambda node : { },
+                }
+            })
+
 class ModuleQuestion(models.Model):
     module = models.ForeignKey(Module, related_name="questions", on_delete=models.PROTECT, help_text="The Module that this ModuleQuestion is a part of.")
     key = models.SlugField(max_length=100, help_text="A slug-like identifier for the question.")

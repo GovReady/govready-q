@@ -16,13 +16,7 @@ def next_question(questions_answered, required=False):
 
     # What questions are actually used in the template?
 
-    needs_answer = [ ]
-    for d in questions_answered.module.spec.get("output", []):
-        needs_answer.extend([
-            questions_answered.module.questions.get(key=qid)
-            for qid in get_jinja2_template_vars(d['template'])
-            if questions_answered.module.questions.filter(key=qid).exists()
-        ])
+    needs_answer = get_questions_used_in_output(questions_answered.module)
 
     # Add imputed question. Since an imputed answer can lead to the
     # imuputing of another question, they all have to be evaluated
@@ -59,10 +53,7 @@ def next_question(questions_answered, required=False):
 
         # What unanswered dependencies does it have?
 
-        deps = [ questions_answered.module.questions.get(key=d)
-                 for d in get_question_dependencies(q.spec)
-                 if questions_answered.module.questions.filter(key=d).exists()
-               ]
+        deps = get_question_dependencies(q)
         deps = list(filter(lambda d : not is_answered(d), deps))
 
         if len(deps) == 0:
@@ -242,29 +233,54 @@ def render_content(content, answers, output_format, additional_context={}, hard_
     output = renderer(output)
     return output
 
+
+def get_questions_used_in_output(module):
+    questions = []
+    for d in module.spec.get("output", []):
+        questions.extend([
+            module.questions.get(key=qid)
+            for qid in get_jinja2_template_vars(d['template'])
+            if module.questions.filter(key=qid).exists()
+        ])
+    return questions
+
 def get_question_dependencies(question):
-    # Returns a set of question IDs that this question is dependent on.
-    ret = set()
+    return set(edge[1] for edge in get_question_dependencies_with_type(question))
+
+def get_question_dependencies_with_type(question):
+    # Returns a set of ModuleQuestion instances that this question is dependent on.
+    ret = []
     
     # All questions mentioned in prompt text become dependencies.
-    ret |= get_jinja2_template_vars(question.get("prompt", ""))
+    for qid in get_jinja2_template_vars(question.spec.get("prompt", "")):
+        ret.append(("prompt", qid))
 
     # All questions mentioned in the impute conditions become dependencies.
     # And when impute values are expressions, then similarly for those.
-    for rule in question.get("impute", []):
-        ret |= get_jinja2_template_vars(
+    for rule in question.spec.get("impute", []):
+        for qid in get_jinja2_template_vars(
                 r"{% if " + rule["condition"] + r" %}...{% endif %}"
-                )
+                ):
+            if rule.get("value") is None:
+                ret.append(("skip-condition", qid))
+            else:
+                ret.append(("impute-condition", qid))
+
         if rule.get("value-type") == "expression":
-            ret |= get_jinja2_template_vars(
+            for qid in get_jinja2_template_vars(
                     r"{% if " + rule["value"] + r" %}...{% endif %}"
-                    )
+                    ):
+                ret.append(("impute-value", qid))
 
     # Other dependencies can just be listed.
-    for qid in question.get("ask-first", []):
-        ret.add(qid)
+    for qid in question.spec.get("ask-first", []):
+        ret.append(("ask-first", qid))
 
-    return ret
+    # Turn IDs into ModuleQuestion instances.
+    return [ (edge_type, question.module.questions.get(key=qid))
+         for (edge_type, qid) in ret
+         if question.module.questions.filter(key=qid).exists()
+       ]
 
 def impute_answer(question, context):
     # Check if any of the impute conditions are met based on

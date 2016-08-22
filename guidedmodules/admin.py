@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
+from .models import \
+	Module, ModuleQuestion, \
+	Task, TaskAnswer, TaskAnswerHistory, \
+	InstrumentationEvent
+
+class ModuleAdmin(admin.ModelAdmin):
+	list_display = ('id', 'key', 'visible', 'superseded_by', 'created')
+	raw_id_fields = ('superseded_by',)
+
+class ModuleQuestionAdmin(admin.ModelAdmin):
+	raw_id_fields = ('module', 'answer_type_module')
 
 class TaskAdmin(admin.ModelAdmin):
 	list_display = ('title', 'project', 'editor', 'module', 'is_finished', 'submodule_of', 'created')
@@ -32,6 +42,8 @@ class InstrumentationEventAdmin(admin.ModelAdmin):
 	raw_id_fields = ('user', 'module', 'question', 'task', 'answer')
 	readonly_fields = ('event_time', 'event_type', 'event_value', 'user', 'module', 'question', 'task', 'answer')
 
+admin.site.register(Module, ModuleAdmin)
+admin.site.register(ModuleQuestion, ModuleQuestionAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(TaskAnswer, TaskAnswerAdmin)
 admin.site.register(TaskAnswerHistory, TaskAnswerHistoryAdmin)
