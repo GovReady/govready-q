@@ -20,6 +20,8 @@ To develop locally, run the following commands:
 	python3 manage.py load_modules
 	python3 manage.py runserver
 
+The module dependency diagrams also require that you have `graphviz` installed (e.g. `apt-get install graphviz`).
+
 ### Testing
 
 To run the integration tests you'll also need to install `chromedriver` e.g., `brew install chromedriver`
