@@ -46,6 +46,7 @@ control 'cf-dev-roles' do
         'secdevops+pivotaldevrelease@govready.com',
         'pburkholder@govready.com',
         'consulting@joshdata.me',
+        'gregelin@govready.com'
       )
     }
     its('auditors') {
