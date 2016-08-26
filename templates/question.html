@@ -330,13 +330,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {% endblock %}
 
 {% block scripts %}
-{% if DEBUG %}
-<div class="container" style="color: #999; font-size: 80%; margin-top: 50px">
-<p>
-  module: {{m.key}} {% if not m.visible %}(obsolete){% endif %} | question: {{q.key}}
-</p>
-{% endif %}
-</div>
+{% include "task-question-debug-links.html" %}
 
 <script>
 $(function() {

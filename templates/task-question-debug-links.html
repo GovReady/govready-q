@@ -1,0 +1,27 @@
+{% if DEBUG %}
+<div class="container" style="color: #999; font-size: 80%; margin-top: 50px">
+<p>
+  module:
+    {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/module/{{m.id}}">{% endif %}
+    {{m.key}}{% if user.is_staff %}</a>{% endif %}
+    {% if not m.visible %}(obsolete){% endif %}
+  {% if q %}
+  |
+  question:
+    {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/modulequestion/{{q.id}}">{% endif %}
+    {{q.key}}{% if user.is_staff %}</a>{% endif %}
+  {% endif %}
+  |
+  task:
+    {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/task/{{task.id}}">{% endif %}
+    {{task.id}}
+    {% if user.is_staff %}</a>{% endif %}
+  {% if answer_obj %}
+  |
+  answer:
+    {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/taskanswerhistory/{{answer_obj.id}}">{% endif %}
+    {{q.key}}{% if user.is_staff %}</a>{% endif %}
+  {% endif %}
+</p>
+</div>
+{% endif %}
