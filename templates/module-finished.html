@@ -26,7 +26,7 @@ thead {
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule and supermodule.task.editor == request.user %}
       {% if task.is_finished %}
-        <p class="text-">...and we're done <span class="glyphicon glyphicon-ok"></span></p>
+        <p class="text-">...and we&rsquo;re done <span class="glyphicon glyphicon-ok"></span></p>
       {% else %}
         <p class="text-">You skipped some required questions.</p>
       {% endif %}
