@@ -25,13 +25,33 @@ Next Question: {{q.spec.title}} | {{task.title}}
   }
 {% endif %}
 
+#question-history-context {
+  margin-top: 1em;
+}
+  #question-history-context ul {
+    list-style-type: none;
+    padding: 0;
+    color: #888;
+  }
+  #question-history-context ul li a {
+    color: inherit;
+  }
+  #question-history-context ul li.this {
+    color: #333;
+  }
+  #question-history-context ul li.other {
+  }
 </style>
 
 
 <div class="row">
-  <div class="col-sm-push-1 col-sm-9">
+  <div class="col-sm-9">
     {% include "task-header.html" with col_width="4" col_active=header_col_active %}
+  </div>
+</div>
 
+<div class="row">
+  <div class="col-sm-9">
     {% if source_invitation %}
       <div style="margin-top: 1.5em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -324,6 +344,34 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
     {% include "discussion.html" %}
 
+  </div> <!-- /col -->
+
+  <div class="col-sm-3">
+    <div id="question-history-context">
+      <ul>
+      {% if context %}
+        <p>Progress:</p>
+        {% for q in context %}
+          <li class="{{q.class}}">
+            {% if q.answered %}<a href="?q={{q.key}}"><span class="glyphicon glyphicon-check"> </span>
+            {% else %}<span class="glyphicon glyphicon-unchecked"> </span>
+            {% endif %}
+            {{q.title}}
+            {% if q.answered %}</a>{% endif %}
+          </li>
+        {% endfor %}
+        <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
+        <li>&middot;</li>
+        <li>&middot;</li>
+        <li>&middot;</li>
+        </div>
+        <li>
+          ...and we&rsquo;re done
+        </li>
+      {% endif %}
+      </ul>
+
+    </div>
   </div> <!-- /col -->
 </div> <!-- /row -->
 

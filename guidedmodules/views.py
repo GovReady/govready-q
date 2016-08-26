@@ -385,6 +385,8 @@ def next_question(request, taskid, taskslug):
             "answer_module": answer_module,
             "answer_tasks": answer_tasks,
             "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
+
+            "context": module_logic.get_question_context(answered, q),
         })
         return render(request, "question.html", context)
 

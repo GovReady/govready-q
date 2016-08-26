@@ -4,7 +4,7 @@ def get_jinja2_template_vars(template):
     env = SandboxedEnvironment()
     return set(meta.find_undeclared_variables(env.parse(template)))
 
-def next_question(questions_answered, required=False):
+def next_question(questions_answered, required=False, unanswered=None):
     # Compute the next question to ask the user, given the user's
     # answers to questions so far.
     #
@@ -51,6 +51,10 @@ def next_question(questions_answered, required=False):
             continue
         already_processed.add(q.id)
 
+        # Remember that this question is as-yet unanswered.
+        if unanswered is not None:
+            unanswered.append(q)
+
         # What unanswered dependencies does it have?
 
         deps = get_question_dependencies(q)
@@ -74,6 +78,36 @@ def next_question(questions_answered, required=False):
     # so we'll choose the question that is defined first in the spec.
     can_answer.sort(key = lambda q : q.definition_order)
     return can_answer[0]
+
+def get_question_context(answers, question):
+    # What is the context of questions around the given question?
+
+    def annotate(q):
+        return {
+            "class": "this" if q.key == question.key else "other",
+            "key": q.key,
+            "title": q.spec['title'],
+            "answered": q.key in answers.answers and q.key != question.key,
+        }
+
+    # What questions still need to be answered?
+    future_questions = []
+    next_question(answers, unanswered=future_questions)
+    future_questions.reverse()
+
+    # Not including this one.
+    future_questions = list(filter(lambda q : q.key != question.key, future_questions))
+
+    # Which questions were recently answered that are not future questions
+    # according to the dependency tree.
+    past_questions = []
+    for ans in answers.task.answers.order_by('created'):
+        q = ans.question
+        if q not in future_questions and q.key != question.key and q.key not in answers.was_imputed:
+            past_questions.append(q)
+
+    return list(map(annotate, past_questions + [question] + future_questions))
+
 
 def render_content(content, answers, output_format, additional_context={}, hard_fail=True):
     # Renders content (which is a dict with keys "format" and "template")
