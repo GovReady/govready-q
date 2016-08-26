@@ -30,7 +30,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
 <div class="row">
   <div class="col-sm-push-1 col-sm-9">
-    {% include "task-header.html" with col_width="4" col_active="questions" %}
+    {% include "task-header.html" with col_width="4" col_active=header_col_active %}
 
     {% if source_invitation %}
       <div style="margin-top: 1.5em">

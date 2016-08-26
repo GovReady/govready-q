@@ -372,6 +372,8 @@ def next_question(request, taskid, taskslug):
         # Construct the page.
         context.update({
             "DEBUG": settings.DEBUG,
+
+            "header_col_active": "start" if (len(answered.answers) == 0 and q.spec["type"] == "interstitial") else "questions",
             "q": q,
             "prompt": task.render_question_prompt(q),
             "history": taskq.get_history() if taskq else None,
