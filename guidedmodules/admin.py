@@ -33,7 +33,7 @@ class TaskAnswerHistoryAdmin(admin.ModelAdmin):
 	raw_id_fields = ('taskanswer', 'answered_by', 'answered_by_task')
 	readonly_fields = ('taskanswer', 'answered_by')
 	fieldsets = [(None, { "fields": ('taskanswer', 'answered_by') }),
-	             (None, { "fields": ('value', 'cleared') }),
+	             (None, { "fields": ('stored_value', 'cleared') }),
 	             (None, { "fields": ('extra',) }) ]
 	def answer(self, obj): return obj.get_answer_display()
 

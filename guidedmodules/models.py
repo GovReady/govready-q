@@ -640,7 +640,7 @@ class TaskAnswerHistory(models.Model):
     def get_answer_display(self):
         if self.cleared:
             return "[answer cleared]"
-        if q.spec["type"] in ("module", "module-set"):
+        if self.taskanswer.question.spec["type"] in ("module", "module-set"):
             return repr(self.answered_by_task.all())
         else:
             return repr(self.get_value())
