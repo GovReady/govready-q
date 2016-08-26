@@ -502,6 +502,10 @@ class TaskAnswer(models.Model):
             if answer.cleared:
                 vp = "cleared the answer"
                 is_cleared = True
+            elif self.question.spec["type"] == "interstitial":
+                # answer/skip doesn't make sense here
+                vp = "acknowledged this page"
+                is_cleared = False
             elif answer.get_value() is None:
                 vp = "skipped the question"
                 is_cleared = False
