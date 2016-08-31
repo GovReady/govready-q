@@ -18,6 +18,7 @@ To develop locally, run the following commands:
 	deployment/fetch-vendor-resources.sh
 	python3 manage.py migrate
 	python3 manage.py load_modules
+	python3 manage.py createsuperuser
 	python3 manage.py runserver
 
 The module dependency diagrams also require that you have `graphviz` installed (e.g. `apt-get install graphviz`).
