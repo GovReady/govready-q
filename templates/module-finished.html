@@ -18,9 +18,13 @@ thead {
 </style>
 
 <div class="row">
-  <div class="col-sm-push-1 col-sm-9">
+  <div class="col-sm-9">
+    {% include "task-header.html" with col_width="4" col_active="review" %}
+  </div>
+</div>
 
-{% include "task-header.html" with col_width="4" col_active="review" %}
+<div class="row">
+  <div class="col-sm-9">
 
 <div style="margin: 2em 0">
   {% with supermodule=task.is_answer_to_unique %}
@@ -58,34 +62,7 @@ thead {
       </div>
     </div>
   {% endfor %}
-
-  {# change answers #}
-
-  <div class="panel panel-default">
-    <div class="panel-heading" role="tab" id="changeanswers-title">
-      <h4 class="panel-title">
-        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#changeanswers-body" aria-expanded="false" aria-controls="changeanswers-body">
-          Change Answers
-        </a>
-      </h4>
-    </div>
-    <div id="changeanswers-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="changeanswers-title">
-      <div class="panel-body">
-        <p>Click on any question to change your answer.</p>
-        {% for rec in all_questions %}
-            <p>
-              {% if not rec.skipped %}
-                <span class="glyphicon glyphicon-ok"> </span>
-              {% else %}
-                <span class="glyphicon glyphicon-remove"> </span>
-              {% endif %}
-              <a id="change-answer-{{rec.question.key}}" href="?q={{rec.question.key}}">{{rec.question.spec.title}}</a>
-            </p>
-        {% endfor %}        
-      </div>
-    </div>
-  </div>
-</div>
+</div> <!-- /accordion -->
 
 <div style="margin: 2em 0">
   {% with supermodule=task.is_answer_to_unique %}
@@ -108,10 +85,29 @@ thead {
       </a></p>
     {% endif %}
   {% endwith %}
-
-</div>
+</div> <!-- / continue panel -->
 
 </div> <!-- /col -->
+
+<div class="col-sm-3">
+  <div id="question-history-context">
+    <ul>
+      {% for rec in all_questions %}
+        <li>
+          <a id="change-answer-{{rec.question.key}}" href="?q={{rec.question.key}}">
+            {% if not rec.skipped %}
+              <span class="glyphicon glyphicon-check"> </span>
+            {% else %}
+              <span class="glyphicon glyphicon-unchecked"> </span>
+            {% endif %}
+            {{rec.question.spec.title}}
+          </a>
+        </li>
+      {% endfor %}        
+    </ul>
+  </div> <!-- /question-history-context -->
+</div> <!-- /col -->
+
 </div> <!-- /row -->
 
 {% endblock %}

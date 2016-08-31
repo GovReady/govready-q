@@ -637,8 +637,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # Go back to the question and start a second answer.
         def change_answer():
-            self.click_element("#changeanswers-title a")
-            var_sleep(.5)
             self.click_element("#change-answer-q_module")
             var_sleep(.5)
         change_answer()
