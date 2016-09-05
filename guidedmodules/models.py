@@ -230,6 +230,15 @@ class Task(models.Model):
         from django.utils.text import slugify
         return "/tasks/%d/%s" % (self.id, slugify(self.title))
 
+    def get_absolute_url_to_question(self, question):
+        # The project root task displays at different URLs.
+        if self == self.project.root_task:
+            from django.utils.text import slugify
+            return self.project.get_absolute_url() + "#tab=" + slugify(question.spec.get("tab", ""))
+        else:
+            import urllib.parse
+            return self.get_absolute_url() + "?" + urllib.parse.urlencode({"q": question.key })
+
     def get_answers(self):
         # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
         # The internal dict of answers is ordered to preserve the question definition order.

@@ -589,11 +589,13 @@ class TemplateContext(Mapping):
         if question:
             # The question might or might not be answered. If not, its value is None.
             answer = self.module_answers.answers.get(item, None)
-            return RenderedAnswer(question, answer, self.escapefunc)
+            return RenderedAnswer(self.module_answers.task, question, answer, self.escapefunc)
 
         # The context also provides the project and organization that the Task belongs to,
         # and other task attributes, assuming the keys are not overridden by question IDs.
         if self.module_answers.task:
+            if item == "task_link":
+                return self.module_answers.task.get_absolute_url()
             if item == "project":
                 return RenderedProject(self.module_answers.task.project, self.escapefunc)
             if item == "organization":
@@ -608,8 +610,6 @@ class TemplateContext(Mapping):
         else:
             # If there is no Task associated with this context, then we're
             # faking the attributes.
-            if item in ("project", "organization"):
-                return None
             if item in ("is_started", "is_finished"):
                 return (lambda : False) # the attribute normally returns a bound function
 
@@ -621,7 +621,12 @@ class TemplateContext(Mapping):
         for q in self.module_answers.task.module.questions.order_by('definition_order'):
             seen_keys.add(q.key)
             yield q.key
-        for attribute in ("project", "organization", "is_started", "is_finished"):
+        if self.module_answers.task:
+            # Attributes that are only available if there is a task.
+            for attribute in ("task_link", "project", "organization"):
+                if attribute not in seen_keys:
+                    yield attribute
+        for attribute in ("is_started", "is_finished"):
             if attribute not in seen_keys:
                 yield attribute
 
@@ -645,7 +650,8 @@ class RenderedOrganization(TemplateContext):
         return self.escapefunc(self.organization.name)
 
 class RenderedAnswer:
-    def __init__(self, question, answer, escapefunc):
+    def __init__(self, task, question, answer, escapefunc):
+        self.task = task
         self.question = question
         self.answer = answer
         self.escapefunc = escapefunc
@@ -704,6 +710,11 @@ class RenderedAnswer:
                 return self.escapefunc(value)
         return SafeString(value, self.escapefunc)
 
+    @property
+    def edit_link(self):
+        # Return a link to edit this question.
+        return self.task.get_absolute_url_to_question(self.question)
+
     def rendered_outputs(self):
         if self.question_type == "module":
             try:
@@ -736,7 +747,7 @@ class RenderedAnswer:
             # with a made-up Question instance.
             from .models import ModuleQuestion
             return (
-                RenderedAnswer(ModuleQuestion(spec={
+                RenderedAnswer(None, ModuleQuestion(spec={
                     "type": "choice",
                     "choices": self.question.spec["choices"],
                     }),
