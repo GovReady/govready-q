@@ -591,12 +591,27 @@ class TemplateContext(Mapping):
             answer = self.module_answers.answers.get(item, None)
             return RenderedAnswer(question, answer, self.escapefunc)
 
-        # Unless the keys are question IDs, then the context also provides the project and
-        # organization that the Task belongs to.
-        if item == "project":
-            return RenderedProject(self.module_answers.task.project, self.escapefunc)
-        if item == "organization":
-            return RenderedOrganization(self.module_answers.task.project.organization, self.escapefunc)
+        # The context also provides the project and organization that the Task belongs to,
+        # and other task attributes, assuming the keys are not overridden by question IDs.
+        if self.module_answers.task:
+            if item == "project":
+                return RenderedProject(self.module_answers.task.project, self.escapefunc)
+            if item == "organization":
+                return RenderedOrganization(self.module_answers.task.project.organization, self.escapefunc)
+            if item in ("is_started", "is_finished"):
+                # These are methods on the Task instance. Don't
+                # call the method here because that leads to infinite
+                # recursion. Figuring out if a module is finished
+                # requires imputing all question answers, which calls
+                # into templates, and we can end up back here.
+                return getattr(self.module_answers.task, item)
+        else:
+            # If there is no Task associated with this context, then we're
+            # faking the attributes.
+            if item in ("project", "organization"):
+                return None
+            if item in ("is_started", "is_finished"):
+                return (lambda : False) # the attribute normally returns a bound function
 
         # The item is not something found in the context.
         raise AttributeError(item)
@@ -606,8 +621,9 @@ class TemplateContext(Mapping):
         for q in self.module_answers.task.module.questions.order_by('definition_order'):
             seen_keys.add(q.key)
             yield q.key
-        if "project" not in q.key: yield "project"
-        if "organization" not in q.key: yield "organization"
+        for attribute in ("project", "organization", "is_started", "is_finished"):
+            if attribute not in seen_keys:
+                yield attribute
 
     def __len__(self):
         return len([x for x in self])
@@ -743,19 +759,17 @@ class RenderedAnswer:
         # For module-type questions, provide the answers of the
         # sub-task as properties of this context variable.
         if self.question_type == "module":
-            # If the question was not skipped, then we have the ModuleAnswers for it.
+            # Pass through via a temporary TemplateContext.
             if self.answer is not None:
-                # Pass through via a temporary TemplateContext.
+                # If the question was not skipped, then we have the ModuleAnswers for it.
                 self.answer.add_imputed_answers()
-                return TemplateContext(self.answer, self.escapefunc)[item]
+                tc = TemplateContext(self.answer, self.escapefunc)
             else:
                 # The question was skipped -- i.e. we have no ModuleAnswers for
                 # the question that this RenderedAnswer represents. But we want
-                # to gracefully represent the item attribute as skipped to.
-                q = self.question.answer_type_module.questions.filter(key=item).first()
-                if q:
-                    # 'item' is a valid question.
-                    return RenderedAnswer(q, None, self.escapefunc)
+                # to gracefully represent the item attribute as skipped too.
+                tc = TemplateContext(ModuleAnswers(self.question.answer_type_module, None, {}), self.escapefunc)
+            return tc[item]
 
         # For external-function and "raw" question types, the answer value is any
         # JSONable Python data structure. Forward the getattr request onto the value.
