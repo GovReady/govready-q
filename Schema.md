@@ -312,7 +312,9 @@ This will pre-set the `project_url` question of the sub-module with the answer t
 
 An `interstitial` question is not really a question at all! The `prompt` contains template content, as with other questions, but it is typically longer content with deeper explanatory text. The user is not asked to enter any information.
 
-It is necessary to add id of the interstitial to the template document for the user to be shown it. However, in document templates and impute conditions, the value of `interstitial` questions is always a null value, so it will not effect the template result.
+It is necessary to add id of the interstitial to the template document for GovReady to display the interstitial as part of the module. In document templates and impute conditions, the value of `interstitial` questions is always a null value.
+
+Put the intersititual id in a comment syntax to keep it from displaying in the rendered template. Example for both `markdown` and `html`: `<!--{{interstitial_id}}-->`
 
 #### `external-function`
 
