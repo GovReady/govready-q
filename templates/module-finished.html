@@ -24,7 +24,7 @@ thead {
 </div>
 
 <div class="row">
-  <div class="col-sm-9">
+  <div class="col-sm-push-1 col-sm-8">
 
 <div style="margin: 2em 0">
   {% with supermodule=task.is_answer_to_unique %}
@@ -89,9 +89,9 @@ thead {
 
 </div> <!-- /col -->
 
-<div class="col-sm-3">
+<div class="col-sm-push-1 col-sm-3">
   <div id="question-history-context">
-    {% if task.is_finished %}
+    {% if task.is_finished  %}
         <p class="text-">...and we&rsquo;re done <span class="glyphicon glyphicon-ok"></span></p>
       {% else %}
         <p class="text-">You skipped some required questions.</p>

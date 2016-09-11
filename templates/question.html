@@ -34,7 +34,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 </div>
 
 <div class="row">
-  <div class="col-sm-9">
+  <div class="col-sm-push-1 col-sm-8">
     {% if source_invitation %}
       <div style="margin-top: 1.5em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -331,7 +331,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
   </div> <!-- /col -->
 
-  <div class="col-sm-3">
+  <div class="col-sm-push-1 col-sm-3">
     <div id="question-history-context">
       <ul>
       {% if context %}

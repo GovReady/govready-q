@@ -90,8 +90,8 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                 {% with picture=request.user.get_profile_picture %}
                   {% if picture %}
-                    <img src="{{picture.url}}" height="20" alt="Profile Picture"
-                      style="margin-right: .5em;">
+                    <img src="{{picture.url}}" height="30" alt="Profile Picture"
+                      style="margin: -10px .5em 0 0;">
                   {% endif %}
                 {% endwith %}
                 {{request.user}}
@@ -153,13 +153,15 @@
       </div><!-- /.container-fluid -->
     </nav>
 
-    <div class="container" style="margin-top: 1em;">
+    <div class="container col-sm-push-0 col-sm-12 col-lg-12" style="margin-top: 0em; padding-top: 1em; padding-bottom: 8px; border-bottom:0.5px solid #999; background-color: rgb(248,248,248)">
+
+      <div class="container col-sm-push-1 col-sm-12 col-lg-10" style="margin-top: 0em; padding-top: 0em; padding-bottom: 0px; border-bottom:0.0px solid #999; background-color: rgb(248,248,248)">
       {# The login page is accessible to unauthenticated users, in which case request.organization is not set. #}
       {% if request.organization  %}
         {% with logo=request.organization.get_logo %}
           {% if logo %}
-            <img src="{{logo.url}}" height="22" alt="Organization Logo"
-                      style="margin-top: -4px; margin-right: .5em;">
+            <img src="{{logo.url}}" height="36" alt="Organization Logo"
+                      style="margin-top: -8px; margin-right: .5em;">
           {% else %}
           <span class="glyphicon glyphicon-globe"></span>
           {% endif %}
@@ -178,7 +180,8 @@
       {% else %}
         {{request.get_host}}
       {% endif %}
-    </div>
+      </div><!-- container -->
+    </div><!-- container -->
 
     {% if messages %}
     <div class="container" style="margin-top: 1em;">

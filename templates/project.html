@@ -30,7 +30,7 @@
 .task-group {
   margin: 1.5em 0;
   padding: 1em;
-  border: 1px solid rgb(200,200,200);
+  /*border: 1px solid rgb(200,200,200);*/
   border-radius: 4px;
   background-color: #FFF;
 }
@@ -39,30 +39,43 @@
   margin: -1em -1em 0 -1em;
   font-weight:bold;
   background-color:rgb(230,230,230);
-  border-bottom:1px solid rgb(200,200,200);
+  border-top: 0.5px solid rgb(200,200,200);
+  border-left: 0.5px solid rgb(200,200,200);
+  border-right: 0.5px solid rgb(200,200,200);
+  border-bottom: 0.5px solid rgb(200,200,200);
   padding: 8px 18px;
+  border-radius: 2px;
 }
 
 .task {
   /*border: 1px solid rgb(200,200,200);
   border-radius: 4px;*/
   /*background-color: rgb(240,240,240);*/
-  border-bottom: 1px solid rgb(200,200,200);
-  padding: 4px;
-  margin-top: 0em;
+  border-bottom: 0.5px solid rgb(200,200,200);
+  border-left: 0.5px solid rgb(200,200,200);
+  border-right: 0.5px solid rgb(200,200,200);
+  border-top: 0.5px solid rgb(255,255,255);
+  padding: 4px 4px 4px 16px;
+  margin-top: 0 0 0 0;
   text-align:left;
+}
+
+.task:hover {
+  background-color: rgb(248,248,248);
+  border-top: 0.5px solid rgb(200,200,200);
 }
 
   .task .task-title {
     margin-bottom: .25em;
     text-align: left;
     font-weight: bold;
-    color: #666;
+    color: #222;
   }
   .task .task-commands a {
     display: inline-block;
-    padding: 0 .25em;
+    padding: 0 0.25em;
     color: #666;
+    font-size: 0.75em;
   }
   .task-commands a:hover, .task-item a:hover {
     color: rgb(55,123,181);
@@ -95,12 +108,17 @@
   }
 
 .task_finished {
-  background-color: #dfd;
+  /*background-color: #dfd;*/
+  border-left: 4px solid rgb(30,143,55);
   {% comment %}
   /*background-image: url({% static "/img/icons/check-small.png" %});
   background-repeat: no-repeat;
   background-position: center;*/
   {% endcomment %}
+}
+
+span.glyphicon.glyphicon-check {
+  color: rgb(30,143,55);
 }
 
 .task img {
@@ -167,8 +185,9 @@
                   <div class="clearfix visible-lg-block"></div>
                 {% endif %}
 
-                <div class="col-sm-12">
-                <div id="question-{{rec.question.key}}" class="task {% if is_member and rec.is_finished %}task_finished{% endif %}">
+<!-- test -->
+                <!-- <div class="col-sm-12"> -->
+                <div id="question-{{rec.question.key}}" class="col-sm-12 task {% if is_member and rec.is_finished %}task_finished{% endif %}">
 
                   <div class="task-title">
                     {{rec.question.spec.title}}
@@ -177,7 +196,7 @@
                   <div>
                     {% if is_member %}
                       {% for t in rec.tasks %}
-                        <div class="task-item">
+                        <div class="task-commands">
                             {% if rec.question.spec.type == "module-set" %}
                               {{t.render_title}} &mdash;
                             {% endif %}
@@ -235,7 +254,10 @@
                       {% endif %}
                   </div>
                 </div> <!-- /task -->
-                </div> <!-- /col -->
+                <!--/div--> <!-- /col -->
+
+<!-- test -->
+
               {% endfor %}
               </div> <!-- /row -->
               </div> <!-- /task-group -->
