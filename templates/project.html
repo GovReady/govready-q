@@ -15,7 +15,16 @@
    because something on hover is canceling out the border. */
 .nav-tabs>li.active>a {
   font-weight: normal;
+  color: black;
   border-top: 3px solid rgb(19,144,50) !important;
+}
+
+.nav-tabs>li>a {
+  color: rgb(125,125,125);
+}
+
+.nav-tabs>li>a:hover {
+  color: black;
 }
 
 .task-group {
@@ -52,13 +61,19 @@
   .task .task-commands a {
     display: inline-block;
     padding: 0 .25em;
+    color: #666;
   }
+  .task-commands a:hover, .task-item a:hover {
+    color: rgb(55,123,181);
+  }
+
   .task .invitation {
     font-size: 14px;
     line-height: 128%;
   }
-  .task .task-item {
+  .task .task-item, .task-item a {
     margin: .5em 0;
+    color: #666;
   }
 
 .task.deleted span {
