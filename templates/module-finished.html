@@ -30,9 +30,9 @@ thead {
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule and supermodule.task.editor == request.user %}
       {% if task.is_finished %}
-        <p class="text-">...and we&rsquo;re done <span class="glyphicon glyphicon-ok"></span></p>
+       <!--  <p class="text-">...and we&rsquo;re done <span class="glyphicon glyphicon-ok"></span></p> -->
       {% else %}
-        <p class="text-">You skipped some required questions.</p>
+       <!--  <p class="text-">You skipped some required questions.</p> -->
       {% endif %}
 
     {% else %}
@@ -91,6 +91,12 @@ thead {
 
 <div class="col-sm-3">
   <div id="question-history-context">
+    {% if task.is_finished %}
+        <p class="text-">...and we&rsquo;re done <span class="glyphicon glyphicon-ok"></span></p>
+      {% else %}
+        <p class="text-">You skipped some required questions.</p>
+    {% endif %}
+    <!-- <p style="padding-top:16px;"><span class="glyphicon glyphicon-check"> </span> {{task.title}} module</p> -->
     <ul>
       {% for rec in all_questions %}
         <li>

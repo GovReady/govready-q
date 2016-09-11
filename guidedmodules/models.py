@@ -378,6 +378,16 @@ class Task(models.Model):
             "html"
         )
 
+    def render_question_title(self, question):
+        return render_content(
+            {
+                "template": question.spec["title"],
+                "format": "markdown",
+            },
+            self.get_answers(),
+            "html"
+        )
+
     def render_output_documents(self, answers=None, hard_fail=True):
         if answers is None:
             answers = self.get_answers()

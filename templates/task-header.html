@@ -26,6 +26,12 @@ h1 a:hover span.glyphicon { text-decoration: none; }
   color: #1e5281;
 }
 
+h2 {font-weight: normal;
+    /*color: rgb(200,200,200);*/
+    font-size: 24px;
+}
+
+h4 {font-weight: bold;}
 
 #question-history-context {
   margin-top: 1em;
@@ -44,37 +50,6 @@ h1 a:hover span.glyphicon { text-decoration: none; }
   #question-history-context ul li.other {
   }
 </style>
-
-<div id="project-name">
-  {% if task.project %}
-    <h1>
-      <a href="{{task.project.get_absolute_url}}">
-        <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
-        <span>{{task.project.title}}</span>
-      </a>
-    </h1>
-  {% endif %}
-  {% with supermodule=task.is_answer_to_unique %}
-    {% if supermodule and supermodule.task != supermodule.project.root_task %}
-      (submodule of <a href="{{supermodule.get_absolute_url}}">{{supermodule.task.title}})</a>
-    {% endif %}
-  {% endwith %}
-</div>
-<h2>{{task.title}}</h2>
-
-<div id="progress-context" class="row">
-  <div class="col-sm-{{col_width}} {% if col_active == "start" %}active{% endif %}">
-    <div>Start Module</div>
-  </div>
-
-  <div class="col-sm-{{col_width}} {% if col_active == "questions" %}active{% endif %}">
-    <div>Answer Questions</div>
-  </div>
-
-  <div class="col-sm-{{col_width}} {% if col_active == "review" %}active{% endif %}">
-    <div>Review</div>
-  </div>
-</div>
 
 <div id="auth-status">
 {% if task.editor == request.user %}

@@ -377,6 +377,7 @@ def next_question(request, taskid, taskslug):
             "header_col_active": "start" if (len(answered.answers) == 0 and q.spec["type"] == "interstitial") else "questions",
             "q": q,
             "prompt": task.render_question_prompt(q),
+            "title": task.render_question_title(q),
             "history": taskq.get_history() if taskq else None,
             "answer_obj": answer,
             "answer": answer.get_value() if (answer and not answer.cleared) else None,

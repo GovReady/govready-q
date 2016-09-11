@@ -51,12 +51,14 @@ Next Question: {{q.spec.title}} | {{task.title}}
       </div>
     {% endif %}
 
-    <div id="question">
+    <div id="question"  style="">
         <form {% if not write_priv %}class="disabled"{% endif %}>
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="save">
 
             <div id="question-prompt">
+              <h4>{{q.spec.title|safe}}</h4>
+
               {{prompt|safe}}
             </div>
 
@@ -333,6 +335,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
     <div id="question-history-context">
       <ul>
       {% if context %}
+        <!-- <p style="padding-top:16px;">{{task.title}} module</p> -->
         <p>Progress:</p>
         {% for q in context %}
           <li class="{{q.class}}">

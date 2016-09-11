@@ -167,6 +167,14 @@
         <a href="/" style="color: black; font-size: 1.1em; font-weight: bold;">
           {{request.organization.name}}
         </a>
+        {% if task.project %}
+        > <a href="{{task.project.get_absolute_url}}">
+          <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
+          <span style="color: black;">{{task.project.title}}</span>
+        </a>
+        > <a href="#" style="color:black;">{{task.title}}</a>
+        {% endif %}
+
       {% else %}
         {{request.get_host}}
       {% endif %}
@@ -199,8 +207,8 @@
       <footer>
         <div class="container">
           <div class="row">
-            <div class="col-sm-push-2 col-sm-8">
-          <p>&copy; GovReady 2016</p>
+            <div class="col-sm-12">
+            <p class="pull-right">&copy; GovReady 2016</p>
             </div>
           </div>
         </div>
