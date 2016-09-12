@@ -367,7 +367,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test an invitation to take over editing a task but without joining the project.
         self.click_element('#question-simple_module .task-item a') # go to the task page
         var_sleep(.5) # wait for page to load
-        self.click_element("#save-button") # pass over the Introductory question because the Ask Team button is suppressed on interstitials
+        self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         var_sleep(.5) # wait for page to load
         self.click_element("#ask-team-show-options")
         var_sleep(.5) # wait for options to slideDown
