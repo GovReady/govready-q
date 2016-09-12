@@ -36,7 +36,6 @@ h1 {
 {% endif %}
 </style>
 
-
 <div class="row">
   <div class="col-sm-9">
     {% include "task-header.html" with col_width="4" col_active=header_col_active %}
@@ -309,7 +308,8 @@ h1 {
 
             {% if not is_discussion_guest %}
             {% if not task.project.is_account_project or task.can_transfer_owner %}
-            <button id="ask-team-show-options" class="btn btn-default" onclick="$('#need-help').slideToggle(); return false;">Ask team</button>
+            <br /><br />
+            <a href id="ask-team-show-options" class="" onclick="$('#need-help').slideToggle(); return false;"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
             {% endif %}
             {% endif %}
 
@@ -320,7 +320,7 @@ h1 {
 
         {% if not is_discussion_guest %}
 
-        <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em">
+        <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em; list-style:none;">
           {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
             <li id="start-a-discussion">
                 {# if you can see this page, you can start a conversation #}
@@ -330,7 +330,7 @@ h1 {
           {% if task.can_transfer_owner %}
             <li id="transfer-editorship">
               {% if write_priv %}
-                <a href="javascript:invite_to_transfer_editor()">Ask team member to finish this {% if q.spec.type == "module" %}{{module.title}}{% endif %} module</a>
+                <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this {% if q.spec.type == "module" %}{{module.title}}{% endif %} module</a>
               {% else %}
                 The editor of this module can ask a colleague to finish this module
               {% endif %}
