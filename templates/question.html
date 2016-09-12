@@ -225,9 +225,13 @@ h1 {
                       <span style="color: #777">
                       ({% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}})
                       </span>
-                      {% if m == current_answer %}
-                        <div class="text-info small">(current answer)</div>
-                      {% endif %}
+                      <div class="text-info small">(
+                        {% if m == current_answer %}
+                          current answer
+                          |
+                        {% endif %}
+                        <a href="{{m.get_absolute_url}}">go to module</a>
+                      )</div>
                   </label>
                 </div>
               {% endfor %}
