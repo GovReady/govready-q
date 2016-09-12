@@ -29,41 +29,41 @@
 
 .task-group {
   margin: 1.5em 0;
-  padding: 1em;
-  border: 1px solid rgb(200,200,200);
-  border-radius: 4px;
-  background-color: #FFF;
 }
 
 .task-group-title {
-  margin: -1em -1em 0 -1em;
   font-weight:bold;
   background-color:rgb(230,230,230);
-  border-bottom:1px solid rgb(200,200,200);
+  border: 0.5px solid rgb(200,200,200);
   padding: 8px 18px;
+  border-radius: 2px;
 }
 
 .task {
-  border: 1px solid rgb(200,200,200);
-  border-radius: 4px;
-  background-color: rgb(240,240,240);
-  padding: 1em;
-  margin-top: 1em;
-  text-align:center;
+  border-bottom: 0.5px solid rgb(200,200,200);
+  border-left: 0.5px solid rgb(200,200,200);
+  border-right: 0.5px solid rgb(200,200,200);
+  padding: 8px 18px;
 }
 
+  .task:hover {
+    background-color: rgb(248,248,248);
+  }
+  .task.task_finished {
+    border-left: 4px solid rgb(30,143,55);
+    padding-left: 17px;
+  }
   .task .task-title {
-    margin-bottom: .25em;
-    text-align: center;
     font-weight: bold;
-    color: #666;
+    color: #222;
   }
   .task .task-commands a {
     display: inline-block;
-    padding: 0 .25em;
+    padding: 0 0.25em;
     color: #666;
+    font-size: 0.75em;
   }
-  .task-commands a:hover, .task-item a:hover {
+  .task-commands a:hover {
     color: rgb(55,123,181);
   }
 
@@ -71,11 +71,7 @@
     font-size: 14px;
     line-height: 128%;
   }
-  .task .task-item, .task-item a {
-    margin: .5em 0;
-    color: #666;
-  }
-
+  
 .task.deleted span {
   color: #DDD;
   text-decoration: line-through;
@@ -93,13 +89,9 @@
     content: "(undo)";
   }
 
-.task_finished {
-  background-color: #dfd;
-  {% comment %}
-  /*background-image: url({% static "/img/icons/check-small.png" %});
-  background-repeat: no-repeat;
-  background-position: center;*/
-  {% endcomment %}
+
+span.glyphicon.glyphicon-check {
+  color: rgb(30,143,55);
 }
 
 .task img {
@@ -158,25 +150,17 @@
             <div class="task-group">
               <div class="task-group-title">{{group.title}}</div>
 
-              <div class="row">
               {% for rec in group.modules %}
-                {% if forloop.counter0|divisibleby:4 %}
-                  <div class="clearfix visible-sm-block"></div>
-                  <div class="clearfix visible-md-block"></div>
-                  <div class="clearfix visible-lg-block"></div>
-                {% endif %}
-
-                <div class="col-sm-12">
                 <div id="question-{{rec.question.key}}" class="task {% if is_member and rec.is_finished %}task_finished{% endif %}">
 
                   <div class="task-title">
                     {{rec.question.spec.title}}
-
                   </div>
-                  <div>
+
+                  <div class="task-body">
                     {% if is_member %}
                       {% for t in rec.tasks %}
-                        <div class="task-item">
+                        <div class="task-commands started-task">
                             {% if rec.question.spec.type == "module-set" %}
                               {{t.render_title}} &mdash;
                             {% endif %}
@@ -192,7 +176,6 @@
                               Continue
                             {% endif %}
                             </a>
-                          <!-- </a> -->
                         </div>
                       {% endfor %}
 
@@ -232,14 +215,12 @@
                         {% endfor %}
                       </div>
                       {% endif %}
-                  </div>
-                </div> <!-- /task -->
-                </div> <!-- /col -->
+                  </div> <!-- /.task-body -->
+                </div> <!-- /#question-__.task -->
               {% endfor %}
-              </div> <!-- /row -->
               </div> <!-- /task-group -->
             {% endfor %}
-        </div>
+        </div> <!-- /.tabpanel -->
       {% endfor %}
 
       {# output document tabs #}
@@ -252,11 +233,9 @@
     {% if not project.is_account_project or project.is_deletable %}
     <div role="tabpanel" class="tab-pane" id="project-settings">
 
-      <h1>Settings</h1>
-
       <div class="task-group">
         <div class="task-group-title">Project Team</div>
-          <div class="row" style="padding:12px;margin:0 0 0 0;">
+          <div class="task">
 
             {% if project_has_members_besides_me %}
               <div style="margin-bottom: 1em">
@@ -298,15 +277,15 @@
       {% if project.is_deletable %}
       <div class="task-group">
         <div class="task-group-title">Caution!</div>
-          <div class="row" style="padding:12px;margin:0 0 0 0;">
-              <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button> 
+          <div class="task">
+              <button class="btn btn-danger" onclick="return delete_project();" style="margin: 1em 0">Delete Project</button> 
           </div>
         </div>
 
       <div class="task-group">
         <div class="task-group-title">Share Data</div>
-          <div class="row" style="padding:12px;margin:0 0 0 0;">
-              <button class="btn btn-success" onclick="alert('Under development');return false;"><span class="glyphicon glyphicon-share"></span>&nbsp;Export System Description and Control Information</button> 
+          <div class="task">
+              <button class="btn btn-success" onclick="alert('Under development');return false;" style="margin: 1em 0"><span class="glyphicon glyphicon-share"></span>&nbsp;Export System Description and Control Information</button> 
           </div>
         </div>
         

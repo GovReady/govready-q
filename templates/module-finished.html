@@ -4,6 +4,10 @@
 {{m.title}}
 {% endblock %}
 
+{% block breadcrumbs %}
+  {% include "task-breadcrumbs.html" %}
+{% endblock %}
+
 {% block body %}
 <style> {# repeated in ssp/project.yaml #}
 table.table {
@@ -24,24 +28,7 @@ thead {
 </div>
 
 <div class="row">
-  <div class="col-sm-9">
-
-<div style="margin: 2em 0">
-  {% with supermodule=task.is_answer_to_unique %}
-    {% if supermodule and supermodule.task.editor == request.user %}
-      {% if task.is_finished %}
-        <p class="text-">...and we&rsquo;re done <span class="glyphicon glyphicon-ok"></span></p>
-      {% else %}
-        <p class="text-">You skipped some required questions.</p>
-      {% endif %}
-
-    {% else %}
-      {# every task, except projects, are now subtasks of other tasks, so this only occurs if a task is a subtask to multiple super-tasks #}
-      <p class="text-success"><span class="glyphicon glyphicon-ok"></span> Module complete. Continue with <a href="{{task.project.get_absolute_url}}">other modules in {{task.project.title}}</a>.</p>
-    {% endif %}
-  {% endwith %}
-
-</div>
+  <div class="col-sm-push-1 col-sm-8">
 
 <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
   {# output documents #}
@@ -89,8 +76,13 @@ thead {
 
 </div> <!-- /col -->
 
-<div class="col-sm-3">
+<div class="col-sm-push-1 col-sm-3">
   <div id="question-history-context">
+    {% if task.is_finished  %}
+        <p class="text-">...and we&rsquo;re done <span class="glyphicon glyphicon-ok"></span></p>
+      {% else %}
+        <p class="text-">You skipped some required questions.</p>
+    {% endif %}
     <ul>
       {% for rec in all_questions %}
         <li>

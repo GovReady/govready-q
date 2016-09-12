@@ -5,11 +5,21 @@
 Next Question: {{q.spec.title}} | {{task.title}}
 {% endblock %}
 
+{% block breadcrumbs %}
+  {% include "task-breadcrumbs.html" %}
+{% endblock %}
+
 {% block body %}
 
 <style>
+h1 {
+  margin-top: 1em;
+  font-size: 18px;
+  font-weight: bold;
+}
+
 #question {
-  margin: 2em 0;
+  margin: 1em 0 2em 0;
 }
   #question form.disabled label {
     color: #777;
@@ -34,7 +44,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 </div>
 
 <div class="row">
-  <div class="col-sm-9">
+  <div class="col-sm-push-1 col-sm-8">
     {% if source_invitation %}
       <div style="margin-top: 1.5em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -50,6 +60,8 @@ Next Question: {{q.spec.title}} | {{task.title}}
         </div>
       </div>
     {% endif %}
+
+    <h1>{{q.spec.title|safe}}</h1>
 
     <div id="question">
         <form {% if not write_priv %}class="disabled"{% endif %}>
@@ -329,7 +341,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
   </div> <!-- /col -->
 
-  <div class="col-sm-3">
+  <div class="col-sm-push-1 col-sm-3">
     <div id="question-history-context">
       <ul>
       {% if context %}

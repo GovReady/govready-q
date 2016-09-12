@@ -19,7 +19,7 @@ questions:
       - key: smresearch
         text: Research Organization
       - key: localagency
-        text: Local Government Agency
+        text: Local/State Government Agency
       - key: federalagency
         text: Federal Government Agency
 

@@ -358,14 +358,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#invite-user-to-project")
         do_invitation("test+project@q.govready.com")
         self.assertRegex(self.browser.title, "My Simple Project") # user is on the project page
-        self.click_element('#question-simple_module .task-item a') # go to the task page
+        self.click_element('#question-simple_module .started-task a') # go to the task page
         self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
         self.assertInNodeText("is editing this module. You cannot make changes to it.", "#auth-status .text-danger")
 
         reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
-        self.click_element('#question-simple_module .task-item a') # go to the task page
+        self.click_element('#question-simple_module .started-task a') # go to the task page
         var_sleep(.5) # wait for page to load
         self.click_element("#save-button") # pass over the Introductory question because the Ask Team button is suppressed on interstitials
         var_sleep(.5) # wait for page to load
