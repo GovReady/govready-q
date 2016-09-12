@@ -37,13 +37,13 @@ h1 {
 </style>
 
 <div class="row">
-  <div class="col-sm-9">
+  <div class="col-sm-8">
     {% include "task-header.html" with col_width="4" col_active=header_col_active %}
   </div>
 </div>
 
 <div class="row">
-  <div class="col-sm-push-1 col-sm-8">
+  <div class="col-sm-8">
     {% if source_invitation %}
       <div style="margin-top: 1.5em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
