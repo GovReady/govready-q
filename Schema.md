@@ -297,6 +297,18 @@ These question type prompt the user to select another completed module as the an
 
 The `module-id` field specifies a module ID as it occurs in the `id` field of another YAML file, if referring to a module in the same directory as the YAML file containing this question.
 
+Here's an example of the `module` question type:
+
+	  - id: evidence
+	    title: Evidence
+	    type: module
+	    module-id: evidence
+	    prompt: |
+	      Provide evidence of your properly configured firewall, if possible.
+	    impute:
+	      - condition: not(have_other_dmz == 'ad_hoc_dmz')
+	        value: ~
+
 Changing the `module-id` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
 
 In document templates and impute conditions, the value of `module` questions is a dictionary of the answers to that module. For example, if `q5` is the ID of a question whose type is `module`, then `{{q5.q1}}` will provide the answer to `q1` within the module the user selected that answers `q5`. 
@@ -362,6 +374,14 @@ The `value` field can be evaluated as a [Jinja2 expression](http://jinja.pocoo.o
       - condition: q1 == 'same-as-q0'
         value: q0
         value-mode: expression
+
+In both conditions and `expression`-type values, the variables you can use are:
+
+* `id`s of questions in the module
+* `question_id.subquestion_id` to access questions within the tasks that are assigned as answers to `module`-type questions
+* `project`, which gives the project name
+* `project.question_id`, `project.question_id.subquestion_id`, etc. to access questions within the project
+* `organization`, which gives the organization name
 
 Question Order
 --------------
