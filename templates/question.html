@@ -25,6 +25,12 @@ h1 {
     color: #777;
   }
 
+{% if q.spec.type == "module" %}
+#question .radio label {
+  margin: .25em 0;
+}
+{% endif %}
+
 {% if q.spec.type == "interstitial" %}
 #question-prompt {
   margin: 20px 0;
@@ -34,6 +40,10 @@ h1 {
     margin: 30px auto;
   }
 {% endif %}
+
+label .onhover { display: none; }
+label:hover .onhover { display: inline; }
+
 </style>
 
 <div class="row">
@@ -221,24 +231,24 @@ h1 {
                   <label>
                     <input name="value" value="{{m.id}}" type="radio" {% if m == current_answer %}checked{% endif %}>
                       {{m.render_title}}
-                      <span style="color: #777">
-                      ({% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}})
-                      </span>
-                      <div class="text-info small">(
+                      <div class="small" style="color: #666">
                         {% if m == current_answer %}
-                          current answer
-                          |
+                          <strong>Current Answer</strong>.
                         {% endif %}
-                        <a href="{{m.get_absolute_url}}">go to module</a>
+
                         {% if m.project != task.project %}
-                          | in {{ m.project.title }}
+                        {{ m.project.title }}.
                         {% endif %}
-                      )</div>
+                        
+                        {% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}}.
+
+                        <a href="{{m.get_absolute_url}}" class="onhover" style="color: #999; margin-left: 3px; font-size: 90%;"><span class="glyphicon glyphicon-pencil"> </span></a>
+                      </div>
                   </label>
                 </div>
               {% endfor %}
 
-              <div class="radio">
+              <div class="radio" style="margin-bottom: 1.5em">
                 <label>
                   <input name="value" value="__new" type="radio">
                   {% if current_answer %}
