@@ -4,6 +4,10 @@ $(function() {
   // [CTRL/Meta]+Enter in any textarea triggers submission of the form it is
   // contained in.
   $('textarea').keydown(textarea_ctrlenter_handler);
+
+  // Make all tab navs responsive.
+  $(".nav-tabs, .tab-content").addClass('responsive');
+  fakewaffle.responsiveTabs(['xs', 'sm'])
 })
 
 function textarea_ctrlenter_handler(e) {
