@@ -336,6 +336,9 @@ def impute_answer(question, context):
                 if isinstance(value, RenderedAnswer):
                     # Unwrap.
                     value =  value.answer
+                elif hasattr(value, "as_raw_value"):
+                    # RenderedProject, RenderedOrganization
+                    value = value.as_raw_value()
             else:
                 raise ValueError("Invalid impute condition value-mode.")
 
@@ -638,16 +641,20 @@ class RenderedProject(TemplateContext):
         self.project = project
         super().__init__(project.root_task.get_answers(), escapefunc)
 
+    def as_raw_value(self):
+        return self.project.title
     def __html__(self):
-        return self.escapefunc(self.project.title)
+        return self.escapefunc(self.as_raw_value())
 
 class RenderedOrganization(TemplateContext):
     def __init__(self, organization, escapefunc):
         self.organization = organization
         super().__init__(organization.get_organization_project().root_task.get_answers(), escapefunc)
 
+    def as_raw_value(self):
+        return self.organization.name
     def __html__(self):
-        return self.escapefunc(self.organization.name)
+        return self.escapefunc(self.as_raw_value())
 
 class RenderedAnswer:
     def __init__(self, task, question, answer, escapefunc):
