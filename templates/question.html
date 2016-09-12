@@ -230,6 +230,9 @@ h1 {
                           |
                         {% endif %}
                         <a href="{{m.get_absolute_url}}">go to module</a>
+                        {% if m.project != task.project %}
+                          | in {{ m.project.title }}
+                        {% endif %}
                       )</div>
                   </label>
                 </div>
