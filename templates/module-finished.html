@@ -78,7 +78,9 @@ thead {
 
 <div class="col-sm-push-1 col-sm-3">
   <div id="question-history-context">
-    {% if task.is_finished  %}
+    {% if all_questions|length == 0 %}
+      {# Don't display an encouragement if the user didn't answer any questions to get here. #}
+    {% elif task.is_finished  %}
         <p class="text-">...and we&rsquo;re done <span class="glyphicon glyphicon-ok"></span></p>
       {% else %}
         <p class="text-">You skipped some required questions.</p>
