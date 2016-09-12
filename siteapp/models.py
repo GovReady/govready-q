@@ -85,6 +85,8 @@ class User(AbstractUser):
         profile.update({
             "id": self.id,
         })
+        if not profile.get("name"):
+            profile["name"] = self.email or "Anonymous User"
         return profile
 
 from django.contrib.auth.backends import ModelBackend
