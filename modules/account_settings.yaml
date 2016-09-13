@@ -14,23 +14,38 @@ questions:
     title: Your Name
     prompt: What is your name?
     type: text
+
   - id: title
     title: Your Title
     prompt: What is your title in your organization or on this project?
     type: text
+
   - id: role
     title: Your Role
-    prompt: Which is closest to your role in your organization or on this project?
+    prompt: Which team is your position most closely aligned?
     type: choice
     choices:
-      - key: isso
-        text: Information System Security Officer
-      - key: dev
-        text: Developer
-      - key: bizown
-        text: Business Owner
-      - key: pm
-        text: Project Manager
+      - key: ceo_team
+        text: CEO Team
+        help: CEO, Agency Head, Chief of Staff, Special Advisor, ...
+      - key: it_exec_team
+        text: IT Executive Team
+        help: Authorizing Official, AO Designated Representative, CIO, CISO, ...
+      - key: dev_team
+        text: Development Team
+        help: Developer, Engineer, Project Manager, Architect, Agile Lead, Analyst, ...
+      - key: ops_team
+        text: Operations Team
+        help: System Administrator, Engineer, Operations Manager, Delivery Specialist, ...
+        key: sec_team
+        text: Security Team
+        help: Security Specialist, Architect, Security Manager, ...
+      - key: comp_team
+        text: Compliance Team
+        help: Information System Security Officer, Information System Security Manager, Compliance Specialist, ...
+      - key: audit_team
+        text: Audit Team
+        help: Security Control Assessor, Auditor, Inspector General, ...
 
   - id: picture
     title: Picture
@@ -65,11 +80,7 @@ output:
       ![Your Picture]({{picture.url}})
       {% endif %}
 
-      Name: {{name}}
-
-      Title: {{title}}
-
-      Role: {{role.text}}
+      {{name}}, {{title}}, is a member of the {{role.text}} at {{organization}}.
 
       ---
 
