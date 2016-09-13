@@ -7,8 +7,12 @@ from urllib.parse import urlsplit, urlencode
 
 from .models import Organization
 
+allowed_paths = None
+
 class OrganizationSubdomainMiddleware:
     def process_request(self, request):
+        global allowed_paths
+
         # Use a different set of routes depending on whether the request
         # is for q.govready.com, the special landing domain, or an
         # organization subdomain.
@@ -78,13 +82,23 @@ class OrganizationSubdomainMiddleware:
             messages.add_message(request, messages.ERROR, 'You are not a member of this organization.')
 
         # The user isn't authenticated to see inside the organization subdomain, but
-        # we have to allow them to log in or sign up.
-        allowed_paths = [reverse("account_login"), reverse("account_signup")]
-        if request.path in allowed_paths:
+        # we have to allow them to log in, sign up, and reset their password (both
+        # submitting the form and then hitting the email confirmation link). Build
+        # a white list of allowed URL patterns by reversing the known URL names
+        # from allauth/account/urls.py. Because account_reset_password_from_key has
+        # URL parameters, turn the reverse'd URLs into regular expressions to match
+        # against.
+        if allowed_paths == None:
+            import re
+            allowed_paths = [reverse("account_login"), reverse("account_signup"),
+                reverse("account_reset_password"), reverse("account_reset_password_done"), reverse("account_reset_password_from_key", kwargs={"uidb36":"aaaaaaaa", "key":"aaaaaaaa"}), reverse("account_reset_password_from_key_done")]
+            allowed_paths = re.compile("|".join(("^" + re.escape(path).replace("aaaaaaaa", ".+") + "$") for path in allowed_paths))
+            print(allowed_paths)
+        if allowed_paths.match(request.path):
             # Don't leak any organization information. But do render the login/signup
             # pages and allow the routes for the form POSTs from there.
             return None
 
         # The user is not authenticated on this domain, is logged out, and is requesting
         # a path besides login/signup. Redirect to the login route.
-        return HttpResponseRedirect(allowed_paths[0] + "?" + urlencode({ "next": request.path }))
+        return HttpResponseRedirect(reverse("account_login") + "?" + urlencode({ "next": request.path }))
