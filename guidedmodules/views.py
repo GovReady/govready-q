@@ -307,7 +307,7 @@ def next_question(request, taskid, taskslug):
             "all_questions": [
                 {
                     "question": task.module.questions.get(key=key),
-                    "skipped": task.module.questions.get(key=key).spec.get("required") and (answered.answers.get(q.key) is None),
+                    "skipped": task.module.questions.get(key=key).spec['type'] != 'interstitial' and (answered.answers.get(key) is None),
                 }
                 for key in answered.answers
                 if not key in answered.was_imputed ],
