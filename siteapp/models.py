@@ -325,6 +325,9 @@ class ProjectMembership(models.Model):
     class Meta:
         unique_together = [('project', 'user')]
 
+    def user_details(self):
+        return self.user.render_context_dict(self.project.organization)
+
 
 class Invitation(models.Model):
     organization = models.ForeignKey(Organization, related_name="invitations", help_text="The Organization that this Invitation belongs to.")
