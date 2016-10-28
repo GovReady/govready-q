@@ -308,16 +308,18 @@ class Task(models.Model):
                     "format": "text",
                 },
                 self.get_answers(),
-                "text"
+                "text",
+                "%s title" % repr(self.module)
             )
-        except (KeyError, jinja2.TemplateError):
+        except (KeyError, ValueError):
             return self.module.title
 
     def render_introduction(self):
         return render_content(
             self.module.spec.get("introduction", ""),
             ModuleAnswers(self.module, self, {}),
-            "html"
+            "html",
+            "%s introduction" % repr(self.module)
         )
 
     def render_question_prompt(self, question):
@@ -327,7 +329,8 @@ class Task(models.Model):
                 "format": "markdown",
             },
             self.get_answers(),
-            "html"
+            "html",
+            "%s question %s prompt" % (repr(self.module), question.key)
         )
 
     def render_output_documents(self, answers=None, hard_fail=True):
@@ -342,6 +345,7 @@ class Task(models.Model):
             snippet,
             self.get_answers(),
             "html",
+            "%s snippet" % repr(self.module)
         )
 
     def get_subtask(self, question_id):

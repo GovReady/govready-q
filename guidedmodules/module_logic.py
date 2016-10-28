@@ -109,7 +109,7 @@ def get_question_context(answers, question):
     return list(map(annotate, past_questions + [question] + future_questions))
 
 
-def render_content(content, answers, output_format, additional_context={}, hard_fail=True):
+def render_content(content, answers, output_format, source, additional_context={}, hard_fail=True):
     # Renders content (which is a dict with keys "format" and "template")
     # into the requested output format, using the ModuleAnswers in answers
     # to provide the template context.
@@ -149,6 +149,7 @@ def render_content(content, answers, output_format, additional_context={}, hard_
             # Do a simple lexical pass over the template and replace template
             # tags with a special code that CommonMark will ignore. We'll put
             # back the strings after.
+            if not isinstance(template_body, str): raise ValueError("Template %s has incorrect type: %s" % (source, type(template_body)))
             substitutions = []
             import re
             def replace(m):
@@ -204,7 +205,7 @@ def render_content(content, answers, output_format, additional_context={}, hard_
             template_format = "text"
 
         else:
-            raise ValueError("Cannot render a markdown template to %s." % output_format)
+            raise ValueError("Cannot render a markdown template to %s in %s." % (output_format, source))
 
     # Execute the template.
 
@@ -217,7 +218,7 @@ def render_content(content, answers, output_format, additional_context={}, hard_
 
         from collections import OrderedDict
 
-        def walk(value):
+        def walk(value, path):
             if isinstance(value, str):
                 return render_content(
                     {
@@ -226,18 +227,19 @@ def render_content(content, answers, output_format, additional_context={}, hard_
                     },
                     answers,
                     "text",
+                    source + " " + "->".join(path),
                     additional_context,
                 )
             elif isinstance(value, list):
-                return [walk(i) for i in value]
+                return [walk(i, path+[str(i)]) for i in value]
             elif isinstance(value, dict):
-                return OrderedDict([ (k, walk(v)) for k, v in value.items() ])
+                return OrderedDict([ (k, walk(v, path+[k])) for k, v in value.items() ])
             else:
                 # Leave unchanged.
                 return value
 
         # Render strings within the data structure.
-        value = walk(template_body)
+        value = walk(template_body, [])
 
         # Render to JSON or YAML depending on what was specified on the
         # template.
@@ -256,7 +258,7 @@ def render_content(content, answers, output_format, additional_context={}, hard_
             # Treat as plain text.
             return output
         else:
-            raise ValueError("Cannot render %s to %s." % (template_format, output_format))
+            raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
     elif template_format in ("text", "html"):
         # The plain-text and HTML template types are rendered using Jinja2.
@@ -301,8 +303,14 @@ def render_content(content, answers, output_format, additional_context={}, hard_
             # dict), otherwise let it pass through silently
             undefined=jinja2.StrictUndefined if hard_fail else jinja2.Undefined,
             )
-        template = env.from_string(template_body)
-        output = template.render(context)
+        try:
+            template = env.from_string(template_body)
+        except jinja2.TemplateSyntaxError as e:
+            raise ValueError("There was an error loading the template %s: %s" % (source, str(e)))
+        try:
+            output = template.render(context)
+        except Exception as e:
+            raise ValueError("There was an error executing the template %s: %s" % (source, str(e)))
 
         # Convert the output to the desired output format.
 
@@ -619,12 +627,12 @@ class ModuleAnswers:
     def render_output(self, additional_context, hard_fail=True):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents.
-        def render_document(d):
+        def render_document(d, i):
             ret = { }
             ret.update(d) # keep all original fields (especially 'name', 'tab')
-            ret["html"] = render_content(d, self, "html", additional_context, hard_fail=hard_fail)
+            ret["html"] = render_content(d, self, "html", "%s output document %d" % (repr(self.module), i), additional_context, hard_fail=hard_fail)
             return ret
-        return [ render_document(d) for d in self.module.spec.get("output", []) ]
+        return [ render_document(d, i) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
 from collections.abc import Mapping
 class TemplateContext(Mapping):
