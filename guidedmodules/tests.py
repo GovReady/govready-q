@@ -5,7 +5,7 @@ from siteapp.models import Organization, Project, User
 from .models import Module, Task
 from .module_logic import *
 
-class RenderTests(TestCase):
+class TestCaseWithFixtureData(TestCase):
     @classmethod
     def setUpClass(self):
         super().setUpClass()
@@ -20,6 +20,127 @@ class RenderTests(TestCase):
         self.project = Project.objects.create(title="Project", organization=self.organization)
         self.user = User.objects.create(username="unit.test")
 
+
+class ImputeConditionTests(TestCaseWithFixtureData):
+    # Tests that expressions have the expected value in impute conditions
+    # and that they have the *same* truthy-ness when used in {% if ... %}
+    # blocks in templates.
+
+    def _helper(self, module, answers, condition, expected):
+        m = Module.objects.get(key=module)
+        answers = ModuleAnswers(m, None, answers)
+
+        # Test that the impute condition works correctly.
+        # Run the impute condition and test whether or not
+        # it matched. Don't look at it's value -- the value
+        # is always (True,) (a tuple containing True).
+        context = TemplateContext(answers, str) # parallels ModuleAnswers.add_imputed_answers
+        actual = run_impute_conditions([{ "condition": condition, "value": True }], context)
+        self.assertEqual(actual is not None, expected)
+
+        # Test that an {% if ... %} block has the same truth value when
+        # used in a template.
+        if_block = render_content(
+            {
+                "format": "text",
+                "template": r"{% if " + condition + r" %}TRUE{% else %}FALSE{% endif %}",
+            },
+            answers,
+            "text",
+            str(self), # source
+        ) == "TRUE"
+        self.assertEqual(if_block, expected)
+
+    def _helper2(self, module, question, value, condition, expected):
+        return self._helper(module, { question: value }, condition, expected)
+
+    def test_impute_using_text_questions(self):
+        test = lambda *args : self._helper2("question_types_text", *args)
+
+        test("q_text", "Hello!", "q_text", True) # answered is truthy
+        test("q_text", "Hello!", "q_text=='Hello!'", True)
+        test("q_text", "Hello!", "q_text!='Hello!'", False)
+        test("q_text", None, "q_text", False) # skipped is falsey
+
+        # password, email, url, and longtext should have the same behavior as above.
+        # so does date, but there are other things to check
+        
+        #test("q_date", "2016-10-28", "q_text < '2017-01-01'", True)
+
+    def test_impute_using_choice_questions(self):
+        test = lambda *args : self._helper2("question_types_choice", *args)
+
+        test("q_choice", "choice1", "q_choice", True) # answered is truthy
+        test("q_choice", "choice1", "q_choice == 'choice1'", True)
+        test("q_choice", None, "q_choice", False) # skipped is falsey
+
+        test("q_yesno", "yes", "q_yesno", True) # answered yes is truthy
+        test("q_yesno", "no", "q_yesno", False) # answered no is falsey
+        test("q_yesno", "yes", "q_yesno == 'yes'", True)
+        test("q_yesno", "no", "q_yesno == 'no'", True)
+        test("q_yesno", None, "q_yesno", False) # skipped is falsey
+
+        test("q_multiple_choice", [], "q_multiple_choice", True) # answered is truthy even if answered with nothing chosen
+        test("q_multiple_choice", ["choice1", "choice3"], "'choice1' in q_multiple_choice", True)
+        test("q_multiple_choice", ["choice1", "choice3"], "'choice2' in q_multiple_choice", False)
+        test("q_multiple_choice", None, "q_multiple_choice", False) # skipped is falsey
+
+    def test_impute_using_numeric_questions(self):
+        test = lambda *args : self._helper2("question_types_numeric", *args)
+
+        test("q_integer", 0, "q_integer", True) # answered is truthy, even if answer would be falsey in Python
+        test("q_integer", 0, "q_integer == 0", True)
+        #test("q_integer", 1, "q_integer > 0", True)
+        test("q_integer", None, "q_integer", False) # skipped is falsey
+
+        test("q_real", 0.0, "q_real", True) # answered is truthy, even if answer would be falsey in Python
+        test("q_real", 0.0, "q_real == 0", True)
+        #test("q_real", 1.0, "q_real > 0", True)
+        test("q_real", None, "q_real", False) # skipped is falsey
+
+    def test_impute_using_media_questions(self):
+        test = lambda *args : self._helper2("question_types_media", *args)
+
+        # The "file" question type yields a dictionary with metadata about
+        # the uploaded file -- it isn't normally rendered directly.
+        file_metadata = {
+            "url": "some-url-here",
+            "size": 1024,
+            "type": "text/plain",
+        }
+        test("q_file", file_metadata, "q_file", True) # answered is truthy
+        test("q_file", None, "q_file", False) # skipped is falsey
+
+        # Interstitial questions never have value.
+        test("q_interstitial", None, "q_interstitial", False)
+
+        # We're not calling the external function here - just using it
+        # given some return value.
+        test("q_external_function", False, "q_external_function", True) # answered is truthy, even if False
+        test("q_external_function", "VALUE", "q_external_function", True) # should be Pythonic truthy
+        test("q_external_function", None, "q_external_function", False) # but skipped/None are falsey
+
+    def test_impute_using_module_questions(self):
+        test = lambda *args : self._helper2("question_types_module", *args)
+
+        # Create a sub-task that answers a question.
+        m = Module.objects.get(key="simple") # the module ID that can answer the q_module question
+        value = ModuleAnswers(
+            m,
+            Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project),
+            {
+                "q1": "My Answer",
+            })
+
+        test("q_module", value, "q_module", True) # answered is truthy
+        test("q_module", value, "q_module.q1", True) # sub-answer test
+        test("q_module", None, "q_module", False) # skipped is falsey
+        test("q_module", None, "q_module.q1", False) # skipped is falsey for all sub-answers
+
+        # TODO: Test module-set questions.
+
+
+class RenderTests(TestCaseWithFixtureData):
     ## GENERAL RENDER TESTS ##
 
     def test_render_markdown_to_text(self):

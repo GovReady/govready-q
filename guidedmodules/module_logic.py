@@ -381,7 +381,7 @@ def get_question_dependencies_with_type(question):
          if question.module.questions.filter(key=qid).exists()
        ]
 
-def impute_answer(question, context):
+def run_impute_conditions(conditions, context):
     # Check if any of the impute conditions are met based on
     # the questions that have been answered so far and return
     # the imputed value. Be careful about values like 0 that
@@ -389,7 +389,7 @@ def impute_answer(question, context):
     # something was imputed or not.
     from jinja2.sandbox import SandboxedEnvironment
     env = SandboxedEnvironment()
-    for rule in question.spec.get("impute", []):
+    for rule in conditions:
         condition_func = env.compile_expression(rule["condition"])
         if condition_func(context):
             # The condition is met. Compute the imputed value.
@@ -613,7 +613,7 @@ class ModuleAnswers:
         for q in self.module.questions.order_by('definition_order'):
             import jinja2.exceptions
             try:
-                v = impute_answer(q, context)
+                v = run_impute_conditions(q.spec.get("impute", []), context)
                 if v :
                     self.answers[q.key] = v[0]
                     self.was_imputed.add(q.key)
