@@ -359,11 +359,12 @@ label:hover .onhover { display: inline; }
         <p>Progress:</p>
         {% for q in context %}
           <li class="{{q.class}}">
-            {% if q.answered %}<a href="?q={{q.key}}"><span class="glyphicon glyphicon-check"> </span>
+            {% if q.class == 'this' %}<span class="glyphicon glyphicon-play-circle"> </span>
+            {% elif q.answered %}<a href="?q={{q.key}}"><span class="glyphicon glyphicon-check"> </span>
             {% else %}<span class="glyphicon glyphicon-unchecked"> </span>
             {% endif %}
             {{q.title}}
-            {% if q.answered %}</a>{% endif %}
+            {% if q.class != 'this' and q.answered %}</a>{% endif %}
           </li>
         {% endfor %}
         <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
