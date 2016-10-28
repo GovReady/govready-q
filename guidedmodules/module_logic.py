@@ -686,7 +686,7 @@ class TemplateContext(Mapping):
 
     def __iter__(self):
         seen_keys = set()
-        for q in self.module_answers.task.module.questions.order_by('definition_order'):
+        for q in self.module_answers.module.questions.order_by('definition_order'):
             seen_keys.add(q.key)
             yield q.key
         if self.module_answers.task:
@@ -704,7 +704,7 @@ class TemplateContext(Mapping):
 class RenderedProject(TemplateContext):
     def __init__(self, project, escapefunc):
         self.project = project
-        super().__init__(project.root_task.get_answers(), escapefunc)
+        super().__init__(project.root_task.get_answers() if project.root_task else None, escapefunc)
 
     def as_raw_value(self):
         return self.project.title
@@ -714,7 +714,8 @@ class RenderedProject(TemplateContext):
 class RenderedOrganization(TemplateContext):
     def __init__(self, organization, escapefunc):
         self.organization = organization
-        super().__init__(organization.get_organization_project().root_task.get_answers(), escapefunc)
+        project = organization.get_organization_project()
+        super().__init__(project.root_task.get_answers() if project.root_task else None, escapefunc)
 
     def as_raw_value(self):
         return self.organization.name
@@ -733,18 +734,21 @@ class RenderedAnswer:
         # How the template renders a question variable used plainly, i.e. {{q0}}.
         if self.answer is None:
             value = "<%s>" % self.question.spec['title']
+        elif self.question_type == "longtext":
+            # Use a different escapefunc mode.
+            return self.escapefunc(self.answer, True)
         elif self.question_type == "multiple-choice":
             # Render multiple-choice as a comma+space-separated list
             # of the choice keys.
             value = ", ".join(self.answer)
         elif self.question_type == "module":
-            return self.text
+            value = self.answer.task.render_title()
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)
 
         # And in all cases, escape the result.
-        return self.escapefunc(value, self.question_type == "longtext")
+        return self.escapefunc(value, False)
 
     @property
     def text(self):
@@ -756,7 +760,10 @@ class RenderedAnswer:
         elif self.question_type == "choice":
             value = get_question_choice(self.question, self.answer)["text"]
         elif self.question_type == "multiple-choice":
-            value = ", ".join(get_question_choice(self.question, c)["text"] for c in self.answer)
+            if len(self.answer) == 0:
+                value = "<nothing chosen>"
+            else:
+                value = ", ".join(get_question_choice(self.question, c)["text"] for c in self.answer)
         elif self.question_type in ("integer", "real"):
             # Use a locale to generate nice human-readable numbers.
             import locale
@@ -766,7 +773,7 @@ class RenderedAnswer:
                 self.answer,
                 grouping=True)
         elif self.question_type == "module":
-            return self.answer.task.render_title()
+            raise Exception() # not reachable because getattr is overridden
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)
@@ -780,7 +787,7 @@ class RenderedAnswer:
                 self.escapefunc = escapefunc
             def __html__(self):
                 return self.escapefunc(value)
-        return SafeString(value, lambda value : self.escapefunc(value, self.question_type == "longtext"))
+        return SafeString(value, lambda value : self.escapefunc(value, self.question_type == "longtext" and self.answer is not None))
 
     @property
     def edit_link(self):

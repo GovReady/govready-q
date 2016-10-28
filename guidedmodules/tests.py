@@ -85,8 +85,8 @@ class RenderTests(TestCase):
         
         test("q_longtext", "This is a paragraph.\n\nThis is another paragraph.", "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>")
         test("q_longtext.text", "This is a paragraph.\n\nThis is another paragraph.", "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>")
-        test("q_longtext", None, ("<longtext>")) # is actually the question's title, not its type
-        test("q_longtext.text", None, ("<not answered>"))
+        test("q_longtext", None, escape("<longtext>")) # is actually the question's title, not its type
+        test("q_longtext.text", None, escape("<not answered>"))
         
         test("q_date", "2016-10-28", "2016-10-28")
         test("q_date.text", "2016-10-28", "2016-10-28")
@@ -113,7 +113,7 @@ class RenderTests(TestCase):
         test("q_yesno.text", None, escape("<not answered>"))
 
         test("q_multiple_choice", [], "")
-        test("q_multiple_choice.text", [], "")
+        test("q_multiple_choice.text", [], escape("<nothing chosen>"))
         test("q_multiple_choice", ["choice1", "choice3"], "choice1, choice3")
         test("q_multiple_choice.text", ["choice1", "choice3"], "Choice 1, Choice 3")
         test("q_multiple_choice", None, escape("<multiple-choice>")) # is actually the question's title, not its type
@@ -185,7 +185,7 @@ class RenderTests(TestCase):
         # of "{{q1}}", but the Task object itself doesn't have any answers
         # because we faked it above, we get back the same as "{{q_module.q1}}",
         # which is the title of q1.
-        test("q_module", value, ("<The Question>"))
+        test("q_module", value, escape("<The Question>"))
 
         test("q_module.q1", value, "My Answer")
         test("q_module.q1.text", value, "My Answer")
