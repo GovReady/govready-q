@@ -755,6 +755,17 @@ class RenderedAnswer:
         # How the template renders {{q0.text}} to get a nice display form of the answer.
         if self.answer is None:
             value = "<not answered>"
+        elif self.question_type == "date":
+            # Format the ISO date for display.
+            value = str(self.answer) # fall-back
+            import re, datetime
+            m = re.match("(\d\d\d\d)-(\d\d)-(\d\d)$", self.answer)
+            if m:
+                try:
+                    year, month, date = [int(x) for x in m.groups()]
+                    value = datetime.date(year, month, date).strftime("%x")
+                except ValueError:
+                    pass
         elif self.question_type == "yesno":
             value = ("Yes" if self.answer == "yes" else "No")
         elif self.question_type == "choice":

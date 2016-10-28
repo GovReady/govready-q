@@ -89,7 +89,7 @@ class RenderTests(TestCase):
         test("q_longtext.text", None, escape("<not answered>"))
         
         test("q_date", "2016-10-28", "2016-10-28")
-        test("q_date.text", "2016-10-28", "2016-10-28")
+        test("q_date.text", "2016-10-28", "10/28/2016")
         test("q_date", None, escape("<date>")) # is actually the question's title, not its type
         test("q_date.text", None, escape("<not answered>"))
 
