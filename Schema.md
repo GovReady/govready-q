@@ -311,14 +311,7 @@ Here's an example of the `module` question type:
 
 Changing the `module-id` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
 
-In document templates and impute conditions, the value of `module` questions is a dictionary of the answers to that module. For example, if `q5` is the ID of a question whose type is `module`, then `{{q5.q1}}` will provide the answer to `q1` within the module the user selected that answers `q5`. 
-
-These questions may also "pass" answers to questions in the sub-module. The `pass` field is a dictionary where the keys are the IDs of questions in the sub-module whose answers are being pre-set and the values are a question ID in the current module or a dot-delimited path to access a question in a (different) sub-module. The pre-set answer is stored by reference so that a change in the value also causes a change in the answer in the sub-module. For example:
-
-    pass:
-      project_url: q_project_details.type_web_live_url
-
-This will pre-set the `project_url` question of the sub-module with the answer to the `type_web_live_url` question in the sub-module that answers the question `q_project_details` in this module.
+In document templates and impute conditions, the value of `module` questions is a dictionary of the answers to that module. For example, if `q5` is the ID of a question whose type is `module`, then `{{q5.q1}}` will provide the answer to `q1` within the module the user selected that answers `q5`.
 
 #### `interstitial`
 

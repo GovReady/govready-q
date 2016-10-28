@@ -104,7 +104,7 @@ def next_question(request, taskid, taskslug):
             if value == "__new":
                 # Create a new task, and we'll redirect to it immediately.
                 t = Task.create(
-                    parent_task_answer=question,
+                    parent_task_answer=question, # for instrumentation only, doesn't go into Task instance
                     editor=request.user,
                     project=task.project,
                     module=q.answer_type_module,
@@ -324,10 +324,6 @@ def next_question(request, taskid, taskslug):
             if answer and answer.cleared:
                 # If the answer is cleared, treat as if it had not been answered.
                 answer = None
-
-        # If the answer is a reference, then we block all edits.
-        if answer and answer.answered_by_reference:
-            context["write_priv"] = False
 
         # For "module"-type questions, get the Module instance of the tasks that can
         # be an answer to this question, and get the existing Tasks that the user can

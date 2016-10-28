@@ -164,55 +164,7 @@ class Task(models.Model):
     def create(parent_task_answer=None, **kwargs):
         # Creates a Task and also creates the required task-create
         # instrumentation event.
-
-        # Create the task.
         task = Task.objects.create(**kwargs)
-
-        # If the question that this task is answering has some "pass"
-        # variables, create some answers with pre-set references.
-        for pass_qid, pass_reference in \
-              parent_task_answer.question.spec.get("pass", {}).items():
-
-            # Find the TaskAnswer that a reference is being created to.
-            # The pass_reference is a dot-delimited path through question
-            # IDs to a TaskAnswer.
-            ref_task = parent_task_answer.task
-            ref = None
-            for i, qid in enumerate(pass_reference.split(".")):
-                # Follow the next step to get the next TaskAnswer.
-                
-                if ref_task is None:
-                    raise ValueError("The pass specification %s is invalid because %s does not refer to a module-type question."
-                        % (pass_reference, ".".join(pass_reference.split(".")[0:i])))
-                
-                try:
-                    q = ref_task.module.questions.get(key=qid)
-                except ModuleQuestion.DoesNotExist:
-                    raise ValueError("The pass specification %s is invalid because %s refers to module %s which does not have a question whose id is %s."
-                        % (pass_reference, ".".join(pass_reference.split(".")[0:i]) or "the context", ref_task.module, pass_qid))
-
-                ref = TaskAnswer.objects.filter(task=ref_task, question=q).first()
-                if not ref:
-                    # A question on the path is unanswered --- just skip
-                    # creating the reference.
-                    break
-
-                # If this TaskAnswer refers to another task, then we can take
-                # a further step in the next iteration. Otherwise, no further
-                # iterations are possible.
-                ref_task = ref.get_current_answer().answered_by_task.first()
-
-            if ref:
-                # The referenced TaskAnswer exists. Create the reference.
-                ans, _ = TaskAnswer.objects.get_or_create(
-                    task=task,
-                    question=task.module.questions.get(key=pass_qid),
-                )
-                TaskAnswerHistory.objects.create(
-                    taskanswer=ans,
-                    answered_by=kwargs["editor"],
-                    stored_value=ref.get_current_value(),
-                    answered_by_reference=ref)
 
         # Add instrumentation event.
         InstrumentationEvent.objects.create(
@@ -428,7 +380,7 @@ class Task(models.Model):
             # There is no Task yet (for "module"-type questions) or
             # we're creating and appending a new task. Create the Task.
             task = Task.create(
-                parent_task_answer=ans,
+                parent_task_answer=ans, # for instrumentation only, doesn't go into Task instance
                 project=self.project,
                 editor=user,
                 module=q.answer_type_module,
@@ -491,11 +443,6 @@ class TaskAnswer(models.Model):
     def get_current_answer(self):
         # The current answer is the one with the highest primary key.
         return self.answer_history.order_by('-id').first()
-
-    def get_current_value(self):
-        a = self.get_current_answer()
-        if a is None: return None
-        return a.get_value()
 
     def get_history(self):
         from discussion.models import reldate
@@ -565,12 +512,10 @@ class TaskAnswerHistory(models.Model):
     taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
 
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
-
     stored_value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
     answered_by_task = models.ManyToManyField(Task, blank=True, related_name="is_answer_to", help_text="A Task or Tasks that supplies the answer for this question (of type 'module' or 'module-set').")
     answered_by_file = models.FileField(upload_to='q/files', blank=True, null=True)
     cleared = models.BooleanField(default=False, help_text="Set to True to indicate that the user wants to clear their answer. This is different from a null-valued answer, which means not applicable/don't know/skip.")
-    answered_by_reference = models.ForeignKey(TaskAnswer, blank=True, null=True, on_delete=models.SET_NULL, help_text="The answer to this question is determined by looking at the value of the current answer to the referenced question.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswerHistory.")
 
@@ -591,19 +536,6 @@ class TaskAnswerHistory(models.Model):
     def get_value(self):
         if self.cleared:
             raise RuntimeError("get_value cannot be called on a cleared answer")
-
-        # If this answer found through a reference to another answer,
-        # then recursively get the value. Update our cached copy if
-        # the value has changed.
-        # TODO: Prevent circular references from creating infinite recursion.
-        if self.answered_by_reference:
-            ans = self.answered_by_reference.get_current_answer()
-            if ans:
-                value = ans.get_value()
-                if value != self.stored_value:
-                    self.stored_value = value
-                    self.save(update_fields=['stored_value'])
-                return value
 
         # Get the ModuleQuestion that defines the type of the question
         # that this answer is for.

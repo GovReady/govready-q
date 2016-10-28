@@ -276,12 +276,6 @@ label:hover .onhover { display: inline; }
 
             {% endif %}
 
-            {% if answer_obj.answered_by_reference %}
-            <p class="text-info">
-              This question cannot be changed because it is linked to another question.
-            </p>
-            {% endif %}
-
             {% if write_priv %}
             <button id="save-button"
               type="submit" class="btn btn-success"
