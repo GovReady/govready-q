@@ -111,94 +111,112 @@ def get_question_context(answers, question):
 
 def render_content(content, answers, output_format, additional_context={}, hard_fail=True):
     # Renders content (which is a dict with keys "format" and "template")
-    # into HTML, using the ModuleAnswers in answers to provide the template
-    # context.
+    # into the requested output format, using the ModuleAnswers in answers
+    # to provide the template context.
 
     # Ensure imputed answers are computed.
     answers.add_imputed_answers()
 
-    if content["format"] == "html":
-        def escapefunc(s):
-            # Ensure that variables are substituted with HTML escapes. We do
-            # the escaping ourself because Jinja2 can't handle escaping for
-            # other formats, and we use the __html__ method on RenderedAnswer
-            # to provide pre-escaped content.
+    # Get the template.
+    template_format = content["format"]
+    template_body = content["template"]
+
+    # Markdown cannot be used with Jinja2 because auto-escaping is highly
+    # context dependent. For instance, Markdown can have HTML literal blocks
+    # and in those blocks the usual backslash-escaping is replaced with
+    # HTML's usual &-escaping. Also, when a template value is substituted
+    # inside a Markdown block like a blockquote, newlines in the substituted
+    # value will break the logical structure of the template without some
+    # very complex handling of adding line-initial whitespace and block
+    # markers ("*", ">").
+    #
+    # So we must convert Markdown to another format prior to running templates.
+    #
+    # If the output format is HTML, convert the Markdown to HTML.
+    #
+    # If the output format is plain-text, treat the Markdown as if it is plain text.
+    #
+    # No other output formats are supported.
+    if template_format == "markdown":
+        if output_format == "html":
+            # Convert the template first to HTML using CommonMark.
+            
+            # But we don't want CommonMark to process template tags because if
+            # there are HTML symbols like ", <, and > within the tag --- which
+            # have meaning to Jinaj2, then they may get ruined by CommonMark
+            # because they may be escaped.
             #
-            # The obvious thing to do would be to just use html.escape:
-            if "\n" not in s:
-                import html
-                return html.escape(s)
-            else:
-                # But long-form text entries by the user should be rendered as
-                # if the input was Markdown, maybe?
-                import CommonMark
-                return CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(s))
+            # Do a simple lexical pass over the template and replace template
+            # tags with a special code that CommonMark will ignore. We'll put
+            # back the strings after.
+            substitutions = []
+            import re
+            def replace(m):
+                # Record the substitution.
+                index = len(substitutions)
+                substitutions.append(m.group(0))
+                return "\uE000%d\uE001" % index # use Unicode private use area code points
+            template_body = re.sub("{%.*?%}|{{.*?}}", replace, template_body)
 
-        def renderer(output):
-            if output_format == "html":
-                # It's already HTML.
-                return output
-            raise ValueError("Can't render HTML template as %s." % output_format)
+            # Render with a custom renderer to control output.
+            import CommonMark
+            class q_renderer(CommonMark.HtmlRenderer):
+                def heading(self, node, entering):
+                    # Generate <h#> tags with one level down from
+                    # what would be normal since they should not
+                    # conflict with the page <h1>.
+                    if entering:
+                        node.level += 1
+                    super().heading(node, entering)
+                def link(self, node, entering):
+                    # Rewrite the target URL to be within the app's
+                    # static virtual path.
+                    if entering:
+                        self.rewrite_url(node)
+                    super().link(node, entering)
+                def image(self, node, entering):
+                    # Rewrite the image URL to be within the app's
+                    # static virtual path.
+                    if entering:
+                        self.rewrite_url(node)
+                    super().image(node, entering)
+                def rewrite_url(self, node):
+                    import urllib.parse
+                    base_path = "/static/module-assets/"
+                    if not node.destination.startswith("/"):
+                        # Assets are relative to the module's 'path'.
+                        base_path += "/".join(answers.module.key.split("/")[0:-1]) + "/"
+                    node.destination = urllib.parse.urljoin(base_path, node.destination)
 
-    elif content["format"] == "markdown":
-        def escapefunc(s):
-            # Punctuation can, and unless we know better, must be backslash-escaped.
-            escape_chars = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
-            return "".join(("\\" if c in escape_chars else "") + c for c in s)
-        def renderer(output):
-            if output_format == "html":
-                # Convert CommonMark to HTML. Use a custom renderer.
-                import CommonMark
-                class q_renderer(CommonMark.HtmlRenderer):
-                    def heading(self, node, entering):
-                        # Generate <h#> tags with one level down from
-                        # what would be normal since they should not
-                        # conflict with the page <h1>.
-                        if entering:
-                            node.level += 1
-                        super().heading(node, entering)
-                    def link(self, node, entering):
-                        # Rewrite the target URL to be within the app's
-                        # static virtual path.
-                        if entering:
-                            self.rewrite_url(node)
-                        super().link(node, entering)
-                    def image(self, node, entering):
-                        # Rewrite the image URL to be within the app's
-                        # static virtual path.
-                        if entering:
-                            self.rewrite_url(node)
-                        super().image(node, entering)
-                    def rewrite_url(self, node):
-                        import urllib.parse
-                        base_path = "/static/module-assets/"
-                        if not node.destination.startswith("/"):
-                            # Assets are relative to the module's 'path'.
-                            base_path += "/".join(answers.module.key.split("/")[0:-1]) + "/"
-                        node.destination = urllib.parse.urljoin(base_path, node.destination)
-                output = q_renderer().render(CommonMark.Parser().parse(output))
-                return output
-            raise ValueError("Can't render Markdown template as %s." % output_format)
+            template_format = "html"
+            template_body = q_renderer().render(CommonMark.Parser().parse(template_body))
 
-    elif content["format"] == "text":
-        def escapefunc(s):
-            # Don't perform any escaping.
-            return s
-        def renderer(output):
-            if output_format == "text":
-                return output
-            if output_format == "html":
-                # HTML-escape the final output and wrap it in a <pre> tag.
-                import html
-                return "<pre>" + html.escape(output) + "</pre>"
-            raise ValueError("Can't render text template as %s." % output_format)
+            # Put the Jinja2 template tags back that we removed prior to running
+            # the CommonMark renderer.
+            def replace(m):
+                return substitutions[int(m.group(1))]
+            template_body = re.sub("\uE000(\d+)\uE001", replace, template_body)
 
-    elif content["format"] in ("json", "yaml"):
-        # Ok this is totally different. The template content
-        # isn't a string -- it's a Python data structure. Replace
-        # all of the strings in the Python data structure using
-        # render_content.
+        elif output_format == "text":
+            # When rendering a Markdown template for plain-text output, we can just
+            # pass the Markdown directly as if it were plain-text. Auto-escaping is
+            # turned off in this mode.
+            template_format = "text"
+
+        else:
+            raise ValueError("Cannot render a markdown template to %s." % output_format)
+
+    # Execute the template.
+
+    if template_format in ("json", "yaml"):
+        # The json and yaml template types are not rendered in the usual
+        # way. The template itself is a Python data structure (not a string).
+        # We will replace all string values in the data structure (except
+        # dict keys) with what we get by calling render_content recursively
+        # on the string value, assuming it is a template of plain-text type.
+
         from collections import OrderedDict
+
         def walk(value):
             if isinstance(value, str):
                 return render_content(
@@ -219,53 +237,92 @@ def render_content(content, answers, output_format, additional_context={}, hard_
                 return value
 
         # Render strings within the data structure.
-        value = walk(content["template"])
+        value = walk(template_body)
 
-        # Render to JSON or YAML.
-        if content["format"] == "json":
+        # Render to JSON or YAML depending on what was specified on the
+        # template.
+        if template_format == "json":
             import json
             output = json.dumps(value, indent=True)
-        elif content["format"] == "yaml":
+        elif template_format == "yaml":
             import rtyaml
             output = rtyaml.dump(value)
 
-        # Convert to HTML.
         if output_format == "html":
+            # Convert to HTML.
             import html
-            output = "<pre>" + html.escape(output) + "</pre>"
+            return "<pre>" + html.escape(output) + "</pre>"
+        elif output_format == "text":
+            # Treat as plain text.
+            return output
+        else:
+            raise ValueError("Cannot render %s to %s." % (template_format, output_format))
 
-        # Return and skip all of the logic below.
-        return output
+    elif template_format in ("text", "html"):
+        # The plain-text and HTML template types are rendered using Jinja2.
+        #
+        # The only difference is in how escaping of substituted variables works.
+        # For plain-text, there is no escaping. For HTML, we render 'longtext'
+        # anwers as if the user was typing Markdown. That makes sure that
+        # paragraphs aren't collapsed in HTML, and gives us other benefits.
+        # For other values we perform standard HTML escaping.
 
+        if template_format == "text":
+            def escapefunc(s, is_longtext):
+                # Don't perform any escaping.
+                return s
+    
+        elif template_format == "html":
+            def escapefunc(s, is_longtext):
+                if not is_longtext:
+                    import html
+                    return html.escape(s)
+                else:
+                    import CommonMark
+                    return CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(s))
+
+        # Execute the template.
+
+        # Create an intial context dict and add rendered answers into it.
+        context = dict(additional_context) # clone
+        context.update(TemplateContext(answers, escapefunc))
+
+        # Evaluate the template. Ensure autoescaping is turned on. Even though
+        # we handle it ourselves, we do so using the __html__ method on
+        # RenderedAnswer, which relies on autoescaping logic. This also lets
+        # the template writer disable autoescaping with "|safe".
+        import jinja2
+        from jinja2.sandbox import SandboxedEnvironment
+        env = SandboxedEnvironment(
+            autoescape=True,
+
+            # if hard_fail is True, then raise an error if any variable used
+            # in the template is undefined (i.e. answer is not present in
+            # dict), otherwise let it pass through silently
+            undefined=jinja2.StrictUndefined if hard_fail else jinja2.Undefined,
+            )
+        template = env.from_string(template_body)
+        output = template.render(context)
+
+        # Convert the output to the desired output format.
+
+        if template_format == "text":
+            if output_format == "text":
+                # text => text (nothing to do)
+                return output
+            elif output_format == "html":
+                # convert text to HTML by ecaping and wrapping in a <pre> tag
+                import html
+                return "<pre>" + html.escape(output) + "</pre>"
+        elif template_format == "html":
+            if output_format == "html":
+                # html => html (nothing to do)
+                return output
+
+        raise ValueError("Cannot render %s to %s." % (template_format, output_format))
+         
     else:
-        raise ValueError(content["format"])
-
-    # Create an intial context dict.
-    context = dict(additional_context) # clone
-
-    # Add rendered answers to it.
-    context.update(TemplateContext(answers, escapefunc))
-
-    # Evaluate the template. Ensure autoescaping is turned on. Even though
-    # we handle it ourselves, we do so using the __html__ method on
-    # RenderedAnswer, which relies on autoescaping logic. This also lets
-    # the template writer disable autoescaping with "|safe".
-    import jinja2
-    from jinja2.sandbox import SandboxedEnvironment
-    env = SandboxedEnvironment(
-        autoescape=True,
-
-        # if hard_fail is True, then raise an error if any variable used
-        # in the template is undefined (i.e. answer is not present in
-        # dict), otherwise let it pass through silently
-        undefined=jinja2.StrictUndefined if hard_fail else jinja2.Undefined,
-        )
-    template = env.from_string(content["template"])
-    output = template.render(context)
-
-    # Apply the renderer which turns the template output into HTML.
-    output = renderer(output)
-    return output
+        raise ValueError("Invalid template format encountered: %s." % template_format)
 
 
 def get_questions_used_in_output(module):
@@ -644,7 +701,7 @@ class RenderedProject(TemplateContext):
     def as_raw_value(self):
         return self.project.title
     def __html__(self):
-        return self.escapefunc(self.as_raw_value())
+        return self.escapefunc(self.as_raw_value(), False)
 
 class RenderedOrganization(TemplateContext):
     def __init__(self, organization, escapefunc):
@@ -654,7 +711,7 @@ class RenderedOrganization(TemplateContext):
     def as_raw_value(self):
         return self.organization.name
     def __html__(self):
-        return self.escapefunc(self.as_raw_value())
+        return self.escapefunc(self.as_raw_value(), False)
 
 class RenderedAnswer:
     def __init__(self, task, question, answer, escapefunc):
@@ -679,7 +736,7 @@ class RenderedAnswer:
             value = str(self.answer)
 
         # And in all cases, escape the result.
-        return self.escapefunc(value)
+        return self.escapefunc(value, self.question_type == "longtext")
 
     @property
     def text(self):
@@ -715,7 +772,7 @@ class RenderedAnswer:
                 self.escapefunc = escapefunc
             def __html__(self):
                 return self.escapefunc(value)
-        return SafeString(value, self.escapefunc)
+        return SafeString(value, lambda value : self.escapefunc(value, self.question_type == "longtext"))
 
     @property
     def edit_link(self):
