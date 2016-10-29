@@ -618,9 +618,16 @@ class ModuleAnswers:
             import jinja2.exceptions
             try:
                 v = run_impute_conditions(q.spec.get("impute", []), context)
-                if v :
+                if v:
+                	# Set the imputed value, overriding any user value.
                     self.answers[q.key] = v[0]
+
+                    # Remember that it's imputed - this is used elsewhere.
                     self.was_imputed.add(q.key)
+
+                    # Clear the TemplateContext cache for this question.
+                    if q.key in context._cache:
+                    	del context._cache[q.key]
             except jinja2.exceptions.UndefinedError:
                 # If a variable is undefined, then we may be trying to
                 # impute the answer to a question that depends on a question
