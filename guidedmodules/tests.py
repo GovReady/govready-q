@@ -269,7 +269,9 @@ class RenderTests(TestCaseWithFixtureData):
             "size": 1024,
             "type": "text/plain",
         }
+        test("q_file", file_metadata, escape("<uploaded file: %s>" % file_metadata["url"]))
         test("q_file.url", file_metadata, "some-url-here")
+        test("q_file.text", file_metadata, escape("<uploaded file: %s>" % file_metadata["url"]))
         test("q_file", None, escape("<file>")) # is actually the question's title, not its type
         test("q_file.text", None, escape("<not answered>"))
 

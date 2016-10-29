@@ -741,6 +741,8 @@ class RenderedAnswer:
             # Render multiple-choice as a comma+space-separated list
             # of the choice keys.
             value = ", ".join(self.answer)
+        elif self.question_type == "file":
+            value = "<uploaded file: " + self.answer['url'] + ">"
         elif self.question_type == "module":
             value = self.answer.task.render_title()
         else:
@@ -783,6 +785,8 @@ class RenderedAnswer:
                 "%d" if self.question_type == "integer" else "%g",
                 self.answer,
                 grouping=True)
+        elif self.question_type == "file":
+            value = "<uploaded file: " + self.answer['url'] + ">"
         elif self.question_type == "module":
             raise Exception() # not reachable because getattr is overridden
         else:
