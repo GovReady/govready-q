@@ -84,6 +84,10 @@ def evaluate_module_state(current_answers, required):
     # Build a list of questions whose answers were imputed.
     was_imputed = set()
 
+    # Create some reusable context for evaluating impute conditions.
+    impute_context_answers = ModuleAnswers(current_answers.module, current_answers.task, {})
+    impute_context = TemplateContext(impute_context_answers, lambda v, mode : str(v))
+
     # Visitor function.
     def walker(q, state, deps):
         # If any of the dependencies don't have answers yet, then this
@@ -104,9 +108,9 @@ def evaluate_module_state(current_answers, required):
         # which are in state because we return the answers from this
         # method and they are collected as the walk continues up the
         # dependency tree.
-        context_answers = ModuleAnswers(current_answers.module, current_answers.task, state)
-        context = TemplateContext(context_answers, lambda v, mode : str(v))
-        v = run_impute_conditions(q.spec.get("impute", []), context)
+        impute_context_answers.answers = state
+        impute_context._cache = { }
+        v = run_impute_conditions(q.spec.get("impute", []), impute_context)
         if v:
             # An impute condition matched. Unwrap to get the value.
             v = v[0]
@@ -728,13 +732,20 @@ class TemplateContext(Mapping):
         if callable(self.module_answers):
             self.module_answers = self.module_answers()
 
+        # Pre-load all of the ModuleQuestions for the Module from the database.
+        if not hasattr(self, '_module_questions'):
+            from collections import OrderedDict
+            self._module_questions = OrderedDict()
+            for q in self.module_answers.module.questions.order_by('definition_order'):
+                self._module_questions[q.key] = q
+
     def getitem(self, item):
         # If 'item' matches a question ID, wrap the internal Pythonic/JSON-able value
         # with a RenderedAnswer instance which take care of converting raw data values
         # into how they are rendered in templates (escaping, iteration, property accessors)
         # and evaluated in expressions.
         self._execute_lazy_module_answers()
-        question = self.module_answers.module.questions.filter(key=item).first()
+        question = self._module_questions.get(item)
         if question:
             # The question might or might not be answered. If not, its value is None.
             answer = self.module_answers.answers.get(item, None)
@@ -768,7 +779,7 @@ class TemplateContext(Mapping):
     def __iter__(self):
         self._execute_lazy_module_answers()
         seen_keys = set()
-        for q in self.module_answers.module.questions.order_by('definition_order'):
+        for q in self._module_questions.values():
             seen_keys.add(q.key)
             yield q.key
         if self.module_answers.task:
