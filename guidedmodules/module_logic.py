@@ -724,11 +724,16 @@ class TemplateContext(Mapping):
             self._cache[item] = self.getitem(item)
         return self._cache[item]
 
+    def _execute_lazy_module_answers(self):
+        if callable(self.module_answers):
+            self.module_answers = self.module_answers()
+
     def getitem(self, item):
         # If 'item' matches a question ID, wrap the internal Pythonic/JSON-able value
         # with a RenderedAnswer instance which take care of converting raw data values
         # into how they are rendered in templates (escaping, iteration, property accessors)
         # and evaluated in expressions.
+        self._execute_lazy_module_answers()
         question = self.module_answers.module.questions.filter(key=item).first()
         if question:
             # The question might or might not be answered. If not, its value is None.
@@ -761,6 +766,7 @@ class TemplateContext(Mapping):
         raise AttributeError(item)
 
     def __iter__(self):
+        self._execute_lazy_module_answers()
         seen_keys = set()
         for q in self.module_answers.module.questions.order_by('definition_order'):
             seen_keys.add(q.key)
@@ -780,7 +786,10 @@ class TemplateContext(Mapping):
 class RenderedProject(TemplateContext):
     def __init__(self, project, escapefunc):
         self.project = project
-        super().__init__(project.root_task.get_answers() if project.root_task else None, escapefunc)
+        def _lazy_load():
+            if self.project.root_task:
+                return self.project.root_task.get_answers()
+        super().__init__(_lazy_load, escapefunc)
 
     def as_raw_value(self):
         return self.project.title
@@ -790,8 +799,11 @@ class RenderedProject(TemplateContext):
 class RenderedOrganization(TemplateContext):
     def __init__(self, organization, escapefunc):
         self.organization = organization
-        project = organization.get_organization_project()
-        super().__init__(project.root_task.get_answers() if project.root_task else None, escapefunc)
+        def _lazy_load():
+            project = organization.get_organization_project()
+            if project.root_task:
+                return project.root_task.get_answers()
+        super().__init__(_lazy_load, escapefunc)
 
     def as_raw_value(self):
         return self.organization.name
