@@ -93,14 +93,15 @@ class Module(models.Model):
 
     def questions_dependencies(self):
         # For the admin.
-        from .module_logic import get_questions_used_in_output, get_question_dependencies_with_type
+        from .module_logic import get_all_question_dependencies, get_question_dependencies_with_type
+        _, root_questions = get_all_question_dependencies(self)
         def get_question_dependencies(node):
             ret = { }
             for edge_type, n2 in get_question_dependencies_with_type(node):
                 ret.setdefault(edge_type, []).append(n2)
             return ret
         return Module.BuildNetworkDiagram(
-            get_questions_used_in_output(self),
+            root_questions,
             {
                 ModuleQuestion: {
                     "label": lambda node : node.key,
@@ -218,8 +219,7 @@ class Task(models.Model):
         # Check that all questions that need an answer have
         # an answer, and that no required questions have been
         # skipped.
-        from .module_logic import next_question
-        return next_question(self.get_answers(), required=True) == None
+        return len(self.get_answers().with_extended_info(required=True).can_answer) == 0
 
     def get_status_display(self):
         # Is this task done?
@@ -307,7 +307,7 @@ class Task(models.Model):
                     "template": self.module.spec["instance-name"],
                     "format": "text",
                 },
-                self.get_answers(),
+                self.get_answers().with_extended_info(), # get answers + imputed answers
                 "text",
                 "%s title" % repr(self.module)
             )
@@ -322,17 +322,6 @@ class Task(models.Model):
             "%s introduction" % repr(self.module)
         )
 
-    def render_question_prompt(self, question):
-        return render_content(
-            {
-                "template": question.spec["prompt"],
-                "format": "markdown",
-            },
-            self.get_answers(),
-            "html",
-            "%s question %s prompt" % (repr(self.module), question.key)
-        )
-
     def render_output_documents(self, answers=None, hard_fail=True):
         if answers is None:
             answers = self.get_answers()
@@ -343,7 +332,7 @@ class Task(models.Model):
         if not snippet: return None
         return render_content(
             snippet,
-            self.get_answers(),
+            self.get_answers().with_extended_info(), # get answers + imputed answers
             "html",
             "%s snippet" % repr(self.module)
         )

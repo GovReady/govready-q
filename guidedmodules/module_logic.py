@@ -4,9 +4,64 @@ def get_jinja2_template_vars(template):
     env = SandboxedEnvironment()
     return set(meta.find_undeclared_variables(env.parse(template)))
 
-def next_question(questions_answered, required=False, unanswered=None):
+
+def walk_module_questions(module, callback):
+    # Walks the questions in depth-first order following the dependency
+    # tree connecting questions. If a question is a dependency of multiple
+    # questions, it is walked only once.
+    #
+    # callback is called with some arguments:
+    #
+    # 1) A ModuleQuestion, after the callback has been called for all
+    #    ModuleQuestions that the question depends on.
+    # 2) A dictionary that has been merged from the return value of all
+    #    of the callback calls on its dependencies.
+    # 3) A set of ModuleQuestion instances that this question depends on,
+    #    so that the callback doesn't have to compute it (again) itself.
+
+    # Remember each question that is processed so we only process each
+    # question at most once. Cache the state that it gives.
+    processed_questions = { }
+
+    # Pre-load all of the dependencies between questions in this module
+    # and get the questions that are not depended on by any question,
+    # which is where the dependency chains start.
+    dependencies, root_questions = get_all_question_dependencies(module)
+
+    # Local function that processes a single question.
+    def walk_question(q, stack):
+        # If we've seen this question already as a dependency of another
+        # question, then return its state dict from last time.
+        if q.key in processed_questions:
+            return processed_questions[q.key]
+        
+        # Prevent infinite recursion.
+        if q.key in stack:
+            raise ValueError("Cyclical dependency in questions: " + "->".join(stack + [q.key]))
+
+        # Execute recursively on the questions it depends on.
+        state = { }
+        deps = dependencies[q]
+        for qq in deps:
+            state.update(walk_question(qq, stack+[q.key]))
+
+        # Run the callback and get its state.
+        state = callback(q, state, deps)
+
+        # Remember the state in case we encounter it later.
+        processed_questions[q.key] = dict(state) # clone
+
+        # Return the state to the caller.
+        return state
+
+    # Walk each question in document order.
+    for q in root_questions:
+        walk_question(q, [])
+
+
+def evaluate_module_state(current_answers, required):
     # Compute the next question to ask the user, given the user's
-    # answers to questions so far.
+    # answers to questions so far, and all imputed answers.
     #
     # To figure this out, we start by looking for all questions
     # that actually appear in the output template. Then we walk
@@ -14,70 +69,99 @@ def next_question(questions_answered, required=False, unanswered=None):
     # have no unanswered dependent questions. Such questions can
     # be put forth to the user.
 
-    # What questions are actually used in the template?
+    # Build a list of ModuleQuestions that the user may answer now.
+    can_answer = set()
 
-    needs_answer = get_questions_used_in_output(questions_answered.module)
+    # Build a list of ModuleQuestions that still need an answer,
+    # including can_answer and unanswered ModuleQuestions that
+    # have dependencies that are unanswered and need to be answered
+    # first.
+    unanswered = set()
 
-    # Add imputed question. Since an imputed answer can lead to the
-    # imuputing of another question, they all have to be evaluated
-    # up front.
-    questions_answered = questions_answered.with_imputed_answers()
+    # Build a new array of answer values.
+    answers = { }
 
-    # Process the questions.
+    # Build a list of questions whose answers were imputed.
+    was_imputed = set()
 
-    can_answer = []
-    already_processed = set()
+    # Visitor function.
+    def walker(q, state, deps):
+        # If any of the dependencies don't have answers yet, then this
+        # question cannot be processed yet.
+        for qq in deps:
+            if qq.key not in state:
+                unanswered.add(q)
+                return { }
 
-    def is_answered(q):
-        # Is q answered yet? Yes if the user has provided
-        # an answer, or if one of its impute conditions is
-        # met. In either case, the answer will be set already.
-        if q.key in questions_answered.answers:
-            # If q is a required question and the required
-            # argument is true, then require that it not
-            # be skipped.
-            if q.spec.get("required") and required and questions_answered.answers[q.key] is None:
-                return False
-            return True
-        return False
+        # Can this question's answer be imputed from answers that
+        # it depends on? If the user answered this question (during
+        # a state in which it wasn't imputed, but now it is), the
+        # user's answer is overridden with the imputed value for
+        # consistency with the Module's logic.
+        #
+        # Create an evaluation context for evaluating impute conditions
+        # that only sees the answers of this question's dependencies,
+        # which are in state because we return the answers from this
+        # method and they are collected as the walk continues up the
+        # dependency tree.
+        context_answers = ModuleAnswers(current_answers.module, current_answers.task, state)
+        context = TemplateContext(context_answers, lambda v, mode : str(v))
+        v = run_impute_conditions(q.spec.get("impute", []), context)
+        if v:
+            # An impute condition matched. Unwrap to get the value.
+            v = v[0]
+            was_imputed.add(q.key)
 
-    while len(needs_answer) > 0:
-        # Get the next question to look at.
+        elif q.key in current_answers.answers:
+            # The user has provided an answer to this question.
+            v = current_answers.answers[q.key]
 
-        q = needs_answer.pop(0)
-        if is_answered(q) or q.id in already_processed:
-            # This question is already answered or we've already
-            # processed its dependencies, so we can skip.
-            continue
-        already_processed.add(q.id)
+            # If q is a required question and the required argument is true,
+            # then treat it as unanswered.
+            if q.spec.get("required") and required and v is None:
+                can_answer.add(q)
+                unanswered.add(q)
+                return state
 
-        # Remember that this question is as-yet unanswered.
-        if unanswered is not None:
-            unanswered.append(q)
-
-        # What unanswered dependencies does it have?
-
-        deps = get_question_dependencies(q)
-        deps = list(filter(lambda d : not is_answered(d), deps))
-
-        if len(deps) == 0:
-            # All of this question's dependent questions are answered,
-            # so this question can be answered.
-            can_answer.append(q)
+        elif current_answers.module.spec.get("type") == "project" and q.key == "_introduction":
+            # Projects have an introduction but it isn't displayed as a question.
+            # It's not explicitly answered, but treat it as answered so that questions
+            # that implicitly depend on it can be evaluated.
+            v = None
 
         else:
-            # The unanswered dependent questions must be answered first.
-            needs_answer.extend(deps)
+            # This question does not have an answer yet. We don't set
+            # anything in the state that we return, which flags that
+            # the question is not answered.
+            #
+            # But we can remember that this question *can* be answered
+            # by the user, and that it's not answered yet.
+            can_answer.add(q)
+            unanswered.add(q)
+            return state
 
-    # If there is nothing for the user to answer, then this module
-    # is finished --- the user answered everything.
-    if len(can_answer) == 0:
-        return None
+        # Update the state that's passed to questions that depend on this
+        # and also the global state of all answered questions.
+        state[q.key] = v
+        answers[q.key] = v
+        return state
+
+    # Walk the dependency tree.
+    walk_module_questions(current_answers.module, walker)
 
     # There may be multiple routes through the tree of questions,
-    # so we'll choose the question that is defined first in the spec.
-    can_answer.sort(key = lambda q : q.definition_order)
-    return can_answer[0]
+    # so we'll prefer the question that is defined first in the spec.
+    can_answer = sorted(can_answer, key = lambda q : q.definition_order)
+
+    # Create a new ModuleAnswers object that holds the user answers,
+    # imputed answers (which override user answers), and next-question
+    # information.
+    ret = ModuleAnswers(current_answers.module, current_answers.task, answers)
+    ret.was_imputed = was_imputed
+    ret.unanswered = unanswered
+    ret.can_answer = can_answer
+    return ret
+
 
 def get_question_context(answers, question):
     # What is the context of questions around the given question?
@@ -90,13 +174,8 @@ def get_question_context(answers, question):
             "answered": q.key in answers.answers and q.key != question.key,
         }
 
-    # What questions still need to be answered?
-    future_questions = []
-    next_question(answers, unanswered=future_questions)
-    future_questions.reverse()
-
-    # Not including this one.
-    future_questions = list(filter(lambda q : q.key != question.key, future_questions))
+    # What questions still need to be answered? Filter out this one.
+    future_questions = list(filter(lambda q : q.key != question.key, answers.unanswered))
 
     # Which questions were recently answered that are not future questions
     # according to the dependency tree.
@@ -113,9 +192,6 @@ def render_content(content, answers, output_format, source, additional_context={
     # Renders content (which is a dict with keys "format" and "template")
     # into the requested output format, using the ModuleAnswers in answers
     # to provide the template context.
-
-    # Ensure imputed answers are computed.
-    answers = answers.with_imputed_answers()
 
     # Get the template.
     template_format = content["format"]
@@ -333,20 +409,40 @@ def render_content(content, answers, output_format, source, additional_context={
         raise ValueError("Invalid template format encountered: %s." % template_format)
 
 
-def get_questions_used_in_output(module):
-    questions = []
-    for d in module.spec.get("output", []):
-        questions.extend([
-            module.questions.get(key=qid)
-            for qid in get_jinja2_template_vars(d['template'])
-            if module.questions.filter(key=qid).exists()
-        ])
-    return questions
+def get_all_question_dependencies(module):
+    # Pre-load all of the questions by their key so that the dependency
+    # evaluation is fast.
+    all_questions = { }
+    for q in module.questions.all():
+        all_questions[q.key] = q
 
-def get_question_dependencies(question):
-    return set(edge[1] for edge in get_question_dependencies_with_type(question))
+    # Compute all of the dependencies of all of the questions.
+    dependencies = {
+        q: get_question_dependencies(q, get_from_question_id=all_questions)
+        for q in all_questions.values()
+    }
 
-def get_question_dependencies_with_type(question):
+    # Find the questions that are at the root of the dependency tree.
+    is_dependency_of_something = set()
+    for deps in dependencies.values():
+        is_dependency_of_something |= deps
+    root_questions = { q for q in dependencies if q not in is_dependency_of_something }
+
+    return (dependencies, root_questions)
+
+def get_question_dependencies(question, get_from_question_id=None):
+    return set(edge[1] for edge in get_question_dependencies_with_type(question, get_from_question_id))
+
+def get_question_dependencies_with_type(question, get_from_question_id=None):
+    if get_from_question_id is None:
+        # dict-like interface
+        class GetFromQuestionId:
+            def __getitem__(self, qid):
+                return question.module.questions.filter(key=qid).get()
+            def __contains__(self, qid):
+                return question.module.questions.filter(key=qid).exists()
+        get_from_question_id = GetFromQuestionId()
+
     # Returns a set of ModuleQuestion instances that this question is dependent on.
     ret = []
     
@@ -376,9 +472,9 @@ def get_question_dependencies_with_type(question):
         ret.append(("ask-first", qid))
 
     # Turn IDs into ModuleQuestion instances.
-    return [ (edge_type, question.module.questions.get(key=qid))
+    return [ (edge_type, get_from_question_id[qid])
          for (edge_type, qid) in ret
-         if question.module.questions.filter(key=qid).exists()
+         if qid in get_from_question_id
        ]
 
 def run_impute_conditions(conditions, context):
@@ -598,55 +694,11 @@ class ModuleAnswers:
         self.module = module
         self.task = task
         self.answers = answers
-        self.has_imputed_answers = False
-        self.was_imputed = set()
 
-    def with_imputed_answers(self):
-        # Return a new ModuleAnswers instance that has imputed values added.
-        #
-        # Set (and override) any answers with inputed answers. Imputed
-        # answers take precedence over explicit answers because the
-        # explicit answers were probably entered before another answer
-        # was changed to allow for the original answer to be imputed.
-        # It's in a consistent state only when we take the imputed
-        # answers.
-        #
-        # Proceed in order (?) in case there are dependencies between
-        # imputations. TODO: This should follow the dependency chain
-        # defined by next_question.
-        if self.has_imputed_answers: return self # already done
-
-        ret = ModuleAnswers(self.module, self.task, {})
-        ret.has_imputed_answers = True
-        context = TemplateContext(ret, lambda v, mode : str(v))
-        for q in self.module.questions.order_by('definition_order'):
-        	# Try to impute the answer to this question.
-            import jinja2.exceptions
-            try:
-                v = run_impute_conditions(q.spec.get("impute", []), context)
-                if v:
-                	# Set the imputed value, overriding any user value.
-                    ret.answers[q.key] = v[0]
-
-                    # Remember that it's imputed - this is used elsewhere.
-                    ret.was_imputed.add(q.key)
-            except jinja2.exceptions.UndefinedError:
-                # If a variable is undefined, then we may be trying to
-                # impute the answer to a question that depends on a question
-                # that hasn't been answered yet.
-                pass
-
-            # Use a user-provided answer if no value is imputed.
-            if q.key in self.answers:
-            	ret.answers[q.key] = self.answers[q.key]
-
-            # Clear the TemplateContext cache for this question, since in the
-            # evaluation of previous impute conditions the TemplateContext
-            # was evaluated and this key may have been cached.
-            if q.key in context._cache:
-            	del context._cache[q.key]
-
-        return ret
+    def with_extended_info(self, required=False):
+        # Return a new ModuleAnswers instance that has imputed values added
+        # and information about the next question(s) and unanswered questions.
+        return evaluate_module_state(self, required)
 
     def render_output(self, additional_context, hard_fail=True):
         # Now that all questions have been answered, generate this
@@ -873,10 +925,8 @@ class RenderedAnswer:
                 for ans in self.answer)
         
         elif self.question_type == "module-set":
-            # Iterate over the sub-tasks' answers.
-            def get_module(m):
-                return TemplateContext(m.with_imputed_answers(), self.escapefunc)
-            return (get_module(v) for v in self.answer)
+            # Iterate over the sub-tasks' answers. Load each's answers + imputed answers.
+            return (TemplateContext(v.with_extended_info(), self.escapefunc) for v in self.answer)
 
         elif self.question_type == "external-function":
             return iter(self.answer)
@@ -890,7 +940,8 @@ class RenderedAnswer:
             # Pass through via a temporary TemplateContext.
             if self.answer is not None:
                 # If the question was not skipped, then we have the ModuleAnswers for it.
-                tc = TemplateContext(self.answer.with_imputed_answers(), self.escapefunc)
+                # Load its answers + evaluate impute conditions.
+                tc = TemplateContext(self.answer.with_extended_info(), self.escapefunc)
             else:
                 # The question was skipped -- i.e. we have no ModuleAnswers for
                 # the question that this RenderedAnswer represents. But we want

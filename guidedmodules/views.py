@@ -30,8 +30,9 @@ def next_question(request, taskid, taskslug):
     # Get the Task.
     task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
 
-    # Load the answers the user has saved so far.
-    answered = task.get_answers()
+    # Load the answers the user has saved so far, and fetch imputed
+    # answers and next-question info.
+    answered = task.get_answers().with_extended_info()
 
     # Process form data.
     if request.method == "POST":
@@ -215,7 +216,10 @@ def next_question(request, taskid, taskslug):
         q = task.module.questions.get(key=request.GET["q"])
     else:
         # Display next unanswered question.
-        q = module_logic.next_question(answered)
+        if len(answered.can_answer) == 0:
+            q = None # no next question
+        else:
+            q = answered.can_answer[0]
 
     if q:
         # Is there a TaskAnswer for this yet?
@@ -295,10 +299,6 @@ def next_question(request, taskid, taskslug):
             task=task,
         )
 
-        # Computed imputed answers because any user answers that are overridden by imputed
-        # values supress the listing of the question.
-        answered = answered.with_imputed_answers()
-
         # Construct the page.
         context.update({
             "output": task.render_output_documents(answered),
@@ -369,10 +369,19 @@ def next_question(request, taskid, taskslug):
         )
 
         # Construct the page.
+        prompt = module_logic.render_content({
+                "template": q.spec["prompt"],
+                "format": "markdown",
+            },
+            answered,
+            "html",
+            "%s question %s prompt" % (repr(q.module), q.key)
+        )
+
         context.update({
             "header_col_active": "start" if (len(answered.answers) == 0 and q.spec["type"] == "interstitial") else "questions",
             "q": q,
-            "prompt": task.render_question_prompt(q),
+            "prompt": prompt,
             "history": taskq.get_history() if taskq else None,
             "answer_obj": answer,
             "answer": answer.get_value() if (answer and not answer.cleared) else None,
