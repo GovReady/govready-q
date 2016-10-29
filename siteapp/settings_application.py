@@ -3,6 +3,8 @@
 from .settings import *
 
 INSTALLED_APPS += [
+    'debug_toolbar',
+
     'htmlemailer',
     'notifications',
     'dbstorage',
@@ -13,10 +15,13 @@ INSTALLED_APPS += [
 ]
 
 MIDDLEWARE_CLASSES += [
-	'siteapp.middleware.OrganizationSubdomainMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'siteapp.middleware.OrganizationSubdomainMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS += ['siteapp.models.DirectLoginBackend']
+
+INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 
 # ALLWOED_HOSTS is set based on environment['host'], which gives us
 # our landing page domain. Also allow all subdomains of the organization

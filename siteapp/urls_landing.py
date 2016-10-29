@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
-
+from django.conf import settings
 from django.contrib import admin
+
 admin.autodiscover()
 
 import siteapp.views_landing as views_landing
@@ -20,3 +21,9 @@ urlpatterns = [
     # admin site
     url(r'^admin/', include(admin.site.urls)),
 ]
+
+if settings.DEBUG: # also in non-landing urls.py
+    import debug_toolbar
+    urlpatterns += [
+        url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
+    ]

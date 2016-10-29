@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
-
 from django.contrib import admin
+from django.conf import settings
+
 admin.autodiscover()
 
 import siteapp.views as views
@@ -34,3 +35,9 @@ urlpatterns += [
     url('^user/notifications/', include(notifications.urls, namespace='notifications')),
     url('^_mark_notifications_as_read', views.mark_notifications_as_read),
 ]
+
+if settings.DEBUG: # also in urls_landing
+    import debug_toolbar
+    urlpatterns += [
+        url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
+    ]

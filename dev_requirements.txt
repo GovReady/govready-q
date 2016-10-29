@@ -12,6 +12,7 @@ git+https://github.com/if-then-fund/django-database-storage
 dj-database-url==0.4.1
 
 django==1.9.8
+django-debug-toolbar
 django-allauth
 jsonfield
 django-bootstrap3
