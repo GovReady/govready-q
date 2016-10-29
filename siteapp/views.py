@@ -143,7 +143,7 @@ def project(request, project_id):
     # Pre-load the answers to project root task questions and impute answers so
     # that we know which questions are suppressed by imputed values.
     root_task_answers = project.root_task.get_answers()
-    root_task_answers.add_imputed_answers()
+    root_task_answers = root_task_answers.with_imputed_answers()
 
     # Create all of the module entries in a tabs & groups data structure.
     from collections import OrderedDict

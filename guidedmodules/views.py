@@ -297,7 +297,7 @@ def next_question(request, taskid, taskslug):
 
         # Computed imputed answers because any user answers that are overridden by imputed
         # values supress the listing of the question.
-        answered.add_imputed_answers()
+        answered = answered.with_imputed_answers()
 
         # Construct the page.
         context.update({

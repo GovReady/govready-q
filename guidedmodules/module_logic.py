@@ -21,7 +21,7 @@ def next_question(questions_answered, required=False, unanswered=None):
     # Add imputed question. Since an imputed answer can lead to the
     # imuputing of another question, they all have to be evaluated
     # up front.
-    questions_answered.add_imputed_answers()
+    questions_answered = questions_answered.with_imputed_answers()
 
     # Process the questions.
 
@@ -115,7 +115,7 @@ def render_content(content, answers, output_format, source, additional_context={
     # to provide the template context.
 
     # Ensure imputed answers are computed.
-    answers.add_imputed_answers()
+    answers = answers.with_imputed_answers()
 
     # Get the template.
     template_format = content["format"]
@@ -599,8 +599,11 @@ class ModuleAnswers:
         self.task = task
         self.answers = answers
         self.has_imputed_answers = False
+        self.was_imputed = set()
 
-    def add_imputed_answers(self):
+    def with_imputed_answers(self):
+        # Return a new ModuleAnswers instance that has imputed values added.
+        #
         # Set (and override) any answers with inputed answers. Imputed
         # answers take precedence over explicit answers because the
         # explicit answers were probably entered before another answer
@@ -611,29 +614,39 @@ class ModuleAnswers:
         # Proceed in order (?) in case there are dependencies between
         # imputations. TODO: This should follow the dependency chain
         # defined by next_question.
-        if self.has_imputed_answers: return # already done
-        self.was_imputed = set()
-        context = TemplateContext(self, lambda v, mode : str(v))
+        if self.has_imputed_answers: return self # already done
+
+        ret = ModuleAnswers(self.module, self.task, {})
+        ret.has_imputed_answers = True
+        context = TemplateContext(ret, lambda v, mode : str(v))
         for q in self.module.questions.order_by('definition_order'):
+        	# Try to impute the answer to this question.
             import jinja2.exceptions
             try:
                 v = run_impute_conditions(q.spec.get("impute", []), context)
                 if v:
                 	# Set the imputed value, overriding any user value.
-                    self.answers[q.key] = v[0]
+                    ret.answers[q.key] = v[0]
 
                     # Remember that it's imputed - this is used elsewhere.
-                    self.was_imputed.add(q.key)
-
-                    # Clear the TemplateContext cache for this question.
-                    if q.key in context._cache:
-                    	del context._cache[q.key]
+                    ret.was_imputed.add(q.key)
             except jinja2.exceptions.UndefinedError:
                 # If a variable is undefined, then we may be trying to
                 # impute the answer to a question that depends on a question
                 # that hasn't been answered yet.
-                continue
-        self.has_imputed_answers = True
+                pass
+
+            # Use a user-provided answer if no value is imputed.
+            if q.key in self.answers:
+            	ret.answers[q.key] = self.answers[q.key]
+
+            # Clear the TemplateContext cache for this question, since in the
+            # evaluation of previous impute conditions the TemplateContext
+            # was evaluated and this key may have been cached.
+            if q.key in context._cache:
+            	del context._cache[q.key]
+
+        return ret
 
     def render_output(self, additional_context, hard_fail=True):
         # Now that all questions have been answered, generate this
@@ -862,8 +875,7 @@ class RenderedAnswer:
         elif self.question_type == "module-set":
             # Iterate over the sub-tasks' answers.
             def get_module(m):
-                m.add_imputed_answers()
-                return TemplateContext(m, self.escapefunc)
+                return TemplateContext(m.with_imputed_answers(), self.escapefunc)
             return (get_module(v) for v in self.answer)
 
         elif self.question_type == "external-function":
@@ -878,8 +890,7 @@ class RenderedAnswer:
             # Pass through via a temporary TemplateContext.
             if self.answer is not None:
                 # If the question was not skipped, then we have the ModuleAnswers for it.
-                self.answer.add_imputed_answers()
-                tc = TemplateContext(self.answer, self.escapefunc)
+                tc = TemplateContext(self.answer.with_imputed_answers(), self.escapefunc)
             else:
                 # The question was skipped -- i.e. we have no ModuleAnswers for
                 # the question that this RenderedAnswer represents. But we want

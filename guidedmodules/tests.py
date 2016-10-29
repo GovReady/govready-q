@@ -34,7 +34,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         # Run the impute condition and test whether or not
         # it matched. Don't look at it's value -- the value
         # is always (True,) (a tuple containing True).
-        context = TemplateContext(answers, lambda v, mode : str(v)) # parallels ModuleAnswers.add_imputed_answers
+        context = TemplateContext(answers, lambda v, mode : str(v)) # parallels ModuleAnswers.with_imputed_answers
         actual = run_impute_conditions([{ "condition": condition, "value": True }], context)
         self.assertEqual(actual is not None, expected, msg="impute condition: %s" % condition)
 
@@ -344,7 +344,7 @@ class RenderTests(TestCaseWithFixtureData):
         # test that we get the same thing if we use an impute condition with value-mode: expression,
         # but since the test is only given its string output convert the impute condition value
         # to a string
-        context = TemplateContext(answers, lambda v, mode : str(v)) # parallels ModuleAnswers.add_imputed_answers
+        context = TemplateContext(answers, lambda v, mode : str(v)) # parallels ModuleAnswers.with_imputed_answers
         actual = run_impute_conditions([{ "condition": "1", "value": expression, "value-mode": "expression" }], context)
         self.assertIsNotNone(actual, msg="'1' impute condition failed")
         actual = actual[0] # unwrap
