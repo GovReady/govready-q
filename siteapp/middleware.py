@@ -93,7 +93,7 @@ class OrganizationSubdomainMiddleware:
             allowed_paths = [reverse("account_login"), reverse("account_signup"),
                 reverse("account_reset_password"), reverse("account_reset_password_done"), reverse("account_reset_password_from_key", kwargs={"uidb36":"aaaaaaaa", "key":"aaaaaaaa"}), reverse("account_reset_password_from_key_done")]
             allowed_paths = re.compile("|".join(("^" + re.escape(path).replace("aaaaaaaa", ".+") + "$") for path in allowed_paths))
-            print(allowed_paths)
+
         if allowed_paths.match(request.path):
             # Don't leak any organization information. But do render the login/signup
             # pages and allow the routes for the form POSTs from there.
