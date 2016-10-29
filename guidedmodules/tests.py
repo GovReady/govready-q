@@ -26,17 +26,17 @@ class ImputeConditionTests(TestCaseWithFixtureData):
     # and that they have the *same* truthy-ness when used in {% if ... %}
     # blocks in templates.
 
-    def _helper(self, module, answers, condition, expected):
+    def _test_condition_helper(self, module, context_key, context_value, condition, expected):
         m = Module.objects.get(key=module)
-        answers = ModuleAnswers(m, None, answers)
+        answers = ModuleAnswers(m, None, { context_key: context_value })
 
         # Test that the impute condition works correctly.
         # Run the impute condition and test whether or not
         # it matched. Don't look at it's value -- the value
         # is always (True,) (a tuple containing True).
-        context = TemplateContext(answers, str) # parallels ModuleAnswers.add_imputed_answers
+        context = TemplateContext(answers, lambda v, mode : str(v)) # parallels ModuleAnswers.add_imputed_answers
         actual = run_impute_conditions([{ "condition": condition, "value": True }], context)
-        self.assertEqual(actual is not None, expected)
+        self.assertEqual(actual is not None, expected, msg="impute condition: %s" % condition)
 
         # Test that an {% if ... %} block has the same truth value when
         # used in a template.
@@ -49,26 +49,23 @@ class ImputeConditionTests(TestCaseWithFixtureData):
             "text",
             str(self), # source
         ) == "TRUE"
-        self.assertEqual(if_block, expected)
-
-    def _helper2(self, module, question, value, condition, expected):
-        return self._helper(module, { question: value }, condition, expected)
+        self.assertEqual(if_block, expected, msg="{%% if %s %%}" % condition)
 
     def test_impute_using_text_questions(self):
-        test = lambda *args : self._helper2("question_types_text", *args)
+        test = lambda *args : self._test_condition_helper("question_types_text", *args)
 
-        test("q_text", "Hello!", "q_text", True) # answered is truthy
-        test("q_text", "Hello!", "q_text=='Hello!'", True)
-        test("q_text", "Hello!", "q_text!='Hello!'", False)
-        test("q_text", None, "q_text", False) # skipped is falsey
+        # all of the text field types have the same behavior in impute conditions
+        for fieldname in ("q_text", "q_password", "q_email_address", "q_url", "q_longtext"):
+            test(fieldname, "Hello!", "%s" % fieldname,           True) # answered is truthy
+            test(fieldname, "Hello!", "%s=='Hello!'" % fieldname, True)
+            test(fieldname, "Hello!", "%s!='Hello!'" % fieldname, False)
+            test(fieldname, None,     "%s" % fieldname,           False) # skipped is falsey
 
-        # password, email, url, and longtext should have the same behavior as above.
-        # so does date, but there are other things to check
-        
+        # Are there other sensible things we can do with dates?
         #test("q_date", "2016-10-28", "q_text < '2017-01-01'", True)
 
     def test_impute_using_choice_questions(self):
-        test = lambda *args : self._helper2("question_types_choice", *args)
+        test = lambda *args : self._test_condition_helper("question_types_choice", *args)
 
         test("q_choice", "choice1", "q_choice", True) # answered is truthy
         test("q_choice", "choice1", "q_choice == 'choice1'", True)
@@ -86,7 +83,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test("q_multiple_choice", None, "q_multiple_choice", False) # skipped is falsey
 
     def test_impute_using_numeric_questions(self):
-        test = lambda *args : self._helper2("question_types_numeric", *args)
+        test = lambda *args : self._test_condition_helper("question_types_numeric", *args)
 
         test("q_integer", 0, "q_integer", True) # answered is truthy, even if answer would be falsey in Python
         test("q_integer", 0, "q_integer == 0", True)
@@ -99,7 +96,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test("q_real", None, "q_real", False) # skipped is falsey
 
     def test_impute_using_media_questions(self):
-        test = lambda *args : self._helper2("question_types_media", *args)
+        test = lambda *args : self._test_condition_helper("question_types_media", *args)
 
         # The "file" question type yields a dictionary with metadata about
         # the uploaded file -- it isn't normally rendered directly.
@@ -121,7 +118,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test("q_external_function", None, "q_external_function", False) # but skipped/None are falsey
 
     def test_impute_using_module_questions(self):
-        test = lambda *args : self._helper2("question_types_module", *args)
+        test = lambda *args : self._test_condition_helper("question_types_module", *args)
 
         # Create a sub-task that answers a question.
         m = Module.objects.get(key="simple") # the module ID that can answer the q_module question
@@ -186,32 +183,32 @@ class RenderTests(TestCaseWithFixtureData):
 
         test("q_text", "Hello!", "Hello!")
         test("q_text.text", "Hello!", "Hello!")
-        test("q_text", None, escape("<text>")) # is actually the question's title, not its type
+        test("q_text", None, escape("<text>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_text.text", None, escape("<not answered>"))
 
         test("q_password", "1234", "1234")
         test("q_password.text", "1234", "1234")
-        test("q_password", None, escape("<password>")) # is actually the question's title, not its type
+        test("q_password", None, escape("<password>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_password.text", None, escape("<not answered>"))
         
         test("q_email_address", "invalid@govready.com", "invalid@govready.com")
         test("q_email_address.text", "invalid@govready.com", "invalid@govready.com")
-        test("q_email_address", None, escape("<email-address>")) # is actually the question's title, not its type
+        test("q_email_address", None, escape("<email-address>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_email_address.text", None, escape("<not answered>"))
         
         test("q_url", "https://www.govready.com?unit#test", "https://www.govready.com?unit#test")
         test("q_url.text", "https://www.govready.com?unit#test", "https://www.govready.com?unit#test")
-        test("q_url", None, escape("<url>")) # is actually the question's title, not its type
+        test("q_url", None, escape("<url>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_url.text", None, escape("<not answered>"))
         
-        test("q_longtext", "This is a paragraph.\n\nThis is another paragraph.", "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>")
-        test("q_longtext.text", "This is a paragraph.\n\nThis is another paragraph.", "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>")
-        test("q_longtext", None, escape("<longtext>")) # is actually the question's title, not its type
+        test("q_longtext", "This is a paragraph.\n\nThis is another paragraph.", "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>", 'This is a paragraph.\n\nThis is another paragraph.') # renders w/ Markdown, but impute condition gives it raw
+        test("q_longtext.text", "This is a paragraph.\n\nThis is another paragraph.", "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>", 'This is a paragraph.\n\nThis is another paragraph.') # renders w/ Markdown, but impute condition gives it raw
+        test("q_longtext", None, escape("<longtext>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_longtext.text", None, escape("<not answered>"))
         
         test("q_date", "2016-10-28", "2016-10-28")
         test("q_date.text", "2016-10-28", "10/28/2016")
-        test("q_date", None, escape("<date>")) # is actually the question's title, not its type
+        test("q_date", None, escape("<date>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_date.text", None, escape("<not answered>"))
 
 
@@ -223,21 +220,21 @@ class RenderTests(TestCaseWithFixtureData):
 
         test("q_choice", "choice1", "choice1")
         test("q_choice.text", "choice1", "Choice 1")
-        test("q_choice", None, escape("<choice>")) # is actually the question's title, not its type
+        test("q_choice", None, escape("<choice>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_choice.text", None, escape("<not answered>"))
 
         test("q_yesno", "yes", "yes")
         test("q_yesno.text", "yes", "Yes")
         test("q_yesno", "no", "no")
         test("q_yesno.text", "no", "No")
-        test("q_yesno", None, escape("<yesno>")) # is actually the question's title, not its type
+        test("q_yesno", None, escape("<yesno>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_yesno.text", None, escape("<not answered>"))
 
-        test("q_multiple_choice", [], "")
+        test("q_multiple_choice", [], "", []) # renders empty, but impute value is the list
         test("q_multiple_choice.text", [], escape("<nothing chosen>"))
-        test("q_multiple_choice", ["choice1", "choice3"], "choice1, choice3")
+        test("q_multiple_choice", ["choice1", "choice3"], "choice1, choice3", ["choice1", "choice3"]) # renders as a string, but imputes as a list
         test("q_multiple_choice.text", ["choice1", "choice3"], "Choice 1, Choice 3")
-        test("q_multiple_choice", None, escape("<multiple-choice>")) # is actually the question's title, not its type
+        test("q_multiple_choice", None, escape("<multiple-choice>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_multiple_choice.text", None, escape("<not answered>"))
 
     def test_render_numeric_questions(self):
@@ -248,12 +245,12 @@ class RenderTests(TestCaseWithFixtureData):
 
         test("q_integer", 0, "0")
         test("q_integer.text", 0, "0")
-        test("q_integer", None, escape("<integer>")) # is actually the question's title, not its type
+        test("q_integer", None, escape("<integer>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_integer.text", None, escape("<not answered>"))
 
         test("q_real", 0.5, "0.5")
         test("q_real.text", 0.5, "0.5")
-        test("q_real", None, escape("<real>")) # is actually the question's title, not its type
+        test("q_real", None, escape("<real>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_real.text", None, escape("<not answered>"))
 
     def test_render_media_questions(self):
@@ -269,14 +266,14 @@ class RenderTests(TestCaseWithFixtureData):
             "size": 1024,
             "type": "text/plain",
         }
-        test("q_file", file_metadata, escape("<uploaded file: %s>" % file_metadata["url"]))
+        test("q_file", file_metadata, escape("<uploaded file: %s>" % file_metadata["url"]), file_metadata) # renders as <uploaded file: ...> but impute value gives it back raw
         test("q_file.url", file_metadata, "some-url-here")
         test("q_file.text", file_metadata, escape("<uploaded file: %s>" % file_metadata["url"]))
-        test("q_file", None, escape("<file>")) # is actually the question's title, not its type
+        test("q_file", None, escape("<file>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_file.text", None, escape("<not answered>"))
 
         # Interstitial questions never have value.
-        test("q_interstitial", None, escape("<interstitial>")) # is actually the question's title, not its type
+        test("q_interstitial", None, escape("<interstitial>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_interstitial.text", None, escape("<not answered>"))
 
         # We're not calling the external function here - just rendering it
@@ -284,7 +281,7 @@ class RenderTests(TestCaseWithFixtureData):
         # since its value can be any Python data structure.
         test("q_external_function", "VALUE", "VALUE")
         test("q_external_function.text", "VALUE", "VALUE")
-        test("q_external_function", None, escape("<external-function>")) # is actually the question's title, not its type
+        test("q_external_function", None, escape("<external-function>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_external_function.text", None, escape("<not answered>"))
 
     def test_render_module_questions(self):
@@ -307,26 +304,33 @@ class RenderTests(TestCaseWithFixtureData):
         # instance-name attribute and that attribute says to give the value
         # of "{{q1}}", but the Task object itself doesn't have any answers
         # because we faked it above, we get back the same as "{{q_module.q1}}",
-        # which is the title of q1.
-        test("q_module", value, escape("<The Question>"))
+        # which is the title of q1. But in an impute condition w/ value-mode
+        # "expression", we get back the ModuleAnswers instance.
+        test("q_module", value, escape("<The Question>"), value)
 
         test("q_module.q1", value, "My Answer")
         test("q_module.q1.text", value, "My Answer")
-        test("q_module", None, escape("<module>")) # the title of the question q_module
-        test("q_module.q1", None, escape("<The Question>")) # the title of q1
+        test("q_module", None, escape("<module>"), None) # renders as the title of the question q_module, but in an impute condition value gives None
+        test("q_module.q1", None, escape("<The Question>"), None) # the title of q1, but in an impute condition value None
         test("q_module.q1.text", None, escape("<not answered>"))
 
         # TODO: Test module-set questions.
 
-    def _test_render_single_question_md(self, module, question, value, expected_output):
+    def _test_render_single_question_md(self, module, expression, value, expected, expected_impute_value="__NOT__PROVIDED__"):
         # Render the "{{question}}" or "{{question.text}}" using the given module.
-        actual = self.render_content(
-            module,
-            "markdown", "{{%s}}" % question,
+        m = Module.objects.get(key=module)
+        answers = ModuleAnswers(m, None, {
+            expression.split(".")[0]: value # if expression looks like "id.text" just use "id" here to set the answer
+        })
+        actual = render_content(
             {
-                question.split(".")[0]: value # if question looks like "id.text" just use "id" here
+                "format": "markdown",
+                "template": "{{%s}}" % expression,
             },
-            "html")
+            answers,
+            "html",
+            str(self), # source
+        ).strip()
 
         # unwrap the <p> tags for simplicity, so the caller doesn't have to supply it
         import re
@@ -335,4 +339,19 @@ class RenderTests(TestCaseWithFixtureData):
         actual = strip_p_tags.match(actual).group(1).strip()
 
         # test that the output matches what the caller gave
-        self.assertEqual(actual, expected_output)
+        self.assertEqual(actual, expected)
+
+        # test that we get the same thing if we use an impute condition with value-mode: expression,
+        # but since the test is only given its string output convert the impute condition value
+        # to a string
+        context = TemplateContext(answers, lambda v, mode : str(v)) # parallels ModuleAnswers.add_imputed_answers
+        actual = run_impute_conditions([{ "condition": "1", "value": expression, "value-mode": "expression" }], context)
+        self.assertIsNotNone(actual, msg="'1' impute condition failed")
+        actual = actual[0] # unwrap
+        if expected_impute_value == "__NOT__PROVIDED__":
+            # when comparing with render output stringify and escape
+            # the imputed value
+            import html
+            actual = html.escape(str(actual))
+            expected_impute_value = expected
+        self.assertEqual(actual, expected_impute_value, msg="impute value expression %s" % expression)

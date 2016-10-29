@@ -401,6 +401,10 @@ def run_impute_conditions(conditions, context):
                 if isinstance(value, RenderedAnswer):
                     # Unwrap.
                     value =  value.answer
+                elif hasattr(value, "__html__"):
+                    # some things might return something that safely wraps a string,
+                    # like our SafeString instance
+                    value = value.__html__()
                 elif hasattr(value, "as_raw_value"):
                     # RenderedProject, RenderedOrganization
                     value = value.as_raw_value()
@@ -609,7 +613,7 @@ class ModuleAnswers:
         # defined by next_question.
         if self.has_imputed_answers: return # already done
         self.was_imputed = set()
-        context = TemplateContext(self, str)
+        context = TemplateContext(self, lambda v, mode : str(v))
         for q in self.module.questions.order_by('definition_order'):
             import jinja2.exceptions
             try:
