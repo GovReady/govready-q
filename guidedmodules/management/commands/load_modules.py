@@ -78,20 +78,23 @@ class Command(BaseCommand):
                 for module_id in self.iter_modules(path=path+[fn]):
                     yield module_id
 
-    def iter_assets_dirs(self, path=[]):
+    def iter_module_dirs_with_assets(self, path=[]):
         # Returns a generator over all relative paths to directories containing
-        # module static assets.
+        # modules that have a static assets subdirectory. To aid build_static_assets,
+        # we return all parent directories before child directories so that we
+        # don't create implicit parent directories before trying to do a copytree
+        # with that directory as the destination, which will throw an error.
         import os, os.path
+
+        # Is there an assets directory here?
+        if os.path.exists(os.path.join(* [settings.MODULES_PATH] + path + ["assets"])):
+        	yield os.sep.join(path) # os.path.join fails if path is empty
+
+        # Recurse into subdirectories except ones named "assets".
         for fn in sorted(os.listdir(os.path.join(settings.MODULES_PATH, *path))):
-            fullpath = os.path.join(*[settings.MODULES_PATH] + path + [fn])
-            if os.path.isfile(fullpath):
-                pass
-            elif fn == "assets":
-                # This is a static assets directory.
-                yield "/".join(path + [fn])
-            else:
-                # Recursively walk directories.
-                for d in self.iter_assets_dirs(path=path+[fn]):
+            fullpath = os.path.join(* [settings.MODULES_PATH] + path + [fn])
+            if not os.path.isfile(fullpath) and fn != "assets":
+                for d in self.iter_module_dirs_with_assets(path=path+[fn]):
                     yield d
 
     def open_module(self, module_id, referenced_by_module_id):
@@ -432,9 +435,10 @@ class Command(BaseCommand):
             shutil.rmtree(target_root)
 
         # Copy.
-        for assets_dir in self.iter_assets_dirs():
-            target_dir = os.path.join(target_root, *assets_dir.split(os.sep)[:-1])
+        for assets_dir in self.iter_module_dirs_with_assets():
+            target_dir = os.path.join(target_root, assets_dir)
+            assets_dir = os.path.join(settings.MODULES_PATH, assets_dir, "assets")
             shutil.copytree(
-                os.path.join(settings.MODULES_PATH, assets_dir),
+                assets_dir,
                 target_dir,
                 copy_function=os.link)
