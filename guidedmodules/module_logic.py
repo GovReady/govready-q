@@ -218,7 +218,7 @@ def render_content(content, answers, output_format, source, additional_context={
     #
     # No other output formats are supported.
     if template_format == "markdown":
-        if output_format == "html":
+        if output_format == "html" or output_format == "PARSE_ONLY":
             # Convert the template first to HTML using CommonMark.
             
             # But we don't want CommonMark to process template tags because if
@@ -264,8 +264,9 @@ def render_content(content, answers, output_format, source, additional_context={
                 def rewrite_url(self, node):
                     import urllib.parse
                     base_path = "/static/module-assets/"
-                    if not node.destination.startswith("/"):
-                        # Assets are relative to the module's 'path'.
+                    if not node.destination.startswith("/") and answers is not None:
+                        # Assets are relative to the module's 'path'. (If answers is
+                        # none, we're probably just calling this method on test data.)
                         base_path += "/".join(answers.module.key.split("/")[0:-1]) + "/"
                     node.destination = urllib.parse.urljoin(base_path, node.destination)
 
@@ -306,7 +307,7 @@ def render_content(content, answers, output_format, source, additional_context={
                         "template": value
                     },
                     answers,
-                    "text",
+                    output_format,
                     source + " " + "->".join(path),
                     additional_context,
                 )
@@ -337,6 +338,10 @@ def render_content(content, answers, output_format, source, additional_context={
         elif output_format == "text":
             # Treat as plain text.
             return output
+        elif output_format == "PARSE_ONLY":
+            # For tests, callers can use the "PARSE_ONLY" output format to
+            # stop after the template is prepared.
+            return output
         else:
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
@@ -365,10 +370,6 @@ def render_content(content, answers, output_format, source, additional_context={
 
         # Execute the template.
 
-        # Create an intial context dict and add rendered answers into it.
-        context = dict(additional_context) # clone
-        context.update(TemplateContext(answers, escapefunc))
-
         # Evaluate the template. Ensure autoescaping is turned on. Even though
         # we handle it ourselves, we do so using the __html__ method on
         # RenderedAnswer, which relies on autoescaping logic. This also lets
@@ -387,6 +388,17 @@ def render_content(content, answers, output_format, source, additional_context={
             template = env.from_string(template_body)
         except jinja2.TemplateSyntaxError as e:
             raise ValueError("There was an error loading the template %s: %s" % (source, str(e)))
+
+        # For tests, callers can use the "PARSE_ONLY" output format to
+        # stop after the template is compiled.
+        if output_format == "PARSE_ONLY":
+            return template
+
+        # Create an intial context dict and add rendered answers into it.
+        context = dict(additional_context) # clone
+        context.update(TemplateContext(answers, escapefunc))
+
+        # Render.
         try:
             output = template.render(context)
         except Exception as e:

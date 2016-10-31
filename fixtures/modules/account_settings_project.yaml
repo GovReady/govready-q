@@ -1,4 +1,5 @@
 id: account_settings_project
+type: system-project
 title: Account Settings Project
 short_description: The structure of the account settings Project.
 questions:

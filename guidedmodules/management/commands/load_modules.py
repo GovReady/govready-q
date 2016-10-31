@@ -3,6 +3,7 @@ from django.db import transaction
 from django.conf import settings
 
 from guidedmodules.models import Module, ModuleQuestion, Task
+from guidedmodules.module_logic import render_content
 
 import sys, json
 
@@ -248,8 +249,28 @@ class Command(BaseCommand):
 
 
     def transform_module_spec(self, spec):
-        # delete 'questions' from it because it is stored within
-        # ModuleQuestion instances
+        def invalid(msg):
+            raise ValidationError(spec['id'], "module", msg)
+
+        # Validate that the introduction and output documents are renderable.
+        if "introduction" in spec:
+            if not isinstance(spec["introduction"], dict):
+                invalid("Introduction field must be a dictionary, not a %s." % str(type(spec["introduction"])))
+            try:
+                render_content(spec["introduction"], None, "PARSE_ONLY", "(introduction)")
+            except ValueError as e:
+                invalid("Introduction is an invalid Jinja2 template: " + str(e))
+
+        if not isinstance(spec.get("output", []), list):
+            invalid("Output field must be a list, not a %s." % str(type(spec.get("output"))))
+        for i, doc in enumerate(spec.get("output", [])):
+            try:
+                render_content(doc, None, "PARSE_ONLY", "(output document)")
+            except ValueError as e:
+                invalid("Output document #%d is an invalid Jinja2 template: %s" % (i+1, str(e)))
+
+        # Delete 'questions' from it because it is stored within
+        # ModuleQuestion instances.
         spec = dict(spec) # clone
         if "questions" in spec:
             del spec["questions"]
@@ -330,6 +351,23 @@ class Command(BaseCommand):
         
         elif spec.get("type") == None:
             invalid("Question is missing a type.")
+
+        # Check that the prompt is a valid Jinja2 template.
+        if spec.get("prompt") is None:
+            # Prompts are optional in project modules but required elsewhere.
+            if m.spec.get("type") not in ("project", "system-project"):
+                invalid("Question prompt is missing.")
+        else:
+            if not isinstance(spec.get("prompt"), str):
+                invalid("Question prompt must be a string, not a %s." % str(type(spec.get("prompt"))))
+            try:
+                render_content({
+                        "format": "markdown",
+                        "template": spec["prompt"],
+                    },
+                    None, "PARSE_ONLY", "(question prompt)")
+            except ValueError as e:
+                invalid("Question prompt is an invalid Jinja2 template: " + str(e))
 
         # Validate impute conditions.
         imputes = spec.get("impute", [])
