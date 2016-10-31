@@ -220,16 +220,50 @@ def render_content(content, answers, output_format, source, additional_context={
     if template_format == "markdown":
         if output_format == "html" or output_format == "PARSE_ONLY":
             # Convert the template first to HTML using CommonMark.
+
+            if not isinstance(template_body, str): raise ValueError("Template %s has incorrect type: %s" % (source, type(template_body)))
             
-            # But we don't want CommonMark to process template tags because if
-            # there are HTML symbols like ", <, and > within the tag --- which
-            # have meaning to Jinaj2, then they may get ruined by CommonMark
-            # because they may be escaped.
+            # We don't want CommonMark to mess up template tags, however. If
+            # there are symbols which have meaning both to Jinaj2 and CommonMark,
+            # then they may get ruined by CommonMark because they may be escaped.
+            # For instance:
+            #
+            #    {% hello "*my friend*" %}
+            #
+            # would become
+            #
+            #    {% hello "<em>my friend</em>" %}
+            #
+            # and
+            #
+            #    [my link]({{variable_holding_url}})
+            #
+            # would become a link whose target is
+            #
+            #    %7B%7Bvariable_holding_url%7D%7D
+            #
+            # And that's not good!
             #
             # Do a simple lexical pass over the template and replace template
-            # tags with a special code that CommonMark will ignore. We'll put
-            # back the strings after.
-            if not isinstance(template_body, str): raise ValueError("Template %s has incorrect type: %s" % (source, type(template_body)))
+            # tags with special codes that CommonMark will ignore. Then we'll
+            # put back the strings after the CommonMark has been rendered into
+            # HTML, so that the template tags end up in their appropriate place.
+            #
+            # Since CommonMark will clean up Unicode in URLs, e.g. in link and
+            # image URLs, by %-encoding non-URL-safe characters, we have to
+            # also override CommonMark's URL escaping function at
+            # https://github.com/rtfd/CommonMark-py/blob/master/CommonMark/common.py#L71
+            # to not %-encode our special codes. Unfortunately urllib.parse.quote's
+            # "safe" argument does not handle non-ASCII characters.
+            from CommonMark import inlines
+            def urlencode_special(uri):
+                import urllib.parse
+                return "".join(
+                    urllib.parse.quote(c, safe="/@:+?=&()%#*,") # this is what CommonMark does
+                    if c not in "\uE000\uE001" else c # but keep our special codes
+                    for c in uri)
+            inlines.normalize_uri = urlencode_special
+
             substitutions = []
             import re
             def replace(m):
@@ -262,6 +296,11 @@ def render_content(content, answers, output_format, source, additional_context={
                         self.rewrite_url(node)
                     super().image(node, entering)
                 def rewrite_url(self, node):
+                    if "\uE000" in node.destination:
+                        # Don't mess with the URL if it contains any template
+                        # tags. We can't tell what the URL will be, so let's
+                        # require that it be absolute.
+                        return node.destination
                     import urllib.parse
                     base_path = "/static/module-assets/"
                     if not node.destination.startswith("/") and answers is not None:
