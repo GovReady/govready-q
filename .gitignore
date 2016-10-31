@@ -76,6 +76,7 @@ target/
 # Local development files
 modules/dev
 modules/ssp
+modules/12fl
 
 # Local build/test files
 siteapp/staticfiles
