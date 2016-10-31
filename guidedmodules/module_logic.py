@@ -458,7 +458,7 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
     # And when impute values are expressions, then similarly for those.
     for rule in question.spec.get("impute", []):
         for qid in get_jinja2_template_vars(
-                r"{% if " + rule["condition"] + r" %}...{% endif %}"
+                r"{% if " + str(rule["condition"]) + r" %}...{% endif %}"
                 ):
             if rule.get("value") is None:
                 ret.append(("skip-condition", qid))
