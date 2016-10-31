@@ -264,13 +264,21 @@ def project(request, project_id):
 @require_http_methods(["POST"])
 def delete_project(request, project_id):
     project = get_object_or_404(Project, id=project_id, organization=request.organization)
-    if request.user not in  project.get_admins():
+    if request.user not in project.get_admins():
         return HttpResponseForbidden()
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
     project.delete()
     return JsonResponse({ "status": "ok" })
 
+@require_http_methods(["POST"])
+def export_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id, organization=request.organization)
+    if request.user not in project.get_admins():
+        return HttpResponseForbidden()
+    resp = JsonResponse(project.export_json(), json_dumps_params={"indent": 2})
+    resp["content-disposition"] = "attachment; filename=%s.json" % quote(project.title)
+    return resp
 
 # INVITATIONS
 

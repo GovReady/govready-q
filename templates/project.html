@@ -289,7 +289,9 @@ span.glyphicon.glyphicon-check {
       <div class="task-group">
         <div class="task-group-title">Share Data</div>
           <div class="task">
-              <button class="btn btn-success" onclick="alert('Under development');return false;" style="margin: 1em 0"><span class="glyphicon glyphicon-share"></span>&nbsp;Export System Description and Control Information</button> 
+              <form method="post" action="{% url "export_project" project.id %}">{% csrf_token %}
+                <button class="btn btn-success" style="margin: 1em 0"><span class="glyphicon glyphicon-share"></span>&nbsp;Export System Description and Control Information</button>
+              </form>
           </div>
         </div>
         

@@ -314,6 +314,61 @@ class Project(models.Model):
     def get_notification_watchers(self):
         return self.get_members()
 
+    def export_json(self):
+        # Exports all project data to a JSON-serializable Python data structure.
+        # The caller should have administrative permissions because no authorization
+        # is performed within this.
+
+        from collections import OrderedDict
+
+        # The Serializer class is a helper that lets us avoid serializing
+        # things redundantly. Objects can asked to be serialzied once. On
+        # later times, a reference to the first serialized instance is returned.
+        #
+        # I meant this to also prevent infinite recursion during serialization
+        # but I don't think that actually works. If that's needed the logic here
+        # needs to be changed.
+        class Serializer:
+            def __init__(self):
+                self.objects = { }
+                self.keys = { }
+            def serializeOnce(self, object, preferred_key, serialize_func):
+                if object not in self.objects:
+                    # This is the first use of this object instance.
+                    # Save the dict that we return for when we assign
+                    # its actual key later.
+                    ret = serialize_func()
+                    self.objects[object] = ret
+                    return ret
+                else:
+                    # We've already serialized this object instance once.
+                    # Just refer to it on second use.
+                    if object not in self.keys:
+                        # This is the first re-use. Generate a key.
+                        key = preferred_key
+                        i = 0
+                        while key in self.keys:
+                            key = preferred_key + ":" + str(i)
+                            i += 1
+                        self.keys[object] = key
+                        self.objects[object]["__referenceId__"] = key
+                    return OrderedDict([
+                        ("__reference__", self.keys[object]),
+                    ])
+
+        # Serialize this Project instance.
+        from collections import OrderedDict
+        return OrderedDict([
+            ("name", "GovReady Q Project Data"), # just something human readable at the top
+            ("schema", "1.0"), # serialization format
+            ("project", OrderedDict([
+                ("title", self.title),
+                ("created", self.created.isoformat()),
+                ("modified", self.updated.isoformat()),
+                ("content", self.root_task.export_json(Serializer())),
+            ])),
+        ])
+
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", help_text="The Project this is defining membership for.")

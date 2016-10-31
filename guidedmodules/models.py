@@ -36,6 +36,19 @@ class Module(models.Model):
         # Return the ModuleQuestions in definition order.
         return list(self.questions.order_by('definition_order'))
 
+    def export_json(self, serializer):
+        # Exports this Module's metadata to a JSON-serializable Python data structure.
+        # Called via siteapp.Project::export_json.
+        from collections import OrderedDict
+        return serializer.serializeOnce(
+            self,
+            "module:" + self.key, # a preferred key, doesn't need to be unique here
+            lambda : OrderedDict([  # "lambda :" makes this able to be evaluated lazily
+                ("key", self.key),
+                ("created", self.created.isoformat()),
+                ("modified", self.updated.isoformat()),
+        ]))
+
     @staticmethod
     def BuildNetworkDiagram(start_nodes, config):
         # Build a network diagram by recursively evaluating
@@ -408,6 +421,35 @@ class Task(models.Model):
             return qs.first()
         return None
 
+    def export_json(self, serializer):
+        # Exports this Task's current answers to a JSON-serializable Python data structure.
+        # The export is recurisve --- all answers to sub-modules are included, and so on.
+        # Called via siteapp.Project::export_json. No authorization is performed within here
+        # so the caller should have administrative access. Especially since the export may
+        # include not just this Task's answers but also the answers of sub-tasks.
+
+        # Since a Task can be used many times throughout a project as the answer
+        # to different module and module-set questions, we use serializeOnce to
+        # assign the Task a unique ID in the output and then if it's attempted to
+        # be serialized again, serializeOnce just outputs a reference to the ID
+        # and doesn't call the lambda function below.
+        from collections import OrderedDict
+        return serializer.serializeOnce(
+            self,
+            "task", # used to create a unique key if the Task is attempted to be serialzied more than once
+            lambda : OrderedDict([ # "lambda :" makes this able to be evaluated lazily
+                ("id", self.id),
+                ("title", self.title),
+                ("created", self.created.isoformat()),
+                ("modified", self.updated.isoformat()),
+                ("module", self.module.export_json(serializer)),
+                ("answers", OrderedDict([
+                    (q.question.key, q.export_json(serializer))
+                    for q in self.answers.all().order_by("question__definition_order")
+                    ])),
+            ])
+            )
+
 class TaskAnswer(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="answers", help_text="The Task that this TaskAnswer is a part of.")
     question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT, help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
@@ -501,6 +543,16 @@ class TaskAnswer(models.Model):
     def title(self):
         return self.question.spec["title"] + " - " + self.task.title
 
+    def export_json(self, serializer):
+        # Exports this TaskAnswer's current answer to a JSON-serializable Python data structure.
+        # Called via siteapp.Project::export_json.
+        ans = self.get_current_answer()
+        if ans is None or ans.cleared:
+            # There is no current answer.
+            return None
+        # Call the TaskAnswerHistory serialiation function.
+        return ans.export_json(serializer)
+
 class TaskAnswerHistory(models.Model):
     taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
 
@@ -582,6 +634,37 @@ class TaskAnswerHistory(models.Model):
             return repr(self.answered_by_task.all())
         else:
             return repr(self.get_value())
+
+    def export_json(self, serializer):
+        # Exports this TaskAnswerHistory's value to a JSON-serializable Python data structure.
+        # Called via siteapp.Project::export_json.
+
+        # Get the answer's current value.
+        value = self.get_value()
+        q = self.taskanswer.question
+
+        # If it's not a skipped value, we may need further processing.
+        if value is not None:
+            if q.spec["type"] == "module":
+                # It's a ModuleAnswers instance -- serialize the Task itself.
+                value = value.task.export_json(serializer)
+            elif q.spec["type"] == "module-set":
+                # It's an array of ModuleAnswers instances.
+                value = [x.task.export_json(serializer) for x in value]
+            else:
+                # Any value that we might have stored in the database is definitely
+                # JSON-serializabile because that's how it's stored. Special question
+                # types like "file" should be sure to only generate JSON-serializable
+                # content, or else we need to update this.
+                pass
+
+        from collections import OrderedDict
+        return OrderedDict([
+            ("questionType", q.spec["type"]), # so that deserialization can interpret the value
+            ("answeredBy", str(self.answered_by)),
+            ("answeredAt", self.created.isoformat()),
+            ("value", value),
+        ])
 
 class InstrumentationEvent(models.Model):
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
