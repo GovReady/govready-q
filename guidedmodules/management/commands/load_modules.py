@@ -7,8 +7,8 @@ from guidedmodules.models import Module, ModuleQuestion, Task
 import sys, json
 
 class ValidationError(Exception):
-    def __init__(self, file_name, message):
-        super().__init__("There was an error in %s: %s" % (file_name, message))
+    def __init__(self, file_name, scope, message):
+        super().__init__("There was an error in %s (%s): %s" % (file_name, scope, message))
 
 class CyclicDependency(Exception):
     def __init__(self, path):
@@ -109,7 +109,7 @@ class Command(BaseCommand):
             try:
                 return (fn, yaml.load(f))
             except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
-                raise ValidationError(fn, "There was an error parsing the file: " + str(e))
+                raise ValidationError(fn, "reading file", "There was an error parsing the file: " + str(e))
 
     @transaction.atomic # there can be an error mid-way through updating a Module
     def process_module(self, module_id, processed_modules, path):
@@ -131,7 +131,7 @@ class Command(BaseCommand):
         # part of the path of the module_id. This allows the IDs to be 
         # relative to the path in which the module is found.
         if spec["id"] != module_id.split('/')[-1]:
-            raise ValidationError(fn, "Module 'id' field ('%s') doesn't match filename ('%s')." % (spec["id"], module_id))
+            raise ValidationError(fn, "module", "Module 'id' field ('%s') doesn't match filename ('%s')." % (spec["id"], module_id))
 
         # Replace spec["id"] with the full module_id.
         spec["id"] = module_id
@@ -143,7 +143,7 @@ class Command(BaseCommand):
         # Run some validation.
 
         if not isinstance(spec.get("questions"), list):
-            raise ValidationError(fn, "Invalid value for 'questions'.")
+            raise ValidationError(fn, "questions", "Invalid value for 'questions'.")
 
         # Pre-process the module.
 
@@ -290,10 +290,29 @@ class Command(BaseCommand):
 
 
     def transform_question_spec(self, m, spec):
-        spec = dict(spec) # clone
+        if not spec.get("id"):
+            raise ValidationError(m.spec['id'], "questions", "Question is missing an id.")
+
+        def invalid(msg):
+            raise ValidationError(m.spec['id'], "question %s" % spec['id'], msg)
+
+        # clone dict before updating
+        spec = dict(spec)
+
+        # Perform type conversions, validation, and fill in some defaults in the YAML
+        # schema so that the values are ready to use in the database.
         if spec.get("type") == "multiple-choice":
-            spec["min"] = int(spec.get("min", "0"))
-            spec["max"] = None if ("max" not in spec) else int(spec["max"])
+            # validate and type-convert min and max
+
+            spec["min"] = spec.get("min", 0)
+            if not isinstance(spec["min"], int) or spec["min"] < 0:
+                invalid("min must be a positive integer")
+
+            spec["max"] = None if ("max" not in spec) else spec["max"]
+            if spec["max"] is not None:
+                if not isinstance(spec["max"], int) or spec["max"] < 0:
+                    invalid("max must be a positive integer")
+        
         elif spec.get("type") in ("module", "module-set"):
             # Replace the module ID (a string) from the specification with
             # the integer ID of the module instance in the database for
@@ -308,8 +327,37 @@ class Command(BaseCommand):
                         .id
             except Module.DoesNotExist:
                 raise DependencyError(m.key, spec.get("module-id"))
+        
         elif spec.get("type") == None:
-            raise ValidationError(m.spec['id'], "Question %s is missing a type." % spec['id'])
+            invalid("Question is missing a type.")
+
+        # Validate impute conditions.
+        imputes = spec.get("impute", [])
+        if not isinstance(imputes, list):
+            invalid("Impute's value must be a list.")
+        for i, rule in enumerate(imputes):
+            def invalid_rule(msg):
+                raise ValidationError(m.spec['id'], "question %s, impute condition %d" % (spec['id'], i+1), msg)
+
+            # Check that the condition is a string, and that it's a valid Jinja2 expression.
+            if not isinstance(rule.get("condition"), str):
+                invalid_rule("Impute condition must be a string, not a %s." % str(type(rule["condition"])))
+            from jinja2.sandbox import SandboxedEnvironment
+            env = SandboxedEnvironment()
+            try:
+                env.compile_expression(rule["condition"])
+            except Exception as e:
+                invalid_rule("Impute condition %s is an invalid Jinja2 expression: %s." % (repr(rule["condition"]), str(e)))
+
+            # Check that the value is valid. If the value-mode is raw, which
+            # is the default, then any Python/YAML value is valid. We only
+            # check expression values.
+            if rule.get("value-mode") == "expression":
+                try:
+                    env.compile_expression(rule["value"])
+                except Exception as e:
+                    invalid_rule("Impute condition value %s is an invalid Jinja2 expression: %s." % (repr(rule["value"]), str(e)))
+        
         return spec
 
 
