@@ -282,7 +282,7 @@ class Command(BaseCommand):
         # YAML specification data in 'question'.
 
         # Run some transformations on the specification data first.
-        spec = self.transform_question_spec(m, spec)
+        spec = self.transform_question_spec(m.key, m.spec, spec)
 
         # Create/update database record.
         field_values = {
@@ -310,12 +310,12 @@ class Command(BaseCommand):
         return q
 
 
-    def transform_question_spec(self, m, spec):
+    def transform_question_spec(self, module_key, mspec, spec):
         if not spec.get("id"):
-            raise ValidationError(m.spec['id'], "questions", "Question is missing an id.")
+            raise ValidationError(mspec['id'], "questions", "Question is missing an id.")
 
         def invalid(msg):
-            raise ValidationError(m.spec['id'], "question %s" % spec['id'], msg)
+            raise ValidationError(mspec['id'], "question %s" % spec['id'], msg)
 
         # clone dict before updating
         spec = dict(spec)
@@ -343,11 +343,11 @@ class Command(BaseCommand):
             try:
                 spec["module-id"] = \
                     Module.objects.get(
-                        key=self.resolve_relative_module_id(m.spec, spec.get("module-id")),
+                        key=self.resolve_relative_module_id(mspec, spec.get("module-id")),
                         superseded_by=None)\
                         .id
             except Module.DoesNotExist:
-                raise DependencyError(m.key, spec.get("module-id"))
+                raise DependencyError(module_key, spec.get("module-id"))
         
         elif spec.get("type") == None:
             invalid("Question is missing a type.")
@@ -355,7 +355,7 @@ class Command(BaseCommand):
         # Check that the prompt is a valid Jinja2 template.
         if spec.get("prompt") is None:
             # Prompts are optional in project modules but required elsewhere.
-            if m.spec.get("type") not in ("project", "system-project"):
+            if mspec.get("type") not in ("project", "system-project"):
                 invalid("Question prompt is missing.")
         else:
             if not isinstance(spec.get("prompt"), str):
@@ -375,7 +375,7 @@ class Command(BaseCommand):
             invalid("Impute's value must be a list.")
         for i, rule in enumerate(imputes):
             def invalid_rule(msg):
-                raise ValidationError(m.spec['id'], "question %s, impute condition %d" % (spec['id'], i+1), msg)
+                raise ValidationError(mspec['id'], "question %s, impute condition %d" % (spec['id'], i+1), msg)
 
             # Check that the condition is a string, and that it's a valid Jinja2 expression.
             if not isinstance(rule.get("condition"), str):
@@ -407,11 +407,10 @@ class Command(BaseCommand):
         #   False => Change, but is compatible with the database record
         #           and the database record can be updated in-place.
         #   True => Incompatible change - a new database record is needed.
-
         if \
                 json.dumps(m.spec, sort_keys=True) == json.dumps(self.transform_module_spec(spec), sort_keys=True) \
             and json.dumps([q.spec for q in m.get_questions()], sort_keys=True) \
-                == json.dumps([self.transform_question_spec(m, q) for q in spec.get("questions", [])], sort_keys=True):
+                == json.dumps([self.transform_question_spec(m.key, spec, q) for q in spec.get("questions", [])], sort_keys=True):
             return None
 
         # Define some symbols.
@@ -446,7 +445,7 @@ class Command(BaseCommand):
             # Is there an incompatible change in the question? (If there
             # is a change that is compatible, we will return that the
             # module is changed anyway at the end of this method.)
-            q = self.transform_question_spec(mq.module, q)
+            q = self.transform_question_spec(mq.module.key, spec, q)
             if self.is_question_changed(mq, definition_order, q) is True:
                 return incompatible_chane
 
