@@ -119,7 +119,7 @@ GovReady Q content is stored in YAML files inside the `modules` directory.
 
 See [Schema.md](Schema.md) for documentation on writing question and answer modules.
 
-The recommended approach to adding new modules is by symbolic link from within `modules` to a separate directory containing your content modules.
+The recommended approach to adding new modules is by symbolic link from within `modules/linked_modules` to a separate directory containing your content modules.
 
 # Credits / License
 
