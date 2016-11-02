@@ -359,15 +359,76 @@ class Project(models.Model):
         # Serialize this Project instance.
         from collections import OrderedDict
         return OrderedDict([
-            ("name", "GovReady Q Project Data"), # just something human readable at the top
+            ("name", "GovReady Q Project Data"), # just something human readable at the top, ignored in import
             ("schema", "1.0"), # serialization format
             ("project", OrderedDict([
                 ("title", self.title),
-                ("created", self.created.isoformat()),
-                ("modified", self.updated.isoformat()),
+                ("created", self.created.isoformat()), # ignored in import
+                ("modified", self.updated.isoformat()), # ignored in import
                 ("content", self.root_task.export_json(Serializer())),
             ])),
         ])
+
+    def import_json(self, data, user, logger):
+        # Imports project data from the 'data' value created by export_json.
+        # Each answer to a question becomes a new TaskAnswerHistory entry for
+        # the question, if the value has changed. For module-type questions, the
+        # answers are merged recursively.
+        #
+        # A User must be given, who becomes the user that answered any questions
+        # whose answers are saved by this import.
+        #
+        # Logger is a function that takes one string argument which is called
+        # with any import errors or warnings.
+
+        if not isinstance(data, dict):
+            logger("Invalid data type for argument.")
+            return
+        
+        if data.get("schema") != "1.0":
+            logger("Data does not look like it was exported from this application.")
+            return
+
+        if not isinstance(data.get("project"), dict):
+            logger("Data does not look like it was exported from this application.")
+            return
+
+        # Move to the project field.
+        data = data["project"]
+
+        # Create a deserialization helper.
+        class Deserializer:
+            def __init__(self):
+                self.user = user
+                self.ref_map = { }
+                self.log = logger
+            def deserializeOnce(self, dictdata, deserialize_func):
+                # If dictdata is a reference to something we've already
+                # deserialized.
+                if isinstance(dictdata, dict):
+                    if isinstance(dictdata.get("__reference__"), str):
+                        if dictdata["__reference__"] in self.ref_map:
+                            return self.ref_map[dictdata["__reference__"]]
+                        else:
+                            raise ValueError("Invalid __reference__: %s" % dictdata["__reference__"])
+
+                # Otherwise, deserialize and store a reference for later.
+                ret = deserialize_func()
+                if isinstance(dictdata, dict):
+                    if isinstance(dictdata.get("__referenceId__"), str):
+                        self.ref_map[dictdata["__referenceId__"]] = ret
+                        
+                return ret
+
+
+        # Overwrite project metadata if the fields are present, i.e. allow for
+        # missing or empty fields, which will preserve the existing metadata we have.
+        self.title = data.get("title") or self.title
+        self.save(update_fields=["title"])
+
+        # Update answers.
+        if "content" in data:
+            self.root_task.import_json_update(data["content"], Deserializer())
 
 
 class ProjectMembership(models.Model):

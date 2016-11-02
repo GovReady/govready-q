@@ -281,19 +281,31 @@ span.glyphicon.glyphicon-check {
       {% if project.is_deletable %}
       <div class="task-group">
         <div class="task-group-title">Caution!</div>
-          <div class="task">
-              <button class="btn btn-danger" onclick="return delete_project();" style="margin: 1em 0">Delete Project</button> 
+          <div class="task" style="padding-top: 1em; padding-bottom: 1em;">
+              <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button> 
           </div>
         </div>
 
       <div class="task-group">
         <div class="task-group-title">Share Data</div>
-          <div class="task">
+          <div class="task" style="padding-top: 1em; padding-bottom: 1em;">
+              {# export #}
               <form method="post" action="{% url "export_project" project.id %}">{% csrf_token %}
                 <button class="btn btn-success" style="margin: 1em 0">
                   <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
                   {{project.root_task.module.spec.export_button_label|default:"Export Project Data"}}
                 </button>
+              </form>
+
+              {# import #}
+              <button class="btn btn-default" onclick="$('#import-file-input').click()">
+                <span class="glyphicon glyphicon-cloud-upload" style="margin-right: .25em"> </span> Import Answers From File
+              </button>
+              <form id="import-form" style="display: none;"
+                method="post" enctype="multipart/form-data" action="{% url "import_project_data" project.id %}">{% csrf_token %}
+                <input name="value" type="file" id="import-file-input" class="form-control"
+                  style="width: auto; border:  none; padding: 0; display: inline-block"
+                  onchange="$('#import-form').submit()" />
               </form>
           </div>
         </div>

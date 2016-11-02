@@ -291,6 +291,29 @@ def export_project(request, project):
     resp["content-disposition"] = "attachment; filename=%s.json" % quote(project.title)
     return resp
 
+@project_admin_login_post_required
+def import_project_data(request, project):
+    # Deserialize the JSON from request.FILES. Assume the JSON data is
+    # UTF-8 encoded and ensure dicts are parsed as OrderedDict so that
+    # key order is preserved, since key order matters because deserialization
+    # has to see the file in the same order it was serialized in so that
+    # serializeOnce works correctly.
+    log_output = []
+    try:
+        import json
+        from collections import OrderedDict
+        data = json.loads(
+            request.FILES["value"].read().decode("utf8", "replace"),
+            object_pairs_hook=OrderedDict)
+
+        # Update project data.
+        project.import_json(data, request.user, lambda x : log_output.append(x))
+    except Exception as e:
+        log_outputa.append(str(e))
+
+    # Show an unfriendly response containing log output.
+    return JsonResponse(log_output, safe=False, json_dumps_params={"indent": 2})
+
 # INVITATIONS
 
 @login_required

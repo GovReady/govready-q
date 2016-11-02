@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^new-project$', views.new_project),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__export$', views.export_project, name="export_project"),
+    url(r'^projects/(\d+)/__import$', views.import_project_data, name="import_project_data"),
     url(r'^projects/(\d+)/(?:[\w\-]+)$', views.project), # must be last because regex matches some previous URLs
 
     # invitations

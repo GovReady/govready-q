@@ -357,3 +357,85 @@ class RenderTests(TestCaseWithFixtureData):
             actual = html.escape(str(actual))
             expected_impute_value = expected
         self.assertEqual(actual, expected_impute_value, msg="impute value expression %s" % expression)
+
+class ImportExportTests(TestCaseWithFixtureData):
+    ## GENERAL RENDER TESTS ##
+
+    class DummySerializer:
+        def serializeOnce(self, object, preferred_key, value_func):
+            return value_func()
+
+    class DummyDeserializer:
+        def __init__(self, user):
+            self.user = user
+            self.log_capture = []
+            def logger(message):
+                print(message)
+                self.log_capture.append(message)
+            self.log = logger
+
+    def test_round_trip(self):
+        # The normal question types all have the same import/export semantics but
+        # validation requires that we give it sane values.
+        tests = {
+            "question_types_text": {
+                "text": ["Hello!"],
+                "password": ["1234"],
+                "email-address": ["unit+test@govready.com"],
+                "url": ["https://www.govready.com"],
+                "longtext": ["Paragraphs are\n\nin need of testing."],
+                "date": ["2016-11-03"],
+            },
+            "question_types_choice": {
+                "choice": ["choice1"],
+                "yesno": ["yes", "no"],
+                "multiple-choice": [[], ["choice1"], ["choice1", "choice2"]],
+            },
+            "question_types_numeric": {
+                "integer": [0, 1, -1],
+                "real": [0.0, 1.5, -2.1],
+            },
+            "question_types_media": {
+                "interstitial": [None],
+                "external-function": [{ "arbitrary": ["data"] }],
+            },
+        }
+
+        for module_name, tests in tests.items():
+            for qtype, test_values in tests.items():
+                for test_value in [None] + test_values:
+                    self._test_round_trip(module_name, "q_" + qtype.replace("-", "_"), {
+                        "questionType": qtype,
+                        "value": test_value,
+                    })
+
+        # TODO: file, module, module-set
+
+    def _test_round_trip(self, module_name, question_name, value_dict):
+        # Create an empty Task.
+        m = Module.objects.get(key=module_name)
+        task = Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project)
+
+        # Import some data to set answers.
+        task_dict = {
+            "answers": {
+                question_name: value_dict
+            }
+        }
+        task.import_json_update(task_dict, ImportExportTests.DummyDeserializer(self.user))
+
+        # Export it and check that the exported JSON matches the JSON that we imported.
+        # In other words, it should round-trip. Only check that the keys in the test JSON
+        # are present and have the correct values in the exported JSON. The exported JSON
+        # may have other keys that we don't care about. Check recursively.
+        export = task.export_json(ImportExportTests.DummySerializer())
+        def check_dict(a, b, path):
+            for k, v in a.items():
+                if isinstance(v, dict):
+                    # Check dicts recursively.
+                    self.assertIsInstance(b.get(k), dict, "->".join(path+[k]))
+                    check_dict(v, b[k], path+[k])
+                else:
+                    # Check other value types for equality.
+                    self.assertEqual(b.get(k), v, "->".join(path+[k]))
+        check_dict(task_dict, export, [module_name, question_name])

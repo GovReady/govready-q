@@ -40,6 +40,9 @@ def next_question(request, taskid, taskslug):
         if not task.has_write_priv(request.user):
             return HttpResponseForbidden()
 
+        # normal redirect - reload the page
+        redirect_to = request.path
+
         # validate question
         q = task.module.questions.get(id=request.POST.get("question"))
 
@@ -48,30 +51,35 @@ def next_question(request, taskid, taskslug):
             # clear means that the question returns to an unanswered state
             value = None
             cleared = True
-            instrumentation_event_type = "clear"
         
         elif request.POST.get("method") == "skip":
             # skipped means the question is answered with a null value
             value = None
             cleared = False
-            instrumentation_event_type = "skip"
         
         elif request.POST.get("method") == "save":
             # load the answer from the HTTP request
-            if q.spec["type"] == "multiple-choice":
-                # Checkboxes come through as a list.
-                value = request.POST.getlist("value")
-            elif q.spec["type"] == "file":
+            if q.spec["type"] == "file":
                 # File uploads come through request.FILES.
-                # But if the user is preserving an existing value,
-                # then it will be missing.
                 value = request.FILES.get("value")
-            else:
-                # A regular, single item is submitted.
-                value = request.POST.get("value", "").strip()
 
-            # validate
+                # We allow the user to preserve the existing uploaded value
+                # for a question by submitting nothing. (The proper way to
+                # clear it is to use Skip.) If the user submits nothing,
+                # just return immediately.
+                if value is None:
+                    return JsonResponse({ "status": "ok", "redirect": redirect_to })
+
+            else:
+                # All other values come in as string fields. Because
+                # multiple-choice comes as a multi-value field, we get
+                # the value as a list. question_input_parser will handle
+                # turning it into a single string for other question types.
+                value = request.POST.getlist("value")
+
+            # parse & validate
             try:
+                value = module_logic.question_input_parser.parse(q, value)
                 value = module_logic.validator.validate(q, value)
             except ValueError as e:
                 # client side validation should have picked this up
@@ -85,7 +93,6 @@ def next_question(request, taskid, taskslug):
                     return JsonResponse({ "status": "error", "message": str(e) })
 
             cleared = False
-            instrumentation_event_type = "answer"
 
         else:
             raise ValueError("invalid 'method' parameter %s" + request.POST.get("method", "<not set>"))
@@ -95,9 +102,6 @@ def next_question(request, taskid, taskslug):
             task=task,
             question=q,
         )
-
-        # normal redirect - reload the page
-        redirect_to = request.path
 
         # fetch the task that answers this question
         answered_by_tasks = []
@@ -145,41 +149,24 @@ def next_question(request, taskid, taskslug):
         else:
             answered_by_file = None
 
-        # Create a new TaskAnswerHistory if the answer is actually changing.
-        current_answer = question.get_current_answer()
-        if not current_answer and cleared:
-            # user is trying to clear but there is no answer yet, so do nothing
-            pass
-
-        elif not current_answer \
-            or value != current_answer.stored_value \
-            or set(answered_by_tasks) != set(current_answer.answered_by_task.all()) \
-            or cleared != current_answer.cleared \
-            or current_answer.answered_by_file.name \
-            or answered_by_file:
-
-            answer = TaskAnswerHistory.objects.create(
-                taskanswer=question,
-                answered_by=request.user,
-                stored_value=value,
-                answered_by_file=answered_by_file,
-                cleared=cleared)
-            for t in answered_by_tasks:
-                answer.answered_by_task.add(t)
-
-            # kick the Task and TaskAnswer's updated field
-            task.save(update_fields=[])
-            question.save(update_fields=[])
-
-            # Use a different event_type string for a change of answer 
-            if instrumentation_event_type == "answer" and current_answer is not None:
-                instrumentation_event_type = "change"
-
+        # Create a new TaskAnswerHistory record, if the answer is actually changing.
+        if cleared:
+            # Clear the answer.
+            question.clear_answer(request.user)
+            instrumentation_event_type = "clear"
         else:
-            # user re-submitted the same answer that already is given,
-            # so do nothing
-            instrumentation_event_type = "keep"
-
+            # Save the answer.
+            had_answer = question.has_answer()
+            if question.save_answer(value, answered_by_tasks, answered_by_file, request.user):
+                # The answer was changed (not just saved as a new answer).
+                if request.POST.get("method") == "skip":
+                    instrumentation_event_type = "skip"
+                elif had_answer:
+                    instrumentation_event_type = "change"
+                else: # is a new answer
+                    instrumentation_event_type = "answer"
+            else:
+                instrumentation_event_type = "keep"
 
         # Add instrumentation event.
         # --------------------------

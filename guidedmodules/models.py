@@ -7,7 +7,7 @@ from jsonfield import JSONField
 from collections import OrderedDict
 import uuid
 
-from .module_logic import ModuleAnswers, render_content
+from .module_logic import ModuleAnswers, render_content, validator
 from siteapp.models import User, Project, ProjectMembership
 
 class Module(models.Model):
@@ -453,6 +453,135 @@ class Task(models.Model):
             ])
             )
 
+    @staticmethod
+    def import_json(data, deserializer, for_question):
+        def do_deserialize():
+            # Gets or creates a Task instance corresponding to the Task encoded
+            # in the data. The Task must be an answer to a TaskQuestion instance,
+            # given as for_question, which determines the Module that the task
+            # uses.
+
+            # Basic validation.
+            if not isinstance(data, dict):
+                deserializer.log("Data format error.")
+                return
+            if not isinstance(data.get("id"), str):
+                deserializer.log("Data format error.")
+                return
+
+            # If there's a Task in the system with the UUID found in the incoming
+            # data, use that, assuming the user has write permission on it.
+            task = Task.objects.filter(uuid=data["id"]).first()
+            if task:
+                if not task.has_write_priv(deserializer.user):
+                    deserializer.log("%s (%s): You do not have permission to update that task."
+                        % (task.title, data['id']))
+                    return None
+
+            else:
+                # The UUID doesn't correspond with anything in the database, so
+                # create a new task.
+                task = Task.create(
+                    parent_task_answer=for_question, # for instrumentation only, doesn't go into Task instance
+                    editor=deserializer.user,
+                    project=for_question.task.project,
+                    module=for_question.question.answer_type_module,
+                    title=for_question.question.answer_type_module.title,
+                    uuid=data['id'], # preserve the UUID from the incoming data
+                    )
+
+            # Recursively fill in the answers to the newly created task.
+            task.import_json_update(data, deserializer)
+            return task
+
+        # If the serialized data is a reference to something we've already deserialized
+        # and imported, then return the Task directly. Otherwise call do_deserialize to
+        # do the actual work of deserializing & updating a Task.
+        return deserializer.deserializeOnce(data, do_deserialize)
+
+    def import_json_update(self, data, deserializer):
+        # Imports/overwrites/merges question answers from the given data structure
+        # into this Task, and into any sub-Tasks that are answers to questions.
+        # The user is known only to have write permission to this Task.
+
+        # Since this method is called directly on a Project root task, we must
+        # repeat some of the same validation that occurs in Task.import_json.
+        if not isinstance(data, dict):
+            deserializer.log("Data format error.")
+            return
+
+        # Overwrite metadata if the fields are present, i.e. allow for
+        # missing or empty fields, which will preserve the existing metadata we have.
+        self.title = data.get("title") or self.title
+        self.save(update_fields=["title"])
+
+        # We don't chek that the module listed in the data matches the module
+        # this Task actually uses in the database. We don't have a way to test
+        # equality and if there's a mismatch there's nothing we can really do.
+        # Instead we just carefully validate the incoming answers.
+
+        my_name = "%s (%s)" % (self.title, data.get("id") or "no UUID")
+        did_update_any_questions = False
+
+        # Merge answers to questions.
+
+        if "answers" in data:
+            if not isinstance(data["answers"], dict):
+                deserializer.log("Data format error.")
+                return
+
+            # Loop through the key-value pairs.
+            for qkey, answer in data["answers"].items():
+                # Get the ModuleQuestion instance for this question.
+                q = self.module.questions.filter(key=qkey).first()
+                if q is None:
+                    deserializer.log("Task %s question %s ignored (not a valid question ID)." % (my_name, qkey))
+                    continue
+
+                # For logging.
+                qname = q.spec.get("title") or qkey
+
+                # Ensure the data type matches the current question specification.
+                if q.spec["type"] != answer.get("questionType"):
+                    deserializer.log("Task %s question %s ignored (question type mismatch)." % (my_name, qname))
+                    continue
+
+                # Validate the answer value (check data type, range), if it is answered.
+                # (Any question can be skipped.)
+                if answer.get("value") is not None:
+                    try:
+                        value = validator.validate(q, answer["value"])
+                    except ValueError as e:
+                        deserializer.log("Task %s question %s ignored: %s" % (my_name, qname, str(e)))
+                        continue
+                else:
+                    # The value is None so we don't validate. Any question
+                    # can be answered with None, meaning it was skipped.
+                    value = None
+
+                # Get or create the TaskAnswer instance for this question.
+                taskanswer, _ = TaskAnswer.objects.get_or_create(
+                    task=self,
+                    question=q,
+                )
+
+                # Prepare the fields for saving.
+                prep_fields = TaskAnswerHistory.import_json_prep(taskanswer, value, deserializer)
+                if prep_fields is None:
+                    deserializer.log("Task %s question %s has been skipped because a sub-task could not be used." % (my_name, qname))
+                    continue
+
+                value, answered_by_tasks, answered_by_file = prep_fields
+
+                # And save the answer.
+                if taskanswer.save_answer(value, answered_by_tasks, answered_by_file, deserializer.user):
+                    deserializer.log("Task %s question %s was updated." % (my_name, qname))
+                    did_update_any_questions = True
+                
+            if not did_update_any_questions:
+                deserializer.log("Task %s had no new answers to save." % (my_name,))
+
+
 class TaskAnswer(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="answers", help_text="The Task that this TaskAnswer is a part of.")
     question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT, help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
@@ -481,6 +610,12 @@ class TaskAnswer(models.Model):
     def get_current_answer(self):
         # The current answer is the one with the highest primary key.
         return self.answer_history.order_by('-id').first()
+
+    def has_answer(self):
+        ans = self.get_current_answer()
+        if ans and not ans.cleared:
+            return True
+        return False
 
     def get_history(self):
         from discussion.models import reldate
@@ -535,6 +670,65 @@ class TaskAnswer(models.Model):
             del item["date"] # not JSON serializable
 
         return history
+
+    def clear_answer(self, user):
+        ans = self.get_current_answer()
+        if ans is None or ans.cleared:
+            # No answer record yet or the record has already marked the question
+            # as cleared.
+            return False
+
+        # Store a new TaskAnswerHistory record with the cleared flag set.
+        TaskAnswerHistory.objects.create(
+            taskanswer=self,
+            answered_by=user,
+            stored_value=None,
+            answered_by_file=None,
+            cleared=True)
+
+        # kick the Task and TaskAnswer's updated field
+        self.task.save(update_fields=[])
+        self.save(update_fields=[])
+        return True
+
+    def save_answer(self, value, answered_by_tasks, answered_by_file, user):
+        # Save the answer and return True if the answer was changed (vs was not
+        # updated because the value matched the value of the existing answer).
+        current_answer = self.get_current_answer()
+
+        # Check if the answer is changing. If not, return False.
+
+        def are_files_same():
+            if answered_by_file is None and current_answer.answered_by_file.name == "":
+                # No files in either case -- so the file field is the same.
+                return True
+            if answered_by_file is None or current_answer.answered_by_file.name == "":
+                # One but not both are null, so there is a change.
+                return False
+            # Both have content -- check if the content matches.
+            return answered_by_file.read() == current_answer.answered_by_file.read()
+
+        if current_answer and not current_answer.cleared \
+            and value == current_answer.stored_value \
+            and set(answered_by_tasks) == set(current_answer.answered_by_task.all()) \
+            and are_files_same():
+            return False
+
+        # The answer is new or changing. Create a new record for it.
+        answer = TaskAnswerHistory.objects.create(
+            taskanswer=self,
+            answered_by=user,
+            stored_value=value,
+            answered_by_file=answered_by_file)
+        for t in answered_by_tasks:
+            answer.answered_by_task.add(t)
+
+        # kick the Task and TaskAnswer's updated field
+        self.task.save(update_fields=[])
+        self.save(update_fields=[])
+
+        # Return True to indicate we saved something.
+        return True
 
     # required to attach a Discussion to it
     @property
@@ -641,6 +835,10 @@ class TaskAnswerHistory(models.Model):
     def export_json(self, serializer):
         # Exports this TaskAnswerHistory's value to a JSON-serializable Python data structure.
         # Called via siteapp.Project::export_json.
+        #
+        # The data structure should match the output format of module_logic.question_input_parser
+        # and the input format expected by module_logic.validator.validate() because the
+        # validate function is called during import.
 
         # Get the answer's current value.
         value = self.get_value()
@@ -651,9 +849,22 @@ class TaskAnswerHistory(models.Model):
             if q.spec["type"] == "module":
                 # It's a ModuleAnswers instance -- serialize the Task itself.
                 value = value.task.export_json(serializer)
+            
             elif q.spec["type"] == "module-set":
                 # It's an array of ModuleAnswers instances.
                 value = [x.task.export_json(serializer) for x in value]
+            
+            elif q.spec["type"] == "file":
+                # Although self.get_value() returns useful data, it's not the export
+                # format because it doesn't include the file content (only a URL to it).
+                # Add the file content to it. It's other important field is 'type' which
+                # holds the MIME type.
+                import re
+                from base64 import b64encode
+                value.update({
+                    "content": re.findall(".{64}", b64encode(self.answered_by_file.read()).decode("ascii")),
+                })
+
             else:
                 # Any value that we might have stored in the database is definitely
                 # JSON-serializabile because that's how it's stored. Special question
@@ -668,6 +879,53 @@ class TaskAnswerHistory(models.Model):
             ("answeredAt", self.created.isoformat()),
             ("value", value),
         ])
+
+    @staticmethod
+    def import_json_prep(taskanswer, value, deserializer):
+        # Given a JSON-serializable data structure produced by export_json, prepare
+        # it for saving as a new answer by returning content for our stored_value,
+        # answered_by_tasks, and answered_by_file database fields.
+
+        answered_by_tasks = set()
+        answered_by_file = None
+
+        # Skipped questions.
+        if value is None:
+            return value, answered_by_tasks, answered_by_file
+
+        # Special question types that aren't stored in the stored_value field.
+        q = taskanswer.question
+        if q.spec["type"] in ("module", "module-set"):
+            # These questions are stored
+
+            # Make module-type questions look like module-set questions
+            # so we can handle the rest the same.
+            if q.spec["type"] == "module":
+                value = [value]
+
+            # For each sub-taks, get or create the Task instance (and
+            # recurse to update its answers). Task.import_json can return
+            # None, and we handle that below.
+            for task in value:
+                task = Task.import_json(task, deserializer, taskanswer)
+                answered_by_tasks.add(task)
+
+            # Skip updating this question if there was any error fetching
+            # a Task.
+            if None in answered_by_tasks:
+                # Could not import.
+                return None
+
+            # Reset this part.
+            value = None
+
+        elif q.spec["type"] == "file":
+            # The value is a Django ContentFile and is stored in a dedicated field
+            answered_by_file = value
+            value = None
+
+        return value, answered_by_tasks, answered_by_file
+
 
 class InstrumentationEvent(models.Model):
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
