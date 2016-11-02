@@ -5,6 +5,7 @@ from django.conf import settings
 from jsonfield import JSONField
 
 from collections import OrderedDict
+import uuid
 
 from .module_logic import ModuleAnswers, render_content
 from siteapp.models import User, Project, ProjectMembership
@@ -155,6 +156,8 @@ class Task(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     deleted_at = models.DateTimeField(blank=True, null=True, db_index=True, help_text="If 'deleted' by a user, the date & time the Task was deleted.")
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Task, used to synchronize Task content between systems.")
 
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
@@ -436,9 +439,9 @@ class Task(models.Model):
         from collections import OrderedDict
         return serializer.serializeOnce(
             self,
-            "task", # used to create a unique key if the Task is attempted to be serialzied more than once
+            "task:" + str(self.uuid), # used to create a unique key if the Task is attempted to be serialzied more than once
             lambda : OrderedDict([ # "lambda :" makes this able to be evaluated lazily
-                ("id", self.id),
+                ("id", str(self.uuid)), # a uuid.UUID instance is JSON-serializable but let's just make it a string so there are no surprises
                 ("title", self.title),
                 ("created", self.created.isoformat()),
                 ("modified", self.updated.isoformat()),
