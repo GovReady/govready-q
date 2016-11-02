@@ -259,23 +259,34 @@ def project(request, project_id):
         "tabs": list(tabs.values()),
     })
 
+def project_admin_login_post_required(f):
+    # Wrap the function to do authorization and change arguments.
+    def g(request, project_id):
+        # Get project, check authorization.
+        project = get_object_or_404(Project, id=project_id, organization=request.organization)
+        if request.user not in project.get_admins():
+            return HttpResponseForbidden()
 
-@login_required
-@require_http_methods(["POST"])
-def delete_project(request, project_id):
-    project = get_object_or_404(Project, id=project_id, organization=request.organization)
-    if request.user not in project.get_admins():
-        return HttpResponseForbidden()
+        # Call function with changed argument.
+        return f(request, project)
+
+    # Apply the require_http_methods decorator.
+    g = require_http_methods(["POST"])(g)
+
+    # Apply the login_required decorator.
+    g = login_required(g)
+
+    return g
+
+@project_admin_login_post_required
+def delete_project(request, project):
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
     project.delete()
     return JsonResponse({ "status": "ok" })
 
-@require_http_methods(["POST"])
-def export_project(request, project_id):
-    project = get_object_or_404(Project, id=project_id, organization=request.organization)
-    if request.user not in project.get_admins():
-        return HttpResponseForbidden()
+@project_admin_login_post_required
+def export_project(request, project):
     resp = JsonResponse(project.export_json(), json_dumps_params={"indent": 2})
     resp["content-disposition"] = "attachment; filename=%s.json" % quote(project.title)
     return resp
