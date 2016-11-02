@@ -290,7 +290,10 @@ span.glyphicon.glyphicon-check {
         <div class="task-group-title">Share Data</div>
           <div class="task">
               <form method="post" action="{% url "export_project" project.id %}">{% csrf_token %}
-                <button class="btn btn-success" style="margin: 1em 0"><span class="glyphicon glyphicon-share"></span>&nbsp;Export System Description and Control Information</button>
+                <button class="btn btn-success" style="margin: 1em 0">
+                  <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
+                  {{project.root_task.module.spec.export_button_label|default:"Export Project Data"}}
+                </button>
               </form>
           </div>
         </div>

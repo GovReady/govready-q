@@ -73,6 +73,12 @@ Finally, a Module contains a list of one or more Questions:
 
 The schema for questions is documented in a later section.
 
+### Additional fields for projects
+
+Modules whose type is `project` can also have some additional fields:
+
+`export_button_label` overrides the default text of the export data button on the settings tab of the project.
+
 Documents
 ---------
 
