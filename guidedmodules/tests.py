@@ -55,7 +55,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test = lambda *args : self._test_condition_helper("question_types_text", *args)
 
         # all of the text field types have the same behavior in impute conditions
-        for fieldname in ("q_text", "q_password", "q_email_address", "q_url", "q_longtext"):
+        for fieldname in ("q_text", "q_password", "q_email_address", "q_url", "q_longtext", "q_date"):
             test(fieldname, "Hello!", "%s" % fieldname,           True) # answered is truthy
             test(fieldname, "Hello!", "%s=='Hello!'" % fieldname, True)
             test(fieldname, "Hello!", "%s!='Hello!'" % fieldname, False)
