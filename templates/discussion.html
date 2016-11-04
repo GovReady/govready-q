@@ -322,6 +322,8 @@ function display_discussion(discussion, is_page_load) {
         callback(matches)
       },
       template: function(value) {
+        if (!value.display)
+          return value.tag;
         var node = $("<span><span class='display'/> <span class='tag' style='font-style: italic; padding-left: 1.5em;'/></span>");
         node.find(".display").text(value.display);
         node.find(".tag").text(value.tag);

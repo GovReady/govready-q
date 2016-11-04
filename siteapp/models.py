@@ -103,6 +103,10 @@ class Organization(models.Model):
     name = models.CharField(max_length=256, help_text="The display name of the Organization.")
     subdomain = models.CharField(max_length=256, help_text="The subdomain of q.govready.com that this Organization exists at.")
 
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    extra = JSONField(default={}, help_text="Additional information stored with this object.")
+
     def __str__(self):
         return self.name
 

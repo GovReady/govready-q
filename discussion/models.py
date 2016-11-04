@@ -121,6 +121,14 @@ class Discussion(models.Model):
                     "display": user.render_context_dict(self.organization)["name"],
                 }
                 for user in self.get_all_participants()
+            ],
+
+            # #-mention Organization-defined terms
+            "#": [
+                {
+                    "tag": term,
+                }
+                for term in self.organization.extra.get("vocabulary", [])
             ]
         }
 
