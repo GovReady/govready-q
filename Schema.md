@@ -43,6 +43,7 @@ In addition, a Module must have an `introduction` document and a list of one or 
 	      Hello! This is the output of the module. You answered {{q1}}.
 
 	  - title: Document 2
+	    glyphicon: dashboard
 	    format: html
 	    template: |
 	      <h1># Document for {{project}}</h1>
@@ -78,6 +79,8 @@ The schema for questions is documented in a later section.
 Modules whose type is `project` can also have some additional fields:
 
 `export_button_label` overrides the default text of the export data button on the settings tab of the project.
+
+In output documents, `glyphicon` can be set to an icon name (like `dashboard`) to add an icon to the tab.
 
 Documents
 ---------

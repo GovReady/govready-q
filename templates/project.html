@@ -123,7 +123,12 @@ span.glyphicon.glyphicon-check {
 
       {# output document tabs #}
       {% for document in additional_tabs %}
-        <li role="presentation"><a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">{{document.title}}</a></li>
+        <li role="presentation">
+          <a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">
+            {% if document.glyphicon %}<i class="glyphicon glyphicon-{{document.glyphicon}}" style="margin-right: .25em"> </i>{% endif %}
+            {{document.title}}
+          </a>
+        </li>
       {% endfor %}
 
       {% if not project.is_account_project %}
