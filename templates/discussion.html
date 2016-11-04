@@ -329,7 +329,7 @@ function display_discussion(discussion, is_page_load) {
         node.find(".tag").text(value.tag);
         return node.html();
       },
-      replace: function(value, event) { return "$1" + (trigger_character + value.tag).replace(/\$/g, "$$$$"); } // must escape any dollar signs in the replacement text, and since we're using replace to do it we need to escape the literal $ twice!
+      replace: function(value, event) { return "$1" + (trigger_character + value.tag).replace(/\$/g, "$$$$") + " "; } // must escape any dollar signs in the replacement text, and since we're using replace to do it we need to escape the literal $ twice!
     }
   };
   $('#discussion-your-comment').textcomplete(
