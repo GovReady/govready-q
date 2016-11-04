@@ -180,13 +180,13 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # Create a default user that is a member of the organization.
         from siteapp.models import User, ProjectMembership
-        u = User.objects.create(username="me")
-        u.set_password("1234")
-        u.save()
-        ProjectMembership.objects.get_or_create(user=u, project=org.get_organization_project())
+        self.user = User.objects.create(username="me")
+        self.user.set_password("1234")
+        self.user.save()
+        ProjectMembership.objects.get_or_create(user=self.user, project=org.get_organization_project())
 
         # And initialize the root Task of the Organization with this user as its editor.
-        org.get_organization_project().set_root_task("organization", u)
+        org.get_organization_project().set_root_task("organization", self.user)
 
     def url(self, path):
         # Within this test, we only generate URLs for the organization subdomain.
@@ -422,9 +422,15 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # This takes the user directly to the discussion they were invited to join.
         # Leave a comment.
-        self.fill_field("#discussion-your-comment", "Yes it's me!\n\nI am here with you.")
+        self.fill_field("#discussion-your-comment", "Yes, @me, I am here!\n\nI am here with you!")
         self.click_element("#discussion .comment-input button.btn-primary")
         var_sleep(.5) # wait for it to submit
+
+        # Test that a notification was sent to the main user.
+        from notifications.models import Notification
+        self.assertTrue(Notification.objects.filter(
+            recipient=self.user,
+            verb="mentioned you in a comment on").exists())
 
         # Leave an emoji reaction on the initial user's comment.
         self.click_element("#react-with-emoji")
@@ -442,7 +448,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.browser.get(discussion_page)
 
         # Test that we can see the comment and the reaction.
-        self.assertInNodeText("Yes it's me!", "#discussion .comment:not(.author-is-self) .comment-text")
+        self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         self.assertInNodeText("reacted", "#discussion .reactions .reply[data-emojis=heart]")
 
     def test_questions_text(self):
