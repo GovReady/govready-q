@@ -62,8 +62,10 @@ class Discussion(models.Model):
         return user in self.get_all_participants()
 
     def get_all_participants(self):
-        return User.objects.filter(projectmembership__project=self.attached_to.project) \
+        return (
+            User.objects.filter(projectmembership__project=self.attached_to.project) \
             | self.guests.all()
+            ).distinct()
 
     def can_invite_guests(self, user):
         return ProjectMembership.objects.filter(project=self.attached_to.project, user=user).exists()
