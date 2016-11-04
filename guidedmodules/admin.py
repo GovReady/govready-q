@@ -29,10 +29,10 @@ class TaskAnswerAdmin(admin.ModelAdmin):
 	def _project(self, obj): return obj.task.project
 
 class TaskAnswerHistoryAdmin(admin.ModelAdmin):
-	list_display = ('taskanswer', 'answer', 'answered_by', 'is_latest')
+	list_display = ('created', 'taskanswer', 'answer', 'answered_by', 'is_latest')
 	raw_id_fields = ('taskanswer', 'answered_by', 'answered_by_task')
-	readonly_fields = ('taskanswer', 'answered_by')
-	fieldsets = [(None, { "fields": ('taskanswer', 'answered_by') }),
+	readonly_fields = ('taskanswer', 'answered_by', 'created')
+	fieldsets = [(None, { "fields": ('created', 'taskanswer', 'answered_by') }),
 	             (None, { "fields": ('stored_value', 'cleared') }),
 	             (None, { "fields": ('extra',) }) ]
 	def answer(self, obj): return obj.get_answer_display()
