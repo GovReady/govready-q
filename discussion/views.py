@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from django.contrib.auth.decorators import login_required
@@ -72,7 +73,9 @@ def start_a_discussion(request):
     })
 
 @login_required
+@transaction.atomic
 def submit_discussion_comment(request):
+    # Get the discussion object.
     discussion = get_object_or_404(Discussion, id=request.POST['discussion'], organization=request.organization)
 
     # Does user have write privs?
@@ -91,7 +94,8 @@ def submit_discussion_comment(request):
         text=text
         )
 
-    # Issue a notification.
+    # Issue a notification to anyone watching the discussion
+    # via discussion.get_notification_watchers().
     from siteapp.views import issue_notification
     from django.utils.text import Truncator
     issue_notification(
@@ -100,8 +104,59 @@ def submit_discussion_comment(request):
         discussion,
         description="“" + Truncator(text).words(15) + "”")
 
+    # Issue a notification to anyone @-mentioned in the comment.
+    # Compile a big regex for all usernames.
+    _, mentioned_users = match_autocompletes(discussion, comment.text, request.user)
+    issue_notification(
+        request.user,
+        "mentioned you in a comment on",
+        discussion,
+        recipients=mentioned_users,
+        description="“" + Truncator(text).words(15) + "”")
+
     # Return the comment for display.
     return JsonResponse(comment.render_context_dict())
+
+def match_autocompletes(discussion, text, user):
+    import re
+    from siteapp.models import User
+
+    # Get all of the possible autocompletes.
+    # Since autocompletes are linked to the user taking the action,
+    # for the purposes of authorization, we have to pass the user along.
+    autocompletes = discussion.get_autocompletes(user)
+
+    # Make a big regex for all mentions of all autocompletable things.
+    pattern = "|".join(
+        "(" + char + ")(" + "|".join(
+            re.escape(item["tag"])
+            for item in items
+        ) + ")"
+        for char, items in autocompletes.items()
+    )
+
+    # Wrap in a lookbehind and a lookahead to not match if surrounded
+    # by word-ish characters.
+    pattern = r"(?<!\w)" + pattern + r"(?!\w)"
+
+    # Create a reverse-mapping.
+    reverse_mapping = { }
+    for char, items in autocompletes.items():
+        for item in items:
+            reverse_mapping[(char, item['tag'])] = item
+
+    # Find what was mentioned.
+    mentioned_users = set()
+    def replace_func(m):
+        char, tag = (m.group(0)[:1], m.group(0)[1:])
+        item = reverse_mapping[(char, tag)]
+        if item.get("user_id"):
+            user = User.objects.get(id=item["user_id"])
+            mentioned_users.add(user)
+    text = re.sub(pattern, replace_func, text)
+
+    return (text, mentioned_users)
+
 
 @login_required
 def edit_discussion_comment(request):

@@ -116,6 +116,7 @@ class Discussion(models.Model):
             # @-mention other participants in the discussion
             "@": [
                 {
+                    "user_id": user.id,
                     "tag": user.username,
                     "display": user.render_context_dict(self.organization)["name"],
                 }
