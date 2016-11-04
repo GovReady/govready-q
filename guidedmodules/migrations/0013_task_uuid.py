@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import uuid
 
+# This migration didn't work right - It assigned the same UUID to every
+# task. Fixed with: for t in Task.objects.all(): t.uuid = uuid.uuid4(); t.save()
 
 class Migration(migrations.Migration):
 
