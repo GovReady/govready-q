@@ -39,3 +39,9 @@ wget -O $VENDOR/push.js \
 # bootstrap-responsive-tabs
 wget -O $VENDOR/bootstrap-responsive-tabs.js \
         https://raw.githubusercontent.com/openam/bootstrap-responsive-tabs/052b957e72ca0d4954813809c2dba21f5afde072/js/responsive-tabs.js
+
+# auto resize textareas
+wget -O $VENDOR/autosize.min.js \
+        https://raw.githubusercontent.com/jackmoore/autosize/master/dist/autosize.min.js
+
+

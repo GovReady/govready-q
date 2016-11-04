@@ -5,6 +5,9 @@ $(function() {
   // contained in.
   $('textarea').keydown(textarea_ctrlenter_handler);
 
+  // Make textareas auto-sizing.
+  autosize($('textarea'));
+
   // Make all tab navs responsive.
   $(".nav-tabs, .tab-content").addClass('responsive');
   fakewaffle.responsiveTabs(['xs', 'sm'])
