@@ -68,6 +68,7 @@ def start_a_discussion(request):
         },
         "guests": [ user.render_context_dict(request.organization) for user in discussion.guests.all() ],
         "events": events,
+        "autocomplete": discussion.get_autocompletes(request.user),
     })
 
 @login_required

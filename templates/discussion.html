@@ -289,6 +289,54 @@ function display_discussion(discussion, is_page_load) {
   $('#discussion .comment-thread').html('');
   render_events(discussion);
 
+  // Autocomplete. The discussion object has a mapping from trigger
+  // characters to autocomplete possibilities:
+  //
+  // {
+  //   "@": [{
+  //             "tag": "thing the autocomplete inserts",
+  //             "display": "text displayed in the autocomplete popup",
+  //         }, ... ]
+  // }
+  function make_autocomplete_strategy(trigger_character) {
+    var autocomplete = discussion.autocomplete[trigger_character];
+
+    RegExp.escape = function(s) {
+      // http://stackoverflow.com/a/18151038
+      return String(s).replace(/([-()\[\]{}+?*.$\^|,:#<!\\])/g, '\\$1').
+      replace(/\x08/g, '\\x08');
+    };
+    return {
+      match: new RegExp("(^|\\s)" + RegExp.escape(trigger_character) + "(\\w*)$"),
+      search: function (term, callback, match) {
+        // Perform a search.
+        var matches = [];
+        term = match[2].toLowerCase().replace(/ /, "");
+        for (var i = 0; i < autocomplete.length; i++) {
+          var item = autocomplete[i];
+          var search_key = (item.tag + item.display).toLowerCase().replace(/ /, "");
+          if (search_key.indexOf(term) >= 0) {
+            matches.push(item);
+          }
+        }
+        callback(matches)
+      },
+      template: function(value) {
+        var node = $("<span><span class='display'/> <span class='tag' style='font-style: italic; padding-left: 1.5em;'/></span>");
+        node.find(".display").text(value.display);
+        node.find(".tag").text(value.tag);
+        return node.html();
+      },
+      replace: function(value, event) { return "$1" + (trigger_character + value.tag).replace(/\$/g, "$$$$"); } // must escape any dollar signs in the replacement text, and since we're using replace to do it we need to escape the literal $ twice!
+    }
+  };
+  $('#discussion-your-comment').textcomplete(
+    Object.keys(discussion.autocomplete).map(make_autocomplete_strategy)
+  , {
+    // options
+  });
+
+  // start polling the server for new events
   discussion_poll();
 }
 

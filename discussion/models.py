@@ -59,8 +59,11 @@ class Discussion(models.Model):
         # Participants are members of the project team of the task of
         # the question this Discussion is attached to, plus the Discussion's
         # guests.
-        return (ProjectMembership.objects.filter(project=self.attached_to.project, user=user)) \
-            or (user in self.guests.all())
+        return user in self.get_all_participants()
+
+    def get_all_participants(self):
+        return User.objects.filter(projectmembership__project=self.attached_to.project) \
+            | self.guests.all()
 
     def can_invite_guests(self, user):
         return ProjectMembership.objects.filter(project=self.attached_to.project, user=user).exists()
@@ -102,6 +105,23 @@ class Discussion(models.Model):
         return \
             list(mbr.user for mbr in ProjectMembership.objects.filter(project=self.attached_to.project)) \
             + list(self.guests.all())
+
+    def get_autocompletes(self, user):
+        # When typing in a comment, what autocompletes are available to this user?
+        # Ensure the user is a participant of the discussion.
+        if not self.is_participant(user):
+            return []
+
+        return {
+            # @-mention other participants in the discussion
+            "@": [
+                {
+                    "tag": user.username,
+                    "display": user.render_context_dict(self.organization)["name"],
+                }
+                for user in self.get_all_participants()
+            ]
+        }
 
 
 class Comment(models.Model):

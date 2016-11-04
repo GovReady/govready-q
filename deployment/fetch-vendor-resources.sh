@@ -44,4 +44,6 @@ wget -O $VENDOR/bootstrap-responsive-tabs.js \
 wget -O $VENDOR/autosize.min.js \
         https://raw.githubusercontent.com/jackmoore/autosize/master/dist/autosize.min.js
 
-
+# text input autocomplete
+wget -O $VENDOR/jquery.textcomplete.min.js \
+        https://raw.githubusercontent.com/yuku-t/jquery-textcomplete/master/dist/jquery.textcomplete.min.js
