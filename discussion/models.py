@@ -168,11 +168,20 @@ class Comment(models.Model):
             "previous-" + field: getattr(self, field),
         })
 
-    def render_context_dict(self):
+    def render_context_dict(self, whose_asking):
         if self.deleted:
             raise ValueError()
 
+        # Render the comment text into HTML.
+        # * Replace @-mentions with something.
+        # * Render to HTML as if CommonMark.
         import CommonMark
+        from .views import match_autocompletes
+        rendered_text = self.text
+        rendered_text, _ = match_autocompletes(self.discussion, rendered_text, whose_asking,
+            lambda text : "**" + text + "**")
+        rendered_text = CommonMark.commonmark(rendered_text)
+
 
         def get_user_role():
             if self.user == self.discussion.attached_to.task.editor:
@@ -199,7 +208,7 @@ class Comment(models.Model):
             "date_relative": reldate(self.created, timezone.now()) + " ago",
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
             "text": self.text,
-            "text_rendered": CommonMark.commonmark(self.text),
+            "text_rendered": rendered_text,
             "notification_text": str(self.user) + ": " + self.text,
             "emojis": self.emojis.split(",") if self.emojis else None,
         }

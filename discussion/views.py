@@ -48,7 +48,7 @@ def start_a_discussion(request):
         if event["date_posix"] > float(request.POST.get("event_since", "0"))
     ])
     events.extend([
-        comment.render_context_dict()
+        comment.render_context_dict(request.user)
         for comment in discussion.comments.filter(
             id__gt=request.POST.get("comment_since", "0"),
             deleted=False)
@@ -115,9 +115,9 @@ def submit_discussion_comment(request):
         description="“" + Truncator(text).words(15) + "”")
 
     # Return the comment for display.
-    return JsonResponse(comment.render_context_dict())
+    return JsonResponse(comment.render_context_dict(request.user))
 
-def match_autocompletes(discussion, text, user):
+def match_autocompletes(discussion, text, user, replace_mentions=None):
     import re
     from siteapp.models import User
 
@@ -153,6 +153,9 @@ def match_autocompletes(discussion, text, user):
         if item.get("user_id"):
             user = User.objects.get(id=item["user_id"])
             mentioned_users.add(user)
+            if replace_mentions:
+                return replace_mentions(char+tag)
+        return m.group(0)
     text = re.sub(pattern, replace_func, text)
 
     return (text, mentioned_users)
@@ -178,7 +181,7 @@ def edit_discussion_comment(request):
     comment.save()
 
     # return new comment info
-    return JsonResponse(comment.render_context_dict())
+    return JsonResponse(comment.render_context_dict(request.user))
 
 @login_required
 def delete_discussion_comment(request):
@@ -223,4 +226,4 @@ def save_reaction(request):
     comment.save()
 
     # return new comment info
-    return JsonResponse(comment.render_context_dict())
+    return JsonResponse(comment.render_context_dict(request.user))
