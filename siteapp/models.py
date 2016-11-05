@@ -9,6 +9,14 @@ from django.contrib.contenttypes.models import ContentType
 from jsonfield import JSONField
 
 class User(AbstractUser):
+    # Additional user profile data.
+
+    notifemails_enabled = models.IntegerField(default=0, choices=[(0, "As They Happen"), (1, "Don't Email")], help_text="How often to email the user notification emails.")
+    notifemails_last_notif_id = models.PositiveIntegerField(default=0, help_text="The primary key of the last notifications.Notification sent by email.")
+    notifemails_last_at = models.DateTimeField(blank=True, null=True, default=None, help_text="The time when the last notification email was sent to the user.")
+
+    # Methods
+
     def __str__(self):
         name = self._get_setting("name")
         if name: # question might be skipped
@@ -112,9 +120,9 @@ class Organization(models.Model):
 
     def get_absolute_url(self):
         # Return a URL with a hostname. That's unusual.
-        return self.get_root_url()
+        return self.get_url()
 
-    def get_root_url(self):
+    def get_url(self, path=''):
         # Construct the base URL of the root page of the site for this organization.
         # settings.SITE_ROOT_URL tells us the scheme, host, and port of the main Q landing site.
         # In testing it's http://localhost:8000, and in production it's https://q.govready.com.
@@ -127,7 +135,7 @@ class Organization(models.Model):
         return urllib.parse.urlunsplit((
             scheme, # scheme
             self.subdomain + '.' + settings.ORGANIZATION_PARENT_DOMAIN + port, # host
-            '', # path
+            path,
             '', # query
             '' # fragment
             ))
@@ -533,11 +541,8 @@ class Invitation(models.Model):
     def get_acceptance_url(self):
         # The invitation must be sent using the subdomain of the organization it is
         # a part of.
-        import urllib.parse
         from django.core.urlresolvers import reverse
-        return urllib.parse.urljoin(
-            self.organization.get_root_url(),
-            reverse('accept_invitation', kwargs={'code': self.email_invitation_code}))
+        return self.organization.get_url(reverse('accept_invitation', kwargs={'code': self.email_invitation_code}))
 
     def send(self):
         # Send and mark as sent.
