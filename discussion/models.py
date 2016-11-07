@@ -103,10 +103,10 @@ class Discussion(models.Model):
 
     def get_notification_watchers(self):
         if self.attached_to.task.deleted_at:
-            return []
-        return \
+            return set()
+        return set(
             list(mbr.user for mbr in ProjectMembership.objects.filter(project=self.attached_to.project)) \
-            + list(self.guests.all())
+            + list(self.guests.all()))
 
     def get_autocompletes(self, user):
         # When typing in a comment, what autocompletes are available to this user?

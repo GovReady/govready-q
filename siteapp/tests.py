@@ -388,6 +388,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Invitations to join discussions are tested in test_discussion.
 
     def test_discussion(self):
+        from siteapp.management.commands.send_notification_emails import Command as send_notification_emails
+
         # Log in and create a new project.
         self._login(is_first_time_user=True, is_first_time_org=True)
         self._new_project()
@@ -419,6 +421,12 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Then accept the invitation as an anonymous user.
         self.browser.get(self.url("/accounts/logout/"))
         self._accept_invitation("test+account@q.govready.com")
+        var_sleep(1) # wait for the invitation to be accepted
+
+        # Check that the original user received a notification that the invited user
+        # accepted the invitation.
+        send_notification_emails().send_new_emails()
+        self.assertRegex(self.pop_email().body, "accepted your invitation to join the discussion")
 
         # This takes the user directly to the discussion they were invited to join.
         # Leave a comment.
@@ -431,6 +439,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.assertTrue(Notification.objects.filter(
             recipient=self.user,
             verb="mentioned you in a comment on").exists())
+
+        # Test that the notification is emailed out to the main user.
+        send_notification_emails().send_new_emails()
+        notification_email_body = self.pop_email().body
+        self.assertRegex(notification_email_body, "mentioned you in")
 
         # Leave an emoji reaction on the initial user's comment.
         self.click_element("#react-with-emoji")

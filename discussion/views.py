@@ -95,18 +95,21 @@ def submit_discussion_comment(request):
         )
 
     # Issue a notification to anyone watching the discussion
-    # via discussion.get_notification_watchers().
+    # via discussion.get_notification_watchers() except to
+    # anyone @-mentioned because they'll get a different
+    # notification.
     from siteapp.views import issue_notification
     from django.utils.text import Truncator
+    _, mentioned_users = match_autocompletes(discussion, text, request.user)
     issue_notification(
         request.user,
         "commented on",
         discussion,
+        recipients=discussion.get_notification_watchers() - mentioned_users,
         description="“" + Truncator(text).words(15) + "”")
 
     # Issue a notification to anyone @-mentioned in the comment.
     # Compile a big regex for all usernames.
-    _, mentioned_users = match_autocompletes(discussion, comment.text, request.user)
     issue_notification(
         request.user,
         "mentioned you in a comment on",
