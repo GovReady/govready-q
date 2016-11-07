@@ -12,7 +12,7 @@ class CommentAdmin(admin.ModelAdmin):
 	fieldsets = [
 		(None, { "fields": ('discussion', 'user', 'replies_to',)}),
 		(None, { "fields": ('text', 'emojis', 'proposed_answer')}),
-		(None, { "fields": ('deleted',)}),
+		(None, { "fields": ('deleted', 'extra')}),
 	]
 
 admin.site.register(Discussion, DiscussionAdmin)

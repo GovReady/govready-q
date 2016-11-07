@@ -3,7 +3,7 @@ from django.db import transaction, models
 from django.conf import settings
 from django.utils import timezone
 
-import time
+import time, uuid
 
 from notifications.models import Notification
 
@@ -57,6 +57,17 @@ class Command(BaseCommand):
         # Let the actor render appropriate for the org.
         notif.actor.localize_to_org(organization)
 
+        # If the target supports receiving email replies (like replying to an email
+        # about a discussion), then store a secret in the notif.data dictionary so
+        # that we can tell that a user has replied to something we sent them (and
+        # can't reply to something we didn't notify them about).
+        what_reply_does = None
+        if hasattr(target, "post_notification_reply"):
+            notif.data = notif.data or { }
+            notif.data["secret_key"] = uuid.uuid4()
+            notif.save(update_fields=['data'])
+            what_reply_does = "You can reply to this email to post a comment to the discussion. Do not forward this email to others."
+
         # Send the email.
         from htmlemailer import send_mail
         from email.utils import format_datetime
@@ -67,8 +78,11 @@ class Command(BaseCommand):
             {
                 "notification": notif,
                 "url": organization.get_url(target.get_absolute_url()),
+                "whatreplydoes": what_reply_does,
             },
             headers={
+                "From": settings.NOTIFICATION_FROM_EMAIL_PATTERN % (str(notif.actor),),
+                "Reply-To": settings.NOTIFICATION_REPLY_TO_EMAIL_PATTERN % (organization.name, notif.id, notif.data["secret_key"]),
                 "Date": format_datetime(notif.timestamp),
             }
         )

@@ -31,8 +31,13 @@ ALLOWED_HOSTS += ['.' + ORGANIZATION_PARENT_DOMAIN]
 
 SERVER_EMAIL = "GovReady Q <q@mg.govready.com>"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
+NOTIFICATION_FROM_EMAIL_PATTERN = "%s via GovReady Q <q@mg.govready.com>"
+NOTIFICATION_REPLY_TO_EMAIL_PATTERN = "%s <q+notification+%d+%s@mg.govready.com>"
+NOTIFICATION_REPLY_TO_EMAIL_REGEX = r"q\+notification\+(\d+)\+([a-f\d\-]+)@mg.govready.com"
 DEFAULT_FILE_STORAGE = 'dbstorage.storage.DatabaseStorage'
+NOTIFICATIONS_USE_JSONFIELD = True # allows us to store extra data on Notification instances
 
 MODULES_PATH = environment.get('modules-path', 'modules')
 
 GOVREADY_CMS_API_AUTH = environment.get('govready_cms_api_auth')
+MAILGUN_API_KEY = environment.get('mailgun_api_key', '') # for the incoming mail route

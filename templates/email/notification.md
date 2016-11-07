@@ -11,3 +11,5 @@ Hello,
 Go to [{{notification.target}}]({{url}})
 
 Good luck!{% endblock %}
+
+{% block after_signature_note %}{% if whatreplydoes %}{{whatreplydoes}}{% endif %}{% endblock %}

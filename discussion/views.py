@@ -78,90 +78,14 @@ def submit_discussion_comment(request):
     # Get the discussion object.
     discussion = get_object_or_404(Discussion, id=request.POST['discussion'], organization=request.organization)
 
-    # Does user have write privs?
-    if not discussion.is_participant(request.user):
-        return JsonResponse({ "status": "error", "message": "No access."})
-
-    # Validate.
-    text = request.POST.get("text", "").strip()
-    if text == "":
-        return JsonResponse({ "status": "error", "message": "No comment entered."})
-
-    # Save comment.
-    comment = Comment.objects.create(
-        discussion=discussion,
-        user=request.user,
-        text=text
-        )
-
-    # Issue a notification to anyone watching the discussion
-    # via discussion.get_notification_watchers() except to
-    # anyone @-mentioned because they'll get a different
-    # notification.
-    from siteapp.views import issue_notification
-    from django.utils.text import Truncator
-    _, mentioned_users = match_autocompletes(discussion, text, request.user)
-    issue_notification(
-        request.user,
-        "commented on",
-        discussion,
-        recipients=discussion.get_notification_watchers() - mentioned_users,
-        description="“" + Truncator(text).words(15) + "”")
-
-    # Issue a notification to anyone @-mentioned in the comment.
-    # Compile a big regex for all usernames.
-    issue_notification(
-        request.user,
-        "mentioned you in a comment on",
-        discussion,
-        recipients=mentioned_users,
-        description="“" + Truncator(text).words(15) + "”")
+    # Post the reply.
+    try:
+        comment = discussion.post_comment(request.user, request.POST.get("text", ""), "web")
+    except ValueError as e:
+        return JsonResponse({ "status": "error", "message": e })
 
     # Return the comment for display.
     return JsonResponse(comment.render_context_dict(request.user))
-
-def match_autocompletes(discussion, text, user, replace_mentions=None):
-    import re
-    from siteapp.models import User
-
-    # Get all of the possible autocompletes.
-    # Since autocompletes are linked to the user taking the action,
-    # for the purposes of authorization, we have to pass the user along.
-    autocompletes = discussion.get_autocompletes(user)
-
-    # Make a big regex for all mentions of all autocompletable things.
-    pattern = "|".join(
-        "(" + char + ")(" + "|".join(
-            re.escape(item["tag"])
-            for item in items
-        ) + ")"
-        for char, items in autocompletes.items()
-    )
-
-    # Wrap in a lookbehind and a lookahead to not match if surrounded
-    # by word-ish characters.
-    pattern = r"(?<!\w)" + pattern + r"(?!\w)"
-
-    # Create a reverse-mapping.
-    reverse_mapping = { }
-    for char, items in autocompletes.items():
-        for item in items:
-            reverse_mapping[(char, item['tag'])] = item
-
-    # Find what was mentioned.
-    mentioned_users = set()
-    def replace_func(m):
-        char, tag = (m.group(0)[:1], m.group(0)[1:])
-        item = reverse_mapping[(char, tag)]
-        if item.get("user_id"):
-            user = User.objects.get(id=item["user_id"])
-            mentioned_users.add(user)
-            if replace_mentions:
-                return replace_mentions(char+tag)
-        return m.group(0)
-    text = re.sub(pattern, replace_func, text)
-
-    return (text, mentioned_users)
 
 
 @login_required

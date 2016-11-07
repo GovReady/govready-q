@@ -18,6 +18,9 @@ urlpatterns = [
     # analytis, which are available here and on organization subdomains
     url(r'^tasks/analytics$', guidedmodules.views.analytics),
 
+    # incoming email hook for responses to notifications
+    url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
+
     # admin site
     url(r'^admin/', include(admin.site.urls)),
 ]

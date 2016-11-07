@@ -67,6 +67,55 @@ class Discussion(models.Model):
             | self.guests.all()
             ).distinct()
 
+    ##
+
+    def post_comment(self, user, text, post_method):
+        # Does user have write privs?
+        if not self.is_participant(user):
+            raise ValueError("No access.")
+
+        # Validate.
+        text = text.strip()
+        if text == "":
+            raise ValueError("No comment entered.")
+
+        # Save comment.
+        comment = Comment.objects.create(
+            discussion=self,
+            user=user,
+            text=text,
+            extra={
+                "post_method": post_method,
+            }
+            )
+
+        # Issue a notification to anyone watching the discussion
+        # via discussion.get_notification_watchers() except to
+        # anyone @-mentioned because they'll get a different
+        # notification.
+        from siteapp.views import issue_notification
+        from django.utils.text import Truncator
+        _, mentioned_users = match_autocompletes(self, text, user)
+        issue_notification(
+            user,
+            "commented on",
+            self,
+            recipients=self.get_notification_watchers() - mentioned_users,
+            description="“" + Truncator(text).words(15) + "”")
+
+        # Issue a notification to anyone @-mentioned in the comment.
+        # Compile a big regex for all usernames.
+        issue_notification(
+            user,
+            "mentioned you in a comment on",
+            self,
+            recipients=mentioned_users,
+            description="“" + Truncator(text).words(15) + "”")
+
+        return comment
+
+    ##
+
     def can_invite_guests(self, user):
         return ProjectMembership.objects.filter(project=self.attached_to.project, user=user).exists()
 
@@ -107,6 +156,14 @@ class Discussion(models.Model):
         return set(
             list(mbr.user for mbr in ProjectMembership.objects.filter(project=self.attached_to.project)) \
             + list(self.guests.all()))
+
+    def post_notification_reply(self, notification, user, message):
+        # This is called via incoming mail routing when a user replies to a notification
+        # email about this discussion. Ignore any problems because we don't have a way
+        # to alert the sender of the problem.
+        self.post_comment(user, message, "email")
+
+    ##
 
     def get_autocompletes(self, user):
         # When typing in a comment, what autocompletes are available to this user?
@@ -186,7 +243,6 @@ class Comment(models.Model):
         # * Replace @-mentions with something.
         # * Render to HTML as if CommonMark.
         import CommonMark
-        from .views import match_autocompletes
         rendered_text = self.text
         rendered_text, _ = match_autocompletes(self.discussion, rendered_text, whose_asking,
             lambda text : "**" + text + "**")
@@ -235,3 +291,46 @@ def reldate(date, ref):
     if rd.days >= 1: return c((rd.days, "day"), (rd.hours, "hour"))
     if rd.hours >= 1: return c((rd.hours, "hour"), (rd.minutes, "minute"))
     return c((rd.minutes, "minute"),)
+
+def match_autocompletes(discussion, text, user, replace_mentions=None):
+    import re
+    from siteapp.models import User
+
+    # Get all of the possible autocompletes.
+    # Since autocompletes are linked to the user taking the action,
+    # for the purposes of authorization, we have to pass the user along.
+    autocompletes = discussion.get_autocompletes(user)
+
+    # Make a big regex for all mentions of all autocompletable things.
+    pattern = "|".join(
+        "(" + char + ")(" + "|".join(
+            re.escape(item["tag"])
+            for item in items
+        ) + ")"
+        for char, items in autocompletes.items()
+    )
+
+    # Wrap in a lookbehind and a lookahead to not match if surrounded
+    # by word-ish characters.
+    pattern = r"(?<!\w)" + pattern + r"(?!\w)"
+
+    # Create a reverse-mapping.
+    reverse_mapping = { }
+    for char, items in autocompletes.items():
+        for item in items:
+            reverse_mapping[(char, item['tag'])] = item
+
+    # Find what was mentioned.
+    mentioned_users = set()
+    def replace_func(m):
+        char, tag = (m.group(0)[:1], m.group(0)[1:])
+        item = reverse_mapping[(char, tag)]
+        if item.get("user_id"):
+            user = User.objects.get(id=item["user_id"])
+            mentioned_users.add(user)
+            if replace_mentions:
+                return replace_mentions(char+tag)
+        return m.group(0)
+    text = re.sub(pattern, replace_func, text)
+
+    return (text, mentioned_users)

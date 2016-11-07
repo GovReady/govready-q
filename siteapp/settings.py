@@ -218,7 +218,7 @@ USE_L10N = True
 # always turned on.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
-if environment.get("email"):
+if environment.get("email", {}).get("host"):
 	EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 	EMAIL_HOST = environment["email"]["host"]
 	EMAIL_PORT = environment["email"]["port"]
