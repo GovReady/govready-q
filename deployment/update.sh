@@ -15,5 +15,6 @@ python3 manage.py collectstatic --noinput &&
 # Load updated modules into database.
 python3 manage.py load_modules &&
 
-# Kick the uWSGI process to reload modules.
+# Kick the processes to reload modules.
 killall -HUP uwsgi_python3
+pkill -f send_notification_emails
