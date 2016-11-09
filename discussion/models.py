@@ -101,7 +101,8 @@ class Discussion(models.Model):
             "commented on",
             self,
             recipients=self.get_notification_watchers() - mentioned_users,
-            description="“" + Truncator(text).words(15) + "”")
+            description="“" + Truncator(text).words(15) + "”",
+            comment_id=comment.id)
 
         # Issue a notification to anyone @-mentioned in the comment.
         # Compile a big regex for all usernames.
@@ -110,7 +111,8 @@ class Discussion(models.Model):
             "mentioned you in a comment on",
             self,
             recipients=mentioned_users,
-            description="“" + Truncator(text).words(15) + "”")
+            description="“" + Truncator(text).words(15) + "”",
+            comment_id=comment.id)
 
         return comment
 
@@ -156,6 +158,11 @@ class Discussion(models.Model):
         return set(
             list(mbr.user for mbr in ProjectMembership.objects.filter(project=self.attached_to.project)) \
             + list(self.guests.all()))
+
+    def get_notification_link(self, notification):
+        if notification.data and notification.data.get("comment_id"):
+            return self.attached_to.get_absolute_url() + "#discussion-comment-" + str(notification.data.get("comment_id"))
+        return None # fall back to default behavior
 
     def post_notification_reply(self, notification, user, message):
         # This is called via incoming mail routing when a user replies to a notification

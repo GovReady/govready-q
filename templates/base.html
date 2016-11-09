@@ -1,5 +1,6 @@
 {% load static %}
 {% load notifications_tags %}
+{% load q %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -144,8 +145,8 @@
                   <li class="notification {% if n.unread %}unread{% endif %}" data-notification-id="{{n.id}}">
                     {# the link has an onclick handler that cancels the click, runs ajax to mark the notification as read, and then on the ajax callback redirects to the target url #}
                     <a
-                        href="{% if n.target and not n.target.supress_link_from_notifications %}{{n.target.get_absolute_url}}{% else %}javascript:false;{% endif %}"
-                        onclick="return mark_notifications_read({ id: {{n.id}} }{% if n.target and not n.target.supress_link_from_notifications %}, function() { window.location = '{{n.target.get_absolute_url|escapejs}}'; }{% endif %})">
+                        href="{% if n.target and not n.target.supress_link_from_notifications %}{{n.target|get_notification_link:n}}{% else %}javascript:false;{% endif %}"
+                        onclick="return mark_notifications_read({ id: {{n.id}} }{% if n.target and not n.target.supress_link_from_notifications %}, function() { window.location = '{{n.target|get_notification_link:n|escapejs}}'; }{% endif %})">
                         <span>{{ n.actor }} {{ n.verb }} {% if n.target %}{{ n.target }}{% endif %}</span>
                         {{ n.timesince }} ago
                     </a>

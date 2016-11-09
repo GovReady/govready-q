@@ -71,18 +71,20 @@ class Command(BaseCommand):
         # Send the email.
         from htmlemailer import send_mail
         from email.utils import format_datetime
+        from siteapp.templatetags import q as q_template_tags
         send_mail(
             "email/notification",
             settings.DEFAULT_FROM_EMAIL,
             [notif.recipient.email],
             {
                 "notification": notif,
-                "url": organization.get_url(target.get_absolute_url()),
+                "url": organization.get_url(q_template_tags.get_notification_link(target, notif)),
                 "whatreplydoes": what_reply_does,
             },
             headers={
                 "From": settings.NOTIFICATION_FROM_EMAIL_PATTERN % (str(notif.actor),),
-                "Reply-To": settings.NOTIFICATION_REPLY_TO_EMAIL_PATTERN % (organization.name, notif.id, notif.data["secret_key"]),
+                "Reply-To": (settings.NOTIFICATION_REPLY_TO_EMAIL_PATTERN % (organization.name, notif.id, notif.data["secret_key"]))
+                if what_reply_does else "",
                 "Date": format_datetime(notif.timestamp),
             }
         )

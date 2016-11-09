@@ -467,6 +467,10 @@ function render_comment(item) {
   // Remember the last comment we've seen, for polling.
   if (item.id > discussion_info.max_comment_id)
     discussion_info.max_comment_id = item.id;
+
+  // Scroll here if the window location fragment targets this.
+  if (window.location.hash == "#discussion-comment-" + item.id)
+    smooth_scroll_to(n);
 }
 
 function render_event(item) {

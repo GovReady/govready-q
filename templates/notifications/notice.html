@@ -1,3 +1,4 @@
+{% load q %}
 <div class="{% if notice.level != "info" %}alert alert-block alert-{{ notice.level }}{% endif %} notification {% if notice.unread %}unread{% endif %}"
   style="margin-bottom: 1em"
   data-notification-id="{{notice.id}}">
@@ -12,8 +13,8 @@
 
   {# the link has an onclick handler that cancels the click, runs ajax to mark the notification as read, and then on the ajax callback redirects to the target url #}
   <a
-    href="{% if notice.target and not notice.target.supress_link_from_notifications %}{{notice.target.get_absolute_url}}{% else %}javascript:false;{% endif %}"
-    onclick="return mark_notifications_read({ id: {{notice.id}} }{% if notice.target and not notice.target.supress_link_from_notifications %}, function() { window.location = '{{notice.target.get_absolute_url|escapejs}}'; }{% endif %})"
+    href="{% if notice.target and not notice.target.supress_link_from_notifications %}{{notice.target|get_notification_link:notice}}{% else %}javascript:false;{% endif %}"
+    onclick="return mark_notifications_read({ id: {{notice.id}} }{% if notice.target and not notice.target.supress_link_from_notifications %}, function() { window.location = '{{notice.target|get_notification_link:notice|escapejs}}'; }{% endif %})"
     >
     {{ notice.actor }} 
     {{ notice.verb }}
