@@ -68,7 +68,9 @@ def homepage(request):
 
 @login_required
 def new_project(request):
-    from django.forms import ModelForm, ChoiceField, RadioSelect
+    from django.forms import ModelForm, ChoiceField, RadioSelect, MultipleChoiceField, \
+        CheckboxSelectMultiple, CharField, Textarea
+    from django.core.exceptions import ValidationError
 
     # Get the list of project modules.
     project_modules = sorted(set(
@@ -77,15 +79,57 @@ def new_project(request):
         if m.spec.get("type") == "project" and not m.spec.get("hidden", False)),
         key = lambda m : m[1])
 
+    # Get the list of users who can be invited to the new project.
+    invitable_users = (
+        User.objects
+            # members of this organization
+            .filter(projectmembership__project__organization=request.organization)
+            # distinct because the field ^ creates duplicates
+            .distinct()
+            # but not the user making this request
+            .exclude(id=request.user.id)
+        )
+
+    def validate_list_of_email_addresses(value):
+        # This is a form validator as well as a function to return the split and
+        # normalized addresses.
+        def validate_email(email):
+            import email_validator
+            try:
+                return email_validator.validate_email(email)["email"]
+            except ValueError as e:
+                raise ValidationError(email + ": " + str(e))
+        import re
+        return set(
+            validate_email(email)
+            for email in re.split(r"[\s,]+", value)
+            if email != "") # if value is the empty string, we will get one empty value after split
+
     # The form.
     class NewProjectForm(ModelForm):
         class Meta:
             model = Project
             fields = ['title']
+            labels = {
+                'title': 'Enter name of system'
+            }
             help_texts = {
                 'title': 'Give your web property, application or other IT system a descriptive name.',
             }
-        module_id = ChoiceField(choices=project_modules, label="What do you want to do?", widget=RadioSelect)
+        module_id = ChoiceField(choices=project_modules, label="What do you need to do?", widget=RadioSelect)
+        if len(invitable_users) > 0:
+            invite_org_users = MultipleChoiceField(label='Select existing users to add to project',
+                choices=sorted([
+                    (user.id, user.render_context_dict(request.organization)['name'])
+                    for user in invitable_users ],
+                    key = lambda choice : choice[1]),
+                widget=CheckboxSelectMultiple,
+                required=False)
+        invite_by_email = CharField(label="Invite others to this project",
+            help_text="Separate email addresses by new lines, spaces, or commas.",
+            widget=Textarea(attrs={'rows': '2', 'placeholder': ''}),
+            required=False,
+            validators=[validate_list_of_email_addresses])
 
     form = NewProjectForm()
     if request.method == "POST":
@@ -110,6 +154,29 @@ def new_project(request):
                     project=project,
                     user=request.user,
                     is_admin=True)
+
+                # add other invited users
+                # (the form field is absent in some cases so must check we have the field)
+                if 'invite_org_users' in form.cleaned_data:
+                    for user in invitable_users.filter(id__in=form.cleaned_data['invite_org_users']):
+                        ProjectMembership.objects.create(
+                            project=project,
+                            user=user)
+
+                # send other invitations
+                for email in validate_list_of_email_addresses(form.cleaned_data['invite_by_email']):
+                    inv = Invitation.objects.create(
+                        organization=request.organization,
+                        from_user=request.user, # sender
+                        from_project=project, # sender
+                        into_project=True, # action
+                        target=project, # action
+                        target_info={ "what": "join-team" }, # action
+                        to_email=email, # recipient
+                        text=""
+                    )
+                    inv.send()
+
             return HttpResponseRedirect(project.get_absolute_url())
 
     return render(request, "new-project.html", {
@@ -395,7 +462,6 @@ def send_invitation(request):
 
             # personalization
             text=request.POST.get("message", ""),
-            email_invitation_code=Invitation.generate_email_invitation_code(),
         )
 
         inv.send() # TODO: Move this into an asynchronous queue.

@@ -502,6 +502,12 @@ class Invitation(models.Model):
             self.purpose(),
             self.created)
 
+    def save(self, *args, **kwargs):
+        # On first save, generate the invitation code.
+        if not self.id:
+           self.email_invitation_code = Invitation.generate_email_invitation_code()
+        super(Invitation, self).save(*args, **kwargs)
+
     @staticmethod
     def generate_email_invitation_code():
         import random, string
@@ -532,11 +538,14 @@ class Invitation(models.Model):
 
     def purpose_verb(self):
         return \
-              ("to join the project team and " if (self.into_project and (not isinstance(self.target, Project) or self.target_info.get('what') != 'join-team')) else "") \
+              ("to join the project team and " if self.into_project and not self.is_just_project_invite() else "") \
             + self.target.get_invitation_verb_inf(self)
 
+    def is_just_project_invite(self):
+        return isinstance(self.target, Project) and self.target_info.get('what') == 'join-team'
+
     def purpose(self):
-        return self.purpose_verb() + self.target.title
+        return self.purpose_verb() + " " + self.target.title
 
     def get_acceptance_url(self):
         # The invitation must be sent using the subdomain of the organization it is
