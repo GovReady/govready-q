@@ -732,13 +732,77 @@ class TaskAnswer(models.Model):
 
     # required to attach a Discussion to it
     @property
-    def project(self):
-        return self.task.project
-
-    # required to attach a Discussion to it
-    @property
     def title(self):
         return self.question.spec["title"] + " - " + self.task.title
+
+    # required to attach a Discussion to it
+    def is_discussion_deleted(self):
+        return self.task.deleted_at
+
+    # required to attach a Discussion to it
+    def get_discussion_participants(self):
+        return User.objects.filter(projectmembership__project=self.task.project)
+
+    # required to attach a Discussion to it
+    def get_project_context_dict(self):
+        return {
+            "id": self.task.project.id,
+            "title": self.task.project.title,
+        }
+
+    # required to attach a Discussion to it
+    def get_discussion_interleaved_events(self, events_since):
+        return [
+            event
+            for event in self.get_history()
+            if event["date_posix"] > float(events_since)
+        ]
+
+    # required to attach a Discussion to it
+    def get_user_role(self, user):
+        if user == self.task.editor:
+            return "editor"
+        mbr = ProjectMembership.objects.filter(
+            project=self.task.project,
+            user=user).first()
+        if mbr:
+            if mbr.is_admin:
+                return "team admin"
+            else:
+                return "project member"
+        return None
+
+    # required to attach a Discussion to it
+    def can_invite_guests(self, user):
+        return ProjectMembership.objects.filter(project=self.task.project, user=user).exists()
+
+    # required to attach a Discussion to it
+    def get_notification_watchers(self):
+        return list(mbr.user for mbr in ProjectMembership.objects.filter(project=self.task.project))
+
+    # required to attach a Discussion to it
+    def get_discussion_autocompletes(self, organization):
+        return {
+            # @-mention other participants in the discussion
+            "@": [
+                {
+                    "user_id": user.id,
+                    "tag": user.username,
+                    "display": user.render_context_dict(organization)["name"],
+                }
+                for user in self.get_discussion_participants()
+            ],
+
+            # #-mention Organization-defined terms
+            "#": [
+                {
+                    "tag": term,
+                }
+                for term in organization.extra.get("vocabulary", [])
+            ]
+        }
+
+
 
     def export_json(self, serializer):
         # Exports this TaskAnswer's current answer to a JSON-serializable Python data structure.

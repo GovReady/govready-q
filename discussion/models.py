@@ -6,7 +6,7 @@ from django.conf import settings
 
 from jsonfield import JSONField
 
-from siteapp.models import User, ProjectMembership
+from siteapp.models import User
 
 class Discussion(models.Model):
     organization = models.ForeignKey('siteapp.Organization', related_name="discussions", help_text="The Organization that this Discussion belongs to.")
@@ -15,7 +15,7 @@ class Discussion(models.Model):
     attached_to_object_id = models.PositiveIntegerField()
     attached_to = GenericForeignKey('attached_to_content_type', 'attached_to_object_id')
 
-    guests = models.ManyToManyField(User, blank=True, help_text="Additional Users who are participating in this chat, besides those that are members of the Project that contains the Discussion.")
+    guests = models.ManyToManyField(User, blank=True, help_text="Additional Users who are participating in this chat, besides those that are implicit discussion members via the Discussion's attached_to object.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -53,19 +53,43 @@ class Discussion(models.Model):
     def is_participant(self, user):
         # No one is a participant of a dicussion attached to (a question
         # of) a deleted Task.
-        if self.attached_to.task.deleted_at:
+        if self.attached_to.is_discussion_deleted():
             return False
-
-        # Participants are members of the project team of the task of
-        # the question this Discussion is attached to, plus the Discussion's
-        # guests.
         return user in self.get_all_participants()
 
     def get_all_participants(self):
         return (
-            User.objects.filter(projectmembership__project=self.attached_to.project) \
+            self.attached_to.get_discussion_participants()
             | self.guests.all()
             ).distinct()
+
+    ##
+
+    def render_context_dict(self, user, comments_since=0, parent_events_since=0):
+        # Build the event history.
+        events = []
+        events.extend(self.attached_to.get_discussion_interleaved_events(parent_events_since))
+        events.extend([
+            comment.render_context_dict(user)
+            for comment in self.comments.filter(
+                id__gt=comments_since,
+                deleted=False)
+        ])
+        events.sort(key = lambda item : item["date_posix"])
+
+        # Get the initial state of the discussion to populate the HTML.
+        return {
+            "status": "ok",
+            "discussion": {
+                "id": self.id,
+                "title": self.title,
+                "project": self.attached_to.get_project_context_dict(),
+                "can_invite": self.can_invite_guests(user),
+            },
+            "guests": [ user.render_context_dict(self.organization) for user in self.guests.all() ],
+            "events": events,
+            "autocomplete": self.get_autocompletes(user),
+        }
 
     ##
 
@@ -119,7 +143,7 @@ class Discussion(models.Model):
     ##
 
     def can_invite_guests(self, user):
-        return ProjectMembership.objects.filter(project=self.attached_to.project, user=user).exists()
+        return self.attached_to.can_invite_guests(user)
 
     def get_invitation_verb_inf(self, invitation):
         return "to join the discussion"
@@ -153,11 +177,10 @@ class Discussion(models.Model):
         return self.attached_to is None
 
     def get_notification_watchers(self):
-        if self.attached_to.task.deleted_at:
+        if self.attached_to.is_discussion_deleted():
             return set()
-        return set(
-            list(mbr.user for mbr in ProjectMembership.objects.filter(project=self.attached_to.project)) \
-            + list(self.guests.all()))
+        return set(self.attached_to.get_notification_watchers()) \
+            | set(self.guests.all())
 
     def get_notification_link(self, notification):
         if notification.data and notification.data.get("comment_id"):
@@ -177,27 +200,7 @@ class Discussion(models.Model):
         # Ensure the user is a participant of the discussion.
         if not self.is_participant(user):
             return []
-
-        return {
-            # @-mention other participants in the discussion
-            "@": [
-                {
-                    "user_id": user.id,
-                    "tag": user.username,
-                    "display": user.render_context_dict(self.organization)["name"],
-                }
-                for user in self.get_all_participants()
-            ],
-
-            # #-mention Organization-defined terms
-            "#": [
-                {
-                    "tag": term,
-                }
-                for term in self.organization.extra.get("vocabulary", [])
-            ]
-        }
-
+        return self.attached_to.get_discussion_autocompletes(self.organization)
 
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", help_text="The Discussion that this comment is attached to.")
@@ -255,21 +258,12 @@ class Comment(models.Model):
             lambda text : "**" + text + "**")
         rendered_text = CommonMark.commonmark(rendered_text)
 
-
         def get_user_role():
-            if self.user == self.discussion.attached_to.task.editor:
-                return "editor"
-            if ProjectMembership.objects.filter(
-                project=self.discussion.attached_to.project,
-                user=self.user,
-                is_admin=True):
-                return "team admin"
+            ret = self.discussion.attached_to.get_user_role(self.user)
+            if ret:
+                return ret
             if self.user in self.discussion.guests.all():
                 return "guest"
-            if ProjectMembership.objects.filter(
-                project=self.discussion.attached_to.project,
-                user=self.user):
-                return "project member"
             return "former participant"
 
         return {
@@ -286,9 +280,9 @@ class Comment(models.Model):
             "emojis": self.emojis.split(",") if self.emojis else None,
         }
 
-def reldate(date, ref):
+def reldate(date, ref=None):
     import dateutil.relativedelta
-    rd = dateutil.relativedelta.relativedelta(ref, date)
+    rd = dateutil.relativedelta.relativedelta(ref or timezone.now(), date)
     def r(n, unit):
         return str(n) + " " + unit + ("s" if n != 1 else "")
     def c(*rs):
@@ -297,7 +291,8 @@ def reldate(date, ref):
     if rd.days >= 7: return c((rd.days, "day"),)
     if rd.days >= 1: return c((rd.days, "day"), (rd.hours, "hour"))
     if rd.hours >= 1: return c((rd.hours, "hour"), (rd.minutes, "minute"))
-    return c((rd.minutes, "minute"),)
+    if rd.minutes >= 1: return c((rd.minutes, "minute"),)
+    return c((rd.seconds, "second"),)
 
 def match_autocompletes(discussion, text, user, replace_mentions=None):
     import re

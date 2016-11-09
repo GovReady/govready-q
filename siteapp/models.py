@@ -88,7 +88,8 @@ class User(AbstractUser):
     def get_profile_picture(self):
         return self._get_setting("picture")
 
-    def render_context_dict(self, organization):
+    def render_context_dict(self, req_organization):
+        organization = req_organization if isinstance(req_organization, Organization) else req_organization.organization
         profile = self.get_settings_task(organization).get_answers().answers
         profile.update({
             "id": self.id,

@@ -71,14 +71,14 @@ class Command(BaseCommand):
         # Send the email.
         from htmlemailer import send_mail
         from email.utils import format_datetime
-        from siteapp.templatetags import q as q_template_tags
+        from siteapp.templatetags.notification_helpers import get_notification_link
         send_mail(
             "email/notification",
             settings.DEFAULT_FROM_EMAIL,
             [notif.recipient.email],
             {
                 "notification": notif,
-                "url": organization.get_url(q_template_tags.get_notification_link(target, notif)),
+                "url": organization.get_url(get_notification_link(target, notif)),
                 "whatreplydoes": what_reply_does,
             },
             headers={

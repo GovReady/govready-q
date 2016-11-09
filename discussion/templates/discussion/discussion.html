@@ -97,7 +97,9 @@
 </style>
 
 <div id="discussion" style="display: none;">
+  {% if show_discussion_h2 %}
   <h2>Activity</h2>
+  {% endif %}
 
     <div class="comment-thread">
       
@@ -110,6 +112,9 @@
         <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder="Enter your message here."></textarea>
         <div style="margin-top: 1em; text-align: right">
           {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
+          {% if show_discussion_close_and_comment %}
+          <button id="discussion_close_and_comment" type="submit" class="btn btn-default" onclick="close_and_comment_clicked();">...</button>
+          {% endif %}
           <button type="submit" class="btn btn-primary">Comment</button>
         </div>
       </form>
@@ -119,10 +124,12 @@
       You are the only person in this conversation so far. <a href="#" onclick="return invite_user_to_discussion()" class="btn btn-link btn-default">Invite a colleague</a> to join you.
     </p>
 
+    {% if show_discussion_members_count %}
     <p class="small active-discussion-only" style="display: none">
       Who can see this conversation? <span class="fillin-project_name"></span> members<span class="fillin-guests"></span>.
       <a id="invite-guest" href="#" onclick="return invite_user_to_discussion()">Invite Colleague</a>
     </p>
+    {% endif %}
 </div>
 
 <div id="comment-template" style="display: none">
@@ -245,6 +252,7 @@ function init_discussion_html() {
 var discussion_info = { max_event_time: 0 };
 var discussion_has_any_comment = false;
 var discussion_has_any_comment_from_someone_else = false;
+var discussion_comment_count = 0;
 
 function display_discussion(discussion, is_page_load) {
   // first time initialization
@@ -262,6 +270,9 @@ function display_discussion(discussion, is_page_load) {
   $('#discussion-your-comment-label').text("Start the team conversation with a question or comment:")
   $('#discussion #invite-guest').toggle(discussion_info.can_invite);
   if (!is_page_load) $('#discussion-your-comment').focus();
+  $('#discussion-your-comment').on("keyup", update_close_and_comment_button_text); // live but only keystrokes
+  $('#discussion-your-comment').on("change", update_close_and_comment_button_text); // on blur
+  update_close_and_comment_button_text();
 
   // fill in the context block on the right side
   $('#discussion .fillin-project_name').text(discussion_info.project.title);
@@ -342,6 +353,13 @@ function display_discussion(discussion, is_page_load) {
   discussion_poll();
 }
 
+function update_close_and_comment_button_text() {
+  if (!close_and_comment_strings[0]) return;
+  $('#discussion_close_and_comment').text(
+    $('#discussion-your-comment').val() == "" ? close_and_comment_strings[0] : close_and_comment_strings[1]
+  )
+}
+
 function render_events(discussion) {
   discussion.events.forEach(function(item) {
     if (item.type == "event")
@@ -353,25 +371,30 @@ function render_events(discussion) {
 
 function discussion_poll() {
   setTimeout(function() {
-    $.ajax({
-        url: "{% url 'start_a_discussion' %}",
-        method: "POST",
-        data: {
-            task: {{task.id}},
-            question: "{{q.id|escapejs}}",
-            comment_since: discussion_info.max_comment_id,
-            event_since: discussion_info.max_event_time
-        },
-        success: function(res) {
-          render_events(res);
-          show_notification(res);
-          discussion_poll(); // poll again
-        }
-    })
+      discussion_poll_now(function(){
+        discussion_poll(); // poll again
+      })
     },
 
     // poll interval (10s)
     10000);
+}
+
+function discussion_poll_now(cb) {
+  $.ajax({
+      url: "{% url 'discussion_poll_for_events' %}",
+      method: "POST",
+      data: {
+          id: discussion_info.id,
+          comment_since: discussion_info.max_comment_id,
+          event_since: discussion_info.max_event_time
+      },
+      success: function(res) {
+        render_events(res);
+        show_notification(res);
+        if (cb) cb()
+      }
+  });
 }
 
 function show_notification(discussion) {
@@ -383,11 +406,12 @@ function show_notification(discussion) {
 
   var notification = "";
   discussion.events.forEach(function(item) {
+    if (!item.notification_text) return;
     notification += truncate(item.notification_text) + "\n\n";
   })
 
   // if there's anything to show, show it
-  if (notification.length > 0)
+  if (notification != "")
     Push.create(discussion.discussion.title, {
       body: notification,
       /*icon: {
@@ -471,6 +495,10 @@ function render_comment(item) {
   // Scroll here if the window location fragment targets this.
   if (window.location.hash == "#discussion-comment-" + item.id)
     smooth_scroll_to(n);
+
+  // Update containing document fields.
+  discussion_comment_count += 1;
+  $('#page-comment-count').text(discussion_comment_count + " comments");
 }
 
 function render_event(item) {
@@ -495,12 +523,15 @@ function render_event(item) {
 }
 
 function submit_comment() {
+  var text = $('#discussion .comment-input form textarea').val();
+  if (!text) return;
+  
   ajax_with_indicator({
     url: "{% url 'discussion-comment-create' %}",
     method: "POST",
     data: {
       discussion: discussion_info.id,
-      text: $('#discussion .comment-input form textarea').val()
+      text: text
     },
     controls: $('#discussion .comment-input form').find('textarea, input, button'),
     success: function(c) {
@@ -648,6 +679,7 @@ function save_emoji_reaction() {
   current_emoji_reaction = null;
 }
 
+{% if send_invitation %}
 function invite_user_to_discussion() {
   show_invite_modal(
     'Invite to Discussion',
@@ -661,4 +693,5 @@ function invite_user_to_discussion() {
   );
   return false;
 }
+{% endif %}
 </script>

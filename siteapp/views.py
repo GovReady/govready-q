@@ -12,6 +12,7 @@ from guidedmodules.models import Module, Task, ProjectMembership
 from discussion.models import Discussion
 
 from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch is loaded
+from .notifications_helpers import *
 
 def homepage(request):
     if not request.user.is_authenticated():
@@ -603,44 +604,3 @@ def accept_invitation(request, code=None):
                 if u not in (inv.from_user, inv.accepted_user)])
 
         return HttpResponseRedirect(inv.get_redirect_url())
-
-def issue_notification(acting_user, verb, target, recipients='WATCHERS', **notification_kwargs):
-    # Create a notification *from* acting_user *to*
-    # all users who are watching target.
-    from notifications.signals import notify
-    if recipients == 'WATCHERS':
-        recipients = target.get_notification_watchers()
-    for user in recipients:
-        # Don't notify the acting user about an
-        # action they took.
-        if user == acting_user:
-            continue
-
-        # Create the notification.
-        # TODO: Associate this notification with an organization?
-        notify.send(
-            acting_user, verb=verb, target=target,
-            recipient=user,
-            **notification_kwargs)
-
-@login_required
-def mark_notifications_as_read(request):
-	# Mark one or all of the user's notifications as read.
-
-    # TODO: Filter for notifications relevant to the organization site the user is on.
-	notifs = request.user.notifications
-
-	if "upto_id" in request.POST:
-		# Mark up to the one with id upto_id. This ensures that if a 
-		# notification was generated after the client-side UI
-		# displayed the last batch of notifications, that we
-		# won't clear out something the user hasn't seen.
-		notifs = notifs.filter(id__lte=request.POST['upto_id'])
-	
-	elif "id" in request.POST:
-		# Mark a single notification as read.
-		notifs = notifs.filter(id=request.POST['id'])
-
-	notifs.mark_all_as_read()
-
-	return JsonResponse({ "status": "ok" })

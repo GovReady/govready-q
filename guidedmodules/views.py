@@ -5,7 +5,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 
-from .models import Module, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
+from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 import guidedmodules.module_logic as module_logic
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
@@ -373,6 +373,8 @@ def next_question(request, taskid, taskslug):
             "answer_obj": answer,
             "answer": answer.get_value() if (answer and not answer.cleared) else None,
             "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
+            "show_discussion_members_count": True,
+            "show_discussion_h2": True,
 
             "answer_module": answer_module,
             "answer_tasks": answer_tasks,
@@ -453,6 +455,40 @@ def change_task_state(request):
     task.save(update_fields=["deleted_at"])
 
     return HttpResponse("ok")
+
+@login_required
+def start_a_discussion(request):
+    # This view function creates a discussion, or returns an existing one.
+
+    # Validate and retreive the Task and ModuleQuestion that the discussion
+    # is to be attached to.
+    task = get_object_or_404(Task, id=request.POST['task'])
+    q = get_object_or_404(ModuleQuestion, id=request.POST['question'])
+
+    # The user may not have permission to create - only to get.
+
+    tq_filter = { "task": task, "question": q }
+    tq = TaskAnswer.objects.filter(**tq_filter).first()
+    if not tq:
+        # Validate user can create discussion. Any user who can read the task can start
+        # a discussion.
+        if not task.has_read_priv(request.user):
+            return JsonResponse({ "status": "error", "message": "You do not have permission!" })
+
+        # Get the TaskAnswer for this task. It may not exist yet.
+        tq, isnew = TaskAnswer.objects.get_or_create(**tq_filter)
+
+    discussion = Discussion.get_for(request.organization, tq)
+    if not discussion:
+        # Validate user can create discussion.
+        if not task.has_read_priv(request.user):
+            return JsonResponse({ "status": "error", "message": "You do not have permission!" })
+
+        # Get the Discussion.
+        discussion = Discussion.get_for(request.organization, tq, create=True)
+
+    return JsonResponse(discussion.render_context_dict(request.user))
+
 
 @login_required
 def analytics(request):

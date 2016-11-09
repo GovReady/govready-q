@@ -1,4 +1,4 @@
-{% load q %}
+{% load notification_helpers %}
 <div class="{% if notice.level != "info" %}alert alert-block alert-{{ notice.level }}{% endif %} notification {% if notice.unread %}unread{% endif %}"
   style="margin-bottom: 1em"
   data-notification-id="{{notice.id}}">

@@ -15,10 +15,3 @@ def json(value):
     import json
     return mark_safe(json.dumps(value))
 
-@register.filter
-def get_notification_link(obj, notification):
-	if hasattr(obj, 'get_notification_link'):
-		ret = obj.get_notification_link(notification)
-		if ret:
-			return ret
-	return obj.get_absolute_url()
