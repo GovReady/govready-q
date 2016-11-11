@@ -61,8 +61,10 @@ class ProjectAdmin(admin.ModelAdmin):
         return obj.get_owner_domains()
 
 class ProjectMembershipAdmin(admin.ModelAdmin):
-    list_display = ('project', 'user', 'is_admin', 'created')
+    list_display = ('project', 'organization', 'user', 'is_admin', 'created')
     raw_id_fields = ('project', 'user',)
+    def organization(self, obj):
+        return obj.project.organization
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
