@@ -848,6 +848,7 @@ class validator:
             from PIL import Image
             try:
                 im = Image.open(BytesIO(content))
+                im.load() # force read from buffer so that exceptions are raised now
             except:
                 raise ValueError("That's not an image file.")
 
