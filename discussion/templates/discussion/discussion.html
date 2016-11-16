@@ -409,6 +409,7 @@ function show_notification(discussion) {
   var notification = "";
   discussion.events.forEach(function(item) {
     if (!item.notification_text) return;
+    if (item && item.who && item.who.id == {{request.user.id}}) return; // no notifications for actions the user took themself
     notification += truncate(item.notification_text) + "\n\n";
   })
 
