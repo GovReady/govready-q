@@ -237,6 +237,9 @@ class Comment(models.Model):
         # discussion.
         return self.user == user and self.discussion.is_participant(user)
 
+    def can_delete(self, user):
+        return self.can_edit(user) and (not isinstance(self.extra, dict) or self.extra.get("deletable", True))
+
     def push_history(self, field):
         if not isinstance(self.extra, dict):
             self.extra = { }
@@ -269,6 +272,8 @@ class Comment(models.Model):
         return {
             "type": "comment",
             "id": self.id,
+            "can_edit": self.can_edit(whose_asking),
+            "can_delete": self.can_delete(whose_asking),
             "replies_to": self.replies_to_id,
             "user": self.user.render_context_dict(self.discussion.organization),
             "user_role": get_user_role(),

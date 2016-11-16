@@ -56,6 +56,8 @@
   }
 #discussion .comment .ifeditpriv { display: none; }
 #discussion .comment.has-edit-priv .ifeditpriv { display: inline; }
+#discussion .comment .ifdeletepriv { display: none; }
+#discussion .comment.has-delete-priv .ifdeletepriv { display: inline; }
 #discussion .comment.author-is-self .ifnotauthor { display: none; }
 #discussion .comment .reply {
   margin-top: 1.25em;
@@ -175,7 +177,7 @@
             <i class="glyphicon glyphicon-plus"></i>
             <i class="glyphicon glyphicon-heart"></i>
           </a>
-          <a title="Delete this comment" class="ifeditpriv" href="#" onclick="return do_delete_comment(this);">
+          <a title="Delete this comment" class="ifdeletepriv" href="#" onclick="return do_delete_comment(this);">
             <i class="glyphicon glyphicon-trash"></i>
           </a>
       </div>
@@ -451,8 +453,10 @@ function render_comment(item) {
   n.find('.comment-author-role').text(item.user_role);
   n.find('.comment-text').html(item.text_rendered);
   n.attr('data-text', item.text);
-  if (item.user.id == {{request.user.id}}) // TODO: admins too
+  if (item.can_edit)
     n.addClass('has-edit-priv');
+  if (item.can_delete)
+    n.addClass('has-delete-priv');
   if (item.user.id == {{request.user.id}})
     n.addClass('author-is-self');
   n.find('.comment-emojis').html('');

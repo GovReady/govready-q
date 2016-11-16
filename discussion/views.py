@@ -55,9 +55,9 @@ def delete_discussion_comment(request):
     # get object
     comment = get_object_or_404(Comment, id=request.POST['id'], **makekwargs(request, 'discussion__'))
 
-    # can edit? must still be a participant of the discussion, to
+    # can delete? must still be a participant of the discussion, to
     # prevent editing things that you are no longer able to see
-    if not comment.can_edit(request.user):
+    if not comment.can_delete(request.user):
         return HttpResponseForbidden()
 
     # mark deleted
