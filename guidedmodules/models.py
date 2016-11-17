@@ -741,7 +741,7 @@ class TaskAnswer(models.Model):
 
     # required to attach a Discussion to it
     def get_discussion_participants(self):
-        return User.objects.filter(projectmembership__project=self.task.project)
+        return User.objects.filter(projectmembership__project=self.task.project).distinct()
 
     # required to attach a Discussion to it
     def get_project_context_dict(self):

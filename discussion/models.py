@@ -60,7 +60,7 @@ class Discussion(models.Model):
     def get_all_participants(self):
         return (
             self.attached_to.get_discussion_participants()
-            | self.guests.all()
+            | self.guests.all().distinct() # because get_discussion_participants uses distinct, this one must too
             ).distinct()
 
     ##
