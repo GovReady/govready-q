@@ -356,7 +356,7 @@ function display_discussion(discussion, is_page_load) {
 }
 
 function update_close_and_comment_button_text() {
-  if (!close_and_comment_strings[0]) return;
+  if (!window.close_and_comment_strings) return;
   $('#discussion_close_and_comment').text(
     $('#discussion-your-comment').val() == "" ? close_and_comment_strings[0] : close_and_comment_strings[1]
   )
