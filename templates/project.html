@@ -391,11 +391,21 @@ function invite_user_to_start_module(module_title, question_id) {
 }
 
 function open_tab_from_url_fragment() {
-  var tabpath = parse_qs(window.location.hash.substring(1)).tab;
+  var tabpath = window.location.hash;
+  // The GovReady Dashboard React app appends a random code like `?_k=h9zm95` to the
+  // hashbang, so we need to strip that out.
+  tabpath = tabpath.substring(tabpath.indexOf('/') + 1).split('?');
+  tabpath = tabpath.shift();
+  tabpath = parse_qs(tabpath).tab;
   if (tabpath) {
     tabpath = tabpath.split('/');
     var tab = tabpath.shift();
-    if (tab) {
+    // If the GovReady Dashboard tab is clicked, we need to change the hashbang.
+    if (tab === 'document-1') {
+      window.location.hash = '#/site-list';
+    }
+    // Otherwise, show the appropriate tab.
+    else if (tab) {
       $('#project-tabs a[href="#' + tab + '"]').tab("show");
     }
   }
