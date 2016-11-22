@@ -14,6 +14,7 @@ Q is developed in Python on top of Django.
 
 To develop locally, run the following commands:
 
+	sudo apt-get install python3-pip unzip # or appropriate for your system
 	pip3 install -r dev_requirements.txt
 	deployment/fetch-vendor-resources.sh
 	python3 manage.py migrate
@@ -22,6 +23,25 @@ To develop locally, run the following commands:
 	python3 manage.py runserver
 
 The module dependency diagrams also require that you have `graphviz` installed (e.g. `apt-get install graphviz`).
+
+If you don't want to get logged out on each restart of the runserver process, copy what it shows you into a new file at `local/environment.json` like this:
+
+    {
+      "debug": true,
+      "host": "localhost:8000",
+      "https": false,
+      "secret-key": "...something here..."
+    }
+    
+(It will give you a fresh `secret-key` on each run that you can actually use.)
+
+You must set up the first organization (i.e. end-user/client) domain from the Django admin. Log into http://localhost:8000/admin with the superuser account that you created above. Add a Siteapp -> Organization (http://localhost:8000/admin/siteapp/organization/add/). Then visit the site at subdomains.localhost:8000 (using the subdomain for the organization you just created) and log in using the super user credentials again. (If you are using a domain other than `localhost`, then you must set it as the value of `"organization-parent-domain"` in the `local/environment/json` file.) When you log in for the first time it will ask you questions about the user and about the organization.
+
+We have some Q modules (i.e. question-answer definitions) stored in a separate repostiory. At this point you may need to get those modules, create a symlink from `modules/something` (here) to the modules directory in the other repository. Then run `python3 manage.py load_modules` again.
+
+Once the modules are loaded, you can create the first "project" a.k.a. "system" and then start answering questions.
+
+After logging in as the superuser, you will probably want to invite non-superusers into the organization from within the application (from organization settings or project settings) and then possibly switch to that account. The debug server is configured to dump all outbound emails to the console. So if you "invite" others to join you within the application, you'll need to go to the console to get the invitation acceptance link.
 
 ### Testing
 
