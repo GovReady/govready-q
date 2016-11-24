@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
 
-from .models import Discussion, Comment
+from .models import Discussion, Comment, Attachment
 
 def makekwargs(request, prefix=""):
     if hasattr(request, "organization"):
@@ -105,3 +105,26 @@ def poll_for_events(request):
         request.POST.get("comment_since", "0"),
         request.POST.get("event_since", "0")
     ))
+
+@login_required
+@transaction.atomic
+def create_attachments(request):
+    # Get the Discussion these attachments will be associated with.
+    discussion = get_object_or_404(Discussion, id=request.POST['discussion'])
+    if not discussion.is_participant(request.user):
+        raise Http404()
+
+    # The user is uploading one or mor files to attach to a comment. The comment has
+    # not yet been saved, so it is linked with the Discussion and User for now.
+    ret = { }
+    for fn in request.FILES:
+        attachment = Attachment.objects.create(
+            discussion=discussion,
+            user=request.user,
+            file=request.FILES[fn]
+        )
+        ret[fn] = attachment.id
+
+    # Return a mapping from file field names in the upload to Attachment ids.
+    return JsonResponse(ret)
+

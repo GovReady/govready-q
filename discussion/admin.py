@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Discussion, Comment
+from .models import Discussion, Comment, Attachment
 
 class DiscussionAdmin(admin.ModelAdmin):
 	list_display = ('attached_to', 'created')
@@ -15,5 +15,10 @@ class CommentAdmin(admin.ModelAdmin):
 		(None, { "fields": ('deleted', 'extra')}),
 	]
 
+class AttachmentAdmin(admin.ModelAdmin):
+	list_display = ('id', 'discussion', 'comment', 'user', 'file')
+	readonly_fields = ('id', 'discussion', 'comment', 'user', 'file')
+
 admin.site.register(Discussion, DiscussionAdmin)
 admin.site.register(Comment, CommentAdmin)
+admin.site.register(Attachment, AttachmentAdmin)

@@ -5,6 +5,16 @@
 <script src="{% static "vendor/push.js" %}"> </script>
 
 <style>
+#discussion-your-comment-tips {
+  padding: 2px;
+  font-size: 85%;
+  color: #555;
+}
+  #discussion-your-comment-tips label {
+    color: #44A;
+    cursor: pointer;
+  }
+
 #discussion .comment-thread {
   margin: 1em 0 1.5em 0;
 }
@@ -112,6 +122,14 @@
           ...
         </label>
         <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder="Enter your message here."></textarea>
+        <div id="discussion-your-comment-tips">
+          Attach files by <label for="discussion-attach-file">selecting them</label>.
+
+         <div style="display: none">
+            <input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" />
+         </div>
+
+        </div>
         <div style="margin-top: 1em; text-align: right">
           {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
           {% if show_discussion_close_and_comment %}
@@ -702,4 +720,27 @@ function invite_user_to_discussion() {
   return false;
 }
 {% endif %}
+
+function attach_files(files) {
+  // Create an AJAX request to upload all of the files at once.
+  var data = new FormData();
+  data.append("discussion", discussion_info.id);
+  for (var i = 0; i < files.length; i++)
+    data.append("file" + i, files[i])
+  
+  // Submit the ajax request.
+  ajax_with_indicator({
+    url: "{% url 'discussion-comment-create-attachments' %}",
+    data: data,
+    controls: $('#discussion .comment-input form').find('textarea, input, button'),
+    success: function(res) {
+      // We get back a mapping indicating what was uploaded.
+      Object.keys(res).forEach(function(key) {
+        var attachment_id = res[key];
+        $('#discussion-your-comment').insertAtCaret("\n![Uploaded File](attachment:" + attachment_id + ")\n");
+      });
+    }
+  });
+}
+
 </script>

@@ -4,6 +4,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.conf import settings
 
+import re
+
 from jsonfield import JSONField
 
 from siteapp.models import User
@@ -112,6 +114,15 @@ class Discussion(models.Model):
                 "post_method": post_method,
             }
             )
+
+        # Finish attachments. Since attachments are created before comments
+        # are saved, they must be associated with the Comment once it is saved.
+        for attachment_id in re.findall("\(attachment:(\d+)\)", text):
+            attachment = Attachment.objects.filter(id=attachment_id, user=user).first()
+            if attachment:
+                # Silently ignore any invalid attachment IDs.
+                attachment.comment = comment
+                attachment.save()
 
         # Issue a notification to anyone watching the discussion
         # via discussion.get_notification_watchers() except to
@@ -255,10 +266,20 @@ class Comment(models.Model):
         # Render the comment text into HTML.
         # * Replace @-mentions with something.
         # * Render to HTML as if CommonMark.
+        # * Rewrite attachment:### URLs.
         import CommonMark
         rendered_text = self.text
         rendered_text, _ = match_autocompletes(self.discussion, rendered_text, whose_asking,
             lambda text : "**" + text + "**")
+        def get_attachment_url(attachment_id):
+            try:
+                attachment = Attachment.objects.filter(id=int(attachment_id.group(1)), comment=self).first()
+                if attachment:
+                    return attachment.get_absolute_url()
+            except ValueError:
+                pass
+            return attachment_id.group(0)
+        rendered_text = re.sub("(?<=\()attachment:(\d+)(?=\))", get_attachment_url, rendered_text)
         rendered_text = CommonMark.commonmark(rendered_text)
 
         def get_user_role():
@@ -284,6 +305,19 @@ class Comment(models.Model):
             "notification_text": str(self.user) + ": " + self.text,
             "emojis": self.emojis.split(",") if self.emojis else None,
         }
+
+class Attachment(models.Model):
+    discussion = models.ForeignKey(Discussion, related_name="attachments", help_text="The Discussion that this Attachment is attached to.")
+    user = models.ForeignKey(User, help_text="The user uploading this attachment.")
+    comment = models.ForeignKey(Comment, blank=True, null=True, related_name="attachments", help_text="The Comment that this Attachment is attached to. Null when the file has been uploaded before the Comment has been saved.")
+    file = models.FileField(upload_to='discussion/attachments', help_text="The attached file.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    def get_absolute_url(self):
+        return self.file.url
 
 def reldate(date, ref=None):
     import dateutil.relativedelta
