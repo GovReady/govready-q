@@ -437,7 +437,7 @@ function show_notification(discussion) {
   var notification = "";
   discussion.events.forEach(function(item) {
     if (!item.notification_text) return;
-    if (item && item.who && item.who.id == {{request.user.id}}) return; // no notifications for actions the user took themself
+    if (item.user && item.user.id == {{request.user.id}}) return; // no notifications for actions the user took themself
     notification += truncate(item.notification_text) + "\n\n";
   })
 
@@ -463,11 +463,9 @@ function render_comment(item) {
     isnew = true;
   }
 
-  // Skip if the reaction is empty, i.e. if the emojis were edited-away.
-  if (item.replies_to && !item.emojis) {
-    n.remove();
-    return;
-  }
+  // If the reaction is empty, i.e. if the emojis were edited-away, then hide the
+  // DOM node. Continue processing because we still have to update max_comment_id.
+  n.toggle(!item.replies_to || (item.emojis != null && item.emojis.length > 0));
 
   // Fill in.
   n.attr('data-id', item.id);
@@ -541,10 +539,10 @@ function render_event(item, initial) {
   n.find('.body').html(item.html);
   n.find('.event-date').text(item.date_relative);
   n.find('.event-date').attr('title', new Date(item.date_posix * 1000));
-  if (item.who && !item.who_is_in_text)
-    n.find('.event-who').text("by " + item.who.name);
-  if (item.who && item.who.picture)
-    n.find('.event-icon img').attr('src', item.who.picture.url).show();
+  if (item.user && !item.user_is_in_text)
+    n.find('.event-who').text("by " + item.user.name);
+  if (item.user && item.user.picture)
+    n.find('.event-icon img').attr('src', item.user.picture.url).show();
 
   var c = $('#discussion .comment-thread')
   c.append(n);

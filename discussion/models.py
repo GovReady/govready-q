@@ -282,6 +282,14 @@ class Comment(models.Model):
         rendered_text = re.sub("(?<=\()attachment:(\d+)(?=\))", get_attachment_url, rendered_text)
         rendered_text = CommonMark.commonmark(rendered_text)
 
+        # Render for a notification.
+        if self.text:
+            notification_text = str(self.user) + ": " + self.text
+        elif self.emojis:
+            notification_text = str(self.user) + " reacted with " + self.emojis + "."
+        else:
+            notification_text = None
+
         def get_user_role():
             ret = self.discussion.attached_to.get_user_role(self.user)
             if ret:
@@ -302,7 +310,7 @@ class Comment(models.Model):
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
             "text": self.text,
             "text_rendered": rendered_text,
-            "notification_text": str(self.user) + ": " + self.text,
+            "notification_text": notification_text,
             "emojis": self.emojis.split(",") if self.emojis else None,
         }
 

@@ -655,8 +655,8 @@ class TaskAnswer(models.Model):
                     ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> " 
                     % html.escape(who['name']))
                     + vp + ".",
-                "who": who,
-                "who_is_in_text": True,
+                "user": who,
+                "user_is_in_text": True,
                 "notification_text": str(answer.answered_by) + " " + vp + "."
             })
 
