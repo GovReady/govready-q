@@ -54,7 +54,7 @@ thead {
 <div style="margin: 2em 0">
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule and supermodule.task.editor == request.user %}
-      {% if supermodule.task == supermodule.project.root_task %}
+      {% if supermodule.task == supermodule.task.project.root_task %}
         {# return to project #}
         <p><a href="{{task.project.get_absolute_url}}#tab={{supermodule.question.spec.tab|slugify}}/{{supermodule.question.spec.group|slugify}}/{{supermodule.question.key|slugify}}/{{task.id}}" class="btn btn-success">
           Continue with other modules in {{task.project.title}} &raquo;
