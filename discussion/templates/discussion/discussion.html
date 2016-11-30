@@ -142,8 +142,12 @@
         </div>
         <div style="margin-top: 1em; text-align: right">
           {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
-          {% if show_discussion_close_and_comment %}
-          <button id="discussion_close_and_comment" class="btn btn-default" onclick="submit_comment(close_and_comment_clicked);">...</button>
+          {% if discussion_close_and_comment_strings %}
+          <button class="btn btn-default" onclick="submit_comment(close_and_comment_clicked);">
+            {% for css_class, text in discussion_close_and_comment_strings %}
+              <span class="{{css_class}}" style="display: none">{{text}}</span>
+            {% endfor %}
+          </button>
           {% endif %}
           <button type="submit" class="btn btn-primary">Comment</button>
         </div>
@@ -300,9 +304,17 @@ function display_discussion(discussion, is_page_load) {
   $('#discussion-your-comment-label').text("Start the team conversation with a question or comment:")
   $('#discussion #invite-guest').toggle(discussion_info.can_invite);
   if (!is_page_load) $('#discussion-your-comment').focus();
-  $('#discussion-your-comment').on("keyup", update_close_and_comment_button_text); // live but only keystrokes
-  $('#discussion-your-comment').on("change", update_close_and_comment_button_text); // on blur
-  update_close_and_comment_button_text();
+
+  // toggle a class depending on whether the user's comment textarea has
+  // anything in it, which is used if we have a "Close & Comment" / "Re-open & Comment"
+  // button
+  function discussion_update_your_comment_empty_class() {
+    var isEmpty = $('#discussion-your-comment').val() == "";
+    $('#discussion .comment-input').toggleClass('user-input-empty', isEmpty);
+    $('#discussion .comment-input').toggleClass('user-input-not-empty', !isEmpty);
+  }
+  $('#discussion-your-comment').on("keyup change paste", discussion_update_your_comment_empty_class);
+  discussion_update_your_comment_empty_class();
 
   // fill in the context block on the right side
   $('#discussion .fillin-project_name').text(discussion_info.project.title);
@@ -381,13 +393,6 @@ function display_discussion(discussion, is_page_load) {
 
   // start polling the server for new events
   discussion_poll();
-}
-
-function update_close_and_comment_button_text() {
-  if (!window.close_and_comment_strings) return;
-  $('#discussion_close_and_comment').text(
-    $('#discussion-your-comment').val() == "" ? close_and_comment_strings[0] : close_and_comment_strings[1]
-  )
 }
 
 function render_events(discussion, initial) {
@@ -579,8 +584,10 @@ function submit_comment(callback) {
       // up.
       var y = $('#discussion .comment-input').offset().top - $(window).scrollTop();
 
-      // clear text input
-      $('#discussion .comment-input form textarea').val('');
+      // clear text input, trigger events
+      $('#discussion .comment-input form textarea')
+        .val('')
+        .trigger("change");
 
       // render the comment in the thread
       render_comment(c)
