@@ -143,7 +143,7 @@
         <div style="margin-top: 1em; text-align: right">
           {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
           {% if show_discussion_close_and_comment %}
-          <button id="discussion_close_and_comment" type="submit" class="btn btn-default" onclick="close_and_comment_clicked() && submit_comment();">...</button>
+          <button id="discussion_close_and_comment" class="btn btn-default" onclick="submit_comment(close_and_comment_clicked);">...</button>
           {% endif %}
           <button type="submit" class="btn btn-primary">Comment</button>
         </div>
@@ -556,10 +556,15 @@ function render_event(item, initial) {
     window.on_discussion_event(item);
 }
 
-function submit_comment() {
+function submit_comment(callback) {
   var text = $('#discussion .comment-input form textarea').val();
-  if (!text) return;
-  
+  if (!text) {
+    // execute callback immediately
+    if (callback)
+      callback();
+    return;
+  }
+
   ajax_with_indicator({
     url: "{% url 'discussion-comment-create' %}",
     method: "POST",
@@ -574,11 +579,18 @@ function submit_comment() {
       // up.
       var y = $('#discussion .comment-input').offset().top - $(window).scrollTop();
 
+      // clear text input
       $('#discussion .comment-input form textarea').val('');
+
+      // render the comment in the thread
       render_comment(c)
 
       // adjust scroll position
       $(window).scrollTop($('#discussion .comment-input').offset().top - y);
+
+      // execute callback
+      if (callback)
+        callback();
     }
   })
 }
