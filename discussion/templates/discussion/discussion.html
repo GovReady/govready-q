@@ -484,6 +484,7 @@ function render_comment(item) {
   n.find('.comment-date').attr('title', new Date(item.date_posix * 1000));
   n.find('.comment-author-role').text(item.user_role);
   n.find('.comment-text').html(item.text_rendered);
+    n.find('.comment-text').find("img").addClass("img-responsive");
   n.attr('data-text', item.text);
   if (item.can_edit)
     n.addClass('has-edit-priv');
