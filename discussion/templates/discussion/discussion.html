@@ -763,8 +763,13 @@ function attach_files(files) {
     success: function(res) {
       // We get back a mapping indicating what was uploaded.
       Object.keys(res).forEach(function(key) {
-        var attachment_id = res[key];
-        $('#discussion-your-comment').insertAtCaret("\n![Uploaded File](attachment:" + attachment_id + ")\n");
+        var attachment = res[key];
+        var ins;
+        if (attachment.is_image)
+          ins = "\n![Uploaded File](attachment:" + attachment.id + ")\n";
+        else
+          ins = " [" + attachment.original_fn.replace(/[\\[\]]/g, "") + "](attachment:" + attachment.id + ") ";
+        $('#discussion-your-comment').insertAtCaret(ins);
       });
     }
   });

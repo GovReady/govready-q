@@ -123,8 +123,20 @@ def create_attachments(request):
             user=request.user,
             file=request.FILES[fn]
         )
-        ret[fn] = attachment.id
 
-    # Return a mapping from file field names in the upload to Attachment ids.
+        # Get the dbstorage.models.StoredFile instance which holds
+        # an auto-detected mime type. Use that to return whether
+        # the attachment is an image or not.
+        from dbstorage.models import StoredFile
+        sf = StoredFile.objects.get(path=attachment.file.name)
+        is_image = sf.mime_type.startswith("image/")
+
+        ret[fn] = {
+            "id": attachment.id,
+            "original_fn": request.FILES[fn].name,
+            "is_image": is_image,
+        }
+
+    # Return a mapping from file field names in the upload to Attachment infos.
     return JsonResponse(ret)
 
