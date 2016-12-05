@@ -129,14 +129,13 @@ class Discussion(models.Model):
         # anyone @-mentioned because they'll get a different
         # notification.
         from siteapp.views import issue_notification
-        from django.utils.text import Truncator
         _, mentioned_users = match_autocompletes(self, text, user)
         issue_notification(
             user,
             "commented on",
             self,
             recipients=self.get_notification_watchers() - mentioned_users,
-            description="“" + Truncator(text).words(15) + "”",
+            description="“" + text + "”",
             comment_id=comment.id)
 
         # Issue a notification to anyone @-mentioned in the comment.
@@ -146,7 +145,7 @@ class Discussion(models.Model):
             "mentioned you in a comment on",
             self,
             recipients=mentioned_users,
-            description="“" + Truncator(text).words(15) + "”",
+            description="“" + text + "”",
             comment_id=comment.id)
 
         return comment
