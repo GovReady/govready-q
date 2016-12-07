@@ -727,6 +727,13 @@ class TaskAnswer(models.Model):
 
         # Check if the answer is changing. If not, return False.
 
+        def read_file(f):
+            f.open()
+            try:
+                return f.read()
+            finally:
+                f.close()
+
         def are_files_same():
             if answered_by_file is None and current_answer.answered_by_file.name == "":
                 # No files in either case -- so the file field is the same.
@@ -735,7 +742,7 @@ class TaskAnswer(models.Model):
                 # One but not both are null, so there is a change.
                 return False
             # Both have content -- check if the content matches.
-            return answered_by_file.read() == current_answer.answered_by_file.read()
+            return read_file(answered_by_file) == current_answer.answered_by_file.read()
 
         if current_answer and not current_answer.cleared \
             and value == current_answer.stored_value \
