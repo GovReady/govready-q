@@ -283,7 +283,7 @@ span.glyphicon.glyphicon-check {
             </div>
         </div>
 
-      {% if project.is_deletable %}
+      {% if project.is_deletable and is_admin %}
       <div class="task-group">
         <div class="task-group-title">Caution!</div>
           <div class="task" style="padding-top: 1em; padding-bottom: 1em;">
