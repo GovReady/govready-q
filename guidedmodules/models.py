@@ -37,6 +37,27 @@ class Module(models.Model):
         # Return the ModuleQuestions in definition order.
         return list(self.questions.order_by('definition_order'))
 
+    def is_startable_project_by(self, user, organization):
+        # Is this a project module that the user/organization has authorization to use?
+
+        # Is it a project?
+        if self.spec.get("type") != "project":
+            return False
+
+        # Is it not hidden?
+        if self.spec.get("hidden", False):
+            return False
+
+        # If its access is restricted, then the user/org must have been granted
+        # access.
+        if self.spec.get("access", "public") == "private":
+            # See if the module key is listed in the Organization's allowed_modules field.
+            import re
+            allowed_modules = re.split(r"\s+", organization.allowed_modules)
+            return self.key in allowed_modules
+
+        return True
+
     def export_json(self, serializer):
         # Exports this Module's metadata to a JSON-serializable Python data structure.
         # Called via siteapp.Project::export_json.

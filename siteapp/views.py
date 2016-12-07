@@ -73,11 +73,13 @@ def new_project(request):
         CheckboxSelectMultiple, CharField, Textarea
     from django.core.exceptions import ValidationError
 
-    # Get the list of project modules.
+    # Get the list of project modules that this user has access to.
+    # The built-in server-side form validation will ensure that the user can
+    # only choose one of these at POST.
     project_modules = sorted(set(
         (m.id, m.title)
         for m in Module.objects.filter(visible=True)
-        if m.spec.get("type") == "project" and not m.spec.get("hidden", False)),
+        if m.is_startable_project_by(request.user, request.organization)),
         key = lambda m : m[1])
 
     # Get the list of users who can be invited to the new project.

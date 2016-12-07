@@ -76,11 +76,16 @@ The schema for questions is documented in a later section.
 
 ### Additional fields for projects
 
-Modules whose type is `project` can also have some additional fields:
+Modules whose type is `project` can also have some additional fields, e.g.:
 
-`export_button_label` overrides the default text of the export data button on the settings tab of the project.
+	access: private
+	export_button_label: Export System Data
 
-In output documents, `glyphicon` can be set to an icon name (like `dashboard`) to add an icon to the tab.
+`access`: Set to `private` if the project should only be offered to organizations with special permission. The default is `public`. To grant an organization access, use the Django admin to edit the Organization and add the module's full ID to the allowed modules field. The full ID includes the local directory path to the module. If the module is stored in `modules/something/project.yaml` the full ID is `something/project`.
+
+`export_button_label`: Override the default text of the export data button on the settings tab of the project.
+
+Additionally, in output documents `glyphicon` can be set to an icon name (like `dashboard`) to add an icon to the tab.
 
 Documents
 ---------
