@@ -416,7 +416,7 @@ class Command(BaseCommand):
         # Define some symbols.
 
         compatible_change = False
-        incompatible_chane = True if (not self.force_update) else False
+        incompatible_change = True if (not self.force_update) else False
 
         # Now we're just checking if the change is compatible or not with
         # the existing database record.
@@ -424,7 +424,7 @@ class Command(BaseCommand):
         if m.spec.get("version") != spec.get("version"):
             # The module writer can force a bump by changing the version
             # field.
-            return incompatible_chane
+            return incompatible_change
 
         # If there are no Tasks started for this Module, then the change is
         # compatible because there is no data consistency to worry about.
@@ -447,7 +447,7 @@ class Command(BaseCommand):
             # module is changed anyway at the end of this method.)
             q = self.transform_question_spec(mq.module.key, spec, q)
             if self.is_question_changed(mq, definition_order, q) is True:
-                return incompatible_chane
+                return incompatible_change
 
             # Remember that we saw this question.
             qs.add(mq)
@@ -455,7 +455,7 @@ class Command(BaseCommand):
         # Were any questions removed?
         for q in m.questions.all():
             if q not in qs:
-                return incompatible_chane
+                return incompatible_change
 
         # The changes will not create any data inconsistency.
         return compatible_change
@@ -481,7 +481,7 @@ class Command(BaseCommand):
 
         # Removal of a choice.
         if mq.spec["type"] in ("choice", "multiple-choice"):
-            def get_choice_keys(choices): return { c["key"] for c in choices }
+            def get_choice_keys(choices): return { c.get("key") for c in choices }
             if get_choice_keys(mq.spec["choices"]) - get_choice_keys(spec["choices"]):
                 return True
 
