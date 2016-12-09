@@ -733,22 +733,6 @@ function save_emoji_reaction() {
   current_emoji_reaction = null;
 }
 
-{% if send_invitation %}
-function invite_user_to_discussion() {
-  show_invite_modal(
-    'Invite to Discussion',
-    'Invite a colleague to join the discussion. They will be a guest of this discussion if they are not added to the project team.',
-    {{send_invitation|safe}},
-    'Please join our discussion about ' + discussion_info.title + ' in ' + discussion_info.project.title + '.',
-    {
-      project: discussion_info.project.id,
-      into_discussion: discussion_info.id
-    }
-  );
-  return false;
-}
-{% endif %}
-
 function attach_files(files) {
   // Create an AJAX request to upload all of the files at once.
   var data = new FormData();

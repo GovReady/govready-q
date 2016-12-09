@@ -1,3 +1,4 @@
+{% load q %}
 <style>
 #question-history-context {
   margin-top: 1em;
@@ -57,7 +58,7 @@
 
 <script>
 function invite_to_transfer_editor() {
-  var info = {{send_invitation|safe}};
+  var info = {{send_invitation|json}};
   show_invite_modal(
     'Ask a Colleague',
     'Invite a colleague to complete {{task.title|escapejs}}.',

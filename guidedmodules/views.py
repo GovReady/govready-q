@@ -248,7 +248,6 @@ def next_question(request, taskid, taskslug):
     # Display requested question.
 
     # Common context variables.
-    import json
     context = {
         "DEBUG": settings.DEBUG,
         "ADMIN_ROOT_URL": settings.SITE_ROOT_URL + "/admin",
@@ -257,7 +256,7 @@ def next_question(request, taskid, taskslug):
         "task": task,
         "is_discussion_guest": not task.has_read_priv(request.user), # i.e. only here for discussion
         "write_priv": task.has_write_priv(request.user),
-        "send_invitation": json.dumps(Invitation.form_context_dict(request.user, task.project, [task.editor])),
+        "send_invitation": Invitation.form_context_dict(request.user, task.project, [task.editor]),
         "open_invitations": task.get_open_invitations(request.user),
         "source_invitation": task.invitation_history.filter(accepted_user=request.user).order_by('-created').first(),
     }
