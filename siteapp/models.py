@@ -1,5 +1,5 @@
 from django.db import models, transaction
-from django.utils import timezone
+from django.utils import timezone, crypto
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
@@ -508,13 +508,8 @@ class Invitation(models.Model):
     def save(self, *args, **kwargs):
         # On first save, generate the invitation code.
         if not self.id:
-           self.email_invitation_code = Invitation.generate_email_invitation_code()
+           self.email_invitation_code = crypto.get_random_string(24)
         super(Invitation, self).save(*args, **kwargs)
-
-    @staticmethod
-    def generate_email_invitation_code():
-        import random, string
-        return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(24))
 
     @staticmethod
     def form_context_dict(user, project, exclude_users):
