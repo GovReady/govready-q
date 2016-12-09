@@ -108,7 +108,7 @@ class Command(BaseCommand):
             raise DependencyError(referenced_by_module_id, module_id)
         with open(fn) as f:
             try:
-                return (fn, yaml.load(f))
+                return (fn, yaml.safe_load(f))
             except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
                 raise ValidationError(fn, "reading file", "There was an error parsing the file: " + str(e))
 
