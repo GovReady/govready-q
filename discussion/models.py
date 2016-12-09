@@ -129,7 +129,7 @@ class Discussion(models.Model):
         # anyone @-mentioned because they'll get a different
         # notification.
         from siteapp.views import issue_notification
-        _, mentioned_users = match_autocompletes(self, text, user)
+        _, mentioned_users = match_autocompletes(text, self.get_autocompletes(user))
         issue_notification(
             user,
             "commented on",
@@ -262,25 +262,6 @@ class Comment(models.Model):
         if self.deleted:
             raise ValueError()
 
-        # Render the comment text into HTML.
-        # * Replace @-mentions with something.
-        # * Render to HTML as if CommonMark.
-        # * Rewrite attachment:### URLs.
-        import CommonMark
-        rendered_text = self.text
-        rendered_text, _ = match_autocompletes(self.discussion, rendered_text, whose_asking,
-            lambda text : "**" + text + "**")
-        def get_attachment_url(attachment_id):
-            try:
-                attachment = Attachment.objects.filter(id=int(attachment_id.group(1)), comment=self).first()
-                if attachment:
-                    return attachment.get_absolute_url()
-            except ValueError:
-                pass
-            return attachment_id.group(0)
-        rendered_text = re.sub("(?<=\()attachment:(\d+)(?=\))", get_attachment_url, rendered_text)
-        rendered_text = CommonMark.commonmark(rendered_text)
-
         # Render for a notification.
         if self.text:
             notification_text = str(self.user) + ": " + self.text
@@ -308,7 +289,7 @@ class Comment(models.Model):
             "date_relative": reldate(self.created, timezone.now()) + " ago",
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
             "text": self.text,
-            "text_rendered": rendered_text,
+            "text_rendered": render_text(self.text, autocompletes=self.discussion.get_autocompletes(whose_asking), comment=self),
             "notification_text": notification_text,
             "emojis": self.emojis.split(",") if self.emojis else None,
         }
@@ -340,14 +321,42 @@ def reldate(date, ref=None):
     if rd.minutes >= 1: return c((rd.minutes, "minute"),)
     return c((rd.seconds, "second"),)
 
-def match_autocompletes(discussion, text, user, replace_mentions=None):
+
+def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
+    # Render comment text into HTML.
+
+    import re
+
+    # Put @-mentions in bold.
+    if autocompletes:
+        text, _ = match_autocompletes(text, autocompletes,
+            lambda text : "**" + text + "**")
+
+    # Rewrite attachment:### URLs.
+    def get_attachment_url(attachment_id):
+        try:
+            attachment = Attachment.objects.filter(id=int(attachment_id.group(1)), comment=comment).first()
+            if attachment:
+                return attachment.get_absolute_url()
+        except ValueError:
+            pass
+        return attachment_id.group(0)
+    text = re.sub("(?<=\()attachment:(\d+)(?=\))", get_attachment_url, text)
+
+    # Render to HTML as if CommonMark.
+    import CommonMark
+    text = CommonMark.commonmark(text)
+
+    if unwrap_p:
+        # If it's a single paragraph, unwrap it.
+        text = re.sub(r"^<p>(.*)</p>$", r"\1", text)
+
+    return text
+
+
+def match_autocompletes(text, autocompletes, replace_mentions=None):
     import re
     from siteapp.models import User
-
-    # Get all of the possible autocompletes.
-    # Since autocompletes are linked to the user taking the action,
-    # for the purposes of authorization, we have to pass the user along.
-    autocompletes = discussion.get_autocompletes(user)
 
     # Make a big regex for all mentions of all autocompletable things.
     pattern = "|".join(
