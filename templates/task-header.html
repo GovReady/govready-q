@@ -62,7 +62,7 @@ function invite_to_transfer_editor() {
     'Ask a Colleague',
     'Invite a colleague to complete {{task.title|escapejs}}.',
     info,
-    'Can you take over answering {{task.title|escapejs}} for ' + info.project_title + ' and let me know when it is done?',
+    '{{task.render_invitation_message|escapejs}}',
     {
       project: info.project_id,
       into_task_editorship: {{task.id}}

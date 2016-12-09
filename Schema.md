@@ -18,6 +18,7 @@ Several optional fields can be specified:
 	type: project
 	version: 1
 	instance-name: "Module for {{q1}}"
+	invitation-message: "Can you tell me about {{question.text}} and let me know when you are done?"
 
 The `type` field is set to `project` just when the Module is to be offered to users when they start a new Project. (`system-project` is used for project-like modules that are system controlled and not offered to the user.)
 

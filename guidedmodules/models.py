@@ -337,19 +337,27 @@ class Task(models.Model):
         return self.project.get_members()
 
     def render_title(self):
+        return self.render_simple_string("instance-name", self.module.title)
+
+    def render_invitation_message(self):
+        return self.render_simple_string("invitation-message",
+            'Can you take over answering %s for %s and let me know when it is done?'
+                % (self.title, self.project.title))
+
+    def render_simple_string(self, field, default):
         import jinja2
         try:
             return render_content(
                 {
-                    "template": self.module.spec["instance-name"],
+                    "template": self.module.spec[field],
                     "format": "text",
                 },
                 self.get_answers().with_extended_info(), # get answers + imputed answers
                 "text",
-                "%s title" % repr(self.module)
+                "%s %s" % (repr(self.module), field)
             )
         except (KeyError, ValueError):
-            return self.module.title
+            return default
 
     def render_introduction(self):
         return render_content(
