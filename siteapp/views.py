@@ -380,7 +380,7 @@ def import_project_data(request, project):
         # Update project data.
         project.import_json(data, request.user, lambda x : log_output.append(x))
     except Exception as e:
-        log_outputa.append(str(e))
+        log_output.append(str(e))
 
     # Show an unfriendly response containing log output.
     return JsonResponse(log_output, safe=False, json_dumps_params={"indent": 2})

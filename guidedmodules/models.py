@@ -571,13 +571,13 @@ class Task(models.Model):
                 qname = q.spec.get("title") or qkey
 
                 # Ensure the data type matches the current question specification.
-                if q.spec["type"] != answer.get("questionType"):
+                if answer and q.spec["type"] != answer.get("questionType"):
                     deserializer.log("Task %s question %s ignored (question type mismatch)." % (my_name, qname))
                     continue
 
                 # Validate the answer value (check data type, range), if it is answered.
                 # (Any question can be skipped.)
-                if answer.get("value") is not None:
+                if answer and answer.get("value") is not None:
                     try:
                         value = validator.validate(q, answer["value"])
                     except ValueError as e:
@@ -593,6 +593,12 @@ class Task(models.Model):
                     task=self,
                     question=q,
                 )
+
+                if answer is None:
+                    # A null answer means the question has no answer - it's cleared.
+                    # (A "skipped" question has an answer whose value is null.)
+                    taskanswer.clear_answer(deserializer.user)
+                    continue
 
                 # Prepare the fields for saving.
                 prep_fields = TaskAnswerHistory.import_json_prep(taskanswer, value, deserializer)
