@@ -12,7 +12,7 @@ mkdir -p $VENDOR
 
 # jQuery
 wget -O $VENDOR/jquery.js \
-        https://code.jquery.com/jquery-2.2.4.min.js
+        https://code.jquery.com/jquery-3.1.1.min.js
 
 # Bootstrap
 wget -O /tmp/bootstrap.zip \
