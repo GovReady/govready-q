@@ -231,13 +231,34 @@ class Task(models.Model):
 
     def get_answers(self):
         # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
+
+        # Since we track the history of answers to each question, we need to get the most
+        # recent answer for each question. It's fastest if we pre-load the complete history
+        # of every question rather than making a separate database call for each to find
+        # its most recent answer. See TaskAnswer.get_current_answer().
+        answers = list(
+            TaskAnswerHistory.objects
+                .filter(taskanswer__task=self)
+                .order_by('-id')
+                .select_related('taskanswer', 'taskanswer__task', 'taskanswer__question', 'answered_by')
+                .prefetch_related('answered_by_task')
+                )
+        def get_current_answer(q):
+            for a in answers:
+                if a.taskanswer == q:
+                    return a
+            return None
+
+        # Loop over all of the questions and fetch each's answer.
         # The internal dict of answers is ordered to preserve the question definition order.
         answered = OrderedDict()
-        for q in self.answers.all().order_by("question__definition_order"):
+        for q in self.answers.all()\
+            .order_by("question__definition_order")\
+            .select_related("question"):
             # Get the latest TaskAnswerHistory instance for this TaskAnswer,
             # if there is any (there should be). If the answer is marked as
             # cleared, then treat as if it had not been answered.
-            a = q.get_current_answer()
+            a = get_current_answer(q) # faster than but equivalent to q.get_current_answer()
             if not a or a.cleared:
                 continue
 
@@ -891,18 +912,23 @@ class TaskAnswerHistory(models.Model):
 
         # If this question type is "module" or "module-set", its answer
         # is stored in the answered_by_task M2M field and the stored_value
-        # field is not used. The return value is a ModuleAnswers instance.
-        if q.spec["type"] == "module":
-            t = self.answered_by_task.first()
-            if not t:
-                # The question is skipped.
-                return None
-            # Fetch value recursively (TODO: Prevent circular references that
-            # lead to infinite recursion.)
-            return t.get_answers()
-
-        elif q.spec["type"] == "module-set":
-            return [t.get_answers() for t in self.answered_by_task.all()]
+        # field is not used. The return value an ModuleAnswers instance or
+        # an array of instances.
+        if q.spec["type"] in ("module", "module-set"):
+            value = [
+                t.get_answers()
+                for t in self.answered_by_task.all().select_related('module')
+                ]
+            if q.spec["type"] == "module":
+                if len(value) == 0:
+                    # The question is skipped.
+                    return None
+                else:
+                    # The question is answered - it has just one answer.
+                    return value[0]
+            elif q.spec["type"] == "module-set":
+                # Return the array of answers.
+                return value
 
         # The "file" question type is answered by a blob that is uploaded
         # by the user. The stored_value field is not used. Instead the
