@@ -87,7 +87,9 @@ def evaluate_module_state(current_answers, required, parent_context=None):
     # so that we can pass down project and organization values. Everything else is
     # cleared from the context's cache for each question because each question sees
     # a different set of dependencies.
-    impute_context_parent = TemplateContext(ModuleAnswers(current_answers.module, current_answers.task, {}), lambda v, mode : str(v), parent_context=parent_context)
+    impute_context_parent = TemplateContext(
+        ModuleAnswers(current_answers.module, current_answers.task, {}), lambda v, mode : str(v),
+        parent_context=parent_context)
 
     # Visitor function.
     def walker(q, state, deps):
@@ -937,6 +939,7 @@ class TemplateContext(Mapping):
         self.escapefunc = escapefunc
         self._cache = { }
         self.parent_context = parent_context
+        self._module_questions_map = parent_context._module_questions_map if parent_context is not None else { }
 
     def __getitem__(self, item):
         # Cache every context variable's value, since some items are expensive.
@@ -949,11 +952,13 @@ class TemplateContext(Mapping):
             self.module_answers = self.module_answers()
 
         # Pre-load all of the ModuleQuestions for the Module from the database.
-        if not hasattr(self, '_module_questions'):
+        if not self._module_questions_map.get(self.module_answers.module):
             from collections import OrderedDict
-            self._module_questions = OrderedDict()
+            module_questions = OrderedDict()
             for q in self.module_answers.module.questions.order_by('definition_order'):
-                self._module_questions[q.key] = q
+                module_questions[q.key] = q
+            self._module_questions_map[self.module_answers.module] = module_questions
+        self._module_questions = self._module_questions_map[self.module_answers.module]
 
     def getitem(self, item):
         # If 'item' matches a question ID, wrap the internal Pythonic/JSON-able value
