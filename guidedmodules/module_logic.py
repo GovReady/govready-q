@@ -1177,7 +1177,7 @@ class RenderedAnswer:
         elif self.question_type == "module-set":
             # Iterate over the sub-tasks' answers. Load each's answers + imputed answers.
             return (TemplateContext(
-                v.with_extended_info(parent_context=self.parent_context if v.task.project_id==self.task.project_id else None),
+                v.with_extended_info(parent_context=self.parent_context if not v.task or not self.task or v.task.project_id==self.task.project_id else None),
                 self.escapefunc, parent_context=self.parent_context)
                 for v in self.answer)
 
@@ -1196,7 +1196,7 @@ class RenderedAnswer:
                 # Load its answers + evaluate impute conditions.
                 if not self.cached_tc:
                     self.cached_tc = TemplateContext(
-                        lambda : self.answer.with_extended_info(parent_context=self.parent_context if self.answer.task.project_id==self.task.project_id else None),
+                        lambda : self.answer.with_extended_info(parent_context=self.parent_context if not self.answer.task or not self.task or self.answer.task.project_id==self.task.project_id else None),
                         self.escapefunc,
                         parent_context=self.parent_context)
                 tc = self.cached_tc
