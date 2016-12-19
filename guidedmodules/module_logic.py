@@ -187,7 +187,7 @@ def get_question_context(answers, question):
     # Which questions were recently answered that are not future questions
     # according to the dependency tree.
     past_questions = []
-    for ans in answers.task.answers.order_by('created'):
+    for ans in answers.task.answers.order_by('created').select_related('question'):
         q = ans.question
         if q not in future_questions and q.key != question.key and q.key not in answers.was_imputed:
             past_questions.append(q)
