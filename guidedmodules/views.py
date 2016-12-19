@@ -88,7 +88,7 @@ def next_question(request, taskid, taskslug):
             # run external functions
             if q.spec['type'] == "external-function":
                 try:
-                    value = module_logic.run_external_function(q.spec, answered.answers)
+                    value = module_logic.run_external_function(q.spec, answered.as_dict())
                 except ValueError as e:
                     return JsonResponse({ "status": "error", "message": str(e) })
 
@@ -293,9 +293,9 @@ def next_question(request, taskid, taskslug):
             "all_questions": [
                 {
                     "question": task.module.questions.get(key=key),
-                    "skipped": task.module.questions.get(key=key).spec['type'] != 'interstitial' and (answered.answers.get(key) is None),
+                    "skipped": task.module.questions.get(key=key).spec['type'] != 'interstitial' and (answered.as_dict().get(key) is None),
                 }
-                for key in answered.answers
+                for key in answered.as_dict()
                 if not key in answered.was_imputed ],
         })
         return render(request, "module-finished.html", context)
@@ -365,7 +365,7 @@ def next_question(request, taskid, taskslug):
         )
 
         context.update({
-            "header_col_active": "start" if (len(answered.answers) == 0 and q.spec["type"] == "interstitial") else "questions",
+            "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
             "q": q,
             "prompt": prompt,
             "history": taskq.get_history() if taskq else None,

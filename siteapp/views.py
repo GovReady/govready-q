@@ -246,10 +246,10 @@ def project(request, project_id):
         is_finished = None
         tasks = []
         task_discussions = []
-        ans = root_task_answers.answers.get(mq.key)
+        ans = root_task_answers.as_dict().get(mq.key)
         if ans is not None:
             if mq.spec["type"] == "module":
-                # Convert a ModuleAnswers instance ot an array containing just itself.
+                # Convert a ModuleAnswers instance to an array containing just itself.
                 ans = [ans]
             elif mq.spec["type"] == "module-set":
                 # ans is already a list of ModuleAnswers instances.

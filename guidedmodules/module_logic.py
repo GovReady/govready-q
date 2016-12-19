@@ -119,9 +119,9 @@ def evaluate_module_state(current_answers, required, parent_context=None):
             v = v[0]
             was_imputed.add(q.key)
 
-        elif q.key in current_answers.answers:
+        elif q.key in current_answers.as_dict():
             # The user has provided an answer to this question.
-            v = current_answers.answers[q.key]
+            v = current_answers.as_dict()[q.key]
 
             # If q is a required question and the required argument is true,
             # and the question was skipped ('None' answer) then treat it as unanswered.
@@ -178,7 +178,7 @@ def get_question_context(answers, question):
             "class": "this" if q.key == question.key else "other",
             "key": q.key,
             "title": q.spec['title'],
-            "answered": q.key in answers.answers and q.key != question.key,
+            "answered": q.key in answers.as_dict() and q.key != question.key,
         }
 
     # What questions still need to be answered? Filter out this one.
@@ -907,6 +907,9 @@ class ModuleAnswers:
         self.task = task
         self.answers = answers
 
+    def as_dict(self):
+        return self.answers
+
     def with_extended_info(self, required=False, parent_context=None):
         # Return a new ModuleAnswers instance that has imputed values added
         # and information about the next question(s) and unanswered questions.
@@ -961,7 +964,7 @@ class TemplateContext(Mapping):
         question = self._module_questions.get(item)
         if question:
             # The question might or might not be answered. If not, its value is None.
-            answer = self.module_answers.answers.get(item, None)
+            answer = self.module_answers.as_dict().get(item, None)
             return RenderedAnswer(self.module_answers.task, question, answer, self)
 
         # The context also provides the project and organization that the Task belongs to,

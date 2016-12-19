@@ -90,7 +90,7 @@ class User(AbstractUser):
 
     def render_context_dict(self, req_organization):
         organization = req_organization if isinstance(req_organization, Organization) else req_organization.organization
-        profile = self.get_settings_task(organization).get_answers().answers
+        profile = self.get_settings_task(organization).get_answers().as_dict()
         profile.update({
             "id": self.id,
         })
@@ -163,8 +163,8 @@ class Organization(models.Model):
     def get_logo(self):
         prj_task = self.get_organization_project().root_task
         profile_task = prj_task.get_subtask("organization_profile")
-        profile = profile_task.get_answers()
-        return profile.answers.get("logo")
+        profile = profile_task.get_answers().as_dict()
+        return profile.get("logo")
 
 
 class Project(models.Model):
