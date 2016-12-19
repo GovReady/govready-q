@@ -1221,6 +1221,24 @@ class RenderedAnswer:
             other = other.answer
         return self.answer == other
 
+    def __gt__(self, other):
+        if isinstance(other, RenderedAnswer):
+            other = other.answer
+        if self.answer is None or other is None:
+            # if either represents a skipped/imputed-null question,
+            # prevent a TypeError by just returning false
+            return False
+        return self.answer > other
+
+    def __lt__(self, other):
+        if isinstance(other, RenderedAnswer):
+            other = other.answer
+        if self.answer is None or other is None:
+            # if either represents a skipped/imputed-null question,
+            # prevent a TypeError by just returning false
+            return False
+        return self.answer < other
+
 def run_external_function(question, existing_answers):
     # Split the function name into the module path and function name.
     function_name = question.get("function", "").rsplit(".", 1)
