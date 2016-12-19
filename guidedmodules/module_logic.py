@@ -10,7 +10,7 @@ def walk_module_questions(module, callback):
     # tree connecting questions. If a question is a dependency of multiple
     # questions, it is walked only once.
     #
-    # callback is called with some arguments:
+    # callback is called for each question in the module with these arguments:
     #
     # 1) A ModuleQuestion, after the callback has been called for all
     #    ModuleQuestions that the question depends on.
@@ -59,15 +59,14 @@ def walk_module_questions(module, callback):
         walk_question(q, [])
 
 
-def evaluate_module_state(current_answers, required):
+def evaluate_module_state(current_answers, required, parent_context=None):
     # Compute the next question to ask the user, given the user's
-    # answers to questions so far, and all imputed answers.
+    # answers to questions so far, and all imputed answers up to
+    # that point.
     #
-    # To figure this out, we start by looking for all questions
-    # that actually appear in the output template. Then we walk
-    # the dependencies backward until we arrive at questions that
-    # have no unanswered dependent questions. Such questions can
-    # be put forth to the user.
+    # To figure this out, we walk the dependency tree of questions
+    # until we arrive at questions that have no unanswered dependencies.
+    # Such questions can be put forth to the user.
 
     # Build a list of ModuleQuestions that the user may answer now.
     can_answer = set()
@@ -84,9 +83,11 @@ def evaluate_module_state(current_answers, required):
     # Build a list of questions whose answers were imputed.
     was_imputed = set()
 
-    # Create some reusable context for evaluating impute conditions.
-    impute_context_answers = ModuleAnswers(current_answers.module, current_answers.task, {})
-    impute_context = TemplateContext(impute_context_answers, lambda v, mode : str(v))
+    # Create some reusable context for evaluating impute conditions --- really only
+    # so that we can pass down project and organization values. Everything else is
+    # cleared from the context's cache for each question because each question sees
+    # a different set of dependencies.
+    impute_context_parent = TemplateContext(ModuleAnswers(current_answers.module, current_answers.task, {}), lambda v, mode : str(v), parent_context=parent_context)
 
     # Visitor function.
     def walker(q, state, deps):
@@ -102,14 +103,16 @@ def evaluate_module_state(current_answers, required):
         # a state in which it wasn't imputed, but now it is), the
         # user's answer is overridden with the imputed value for
         # consistency with the Module's logic.
-        #
+        
         # Create an evaluation context for evaluating impute conditions
         # that only sees the answers of this question's dependencies,
         # which are in state because we return the answers from this
         # method and they are collected as the walk continues up the
-        # dependency tree.
-        impute_context_answers.answers = state
-        impute_context._cache = { }
+        # dependency tree. 
+        impute_context = TemplateContext(
+            ModuleAnswers(current_answers.module, current_answers.task, state),
+            impute_context_parent.escapefunc, parent_context=impute_context_parent)
+
         v = run_impute_conditions(q.spec.get("impute", []), impute_context)
         if v:
             # An impute condition matched. Unwrap to get the value.
@@ -121,7 +124,7 @@ def evaluate_module_state(current_answers, required):
             v = current_answers.answers[q.key]
 
             # If q is a required question and the required argument is true,
-            # then treat it as unanswered.
+            # and the question was skipped ('None' answer) then treat it as unanswered.
             if q.spec.get("required") and required and v is None:
                 can_answer.add(q)
                 unanswered.add(q)
@@ -904,10 +907,10 @@ class ModuleAnswers:
         self.task = task
         self.answers = answers
 
-    def with_extended_info(self, required=False):
+    def with_extended_info(self, required=False, parent_context=None):
         # Return a new ModuleAnswers instance that has imputed values added
         # and information about the next question(s) and unanswered questions.
-        return evaluate_module_state(self, required)
+        return evaluate_module_state(self, required, parent_context=parent_context)
 
     def render_output(self, additional_context, hard_fail=True):
         # Now that all questions have been answered, generate this
@@ -921,14 +924,19 @@ class ModuleAnswers:
 
 from collections.abc import Mapping
 class TemplateContext(Mapping):
-    """Provides Jinja2 template and expression variables."""
+    """A Jinja2 execution context that wraps the Pythonic answers to questions
+       of a ModuleAnswers instance in RenderedAnswer instances that provide
+       template and expression functionality like the '.' accessor to get to
+       the answers of a sub-task."""
 
-    def __init__(self, module_answers, escapefunc):
+    def __init__(self, module_answers, escapefunc, parent_context=None):
         self.module_answers = module_answers
         self.escapefunc = escapefunc
         self._cache = { }
+        self.parent_context = parent_context
 
     def __getitem__(self, item):
+        # Cache every context variable's value, since some items are expensive.
         if item not in self._cache:
             self._cache[item] = self.getitem(item)
         return self._cache[item]
@@ -954,7 +962,7 @@ class TemplateContext(Mapping):
         if question:
             # The question might or might not be answered. If not, its value is None.
             answer = self.module_answers.answers.get(item, None)
-            return RenderedAnswer(self.module_answers.task, question, answer, self.escapefunc)
+            return RenderedAnswer(self.module_answers.task, question, answer, self)
 
         # The context also provides the project and organization that the Task belongs to,
         # and other task attributes, assuming the keys are not overridden by question IDs.
@@ -962,9 +970,13 @@ class TemplateContext(Mapping):
             if item == "task_link":
                 return self.module_answers.task.get_absolute_url()
             if item == "project":
-                return RenderedProject(self.module_answers.task.project, self.escapefunc)
+                if self.parent_context is not None: # use parent's cache
+                    return self.parent_context[item]
+                return RenderedProject(self.module_answers.task.project, self.escapefunc, parent_context=self)
             if item == "organization":
-                return RenderedOrganization(self.module_answers.task.project.organization, self.escapefunc)
+                if self.parent_context is not None: # use parent's cache
+                    return self.parent_context[item]
+                return RenderedOrganization(self.module_answers.task.project.organization, self.escapefunc, parent_context=self)
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
                 # call the method here because that leads to infinite
@@ -1000,12 +1012,12 @@ class TemplateContext(Mapping):
         return len([x for x in self])
 
 class RenderedProject(TemplateContext):
-    def __init__(self, project, escapefunc):
+    def __init__(self, project, escapefunc, parent_context=None):
         self.project = project
         def _lazy_load():
             if self.project.root_task:
                 return self.project.root_task.get_answers()
-        super().__init__(_lazy_load, escapefunc)
+        super().__init__(_lazy_load, escapefunc, parent_context=parent_context)
 
     def as_raw_value(self):
         return self.project.title
@@ -1013,13 +1025,13 @@ class RenderedProject(TemplateContext):
         return self.escapefunc(self.as_raw_value(), False)
 
 class RenderedOrganization(TemplateContext):
-    def __init__(self, organization, escapefunc):
+    def __init__(self, organization, escapefunc, parent_context=None):
         self.organization = organization
         def _lazy_load():
             project = organization.get_organization_project()
             if project.root_task:
                 return project.root_task.get_answers()
-        super().__init__(_lazy_load, escapefunc)
+        super().__init__(_lazy_load, escapefunc, parent_context=parent_context)
 
     def as_raw_value(self):
         return self.organization.name
@@ -1027,12 +1039,14 @@ class RenderedOrganization(TemplateContext):
         return self.escapefunc(self.as_raw_value(), False)
 
 class RenderedAnswer:
-    def __init__(self, task, question, answer, escapefunc):
+    def __init__(self, task, question, answer, parent_context):
         self.task = task
         self.question = question
         self.answer = answer
-        self.escapefunc = escapefunc
+        self.parent_context = parent_context
+        self.escapefunc = parent_context.escapefunc
         self.question_type = self.question.spec["type"]
+        self.cached_tc = None
 
     def __html__(self):
         # How the template renders a question variable used plainly, i.e. {{q0}}.
@@ -1149,12 +1163,15 @@ class RenderedAnswer:
                     "type": "choice",
                     "choices": self.question.spec["choices"],
                     }),
-                ans, self.escapefunc)
+                ans, self.parent_context)
                 for ans in self.answer)
         
         elif self.question_type == "module-set":
             # Iterate over the sub-tasks' answers. Load each's answers + imputed answers.
-            return (TemplateContext(v.with_extended_info(), self.escapefunc) for v in self.answer)
+            return (TemplateContext(
+                v.with_extended_info(parent_context=self.parent_context if v.task.project_id==self.task.project_id else None),
+                self.escapefunc, parent_context=self.parent_context)
+                for v in self.answer)
 
         elif self.question_type == "external-function":
             return iter(self.answer)
@@ -1169,12 +1186,17 @@ class RenderedAnswer:
             if self.answer is not None:
                 # If the question was not skipped, then we have the ModuleAnswers for it.
                 # Load its answers + evaluate impute conditions.
-                tc = TemplateContext(self.answer.with_extended_info(), self.escapefunc)
+                if not self.cached_tc:
+                    self.cached_tc = TemplateContext(
+                        lambda : self.answer.with_extended_info(parent_context=self.parent_context if self.answer.task.project_id==self.task.project_id else None),
+                        self.escapefunc,
+                        parent_context=self.parent_context)
+                tc = self.cached_tc
             else:
                 # The question was skipped -- i.e. we have no ModuleAnswers for
                 # the question that this RenderedAnswer represents. But we want
                 # to gracefully represent the item attribute as skipped too.
-                tc = TemplateContext(ModuleAnswers(self.question.answer_type_module, None, {}), self.escapefunc)
+                tc = TemplateContext(ModuleAnswers(self.question.answer_type_module, None, {}), self.escapefunc, parent_context=self.parent_context)
             return tc[item]
 
         # For external-function and "raw" question types, the answer value is any
