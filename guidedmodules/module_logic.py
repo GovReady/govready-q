@@ -465,6 +465,12 @@ def render_content(content, answers, output_format, source, additional_context={
 
 
 def get_all_question_dependencies(module):
+    # Initialize cache, query cache.
+    if not hasattr(get_all_question_dependencies, 'cache'):
+        get_all_question_dependencies.cache = { }
+    if module.id in get_all_question_dependencies.cache:
+        return get_all_question_dependencies.cache[module.id]
+
     # Pre-load all of the questions by their key so that the dependency
     # evaluation is fast.
     all_questions = { }
@@ -483,7 +489,12 @@ def get_all_question_dependencies(module):
         is_dependency_of_something |= deps
     root_questions = { q for q in dependencies if q not in is_dependency_of_something }
 
-    return (dependencies, root_questions)
+    ret = (dependencies, root_questions)
+
+    # Save to in-memory (in-process) cache.
+    get_all_question_dependencies.cache[module.id] = ret
+
+    return ret
 
 def get_question_dependencies(question, get_from_question_id=None):
     return set(edge[1] for edge in get_question_dependencies_with_type(question, get_from_question_id))
