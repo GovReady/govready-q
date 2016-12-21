@@ -310,7 +310,7 @@ def project(request, project_id):
     # Additional tabs of content.
     additional_tabs = []
     if project.root_task.module.spec.get("output"):
-    	for doc in project.root_task.render_output_documents(hard_fail=False):
+    	for doc in project.root_task.render_output_documents():
     		if doc.get("tab") in tabs:
     			# Assign this to one of the tabs.
     			tabs[doc["tab"]]["intro"] = doc

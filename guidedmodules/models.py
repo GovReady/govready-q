@@ -388,10 +388,10 @@ class Task(models.Model):
             "%s introduction" % repr(self.module)
         )
 
-    def render_output_documents(self, answers=None, hard_fail=True):
+    def render_output_documents(self, answers=None):
         if answers is None:
             answers = self.get_answers()
-        return answers.render_output({}, hard_fail=hard_fail)
+        return answers.render_output({})
 
     def render_snippet(self):
         snippet = self.module.spec.get("snippet")

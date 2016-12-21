@@ -197,7 +197,7 @@ def get_question_context(answers, question):
     return list(map(annotate, past_questions + [question] + future_questions))
 
 
-def render_content(content, answers, output_format, source, additional_context={}, hard_fail=True):
+def render_content(content, answers, output_format, source, additional_context={}):
     # Renders content (which is a dict with keys "format" and "template")
     # into the requested output format, using the ModuleAnswers in answers
     # to provide the template context.
@@ -422,12 +422,7 @@ def render_content(content, answers, output_format, source, additional_context={
         from jinja2.sandbox import SandboxedEnvironment
         env = SandboxedEnvironment(
             autoescape=True,
-
-            # if hard_fail is True, then raise an error if any variable used
-            # in the template is undefined (i.e. answer is not present in
-            # dict), otherwise let it pass through silently
-            undefined=jinja2.StrictUndefined if hard_fail else jinja2.Undefined,
-            )
+            undefined=jinja2.StrictUndefined)
         try:
             template = env.from_string(template_body)
         except jinja2.TemplateSyntaxError as e:
@@ -921,13 +916,13 @@ class ModuleAnswers:
         # and information about the next question(s) and unanswered questions.
         return evaluate_module_state(self, required, parent_context=parent_context)
 
-    def render_output(self, additional_context, hard_fail=True):
+    def render_output(self, additional_context):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents.
         def render_document(d, i):
             ret = { }
             ret.update(d) # keep all original fields (especially 'name', 'tab')
-            ret["html"] = render_content(d, self, "html", "%s output document %d" % (repr(self.module), i), additional_context, hard_fail=hard_fail)
+            ret["html"] = render_content(d, self, "html", "%s output document %d" % (repr(self.module), i), additional_context)
             return ret
         return [ render_document(d, i) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
@@ -1142,7 +1137,7 @@ class RenderedAnswer:
     def rendered_outputs(self):
         if self.question_type == "module":
             try:
-                return self.answer.task.render_output_documents(hard_fail=False)
+                return self.answer.task.render_output_documents()
             except:
                 return []
         raise AttributeError()
