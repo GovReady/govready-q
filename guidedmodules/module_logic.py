@@ -1243,7 +1243,12 @@ class RenderedAnswer:
             # if either represents a skipped/imputed-null question,
             # prevent a TypeError by just returning false
             return False
-        return self.answer > other
+        try:
+            return self.answer > other
+        except TypeError:
+            # If one tries to compare a string to an integer, just
+            # say false.
+            return False
 
     def __lt__(self, other):
         if isinstance(other, RenderedAnswer):
@@ -1252,7 +1257,12 @@ class RenderedAnswer:
             # if either represents a skipped/imputed-null question,
             # prevent a TypeError by just returning false
             return False
-        return self.answer < other
+        try:
+            return self.answer < other
+        except TypeError:
+            # If one tries to compare a string to an integer, just
+            # say false.
+            return False
 
 def run_external_function(question, existing_answers):
     # Split the function name into the module path and function name.
