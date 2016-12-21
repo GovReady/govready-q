@@ -32,21 +32,40 @@ class User(AbstractUser):
         return getattr(self, 'user_settings_task', None)
 
     def _get_setting(self, key):
+        # any org-localized settings?
         if not self._get_settings_task():
             return None
+
+        # initialize cache
+        if not hasattr(self, "_settings"):
+            self._settings = { }
+
+        # return from cache
+        if key in self._settings:
+            return self._settings[key]
+
         from guidedmodules.models import TaskAnswer
         ans = TaskAnswer.objects.filter(
             task=self._get_settings_task(),
             question__key=key).first()
-        if not ans:
-            return None
-        ans = ans.get_current_answer()
-        if ans.cleared:
-            return None
-        return ans.get_value()
+        if ans is not None:
+            ans = ans.get_current_answer()
+            if ans.cleared:
+                ans = None
+            else:
+                ans = ans.get_value()
+        self._settings[key] = ans
+        return ans
+
+    def get_account_project(self, org):
+        p = getattr(self, "_account_project", None)
+        if p is None:
+            p = self.get_account_project_(org)
+            self._account_project = p
+        return p
 
     @transaction.atomic
-    def get_account_project(self, org):
+    def get_account_project_(self, org):
         # TODO: There's a race condition here.
 
         # Get an existing account project.
