@@ -945,7 +945,7 @@ class TaskAnswerHistory(models.Model):
             # Get the dbstorage.models.StoredFile instance which holds
             # an auto-detected mime type.
             from dbstorage.models import StoredFile
-            sf = StoredFile.objects.get(path=blob.name)
+            sf = StoredFile.objects.only("mime_type").get(path=blob.name)
             return {
                 "url": settings.SITE_ROOT_URL + blob.url,
                 "size": blob.size,
