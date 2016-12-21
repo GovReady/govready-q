@@ -72,7 +72,9 @@ class User(AbstractUser):
         pm = ProjectMembership.objects.filter(
             user=self,
             project__organization=org,
-            project__is_account_project=True).first()
+            project__is_account_project=True)\
+            .select_related("project", "project__root_task", "project__root_task__module")\
+            .first()
         if pm:
             return pm.project
 

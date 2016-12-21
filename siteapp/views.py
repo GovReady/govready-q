@@ -37,7 +37,9 @@ def homepage(request):
 
         # Add all of the Projects the user is a member of within the Organization
         # that the user is on the subdomain of.
-        for pm in ProjectMembership.objects.filter(project__organization=request.organization, user=request.user):
+        for pm in ProjectMembership.objects\
+            .filter(project__organization=request.organization, user=request.user)\
+            .select_related('project'):
             projects.add(pm.project)
             if pm.is_admin:
                 # Annotate with whether the user is an admin of the project.
@@ -45,7 +47,9 @@ def homepage(request):
 
         # Add projects that the user is the editor of a task in, even if
         # the user isn't a team member of that project.
-        for task in Task.get_all_tasks_readable_by(request.user, request.organization).order_by('-created'):
+        for task in Task.get_all_tasks_readable_by(request.user, request.organization)\
+            .order_by('-created')\
+            .select_related('project'):
             projects.add(task.project)
 
         # Add projects that the user is participating in a Discussion in
