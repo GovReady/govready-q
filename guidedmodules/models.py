@@ -76,7 +76,7 @@ class Module(models.Model):
         # Build a network diagram by recursively evaluating
         # node edges.
         from graphviz import Digraph
-        g = Digraph()
+        g = Digraph(name=config['name'])
         seen_nodes = set()
         stack = list(start_nodes)
         node_id = lambda node : str((type(node), node.id))
@@ -90,13 +90,18 @@ class Module(models.Model):
             g.node(
                 node_id(node),
                 label=config[type(node)]['label'](node),
+                tooltip=config[type(node)]['tooltip'](node),
                 **config[type(node)]['attrs'](node))
 
             # Create the edges.
             edges = config[type(node)]['edges'](node)
             for edge_type, nodes in edges.items():
                 for n in nodes:
-                    g.edge(node_id(node), node_id(n), label=edge_type)
+                    g.edge(
+                        node_id(node),
+                        node_id(n),
+                        label=edge_type,
+                        )
                     stack.append(n)
         
         if not seen_nodes:
@@ -114,15 +119,18 @@ class Module(models.Model):
         return Module.BuildNetworkDiagram(
             [self],
             {
+                'name': 'Module Usage',
                 Module: {
                     "label": lambda node : str(node),
                     "edges": lambda node : { "answer-to": node.is_type_of_answer_to.all() },
                     "attrs": lambda node : { "color": "red" },
+                    "tooltip": lambda node : node.spec['title'],
                 },
                 ModuleQuestion: {
                     "label": lambda node : node.key,
                     "edges": lambda node : { "in": [node.module] },
                     "attrs": lambda node : { "color": "blue" },
+                    "tooltip": lambda node : node.spec['title'],
                 }
             })
 
@@ -138,10 +146,12 @@ class Module(models.Model):
         return Module.BuildNetworkDiagram(
             root_questions,
             {
+                'name': 'Question Dependencies',
                 ModuleQuestion: {
                     "label": lambda node : node.key,
                     "edges": lambda node : get_question_dependencies(node),
                     "attrs": lambda node : { },
+                    "tooltip": lambda node : node.spec['title'],
                 }
             })
 
