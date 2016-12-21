@@ -912,11 +912,12 @@ class TaskAnswerHistory(models.Model):
 
         # If this question type is "module" or "module-set", its answer
         # is stored in the answered_by_task M2M field and the stored_value
-        # field is not used. The return value an ModuleAnswers instance or
-        # an array of instances.
+        # field is not used. The return value is an uninitialized ModuleAnswers
+        # instance, an array of instances, that will lazy-load the answers
+        # when needed.
         if q.spec["type"] in ("module", "module-set"):
             value = [
-                t.get_answers()
+                ModuleAnswers(t.module, t, None)
                 for t in self.answered_by_task.all().select_related('module')
                 ]
             if q.spec["type"] == "module":

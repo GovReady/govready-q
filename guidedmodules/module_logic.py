@@ -910,6 +910,10 @@ class ModuleAnswers:
         self.answers = answers
 
     def as_dict(self):
+        if self.answers is None:
+            # Lazy-load by calling the task's get_answers function
+            # and copying its answers dictionary.
+            self.answers = self.task.get_answers().answers
         return self.answers
 
     def with_extended_info(self, required=False, parent_context=None):
