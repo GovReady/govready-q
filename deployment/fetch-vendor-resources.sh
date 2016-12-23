@@ -47,3 +47,9 @@ wget -O $VENDOR/autosize.min.js \
 # text input autocomplete
 wget -O $VENDOR/jquery.textcomplete.min.js \
         https://raw.githubusercontent.com/yuku-t/jquery-textcomplete/master/dist/jquery.textcomplete.min.js
+
+# emojione
+wget -O $VENDOR/emojione.min.css \
+        https://raw.githubusercontent.com/Ranks/emojione/v2.2.7/assets/css/emojione.min.css
+wget -O $VENDOR/emojione.min.js \
+        https://raw.githubusercontent.com/Ranks/emojione/v2.2.7/lib/js/emojione.min.js
