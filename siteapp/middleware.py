@@ -10,11 +10,26 @@ from .models import Organization
 allowed_paths = None
 
 class OrganizationSubdomainMiddleware:
-    def process_request(self, request):
+    def __init__(self, next_middleware):
+        self.next_middleware = next_middleware
+
+    def __call__(self, request):
+        # If the user is on an organization subdomain but is not logged in and authorized,
+        # then we redirect to the login page on that subdomain.
+        #
+        # Also if the user is on 127.0.0.1 for testing, we redirect to 'localhost'.
+        response = self.check_subdomain(request)
+        if response is not None:
+            return response
+
+        # Otherwise, the user is permitted to view a page on this subdomain.
+        return self.next_middleware(request)
+
+    def check_subdomain(self, request):
         global allowed_paths
 
         # Use a different set of routes depending on whether the request
-        # is for q.govready.com, the special landing domain, or an
+        # is for q.govready.com (the special landing domain) or an
         # organization subdomain.
 
         # Get the hostname in the UA's original HTTP request. It may be

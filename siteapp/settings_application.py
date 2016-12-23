@@ -14,7 +14,7 @@ INSTALLED_APPS += [
     'discussion',
 ]
 
-MIDDLEWARE_CLASSES += [
+MIDDLEWARE += [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'siteapp.middleware.OrganizationSubdomainMiddleware',
 ]
