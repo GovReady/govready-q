@@ -23,11 +23,11 @@ unzip -d /tmp /tmp/bootstrap.zip
 mv /tmp/bootstrap-3.3.6-dist $VENDOR/bootstrap
 rm -f /tmp/bootstrap.zip
 
-# Font Awesome
+# Font Awesome (for the spinner on ajax calls)
 wget -O /tmp/fontawesome.zip \
-        http://fontawesome.io/assets/font-awesome-4.6.3.zip
+        http://fontawesome.io/assets/font-awesome-4.7.0.zip
 unzip -d /tmp /tmp/fontawesome.zip
-mv /tmp/font-awesome-4.6.3 $VENDOR/fontawesome
+mv /tmp/font-awesome-4.7.0 $VENDOR/fontawesome
 rm -f /tmp/fontawesome.zip
 
 # Josh's Bootstrap Helpers
