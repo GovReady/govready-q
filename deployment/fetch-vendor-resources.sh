@@ -53,3 +53,9 @@ wget -O $VENDOR/emojione.min.css \
         https://raw.githubusercontent.com/Ranks/emojione/v2.2.7/assets/css/emojione.min.css
 wget -O $VENDOR/emojione.min.js \
         https://raw.githubusercontent.com/Ranks/emojione/v2.2.7/lib/js/emojione.min.js
+
+# google fonts
+# first download a helper (note: we're about to run a foriegn script locally)
+wget -O /tmp/google-font-download \
+        https://raw.githubusercontent.com/neverpanic/google-font-download/master/google-font-download
+(cd $VENDOR; bash /tmp/google-font-download -o google-fonts.css Hind:400 Hind:700)
