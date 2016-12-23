@@ -87,3 +87,8 @@ output:
       ### Applications
 
       Chat: {{chat.text}}
+
+      ### Account Settings
+
+      [Change Your Password](/accounts/password/change/)
+      

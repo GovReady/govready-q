@@ -158,6 +158,26 @@ ACCOUNT_PASSWORD_MIN_LENGTH = (4 if DEBUG else 6) # in debugging, allow simple p
 import bootstrap3.templatetags.bootstrap3
 ALLAUTH_FORM_RENDERER = bootstrap3.templatetags.bootstrap3.bootstrap_form
 
+# Require strong passwords (but not when debugging because that's annoying).
+if not DEBUG:
+	AUTH_PASSWORD_VALIDATORS = [
+		{
+			'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+		},
+		{
+			'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+			'OPTIONS': {
+				'min_length': 9,
+			}
+		},
+		{
+			'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+		},
+		{
+			'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+		},
+	]
+
 # Use an Sqlite database at local/db.sqlite, until other database
 # settings have been set in the environment.
 DATABASES = {
