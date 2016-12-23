@@ -18,9 +18,9 @@ wget -O $VENDOR/jquery.js \
 
 # Bootstrap
 wget -O /tmp/bootstrap.zip \
-        https://github.com/twbs/bootstrap/releases/download/v3.3.6/bootstrap-3.3.6-dist.zip
+        https://github.com/twbs/bootstrap/releases/download/v3.3.7/bootstrap-3.3.7-dist.zip
 unzip -d /tmp /tmp/bootstrap.zip
-mv /tmp/bootstrap-3.3.6-dist $VENDOR/bootstrap
+mv /tmp/bootstrap-3.3.7-dist $VENDOR/bootstrap
 rm -f /tmp/bootstrap.zip
 
 # Font Awesome (for the spinner on ajax calls)
