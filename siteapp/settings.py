@@ -68,15 +68,15 @@ INSTALLED_APPS = [
 	'django.contrib.contenttypes',
 	'django.contrib.staticfiles',
 	'django.contrib.sessions',
-    'django.contrib.sites', # required by allauth
+	'django.contrib.sites', # required by allauth
 	'django.contrib.messages',
 	'django.contrib.humanize',
 
-    'bootstrap3',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    # add any allauth social providers as you like
+	'bootstrap3',
+	'allauth',
+	'allauth.account',
+	'allauth.socialaccount',
+	# add any allauth social providers as you like
 ]
 
 # Add test_without_migrations if it is installed. This provides --nomigrations
@@ -89,13 +89,13 @@ except ImportError:
 
 # Add standard middleware.
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'django.middleware.security.SecurityMiddleware',
+	'django.contrib.sessions.middleware.SessionMiddleware',
+	'django.middleware.common.CommonMiddleware',
+	'django.middleware.csrf.CsrfViewMiddleware',
+	'django.contrib.auth.middleware.AuthenticationMiddleware',
+	'django.contrib.messages.middleware.MessageMiddleware',
+	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 if environment["debug"] and os.path.exists(os.path.join(os.path.dirname(__file__), 'helper_middleware.py')):
 	MIDDLEWARE_CLASSES.append(primary_app+'.helper_middleware.DumpErrorsToConsole')
