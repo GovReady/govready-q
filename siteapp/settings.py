@@ -231,6 +231,10 @@ if environment["https"]:
 	CSRF_COOKIE_HTTPONLY = True
 	CSRF_COOKIE_SECURE = True
 
+# Other security headers.
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
 # Put static files in the virtual path "/static/". When the "static"
 # environment setting is present, then it's a local directory path
 # where "collectstatic" will put static files. The ManifestStaticFilesStorage
