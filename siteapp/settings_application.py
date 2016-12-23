@@ -17,6 +17,7 @@ INSTALLED_APPS += [
 MIDDLEWARE += [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'siteapp.middleware.OrganizationSubdomainMiddleware',
+    'guidedmodules.middleware.InstrumentQuestionPageLoadTimes',
 ]
 
 AUTHENTICATION_BACKENDS += ['siteapp.models.DirectLoginBackend']

@@ -354,6 +354,17 @@ def next_question(request, taskid, taskslug):
             answer=taskq,
         )
 
+        # Indicate for the InstrumentQuestionPageLoadTimes middleware that this is
+        # a question page load.
+        request._instrument_page_load = {
+            "event_type": "task-question-request-duration",
+            "module": task.module,
+            "question": q,
+            "project": task.project,
+            "task": task,
+            "answer": taskq,
+        }
+
         # Construct the page.
         prompt = module_logic.render_content({
                 "template": q.spec["prompt"],
@@ -522,11 +533,11 @@ def analytics(request):
             .exclude(avg_value=None)\
             .order_by('-avg_value')\
             [0:10]
-        
+
         bulk_objs = opt['model'].objects.in_bulk(r[opt['field']] for r in rows)
 
         opt.update({
-            "overall": round(overall['avg_value']),
+            "overall": round(overall['avg_value']) if overall['avg_value'] is not None else "No Data",
             "n": overall['count'],
             "rows": [{
                     "obj": str(bulk_objs[v[opt['field']]]),
@@ -543,33 +554,52 @@ def analytics(request):
         "base_template": "base.html" if hasattr(request, "organization") else "base-landing.html",
         "tables": [
             compute_table({
-                "model": Module,
                 "event_type": "task-done",
-                "field": "module",
                 "title": "Hardest Modules",
+
+                "model": Module,
+                "field": "module",
+
                 "quantity": "Time To Finish (sec)",
                 "label": lambda m : m.title,
                 "detail": lambda m : "version id %d" % m.id,
             }),
 
             compute_table({
-                "model": ModuleQuestion,
                 "event_type": "task-question-answer",
                 "title": "Hardest Questions",
+
+                "model": ModuleQuestion,
                 "field": "question",
+
                 "quantity": "Time To Answer (sec)",
                 "label": lambda q : q.spec['title'],
                 "detail": lambda q : "%s, version id %d" % (q.module.title, q.module.id),
             }),
 
             compute_table({
-                "model": ModuleQuestion,
                 "event_type": "task-question-interact-first",
                 "title": "Longest Time to First Interaction",
+
+                "model": ModuleQuestion,
                 "field": "question",
+
                 "quantity": "Time To First Interaction (sec)",
                 "label": lambda q : q.spec['title'],
                 "detail": lambda q : "%s, version id %d" % (q.module.title, q.module.id),
             }),
+
+            compute_table({
+                "event_type": "task-question-request-duration",
+                "title": "Slowest Loading Modules",
+
+                "model": Module,
+                "field": "module",
+
+                "quantity": "HTTP Request Duration (ms)",
+                "label": lambda m : m.spec['title'],
+                "detail": lambda m : "version id %d" % m.id,
+            }),
+
         ]
     })
