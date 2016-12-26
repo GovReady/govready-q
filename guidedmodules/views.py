@@ -391,6 +391,22 @@ def next_question(request, taskid, taskslug):
             "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
 
             "context": module_logic.get_question_context(answered, q),
+
+            # Helpers for showing date month, day, year dropdowns, with
+            # localized strings and integer values. Default selections
+            # are done in the template & client-side so that we can use
+            # the client browser's timezone to determine the current date.
+            "date_l8n": lambda : {
+                "months": [
+                    (timezone.now().replace(2016,m,1).strftime("%B"), m)
+                    for m in range(1, 12+1)],
+                "days": [
+                    d
+                    for d in range(1, 31+1)],
+                "years": [
+                    y
+                    for y in reversed(range(timezone.now().year-100, timezone.now().year+101))],
+            }
         })
         return render(request, "question.html", context)
 

@@ -113,10 +113,30 @@ label:hover .onhover { display: inline; }
               </div>
 
             {% elif q.spec.type == "date" %}
-              {# need a shim for most browsers #}
+              {# The HTML5 date input type is only properly supported on Chrome, so we don't use it yet. Other browsers just show a text box, and we expect YYYY-MM-DD format, which is hard for users to enter manually. #}
               <div class="form-group">
-                <input name="value" type="date" class="form-control" id="inputctrl" style="width: auto"
-                   {% if answer %}value="{{answer}}"{% endif %}>
+                <select name="value_month" class="form-control" style="width: auto; display: inline-block;">
+                  <option value="" disabled="1">(month)</option>
+                  {% for month_str, value in date_l8n.months %}
+                  <option value="{{value}}">{{month_str}}</option>
+                  {% endfor %}
+                </select>
+
+                <select name="value_day" class="form-control" style="width: auto; display: inline-block;">
+                  <option value="" disabled="1">(day)</option>
+                  {% for value in date_l8n.days %}
+                  <option value="{{value}}">{{value}}</option>
+                  {% endfor %}
+                </select>
+
+                <select name="value_year" class="form-control" style="width: auto; display: inline-block;">
+                  <option value="" disabled="1">(year)</option>
+                  {% for value in date_l8n.years %}
+                  <option value="{{value}}">{{value}}</option>
+                  {% endfor %}
+                </select>
+
+                <input name="value" type="hidden"> {# filled in by script, actual value submitted #}
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
@@ -391,11 +411,31 @@ label:hover .onhover { display: inline; }
 $(function() {
     var form = $("#question > form");
 
+    // DEFAULT STATE
+
     {% if write_priv %}
       $('#inputctrl').focus();
     {% else %}
       form.find('input, textarea').prop('disabled', true);
     {% endif %}
+
+    // DEFAULT VALUE
+
+    {% if q.spec.type == "date" %}
+      {% if answer %}
+        {# If there is a current answer, set it into the date drop-downs. #}
+        var date = [parseInt({{answer|slice:"0:4"|json}}), parseInt({{answer|slice:"5:7"|json}}), parseInt({{answer|slice:"8:10"|json}})];
+      {% else %}
+        {# Set the default to the current date in local time. #}
+        var d = new Date();
+        var date = [d.getFullYear(), d.getMonth()+1, d.getDate()];
+      {% endif %}
+      $("#question select[name='value_year']").val(date[0]);
+      $("#question select[name='value_month']").val(date[1]);
+      $("#question select[name='value_day']").val(date[2]);
+    {% endif %}
+
+    // DISCUSSION
 
     {% if discussion %}
     {# a discussion already exists, so show it #}
@@ -429,7 +469,7 @@ $(function() {
 
     // VALIDATION
 
-    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" or q.spec.type == "date" %}
+    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
     
     function validate_answer() {
         var val = $('#inputctrl').val();
@@ -441,17 +481,45 @@ $(function() {
       $('#inputctrl').change(handler);
       $('#inputctrl').on('keyup', handler);
     }
+
     {% if q.spec.type == "text" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "url" %}
     function is_answer_unchanged() {
       var val = $('#inputctrl').val();
       if (val == "{{answer|escapejs}}")
         return true;
     }
-    {# TODO: for integer, real, and date questions, we need to parse the value #}
+    {# TODO: for integer and real questions, we need to parse the value to know if the answer really changed #}
     {% else %}
-    {# dont reval for password-type questions #}
+    {# dont reveal for password-type questions #}
     function is_answer_unchanged() { }
     {% endif %}
+
+    {% elif q.spec.type == "date" %}
+
+    function validate_answer() {
+      // Copy the values of the selects into the hidden submission field in YYYY-MM-DD format.
+      function zeropad(value, length) { value = ""+value; while (value.length < length) value = "0" + value; return value; }
+      $("#question input[name='value']").val(
+        zeropad($("#question select[name='value_year']").val(), 4)
+        + "-" +
+        zeropad($("#question select[name='value_month']").val(), 2)
+        + "-" +
+        zeropad($("#question select[name='value_day']").val(), 2)
+      );
+
+      // The value is always valid, unless the user chooses February 31st,
+      // but we'll let the server handle that.
+      return undefined;
+    }
+    function on_input_changed(handler) {
+      $('#question select').change(handler);
+    }
+    function is_answer_unchanged() {
+      // This is called on the on_input_changed handler, which
+      // is before validate_answer, so the YYYY-MM-DD field hasn't
+      // been constructed yet. Do that first.
+      return !validate_answer() && $("#question input[name='value']").val() == {{answer|json}};
+    }
 
     {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
 
@@ -552,6 +620,7 @@ $(function() {
         // var form_fields = form.serializeArray();
         // for (var i in form_fields)
         //  data.append(form_fields[i].name, form_fields[i].value);
+        // ...and for a file field...
         // data.append('value', $('#inputctrl')[0].files[0]);
         //
         // But there's a constructor that does this for us:

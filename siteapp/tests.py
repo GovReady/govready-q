@@ -507,11 +507,10 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5)
 
         # date
-        # The UI for <input type=date> varies by browser. The chromedriver
-        # gives a box that the user can type mm/dd/yyyy format into (at
-        # least on my desktop...).
         self.assertRegex(self.browser.title, "Next Question: date")
-        self.fill_field("#inputctrl", "08222016")
+        self.select_option("select[name='value_year']", "2016")
+        self.select_option("select[name='value_month']", "8")
+        self.select_option("select[name='value_day']", "22")
         self.click_element("#save-button")
         var_sleep(.5)
 
