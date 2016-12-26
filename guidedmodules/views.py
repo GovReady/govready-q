@@ -88,7 +88,7 @@ def next_question(request, taskid, taskslug):
             # run external functions
             if q.spec['type'] == "external-function":
                 try:
-                    value = module_logic.run_external_function(q.spec, answered.as_dict())
+                    value = module_logic.run_external_function(q.module.key, q.spec, answered.as_dict())
                 except ValueError as e:
                     return JsonResponse({ "status": "error", "message": str(e) })
 

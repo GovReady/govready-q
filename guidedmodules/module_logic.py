@@ -1264,16 +1264,26 @@ class RenderedAnswer:
             # say false.
             return False
 
-def run_external_function(question, existing_answers):
-    # Split the function name into the module path and function name.
-    function_name = question.get("function", "").rsplit(".", 1)
-    if len(function_name) != 2:
-        raise Exception("Invalid function name.") # not trapped / not user-visible error
+def run_external_function(module_id, question, existing_answers):
+    function_name = question.get("function", "")
+
+    if "." not in function_name:
+        # Load the function from the Python module that is named the same
+        # as the questions module. Since our modules directory is in the
+        # Python path, those Python files will be available to us to load.
+        # See siteapp/wsgi.py.
+        module_name = module_id.replace("/", ".")
+    else:
+        # Split the function name into the module path and function name.
+        try:
+            module_name, function_name = function_name.rsplit(".", 1)
+        except:
+            raise Exception("Invalid function name.") # not trapped / not user-visible error
 
     # Import the module and get the method.
     import importlib
-    module = importlib.import_module(function_name[0])
-    method = getattr(module, function_name[1])
+    module = importlib.import_module(module_name)
+    method = getattr(module, function_name)
 
     # Run the method.
     return method(question, existing_answers)

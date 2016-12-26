@@ -343,9 +343,11 @@ An `external-function` question is not really a question at all but instead runs
 The function is specified as
 
     type: external-function
-    function: guidedmodules.sample_external_functions.sample_function
+    function: {function-name}
 
-where `sample_function` is a method defined in the Python module `guidedmodules.sample_external_functions`, which must be installed/available. The function is called with two arguments, a dict containing the question's specification and a dict of module answers mapping question IDs to answers already present.
+where `{function-name}` identifies the Python function to be executed. If `{function-name}` does not have any dots, then the function is loaded from a Python module that is named the same as the YAML file, except with a `py` extension instead of `yaml`. If `{function-name}` has a dot, then it is a Python module/function path and the Python module must be globally available, like `guidedmodules.sample_external_functions.sample_function`.
+
+The function is called with two arguments, a dict containing the question's specification (i.e. a dict containing keys `id`, `type`, and `function`, and whatever else might be in this part of the the YAML file) and a dict of module answers mapping question IDs to answers previous entered by the user.
 
 #### `raw`
 

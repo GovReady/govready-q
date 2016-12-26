@@ -4,6 +4,14 @@ from django.core.wsgi import get_wsgi_application
 
 django_application = get_wsgi_application()
 
+# Add the MODULES_PATH to the Python modules path so that
+# external-function functions can be loaded from Python
+# source files near where the functions are used. Add it
+# to the end of the path so it can't override build-in
+# Python code I guess?
+from django.conf import settings
+sys.path.append(settings.MODULES_PATH)
+
 if os.getenv('VCAP_APPLICATION'):
     from whitenoise.django import DjangoWhiteNoise
     django_application = DjangoWhiteNoise(django_application)
