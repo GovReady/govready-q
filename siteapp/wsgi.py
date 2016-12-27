@@ -12,6 +12,8 @@ django_application = get_wsgi_application()
 from django.conf import settings
 sys.path.append(settings.MODULES_PATH)
 
+# When running inside a Cloud Foundry container, serve
+# static files using the whitenoise Django app.
 if os.getenv('VCAP_APPLICATION'):
     from whitenoise.django import DjangoWhiteNoise
     django_application = DjangoWhiteNoise(django_application)
@@ -29,7 +31,10 @@ def application_redirect(environ, start_response, http_host):
 def application(environ, start_response):
     http_host = environ.get('HTTP_HOST')
 
+    # When running inside a Cloud Foundry container, we may get HTTP
+    # requests which we will redirect to HTTPS. TODO: Handle this at
+    # the infrastructure level?
     if (environ.get('wsgi.url_scheme', 'http') != 'https') and os.getenv('VCAP_APPLICATION'):
         return application_redirect(environ, start_response, http_host)
-    else:
-        return django_application(environ, start_response)
+
+    return django_application(environ, start_response)

@@ -11,8 +11,6 @@ git+https://github.com/if-then-fund/django-html-emailer
 git+https://github.com/if-then-fund/django-database-storage
 exclusiveprocess
 
-dj-database-url==0.4.1
-
 Django==1.10.4
 django-debug-toolbar
 django-allauth
