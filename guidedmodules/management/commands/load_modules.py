@@ -131,8 +131,8 @@ class Command(BaseCommand):
         # Sanity check that the 'id' in the YAML file matches just the last
         # part of the path of the module_id. This allows the IDs to be 
         # relative to the path in which the module is found.
-        if spec["id"] != module_id.split('/')[-1]:
-            raise ValidationError(fn, "module", "Module 'id' field ('%s') doesn't match filename ('%s')." % (spec["id"], module_id))
+        if spec.get("id") != module_id.split('/')[-1]:
+            raise ValidationError(fn, "module", "Module 'id' field (%s) doesn't match filename (\"%s\")." % (repr(spec.get("id")), module_id))
 
         # Replace spec["id"] with the full module_id.
         spec["id"] = module_id
