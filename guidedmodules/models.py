@@ -969,7 +969,7 @@ class TaskAnswerHistory(models.Model):
 
     def get_answer_display(self):
         if self.cleared:
-            return "[answer cleared]"
+            return "[marked unanswered]"
         if self.taskanswer.question.spec["type"] in ("module", "module-set"):
             return repr(self.answered_by_task.all())
         else:

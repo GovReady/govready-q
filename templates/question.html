@@ -324,11 +324,11 @@ label:hover .onhover { display: inline; }
               &raquo;
             </button>
 
-            {% if answer_obj %}
+            {% if answer_obj and DEBUG %}
               <button id="clear-button"
-                type="submit" class="btn btn-danger"
+                type="submit" class="btn btn-default"
                 onclick="$('#question > form input[name=method]').val('clear')">
-                  Reset
+                  Mark as Unanswered
                   &raquo;
                 </button>
             {% endif %}
