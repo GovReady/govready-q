@@ -393,6 +393,14 @@ In both conditions and `expression`-type values, the variables you can use are:
 * `project.question_id`, `project.question_id.subquestion_id`, etc. to access questions within the project
 * `organization`, which gives the organization name
 
+### Encrypting answers
+
+A single encryption type is available that we call "emphemeral user key" and it is turned on for individual questions by adding:
+
+	encrypt: emphemeral-user-key
+
+When this encryption type is used, the answer is encrypted prior to its storage into our database. Each time the answer is saved, a fresh symmetric encryption key is generated and stored in a cookie in the user's web browser. The cookie is set to expire after three hours. After the cookie expires, or when viewed in another web browser or by another user, the answer will no longer (or not) be able to be decrypted and the question will simply appear to be skipped (i.e. a null value internally).
+
 Question Order
 --------------
 

@@ -131,6 +131,8 @@ class SeleniumTest(StaticLiveServerTestCase):
 
     def assertInNodeText(self, search_text, css_selector):
         self.assertIn(search_text, self._getNodeText(css_selector))
+    def assertNotInNodeText(self, search_text, css_selector):
+        self.assertNotIn(search_text, self._getNodeText(css_selector))
 
     def assertNodeNotVisible(self, css_selector):
         from selenium.common.exceptions import NoSuchElementException
@@ -672,6 +674,34 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#save-button")
         var_sleep(.5)
         self.assertRegex(self.browser.title, "^Test The Module Question Types - GovReady Q$")
+
+    def test_questions_encrypted(self):
+        # Log in and create a new project.
+        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._new_project()
+        self.click_element('#question-question_types_encrypted .task-commands form.start-task a')
+
+        # Introduction screen.
+        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # text
+        self.assertRegex(self.browser.title, "Next Question: text with encryption")
+        self.fill_field("#inputctrl", "This is some text that will be encrypted in our database.")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # We're now in the output page and we can see if we can still see
+        # the answer.
+        self.assertInNodeText('some text that will be encrypted', '#document-1-body')
+
+        # Clear the cookie that holds the encrpytion key, reload the page,
+        # and see that the value disappears.
+        self.browser.delete_cookie("encr_eph_1");
+        self.browser.get(self.browser.current_url)
+        var_sleep(.5)
+        self.assertNotInNodeText('some text that will be encrypted', '#document-1-body')
 
 def sample_external_function(question, existing_answers):
     # For test_questions_media's module.

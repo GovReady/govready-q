@@ -1,0 +1,20 @@
+id: question_types_encrypted
+title: Test Encrypted Questions
+introduction:
+  format: markdown
+  template: |
+    This module tests the functionality of encrypted questions.
+questions:
+  - id: q_text
+    title: text with encryption
+    prompt: Enter some text.
+    type: text
+    placeholder: this is placeholder text
+    help: This is help text.
+    encrypt: emphemeral-user-key
+output:
+  - title: Your Answers
+    format: markdown
+    template: |
+      {{q_text}}
+      

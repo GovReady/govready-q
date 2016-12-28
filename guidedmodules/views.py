@@ -27,12 +27,46 @@ def new_task(request):
 
 @login_required
 def next_question(request, taskid, taskslug):
+
     # Get the Task.
     task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
 
+
+    # Prepare for ephemeral encryption.
+    from datetime import timedelta
+    ephemeral_encryption_lifetime = timedelta(hours=3).total_seconds()
+    ephemeral_encryption_lifetime_nice = "3 hours"
+    ephemeral_encryption_cookies = []
+    class EncryptionProvider():
+        key_id_pattern = "encr_eph_%d"
+        def set_new_ephemeral_user_key(self, key):
+            # Find a new ID for this key.
+            key_id_pattern = EncryptionProvider.key_id_pattern
+            key_id = 1
+            while (key_id_pattern % key_id) in request.COOKIES: key_id += 1
+            # We can't set a cookie here because we don't have an HttpResponse
+            # object yet. So just record the cookie for now and set it later.
+            ephemeral_encryption_cookies.append((
+                key_id_pattern % key_id,
+                key))
+            # Return the key's ID and its lifetime.
+            return key_id, ephemeral_encryption_lifetime
+        def get_ephemeral_user_key(self, key_id):
+            return request.COOKIES.get(EncryptionProvider.key_id_pattern % key_id)
+    def set_ephemeral_encryption_cookies(response):
+        # No need to sign the cookies since if it's tampered
+        # with, the user simply won't be able to decrypt things.
+        for key, value in ephemeral_encryption_cookies:
+            response.set_cookie(key, value=value,
+                max_age=ephemeral_encryption_lifetime,
+                httponly=True)
+
+
     # Load the answers the user has saved so far, and fetch imputed
     # answers and next-question info.
-    answered = task.get_answers().with_extended_info()
+    answered = task.get_answers(decryption_provider=EncryptionProvider())\
+        .with_extended_info()
+
 
     # Process form data.
     if request.method == "POST":
@@ -157,7 +191,7 @@ def next_question(request, taskid, taskslug):
         else:
             # Save the answer.
             had_answer = question.has_answer()
-            if question.save_answer(value, answered_by_tasks, answered_by_file, request.user):
+            if question.save_answer(value, answered_by_tasks, answered_by_file, request.user, encryption_provider=EncryptionProvider()):
                 # The answer was changed (not just saved as a new answer).
                 if request.POST.get("method") == "skip":
                     instrumentation_event_type = "skip"
@@ -193,8 +227,16 @@ def next_question(request, taskid, taskslug):
             }
         )
 
-        # return to a GET request
-        return JsonResponse({ "status": "ok", "redirect": redirect_to })
+        # Form a JSON response to the AJAX request and indicate the
+        # URL to redirect to, to load the next question.
+        response = JsonResponse({ "status": "ok", "redirect": redirect_to })
+
+        # Apply any new ephemeral encryption cookies now that we have
+        # an HttpResponse object.
+        set_ephemeral_encryption_cookies(response)
+
+        # Return the response.
+        return response
 
     # Ok this is a GET request....
 
@@ -381,7 +423,7 @@ def next_question(request, taskid, taskslug):
             "prompt": prompt,
             "history": taskq.get_history() if taskq else None,
             "answer_obj": answer,
-            "answer": answer.get_value() if (answer and not answer.cleared) else None,
+            "answer": answer.get_value(decryption_provider=EncryptionProvider()) if (answer and not answer.cleared) else None,
             "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
             "show_discussion_members_count": True,
             "show_discussion_h2": True,
@@ -406,7 +448,9 @@ def next_question(request, taskid, taskslug):
                 "years": [
                     y
                     for y in reversed(range(timezone.now().year-100, timezone.now().year+101))],
-            }
+            },
+
+            "ephemeral_encryption_lifetime": ephemeral_encryption_lifetime_nice,
         })
         return render(request, "question.html", context)
 

@@ -102,6 +102,7 @@ label:hover .onhover { display: inline; }
             {% elif q.spec.type == "password" %}
               <div class="form-group">
                 <input name="value" type="password" class="form-control" id="inputctrl" placeholder="password">
+                {# we don't provide the old value as a default to protect secrets #}
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
@@ -294,6 +295,10 @@ label:hover .onhover { display: inline; }
             {% else %}
               <p class="text-danger">QUESTION TYPE NOT IMPLEMENTED: {{q.spec.type}}</p>
 
+            {% endif %}
+
+            {% if q.spec.encrypt == "emphemeral-user-key" %}
+              <p class="help-block">Your answer will be encrypted and will only be available to you when accessed from this web browser within the next {{ephemeral_encryption_lifetime}}.</p>
             {% endif %}
 
             {% if write_priv %}
