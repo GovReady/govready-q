@@ -11,13 +11,15 @@ from notifications.models import Notification
 
 class Command(BaseCommand):
     help = 'Sends emails for notifications.'
-    args = '[forever]'
+
+    def add_arguments(self, parser):
+        parser.add_argument('forever', nargs='?', type=bool)
 
     def handle(self, *args, **options):
         # Ensure this process doesn't run multiple times concurrently.
         Lock(die=True).forever()
 
-        if len(args) == 1 and args[0] == "forever":
+        if options["forever"]:
             # Loop forever.
             while True:
                 self.send_new_emails()
