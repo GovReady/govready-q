@@ -65,6 +65,15 @@ def homepage(request):
         # Sort.
         projects = sorted(projects, key = lambda x : x.updated, reverse=True)
 
+        # All non-project tasks that the user might want to continue working on.
+        open_tasks = [
+            task for task in
+            Task.get_all_tasks_readable_by(request.user, request.organization)
+                .filter(editor=request.user) \
+                .order_by('-updated')\
+                .select_related('project')
+            if not task.is_finished() and task != task.project.root_task ]
+
         def fixup_inv(inv):
             inv.from_user.localize_to_org(request.organization)
             return inv
@@ -72,6 +81,7 @@ def homepage(request):
         return render(request, "home.html", {
             "invitations": [fixup_inv(inv) for inv in request.user.invitations_accepted.exclude(accepted_at=None).order_by('-accepted_at')],
             "projects": projects,
+            "open_tasks": open_tasks,
             "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
         })
 

@@ -48,6 +48,8 @@ Home
 
 <div class="row">
   <div class="col-sm-6 col-lg-7">
+    {# CONTEXTUALIZE WITH WHO INVITED YOU #}
+
     {% if invitations %}
       {% for inv in invitations %}
         <div style="border: 1px solid #BCB; border-radius: 5px; padding: 1em;">
@@ -74,6 +76,19 @@ Home
         </div>
       {% endfor %}
     {% endif %}
+
+    {# WHAT YOU HAVE NEXT #}
+
+    {% if open_tasks %}
+    <div style="border: 1px solid #BCB; border-radius: 5px; padding: 1em; margin: 1em 0;">
+      <p><b>Continue answering...</b></p>
+      {% for task in open_tasks %}
+        <p><a href="{{task.get_absolute_url}}">{{task}}</a> (in <a href="{{task.project.get_absolute_url}}">{{task.project}}</a>)</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# GENERIC INFO #}
 
     <div style="padding-top: 35px"> </div> {# approx height of the Add Project button #}
 
