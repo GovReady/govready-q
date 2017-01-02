@@ -79,7 +79,7 @@ def homepage(request):
             return inv
 
         return render(request, "home.html", {
-            "invitations": [fixup_inv(inv) for inv in request.user.invitations_accepted.exclude(accepted_at=None).order_by('-accepted_at')],
+            "invitations": [fixup_inv(inv) for inv in request.user.invitations_accepted.filter(organization=request.organization).exclude(accepted_at=None).order_by('-accepted_at')],
             "projects": projects,
             "open_tasks": open_tasks,
             "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
