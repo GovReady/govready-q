@@ -108,6 +108,13 @@ span.glyphicon.glyphicon-check {
 </style>
 {% endblock %}
 
+{% block breadcrumbs %}
+<li>
+  <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
+  <span style="color: black;">{{project.title}}</span>
+</li>
+{% endblock %}
+
 {% block body %}
 <h1 style="margin: 1em 0 0 0;color: #666;"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> {{title}}</h1>
 
