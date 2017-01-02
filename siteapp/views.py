@@ -117,7 +117,7 @@ def new_project(request):
             model = Project
             fields = ['title']
             labels = {
-                'title': 'Enter name of system'
+                'title': 'Enter name of project or system'
             }
             help_texts = {
                 'title': 'Give your web property, application or other IT system a descriptive name.',
