@@ -354,9 +354,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             self.browser.get(self.url("/accounts/logout/"))
             self._login(is_first_time_user=False)
             self.browser.get(project_page)
+            var_sleep(1)
 
         # Test an invitation to that project.
-        self.click_element("#project-settings-tab a")
+        self.click_element("#show-project-settings")
+        var_sleep(.5) # modal fades in
         self.click_element("#invite-user-to-project")
         do_invitation("test+project@q.govready.com")
         self.assertRegex(self.browser.title, "My Simple Project") # user is on the project page

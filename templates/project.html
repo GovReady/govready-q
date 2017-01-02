@@ -116,7 +116,14 @@ span.glyphicon.glyphicon-check {
 {% endblock %}
 
 {% block body %}
-<h1 style="margin: 1em 0 0 0;color: #666;"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> {{title}}</h1>
+
+{% if not project.is_account_project or project.is_deletable %}
+  <button id="show-project-settings" class="btn" style="float: right; margin: 0 0 1em 1em;" onclick="$('#project_settings').modal();">
+    <i class="glyphicon glyphicon-wrench"></i> Project/System Settings</a>
+  </button>
+{% endif %}
+
+<h1 style="color: #666;"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> {{title}}</h1>
 
 <div style="margin: 2em 0">
   {{intro|safe}}
@@ -137,11 +144,6 @@ span.glyphicon.glyphicon-check {
           </a>
         </li>
       {% endfor %}
-
-      {% if not project.is_account_project %}
-        <li id="project-settings-tab" role="presentation"><a href="#project-settings" aria-controls="project-settings" role="tab" data-toggle="tab"><i class="glyphicon glyphicon-wrench"></i> Settings</a></li>
-      {% endif %}
-
     </ul>
 
     <div class="tab-content">
@@ -235,12 +237,21 @@ span.glyphicon.glyphicon-check {
         </div>
       {% endfor %}
 
-    {% if not project.is_account_project or project.is_deletable %}
-    <div role="tabpanel" class="tab-pane" id="project-settings">
+    </div>
+  </div>
+</div>
 
-      <div class="task-group">
-        <div class="task-group-title">Project Team</div>
-          <div class="task">
+{# SETTINGS MODAL #}
+{% if not project.is_account_project or project.is_deletable %}
+<div id="project_settings" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="project_settings_title" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="project_settings_title">Project/System Settings</h4>
+      </div>
+      <div class="modal-body">
+        <h3>Project Team</h3>
 
             {% if project_has_members_besides_me %}
               <div style="margin-bottom: 1em">
@@ -287,23 +298,15 @@ span.glyphicon.glyphicon-check {
               </div>
             {% endif %}
 
-            </div>
-        </div>
 
       {% if project.is_deletable and is_admin %}
-      <div class="task-group">
-        <div class="task-group-title">Caution!</div>
-          <div class="task" style="padding-top: 1em; padding-bottom: 1em;">
+        <h3>Caution!</h3>
               <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button> 
-          </div>
-        </div>
 
-      <div class="task-group">
-        <div class="task-group-title">Share Data</div>
-          <div class="task" style="padding-top: 1em; padding-bottom: 1em;">
+        <h3>Share Data</h3>
               {# export #}
               <form method="post" action="{% url "export_project" project.id %}">{% csrf_token %}
-                <button class="btn btn-success" style="margin: 1em 0">
+                <button class="btn btn-success" style="margin-bottom: 1em">
                   <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
                   {{project.root_task.module.spec.export_button_label|default:"Export Project Data"}}
                 </button>
@@ -319,18 +322,12 @@ span.glyphicon.glyphicon-check {
                   style="width: auto; border:  none; padding: 0; display: inline-block"
                   onchange="$('#import-form').submit()" />
               </form>
-          </div>
-        </div>
-        
-      </div>
       {% endif %}
-
-    </div> <!-- /tab-panel -->
-    {% endif %}
-
     </div>
   </div>
 </div>
+{% endif %}
+
 {% endblock %}
 
 {% block scripts %}
