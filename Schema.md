@@ -77,6 +77,8 @@ The schema for questions is documented in a later section.
 
 ### Additional fields for projects
 
+#### Project Fields
+
 Modules whose type is `project` can also have some additional fields, e.g.:
 
 	access: private
@@ -86,7 +88,31 @@ Modules whose type is `project` can also have some additional fields, e.g.:
 
 `export_button_label`: Override the default text of the export data button on the settings tab of the project.
 
-Additionally, in output documents `glyphicon` can be set to an icon name (like `dashboard`) to add an icon to the tab.
+#### Question Fields
+
+The questions of projects are displayed in a layout of tabs and groups within each tab pane. Each question that shows up on a project page should specify its tab and group name (which are also the display strings):
+
+	questions:
+	- id: howto_ssp
+	  title: "SSP 101: What's a System Security Plan"
+	  type: module
+	  module-id: howto_ssp
+	  tab: How To
+	  group: Start Here
+
+#### Output Document Fields
+
+The output documents of a project are displayed in the same tabs as the questions and can be used to display additional content. The `title` is used as the tab label.
+
+Additionally, `glyphicon` can be set to an icon name (like `dashboard`) to add an icon to the tab.
+
+	output:
+	- title: Dashboard
+	  glyphicon: dashboard
+	  format: markdown
+	  template: |
+	      This is additional content displayed on the project page.
+
 
 Documents
 ---------
