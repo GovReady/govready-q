@@ -297,6 +297,7 @@ def project(request, project_id):
             tabname = mq.spec.get("tab", "Modules")
             tab = tabs.setdefault(tabname, {
                 "title": tabname,
+                "unfinished_tasks": 0,
                 "groups": OrderedDict(),
             })
             groupname = mq.spec.get("group", "Modules")
@@ -305,6 +306,12 @@ def project(request, project_id):
                 "modules": [],
             })
             group["modules"].append(d)
+
+            # Add a flag to the tab if any tasks contained
+            # within it are unfinished.
+            for t in tasks:
+                if not t.is_finished:
+                    tab["unfinished_tasks"] += 1
 
         elif mq.spec.get("placement") == "action-buttons":
             action_buttons.append(d)

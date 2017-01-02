@@ -165,7 +165,20 @@ span.glyphicon.glyphicon-check {
     <ul id="project-tabs" class="nav nav-tabs">
       {# question tabs #}
       {% for tab in tabs %}
-        <li role="presentation" {% if forloop.first %}class="active"{% endif %}><a href="#{{tab.title|slugify}}" aria-controls="{{forloop.counter}}-{{tab.title|slugify}}" role="tab" data-toggle="tab">{{tab.title}}</a></li>
+        <li
+          class="{% if forloop.first %}active{% endif %}"
+          role="presentation"
+          >
+            <a
+              href="#{{tab.title|slugify}}"
+              aria-controls="{{forloop.counter}}-{{tab.title|slugify}}"
+              role="tab" data-toggle="tab">
+              {{tab.title}}
+              {% if tab.unfinished_tasks > 0 %}
+                <span class="label label-primary">{{tab.unfinished_tasks}} in progress</span>
+              {% endif %}
+            </a>
+        </li>
       {% endfor %}
 
       {# output document tabs #}
@@ -210,10 +223,8 @@ span.glyphicon.glyphicon-check {
                             {% if t.is_finished %}
                                 <span class="glyphicon glyphicon-check"></span>
                                 View
-                            {% elif t.is_started %}
-                                <span class="glyphicon glyphicon-edit"></span>
-                              Continue
                             {% else %}
+                              <span class="label label-primary">in progress</span>
                               <span class="glyphicon glyphicon-edit"></span>
                               Continue
                             {% endif %}
