@@ -37,7 +37,7 @@
         <link rel="stylesheet" href="{% static "vendor/google-fonts.css" %}">
         <style>
             body {
-                padding-top: 50px;
+                padding-top: 50px !important; /* the !important is to fix a bug with the dashboard integration, remove it eventually */
                 padding-bottom: 20px;
                 overflow-y: scroll;
                 font-family: 'Hind', sans-serif;
