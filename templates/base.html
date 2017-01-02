@@ -186,6 +186,7 @@
       </div><!-- /.container-fluid -->
     </nav>
 
+    {% block contextbar %}
     <div id="context-bar">
     <div class="container">
     <ol class="breadcrumb">
@@ -211,6 +212,7 @@
     </ol> <!-- .breadcrumb -->
     </div><!-- container -->
     </div><!-- div wrapper -->
+    {% endblock %}
 
     {% if messages %}
     <div class="container" style="margin-top: 1em;">

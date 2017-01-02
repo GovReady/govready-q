@@ -4,8 +4,20 @@
 Home
 {% endblock %}
 
+{% block contextbar %}
+  {# kill it on this page #}
+{% endblock %}
+
 {% block head %}
 <style>
+{% if projects|length > 0 %}
+{# dont create a box with only the button in it #}
+#projects {
+  border: 1px solid #BCB;
+  border-radius: 5px;
+  padding: 1em;
+}
+{% endif %}
 .project {
   margin: 0em 0;
   /*background-color: #EEF;
@@ -30,17 +42,28 @@ Home
 {% endblock %}
 
 {% block body %}
-<h1 style="margin: 1em 0"><span class="glyphicon glyphicon-book"></span>&nbsp;System Catalog</h1>
+<h1 style="font-weight: bold;">
+  {{request.organization.name}}
+</h1>
 
-<div style="margin: 2em 0">
-<p>Your organization's list of web properties, major applications, and general IT systems.</p>
+<div class="row">
+  <div class="col-sm-6 col-lg-7" style="padding-top: 35px"> {# approx height of the Add Project button #}
+    <p>{{request.organization.name}} is using the GovReady Q platform to collect information and generate compliance documents for information security systems.</p>
+    
+    {% if projects|length == 0 %}
+      <p>Start by <a href="/new-project">creating your first information technology system</a>.</p>
+    {% else %}
+      <p>You are participating in your organization&rsquo;s web properties, major applications, and general IT systems listed on this page.</p>
+    {% endif %}
+  </div>
 
+  <!-- project listing -->
+  <div class="col-sm-6 col-lg-5">
+    <div id="projects">
+
+<div style="text-align: right; margin-bottom: 1em">
+  <a id="new-project" href="/new-project" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> New System</a>
 </div>
-
-<div style="float: right; margin-bottom: 1em">
-  <a id="new-project" href="/new-project" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system</a>
-</div>
-<div class="clearfix"> </div>
 
 <!-- List projects -->
 {% for project in projects %}
@@ -74,6 +97,11 @@ Home
   {% endwith %}
 </div>
 {% endfor %}
+</div></div>
+
+    </div> <!-- /#projects -->
+  </div> <!-- /col -->
+</div> <!-- /row -->
 
 
 {% endblock %}
