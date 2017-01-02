@@ -604,6 +604,9 @@ class Invitation(models.Model):
         return False
     is_expired.boolean = True
 
+    def is_redirect_valid(self):
+        return self.target.is_invitation_valid(self)
+
     def get_redirect_url(self):
         return self.target.get_invitation_redirect_url(self)
 

@@ -42,12 +42,41 @@ Home
 {% endblock %}
 
 {% block body %}
-<h1 style="font-weight: bold;">
+<h1 style="font-weight: bold; margin-bottom: .75em;">
   {{request.organization.name}}
 </h1>
 
 <div class="row">
-  <div class="col-sm-6 col-lg-7" style="padding-top: 35px"> {# approx height of the Add Project button #}
+  <div class="col-sm-6 col-lg-7">
+    {% if invitations %}
+      {% for inv in invitations %}
+        <div style="border: 1px solid #BCB; border-radius: 5px; padding: 1em;">
+        <div class="row">
+          {% with picture=inv.from_user.get_profile_picture %}
+            {% if picture %}
+              <div class="col-xs-3">
+                <img src="{{picture.url}}" alt="Profile Picture" class="img-responsive">
+              </div>
+              <div class="col-xs-9">
+            {% else %}
+              <div class="col-xs-12">
+            {% endif %}
+          {% endwith %}
+
+          <p>{{inv.from_user}} invited you {{inv.purpose}} on {{inv.created|date}}, writing:</p>
+          <blockquote>{{inv.text}}</blockquote>
+          {% if inv.is_redirect_valid %}
+            <p><a class="btn btn-warning" href="{{inv.get_redirect_url}}">Go to {{inv.target}} &raquo;</a></p>
+          {% endif %}
+
+          </div>
+        </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <div style="padding-top: 35px"> </div> {# approx height of the Add Project button #}
+
     <p>{{request.organization.name}} is using the GovReady Q platform to collect information and generate compliance documents for information security systems.</p>
     
     {% if projects|length == 0 %}
@@ -55,6 +84,7 @@ Home
     {% else %}
       <p>You are participating in your organization&rsquo;s web properties, major applications, and general IT systems listed on this page.</p>
     {% endif %}
+
   </div>
 
   <!-- project listing -->

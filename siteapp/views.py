@@ -26,8 +26,8 @@ def homepage(request):
         # First task: Fill out your account settings.
         return HttpResponseRedirect(settings_task.get_absolute_url())
 
-    elif not organization_task.is_finished():
-        # First task: Fill out your account settings.
+    elif organization_task.has_read_priv(request.user) and not organization_task.is_finished():
+        # First task: Fill out the organization's settings.
         return HttpResponseRedirect(organization_task.get_absolute_url())
 
     else:
@@ -65,7 +65,12 @@ def homepage(request):
         # Sort.
         projects = sorted(projects, key = lambda x : x.updated, reverse=True)
 
+        def fixup_inv(inv):
+            inv.from_user.localize_to_org(request.organization)
+            return inv
+
         return render(request, "home.html", {
+            "invitations": [fixup_inv(inv) for inv in request.user.invitations_accepted.exclude(accepted_at=None).order_by('-accepted_at')],
             "projects": projects,
             "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
         })
