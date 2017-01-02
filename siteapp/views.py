@@ -236,6 +236,7 @@ def project(request, project_id):
     # Create all of the module entries in a tabs & groups data structure.
     from collections import OrderedDict
     tabs = OrderedDict()
+    action_buttons = []
     question_dict = { }
     for mq in project.root_task.module.questions.all().order_by('definition_order'):
         # Display module/module-set questions only. Other question types in a project
@@ -246,18 +247,6 @@ def project(request, project_id):
         # Skip questions that are imputed.
         if mq.key in root_task_answers.was_imputed:
             continue
-
-        # Create the tab and group for this.
-        tabname = mq.spec.get("tab", "Modules")
-        tab = tabs.setdefault(tabname, {
-            "title": tabname,
-            "groups": OrderedDict(),
-        })
-        groupname = mq.spec.get("group", "Modules")
-        group = tab["groups"].setdefault(groupname, {
-            "title": groupname,
-            "modules": [],
-        })
 
         # Is this question answered yet? Are there any discussions the user
         # is a guest of in any of the tasks that answer this question?
@@ -291,7 +280,7 @@ def project(request, project_id):
         if not is_project_member and len(task_discussions) == 0:
             continue
 
-        # Add entry.
+        # Create template context dict.
         d = {
             "question": mq,
             "module": mq.answer_type_module,
@@ -302,7 +291,23 @@ def project(request, project_id):
             "invitations": [], # filled in below
         }
         question_dict[mq.id] = d
-        group["modules"].append(d)
+
+        if mq.spec.get("placement", "tabpanel") == "tabpanel":
+            # Create the tab and group for this.
+            tabname = mq.spec.get("tab", "Modules")
+            tab = tabs.setdefault(tabname, {
+                "title": tabname,
+                "groups": OrderedDict(),
+            })
+            groupname = mq.spec.get("group", "Modules")
+            group = tab["groups"].setdefault(groupname, {
+                "title": groupname,
+                "modules": [],
+            })
+            group["modules"].append(d)
+
+        elif mq.spec.get("placement") == "action-buttons":
+            action_buttons.append(d)
 
     # Find any open invitations and if they are for particular modules,
     # display them with the module.
@@ -324,13 +329,13 @@ def project(request, project_id):
     # Additional tabs of content.
     additional_tabs = []
     if project.root_task.module.spec.get("output"):
-    	for doc in project.root_task.render_output_documents():
-    		if doc.get("tab") in tabs:
-    			# Assign this to one of the tabs.
-    			tabs[doc["tab"]]["intro"] = doc
-    		else:
-    			# Add tab to end.
-    			additional_tabs.append(doc)
+        for doc in project.root_task.render_output_documents():
+            if doc.get("tab") in tabs:
+                # Assign this to one of the tabs.
+                tabs[doc["tab"]]["intro"] = doc
+            else:
+                # Add tab to end.
+                additional_tabs.append(doc)
 
     # Render.
     return render(request, "project.html", {
@@ -346,6 +351,7 @@ def project(request, project_id):
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
         "tabs": list(tabs.values()),
+        "action_buttons": action_buttons,
     })
 
 def project_admin_login_post_required(f):

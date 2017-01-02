@@ -100,6 +100,8 @@ The questions of projects are displayed in a layout of tabs and groups within ea
 	  tab: How To
 	  group: Start Here
 
+Instead of `tab` and `group`, `placement: action-buttons` can be used instead to show the question in an action bar above the tabs, rather than in tabs.
+
 #### Output Document Fields
 
 The output documents of a project are displayed in the same tabs as the questions and can be used to display additional content. The `title` is used as the tab label.

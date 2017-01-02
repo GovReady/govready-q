@@ -7,6 +7,11 @@
 
 {% block head %}
 <style>
+#action-buttons {
+  margin: 1em 0;
+  text-align: right;
+}
+
 .tab-pane {
   padding-top: 1.5em;
 }
@@ -128,6 +133,34 @@ span.glyphicon.glyphicon-check {
 <div style="margin: 2em 0">
   {{intro|safe}}
 </div>
+    {# action buttons #}
+    {% if action_buttons %}
+    <div id="action-buttons">
+      {% for rec in action_buttons %}
+        {% for t in rec.tasks %}
+          <a
+            class="btn {% if t.is_finished %}btn-info{% else %}btn-default{% endif %}"
+            href="{{t.get_absolute_url}}">
+            {{t.render_title}} &raquo;
+          </a>
+        {% empty %}
+          {% if can_begin_module and rec.can_start_new_task %}
+            <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="project" value="{{project.id}}"/>
+              <input type="hidden" name="question" value="{{rec.question.key}}"/>
+              <a class="btn btn-default"
+                href="#" onclick="$(this).parent('form').submit(); return false;">
+                {{rec.question.spec.title}} &raquo;
+              </a>
+            </form>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div> <!-- /action-buttons -->
+    {% endif %}
+
+    {# tabs #}
 
     <ul id="project-tabs" class="nav nav-tabs">
       {# question tabs #}
@@ -145,6 +178,8 @@ span.glyphicon.glyphicon-check {
         </li>
       {% endfor %}
     </ul>
+
+    {# tab content #}
 
     <div class="tab-content">
       {# question tabs #}
