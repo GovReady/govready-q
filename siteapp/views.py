@@ -581,9 +581,11 @@ def accept_invitation(request, code=None):
         # invitation email address, log them out now.
         from urllib.parse import urlencode
         logout(request)
-        return HttpResponseRedirect(reverse("account_login") + "?" + urlencode({
-            "next": request.path + "?accept-auth=1",
-        }))
+        inv.from_user.localize_to_org(request.organization)
+        return render(request, "invitation.html", {
+            "inv": inv,
+            "next": urlencode({ "next": request.path + "?accept-auth=1", }),
+        })
 
     # The user is now logged in and able to accept the invitation.
     with transaction.atomic():

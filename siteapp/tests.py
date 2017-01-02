@@ -268,6 +268,10 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         m = re.search(invitation_url_pattern, invitation_body)
         self.browser.get(m.group(0))
 
+        # Since we're not logged in, we hit the invitation splash page.
+        self.click_element('#button-sign-in')
+        var_sleep(.5) # wait for page to load
+
         # We're at the sign-in page. Go to the create account page
         # and register. Use a random username so that we submit something
         # unique, since a test may create multiple users.
