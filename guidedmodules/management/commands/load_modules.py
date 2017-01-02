@@ -296,7 +296,7 @@ class Command(BaseCommand):
             defaults=field_values)
 
         if isnew:
-            print("Added", repr(q))
+            pass # print("Added", repr(q))
         else:            
             # Don't need to update the database (and we can avoid
             # bumping the .updated date) if the question's specification
