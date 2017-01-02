@@ -90,11 +90,34 @@
         </div>
 
         <div id="navbar-collapse-target" class="collapse navbar-collapse pull-right">
+          {% comment %}
           <ul class="nav navbar-nav">
             <li class="active"><a href="/">System Catalog</a></li>
           </ul>
+          {% endcomment %}
           <ul class="nav navbar-nav navbar-right">
             {% if request.user.is_authenticated %}
+            <li class="dropdown">
+
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                {% with picture=request.organization.get_logo %}
+                  {% if picture %}
+                    <img src="{{picture.url}}" height="30" alt="Profile Picture"
+                      style="margin: -5px 5px;">
+                  {% endif %}
+                {% endwith %}
+                {{request.organization.name|truncatewords:5}}
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href="/">Home</a></li>
+                {% if user.can_see_org_settings %}
+                  <li role="separator" class="divider"></li>
+                  <li><a href="{{request.organization.get_organization_project.get_absolute_url}}">Organization Settings</a></li>
+                {% endif %}
+              </ul>
+            </li>
+
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                 {% with picture=request.user.get_profile_picture %}

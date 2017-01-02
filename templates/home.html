@@ -75,14 +75,5 @@ Home
 </div>
 {% endfor %}
 
-<!-- List special account settings and organization projects -->
-<div class="acct_org_projects" style="margin-top:20px">
-{% for project in system_projects %}
-<div class="projectx">
-  <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
-   <span>{{project.title}}</span>
-  </a>
-</div>
-{% endfor %}
-</div>
+
 {% endblock %}

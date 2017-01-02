@@ -26,7 +26,9 @@ class User(AbstractUser):
         return self.email or "Anonymous User"
 
     def localize_to_org(self, org):
+        # Prep this user's cached state when viewed from a particular Organization/
         self.user_settings_task = self.get_settings_task(org)
+        self.can_see_org_settings = self in org.get_organization_project().get_members()
 
     def _get_settings_task(self):
         return getattr(self, 'user_settings_task', None)
