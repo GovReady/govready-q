@@ -15,75 +15,55 @@ from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch i
 from .notifications_helpers import *
 
 def homepage(request):
-    if not request.user.is_authenticated():
-        # Public homepage.
-        return render(request, "index.html")
+    return render(request, "index.html", {
+        "has_projects": len(get_user_projects(request)) > 0,
+    })
 
-    settings_task = request.user.get_settings_task(request.organization)
-    organization_task = request.organization.get_organization_project().root_task.get_or_create_subtask(request.user, "organization_details")
+def get_user_projects(request):
+    # Show user what they can do --- list the projects they
+    # are involved with.
+    projects = set()
 
-    if not settings_task.is_finished():
-        # First task: Fill out your account settings.
-        return HttpResponseRedirect(settings_task.get_absolute_url())
+    # Add all of the Projects the user is a member of within the Organization
+    # that the user is on the subdomain of.
+    for pm in ProjectMembership.objects\
+        .filter(project__organization=request.organization, user=request.user)\
+        .select_related('project'):
+        projects.add(pm.project)
+        if pm.is_admin:
+            # Annotate with whether the user is an admin of the project.
+            pm.project.user_is_admin = True
 
-    elif organization_task.has_read_priv(request.user) and not organization_task.is_finished():
-        # First task: Fill out the organization's settings.
-        return HttpResponseRedirect(organization_task.get_absolute_url())
+    # Add projects that the user is the editor of a task in, even if
+    # the user isn't a team member of that project.
+    for task in Task.get_all_tasks_readable_by(request.user, request.organization)\
+        .order_by('-created')\
+        .select_related('project'):
+        projects.add(task.project)
 
-    else:
-        # Ok, show user what they can do --- list the projects they
-        # are involved with.
-        projects = set()
+    # Add projects that the user is participating in a Discussion in
+    # as a guest.
+    for d in Discussion.objects.filter(organization=request.organization, guests=request.user):
+        if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
+            projects.add(d.attached_to.task.project)
 
-        # Add all of the Projects the user is a member of within the Organization
-        # that the user is on the subdomain of.
-        for pm in ProjectMembership.objects\
-            .filter(project__organization=request.organization, user=request.user)\
-            .select_related('project'):
-            projects.add(pm.project)
-            if pm.is_admin:
-                # Annotate with whether the user is an admin of the project.
-                pm.project.user_is_admin = True
+    # Don't show system projects. They're displayed separately.
+    system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
+    projects -= system_projects
 
-        # Add projects that the user is the editor of a task in, even if
-        # the user isn't a team member of that project.
-        for task in Task.get_all_tasks_readable_by(request.user, request.organization)\
-            .order_by('-created')\
-            .select_related('project'):
-            projects.add(task.project)
+    # Sort.
+    projects = sorted(projects, key = lambda x : x.updated, reverse=True)
 
-        # Add projects that the user is participating in a Discussion in
-        # as a guest.
-        for d in Discussion.objects.filter(organization=request.organization, guests=request.user):
-            if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
-                projects.add(d.attached_to.task.project)
+    return projects
 
-        # Don't show system projects. They're displayed separately.
-        system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
-        projects -= system_projects
-
-        # Sort.
-        projects = sorted(projects, key = lambda x : x.updated, reverse=True)
-
-        # All non-project tasks that the user might want to continue working on.
-        open_tasks = [
-            task for task in
-            Task.get_all_tasks_readable_by(request.user, request.organization)
-                .filter(editor=request.user) \
-                .order_by('-updated')\
-                .select_related('project')
-            if not task.is_finished() and task != task.project.root_task ]
-
-        def fixup_inv(inv):
-            inv.from_user.localize_to_org(request.organization)
-            return inv
-
-        return render(request, "home.html", {
-            "invitations": [fixup_inv(inv) for inv in request.user.invitations_accepted.filter(organization=request.organization).exclude(accepted_at=None).order_by('-accepted_at')],
-            "projects": projects,
-            "open_tasks": open_tasks,
-            "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
-        })
+def project_list(request):
+    projects = get_user_projects(request)
+    for p in projects:
+        p.open_tasks = p.get_open_tasks(request.user) # for the template
+    return render(request, "project_list.html", {
+        "projects": projects,
+        "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
+    })
 
 @login_required
 def new_project(request):

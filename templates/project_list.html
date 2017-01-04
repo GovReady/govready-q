@@ -4,26 +4,18 @@
 Home
 {% endblock %}
 
-{% block contextbar %}
-  {# kill it on this page #}
+{% block breadcrumbs %}
+<li>
+  Projects/Systems
+</li>
 {% endblock %}
 
 {% block head %}
 <style>
-{% if projects|length > 0 %}
-{# dont create a box with only the button in it #}
-#projects {
-  border: 1px solid #BCB;
-  border-radius: 5px;
-  padding: 1em;
-}
-{% endif %}
 .project {
   margin: 0em 0;
-  /*background-color: #EEF;
-  border-radius: 10px;
-  padding: 15px;*/
   border-top:1px solid rgb(240,240,240); 
+  border-bottom:1px solid rgb(240,240,240); 
   padding: 8px 0px; 0px 4px;
 }
   .project a {
@@ -42,55 +34,10 @@ Home
 {% endblock %}
 
 {% block body %}
-<h1 style="font-weight: bold; margin-bottom: .75em;">
-  {{request.organization.name}}
+<h1 style="font-weight: bold;">
+  Projects/Systems
 </h1>
 
-<div class="row">
-  <div class="col-sm-6 col-lg-7">
-    {# CONTEXTUALIZE WITH WHO INVITED YOU #}
-
-    {% if invitations %}
-      {% for inv in invitations %}
-        <div style="border: 1px solid #BCB; border-radius: 5px; padding: 1em;">
-        <div class="row">
-          {% with picture=inv.from_user.get_profile_picture %}
-            {% if picture %}
-              <div class="col-xs-3">
-                <img src="{{picture.url}}" alt="Profile Picture" class="img-responsive">
-              </div>
-              <div class="col-xs-9">
-            {% else %}
-              <div class="col-xs-12">
-            {% endif %}
-          {% endwith %}
-
-          <p>{{inv.from_user}} invited you {{inv.purpose}} on {{inv.created|date}}, writing:</p>
-          <blockquote>{{inv.text}}</blockquote>
-          {% if inv.is_redirect_valid %}
-            <p><a class="btn btn-warning" href="{{inv.get_redirect_url}}">Go to {{inv.target}} &raquo;</a></p>
-          {% endif %}
-
-          </div>
-        </div>
-        </div>
-      {% endfor %}
-    {% endif %}
-
-    {# WHAT YOU HAVE NEXT #}
-
-    {% if open_tasks %}
-    <div style="border: 1px solid #BCB; border-radius: 5px; padding: 1em; margin: 1em 0;">
-      <p><b>Modules in progress</b></p>
-      {% for task in open_tasks %}
-        <p><a href="{{task.get_absolute_url}}">{{task}}</a> (in <a href="{{task.project.get_absolute_url}}">{{task.project}}</a>)</p>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    {# GENERIC INFO #}
-
-    <div style="padding-top: 35px"> </div> {# approx height of the Add Project button #}
 
     <p>{{request.organization.name}} is using the GovReady Q platform to collect information and generate compliance documents for information security systems.</p>
     
@@ -99,12 +46,6 @@ Home
     {% else %}
       <p>You are participating in your organization&rsquo;s web properties, major applications, and general IT systems listed on this page.</p>
     {% endif %}
-
-  </div>
-
-  <!-- project listing -->
-  <div class="col-sm-6 col-lg-5">
-    <div id="projects">
 
 <div style="text-align: right; margin-bottom: 1em">
   <a id="new-project" href="/new-project" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> New Project/System</a>
@@ -116,8 +57,16 @@ Home
   <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
     <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
     <span>{{project.title}}</span>
+
+    {# how many open tasks for the user? #}
+    {% with project.open_tasks|length as count %}
+      {% if count > 0 %}
+        <span class="label label-primary">{{count}}</span>
+      {% endif %}
+    {% endwith %}
   </a>
 
+  {# what kind of project is this #}
   <div class="small" style="margin-top: .5em">
     {{project.root_task.module.title}}
   </div>
@@ -142,11 +91,6 @@ Home
   {% endwith %}
 </div>
 {% endfor %}
-</div></div>
-
-    </div> <!-- /#projects -->
-  </div> <!-- /col -->
-</div> <!-- /row -->
 
 
 {% endblock %}

@@ -9,7 +9,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - GovReady Q</title>
+        <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - {% firstof request.organization.name request.get_host %} on GovReady QGovReady Q</title>
 
         {% comment %}
         <meta property="og:title" content="" />
@@ -111,6 +111,7 @@
               </a>
               <ul class="dropdown-menu">
                 <li><a href="/">Home</a></li>
+                <li><a href="/projects">Projects/Systems</a></li>
                 {% if user.can_see_org_settings or user.is_staff %}
                   <li role="separator" class="divider"></li>
                 {% endif %}
@@ -213,6 +214,14 @@
     </div><!-- container -->
     </div><!-- div wrapper -->
     {% endblock %}
+
+    {% if not request.user.user_settings_task.is_finished %}
+    <div class="container" style="margin-top: 1em;">
+        <div class="alert alert-warning">
+          Please complete <a href="{{request.user.user_settings_task.get_absolute_url}}">your account settings</a>.
+        </div>
+    </div>
+    {% endif %}
 
     {% if messages %}
     <div class="container" style="margin-top: 1em;">

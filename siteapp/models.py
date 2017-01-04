@@ -254,6 +254,18 @@ class Project(models.Model):
             return True
         return False
 
+    def get_open_tasks(self, user):
+        # Get all tasks that the user might want to continue working on
+        # (except for the project root task).
+        from guidedmodules.models import Task
+        return [
+            task for task in
+            Task.get_all_tasks_readable_by(user, self.organization)
+                .filter(project=self, editor=user) \
+                .order_by('-updated')\
+                .select_related('project')
+            if not task.is_finished()
+               and task != self.root_task ]
 
     def set_root_task(self, module_id, editor):
         from guidedmodules.models import Module, Task, ProjectMembership

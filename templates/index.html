@@ -1,18 +1,46 @@
 {% extends "base.html" %}
 
 {% block title %}
-GovReady Q
+Home
+{% endblock %}
+
+{% block contextbar %}
+  {# kill it on this page #}
 {% endblock %}
 
 {% block body-wide %}
 
-    <div class="jumbotron">
-      <div class="container">
-        <h1>Welcome to GovReady Q</h1>
-        <p>We&rsquo;ll help you answer questions and produce a document.</p>
-        <p><a class="btn btn-primary btn-lg" role="button" href="{% url 'account_login' %}">Log in &raquo;</a></p>
-      </div>
-    </div>
+<div class="jumbotron">
+  <div class="container">
+    <h1>Welcome to GovReady Q</h1>
+    <p>We&rsquo;ll help you answer questions and produce a document.</p>
+
+    {% if not has_projects %}
+    <p><a class="btn btn-primary btn-lg" role="button" href="/new-project">Start a New Project/System &raquo;</a></p>
+    {% else %}
+    <p><a class="btn btn-primary btn-lg" role="button" href="/projects">Choose a Project/System &raquo;</a></p>
+    {% endif %}
+    
+    <hr>
+
+    <h2>GovReady&rsquo;s Learning Philosophy</h2>
+
+    <div class="row">
+	    <div class="col-md-6">
+			<p>GovReady respects your time, expertise and curiosity. And we also respect that sometimes you’re just trying to get your job done better, faster. When it comes to the workplace, the right tool is everything.</p>
+
+			<p>Q is GovReady’s Compliance &amp; Security Performance Support platform. There’s no voice over for you to sit through, and nothing cute or extraneous. This is a 21st century toolbox, so it’s mobile-friendly and infographic-heavy, and you can jump in and out of the content as your job requires. Our stripped-down approach delivers practical guidance in the immediate moment of need as well as access to deeper technical knowledge for learners who have time to be a bit more curious. We’ve also created some functional checklists that you can use to track your progress and manage some of your administrative inputs.</p>
+
+			<p>It’s a challenge to make a highly technical subject like compliance easy, and that’s what we’re going for. We’re working to operationalize the information you need to move through security assessments.  We want to give you the answer you need to do your job and move on, rather than have you waste time searching for the information. Q gives you some solid tools to do compliance faster – and better.</p>
+		</div>
+		<div class="col-md-6">
+			<div style="width: 100%; height: 25vw; border: 1px solid black; padding: 2em;">
+				Image here
+			</div>
+		</div>
+	</div>
+  </div>
+</div>
 
 	{{ block.super }} 
 {% endblock %}
