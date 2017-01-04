@@ -762,8 +762,10 @@ class TaskAnswer(models.Model):
 
         value_encoding = None
 
-        if self.question.spec.get("encrypt") == "emphemeral-user-key":
-            # Encrypt the value before it goes into the database.
+        if self.question.spec.get("encrypt") == "emphemeral-user-key" and value is not None:
+            # Encrypt the value before it goes into the database (except
+            # the null value --- don't encrypt whether or not the question
+            # was skipped).
 
             if encryption_provider is None:
                 raise ValueError("Cannot save an answer to this question because encryption is required but is not available in this context.")
