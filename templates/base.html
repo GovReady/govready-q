@@ -215,7 +215,7 @@
     </div><!-- div wrapper -->
     {% endblock %}
 
-    {% if not request.user.user_settings_task.is_finished %}
+    {% if request.user.user_settings_task and not request.user.user_settings_task.is_finished %}
     <div class="container" style="margin-top: 1em;">
         <div class="alert alert-warning">
           Please complete <a href="{{request.user.user_settings_task.get_absolute_url}}">your account settings</a>.
