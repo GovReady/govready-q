@@ -945,7 +945,7 @@ class TaskAnswerHistory(models.Model):
 
     def __repr__(self):
         # For debugging.
-        return "<TaskAnswerHistory %s>" % (repr(self.question),)
+        return "<TaskAnswerHistory %s>" % (repr(self.taskanswer),)
 
     def is_latest(self):
         # Is this the most recent --- the current --- answer for a TaskAnswer.
