@@ -81,7 +81,7 @@ Home
 
     {% if open_tasks %}
     <div style="border: 1px solid #BCB; border-radius: 5px; padding: 1em; margin: 1em 0;">
-      <p><b>Continue answering...</b></p>
+      <p><b>Modules in progress</b></p>
       {% for task in open_tasks %}
         <p><a href="{{task.get_absolute_url}}">{{task}}</a> (in <a href="{{task.project.get_absolute_url}}">{{task.project}}</a>)</p>
       {% endfor %}
