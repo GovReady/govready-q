@@ -86,18 +86,7 @@ thead {
         <p class="text-">You skipped some required questions.</p>
     {% endif %}
     <ul>
-      {% for rec in all_questions %}
-        <li>
-          <a id="change-answer-{{rec.question.key}}" href="?q={{rec.question.key}}">
-            {% if not rec.skipped %}
-              <span class="glyphicon glyphicon-check"> </span>
-            {% else %}
-              <span class="glyphicon glyphicon-unchecked"> </span>
-            {% endif %}
-            {{rec.question.spec.title}}
-          </a>
-        </li>
-      {% endfor %}        
+      {% include "task-progress-question-list.html" %}
     </ul>
   </div> <!-- /question-history-context -->
 </div> <!-- /col -->

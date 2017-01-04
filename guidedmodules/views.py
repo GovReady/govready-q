@@ -243,6 +243,12 @@ def next_question(request, taskid, taskslug):
     # What question are we displaying?
     if "q" in request.GET:
         q = task.module.questions.get(key=request.GET["q"])
+
+        # Validate that this is a question that can be answered,
+        # i.e. it is not imputed based on other answers.
+        if q.key in answered.was_imputed:
+            return HttpResponse("This question cannot be answered because its value has been imputed from other answers.")
+
     else:
         # Display next unanswered question.
         if len(answered.can_answer) == 0:
@@ -330,15 +336,7 @@ def next_question(request, taskid, taskslug):
         # Construct the page.
         context.update({
             "output": task.render_output_documents(answered),
-
-            # List all questions answered by the user - skipping any answers that were imputed.
-            "all_questions": [
-                {
-                    "question": task.module.questions.get(key=key),
-                    "skipped": task.module.questions.get(key=key).spec['type'] != 'interstitial' and (answered.as_dict().get(key) is None),
-                }
-                for key in answered.as_dict()
-                if not key in answered.was_imputed ],
+            "context": module_logic.get_question_context(answered, None),
         })
         return render(request, "module-finished.html", context)
 

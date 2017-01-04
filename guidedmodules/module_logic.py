@@ -74,8 +74,10 @@ def evaluate_module_state(current_answers, required, parent_context=None):
     # Build a list of ModuleQuestions that still need an answer,
     # including can_answer and unanswered ModuleQuestions that
     # have dependencies that are unanswered and need to be answered
-    # first.
-    unanswered = set()
+    # first before the questions in this list can be answered.
+    # The order is in depth-first order, i.e. all dependencies
+    # are listed before what depends on them.
+    unanswered = []
 
     # Build a new array of answer values.
     answers = { }
@@ -97,7 +99,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
         # question cannot be processed yet.
         for qq in deps:
             if qq.key not in state:
-                unanswered.add(q)
+                unanswered.append(q)
                 return { }
 
         # Can this question's answer be imputed from answers that
@@ -129,7 +131,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
             # and the question was skipped ('None' answer) then treat it as unanswered.
             if q.spec.get("required") and required and v is None:
                 can_answer.add(q)
-                unanswered.add(q)
+                unanswered.append(q)
                 return state
 
         elif current_answers.module.spec.get("type") == "project" and q.key == "_introduction":
@@ -146,7 +148,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
             # But we can remember that this question *can* be answered
             # by the user, and that it's not answered yet.
             can_answer.add(q)
-            unanswered.add(q)
+            unanswered.append(q)
             return state
 
         # Update the state that's passed to questions that depend on this
@@ -173,28 +175,46 @@ def evaluate_module_state(current_answers, required, parent_context=None):
 
 
 def get_question_context(answers, question):
-    # What is the context of questions around the given question?
+    # What is the context of questions around the given question so show
+    # the user their progress through the questions?
 
-    def annotate(q):
-        return {
-            "class": "this" if q.key == question.key else "other",
-            "key": q.key,
-            "title": q.spec['title'],
-            "answered": q.key in answers.as_dict() and q.key != question.key,
-        }
-
-    # What questions still need to be answered? Filter out this one.
-    future_questions = list(filter(lambda q : q.key != question.key, answers.unanswered))
-
-    # Which questions were recently answered that are not future questions
-    # according to the dependency tree.
-    past_questions = []
+    # Start with questions in the order in which they were first answered,
+    # so that we have a stable representation of what's been seen and that
+    # no matter what question the user returns to, the questions listed
+    # before and after that point accurately reflect the questions the user
+    # actually answered before and after that point.
+    context = []
     for ans in answers.task.answers.order_by('created').select_related('question'):
         q = ans.question
-        if q not in future_questions and q.key != question.key and q.key not in answers.was_imputed:
-            past_questions.append(q)
 
-    return list(map(annotate, past_questions + [question] + future_questions))
+        # Don't show questions that are overridden by imputed values.
+        if q.key in answers.was_imputed:
+            continue
+
+        # Add this record.
+        context.append({
+            "key": q.key,
+            "title": q.spec['title'],
+            "can_link": True, # any non-imputed (checked above) question can be re-answered
+            "answered": ans.has_answer() and not ans.get_current_answer().is_skipped(),
+            "is_this_question": (question is not None) and (q.key == question.key),
+        })
+
+    # Add questions that we will ask in the future. The
+    # unanswered list is in depth-first order by the
+    # dependency tree, which means it should be in the
+    # order that they will get asked of the user.
+    for q in answers.unanswered:
+        context.append({
+            "key": q.key,
+            "title": q.spec['title'],
+            "can_link": q in answers.can_answer, # any question that can be answered next can be linked to
+            "answered": False,
+            "is_this_question": (question is not None) and (q.key == question.key),
+        })
+
+
+    return context
 
 
 def render_content(content, answers, output_format, source, additional_context={}):

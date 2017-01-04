@@ -697,15 +697,15 @@ class TaskAnswer(models.Model):
             if answer.cleared:
                 vp = "cleared the answer"
                 is_cleared = True
-            elif self.question.spec["type"] == "interstitial":
-                # answer/skip doesn't make sense here
-                vp = "acknowledged this page"
-                is_cleared = False
             elif answer.is_skipped():
                 vp = "skipped the question"
                 is_cleared = False
             elif is_cleared:
-                vp = "answered the question"
+                if self.question.spec["type"] == "interstitial":
+                    # answer doesn't make sense here
+                    vp = "acknowledged this page"
+                else:
+                    vp = "answered the question"
                 is_cleared = False
             else:
                 vp = "changed the answer"
@@ -952,7 +952,10 @@ class TaskAnswerHistory(models.Model):
         return self.taskanswer.get_current_answer() == self
 
     def is_skipped(self):
-        # A skipped question is one whose answer is None.
+        # A skipped question is one whose answer is None,
+        # except for interstitial questions where a None
+        # indicates they've seen the question.
+        if self.taskanswer.question.spec['type'] == "interstitial": return False
         try:
             if self.get_value(raise_if_cant_decrypt=True) is None:
                 return True
