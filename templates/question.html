@@ -307,10 +307,14 @@ label:hover .onhover { display: inline; }
               onclick="$('#question > form input[name=method]').val('save')">
               {% if q.spec.type == "interstitial" %}
                 Got it
+              {% elif q.spec.type == "external-function" %}
+                {# function might be fetching external information or taking an action like submitting content to an existing system #}
+                Go
               {% elif not request.GET.q %}
                 {# user is proceeding through the questions in order #}
                 Next
               {% else %}
+                {# user is visiting a specific question #}
                 Update
               {% endif %}
               &raquo;
