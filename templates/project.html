@@ -140,7 +140,7 @@ span.glyphicon.glyphicon-check {
         {% for t in rec.tasks %}
           <a
             class="btn {% if t.is_finished %}btn-info{% else %}btn-default{% endif %}"
-            href="{{t.get_absolute_url}}">
+            href="{{t.get_absolute_url}}?previous=project">
             {{t.render_title}} &raquo;
           </a>
         {% empty %}
@@ -149,6 +149,7 @@ span.glyphicon.glyphicon-check {
               {% csrf_token %}
               <input type="hidden" name="project" value="{{project.id}}"/>
               <input type="hidden" name="question" value="{{rec.question.key}}"/>
+              <input type="hidden" name="previous" value="project"/>
               <a class="btn btn-default"
                 href="#" onclick="$(this).parent('form').submit(); return false;">
                 {{rec.question.spec.title}} &raquo;
@@ -219,7 +220,7 @@ span.glyphicon.glyphicon-check {
                             {% if rec.question.spec.type == "module-set" %}
                               {{t.render_title}} &mdash;
                             {% endif %}
-                            <a href="{{t.get_absolute_url}}">
+                            <a href="{{t.get_absolute_url}}?previous=project">
                             {% if t.is_finished %}
                                 <span class="glyphicon glyphicon-check"></span>
                                 View
@@ -238,6 +239,7 @@ span.glyphicon.glyphicon-check {
                           {% csrf_token %}
                           <input type="hidden" name="project" value="{{project.id}}"/>
                           <input type="hidden" name="question" value="{{rec.question.key}}"/>
+                          <input type="hidden" name="previous" value="project"/>
                           <a href="#" onclick="$(this).parent('form').submit(); return false;">
                             {% if rec.tasks|length == 0 %}
                               <span class="glyphicon glyphicon-unchecked"></span> Start

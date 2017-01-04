@@ -24,10 +24,18 @@ thead {
 <div class="row">
   <div class="col-sm-8">
     {% include "task-header.html" with col_width="4" col_active="review" %}
+
+    {% if had_any_questions %}
+      {% if previous_page_type == "project" %}
+        <p><em>This module was completed on {{task.updated|date}}.</em></p>
+      {% elif previous_page_type == "nquestion" %}
+        <p><em>You have completed the module.</em></p>
+      {% endif %}
+    {% endif %}
   </div>
 </div>
 
-<div class="row">
+<div class="row" style="margin-top: 1em">
   <div class="col-sm-8">
 
 <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
@@ -86,7 +94,7 @@ thead {
         <p class="text-">You skipped some required questions.</p>
     {% endif %}
     <ul>
-      {% include "task-progress-question-list.html" %}
+      {% include "task-progress-question-list.html" with previous="task-finished" %}
     </ul>
   </div> <!-- /question-history-context -->
 </div> <!-- /col -->

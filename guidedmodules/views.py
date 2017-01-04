@@ -23,7 +23,11 @@ def new_task(request):
     task = project.root_task.get_or_create_subtask(request.user, request.POST["question"])
 
     # Redirect.
-    return HttpResponseRedirect(task.get_absolute_url())
+    url = task.get_absolute_url()
+    if request.POST.get("previous"):
+        import urllib.parse
+        url += "?" + urllib.parse.urlencode({ "previous": request.POST.get("previous") })
+    return HttpResponseRedirect(url)
 
 @login_required
 def next_question(request, taskid, taskslug):
@@ -75,7 +79,7 @@ def next_question(request, taskid, taskslug):
             return HttpResponseForbidden()
 
         # normal redirect - reload the page
-        redirect_to = request.path
+        redirect_to = request.path + "?previous=nquestion"
 
         # validate question
         q = task.module.questions.get(id=request.POST.get("question"))
@@ -150,7 +154,7 @@ def next_question(request, taskid, taskslug):
                     title=q.answer_type_module.title)
 
                 answered_by_tasks = [t]
-                redirect_to = t.get_absolute_url()
+                redirect_to = t.get_absolute_url() + "?previous=parent"
 
             elif value == None:
                 # User is skipping this question.
@@ -307,6 +311,7 @@ def next_question(request, taskid, taskslug):
         "send_invitation": Invitation.form_context_dict(request.user, task.project, [task.editor]),
         "open_invitations": task.get_open_invitations(request.user),
         "source_invitation": task.invitation_history.filter(accepted_user=request.user).order_by('-created').first(),
+        "previous_page_type": request.GET.get("previous"),
     }
 
     if not q:
@@ -335,6 +340,7 @@ def next_question(request, taskid, taskslug):
 
         # Construct the page.
         context.update({
+            "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
             "output": task.render_output_documents(answered),
             "context": module_logic.get_question_context(answered, None),
         })
