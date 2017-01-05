@@ -10,11 +10,10 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {% endblock %}
 
 {% block body %}
-
 <style>
 h1 {
   margin-top: 1em;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: bold;
 }
 
@@ -44,6 +43,12 @@ h1 {
 label .onhover { display: none; }
 label:hover .onhover { display: inline; }
 
+#discussion {
+  margin-top: 1em;
+  border-top: 1px solid #DDD;
+  padding-top: 1em;
+}
+h2 { display: none; }
 </style>
 
 <div class="row">
@@ -59,7 +64,29 @@ label:hover .onhover { display: inline; }
 </div>
 
 <div class="row">
-  <div class="col-sm-8">
+<div class="col-md-2 hidden-xs hidden-sm">
+  <div id="question-history-context">
+      <ul>
+      {% if context %}
+        <p>Progress:</p>
+        {% include "task-progress-question-list.html" with previous="question" %}
+        <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
+        <li>&middot;</li>
+        <li>&middot;</li>
+        <li>&middot;</li>
+        </div>
+        <li>
+          ...and we&rsquo;re done
+        </li>
+      {% endif %}
+      </ul>
+
+    </div> <!-- /question-history-context -->
+</div>
+
+<div class="col-md-10">
+  <div id="focus-area-wrapper">
+
     {% if source_invitation %}
       <div style="margin-top: 1.5em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -385,26 +412,6 @@ label:hover .onhover { display: inline; }
 
     {% include "discussion/discussion.html" %}
 
-  </div> <!-- /col -->
-
-  <div class="col-sm-push-1 col-sm-3">
-    <div id="question-history-context">
-      <ul>
-      {% if context %}
-        <p>Progress:</p>
-        {% include "task-progress-question-list.html" with previous="question" %}
-        <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
-        <li>&middot;</li>
-        <li>&middot;</li>
-        <li>&middot;</li>
-        </div>
-        <li>
-          ...and we&rsquo;re done
-        </li>
-      {% endif %}
-      </ul>
-
-    </div>
   </div> <!-- /col -->
 </div> <!-- /row -->
 

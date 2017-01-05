@@ -7,24 +7,31 @@
 
 {% block head %}
 <style>
+{% include "focus-area-styles.css" %}
 #action-buttons {
   margin: 1em 0;
   text-align: right;
 }
 
+
 .tab-pane {
   padding-top: 1.5em;
 }
 
+.nav-tabs {
+    border-bottom: none;
+}
 /* TODO: Move into side-wide stylesheet. The !important is here
    because something on hover is canceling out the border. */
-.nav-tabs>li.active>a {
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus {
   font-weight: normal;
   color: black;
-  border-top: 3px solid rgb(19,144,50) !important;
+  border: none;
+  border-bottom: 3px solid rgb(19,144,50) !important;
 }
 
 .nav-tabs>li>a {
+  border: none;
   color: rgb(125,125,125);
 }
 
@@ -37,18 +44,12 @@
 }
 
 .task-group-title {
-  font-weight:bold;
-  background-color:rgb(230,230,230);
-  border: 1px solid rgb(200,200,200);
-  padding: 8px 18px;
-  border-radius: 2px;
+  color: #777;
+  padding: 16px 18px;
 }
 
 .task {
-  border-bottom: 1px solid rgb(200,200,200);
-  border-left: 1px solid rgb(200,200,200);
-  border-right: 1px solid rgb(200,200,200);
-  padding: 8px 18px;
+  padding: 0 18px;
 }
 
   .task:hover {
@@ -59,7 +60,6 @@
     padding-left: 17px;
   }
   .task .task-title {
-    font-weight: bold;
     color: #222;
   }
   .task .task-commands a {
@@ -120,19 +120,24 @@ span.glyphicon.glyphicon-check {
 </li>
 {% endblock %}
 
-{% block body %}
-
+{% block breadcrumbs_right %}
 {% if not project.is_account_project or project.is_deletable %}
-  <button id="show-project-settings" class="btn" style="float: right; margin: 0 0 1em 1em;" onclick="$('#project_settings').modal();">
+  <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
     <i class="glyphicon glyphicon-wrench"></i> Project/System Settings</a>
   </button>
 {% endif %}
+{% endblock %}
 
-<h1 style="color: #666;"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> {{title}}</h1>
+{% block body %}
 
+{% comment %}
 <div style="margin: 2em 0">
   {{intro|safe}}
 </div>
+{% endcomment %}
+
+<div class="row">
+<div class="col-md-2">
     {# action buttons #}
     {% if action_buttons %}
     <div id="action-buttons">
@@ -160,7 +165,10 @@ span.glyphicon.glyphicon-check {
       {% endfor %}
     </div> <!-- /action-buttons -->
     {% endif %}
+</div>
 
+<div class="col-md-10">
+  <div id="focus-area-wrapper">
     {# tabs #}
 
     <ul id="project-tabs" class="nav nav-tabs">
@@ -288,6 +296,10 @@ span.glyphicon.glyphicon-check {
     </div>
   </div>
 </div>
+
+  </div> <!-- /focus-area-wrapper -->
+</div> <!-- /col -->
+</div> <!-- /row -->
 
 {# SETTINGS MODAL #}
 {% if not project.is_account_project or project.is_deletable %}

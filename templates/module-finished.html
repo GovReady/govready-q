@@ -22,7 +22,17 @@ thead {
 </style>
 
 <div class="row">
-  <div class="col-sm-8">
+<div class="col-md-2">
+  <div id="question-history-context">
+    <ul>
+      {% include "task-progress-question-list.html" with previous="task-finished" %}
+    </ul>
+  </div> <!-- /question-history-context -->
+</div>
+
+<div class="col-md-10">
+  <div id="focus-area-wrapper">
+
     {% include "task-header.html" with col_width="4" col_active="review" %}
 
     {% if had_any_questions %}
@@ -32,11 +42,6 @@ thead {
         <p><em>You have completed the module.</em></p>
       {% endif %}
     {% endif %}
-  </div>
-</div>
-
-<div class="row" style="margin-top: 1em">
-  <div class="col-sm-8">
 
 <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
   {# output documents #}
@@ -81,24 +86,7 @@ thead {
     {% endif %}
   {% endwith %}
 </div> <!-- / continue panel -->
-
 </div> <!-- /col -->
-
-<div class="col-sm-push-1 col-sm-3">
-  <div id="question-history-context">
-    {% if all_questions|length == 0 %}
-      {# Don't display an encouragement if the user didn't answer any questions to get here. #}
-    {% elif task.is_finished  %}
-        <p class="text-">...and we&rsquo;re done <span class="glyphicon glyphicon-ok"></span></p>
-      {% else %}
-        <p class="text-">You skipped some required questions.</p>
-    {% endif %}
-    <ul>
-      {% include "task-progress-question-list.html" with previous="task-finished" %}
-    </ul>
-  </div> <!-- /question-history-context -->
-</div> <!-- /col -->
-
 </div> <!-- /row -->
 
 {% endblock %}

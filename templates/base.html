@@ -193,6 +193,12 @@
     {% block contextbar %}
     <div id="context-bar">
     <div class="container">
+
+    <div style="float: right; margin: 0 .5em;">
+      {% block breadcrumbs_right %}
+      {% endblock %}
+    </div>
+
     <ol class="breadcrumb">
       <li>
       {# The login page is accessible to unauthenticated users, in which case request.organization is not set. #}
