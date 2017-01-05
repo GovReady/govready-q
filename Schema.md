@@ -83,6 +83,11 @@ Modules whose type is `project` can also have some additional fields, e.g.:
 
 	access: private
 	export_button_label: Export System Data
+	interstitial:
+	  format: markdown
+	  template: |
+	    This content is shown after the project is created but before
+	    the user is taken to the project page listing its modules.
 
 `access`: Set to `private` if the project should only be offered to organizations with special permission. The default is `public`. To grant an organization access, use the Django admin to edit the Organization and add the module's full ID to the allowed modules field. The full ID includes the local directory path to the module. If the module is stored in `modules/something/project.yaml` the full ID is `something/project`.
 

@@ -390,12 +390,12 @@ class Task(models.Model):
         except (KeyError, ValueError):
             return default
 
-    def render_introduction(self):
+    def render_field(self, field):
         return render_content(
-            self.module.spec.get("introduction", ""),
+            self.module.spec.get(field) or "",
             ModuleAnswers(self.module, self, {}),
             "html",
-            "%s introduction" % repr(self.module)
+            "%s %s" % (repr(self.module), field)
         )
 
     def render_output_documents(self, answers=None):

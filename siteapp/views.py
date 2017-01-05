@@ -178,13 +178,27 @@ def new_project(request):
                     )
                     inv.send()
 
-            return HttpResponseRedirect(project.get_absolute_url())
+            return HttpResponseRedirect(project.get_absolute_url() + "/start")
 
     return render(request, "new-project.html", {
         "first": not ProjectMembership.objects.filter(user=request.user).exists(),
         "form": form,
     })
 
+@login_required
+def begin_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id, organization=request.organization)
+    if project.root_task.module.spec.get("interstitial"):
+        return render(request, "interstitial.html", {
+            "title": "Starting " + project.title,
+            "body": project.root_task.render_field("interstitial"),
+            "breadcrumbs_links": [{ "link": project.get_absolute_url(), "title": project.title }],
+            "breadcrumbs_last": "Start",
+            "next": project.get_absolute_url(),
+            "next_text": "I\u2019m Ready",
+        })
+    else:
+        return HttpResponseRedirect(project.get_absolute_url())
 
 @login_required
 def project(request, project_id):
@@ -332,7 +346,7 @@ def project(request, project_id):
         "project_has_members_besides_me": project and project.members.exclude(user=request.user),
         "project": project,
         "title": project.title,
-        "intro" : project.root_task.render_introduction() if project.root_task.module.spec.get("introduction") else "",
+        "intro" : project.root_task.render_field('introduction') if project.root_task.module.spec.get("introduction") else "",
         "additional_tabs": additional_tabs,
         "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
