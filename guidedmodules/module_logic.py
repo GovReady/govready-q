@@ -576,7 +576,11 @@ def run_impute_conditions(conditions, context):
     env = SandboxedEnvironment()
     for rule in conditions:
         condition_func = env.compile_expression(rule["condition"])
-        if condition_func(context):
+        try:
+            value = condition_func(context)
+        except:
+            value = None
+        if value:
             # The condition is met. Compute the imputed value.
             if rule.get("value-mode", "raw") == "raw":
                 # Imputed value is the raw YAML value.
