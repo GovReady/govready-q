@@ -120,6 +120,20 @@ Additionally, `glyphicon` can be set to an icon name (like `dashboard`) to add a
 	  template: |
 	      This is additional content displayed on the project page.
 
+### Advanced fields
+
+External Python functions can be made available in the template context when rendering documents. Add to the top-level module:
+
+	external-functions:
+	  - your_function_name
+
+The function name is resolved as in the `external-function` question type (see below). In general, the function is searched for in a Python module that is in the same directory and named the same as the module YAML file, except with a `.py` extension instead of `.yaml`.
+
+The function is called from templates (and impute conditions and value, but then without the outermost braces) as:
+
+	{{ your_function_name(arg1, arg2) }}
+
+The arguments can refer to any other template context variables.
 
 Documents
 ---------
@@ -425,6 +439,7 @@ In both conditions and `expression`-type values, the variables you can use are:
 * `project`, which gives the project name
 * `project.question_id`, `project.question_id.subquestion_id`, etc. to access questions within the project
 * `organization`, which gives the organization name
+* The name of an external Python function (see `external-functions`)
 
 ### Encrypting answers
 

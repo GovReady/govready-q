@@ -117,7 +117,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
         # dependency tree. 
         impute_context = TemplateContext(
             ModuleAnswers(current_answers.module, current_answers.task, state),
-            impute_context_parent.escapefunc, parent_context=impute_context_parent)
+            impute_context_parent.escapefunc, parent_context=impute_context_parent, root=True)
 
         v = run_impute_conditions(q.spec.get("impute", []), impute_context)
         if v:
@@ -457,7 +457,7 @@ def render_content(content, answers, output_format, source, additional_context={
 
         # Create an intial context dict and add rendered answers into it.
         context = dict(additional_context) # clone
-        context.update(TemplateContext(answers, escapefunc))
+        context.update(TemplateContext(answers, escapefunc, root=True))
 
         # Render.
         try:
@@ -967,9 +967,10 @@ class TemplateContext(Mapping):
        template and expression functionality like the '.' accessor to get to
        the answers of a sub-task."""
 
-    def __init__(self, module_answers, escapefunc, parent_context=None):
+    def __init__(self, module_answers, escapefunc, parent_context=None, root=False):
         self.module_answers = module_answers
         self.escapefunc = escapefunc
+        self.root = root
         self._cache = { }
         self.parent_context = parent_context
         self._module_questions_map = parent_context._module_questions_map if parent_context is not None else { }
@@ -994,11 +995,25 @@ class TemplateContext(Mapping):
         self._module_questions = self._module_questions_map[self.module_answers.module]
 
     def getitem(self, item):
+        self._execute_lazy_module_answers()
+
+        # If 'item' matches an external function name (in the root template context only), return it.
+        # Un-wrap RenderedAnswer instances so the external function gets the value and not the
+        # RenderedAnswer instance.
+        if self.root and item in self.module_answers.module.spec.get("external-functions", []):
+            func = find_external_function(self.module_answers.module.key, item)
+            def arg_filter(arg):
+                if isinstance(arg, RenderedAnswer):
+                    return arg.answer
+                return arg
+            def wrapper(*args, **kwargs):
+                return func(*map(arg_filter, args), **kwargs)
+            return wrapper
+
         # If 'item' matches a question ID, wrap the internal Pythonic/JSON-able value
         # with a RenderedAnswer instance which take care of converting raw data values
         # into how they are rendered in templates (escaping, iteration, property accessors)
         # and evaluated in expressions.
-        self._execute_lazy_module_answers()
         question = self._module_questions.get(item)
         if question:
             # The question might or might not be answered. If not, its value is None.
@@ -1036,10 +1051,21 @@ class TemplateContext(Mapping):
 
     def __iter__(self):
         self._execute_lazy_module_answers()
+
         seen_keys = set()
+
+        # external functions, in the root template context only
+        if self.root:
+            for fname in self.module_answers.module.spec.get("external-functions", []):
+                seen_keys.add(fname)
+                yield fname
+
+        # question names
         for q in self._module_questions.values():
             seen_keys.add(q.key)
             yield q.key
+
+        # special values
         if self.module_answers.task:
             # Attributes that are only available if there is a task.
             for attribute in ("task_link", "project", "organization"):
@@ -1287,9 +1313,7 @@ class RenderedAnswer:
             # say false.
             return False
 
-def run_external_function(module_id, question, existing_answers):
-    function_name = question.get("function", "")
-
+def find_external_function(module_id, function_name):
     if "." not in function_name:
         # Load the function from the Python module that is named the same
         # as the questions module. Since our modules directory is in the
@@ -1306,7 +1330,10 @@ def run_external_function(module_id, question, existing_answers):
     # Import the module and get the method.
     import importlib
     module = importlib.import_module(module_name)
-    method = getattr(module, function_name)
+    return getattr(module, function_name)
 
-    # Run the method.
+def run_external_function(module_id, question, existing_answers):
+    # Find and run the method.
+    function_name = question.get("function", "")
+    method = find_external_function(module_id, function_name)
     return method(question, existing_answers)
