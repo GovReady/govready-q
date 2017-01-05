@@ -116,4 +116,7 @@ class OrganizationSubdomainMiddleware:
 
         # The user is not authenticated on this domain, is logged out, and is requesting
         # a path besides login/signup. Redirect to the login route.
-        return HttpResponseRedirect(reverse("account_login") + "?" + urlencode({ "next": request.path }))
+        qs = ""
+        if request.path != "/":
+            qs = "?" + urlencode({ "next": request.path })
+        return HttpResponseRedirect(reverse("account_login") + qs)

@@ -30,6 +30,7 @@ INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 ORGANIZATION_PARENT_DOMAIN = environment.get('organization-parent-domain', 'localhost')
 ALLOWED_HOSTS += ['.' + ORGANIZATION_PARENT_DOMAIN]
 
+LOGIN_REDIRECT_URL = "/projects"
 SERVER_EMAIL = "GovReady Q <q@mg.govready.com>"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 NOTIFICATION_FROM_EMAIL_PATTERN = "%s via GovReady Q <q@mg.govready.com>"
