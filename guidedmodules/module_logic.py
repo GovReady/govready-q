@@ -550,7 +550,7 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
             else:
                 ret.append(("impute-condition", qid))
 
-        if rule.get("value-type") == "expression":
+        if rule.get("value-mode") == "expression":
             for qid in get_jinja2_template_vars(
                     r"{% if " + rule["value"] + r" %}...{% endif %}"
                     ):
