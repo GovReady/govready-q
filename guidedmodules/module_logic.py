@@ -1,3 +1,5 @@
+from django.conf import settings
+
 def get_jinja2_template_vars(template):
     from jinja2 import meta
     from jinja2.sandbox import SandboxedEnvironment
@@ -511,8 +513,9 @@ def get_all_question_dependencies(module):
 
     ret = (dependencies, root_questions)
 
-    # Save to in-memory (in-process) cache.
-    get_all_question_dependencies.cache[module.id] = ret
+    # Save to in-memory (in-process) cache. Never in debugging.
+    if not settings.DEBUG:
+        get_all_question_dependencies.cache[module.id] = ret
 
     return ret
 
