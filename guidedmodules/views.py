@@ -314,6 +314,10 @@ def next_question(request, taskid, taskslug):
         "previous_page_type": request.GET.get("previous"),
     }
 
+    # Is this the user's settings page? Hide the blurb to do it.
+    if task == request.user.user_settings_task:
+        request.is_user_settings_page = True
+
     if not q:
         # There is no next question. Either the task is finished or there
         # are required questions that were skipped.
