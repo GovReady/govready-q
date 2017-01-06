@@ -89,7 +89,7 @@ h2 { display: none; }
   <div id="focus-area-wrapper">
 
     {% if source_invitation %}
-      <div style="margin-top: 1.5em">
+      <div style="margin-bottom: 2em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
           <a href="#" onclick="$('#source-invitation').fadeIn(); $('#source-invitation-show').hide(); return false;" style="color: #448; font-size: 85%">
             Show Invitation from {{source_invitation.from_user}}

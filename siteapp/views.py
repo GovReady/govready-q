@@ -194,8 +194,8 @@ def begin_project(request, project_id):
             "body": project.root_task.render_field("interstitial"),
             "breadcrumbs_links": [{ "link": project.get_absolute_url(), "title": project.title }],
             "breadcrumbs_last": "Start",
-            "next": project.get_absolute_url(),
-            "next_text": "I\u2019m Ready",
+            "continue_url": project.get_absolute_url(),
+            "continue_text": "I\u2019m Ready",
         })
     else:
         return HttpResponseRedirect(project.get_absolute_url())
@@ -518,15 +518,37 @@ def accept_invitation(request, code=None):
     assert code.strip() != ""
     inv = get_object_or_404(Invitation, organization=request.organization, email_invitation_code=code)
 
+    # If this is a repeat-click, we don't need them to go through the
+    # acceptance logic again.
+    if not inv.accepted_at:
+        response = accept_invitation_do_accept(request, inv)
+        if isinstance(response, HttpResponse):
+            return response
+
+    # The invitation has been accepted by a logged in user.
+
+    # Some invitations create an interstitial before redirecting.
+    inv.from_user.localize_to_org(request.organization)
+    interstitial = inv.target.get_invitation_interstitial(inv)
+    if interstitial:
+        # If the target provides interstitial context data...
+        context = {
+            "title": "Accept Invitation to " + inv.purpose(),
+            "breadcrumbs_links": [],
+            "breadcrumbs_last": "Accept Invitation",
+            "continue_url": inv.get_redirect_url(),
+        }
+        context.update(interstitial)
+        return render(request, "interstitial.html", context)
+
+    return HttpResponseRedirect(inv.get_redirect_url())
+
+
+def accept_invitation_do_accept(request, inv):
     from django.contrib.auth import authenticate, login, logout
     from django.contrib import messages
     from django.http import HttpResponseRedirect
     import urllib.parse
-
-    # If this is a repeat-click, just redirect the user to where
-    # they went the first time.
-    if inv.accepted_at:
-        return HttpResponseRedirect(inv.get_redirect_url())
 
     # Can't accept if this object has expired. Warn the user but
     # send them to the homepage.
@@ -632,4 +654,3 @@ def accept_invitation(request, code=None):
             recipients=[u for u in inv.target.get_notification_watchers()
                 if u not in (inv.from_user, inv.accepted_user)])
 
-        return HttpResponseRedirect(inv.get_redirect_url())

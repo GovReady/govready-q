@@ -309,8 +309,8 @@ def next_question(request, taskid, taskslug):
         "is_discussion_guest": not task.has_read_priv(request.user), # i.e. only here for discussion
         "write_priv": task.has_write_priv(request.user),
         "send_invitation": Invitation.form_context_dict(request.user, task.project, [task.editor]),
-        "open_invitations": task.get_open_invitations(request.user),
-        "source_invitation": task.invitation_history.filter(accepted_user=request.user).order_by('-created').first(),
+        "open_invitations": task.get_open_invitations(request.user, request.organization),
+        "source_invitation": task.get_source_invitation(request.user, request.organization),
         "previous_page_type": request.GET.get("previous"),
     }
 

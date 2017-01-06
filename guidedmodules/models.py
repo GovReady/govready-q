@@ -331,6 +331,8 @@ class Task(models.Model):
             return True
         return False
 
+    # INVITATION TARGET FUNCTIONS
+
     def get_invitation_verb_inf(self, invitation):
         if invitation.target_info.get("what") == "editor":
             return "to take over editing"
@@ -363,11 +365,38 @@ class Task(models.Model):
     def get_invitation_redirect_url(self, invitation):
         return self.get_absolute_url()
 
-    def get_open_invitations(self, user):
+    def get_invitation_interstitial(self, invitation):
+        if "invitation_to_task_interstitial" not in self.project.root_task.module.spec:
+            return None
+        return {
+            "body":
+                self.project.root_task.render_field("invitation_to_task_interstitial",
+                    invitation=invitation,
+                    task=self,
+                ),
+            "continue_text": "Start " + self.title,
+            "alt_url": self.project.get_absolute_url(),
+            "alt_text": "Learn more about " + self.project.title,
+        }
+
+    # MISC
+
+    def get_open_invitations(self, user, org):
         # Return the open Invitations for transferring task ownership
         # elsewhere, sent from the user.
         from siteapp.models import Invitation
-        return Invitation.get_for(self).filter(from_user=user)
+        inv = Invitation.get_for(self).filter(organization=org, from_user=user)
+        if inv:
+            inv.from_user.localize_to_org(org)
+        return inv
+
+    def get_source_invitation(self, user, org):
+        inv = self.invitation_history.filter(accepted_user=user).order_by('-created').first()
+        if inv:
+            inv.from_user.localize_to_org(org)
+        return inv
+
+    # NOTIFICATION TARGET HELEPRS
 
     def get_notification_watchers(self):
         return self.project.get_members()
@@ -395,12 +424,13 @@ class Task(models.Model):
         except (KeyError, ValueError):
             return default
 
-    def render_field(self, field):
+    def render_field(self, field, **additional_context):
         return render_content(
             self.module.spec.get(field) or "",
             ModuleAnswers(self.module, self, {}),
             "html",
-            "%s %s" % (repr(self.module), field)
+            "%s %s" % (repr(self.module), field),
+            additional_context=additional_context
         )
 
     def render_output_documents(self, answers=None):
