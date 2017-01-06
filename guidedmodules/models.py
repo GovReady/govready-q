@@ -188,6 +188,8 @@ class Task(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     deleted_at = models.DateTimeField(blank=True, null=True, db_index=True, help_text="If 'deleted' by a user, the date & time the Task was deleted.")
 
+    cached_is_finished = models.NullBooleanField(help_text="Cached value storing whether the Task is finished.")
+
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Task, used to synchronize Task content between systems.")
 
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
@@ -287,7 +289,10 @@ class Task(models.Model):
         # Check that all questions that need an answer have
         # an answer, and that no required questions have been
         # skipped.
-        return len(self.get_answers().with_extended_info(required=True).can_answer) == 0
+        if self.cached_is_finished is None:
+            self.cached_is_finished = len(self.get_answers().with_extended_info(required=True).can_answer) == 0
+            self.save(update_fields=["cached_is_finished"])
+        return self.cached_is_finished
 
     def get_status_display(self):
         # Is this task done?
@@ -471,6 +476,10 @@ class Task(models.Model):
 
             # Add the new task.
             ansh.answered_by_task.add(task)
+
+            # Clear the cached data.
+            self.cached_is_finished = None
+            self.save(update_fields=["cached_is_finished"])
 
             return task
 
@@ -828,8 +837,10 @@ class TaskAnswer(models.Model):
         for t in answered_by_tasks:
             answer.answered_by_task.add(t)
 
-        # kick the Task and TaskAnswer's updated field
-        self.task.save(update_fields=[])
+        # kick the Task and TaskAnswer's updated field, and clear the Task's
+        # cache_is_finished field.
+        self.task.cached_is_finished = None
+        self.task.save(update_fields=["cached_is_finished"])
         self.save(update_fields=[])
 
         # Return True to indicate we saved something.
