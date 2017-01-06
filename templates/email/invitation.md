@@ -2,7 +2,7 @@
 {% block content %}
 Hello,
 
-{{invitation.from_user}} is inviting you {{invitation.purpose}} {% if not invitation.is_just_project_invite %}in {{invitation.from_project.title}}{% endif %} at GovReady Q.
+{{invitation.from_user}} is inviting you {{invitation.purpose}} {% if not invitation.is_target_the_project %}in {{invitation.from_project.title}}{% endif %} at GovReady Q.
 {% if invitation.text %}
 > {{invitation.text}}
 {% endif %}
@@ -13,5 +13,4 @@ To accept the invitation and help {{invitation.from_user}}, please follow the fo
 
 {{invitation.from_user}} will appreciate it!
 
-Thank you,
 {% endblock %}

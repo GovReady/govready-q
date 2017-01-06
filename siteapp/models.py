@@ -315,7 +315,7 @@ class Project(models.Model):
         into_new_task_question_id = invitation.target_info.get('into_new_task_question_id')
         if into_new_task_question_id:
             from guidedmodules.models import ModuleQuestion
-            return ("to edit a new module <%s> in" % ModuleQuestion.objects.get(id=into_new_task_question_id).spec["title"])
+            return ("to edit a new module %s in" % ModuleQuestion.objects.get(id=into_new_task_question_id).spec["title"])
         elif invitation.target_info.get('what') == 'join-team':
             return "to join the project"
         raise ValueError()
@@ -571,11 +571,11 @@ class Invitation(models.Model):
 
     def purpose_verb(self):
         return \
-              ("to join the project team and " if self.into_project and not self.is_just_project_invite() else "") \
+              ("to join the project team and " if self.into_project and not self.is_target_the_project() else "") \
             + self.target.get_invitation_verb_inf(self)
 
-    def is_just_project_invite(self):
-        return isinstance(self.target, Project) and self.target_info.get('what') == 'join-team'
+    def is_target_the_project(self):
+        return isinstance(self.target, Project)
 
     def purpose(self):
         return self.purpose_verb() + " " + self.target.title
