@@ -315,7 +315,8 @@ def next_question(request, taskid, taskslug):
     }
 
     if not q:
-        # There is no next question - the module is complete.
+        # There is no next question. Either the task is finished or there
+        # are required questions that were skipped.
 
         # Add instrumentation event.
         # Has the user been here before?
