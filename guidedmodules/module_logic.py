@@ -208,7 +208,8 @@ def get_question_context(answers, question):
             "key": q.key,
             "title": q.spec['title'],
             "can_link": True, # any non-imputed (checked above) question can be re-answered
-            "answered": ans.has_answer() and not ans.get_current_answer().is_skipped(),
+            "skipped": ans.get_current_answer().is_skipped(),
+            "answered": ans.has_answer(),
             "is_this_question": (question is not None) and (q.key == question.key),
         })
 
@@ -221,6 +222,7 @@ def get_question_context(answers, question):
             "key": q.key,
             "title": q.spec['title'],
             "can_link": q in answers.can_answer, # any question that can be answered next can be linked to
+            "skipped": False,
             "answered": False,
             "is_this_question": (question is not None) and (q.key == question.key),
         })
