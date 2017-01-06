@@ -215,7 +215,6 @@ def project(request, project_id):
 
     # Get the project team members.
     project_members = ProjectMembership.objects.filter(project=project)
-    is_project_member = project_members.filter(user=request.user).exists()
 
     # Get all of the discussions I'm participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
@@ -226,6 +225,8 @@ def project(request, project_id):
     # that we know which questions are suppressed by imputed values.
     root_task_answers = project.root_task.get_answers()
     root_task_answers = root_task_answers.with_extended_info()
+
+    can_begin_module = project.can_start_task(request.user)
 
     # Create all of the module entries in a tabs & groups data structure.
     from collections import OrderedDict
@@ -257,9 +258,14 @@ def project(request, project_id):
                 pass
             for module_answers in ans:
                 task = module_answers.task
+
+                task_discussions.extend([d for d in discussions if d.attached_to.task == task])
+                
+                if not task.has_read_priv(request.user):
+                    continue
+
                 tasks.append(task)
                 task.has_write_priv = task.has_write_priv(request.user)
-                task_discussions.extend([d for d in discussions if d.attached_to.task == task])
                 if not task.is_finished():
                     # If any task is unfinished, the whole question
                     # is marked as unfinished.
@@ -269,8 +275,9 @@ def project(request, project_id):
                     # is marked as finished.
                     is_finished = True
 
-        # Do not display if user should not be able to see this task.
-        if not is_project_member and len(task_discussions) == 0:
+        # Do not display if the user can't start a task and there are no
+        # tasks visible to the user.
+        if not can_begin_module and len(tasks) == 0 and len(task_discussions) == 0:
             continue
 
         # Create template context dict.
@@ -340,8 +347,7 @@ def project(request, project_id):
     # Render.
     return render(request, "project.html", {
         "is_admin": request.user in project.get_admins(),
-        "is_member": is_project_member,
-        "can_begin_module": project.can_start_task(request.user),
+        "can_begin_module": can_begin_module,
         "project_has_members_besides_me": project and project.members.exclude(user=request.user),
         "project": project,
         "title": project.title,

@@ -215,14 +215,13 @@ span.glyphicon.glyphicon-check {
               <div class="task-group-title">{{group.title}}</div>
 
               {% for rec in group.modules %}
-                <div id="question-{{rec.question.key}}" class="task {% if is_member and rec.is_finished %}task_finished{% endif %}">
+                <div id="question-{{rec.question.key}}" class="task {% if rec.is_finished %}task_finished{% endif %}">
 
                   <div class="task-title">
                     {{rec.question.spec.title}}
                   </div>
 
                   <div class="task-body">
-                    {% if is_member %}
                       {% for t in rec.tasks %}
                         <div class="task-commands started-task">
                             {% if rec.question.spec.type == "module-set" %}
@@ -259,7 +258,6 @@ span.glyphicon.glyphicon-check {
                         <a href="#" class="assign-task" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign</a>
                       </div> <!-- /task-commands -->
                       {% endif %}
-                    {% endif %}
 
                     {% for inv in rec.invitations %}
                       <p class="invitation" data-invitation-id="{{inv.id}}">
