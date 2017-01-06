@@ -41,9 +41,12 @@ def walk_module_questions(module, callback):
         if q.key in stack:
             raise ValueError("Cyclical dependency in questions: " + "->".join(stack + [q.key]))
 
-        # Execute recursively on the questions it depends on.
+        # Execute recursively on the questions it depends on,
+        # in module definition order rather than in a random
+        # order.
         state = { }
-        deps = dependencies[q]
+        deps = list(dependencies[q])
+        deps.sort(key = lambda q : q.definition_order)
         for qq in deps:
             state.update(walk_question(qq, stack+[q.key]))
 
@@ -56,7 +59,9 @@ def walk_module_questions(module, callback):
         # Return the state to the caller.
         return state
 
-    # Walk each question in document order.
+    # Walk the dependency root questions in document order.
+    root_questions = list(root_questions)
+    root_questions.sort(key = lambda q : q.definition_order)
     for q in root_questions:
         walk_question(q, [])
 
@@ -187,6 +192,11 @@ def get_question_context(answers, question):
     # actually answered before and after that point.
     context = []
     for ans in answers.task.answers.order_by('created').select_related('question'):
+        # We may have a TaskAnswer record (to attach a Discussion to, for
+        # instance) but no actual answers yet.
+        if not ans.has_answer():
+            continue
+
         q = ans.question
 
         # Don't show questions that are overridden by imputed values.
