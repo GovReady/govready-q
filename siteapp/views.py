@@ -303,7 +303,7 @@ def project(request, project_id):
             # Add a flag to the tab if any tasks contained
             # within it are unfinished.
             for t in tasks:
-                if not t.is_finished:
+                if not t.is_finished():
                     tab["unfinished_tasks"] += 1
 
         elif mq.spec.get("placement") == "action-buttons":
