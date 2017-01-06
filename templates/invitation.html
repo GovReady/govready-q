@@ -7,6 +7,7 @@ Invitation to GovReady Q
 
 {% block head %}
 <style>
+{% include "focus-area-styles.css" %}
 h1 { margin-top: 0; }
 </style>
 {% endblock %}
@@ -17,32 +18,30 @@ h1 { margin-top: 0; }
 
 {% block body %}
 <div class="row">
-  <div class="col-sm-push-1 col-sm-9">
-
-    <div class="row">
-      {% with picture=inv.from_user.get_profile_picture %}
-        {% if picture %}
-          <div class="col-xs-3">
-            <img src="{{picture.url}}" alt="Profile Picture" class="img-responsive">
-          </div>
-          <div class="col-xs-9">
-        {% else %}
-          <div class="col-xs-12">
-        {% endif %}
-      {% endwith %}
-
-      <h1><b>{{inv.from_user}}</b> invited you <b>{{inv.purpose}}</b> on <b>GovReady Q</b></h1>
-      <p>On {{inv.created|date}} they wrote:</p>
-      <blockquote>{{inv.text}}</blockquote>
-      
-      <p>To accept this invitation, sign up for GovReady Q or log in:</p>
-
-      <a id="button-sign-in" class="btn btn-success" href="{% url 'account_login' %}?{{next}}">I am an Existing GovReady Q User &raquo;</a>
-      <a id="button-sign-up" class="btn btn-success" href="{% url 'account_signup' %}?{{next}}">I am New to GovReady Q &raquo;</a>
-
+  {% with picture=inv.from_user.get_profile_picture %}
+    {% if picture %}
+      <div class="col-md-2">
+        <img src="{{picture.url}}" alt="Profile Picture" class="img-responsive" style="border-radius: 10px">
       </div>
-    </div>
+      <div class="col-md-8">
+    {% else %}
+      <div class="col-md-push-2 col-md-8">
+    {% endif %}
+  {% endwith %}
 
+   <div id="focus-area-wrapper">
+      <h1><b>{{inv.from_user}}</b> invited you <b>{{inv.purpose}}</b> on <b>GovReady Q</b></h1>
+
+      <div style="margin: 2em 0">
+        <p>On {{inv.created|date}} {{inv.from_user}} emailed:</p>
+        <blockquote>{{inv.text}}</blockquote>
+        
+        <p>To accept this invitation, log in or sign up:</p>
+      </div>
+
+      <a id="button-sign-in" class="btn btn-success" href="{% url 'account_login' %}?{{next}}">I am an existing GovReady Q user &raquo;</a>
+      <a id="button-sign-up" class="btn btn-success" href="{% url 'account_signup' %}?{{next}}">I am new to GovReady Q &raquo;</a>
+    </div>
   </div>
 </div>
 {% endblock %}
