@@ -36,11 +36,21 @@ thead {
     {% include "task-header.html" with col_width="4" col_active="review" %}
 
     {% if had_any_questions %}
+    <div id="page-transition-paragraph">
       {% if previous_page_type == "project" %}
-        <p><em>This module was completed on {{task.updated|date}}.</em></p>
+        {% if task.is_finished %}
+          <p>This module was completed on {{task.updated|date}}.</p>
+        {% else %}
+          <p>All of the questions in this module have been responded to but some required questions were skipped.</p>
+        {% endif %}
       {% elif previous_page_type == "nquestion" %}
-        <p><em>You have completed the module.</em></p>
+        {% if task.is_finished %}
+          <p>You have completed the module.</p>
+        {% else %}
+          <p>You have responded to all of the questions but skipped some required questions.</p>
+        {% endif %}
       {% endif %}
+    </div>
     {% endif %}
 
 <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">

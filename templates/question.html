@@ -51,12 +51,14 @@ h2 { display: none; }
 </style>
 
 <div class="row">
-  <div class="col-sm-8">
+  <div class="col-md-push-2 col-md-8">
+    {% comment %}
     {% if previous_page_type == "project" or previous_page_type == "nquestion" %}
       <p><em>Please complete the next question to make progress on this module...</em></p>
     {% elif previous_page_type == "parent" %}
       <p><em>You&rsquo;ve begun a new {{m.title}} module. You will return to the previous module when you finish this one.</em></p>
     {% endif %}
+    {% endcomment %}
 
     {% include "task-header.html" with col_width="4" col_active=header_col_active %}
   </div>
