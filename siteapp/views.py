@@ -233,6 +233,7 @@ def project(request, project_id):
     tabs = OrderedDict()
     action_buttons = []
     question_dict = { }
+    first_start = True
     for mq in project.root_task.module.questions.all().order_by('definition_order'):
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
@@ -280,6 +281,10 @@ def project(request, project_id):
         if not can_begin_module and len(tasks) == 0 and len(task_discussions) == 0:
             continue
 
+        # Is this the first Start?
+        d_first_start = first_start and (len(tasks) == 0)
+        if d_first_start: first_start = False
+
         # Create template context dict.
         d = {
             "question": mq,
@@ -287,6 +292,7 @@ def project(request, project_id):
             "is_finished": is_finished,
             "tasks": tasks,
             "can_start_new_task": mq.spec["type"] == "module-set" or len(tasks) == 0,
+            "first_start": d_first_start,
             "discussions": task_discussions,
             "invitations": [], # filled in below
         }
