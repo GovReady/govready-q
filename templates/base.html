@@ -9,7 +9,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - {% firstof request.organization.name request.get_host %} on GovReady QGovReady Q</title>
+        <title>{% block title %}{% block head_title %}{% endblock %}{% endblock %} - {% firstof request.organization.name request.get_host %} on GovReady Q</title>
 
         {% comment %}
         <meta property="og:title" content="" />
@@ -260,7 +260,7 @@
         <div class="container">
           <div class="row">
             <div class="col-sm-12">
-              <p class="pull-right">&copy; GovReady 2016</p>
+              <p class="pull-right">&copy; GovReady {% now "Y" %}</p>
             </div>
           </div>
         </div>
