@@ -50,6 +50,12 @@
 
 .task {
   padding: 0 18px;
+  width: 350px;
+  margin: auto;
+  margin-bottom: 8px;
+  padding: 8px;
+  text-align: center;
+  border:1px solid #ccc;
 }
 
   .task:hover {
@@ -212,7 +218,7 @@ span.glyphicon.glyphicon-check {
 
             {% for group in tab.groups.values %}
             <div class="task-group">
-              <div class="task-group-title">{{group.title}}</div>
+              <!-- <div class="task-group-title">{{group.title}}</div> -->
 
               {% for rec in group.modules %}
                 <div id="question-{{rec.question.key}}" class="task {% if rec.is_finished %}task_finished{% endif %}">
