@@ -541,7 +541,10 @@ def accept_invitation(request, code=None):
 
     # Some invitations create an interstitial before redirecting.
     inv.from_user.localize_to_org(request.organization)
-    interstitial = inv.target.get_invitation_interstitial(inv)
+    try:
+        interstitial = inv.target.get_invitation_interstitial(inv)
+    except AttributeError: # inv.target may not have get_invitation_interstitial method
+        interstitial = None
     if interstitial:
         # If the target provides interstitial context data...
         context = {
