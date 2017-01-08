@@ -213,7 +213,9 @@ h2 { display: none; }
               </div>
               {% endfor %}
 
-              {% if q.spec.min > 0 %}
+              {% if q.spec.min > 0 and q.spec.min == q.spec.max %}
+                  <p class="help-block">You must choose exactly {{q.spec.min}} options.</p>
+              {% elif q.spec.min > 0 %}
                   <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} options.</p>
               {% elif q.spec.max %}
                   <p class="help-block">You may choose at most {{q.spec.max}} options.</p>
