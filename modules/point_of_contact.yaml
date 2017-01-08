@@ -16,9 +16,7 @@ questions:
   - id: q3_ev
     title: Employee or External
     prompt: Is {{q1_name}} an employee, contractor, or vendor?
-    type: multiple-choice
-    min: 1
-    max: 1
+    type: choice
     choices:
       - key: employee
         text: Employee
@@ -40,17 +38,17 @@ questions:
 
   - id: q5_email
     title: Email
-    prompt: What is {{q1_name}} preferred email?
-    type: text
+    prompt: What is {{q1_name}}'s preferred email?
+    type: email-address
 
   - id: q6_work_phone
     title: Work phone
-    prompt: What is {{q1_name}} work phone?
+    prompt: What is {{q1_name}}'s work phone?
     type: text
 
   - id: q7_mobile_phone
     title: Mobile phone
-    prompt: What is {{q1_name}} mobile phone?
+    prompt: What is {{q1_name}}'s mobile phone?
     type: text
 
 output:
