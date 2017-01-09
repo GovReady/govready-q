@@ -199,6 +199,31 @@ In addition to the `output` documents described above, a project module may also
 	  template: |
 	    Project {{name}}
 
+Module Assets
+-------------
+
+Modules often make use of assets outside of the YAML file.
+
+### Static Assets
+
+Static assets such as images can be referenced in module content (introductions, question prompts, and output documents). These assets are exposed by the Q web server in its static path. Place static assets in an `assets` subdirectory where the module is. When the asset is referenced in a Markdown document template, its path will be rewritten to be its public (virtual) path on the web server.
+
+For example, to include an image in a module introduction add the image in the Markdown template:
+
+	module.yaml
+	-----------
+
+	...
+	format: markdown
+	template: |
+	  ![](my_image.png)
+	...
+
+Place the module and image files at the path:
+
+	module.yaml
+	assets/my_image.png
+
 Questions
 ---------
 
