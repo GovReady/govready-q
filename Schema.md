@@ -469,7 +469,7 @@ The `value` field can be evaluated as a [Jinja2 expression](http://jinja.pocoo.o
         value: q0
         value-mode: expression
 
-In both conditions and `expression`-type values, the variables you can use are:
+In both conditions and `expression`-type values, as well as in documents, the variables you can use are:
 
 * `id`s of questions in the module
 * `question_id.subquestion_id` to access questions within the tasks that are assigned as answers to `module`-type questions
@@ -477,6 +477,11 @@ In both conditions and `expression`-type values, the variables you can use are:
 * `project.question_id`, `project.question_id.subquestion_id`, etc. to access questions within the project
 * `organization`, which gives the organization name
 * The name of an external Python function (see `external-functions`)
+
+We also have a funtion to retreive the URL of a module's static assets, e.g.:
+
+	<srcipt src="{{static_asset_path_for('myscript.js')}}"></script>
+
 
 ### Encrypting answers
 

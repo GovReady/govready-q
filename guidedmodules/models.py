@@ -71,6 +71,16 @@ class Module(models.Model):
                 ("modified", self.updated.isoformat()),
         ]))
 
+    def get_static_asset_url(self, asset_path):
+        import urllib.parse
+        base_path = "/static/module-assets/"
+        if not asset_path.startswith("/"):
+            # Assets are relative to the module's 'path', which is based
+            # on its full id, unless the asset path begins with a slash,
+            # and then it is just relative to base_path.
+            base_path += "/".join(self.key.split("/")[0:-1]) + "/"
+        return urllib.parse.urljoin(base_path, asset_path)
+
     @staticmethod
     def BuildNetworkDiagram(start_nodes, config):
         # Build a network diagram by recursively evaluating

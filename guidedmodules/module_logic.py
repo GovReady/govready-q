@@ -335,18 +335,14 @@ def render_content(content, answers, output_format, source, additional_context={
                         self.rewrite_url(node)
                     super().image(node, entering)
                 def rewrite_url(self, node):
-                    if "\uE000" in node.destination:
+                    if "\uE000" in node.destination or answers is None:
                         # Don't mess with the URL if it contains any template
                         # tags. We can't tell what the URL will be, so let's
-                        # require that it be absolute.
+                        # require that it be absolute. Also don't rewrite if
+                        # we are doing this outside of having a Module instance
+                        # (probably in unit tests).
                         return node.destination
-                    import urllib.parse
-                    base_path = "/static/module-assets/"
-                    if not node.destination.startswith("/") and answers is not None:
-                        # Assets are relative to the module's 'path'. (If answers is
-                        # none, we're probably just calling this method on test data.)
-                        base_path += "/".join(answers.module.key.split("/")[0:-1]) + "/"
-                    node.destination = urllib.parse.urljoin(base_path, node.destination)
+                    node.destination = answers.module.get_static_asset_url(node.destination)
 
             template_format = "html"
             template_body = q_renderer().render(CommonMark.Parser().parse(template_body))
@@ -467,8 +463,11 @@ def render_content(content, answers, output_format, source, additional_context={
         if output_format == "PARSE_ONLY":
             return template
 
-        # Create an intial context dict and add rendered answers into it.
+        # Create an intial context dict with the additional_context provided
+        # by the caller, add additional context variables and functions, and
+        # add rendered answers into it.
         context = dict(additional_context) # clone
+        context['static_asset_path_for'] = answers.module.get_static_asset_url
         context.update(TemplateContext(answers, escapefunc, root=True))
 
         # Render.
