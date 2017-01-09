@@ -27,7 +27,7 @@ class Module(models.Model):
 
     def __repr__(self):
         # For debugging.
-        return "<Module [%d] %s%s %s>" % (self.id, "" if not self.superseded_by else "(old) ", self.key, self.spec["title"][0:30])
+        return "<Module [%d] %s%s %s>" % (self.id, "" if not self.superseded_by else "(old) ", self.key, self.spec.get("title", "<No Title>")[0:30])
 
     @property
     def title(self):
