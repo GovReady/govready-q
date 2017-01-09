@@ -69,10 +69,11 @@ class Command(BaseCommand):
                 fn_name, fn_ext = os.path.splitext(fn)
                 if fn_ext == ".yaml":
                     yield "/".join(path + [fn_name])
-            elif fn == "assets":
-                # Don't recurisvely walk into directories named 'assets'. These
-                # directories provide static assets that go along with the modules
-                # in that directory.
+            elif fn in ("assets", "private-assets"):
+                # Don't recurisvely walk into directories named 'assets' or
+                # 'private-assets'. These directories provide static assets
+                # that go along with the modules in that directory. 'assets'
+                # are public assets that are exposed by the web server.
                 pass
             else:
                 # Recursively walk directories.

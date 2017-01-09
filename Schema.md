@@ -224,6 +224,18 @@ Place the module and image files at the path:
 	module.yaml
 	assets/my_image.png
 
+### Private Assets
+
+Private assets are other files that are stored with a module but are not exposed by the web server. The assets are intended to be used by external Python code (see the `external-functions` Module field above and the `external-function` question type below).
+
+Place private assets in a `private-assets` subdirectory next to the module YAML file.
+
+In the Python code, you can get a path to a private asset like this:
+
+	os.path.join(os.path.dirname(__file__), 'private-assets', 'assetfile.dat')
+
+(This works since the Python code is in the same directory as the module, and so the private-assets subdirectory is next to the Python code file as well as the module YAML file.)
+
 Questions
 ---------
 
