@@ -9,11 +9,11 @@ git pull --rebase &&
 # Run database migrations.
 python3 manage.py migrate &&
 
-# Extract static assets.
-python3 manage.py collectstatic --noinput &&
-
 # Load updated modules into database.
 python3 manage.py load_modules &&
+
+# Extract static assets.
+python3 manage.py collectstatic --noinput &&
 
 # Kick the processes to reload modules.
 killall -HUP uwsgi_python3
