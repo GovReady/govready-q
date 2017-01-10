@@ -530,12 +530,9 @@ def accept_invitation(request, code=None):
     assert code.strip() != ""
     inv = get_object_or_404(Invitation, organization=request.organization, email_invitation_code=code)
 
-    # If this is a repeat-click, we don't need them to go through the
-    # acceptance logic again.
-    if not inv.accepted_at:
-        response = accept_invitation_do_accept(request, inv)
-        if isinstance(response, HttpResponse):
-            return response
+    response = accept_invitation_do_accept(request, inv)
+    if isinstance(response, HttpResponse):
+        return response
 
     # The invitation has been accepted by a logged in user.
 
@@ -573,8 +570,8 @@ def accept_invitation_do_accept(request, inv):
 
     # Get the user logged into an account.
     
-    matched_user = inv.to_user \
-        or User.objects.filter(email=inv.to_email).exclude(id=inv.from_user.id).first()
+    matched_user = None # inv.to_user \
+       # or User.objects.filter(email=inv.to_email).exclude(id=inv.from_user.id).first()
     
     if request.user.is_authenticated() and request.GET.get("accept-auth") == "1":
         # The user is logged in and the "auth" flag is set, so let the user
@@ -631,6 +628,12 @@ def accept_invitation_do_accept(request, inv):
         })
 
     # The user is now logged in and able to accept the invitation.
+
+    # If the invitation was already accepted, then there's nothing more to do.
+    if inv.accepted_at:
+        return
+
+    # Accept the invitation.
     with transaction.atomic():
 
         inv.accepted_at = timezone.now()
