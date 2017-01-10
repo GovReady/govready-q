@@ -26,7 +26,7 @@
   font-weight: normal;
   color: black;
   border: none;
-  border-bottom: 3px solid rgb(19,144,50) !important;
+  border-bottom: 3px solid #449d44 !important;
 }
 
 .nav-tabs>li>a {
@@ -58,16 +58,12 @@
   .task:hover {
     background-color: rgb(248,248,248);
   }
-  .task .first_start {
-    margin: -8px -8px 8px -8px;
-    padding: 4px;
-    background-color: #EEE;
-    font-weight: bold;
-    color: #090;
-    font-size: 90%;
-  }
   .task.task_finished {
-    border-left: 4px solid rgb(30,143,55);
+    border-left: 4px solid #96B;
+    padding-left: 17px;
+  }
+  .task.first_start {
+    border-left: 4px solid #449d44;
     padding-left: 17px;
   }
   .task .task-title {
@@ -83,6 +79,10 @@
   .task-commands a:hover {
     color: rgb(55,123,181);
   }
+    .task.first_start .start-task a {
+      color: #449d44;
+      font-weight: bold;
+    }
 
   .task .invitation {
     font-size: 14px;
@@ -106,10 +106,6 @@
     content: "(undo)";
   }
 
-span.glyphicon.glyphicon-check {
-  color: rgb(30,143,55);
-}
-
 #project-members {
 	margin-top: 1em;
 }
@@ -125,9 +121,9 @@ span.glyphicon.glyphicon-check {
 {% endblock %}
 
 {% block breadcrumbs %}
-<li>
-  <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
-  <span style="color: black;">{{project.title}}</span>
+<li class="active">
+    <span class="glyphicon glyphicon-hdd" style="color: #449d44; margin-right: .25em"></span>
+  {{project.title}}
 </li>
 {% endblock %}
 
@@ -227,13 +223,7 @@ span.glyphicon.glyphicon-check {
               <!-- <div class="task-group-title">{{group.title}}</div> -->
 
               {% for rec in group.modules %}
-                <div id="question-{{rec.question.key}}" class="task {% if rec.is_finished %}task_finished{% endif %}">
-
-                  {% if rec.first_start %}
-                  <div class="first_start">
-                    Your Next Task
-                  </div>
-                  {% endif %}
+                <div id="question-{{rec.question.key}}" class="task {% if rec.is_finished %}task_finished{% endif %} {% if rec.first_start %}first_start{% endif %}">
 
                   <div class="task-title">
                     {{rec.question.spec.title}}
@@ -247,8 +237,10 @@ span.glyphicon.glyphicon-check {
                             {% endif %}
                             <a href="{{t.get_absolute_url}}?previous=project">
                             {% if t.is_finished %}
+                              <span style="color: #96B">
                                 <span class="glyphicon glyphicon-check"></span>
                                 View
+                              </span>
                             {% else %}
                               <span class="label label-primary">in progress</span>
                               <span class="glyphicon glyphicon-edit"></span>

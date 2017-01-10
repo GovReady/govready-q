@@ -366,7 +366,7 @@ h2 { display: none; }
             {% if q.spec.type != "interstitial" %}
 
             <button id="skip-button"
-              type="submit" class="btn btn-info"
+              type="submit" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" 
               onclick="$('#question > form input[name=method]').val('skip')">
               {% if not answer %}
               Skip
