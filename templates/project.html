@@ -151,9 +151,9 @@
       {% for rec in action_buttons %}
         {% for t in rec.tasks %}
           <a
-            class="btn {% if t.is_finished %}btn-info{% else %}btn-default{% endif %}"
+            class="btn btn-default" style="background: white"
             href="{{t.get_absolute_url}}?previous=project">
-            {{t.render_title}} &raquo;
+            {{rec.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
           </a>
         {% empty %}
           {% if can_begin_module and rec.can_start_new_task %}
@@ -162,7 +162,7 @@
               <input type="hidden" name="project" value="{{project.id}}"/>
               <input type="hidden" name="question" value="{{rec.question.key}}"/>
               <input type="hidden" name="previous" value="project"/>
-              <a class="btn btn-default"
+              <a class="btn btn-default" style="background: white"
                 href="#" onclick="$(this).parent('form').submit(); return false;">
                 {{rec.question.spec.title}} &raquo;
               </a>
