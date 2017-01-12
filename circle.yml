@@ -10,7 +10,7 @@ dependencies:
     - pip install --upgrade pip
   # CircleCI will run `pip install requirements.txt` automatically at this stage.
   post:
-    - deployment/fetch-vendor-resources.sh
+    - ./fetch-vendor-resources.sh
   cache_directories:
     - siteapp/static/vendor # created the first time by fetch-vendor-resources.sh
 

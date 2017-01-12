@@ -12,7 +12,7 @@ To develop locally, run the following commands:
 
 	sudo apt-get install python3-pip unzip # or appropriate for your system
 	pip3 install -r requirements.txt
-	deployment/fetch-vendor-resources.sh
+	./fetch-vendor-resources.sh
 	python3 manage.py migrate
 	python3 manage.py load_modules
 	python3 manage.py createsuperuser
