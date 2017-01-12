@@ -78,10 +78,17 @@ thead {
   {% with supermodule=task.is_answer_to_unique %}
     {% if supermodule and supermodule.task.editor == request.user %}
       {% if supermodule.task == supermodule.task.project.root_task %}
-        {# return to project #}
-        <p><a href="{{task.project.get_absolute_url}}#tab={{supermodule.question.spec.tab|slugify}}/{{supermodule.question.spec.group|slugify}}/{{supermodule.question.key|slugify}}/{{task.id}}" class="btn btn-success">
-          Continue with other modules in {{task.project.title}} &raquo;
-        </a></p>
+        {% if task.project.is_account_project %}
+          {# there is nothing else in the account settings project #}
+          <p><a id="return-to-projects" href="/projects" class="btn btn-success">
+            Return to Projects &raquo;
+          </a></p>
+        {% else %}
+          {# return to project #}
+          <p><a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{supermodule.question.spec.tab|slugify}}/{{supermodule.question.spec.group|slugify}}/{{supermodule.question.key|slugify}}/{{task.id}}" class="btn btn-success">
+            Continue with other modules in {{task.project.title}} &raquo;
+          </a></p>
+        {% endif %}
       {% else %}
         {# return to non-project parent task #}
         <p><a id="return-to-supertask" href="{{supermodule.task.get_absolute_url}}" class="btn btn-success">

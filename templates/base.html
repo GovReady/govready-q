@@ -228,7 +228,7 @@
     {% endblock %}
 
     {% if request.user.user_settings_task and not request.user.user_settings_task.is_finished and not request.is_user_settings_page %}
-    <div class="container" style="margin-top: 1em;">
+    <div id="please-complete-account-settings" class="container" style="margin-top: 1em;">
         <div class="alert alert-warning">
           Please complete <a href="{{request.user.user_settings_task.get_absolute_url}}">your account settings</a>.
         </div>

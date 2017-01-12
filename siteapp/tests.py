@@ -194,7 +194,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Within this test, we only generate URLs for the organization subdomain.
         return super().url("testorg", path)
 
-    def _login(self, is_first_time_user=True, is_first_time_org=False):
+    def _login(self):
         # Fill in the login form and submit.
         self.browser.get(self.url("/")) # redirects to /accounts/login/
 
@@ -203,46 +203,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_password", "1234")
         self.click_element("form button.primaryAction")
 
-        # If this is the user's first login, then we are now at the
-        # user account settings task. Proceed through those questions.
-        if is_first_time_user:
-            var_sleep(.5) # wait for page to load
-            self.assertIn("Introduction | GovReady Account Settings", self.browser.title)
-
-            # - The user is looking at the Introduction page.
-            self.click_element("#save-button")
-            var_sleep(.5) # wait for page to load
-
-            # - Now at the what is your name page?
-            self.fill_field("#inputctrl", "John Doe")
-            self.click_element("#save-button")
-            var_sleep(.5) # wait for page to load
-
-            # - We're on the module finished page.
-            self.browser.get(self.url("/"))
-
-        if is_first_time_org:
-            # The first time we hit an Organization home, we are
-            # taken to its org info task.
-            var_sleep(.5) # wait for page to load
-            self.assertIn("Introduction | Organization Classification", self.browser.title)
-
-            # - The user is looking at the Introduction page.
-            self.click_element("#save-button")
-            var_sleep(.5) # wait for page to load
-
-            # - Now at the 'what kind of org is it' page?
-            self.click_element("input[value='smbiz']")
-            self.click_element("#save-button")
-            var_sleep(.5) # wait for page to load
-
-            # - We're on the module finished page.
-            self.browser.get(self.url("/"))
-
-        self.assertRegex(self.browser.title, "Home")
-
     def _new_project(self):
-        self.browser.get(self.url("/"))
+        self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
         self.fill_field("#id_title", "My Simple Project")
         self.click_element("#id_module_id_0")
@@ -296,13 +258,38 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log in as a new user, log out, then log in a second time.
         # We should only get the account settings questions on the
         # first login.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self.browser.get(self.url("/accounts/logout/"))
-        self._login(is_first_time_user=False)
+        self._login()
+
+    def test_new_user_account_settings(self):
+        # Log in as the user, who is new. Complete the account settings.
+
+        self._login()
+
+        self.click_element('#please-complete-account-settings a')
+        var_sleep(.5) # wait for page to load
+        self.assertIn("Introduction | GovReady Account Settings", self.browser.title)
+
+        # - The user is looking at the Introduction page.
+        self.click_element("#save-button")
+        var_sleep(.5) # wait for page to load
+
+        # - Now at the what is your name page?
+        self.fill_field("#inputctrl", "John Doe")
+        self.click_element("#save-button")
+        var_sleep(.5) # wait for page to load
+
+        # - We're on the module finished page.
+        self.assertNodeNotVisible('#return-to-project')
+        self.click_element("#return-to-projects")
+        var_sleep(1.5)
+        self.assertRegex(self.browser.title, "Home")
+        self.assertNodeNotVisible('#please-complete-account-settings')
 
     def test_simple_module(self):
         # Log in and create a new project and start its task.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self._new_project()
         self._start_task()
 
@@ -320,13 +307,13 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5)
 
         # Finished.
-        self.assertRegex(self.browser.title, "^A Simple Module - GovReady Q$")
+        self.assertRegex(self.browser.title, "^A Simple Module - ")
 
     def test_invitations(self):
         # Test a bunch of invitations.
 
         # Log in and create a new project.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self._new_project()
         project_page = self.browser.current_url
 
@@ -356,7 +343,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         def reset_login():
             # Log out and back in as the original user.
             self.browser.get(self.url("/accounts/logout/"))
-            self._login(is_first_time_user=False)
+            self._login()
             self.browser.get(project_page)
             var_sleep(1)
 
@@ -399,7 +386,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         from siteapp.management.commands.send_notification_emails import Command as send_notification_emails
 
         # Log in and create a new project.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self._new_project()
         self._start_task()
 
@@ -465,7 +452,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log back in as the original user.
         discussion_page = self.browser.current_url
         self.browser.get(self.url("/accounts/logout/"))
-        self._login(is_first_time_user=False)
+        self._login()
         self.browser.get(discussion_page)
 
         # Test that we can see the comment and the reaction.
@@ -474,7 +461,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def test_questions_text(self):
         # Log in and create a new project.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self._new_project()
         self.click_element('#question-question_types_text .task-commands form.start-task a')
 
@@ -523,11 +510,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5)
 
         # Finished.
-        self.assertRegex(self.browser.title, "^Test The Text Input Question Types - GovReady Q$")
+        self.assertRegex(self.browser.title, "^Test The Text Input Question Types - ")
 
     def test_questions_choice(self):
         # Log in and create a new project.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self._new_project()
         self.click_element('#question-question_types_choice .task-commands form.start-task a')
 
@@ -556,11 +543,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5)
 
         # Finished.
-        self.assertRegex(self.browser.title, "^Test The Choice Question Types - GovReady Q$")
+        self.assertRegex(self.browser.title, "^Test The Choice Question Types - ")
 
     def test_questions_numeric(self):
         # Log in and create a new project.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self._new_project()
         self.click_element('#question-question_types_numeric .task-commands form.start-task a')
 
@@ -582,11 +569,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5)
 
         # Finished.
-        self.assertRegex(self.browser.title, "^Test The Numeric Question Types - GovReady Q$")
+        self.assertRegex(self.browser.title, "^Test The Numeric Question Types - ")
     
     def test_questions_media(self):
         # Log in and create a new project.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self._new_project()
         self.click_element('#question-question_types_media .task-commands form.start-task a')
 
@@ -618,11 +605,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5)
 
         # Finished.
-        self.assertRegex(self.browser.title, "^Test The Media Question Types - GovReady Q$")
+        self.assertRegex(self.browser.title, "^Test The Media Question Types - ")
 
     def test_questions_module(self):
         # Log in and create a new project.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self._new_project()
         self.click_element('#question-question_types_module .task-commands form.start-task a')
 
@@ -652,18 +639,18 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             self.fill_field("#inputctrl", answer_text)
             self.click_element("#save-button")
             var_sleep(.5)
-            self.assertRegex(self.browser.title, "^A Simple Module - GovReady Q$")
+            self.assertRegex(self.browser.title, "^A Simple Module - ")
 
             # Return to the main module.
             self.click_element("#return-to-supertask")
             var_sleep(.5)
 
         do_submodule("My first answer.")
-        self.assertRegex(self.browser.title, "^Test The Module Question Types - GovReady Q$")
+        self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 
         # Go back to the question and start a second answer.
         def change_answer():
-            self.click_element("#change-answer-q_module")
+            self.click_element("#link-to-question-q_module a")
             var_sleep(.5)
         change_answer()
         self.assertRegex(self.browser.title, "Next Question: module")
@@ -671,7 +658,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#save-button")
         var_sleep(.5)
         do_submodule("My second answer.")
-        self.assertRegex(self.browser.title, "^Test The Module Question Types - GovReady Q$")
+        self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 
         # Go back and change the answer to the first one again.
         change_answer()
@@ -679,11 +666,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element('#question input[name="value"][value="%d"]' % task_id)
         self.click_element("#save-button")
         var_sleep(.5)
-        self.assertRegex(self.browser.title, "^Test The Module Question Types - GovReady Q$")
+        self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 
     def test_questions_encrypted(self):
         # Log in and create a new project.
-        self._login(is_first_time_user=True, is_first_time_org=True)
+        self._login()
         self._new_project()
         self.click_element('#question-question_types_encrypted .task-commands form.start-task a')
 
