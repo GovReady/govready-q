@@ -76,13 +76,18 @@ class Command(BaseCommand):
         from htmlemailer import send_mail
         from email.utils import format_datetime
         from siteapp.templatetags.notification_helpers import get_notification_link
+        url = get_notification_link(target, notif)
+        if url is None:
+            # Some notifications go stale and can't generate links,
+            # and then we can't email notifications.
+            return
         send_mail(
             "email/notification",
             settings.DEFAULT_FROM_EMAIL,
             [notif.recipient.email],
             {
                 "notification": notif,
-                "url": organization.get_url(get_notification_link(target, notif)),
+                "url": organization.get_url(url),
                 "whatreplydoes": what_reply_does,
             },
             headers={
