@@ -1,0 +1,22 @@
+# This is an example CircleCI YAML file. Since it's not at the
+# repository root, this isn't actually used. It's an example
+# of a minimal setup for PWS.
+#
+# This file executes deploy.sh as a deployment step in CircleCI.
+# Be sure to have CircleCI set the $PWS_USER and $PWS_PASS
+# environment variables.
+machine:
+ python:
+   # deploy.sh expects pip3 to be available
+   version: 3.5.2
+test:
+  override:
+    # CircleCI will balk if there are no tests.
+    - /bin/true
+deployment:
+  dev: # just a label
+    branch: deployment_on_pws
+    commands:
+      - ./deploy.sh
+      # TODO: Add a command to verify that the deployment worked.
+      

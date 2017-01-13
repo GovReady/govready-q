@@ -4,19 +4,15 @@ Q is an information gathering platform for people, tuned to the specific needs o
 
 ---
 
-## TODO
-TODO:
-- [ ] Move psycop install `pip install -r pgsql.txt` so local installs don't need PostgreSQL
-
 ## Development
 
-Q is developed in Python on top of Django.
+Q is developed in Python 3 on top of Django.
 
 To develop locally, run the following commands:
 
 	sudo apt-get install python3-pip unzip # or appropriate for your system
-	pip3 install -r dev_requirements.txt
-	deployment/fetch-vendor-resources.sh
+	pip3 install -r requirements.txt
+	./fetch-vendor-resources.sh
 	python3 manage.py migrate
 	python3 manage.py load_modules
 	python3 manage.py createsuperuser
@@ -43,49 +39,13 @@ Once the modules are loaded, you can create the first "project" a.k.a. "system" 
 
 After logging in as the superuser, you will probably want to invite non-superusers into the organization from within the application (from organization settings or project settings) and then possibly switch to that account. The debug server is configured to dump all outbound emails to the console. So if you "invite" others to join you within the application, you'll need to go to the console to get the invitation acceptance link.
 
-### Testing
+## Testing
 
 To run the integration tests you'll also need to install `chromedriver` e.g., `brew install chromedriver`
 
-The test suite is run with: `make test`
+The test suite is run with: `./manage.py test`
 
-## Test kitchen (not on this branch)
-
-Q can be tested within test-kitchen + vagrant with Ubuntu 14.04. Assuming you've installed `kitchen` (chefdk can be useful) and Vagrant, then:
-
-```
-kitchen converge
-```
-
-will bring up your instance.  Try `curl http://localhost:8000` to see it. Then login with:
-
-```
-kitchen login
-```
-
-
-## Cloud Foundry (under development)
-
-To launch, use the `make` targets, generally, for the `dev` space
-
-```
-CFENV=dev make clean provision run
-```
-
-or for a sandbox deployment not using a domain apex:
-
-```
-make clean provision run
-```
-
-The above steps will always do the migrations as they are idempotent (not changing the database unless there are new changes), then start the app. This is not designed for running with multiple instances. As Q is a pre-release application there's no need to scale to multiple instances (https://gettingreal.37signals.com/ch04_Scale_Later.php), although the app should be stateless to support running as across multiple instances later (e.g. following 12-factor principals)
-
-Once the `cf push` step of `make run` is complete, visit the site at https://govready-q.cfapps.io
-
-Notes:
-* To vendor all of the requirements with `pip` it seems you have to have PostgreSQL installed locally (shrug). Try `brew install postgresql` on OsX.
-* Suggestions for migrations at: https://docs.cloudfoundry.org/devguide/services/migrate-db.html
-
+We have continuous integration set up with CircleCI at https://circleci.com/gh/GovReady/govready-q.
 
 ## Interactive Deployment
 

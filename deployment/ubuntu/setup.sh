@@ -33,7 +33,7 @@ apt-get install -y \
 rm -f /etc/nginx/sites-enabled/default
 
 # Put in our nginx site config.
-ln -sf `pwd`/deployment/nginx.conf /etc/nginx/sites-enabled/$DOMAIN
+ln -sf `pwd`/deployment/ubuntu/nginx.conf /etc/nginx/sites-enabled/$DOMAIN
 
 # Create a new TLS private key if we don't have one yet.
 if [ ! -f /etc/ssl/local/ssl_certificate.key ]; then
@@ -68,7 +68,7 @@ sudo -u site mkdir -p ../public_html/static
 sudo -u site pip3 install -r dev_requirements.txt
 
 # Fetch other dependencies.
-sudo -u site deployment/fetch-vendor-resources.sh
+sudo -u site ./fetch-vendor-resources.sh
 
 # Create database / migrate database.
 # TODO: Get rid of this in a real production environment because we should
@@ -83,7 +83,7 @@ sudo -u site python3 manage.py migrate
 sudo -u site python3 manage.py collectstatic --noinput
 
 # Supervisor, which runs uwsgi
-ln -sf `pwd`/deployment/supervisor.conf /etc/supervisor/conf.d/q.govready.com.conf
+ln -sf `pwd`/deployment/ubuntu/supervisor.conf /etc/supervisor/conf.d/q.govready.com.conf
 service supervisor restart
 
 # Restart nginx.

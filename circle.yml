@@ -1,65 +1,25 @@
-# https://circleci.com/docs/deploy-bluemix/
-#
-# ToDo:
-#  enable caching staticfiles and vendor
-dependencies:
-  pre:
-    - pip install --upgrade pip
-    - curl -v -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'
-    - sudo dpkg -i cf-cli_amd64.deb
-    - cf -v
-  cache_directories:
-    - vendor
-    - siteapp/static/vendor
+# A CircleCI configuration file because we do continuous integration testing!
 
-# maching build images (Ubuntu version) are set in Project Settings, not
-# in this configuration file.
 machine:
   python:
-    version: 3.4.4
-  # Add some environment variables
-  environment:
-    APPNAME: govready-q
-    AUTOPILOT: https://github.com/contraband/autopilot/releases/download/0.0.2/autopilot-linux
+    version: 3.5.2 # matches Python version in Ubuntu 16.04 in deployment
+
+dependencies:
+  pre:
+    # For good measure? Not sure this is really necessary.
+    - pip install --upgrade pip
+  # CircleCI will run `pip install requirements.txt` automatically at this stage.
+  post:
+    - ./fetch-vendor-resources.sh
+  cache_directories:
+    - siteapp/static/vendor # created the first time by fetch-vendor-resources.sh
 
 test:
-  pre:
-    - deployment/fetch-vendor-resources.sh
-    - pip install -r dev_requirements.txt
-    - bundle install --gemfile compliance/Gemfile
+  # CircleCI would automatically run `manage.py test` but our Selenium
+  # tests take a long time and CircleCI will timeout if there's no
+  # console output after 10 minutes. So we split the tests up into
+  # multiple commands.
   override:
-    - python manage.py test
-    - python -m unittest discover tests
-
-# Before deploying, set up
-# PWS_USER and PWS_PASSWORD as env vars in CircleCI
-# provision DATABASE_URL, if needed, and SECRET_KEY via local release
-deployment:
-  development: # just a label; label names are completely up to you
-    branch: master
-    commands:
-      - cf api https://api.run.pivotal.io
-      - cf auth $PWS_USER $PWS_PASS
-      - cf target -o GovReady -s dev
-      - cf target # echo space to confirm ok
-      - cf install-plugin -f $AUTOPILOT
-      - CFENV=dev make requirements
-      - ./cf-blue-green.sh $APPNAME
-      - compliance/remote.sh # needs developer access to run SSH
-      - cf logout # let circle.sh run as another user
-      - compliance/circle.sh # compliance runs after release with PWS_AUDITOR_USER
-      - cf logout
-  production: # just a label; label names are completely up to you
-    branch: prod
-    commands: # ToDo: bundle all this into a script, too much copypasta
-      - cf api https://api.run.pivotal.io
-      - cf auth $PWS_PROD_USER $PWS_PROD_PASS
-      - cf target -o GovReady -s prod
-      - cf target # echo space to confirm ok
-      - cf install-plugin -f $AUTOPILOT
-      - CFENV=prod make requirements
-      - ./cf-blue-green.sh $APPNAME
-      - compliance/remote.sh # needs developer access to run SSH
-      - cf logout # let circle.sh run as another user
-      - compliance/circle.sh # compliance runs after release with PWS_AUDITOR_USER
-      - cf logout
+    - ./manage.py test guidedmodules
+    - ./manage.py test siteapp.tests.LandingSiteFunctionalTests
+    - ./manage.py test siteapp.tests.OrganizationSiteFunctionalTests
