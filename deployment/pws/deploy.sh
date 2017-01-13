@@ -1,4 +1,18 @@
 #!/bin/bash
+#
+# This is the main Pivotal Web Services deploy script.
+#
+# This script is run locally (or from within a continuous deployment
+# environment) to assemble the assets needed to run `cf push`,
+# and then it performs a blue-green-deploy to push the update
+# without downtime.
+#
+# Run with:
+#
+# ./deploy.sh
+#
+# See the README for more details.
+
 set -euf -o pipefail # abort script on error
 
 PWS_ORGANIZATION=GovReady
@@ -73,7 +87,7 @@ if [[ ! -f /usr/bin/pg_config || ! -f /usr/bin/pg_config ]]; then
 	sudo apt-get install libpq-dev postgresql-common
 fi
 
-# The Python buildpack assumps a requirements.txt file here, so
+# The Python buildpack assumes a requirements.txt file here, so
 # create it from the main application dependencies and the Cloud
 # Foundry-specific dependencies stored here.
 cat src/requirements.txt cf_requirements.txt > requirements.txt

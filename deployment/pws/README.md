@@ -41,18 +41,22 @@ You can copy and modify from this, but _delete the comments_ before you paste it
 
 You'll also need to configure Mailgun to send incoming replies to notification emails to an HTTP hook by giving Mailgun a URL on our domain hosted at PWS.
 
+TODO: Add explanation of that.
+
 # Performing a Deployment
 
-To deploy to Pivotal Web Services, run:
+To deploy to Pivotal Web Services, change to this directory and then run:
 
 	./deploy.sh
 
 This deploy script:
 
-* Makes a fresh clone of the Q source code into `src`, cloning from your local `.git` directory
+* Makes a fresh clone of the Q source code into `src`, cloning from your local checkout (`../../.git`).
 * Installs and configures the Cloud Foundry command-line client (CLI), on first run.
 * Fetches remote vendor resources that are required to build the app container.
 * Pushes everything to the `GovReady` organization `dev` space as the app `govready-q`, first by creating a new app and, on success, swapping the old app and the new app and then killing the routes for the old app.
+
+Note that a zero-downtime deployment like this should not be run if there are backwards-incompatible changes such as to the database schema, since there will be old and new code running concurrently while the deployment finishes.
 
 # Continuous Integration
 

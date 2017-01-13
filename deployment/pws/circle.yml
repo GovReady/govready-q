@@ -1,3 +1,7 @@
+# This is an example CircleCI YAML file. Since it's not at the
+# repository root, this isn't actually used. It's an example
+# of a minimal setup for PWS.
+#
 # This file executes deploy.sh as a deployment step in CircleCI.
 # Be sure to have CircleCI set the $PWS_USER and $PWS_PASS
 # environment variables.
