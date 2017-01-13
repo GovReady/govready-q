@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Change to the parent directory of the directory that contains this script.
-cd $(dirname $(dirname $(readlink -m $0)))
+cd $(dirname $(dirname $(dirname $(readlink -m $0))))
 
 # Pull from git.
 git pull --rebase &&
