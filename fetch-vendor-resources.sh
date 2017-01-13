@@ -58,8 +58,7 @@ wget -O $VENDOR/emojione.min.js \
 
 # google fonts
 # first download a helper (note: we're about to run a foriegn script locally)
-# TODO: Requires bash v4 not available on macOS and it seems to always exit with
-# a non-zero exit code even on success, which causes this script to error out.
+# TODO: Requires bash v4 not available on macOS.
 wget -O /tmp/google-font-download \
         https://raw.githubusercontent.com/neverpanic/google-font-download/master/google-font-download
-(cd $VENDOR; bash /tmp/google-font-download -o google-fonts.css Hind:400 Hind:700) || /bin/true
+(cd $VENDOR; bash /tmp/google-font-download -f woff,woff2 -o google-fonts.css Hind:400 Hind:700)
