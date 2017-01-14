@@ -393,7 +393,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.assertRegex(notification_email_body, "mentioned you in")
 
         # Leave an emoji reaction on the initial user's comment.
-        self.click_element("#react-with-emoji")
+        self.click_element(".react-with-emoji")
         var_sleep(.5) # emoji selector shows
         self.click_element("#emoji-selector .emoji[data-emoji-name=heart]") # makes active
         self.click_element("body") # closes emoji panel and submits via ajax
@@ -409,7 +409,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # Test that we can see the comment and the reaction.
         self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
-        self.assertInNodeText("reacted", "#discussion .reactions .reply[data-emojis=heart]")
+        self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
     def test_questions_text(self):
         # Log in and create a new project.

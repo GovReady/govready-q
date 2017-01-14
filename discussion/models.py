@@ -272,7 +272,7 @@ class Comment(models.Model):
 
         def get_user_role():
             ret = self.discussion.attached_to.get_user_role(self.user)
-            if ret:
+            if ret is not None:
                 return ret
             if self.user in self.discussion.guests.all():
                 return "guest"

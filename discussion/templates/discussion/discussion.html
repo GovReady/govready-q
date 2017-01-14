@@ -28,58 +28,51 @@
   margin-bottom: 1.5em;
 }
 
-#discussion .comment.author-is-self.panel {
-  border-color: #ddf;
+#discussion .comment {
+  margin-bottom: 15px;
 }
-#discussion .comment.author-is-self .panel-heading {
-  /* copied from bootstrap theme for panel-info */
-  background-image: -webkit-linear-gradient(#d9edf7 0%, #c4e3f3 100%);
-  background-image: -o-linear-gradient(#d9edf7 0%, #c4e3f3 100%);
-  background-image: linear-gradient(#d9edf7 0%, #c4e3f3 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd9edf7', endColorstr='#ffc4e3f3', GradientType=0);
-}
-
 #discussion .comment .comment-avatar {
+  border-radius: 10px;
   border: 1px solid #CCC;
-  margin-right: .5em;
-  max-width: 25px;
-  max-height: 25px; /* same as line height */
 }
-#discussion .comment .username {
-  color: black;
-}
-#discussion .comment .comment-author-role {
-  border: 1px solid #AAA;
-  font-size: 90%;
-  padding: 2px 4px;
-}
-#discussion .comment .proposed-answer {
-  margin: 1em 0;
-  border: 1px solid #EEE;
-  padding: .5em 2em .5em 1em;
-}
-#discussion .comment .commands {
-  margin: 0 -15px -15px -15px;
+#discussion .comment .comment-meta {
+  margin: -15px -15px 15px -15px;
   padding: 10px 15px;
-  border-top: 1px solid #EEE;
-  font-size: 11px;
+  border-bottom: 1px solid #EEE;
 }
-#discussion .comment .commands a {
-  margin-right: 1em;
+#discussion .comment .comment-commands {
+  text-align: right;
 }
-#discussion .comment .commands .react-with-emoji {
-  color: #999;
-}
-  #discussion .comment .commands .react-with-emoji:hover {
-    color: #00A;
+  #discussion .comment .comment-commands > * {
+    margin-left: 15px;
+    color: #999;
+  }
+    #discussion .comment .comment-commands > *:hover {
+      color: #5A5;
+    }
+  #discussion .comment .comment-author {
+  }
+    #discussion .comment.author-is-self .comment-author {
+      font-weight: bold;
+    }
+  #discussion .comment .comment-author-role {
   }
 #discussion .comment .ifeditpriv { display: none; }
 #discussion .comment.has-edit-priv .ifeditpriv { display: inline; }
 #discussion .comment .ifdeletepriv { display: none; }
 #discussion .comment.has-delete-priv .ifdeletepriv { display: inline; }
 #discussion .comment.author-is-self .ifnotauthor { display: none; }
-#discussion .comment .reply {
-  margin-top: 1.25em;
+#discussion .comment .replies {
+  margin: 15px -15px -15px -15px;
+  padding: 0 15px;
+  border-top: 1px solid #EEE;
+  font-size: 95%;
+}
+  #discussion .comment .replies .reply {
+    margin: 15px 0;
+  }
+#discussion .comment .comment-text p:last-child {
+  margin-bottom: 0;
 }
 #discussion .event {
   margin: 15px 0;
@@ -167,15 +160,37 @@
 </div>
 
 <div id="comment-template" style="display: none">
-  <div class="comment panel panel-default">
-    <div class="panel-heading">
-      <img class="comment-avatar" style="display: none">
-      <span class="comment-author">...</span>
-      <span class="comment-author-role"></span>
-      commented <span class="comment-date"></span>
+  <div class="comment row">
+    <div class="col-xs-2 col-lg-1" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
+      <img class="comment-avatar img-responsive" style="display: none">
     </div>
+    <div class="col-xs-10 col-lg-11">
+    <div class="panel panel-default">
     <div class="panel-body">
+      <div class="comment-meta">
+        <div class="row">
+          <div class="col-sm-10">
+            <span class="comment-author">...</span>
+            <span class="comment-author-role">...</span>
+            commented
+            <span class="comment-date"></span>
+          </div>
+          <div class="col-sm-2 comment-commands">
+            <a title="Edit your comment" class="ifeditpriv" href="#" onclick="return begin_comment_edit(this);">
+              <i class="glyphicon glyphicon-pencil"></i>
+            </a>
+            <a title="React to this comment with an emoji" class="ifnotauthor react-with-emoji" href="#" onclick="return begin_emoji_reaction(event, this);">
+              <i class="glyphicon glyphicon-plus"></i>
+              <i class="glyphicon glyphicon-heart"></i>
+            </a>
+            <a title="Delete this comment" class="ifdeletepriv" href="#" onclick="return do_delete_comment(this);">
+              <i class="glyphicon glyphicon-trash"></i>
+            </a>
+          </div>
+        </div> <!-- /row -->
+      </div> <!-- /comment-meta -->
       <div class="comment-text"> </div>
+
       <form class="comment-edit clearfix" style="display: none" onsubmit="do_comment_save(this); return false;">
         <textarea class="form-control" style="width: 100%;"> </textarea>
         <div style="margin: 1em 0; float: right">
@@ -199,26 +214,13 @@
       </div>
       {% endcomment %}
 
-      <div class="commands">
-          <a title="Edit your comment" class="ifeditpriv" href="#" onclick="return begin_comment_edit(this);">
-            <i class="glyphicon glyphicon-pencil"></i>
-          </a>
-          <span class="emoji-reactions">
-          </span>
-          <a id="react-with-emoji" title="React to this comment with an emoji" class="ifnotauthor react-with-emoji" href="#" onclick="return begin_emoji_reaction(event, this);">
-            <i class="glyphicon glyphicon-plus"></i>
-            <i class="glyphicon glyphicon-heart"></i>
-          </a>
-          <a title="Delete this comment" class="ifdeletepriv" href="#" onclick="return do_delete_comment(this);">
-            <i class="glyphicon glyphicon-trash"></i>
-          </a>
+      <div class="replies">
       </div>
-
-      <div class="reactions">
-      </div>
-    </div>
-  </div>
-</div>
+    </div> <!-- /panel-body -->
+  </div> <!-- /panel -->
+ </div> <!-- /col -->
+ </div> <!-- /row -->
+</div> <!-- /template -->
 
 <div id="reply-template" style="display: none">
   <div class="reply">
@@ -272,6 +274,7 @@
 function init_discussion_html() {
   // Clicks outside of the emoji-selector trigger closing & saving the dialog.
   $(document).click(save_emoji_reaction);
+  $('body').append($('#emoji-selector')); // move to body to make positioning easier in case this whole template is inside a relatively positioned element like a col
   $('#emoji-selector').click(function(event) { event.stopPropagation(); });
   $('#emoji-selector .emoji').each(function() {
     // Initialize - replace text in markup with images.
@@ -469,7 +472,9 @@ function render_comment(item) {
   }
 
   // If the reaction is empty, i.e. if the emojis were edited-away, then hide the
-  // DOM node. Continue processing because we still have to update max_comment_id.
+  // DOM node. Continue processing because we still have to update max_comment_id
+  // and update the emoji state, which is read back to pre-populate this user's
+  // emoji reactions.
   n.toggle(!item.replies_to || (item.emojis != null && item.emojis.length > 0));
 
   // Fill in.
@@ -482,7 +487,7 @@ function render_comment(item) {
   n.find('.comment-author').text(item.user.name);
   n.find('.comment-date').text(item.date_relative);
   n.find('.comment-date').attr('title', new Date(item.date_posix * 1000));
-  n.find('.comment-author-role').text(item.user_role);
+  n.find('.comment-author-role').text(item.user_role ? ("(" + item.user_role + ")") : "");
   n.find('.comment-text').html(item.text_rendered);
     n.find('.comment-text').find("img").addClass("img-responsive");
   n.attr('data-text', item.text);
@@ -493,12 +498,11 @@ function render_comment(item) {
   if (item.user.id == {{request.user.id}})
     n.addClass('author-is-self');
   n.find('.comment-emojis').html('');
-  if (item.emojis) {
-    n.attr('data-emojis', item.emojis.join(','));
-    item.emojis.forEach(function(item) {
-      n.find('.comment-emojis').append(emojione.toImage(":" + item + ":"))
-    })
-  }
+  if (!item.emojis) item.emojis = []; // if null, turn into empty array
+  n.attr('data-emojis', item.emojis.join(','));
+  item.emojis.forEach(function(item) {
+    n.find('.comment-emojis').append(emojione.toImage(":" + item + ":"))
+  })
 
   // The rest is only if we're seeing a new comment.
   if (!isnew)
@@ -522,7 +526,7 @@ function render_comment(item) {
     c.append(n);
   } else {
     var parent = $('#discussion .comment[data-id=' + item.replies_to + ']');
-    parent.find('.reactions').append(n);
+    parent.find('.replies').append(n);
   }
 
   // Remember the last comment we've seen, for polling.
@@ -611,7 +615,6 @@ function get_comment_from_command_elem(command_elem) {
 
 function begin_comment_edit(command_elem) {
   var c = get_comment_from_command_elem(command_elem);
-  c.find('.commands').hide();
   c.find('.comment-edit textarea').css({ minHeight: c.find('.comment-text').height()+30 });
   c.find('.comment-edit textarea').val(c.attr('data-text'));
   c.find('.comment-text').hide();
@@ -621,7 +624,6 @@ function begin_comment_edit(command_elem) {
 
 function close_comment_edit(command_elem) {
   var c = get_comment_from_command_elem(command_elem);
-  c.find('.commands').show();
   c.find('.comment-text').show();
   c.find('.comment-edit').hide();
   return false;
@@ -675,18 +677,20 @@ function begin_emoji_reaction(event, command_elem) {
   event.stopPropagation();
 
   // Save any emoji reaction currently being edited.
-  if (current_emoji_reaction)
+  if (current_emoji_reaction) {
     save_emoji_reaction();
+    return false;
+  }
 
   // Initialize and show.
   var c = get_comment_from_command_elem(command_elem);
   current_emoji_reaction = c;
-  var et = c.find('.commands .react-with-emoji');
+  var et = c.find('.comment-meta .react-with-emoji');
   var es = $('#emoji-selector');
 
   // reset state to previously reacted emojis
   es.find('.emoji').removeClass('active');
-  var emojis = c.find('.reactions .author-is-self').attr('data-emojis');
+  var emojis = c.find('.replies .author-is-self').attr('data-emojis');
   if (emojis) {
     emojis.split(',').forEach(function(shortname) {
       es.find('.emoji').each(function() {
@@ -700,8 +704,8 @@ function begin_emoji_reaction(event, command_elem) {
     display: 'block',
     position: 'absolute',
     width: '20em',
-    left: et.position().left + et.width() + 5, // using position() rather than offset() because we're witihn a relatively positioned column (and the pop-up is defined within the same col, so that's ok)
-    top: et.position().top - 30
+    left: et.offset().left + et.width() + 5,
+    top: et.offset().top - 30
   })
   return false;
 }
