@@ -8,19 +8,19 @@ What Q tracks
 GovReady Q tracks the following major entities
 
 * Users - individuals with logins to an installed instance of Q
-* Organizations - identifiable entities, e.g., a companies
+* Organizations - entities, e.g., companies, around with data in Q is segmented
 * Systems/Projects - IT systems or IT projects (we use the terms interchangeably)
 * Membership - associating individual users with organizations and systems
 * Tasks/Modules - coherent grouping of questions and educational content
 * Questions/Answers - specific snippet of content within a Task
-* Templates - automatically generated artifact supporting variable subsitution
+* Templates - drives automatic generation of artifacts, supporting variable subsitution
 
 Users
 -----
 
 ### Global user data
 
-A User is authenticated by a unique username and an encrypted password.
+A User is authenticated by a unique username and a hashed password.
 
 Each User has one or more email addresses associated with their account and notification email settings.
 
