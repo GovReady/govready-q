@@ -20,7 +20,7 @@ Users
 
 ### Global user data
 
-A User is authenticated by a unique username and a password.
+A User is authenticated by a unique username and an encrypted password.
 
 Each User has one or more email addresses associated with their account and notification email settings.
 
@@ -28,9 +28,11 @@ User accounts --- i.e. the fields above --- are global to a Q deployment. They a
 
 ### Segmented user data
 
-Each User additionally has an "account project" within each Organization, which is a Project that holds additional profile information including their full name, a profile photo, etc. The User account project is segmented by Organization: each User has a different set of profile information in each Organization.
+Each User additionally has a unique "organization user profile" associated with each organization to support the same User having different roles at different organizations. (This user profile is an "account project" that holds additional User information including a User's full name, profile photo, etc. In short, each User has a different profile in each Organization.
 
-The profile information can be seen by all other members of the Organization because it is used in the history of question answers, notifications, discussions, and many other places. The User is the only "member" of their account projects (see Project *membership* below), which means they are the only User who can edit the information.
+The profile information can be seen by all other members of the Organization because it is used in the history of question answers, notifications, discussions, and many other places. 
+
+(The User is the only "member" of their account projects (see Project *membership* below), which means they are the only User who can edit the information.)
 
 ### System staff
 
