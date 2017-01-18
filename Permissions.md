@@ -3,6 +3,18 @@ User Permissions in Q
 
 This document describes the user permissions model in Q.
 
+What Q tracks
+-------------
+GovReady Q tracks the following major entities
+
+* Users - individuals with logins to an installed instance of Q
+* Organizations - identifiable entities, e.g., a companies
+* Systems/Projects - IT systems or IT projects (we use the terms interchangeably)
+* Membership - associating individual users with organizations and systems
+* Tasks/Modules - coherent grouping of questions and educational content
+* Questions/Answers - specific snippet of content within a Task
+* Templates - automatically generated artifact supporting variable subsitution
+
 Users
 -----
 
