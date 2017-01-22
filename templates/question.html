@@ -112,7 +112,7 @@ h2 { display: none; }
     <h1>{{q.spec.title|safe}}</h1>
 
     <div id="question">
-        <form {% if not write_priv %}class="disabled"{% endif %}>
+        <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="save">
 

@@ -2,11 +2,11 @@ from django.conf import settings
 
 from datetime import datetime
 
-def sample_function(question, existing_answers):
+def sample_function(question=None, answers=None, **kwargs):
     import urllib.request, urllib.parse
     import base64, json
 
-    project_url = existing_answers.get("project_url")
+    project_url = answers.get("project_url")
     if not project_url:
         raise ValueError("The website URL is not set.")
 

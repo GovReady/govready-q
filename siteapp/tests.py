@@ -648,6 +648,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5)
         self.assertNotInNodeText('some text that will be encrypted', '#document-1-body')
 
-def sample_external_function(question, existing_answers):
+def sample_external_function(question, answers, **kwargs):
     # For test_questions_media's module.
-    return repr((question, existing_answers))
+    return repr((question, answers))

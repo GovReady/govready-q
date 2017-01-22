@@ -125,8 +125,15 @@ def next_question(request, taskid, taskslug):
 
             # run external functions
             if q.spec['type'] == "external-function":
+                # Make a deepcopy of some things so that we don't allow the function
+                # to mess with our data.
+                import copy
                 try:
-                    value = module_logic.run_external_function(q.module.key, q.spec, answered.as_dict())
+                    value = module_logic.run_external_function(
+                        copy.deepcopy(q.module.spec), copy.deepcopy(q.spec), answered,
+                        project_name=task.project.title,
+                        project_url=task.project.organization.get_url(task.project.get_absolute_url())
+                    )
                 except ValueError as e:
                     return JsonResponse({ "status": "error", "message": str(e) })
 
