@@ -422,7 +422,7 @@ In document templates and impute conditions, the value of `interstitial` questio
 
 #### `external-function`
 
-An `external-function` question is not really a question at all but instead runs some Python code and stores the result as the value of the question. The `prompt` is displayed to the user as normal. The function is run when the user clicks the Submit button.
+An `external-function` question is not really a question at all but instead runs some Python code when the user clicks the Submit button and stores the result as the value of the question. The `prompt` is displayed to the user as normal. The function is run when the user clicks the Submit button.
 
 The function is specified as
 
@@ -431,7 +431,12 @@ The function is specified as
 
 where `{function-name}` identifies the Python function to be executed. If `{function-name}` does not have any dots, then the function is loaded from a Python module that is named the same as the YAML file, except with a `py` extension instead of `yaml`. If `{function-name}` has a dot, then it is a Python module/function path and the Python module must be globally available, like `guidedmodules.sample_external_functions.sample_function`.
 
-The function is called with two arguments, a dict containing the question's specification (i.e. a dict containing keys `id`, `type`, and `function`, and whatever else might be in this part of the the YAML file) and a dict of module answers mapping question IDs to answers previous entered by the user.
+The function should have the following signature:
+
+	my_function(module=None, question=None, answers=None, **kwargs):
+	    pass
+
+The arguments provide information about the module and the question being answered as well as all of the answers to the module that have been provided so far. `question` is a dict containing the question's specification (i.e. a dict containing keys `id`, `type`, and `function`, and whatever else might be in this part of the the YAML file). `answers` is a dict mapping question IDs to answer values. `**kwargs` ensures forwards-compatibility with future versions of Q.
 
 #### `raw`
 
