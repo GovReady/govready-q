@@ -129,7 +129,11 @@ def next_question(request, taskid, taskslug):
                 # to mess with our data.
                 import copy
                 try:
-                    value = module_logic.run_external_function(copy.deepcopy(q.module.spec), copy.deepcopy(q.spec), answered)
+                    value = module_logic.run_external_function(
+                        copy.deepcopy(q.module.spec), copy.deepcopy(q.spec), answered,
+                        project_name=task.project.title,
+                        project_url=task.project.organization.get_url(task.project.get_absolute_url())
+                    )
                 except ValueError as e:
                     return JsonResponse({ "status": "error", "message": str(e) })
 

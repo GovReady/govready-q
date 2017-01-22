@@ -1347,8 +1347,8 @@ def find_external_function(module_id, function_name):
     module = importlib.import_module(module_name)
     return getattr(module, function_name)
 
-def run_external_function(module, question, answers):
+def run_external_function(module, question, answers, **additional_args):
     # Find and run the method.
     function_name = question.get("function", "")
     method = find_external_function(module["id"], function_name)
-    return method(module=module, question=question, answers=answers.as_dict())
+    return method(module=module, question=question, answers=answers.as_dict(), **additional_args)
