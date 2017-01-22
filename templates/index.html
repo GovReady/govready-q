@@ -12,26 +12,47 @@ Home
 
 <div class="jumbotron">
   <div class="container">
-    <h1>Welcome to GovReady Q</h1>
-    <p>We&rsquo;ll help you do compliance faster, better and easier.</p>
 
-    {% if not has_projects %}
-    <p><a class="btn btn-success btn-lg" role="button" href="/new-project">Start a New Project/System &raquo;</a></p>
-    {% else %}
-    <p><a class="btn btn-success btn-lg" role="button" href="/projects">View Your Projects/Systems &raquo;</a></p>
-    {% endif %}
+    <div class="row" style="border:0px solid black;max-width: 1024px;margin:40px auto;margin-bottom:80px;">
+      {% with picture=request.organization.get_logo %}
+        {% if picture %}
+          <div class="col-md-2" style="border: 0px solid black;">
+            <img src="{{picture.url}}" height="160" alt="Profile Picture" style="">
+          </div>
+          <div class="col-md-10"  style="text-align: center; border: 0px solid black;">
+        {% else %}
+          <div class="col-md-12">
+        {% endif %}
+      {% endwith %}
+        <h1 style="margin-top:0px;">
+          {{request.organization}} Assessment Kit
+          <div class="small">powered by GovReady Q</div>
+        </h1>
+        <p><b>Open source compliance software for everyone to innovate securely</b></p>
+      </div>
+    </div>
+
 
   <div class="row" style="margin-top: 2em">
     <div class="col-md-6">
-			<p>Click View Your Projects/Systems to access your existing projects and create new ones. Once you get into a project you’ll be directed to your next task. You should generally work through these tasks in order, though it is OK to skip questions you don’t yet know the answer to &mdash; Q makes it easy to track In Progress tasks and permits you to update with new information as your workflow allows. </p>
+			<p>Stop suffering and start answering simple questions with your teammates. We'll help you track down security risks, guide you through implementing controls, and prepare compliance documents.</p>
 
-      <p>And keep in mind that as you enter information, you’re creating the actual compliance output documents. You can click the Preview button at any time to see how the information you’re entering is populating the documents.</p>
+      {% if not has_projects %}
+      <p><a class="btn btn-success btn-lg" role="button" href="/new-project">Start a New Project/System &raquo;</a></p>
+      {% else %}
+      <p><a class="btn btn-success btn-lg" role="button" href="/projects">View Your Projects/Systems &raquo;</a></p>
+      {% endif %}
+
     </div>
+
+
+
 		<div class="col-md-6">
       <div class="embed-responsive embed-responsive-16by9">
         <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/F5QN28WGTbs"></iframe>
       </div>
 		</div>
+
 	</div>
   </div>
 </div>
