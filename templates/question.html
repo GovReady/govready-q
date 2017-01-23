@@ -388,7 +388,6 @@ h2 { display: none; }
             {% if not is_discussion_guest %}
             {% if not task.project.is_account_project or task.can_transfer_owner %}
             <br /><br />
-            <a href id="ask-team-show-options" class="" onclick="$('#need-help').slideToggle(); return false;"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
             {% endif %}
             {% endif %}
 
@@ -399,23 +398,23 @@ h2 { display: none; }
 
         {% if not is_discussion_guest %}
 
-        <ul id="need-help" style="display: none; padding: 0; margin-top: 1.25em; list-style:none;">
+        <div id="need-help" style="padding: 0; margin-top: 1.25em; list-style:none;">
           {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
-            <li id="start-a-discussion">
+            <span id="start-a-discussion">
                 {# if you can see this page, you can start a conversation #}
-                <a href="javascript:start_a_discussion()">Start team conversation to decide answer</a>
-            </li>
+                <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-list-alt"></span> Discuss</a>
+            </span>&nbsp;&nbsp;&nbsp;&nbsp;
           {% endif %}
           {% if task.can_transfer_owner %}
-            <li id="transfer-editorship">
+            <span id="transfer-editorship">
               {% if write_priv %}
-                <a href="javascript:invite_to_transfer_editor()">Ask a colleague to finish this {% if q.spec.type == "module" %}{{module.title}}{% endif %} module</a>
+                <a href="javascript:invite_to_transfer_editor()"><span class="glyphicon glyphicon-user"></span> Assign</a>
               {% else %}
                 The editor of this module can ask a colleague to finish this module
               {% endif %}
-            </li>
+            </span>
           {% endif %}
-        </ul>
+        </div>
         {% endif %}
 
     </div> <!-- /question -->
@@ -673,7 +672,7 @@ function start_a_discussion(is_page_load) {
         },
         success: function(res) {
           // replace link that starts discussion with static text
-          $('#start-a-discussion').text('Team conversation has been started: see below!');
+          $('#start-a-discussion').text('Discussion');
 
           // load the discussion
           display_discussion(res, is_page_load);
