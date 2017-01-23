@@ -15,14 +15,19 @@ from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch i
 from .notifications_helpers import *
 
 def homepage(request):
+    from allauth.account.forms import LoginForm
     return render(request, "index.html", {
         "has_projects": len(get_user_projects(request)) > 0,
+        "login_form": LoginForm,
     })
 
 def get_user_projects(request):
     # Show user what they can do --- list the projects they
     # are involved with.
     projects = set()
+
+    if not request.user.is_authenticated:
+        return projects
 
     # Add all of the Projects the user is a member of within the Organization
     # that the user is on the subdomain of.

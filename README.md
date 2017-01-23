@@ -67,6 +67,7 @@ If this is truly on a new machine, it will create a new Sqlite database. You'll 
 	  "debug": true,
 	  "host": "q.govready.com",
 	  "organization-parent-domain": "govready.com",
+	  "organization-seen-anonymously": false,
 	  "https": true,
 	  "secret-key": "something random here",
 	  "static": "/root/public_html"

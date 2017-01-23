@@ -8,6 +8,7 @@ from urllib.parse import urlsplit, urlencode
 from .models import Organization
 
 allowed_paths = None
+account_login_url = None
 
 class OrganizationSubdomainMiddleware:
     def __init__(self, next_middleware):
@@ -27,6 +28,7 @@ class OrganizationSubdomainMiddleware:
 
     def check_subdomain(self, request):
         global allowed_paths
+        global account_login_url
 
         # Use a different set of routes depending on whether the request
         # is for q.govready.com (the special landing domain) or an
@@ -60,19 +62,9 @@ class OrganizationSubdomainMiddleware:
             # Does this subdomain correspond with a known organization?
             org = Organization.objects.filter(subdomain=subdomain).first()
             if org:
-                # Only authenticated users can see inside organizational subdomains.
-                # We don't want to reveal any information about the organization.
-                # Except:
-                # * the log in and sign up pages must be accessible anonymously.
-                # * the invitation acceptance URL must be accessible while logged in
-                #   but not yet a member of the organization
-                if request.path.startswith("/invitation/accept/"):
-                    # Allow this through.
-                    request.organization = org
-                    return None
-
-                elif request.user.is_authenticated() and org.can_read(request.user):
-                    # Ok, this request is good.
+                if request.user.is_authenticated() and org.can_read(request.user):
+                    # This request is from an authenticated user who is
+                    # authorized to participate in the organization.
 
                     # Set the Organiation on the request object.
                     request.organization = org
@@ -82,6 +74,16 @@ class OrganizationSubdomainMiddleware:
                     request.user.localize_to_org(request.organization)
 
                     # Continue with normal request processing.
+                    return None
+
+                # The user isn't a participant in the organization but we may
+                # still reveal which org this is if...
+
+                # The invitation acceptance URL must be accessible while logged in
+                # but not yet a member of the organization.
+                elif request.path.startswith("/invitation/accept/"):
+                    # Allow this through, revealing which org this is.
+                    request.organization = org
                     return None
 
         # The HTTP host did not match a domain we can serve or that the user is authenticated
@@ -105,18 +107,28 @@ class OrganizationSubdomainMiddleware:
         # against.
         if allowed_paths == None:
             import re
-            allowed_paths = [reverse("account_login"), reverse("account_signup"),
+            allowed_paths = [
+                reverse("homepage"),
+                reverse("account_login"), reverse("account_signup"),
                 reverse("account_reset_password"), reverse("account_reset_password_done"), reverse("account_reset_password_from_key", kwargs={"uidb36":"aaaaaaaa", "key":"aaaaaaaa"}), reverse("account_reset_password_from_key_done")]
             allowed_paths = re.compile("|".join(("^" + re.escape(path).replace("aaaaaaaa", ".+") + "$") for path in allowed_paths))
 
         if allowed_paths.match(request.path):
-            # Don't leak any organization information. But do render the login/signup
-            # pages and allow the routes for the form POSTs from there.
+            # Don't leak any organization information, unless this deployment
+            # allows leaking on login pages.
+            if settings.REVEAL_ORGS_TO_ANON_USERS:
+                request.organization = org
+
+            # Render the page --- including the POST routes.
             return None
+
+        # Do the reverse once.
+        if account_login_url is None:
+            account_login_url = reverse("homepage")
 
         # The user is not authenticated on this domain, is logged out, and is requesting
         # a path besides login/signup. Redirect to the login route.
         qs = ""
-        if request.path != "/":
+        if request.path not in (account_login_url, settings.LOGIN_REDIRECT_URL):
             qs = "?" + urlencode({ "next": request.path })
-        return HttpResponseRedirect(reverse("account_login") + qs)
+        return HttpResponseRedirect(account_login_url + qs)
