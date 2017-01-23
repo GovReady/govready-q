@@ -82,9 +82,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
     # including can_answer and unanswered ModuleQuestions that
     # have dependencies that are unanswered and need to be answered
     # first before the questions in this list can be answered.
-    # The order is in depth-first order, i.e. all dependencies
-    # are listed before what depends on them.
-    unanswered = []
+    unanswered = set()
 
     # Build a new array of answer values.
     answers = { }
@@ -106,7 +104,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
         # question cannot be processed yet.
         for qq in deps:
             if qq.key not in state:
-                unanswered.append(q)
+                unanswered.add(q)
                 return { }
 
         # Can this question's answer be imputed from answers that
@@ -138,7 +136,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
             # and the question was skipped ('None' answer) then treat it as unanswered.
             if q.spec.get("required") and required and v is None:
                 can_answer.add(q)
-                unanswered.append(q)
+                unanswered.add(q)
                 return state
 
         elif current_answers.module.spec.get("type") == "project" and q.key == "_introduction":
@@ -155,7 +153,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
             # But we can remember that this question *can* be answered
             # by the user, and that it's not answered yet.
             can_answer.add(q)
-            unanswered.append(q)
+            unanswered.add(q)
             return state
 
         # Update the state that's passed to questions that depend on this
@@ -170,6 +168,14 @@ def evaluate_module_state(current_answers, required, parent_context=None):
     # There may be multiple routes through the tree of questions,
     # so we'll prefer the question that is defined first in the spec.
     can_answer = sorted(can_answer, key = lambda q : q.definition_order)
+
+    # The list of unanswered questions should be in the same order as
+    # can_answer so that as the user goes through the questions they
+    # are following the same order as the list of upcoming questions.
+    # Ideally we'd form both can_answer and unanswered in the same way
+    # in the right order without needing to sort later, but until then
+    # we'll just sort both.
+    unanswered = sorted(unanswered, key = lambda q : q.definition_order)
 
     # Create a new ModuleAnswers object that holds the user answers,
     # imputed answers (which override user answers), and next-question
