@@ -395,10 +395,10 @@ class Task(models.Model):
         # Return the open Invitations for transferring task ownership
         # elsewhere, sent from the user.
         from siteapp.models import Invitation
-        inv = Invitation.get_for(self).filter(organization=org, from_user=user)
-        if inv:
+        invs = Invitation.get_for(self).filter(organization=org, from_user=user)
+        for inv in invs:
             inv.from_user.localize_to_org(org)
-        return inv
+        return invs
 
     def get_source_invitation(self, user, org):
         inv = self.invitation_history.filter(accepted_user=user).order_by('-created').first()
