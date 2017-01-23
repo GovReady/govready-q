@@ -148,9 +148,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def _login(self):
         # Fill in the login form and submit.
-        self.browser.get(self.url("/")) # redirects to /accounts/login/
+        self.browser.get(self.url("/"))
 
-        self.assertRegex(self.browser.title, "Sign In")
+        self.assertRegex(self.browser.title, "Home")
         self.fill_field("#id_login", "me")
         self.fill_field("#id_password", "1234")
         self.click_element("form button.primaryAction")
@@ -316,8 +316,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5) # wait for page to load
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         var_sleep(.5) # wait for page to load
-        self.click_element("#ask-team-show-options")
-        var_sleep(.5) # wait for options to slideDown
         self.click_element('#transfer-editorship a')
         do_invitation("test+editor@q.govready.com")
         var_sleep(5)
