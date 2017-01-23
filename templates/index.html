@@ -22,7 +22,7 @@ Home
       {% with picture=request.organization.get_logo %}
         {% if picture %}
           <div class="col-md-2" style="border: 0px solid black;">
-            <img src="{{picture.url}}" height="160" alt="Profile Picture" style="">
+            <img src="{{picture.url}}" class="img-responsive" alt="Profile Picture" style="">
           </div>
           <div class="col-md-10"  style="text-align: center; border: 0px solid black;">
         {% else %}
