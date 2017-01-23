@@ -7,7 +7,7 @@ admin.autodiscover()
 import siteapp.views as views
 
 urlpatterns = [
-    url(r"^$", views.homepage),
+    url(r"^$", views.homepage, name="homepage"),
 
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
