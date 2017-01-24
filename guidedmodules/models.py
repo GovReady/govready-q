@@ -579,8 +579,9 @@ class Task(models.Model):
                 return
 
             # If there's a Task in the system with the UUID found in the incoming
-            # data, use that, assuming the user has write permission on it.
-            task = Task.objects.filter(uuid=data["id"]).first()
+            # data, use that, assuming the user has write permission on it and it
+            # is a part of the same organization as the question it answers.
+            task = Task.objects.filter(uuid=data["id"], project__organization=for_question.task.project.organization).first()
             if task:
                 if not task.has_write_priv(deserializer.user):
                     deserializer.log("%s (%s): You do not have permission to update that task."
