@@ -6,7 +6,7 @@ introduction:
   template: |
     Hi,
 
-    GovReady Q works much better when you have a user profile. 
+    GovReady Q works much better when you have a user profile.
 
     Answer a few  quick questions and will have your profile.
 questions:
@@ -15,14 +15,9 @@ questions:
     prompt: What is your name?
     type: text
 
-  - id: title
-    title: Your Title
-    prompt: What is your title in your organization or on this project?
-    type: text
-
   - id: role
     title: Your Role
-    prompt: Which team is your position most closely aligned?
+    prompt: Which team is your position at **{{organization}}** most closely aligned?
     type: choice
     choices:
       - key: ceo_team
@@ -46,6 +41,11 @@ questions:
       - key: audit_team
         text: Audit Team
         help: Security Control Assessor, Auditor, Inspector General, ...
+
+  - id: title
+    title: Your Title
+    prompt: What is your title at **{{organization}}**?
+    type: text
 
   - id: picture
     title: Picture
