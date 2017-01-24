@@ -35,14 +35,11 @@ Home
 <h1 style="font-weight: bold;">
   Projects/Systems
 </h1>
-
-
-    <p>{{request.organization.name}} is using the GovReady Q platform to collect information and generate compliance documents for information security systems.</p>
     
     {% if projects|length == 0 %}
-      <p>Start by <a href="/new-project">creating your first information technology system</a>.</p>
+      <p>Your IT systems and projects will be listed on this page. Start by creating your first IT system or project.</p>
     {% else %}
-      <p>You are participating in your organization&rsquo;s web properties, major applications, and general IT systems listed on this page.</p>
+      <p>You are helping with these {{request.organization.name}} systems and projects.</p>
     {% endif %}
 
 <div style="text-align: right; margin-bottom: 1em">
@@ -66,7 +63,7 @@ Home
 
   {# what kind of project is this #}
   <div class="small" style="margin-top: .5em">
-    {{project.root_task.module.title}}
+    Task: {{project.root_task.module.title}}
   </div>
 
   {% if project and any_have_members_besides_me %}
