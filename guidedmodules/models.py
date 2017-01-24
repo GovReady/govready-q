@@ -1145,7 +1145,7 @@ class TaskAnswerHistory(models.Model):
                 import re
                 from base64 import b64encode
                 value.update({
-                    "content": re.findall(".{64}", b64encode(self.answered_by_file.read()).decode("ascii")),
+                    "content": re.findall(".{1,64}", b64encode(self.answered_by_file.read()).decode("ascii")),
                 })
 
             else:
