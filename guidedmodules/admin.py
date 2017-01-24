@@ -13,11 +13,13 @@ class ModuleQuestionAdmin(admin.ModelAdmin):
 	raw_id_fields = ('module', 'answer_type_module')
 
 class TaskAdmin(admin.ModelAdmin):
-	list_display = ('title', 'project', 'editor', 'module', 'is_finished', 'submodule_of', 'created')
+	list_display = ('title', 'organization_and_project', 'editor', 'module', 'is_finished', 'submodule_of', 'created')
 	raw_id_fields = ('project', 'editor', 'module')
 	readonly_fields = ('module', 'invitation_history')
 	def submodule_of(self, obj):
 		return obj.is_answer_to_unique()
+	def organization_and_project(self, obj):
+		return obj.project.organization_and_title()
 
 class TaskAnswerAdmin(admin.ModelAdmin):
 	list_display = ('question', 'task', '_project', 'created')

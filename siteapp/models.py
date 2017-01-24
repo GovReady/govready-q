@@ -222,6 +222,17 @@ class Project(models.Model):
         from django.utils.text import slugify
         return "/projects/%d/%s" % (self.id, slugify(self.title))
 
+    def organization_and_title(self):
+        parts = [str(self.organization)]
+        if self.is_account_project:
+            parts.append(str(self.members.first().user))
+            parts.append("[account settings]")
+        elif self.is_organization_project:
+            parts.append("[organization profile]")
+        else:
+            parts.append(self.title)
+        return " / ".join(parts)
+        
     def get_members(self):
         return User.objects.filter(projectmembership__project=self)
 

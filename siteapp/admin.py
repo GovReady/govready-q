@@ -56,9 +56,9 @@ class OrganizationAdmin(admin.ModelAdmin):
     actions = [add_me_as_admin]
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('organization', 'title', 'owner_domains', 'created')
-    def owner_domains(self, obj):
-        return obj.get_owner_domains()
+    list_display = ('project', 'root_task', 'created')
+    def project(self, obj):
+        return obj.organization_and_title()
 
 class ProjectMembershipAdmin(admin.ModelAdmin):
     list_display = ('project', 'organization', 'user', 'is_admin', 'created')
