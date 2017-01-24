@@ -69,7 +69,7 @@ class OrganizationAdmin(admin.ModelAdmin):
         for org in queryset:
             for user in (
                 "SELF",
-                "oscar.goldman", "steve.austin", "jaime.summers", "bigfoot"):
+                "oscar.goldman", "steve.austin", "jaime.sommers", "bigfoot"):
 
                 # Get or create user.
                 if user == "SELF":
