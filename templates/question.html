@@ -402,7 +402,7 @@ h2 { display: none; }
           {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
             <span id="start-a-discussion">
                 {# if you can see this page, you can start a conversation #}
-                <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-comment"></span> Discuss</a>
+                <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-comment"></span> Comment</a>
             </span>&nbsp;&nbsp;&nbsp;&nbsp;
           {% endif %}
           {% if task.can_transfer_owner %}
@@ -672,7 +672,7 @@ function start_a_discussion(is_page_load) {
         },
         success: function(res) {
           // replace link that starts discussion with static text
-          $('#start-a-discussion').html('<span class="glyphicon glyphicon-comment"></span> <b>Discuss</b>');
+          $('#start-a-discussion').html('<span class="glyphicon glyphicon-comment"></span> <b>Comment</b>');
 
           // load the discussion
           display_discussion(res, is_page_load);

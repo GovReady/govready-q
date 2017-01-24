@@ -123,7 +123,7 @@
         <label id="discussion-your-comment-label" for="discussion-your-comment">
           ...
         </label>
-        <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder="Enter your message here."></textarea>
+        <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder=""></textarea>
         <div id="discussion-your-comment-tips">
           <a href="http://commonmark.org/help/" target="_blank">
             <span><b>**bold**</b></span> <span><i>*italic*</i></span> <span>* list</span> <span>[link](http://to)</span> <span># heading.</span>
@@ -304,7 +304,7 @@ function display_discussion(discussion, is_page_load) {
   // show the discussion
   $('#discussion').show();
   $('#discussion .active-discussion-only').show();
-  $('#discussion-your-comment-label').text("Start the team conversation with a question or comment:")
+  $('#discussion-your-comment-label').text("Add your comment:")
   $('#discussion #invite-guest').toggle(discussion_info.can_invite);
   if (!is_page_load) $('#discussion-your-comment').focus();
 
