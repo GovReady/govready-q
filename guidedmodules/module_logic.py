@@ -887,7 +887,7 @@ class validator:
 
         # Fetch content.
         from base64 import b64decode
-        content = b64decode("".join(str(chunk) for chunk in value["content"]).encode("ascii"))
+        content = b64decode("".join(chunk for chunk in value["content"]).encode("ascii"))
 
         # The file must have content.
         if len(content) == 0:
