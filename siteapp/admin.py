@@ -51,9 +51,67 @@ class OrganizationAdmin(admin.ModelAdmin):
             mb.is_admin = True
             mb.save()
 
-    add_me_as_admin.short_description = "Add me as an administrator to the organization"
+    def populate_test_organization(self, request, queryset):
+        # Add me as an admin to the org and add our hard-coded
+        # test accounts to the org, and pre-fill everybodies
+        # org profile info based on the last profile info that
+        # each user made in any other organization. Create the
+        # users if they don't already exist - for firt time runs
+        # and on dev machines.
 
-    actions = [add_me_as_admin]
+        from django.contrib import messages
+        from django.utils.crypto import get_random_string
+
+        # Create a random password for any new test accounts that are
+        # created. Use the same password for all.
+        pw = get_random_string(12, 'abcdefghkmnpqrstuvwxyz23456789')
+
+        for org in queryset:
+            for user in (
+                "SELF",
+                "oscar.goldman", "steve.austin", "jaime.summers", "bigfoot"):
+
+                # Get or create user.
+                if user == "SELF":
+                    user = request.user
+                else:
+                    user, is_new = User.objects.get_or_create(username=user, email=user+"@osi.group")
+                    if is_new:
+                        user.set_password(pw)
+                        user.save()
+                        messages.add_message(request, messages.INFO, 'Create user %s with password %s.' % (user.username, pw))
+
+                # Add user as an admin to the organization.
+                mb, isnew = ProjectMembership.objects.get_or_create(
+                    user=user,
+                    project=org.get_organization_project(),
+                    )
+                if isnew or not mb.is_admin:
+                    messages.add_message(request, messages.INFO, '%s was added as an administrator to %s.' % (user, org))
+                mb.is_admin = True
+                mb.save()
+
+                # Copy forward profile info from the last time the user
+                # entered any profile info.
+                prev_profile = Project.objects\
+                    .filter(
+                        is_account_project=True,
+                        members__user=user,
+                        )\
+                    .exclude(organization=org)\
+                    .order_by('-created')\
+                    .first()
+                if prev_profile:
+                    prev_profile_task = prev_profile.root_task.get_or_create_subtask(user, "account_settings")
+                    if prev_profile_task.get_answers().as_dict(): # not empty
+                        prev_profile_json = prev_profile.export_json()
+                        new_profile = user.get_account_project_(org)
+                        new_profile.import_json(prev_profile_json, user, lambda msg : print(msg))
+
+    add_me_as_admin.short_description = "Add me as an administrator to the organization"
+    populate_test_organization.short_description = "Populate with the test users"
+
+    actions = [add_me_as_admin, populate_test_organization]
 
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('project', 'root_task', 'created')
