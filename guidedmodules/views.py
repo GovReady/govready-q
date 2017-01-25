@@ -442,7 +442,6 @@ def next_question(request, taskid, taskslug):
             "answer": answer.get_value(decryption_provider=EncryptionProvider()) if (answer and not answer.cleared) else None,
             "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
             "show_discussion_members_count": True,
-            "show_discussion_h2": True,
 
             "answer_module": answer_module,
             "answer_tasks": answer_tasks,
