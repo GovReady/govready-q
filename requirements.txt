@@ -1,21 +1,26 @@
-Pillow==4.0.0
-CommonMark==0.6.4
-python-dateutil==2.6.0
-Jinja2==2.9.4
-rtyaml==0.0.3
-email-validator==1.0.2
-cryptography==1.7.1
+# Common Python Packages
+python-dateutil==2.6.0 # Simplified BSD License
+Pillow==4.0.0 # MIT-like License
+Jinja2==2.9.4 # BSD License
+selenium==3.0.2 # Apache License 2.0
 
-git+https://github.com/JoshData/commonmark-py-plaintext#egg=commonmark-to-text
-git+https://github.com/if-then-fund/django-html-emailer#egg=django-html-emailer
-git+https://github.com/if-then-fund/django-database-storage#egg=django-database-storage
+# Less Common Python Packages
+CommonMark==0.6.4 # BSD License
+cryptography==1.7.1 # BSD License
+graphviz==0.5.2 # MIT License
 
-exclusiveprocess==0.9.3
-Django==1.10.4
-django-debug-toolbar==1.6
-django-allauth==0.30.0
-jsonfield==1.0.3
-django-bootstrap3==8.1.0
-django-notifications-hq==1.2
-graphviz==0.5.2
-selenium==3.0.2
+# Common Django Packages
+Django==1.10.4 # BSD License
+django-debug-toolbar==1.6 # BSD License
+django-allauth==0.30.0 # MIT License
+django-bootstrap3==8.1.0 # Apache License 2.0
+django-notifications-hq==1.2 # MIT License
+jsonfield==1.0.3 # MIT License
+
+# Python Packages Developed by Josh
+rtyaml==0.0.3 # CC0
+email-validator==1.0.2 # CC0
+exclusiveprocess==0.9.3 # CC0
+git+https://github.com/JoshData/commonmark-py-plaintext#egg=commonmark-to-text # CC0; we don't use this directly but it is a dependency of django-html-emailer
+git+https://github.com/if-then-fund/django-html-emailer#egg=django-html-emailer # MIT License
+git+https://github.com/if-then-fund/django-database-storage#egg=django-database-storage # CC0
