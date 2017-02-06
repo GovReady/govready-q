@@ -424,19 +424,24 @@ def next_question(request, taskid, taskslug):
         }
 
         # Construct the page.
-        prompt = module_logic.render_content({
-                "template": q.spec["prompt"],
-                "format": "markdown",
-            },
-            answered,
-            "html",
-            "%s question %s prompt" % (repr(q.module), q.key)
-        )
+        def render_markdown_field(field):
+            template = q.spec.get(field)
+            if not template:
+                return None
+            return module_logic.render_content({
+                    "template": template,
+                    "format": "markdown",
+                },
+                answered,
+                "html",
+                "%s question %s %s" % (repr(q.module), q.key, field)
+            )
 
         context.update({
             "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
             "q": q,
-            "prompt": prompt,
+            "prompt": render_markdown_field("prompt"),
+            "reference_text": render_markdown_field("reference_text"),
             "history": taskq.get_history() if taskq else None,
             "answer_obj": answer,
             "answer": answer.get_value(decryption_provider=EncryptionProvider()) if (answer and not answer.cleared) else None,

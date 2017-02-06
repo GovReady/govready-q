@@ -395,6 +395,12 @@ label:hover .onhover { display: inline; }
             {% endif %} {# write_priv #}
         </form>
 
+        {% if reference_text %}
+          <div id="reference-text" class="well" style="margin-top: 40px">
+            {{reference_text|safe}}
+          </div>
+        {% endif %}
+
         {% if not is_discussion_guest %}
 
         <div id="need-help" style="padding: 0; margin-top: 1.25em; list-style:none;">
