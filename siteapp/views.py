@@ -218,9 +218,6 @@ def project(request, project_id):
     if request.path != project.get_absolute_url():
         return HttpResponseRedirect(project.get_absolute_url())
 
-    # Get the project team members.
-    project_members = ProjectMembership.objects.filter(project=project)
-
     # Get all of the discussions I'm participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
     # certain questions within those tasks.
@@ -359,14 +356,12 @@ def project(request, project_id):
     return render(request, "project.html", {
         "is_admin": request.user in project.get_admins(),
         "can_begin_module": can_begin_module,
-        "project_has_members_besides_me": project and project.members.exclude(user=request.user),
         "project": project,
         "title": project.title,
         "intro" : project.root_task.render_field('introduction') if project.root_task.module.spec.get("introduction") else "",
         "additional_tabs": additional_tabs,
         "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-        "project_members": sorted(project_members, key = lambda mbr : (not mbr.is_admin, str(mbr.user))),
         "tabs": list(tabs.values()),
         "action_buttons": action_buttons,
     })

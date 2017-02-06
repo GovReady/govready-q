@@ -109,12 +109,8 @@
 #project-members {
 	margin-top: 1em;
 }
-#project-members .admin {
+#project-members .role {
   font-style: italic;
-  font-size: 85%;
-}
-#project-members .you {
-  font-weight: bold;
   font-size: 85%;
 }
 </style>
@@ -315,32 +311,27 @@
         <h4 class="modal-title" id="project_settings_title">Project/System Settings</h4>
       </div>
       <div class="modal-body">
-        <h3>Project Team</h3>
+        <h3>Participants</h3>
 
-            {% if project_has_members_besides_me %}
               <div style="margin-bottom: 1em">
                 <div id="project-members">
-                  {% for pmbr in project_members %}
+                  {% for user, authz in project.get_all_participants %}
                     <div class="clearfix" style="margin-bottom: 4px;">
-                    {% with pmbr.user_details as u %}
                       <div style="width: 24px; height: 24px; border: 1px solid #AAA; margin-right: .5em; float: left; margin-top: -2px;">
-                      {% if u.picture %}
-                        <img src="{{u.picture.url}}" alt="{{u.name}} Profile Picture"
+                      {% if authz.user_details.picture %}
+                        <img src="{{authz.user_details.picture.url}}" alt="{{authz.user_details.name}} Profile Picture"
                           style="display:block; width: 100%; height: 100%;">
                       {% endif %}
                       </div>
 
-                      <span {% if u.name != pmbr.user.email %}title="{{pmbr.user.email}}"{% endif %}>
-                        {{u.name}}
+                      <span {% if authz.user_details.name != user.email %}title="{{user.email}}"{% endif %}>
+                        {{authz.user_details.name}}
                       </span>
-                      {% if pmbr.user == request.user %}<span class="you">you</span>{% endif %}
-                      {% if pmbr.is_admin %}<span class="admin">admin</span>{% endif %}
-                    {% endwith %}
+                      <span class="role">{{authz.role}}</span>
                     </div>
                   {% endfor %}
                 </div>
               </div>
-            {% endif %}
 
             {% if send_invitation.can_add_invitee_to_team %}
               <div style="margin: 1em 0">

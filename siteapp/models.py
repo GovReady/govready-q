@@ -256,6 +256,7 @@ class Project(models.Model):
     def has_read_priv(self, user):
         # Who can see this project? Team members + anyone editing a task within
         # this project + anyone that's a guest in dicussion within this project.
+        # See get_all_participants for the inverse of this function.
         from guidedmodules.models import Task
         if ProjectMembership.objects.filter(project=self, user=user).exists():
             return True
@@ -264,6 +265,49 @@ class Project(models.Model):
         for d in self.get_discussions_in_project_as_guest(user):
             return True
         return False
+
+    def get_all_participants(self):
+        # Get all users who have read access to this project. Inverse of
+        # has_read_priv.
+        from guidedmodules.models import Task, TaskAnswer
+        from discussion.models import Discussion
+        from collections import defaultdict
+
+        participants = defaultdict(lambda : {
+            "is_member": False,
+            "is_admin": False,
+            "editor_of": [],
+            "discussion_guest_in": [],
+        })
+
+        # Fetch users with read access.
+        for pm in ProjectMembership.objects.filter(project=self):
+            participants[pm.user]["is_member"] = True
+            participants[pm.user]["is_admin"] = pm.is_admin
+        for task in Task.objects.filter(project=self):
+            participants[task.editor]["editor_of"].append(task)
+        for ta in TaskAnswer.objects.filter(task__project=self, task__deleted_at=None):
+            d = Discussion.get_for(self.organization, ta)
+            if d:
+                for user in d.guests.all():
+                    participants[user]["discussion_guest_in"].append(d)
+
+        # Add text labels to describe user and authz.
+        for user, info in participants.items():
+            info["user_details"] = user.render_context_dict(self.organization)
+            descr = []
+            if info["is_admin"]:
+                descr.append("admin")
+            elif info["is_member"]:
+                descr.append("member")
+            if info["editor_of"]:
+                descr.append("editor of %d task(s)" % len(info["editor_of"]))
+            if info["discussion_guest_in"]:
+                descr.append("guest in %d discussion(s)" % len(info["discussion_guest_in"]))
+            info["role"] = "; ".join(descr)
+
+        # Return sorted by username.
+        return sorted(participants.items(), key = lambda kv : kv[0].username)
 
     def get_open_tasks(self, user):
         # Get all tasks that the user might want to continue working on
@@ -316,6 +360,7 @@ class Project(models.Model):
         return self.root_task.render_snippet()
 
     def get_discussions_in_project_as_guest(self, user):
+        # see has_read_priv, get_all_participants
         from discussion.models import Discussion
         for d in Discussion.objects.filter(guests=user):
             if d.attached_to.task.project == self:
@@ -501,10 +546,6 @@ class ProjectMembership(models.Model):
 
     class Meta:
         unique_together = [('project', 'user')]
-
-    def user_details(self):
-        return self.user.render_context_dict(self.project.organization)
-
 
 class Invitation(models.Model):
     organization = models.ForeignKey(Organization, related_name="invitations", help_text="The Organization that this Invitation belongs to.")
