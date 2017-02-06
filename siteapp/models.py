@@ -259,7 +259,7 @@ class Project(models.Model):
         from guidedmodules.models import Task
         if ProjectMembership.objects.filter(project=self, user=user).exists():
             return True
-        if Task.objects.filter(editor=user, project=self).exists():
+        if Task.objects.filter(editor=user, project=self, deleted_at=None).exists():
             return True
         for d in self.get_discussions_in_project_as_guest(user):
             return True
