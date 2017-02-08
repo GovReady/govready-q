@@ -9,6 +9,7 @@ GovReady Q tracks the following major entities
 
 * Users - individuals with logins to an installed instance of Q
 * Organizations - entities, e.g., companies, around with data in Q is segmented
+* Folders - collections of Systems/Projects
 * Systems/Projects - IT systems or IT projects (we use the terms interchangeably)
 * Membership - associating individual users with organizations and systems
 * Tasks/Modules - coherent grouping of questions and educational content
@@ -60,6 +61,16 @@ An unauthorized user is always redirected to a login page. The login page does n
 
 Each Organization has a single "organization project" which stores additional metadata about the Organization, akin to a User's profile. This metadata can be seen by all members of the Organization because the values, e.g. an organization avatar, may be rendered on Organization pages that any such User may see. Members of the organization project may additionally edit the metadata (see Project membership below).
 
+Folders
+-------
+
+A Folder is a collection of one or more Projects (see below) within the same Organization.
+
+Folder permissions are based on Project permissions:
+
+* A user can see that a Project is a part of a Folder if the user has *read* access on the Project.
+* A user can add Projects to a Folder or rename a Folder if the user is an _administrator_ of any Project within the Folder. These users may not be able to see all Projects within the folder if they do not have *read* access to those Projects, but they will be told how many Projects they can't see in the Folder.
+
 Projects
 --------
 
@@ -69,15 +80,19 @@ A Project is a collection of Tasks being edited by one or more Users. Every Proj
 
 Projects have zero or more Users who are *members* and zero or more Users who are *administrators*.
 
+### Read Access
+
 Any access to a Project requires *read* access, which is granted if any of the following are true:
 
-* They are a _member_ of the Project.
+* They are a _member_ or _administrator_ of the Project.
 * They are the editor of a Task within the Project (i.e. guest-style *membership* if they are not otherwise authorized).
 * They are a guest participant in a Discussion within the Project.
 
 (This is a subset of the requirements for membership in an Organization, therefore *read* access to a Project guarantees membership in the Organization it belongs to.)
 
-However the Tasks (the questions and answers) within a Project are further restricted (see Tasks below).
+### Task Operations
+
+The Tasks (the questions and answers) within a Project are further restricted (see Tasks below).
 
 Project _members_ can start Tasks listed on the Project page (they become the Task's editor), can send invitations to have another User start a Task (the invited user becomes that Task's editor), and can invite guests to discussions.
 
@@ -91,6 +106,8 @@ When a User creates a new Project, they are offered project-type Modules that ar
 
 * _not_ marked with `access: private` (see [Schema.md](Schema.md))
 * listed in the Organization's `allowed_modules` database field
+
+New Projects are added into a new or existing Folder (for existing folders, see Folder permissions above).
 
 Tasks
 -----

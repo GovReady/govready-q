@@ -189,8 +189,47 @@ class Organization(models.Model):
         profile = profile_task.get_answers().as_dict()
         return profile.get("logo")
 
+class Folder(models.Model):
+    """A folder is a collection of Projects."""
+
+    organization = models.ForeignKey(Organization, related_name="folders", help_text="The Organization that this project belongs to.")
+
+    title = models.CharField(max_length=256, help_text="The title of this Project.")
+
+    projects = models.ManyToManyField("Project", related_name="contained_in_folders", help_text="The Projects that are listed within this Folder.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    def __str__(self):
+        # For the admin, notification strings
+        return self.title
+
+    def __repr__(self):
+        # For debugging.
+        return "<Folder %d %s>" % (self.id, self.title[0:30])
+
+    def get_admins(self):
+        # Get all of the Users with admin privs on the folder --- which
+        # is the set of users that have admin privs on any project within
+        # it.
+        ret = User.objects.none()
+        for project in self.projects.all():
+            ret |= project.get_admins()
+        return ret.distinct()
+
+    @staticmethod
+    def get_all_folders_admin_of(user):
+        # Get all Folders that this user has privs to rename and add
+        # new Projects to.
+        return Folder.objects\
+            .filter(projects__members__user=user, projects__members__is_admin=True)\
+            .distinct()
 
 class Project(models.Model):
+    """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
+
     organization = models.ForeignKey(Organization, related_name="projects", help_text="The Organization that this project belongs to.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
@@ -308,6 +347,51 @@ class Project(models.Model):
 
         # Return sorted by username.
         return sorted(participants.items(), key = lambda kv : kv[0].username)
+
+    @staticmethod
+    def get_projects_with_read_priv(user, organization):
+        # Gets all projects a user has read priv to, excluding
+        # account and organization profile projects, and sorted
+        # in reverse chronological order by modified date.
+
+        projects = set()
+
+        if not user.is_authenticated:
+            return projects
+
+        # Add all of the Projects the user is a member of within the Organization
+        # that the user is on the subdomain of.
+        for pm in ProjectMembership.objects\
+            .filter(project__organization=organization, user=user)\
+            .select_related('project'):
+            projects.add(pm.project)
+            if pm.is_admin:
+                # Annotate with whether the user is an admin of the project.
+                pm.project.user_is_admin = True
+
+        # Add projects that the user is the editor of a task in, even if
+        # the user isn't a team member of that project.
+        from guidedmodules.models import Task
+        for task in Task.get_all_tasks_readable_by(user, organization)\
+            .order_by('-created')\
+            .select_related('project'):
+            projects.add(task.project)
+
+        # Add projects that the user is participating in a Discussion in
+        # as a guest.
+        from discussion.models import Discussion
+        for d in Discussion.objects.filter(organization=organization, guests=user):
+            if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
+                projects.add(d.attached_to.task.project)
+
+        # Don't show system projects.
+        system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
+        projects -= system_projects
+
+        # Sort.
+        projects = sorted(projects, key = lambda x : x.updated, reverse=True)
+
+        return projects
 
     def get_open_tasks(self, user):
         # Get all tasks that the user might want to continue working on

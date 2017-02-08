@@ -7,7 +7,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 
-from .models import User, Project, Invitation
+from .models import User, Folder, Project, Invitation
 from guidedmodules.models import Module, Task, ProjectMembership
 from discussion.models import Discussion
 
@@ -17,56 +17,42 @@ from .notifications_helpers import *
 def homepage(request):
     from allauth.account.forms import LoginForm
     return render(request, "index.html", {
-        "has_projects": len(get_user_projects(request)) > 0,
+        "has_projects": len(Project.get_projects_with_read_priv(request.user, request.organization)) > 0,
         "login_form": LoginForm,
     })
 
-def get_user_projects(request):
-    # Show user what they can do --- list the projects they
-    # are involved with.
-    projects = set()
-
-    if not request.user.is_authenticated:
-        return projects
-
-    # Add all of the Projects the user is a member of within the Organization
-    # that the user is on the subdomain of.
-    for pm in ProjectMembership.objects\
-        .filter(project__organization=request.organization, user=request.user)\
-        .select_related('project'):
-        projects.add(pm.project)
-        if pm.is_admin:
-            # Annotate with whether the user is an admin of the project.
-            pm.project.user_is_admin = True
-
-    # Add projects that the user is the editor of a task in, even if
-    # the user isn't a team member of that project.
-    for task in Task.get_all_tasks_readable_by(request.user, request.organization)\
-        .order_by('-created')\
-        .select_related('project'):
-        projects.add(task.project)
-
-    # Add projects that the user is participating in a Discussion in
-    # as a guest.
-    for d in Discussion.objects.filter(organization=request.organization, guests=request.user):
-        if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
-            projects.add(d.attached_to.task.project)
-
-    # Don't show system projects. They're displayed separately.
-    system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
-    projects -= system_projects
-
-    # Sort.
-    projects = sorted(projects, key = lambda x : x.updated, reverse=True)
-
-    return projects
-
 def project_list(request):
-    projects = get_user_projects(request)
+    # Get the projects.
+    projects = Project.get_projects_with_read_priv(request.user, request.organization)
     for p in projects:
         p.open_tasks = p.get_open_tasks(request.user) # for the template
+
+    # Collate into folders. Folders are accessible to a user
+    # just when they can see a Project within it, so we go
+    # backwards from Projects to Folders.
+    folders = list(Folder.objects.filter(projects__in=projects).distinct())
+
+    for folder in folders:
+        # Set an attribute on the Folder with a list of
+        # projects that the user has access to.
+        projects_in_folder = set(folder.projects.all())
+        folder.accessible_projects = [p for p in projects if p in projects_in_folder]
+
+        # Mark folders that the user is an admin of, i.e. can rename it and
+        # see all projects within it.
+        folder.is_admin = (request.user in folder.get_admins())
+
+        # If the user is an admin and there are projects in the folder the
+        # user can't see, mark that too.
+        if folder.is_admin:
+            folder.num_hidden_projects = len(projects_in_folder - set(folder.accessible_projects))
+
+    # Sort the folders by the sort order of the first project
+    # in each folder.
+    folders.sort(key = lambda folder : [projects.index(p) for p in folder.accessible_projects])
+
     return render(request, "project_list.html", {
-        "projects": projects,
+        "folders": folders,
         "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
     })
 
@@ -75,6 +61,9 @@ def new_project(request):
     from django.forms import ModelForm, ChoiceField, RadioSelect, MultipleChoiceField, \
         CheckboxSelectMultiple, CharField, Textarea
     from django.core.exceptions import ValidationError
+
+    # What Folders can the new Project be added to?
+    folders = list(Folder.get_all_folders_admin_of(request.user))
 
     # Get the list of project modules that this user has access to.
     # The built-in server-side form validation will ensure that the user can
@@ -122,7 +111,15 @@ def new_project(request):
             help_texts = {
                 'title': 'Give your web property, application or other IT system a descriptive name.',
             }
+
+        if len(folders) > 0:
+            add_to_folder = ChoiceField(
+                choices=[("", "Add to New Folder")] + [(f.id, f) for f in folders],
+                required=False,
+                label="Add to a folder?")
+
         module_id = ChoiceField(choices=project_modules, label="What do you need to do?", widget=RadioSelect)
+
         if len(invitable_users) > 0:
             invite_org_users = MultipleChoiceField(label='Select existing users to add to project',
                 choices=sorted([
@@ -131,6 +128,7 @@ def new_project(request):
                     key = lambda choice : choice[1]),
                 widget=CheckboxSelectMultiple,
                 required=False)
+
         invite_by_email = CharField(label="Invite others to this project",
             help_text="Separate email addresses by new lines, spaces, or commas.",
             widget=Textarea(attrs={'rows': '2', 'placeholder': ''}),
@@ -160,6 +158,19 @@ def new_project(request):
                     project=project,
                     user=request.user,
                     is_admin=True)
+
+                # add to a folder that the user has privilege to, or a new folder
+                # (The form field isn't shown if there are no existing folders
+                # (get returns None), and if the user wants to create a new folder
+                # the value is the empty string, otherwise it is a string containing
+                # a primary key (positive integer).)
+                if form.cleaned_data.get("add_to_folder"):
+                    folder = Folder.objects.get(id=form.cleaned_data["add_to_folder"])
+                else:
+                    folder = Folder.objects.create(
+                        organization=project.organization,
+                        title=project.title)
+                folder.projects.add(project)
 
                 # add other invited users
                 # (the form field is absent in some cases so must check we have the field)
@@ -365,6 +376,19 @@ def project(request, project_id):
         "tabs": list(tabs.values()),
         "action_buttons": action_buttons,
     })
+
+def rename_folder(request):
+    # Get the folder.
+    folder = get_object_or_404(Folder, id=request.POST.get("folder"))
+
+    # Validate that the user can rename it.
+    if request.user not in folder.get_admins():
+        return JsonResponse({ "status": "error", "message": "Not authorized." })
+
+    # Update.
+    folder.title = request.POST.get("title")
+    folder.save()
+    return JsonResponse({ "status": "ok" })
 
 def project_admin_login_post_required(f):
     # Wrap the function to do authorization and change arguments.

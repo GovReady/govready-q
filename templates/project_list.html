@@ -10,19 +10,25 @@ Home
 
 {% block head %}
 <style>
-.project {
-  margin: 0em 0;
+.folder {
   border-top:1px solid rgb(240,240,240); 
   border-bottom:1px solid rgb(240,240,240); 
-  padding: 8px 0px; 0px 4px;
 }
-  .project a {
-    font-weight: bold;
+  .folder .rename_folder {
+    margin: 0 1em;
+    color: #777;
+    cursor: pointer;
+    font-size: 13px;
   }
-  .project a:hover { text-decoration: none; }
-  .project a:hover span { text-decoration: underline; }
-  .project a:hover span.glyphicon { text-decoration: none; }
-.project:hover{
+  h2 { font-size: 115%; font-weight: bold; margin: 1em 0; }
+  .folder .project { margin: 1em 0; }
+  h3 { font-size: 100%; font-weight: bold; margin: 0; }
+  h2 .label, h3 .label { margin-left: .75em; font-size: 12px; }
+  .folder .project h2 { margin: 0; }
+  .folder a:hover { text-decoration: none; }
+  .folder a:hover span { text-decoration: underline; }
+  .folder a:hover span.glyphicon { text-decoration: none; }
+.folder:hover{
   background-color: rgb(250,250,250); 
 }
 .glyphicon-book { color: #888; }
@@ -36,7 +42,7 @@ Home
   Projects/Systems
 </h1>
     
-    {% if projects|length == 0 %}
+    {% if folders|length == 0 %}
       <p>Your IT systems and projects will be listed on this page. Start by creating your first IT system or project.</p>
     {% else %}
       <p>You are helping with these {{request.organization.name}} systems and projects.</p>
@@ -47,9 +53,25 @@ Home
 </div>
 
 <!-- List projects -->
-{% for project in projects %}
-<div class="project">
-  <a href="{% if project %}{{project.get_absolute_url}}{% else %}/projects/system{% endif %}">
+{% for folder in folders %}
+<div class="folder" data-folder-id="{{folder.id}}">
+  {% if folder.accessible_projects|length != 1 %}
+  <h2>
+    <span class="folder_name">{{folder.title}}</span>
+    {% if folder.is_admin %}
+    <span class="rename_folder" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
+    {% endif %}
+  </h2>
+  {% endif %}
+
+  {% for project in folder.accessible_projects %}
+  <div class="project">
+  {% if folder.accessible_projects|length != 1 %}
+  <h3>
+  {% else %}
+  <h2>
+  {% endif %}
+  <a href="{{project.get_absolute_url}}">
     <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
     <span>{{project.title}}</span>
 
@@ -60,6 +82,12 @@ Home
       {% endif %}
     {% endwith %}
   </a>
+  {% if folder.accessible_projects|length != 1 %}
+  </h3>
+  {% else %}
+  </h2>
+  {% endif %}
+
 
   {# what kind of project is this #}
   <div class="small" style="margin-top: .5em">
@@ -84,8 +112,39 @@ Home
       </div>
     {% endif %}
   {% endwith %}
+
+  </div>
+  {% endfor %}
+
+  {% if folder.is_admin and folder.num_hidden_projects > 0 %}
+  <p><i>There are {{folder.num_hidden_projects}} other assessment{{folder.num_hidden_projects|pluralize}} in this folder that you do not have permission to see.</i></p>
+  {% endif %}
 </div>
 {% endfor %}
 
 
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+function rename_folder(elem) {
+  var folder = $(elem).parents(".folder");
+  var folder_id = folder.data("folder-id");
+  var folder_name = folder.find(".folder_name");
+  var new_title = prompt("Rename this folder?", folder_name.text());
+  if (!new_title) return;
+  ajax_with_indicator({
+   url: '{% url "rename_folder" %}',
+   method: "POST",
+   data: {
+    folder: folder_id,
+    title: new_title
+   },
+   success: function() {
+     folder_name.text(new_title);
+   }
+  });
+}
+</script>
 {% endblock %}

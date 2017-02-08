@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^projects/(\d+)/__import$', views.import_project_data, name="import_project_data"),
     url(r'^projects/(\d+)/(?:[\w\-]+)$', views.project), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)/start$', views.begin_project),
+    url(r'^__rename_folder$', views.rename_folder, name="rename_folder"),
 
     # invitations
     url(r'^invitation/_send$', views.send_invitation, name="send_invitation"),

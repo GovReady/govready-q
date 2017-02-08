@@ -412,6 +412,10 @@ class Task(models.Model):
         return self.project.get_members()
 
     def render_title(self):
+        # Project root tasks derive their rendered title from the
+        # project title and don't use the instance-name.
+        if self == self.project.root_task:
+            return self.project.title
         return self.render_simple_string("instance-name", self.module.title)
 
     def render_invitation_message(self):

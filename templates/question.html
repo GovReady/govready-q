@@ -291,13 +291,14 @@ label:hover .onhover { display: inline; }
                 <div class="radio">
                   <label>
                     <input name="value" value="{{m.id}}" type="radio" {% if m == current_answer %}checked{% endif %}>
-                      {{m.render_title}}
+                      {% with m.render_title as title %}
+                      {{title}}
                       <div class="small" style="color: #666">
                         {% if m == current_answer %}
                           <strong>Current Answer</strong>.
                         {% endif %}
 
-                        {% if m.project != task.project %}
+                        {% if m.project != task.project and m.project.title != title %}
                         {{ m.project.title }}.
                         {% endif %}
                         
@@ -305,6 +306,7 @@ label:hover .onhover { display: inline; }
 
                         <a href="{{m.get_absolute_url}}" class="onhover" style="color: #999; margin-left: 3px; font-size: 90%;"><span class="glyphicon glyphicon-pencil"> </span></a>
                       </div>
+                      {% endwith %}
                   </label>
                 </div>
               {% endfor %}

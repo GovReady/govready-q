@@ -387,12 +387,14 @@ def next_question(request, taskid, taskslug):
             # Sort the instances:
             #  first: the current answer, if any
             #  then: tasks defined in the same project as this task
+            #  later: tasks defined in projects in the same folder as this task's project
             #  last: everything else by reverse update date
             now = timezone.now()
             current_answer = answer.answered_by_task.first() if answer else None
             answer_tasks = sorted(answer_tasks, key = lambda t : (
                 not (t == current_answer),
                 not (t.project == task.project),
+                not (set(t.project.contained_in_folders.all()) & set(task.project.contained_in_folders.all())),
                 now-t.updated,
                 ))
 

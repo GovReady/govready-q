@@ -2,7 +2,7 @@ from django.contrib import admin
 
 import django.contrib.auth.admin as contribauthadmin
 
-from .models import User, Organization, Project, ProjectMembership
+from .models import User, Organization, Folder, Project, ProjectMembership
 
 def all_user_fields_still_exist(fieldlist):
     for f in fieldlist:
@@ -113,8 +113,15 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     actions = [add_me_as_admin, populate_test_organization]
 
+class FolderAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created')
+    raw_id_fields = ('organization',)
+    readonly_fields = ('projects', 'extra')
+
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('project', 'root_task', 'created')
+    raw_id_fields = ('organization', 'root_task')
+    readonly_fields = ('extra',)
     def project(self, obj):
         return obj.organization_and_title()
 
@@ -126,6 +133,7 @@ class ProjectMembershipAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
+admin.site.register(Folder, FolderAdmin)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectMembership, ProjectMembershipAdmin)
 
