@@ -526,5 +526,4 @@ class Command(BaseCommand):
             assets_dir = os.path.join(settings.MODULES_PATH, assets_dir, "assets")
             shutil.copytree(
                 assets_dir,
-                target_dir,
-                copy_function=os.link)
+                target_dir)
