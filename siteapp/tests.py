@@ -65,8 +65,15 @@ class SeleniumTest(StaticLiveServerTestCase):
         base_url = urllib.parse.urlunsplit((scheme, host, '', '', ''))
         return urllib.parse.urljoin(base_url, path)
 
+    def clear_field(self, css_selector):
+        self.browser.find_element_by_css_selector(css_selector).clear()
+
     def fill_field(self, css_selector, text):
         self.browser.find_element_by_css_selector(css_selector).send_keys(text)
+
+    def clear_and_fill_field(self, css_selector, text):
+        self.clear_field(css_selector)
+        self.fill_field(css_selector, text)
 
     def click_element(self, css_selector):
         self.browser.find_element_by_css_selector(css_selector).click()
@@ -146,13 +153,13 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Within this test, we only generate URLs for the organization subdomain.
         return super().url("testorg", path)
 
-    def _login(self):
+    def _login(self, username="me", password="1234"):
         # Fill in the login form and submit.
         self.browser.get(self.url("/"))
 
         self.assertRegex(self.browser.title, "Home")
-        self.fill_field("#id_login", "me")
-        self.fill_field("#id_password", "1234")
+        self.fill_field("#id_login", username)
+        self.fill_field("#id_password", password)
         self.click_element("form button.primaryAction")
 
     def _new_project(self):
@@ -207,6 +214,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.assertRegex(self.browser.title, "GovReady Q")
 
     def test_login(self):
+        # Test that a wrong password doesn't log us in.
+        self._login(password="badpw")
+        self.assertInNodeText("The username and/or password you specified are not correct.", "form.login .alert-danger")
+
+        # Test that a wrong username doesn't log us in.
+        self._login(username="notme")
+        self.assertInNodeText("The username and/or password you specified are not correct.", "form.login .alert-danger")
+
         # Log in as a new user, log out, then log in a second time.
         # We should only get the account settings questions on the
         # first login.
@@ -276,7 +291,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # But now go back to the project page.
         self.browser.get(project_page)
 
-        def do_invitation(email):
+        def start_invitation(email):
             # Fill out the invitation modal.
             var_sleep(.5) # wait for modal to show
 
@@ -286,6 +301,10 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
             self.fill_field("#invitation_modal #invite-user-email", email)
             self.click_element("#invitation_modal button.btn-submit")
+
+        def do_invitation(email):
+            start_invitation(email)
+
             var_sleep(1) # wait for invitation to be sent
 
             # Log out and accept the invitation as an anonymous user.
@@ -303,6 +322,15 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#show-project-settings")
         var_sleep(.5) # modal fades in
         self.click_element("#invite-user-to-project")
+
+        # Test an invalid email address.
+        start_invitation("example")
+        var_sleep(.5)
+        self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+        self.click_element("#invite-user-to-project") # Re-open the invite box.
+
         do_invitation("test+project@q.govready.com")
         self.assertRegex(self.browser.title, "My Simple Project") # user is on the project page
         self.click_element('#question-simple_module .started-task a') # go to the task page
@@ -433,13 +461,32 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # email-address
         import random
         self.assertRegex(self.browser.title, "Next Question: email-address")
-        self.fill_field("#inputctrl", "test+%d@q.govready.com" % random.randint(10000, 99999))
+
+        # test a bad address
+        self.fill_field("#inputctrl", "a@a")
+        self.click_element("#save-button")
+        var_sleep(.5)
+        self.assertInNodeText("is not valid.", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # test a good address
+        self.clear_and_fill_field("#inputctrl", "test+%d@q.govready.com" % random.randint(10000, 99999))
         self.click_element("#save-button")
         var_sleep(.5)
 
         # url
         self.assertRegex(self.browser.title, "Next Question: url")
-        self.fill_field("#inputctrl", "https://q.govready.com")
+
+        # test a bad address
+        self.clear_and_fill_field("#inputctrl", "example.x")
+        self.click_element("#save-button")
+        # This is caught by the browser itself, so we don't have to dismiss anything.
+        # Make sure we haven't moved past the url page.
+        self.assertRegex(self.browser.title, "Next Question: url")
+
+        # test a good address
+        self.clear_and_fill_field("#inputctrl", "https://q.govready.com")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -451,6 +498,18 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # date
         self.assertRegex(self.browser.title, "Next Question: date")
+
+        # test a bad date
+        self.select_option("select[name='value_year']", "2016")
+        self.select_option("select[name='value_month']", "2")
+        self.select_option("select[name='value_day']", "31")
+        self.click_element("#save-button")
+        var_sleep(.5)
+        self.assertInNodeText("day is out of range for month", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # test a good date
         self.select_option("select[name='value_year']", "2016")
         self.select_option("select[name='value_month']", "8")
         self.select_option("select[name='value_day']", "22")
@@ -506,13 +565,63 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # integer
         self.assertRegex(self.browser.title, "Next Question: integer")
-        self.fill_field("#inputctrl", "5000")
+
+        # Test a non-integer.
+        self.clear_and_fill_field("#inputctrl", "1.01")
+        self.click_element("#save-button")
+        var_sleep(0.5)
+
+        self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # Test a string.
+        self.clear_and_fill_field("#inputctrl", "asdf")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # This is caught by the browser itself, so we don't have to dismiss anything.
+        # Make sure we haven't moved past the url page.
+        self.assertRegex(self.browser.title, "Next Question: integer")
+        var_sleep(0.5)
+        # Test a good integer.
+
+        self.clear_and_fill_field("#inputctrl", "5000")
         self.click_element("#save-button")
         var_sleep(.5)
 
         # real
         self.assertRegex(self.browser.title, "Next Question: real")
-        self.fill_field("#inputctrl", "0.050")
+
+        # Test a string.
+        self.clear_and_fill_field("#inputctrl", "asdf")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # This is caught by the browser itself, so we don't have to dismiss anything.
+        # Make sure we haven't moved past the url page.
+        self.assertRegex(self.browser.title, "Next Question: real")
+
+        # Test a number that's too small.
+        # self.clear_and_fill_field("#inputctrl", "0.01")
+        # self.click_element("#save-button")
+        # var_sleep(0.5)
+
+        # self.assertInNodeText("Must be at least 1", "#global_modal p") # make sure we get a stern message.
+        # self.click_element("#global_modal button") # dismiss the warning.
+        # var_sleep(.5)
+
+        # Test a number that's too large.
+        # self.clear_and_fill_field("#inputctrl", "1000")
+        # self.click_element("#save-button")
+        # var_sleep(0.5)
+
+        # self.assertInNodeText("Must be at most 200", "#global_modal p") # make sure we get a stern message.
+        # self.click_element("#global_modal button") # dismiss the warning.
+        # var_sleep(.5)
+
+        # Test a real number.
+        self.clear_and_fill_field("#inputctrl", "1.050")
         self.click_element("#save-button")
         var_sleep(.5)
 
