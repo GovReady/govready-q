@@ -116,7 +116,7 @@ class OrganizationSubdomainMiddleware:
         if allowed_paths.match(request.path):
             # Don't leak any organization information, unless this deployment
             # allows leaking on login pages.
-            if settings.REVEAL_ORGS_TO_ANON_USERS:
+            if org and settings.REVEAL_ORGS_TO_ANON_USERS:
                 request.organization = org
 
             # Render the page --- including the POST routes.
