@@ -126,7 +126,7 @@
 {% block breadcrumbs_right %}
 {% if not project.is_account_project or project.is_deletable %}
   <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
-    <i class="glyphicon glyphicon-wrench"></i> Project/System Settings</a>
+    <i class="glyphicon glyphicon-wrench"></i> Assessment Settings</a>
   </button>
 {% endif %}
 {% endblock %}
@@ -308,7 +308,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="project_settings_title">Project/System Settings</h4>
+        <h4 class="modal-title" id="project_settings_title">Assessment Settings</h4>
       </div>
       <div class="modal-body">
         <h3>Participants</h3>
@@ -335,7 +335,7 @@
 
             {% if send_invitation.can_add_invitee_to_team %}
               <div style="margin: 1em 0">
-                <button id="invite-user-to-project" class="btn btn-success" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Invite Colleague to Join Project ...</button>
+                <button id="invite-user-to-project" class="btn btn-success" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Invite Colleague to Join Assessment ...</button>
               </div>
             {% endif %}
 
@@ -356,14 +356,14 @@
 
       {% if project.is_deletable and is_admin %}
         <h3>Caution!</h3>
-              <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button> 
+              <button class="btn btn-danger" onclick="return delete_project();">Delete Assessment</button> 
 
         <h3>Share Data</h3>
               {# export #}
               <form method="post" action="{% url "export_project" project.id %}">{% csrf_token %}
                 <button class="btn btn-success" style="margin-bottom: 1em">
                   <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
-                  {{project.root_task.module.spec.export_button_label|default:"Export Project Data"}}
+                  Export Assessment Data
                 </button>
               </form>
 
@@ -418,10 +418,10 @@ $(function() {
 function invite_user_into_project() {
   var info = project_invitation_info;
   show_invite_modal(
-    'Invite To Project Team (' + info.project_title + ')',
-    'Invite a colleague to join this project team.',
+    'Invite To Assessment Team (' + info.project_title + ')',
+    'Invite a colleague to join this assessment team.',
     info,
-    'Please join the project team for ' + info.project_title + '.',
+    'Please join the assessment team for ' + info.project_title + '.',
     {
       project: info.project_id,
       add_to_team: "1"
@@ -473,8 +473,8 @@ function open_tab_from_url_fragment() {
 
 function delete_project() {
   show_modal_confirm(
-    "Delete Project",
-    "Are you sure you want to delete this project? All information will be permanently deleted.",
+    "Delete Assessment",
+    "Are you sure you want to delete this assessment? All information will be permanently deleted.",
     "Delete",
     function() {
       ajax_with_indicator({

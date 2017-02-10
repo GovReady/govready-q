@@ -5,7 +5,7 @@ Home
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active">Projects/Systems</li>
+<li class="active">Assessments</li>
 {% endblock %}
 
 {% block head %}
@@ -39,17 +39,17 @@ Home
 
 {% block body %}
 <h1 style="font-weight: bold;">
-  Projects/Systems
+  Assessments
 </h1>
     
     {% if folders|length == 0 %}
-      <p>Your IT systems and projects will be listed on this page. Start by creating your first IT system or project.</p>
+      <p>Start by beginning your first assessment.</p>
     {% else %}
-      <p>You are helping with these {{request.organization.name}} systems and projects.</p>
+      <p>You are working on these {{request.organization.name}} assessments.</p>
     {% endif %}
 
 <div style="text-align: right; margin-bottom: 1em">
-  <a id="new-project" href="/new-project" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> New Project/System</a>
+  <a id="new-project" href="/new-project" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> New Assessment</a>
 </div>
 
 <!-- List projects -->

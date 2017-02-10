@@ -9,8 +9,8 @@ GovReady Q tracks the following major entities
 
 * Users - individuals with logins to an installed instance of Q
 * Organizations - entities, e.g., companies, around with data in Q is segmented
-* Folders - collections of Systems/Projects
-* Systems/Projects - IT systems or IT projects (we use the terms interchangeably)
+* Folders - collections of Projects
+* Projects (Assessments) - IT systems or IT projects (we use the terms interchangeably) or assessments of systems or projects
 * Membership - associating individual users with organizations and systems
 * Tasks/Modules - coherent grouping of questions and educational content
 * Questions/Answers - specific snippet of content within a Task

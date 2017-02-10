@@ -6,20 +6,20 @@ Add System
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active">New Project/System</li>
+<li class="active">Begin New Assessment</li>
 {% endblock %}
 
 {% block body %}
 <div class="row">
   <div class="col-sm-push-1 col-sm-9">
 
-<h1 style="margin: 60px 0 30px 0"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> New Project/System</h1>
+<h1 style="margin: 60px 0 30px 0"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> Begin New Assessment</h1>
 
 <div style="margin: 30px 0">
   {% if first %}
-    <p>Add your first project or system.</p>
+    <p>Begin your first assessment.</p>
   {% else %}
-    <p>Add new project or system.</p>
+    <p>Begin a new assessment.</p>
   {% endif %}
 </div>
 
@@ -27,7 +27,7 @@ Add System
     {% csrf_token %}
     {% bootstrap_form form %}
     {% buttons %}
-      <button type="submit" class="btn btn-success">Create Project/System &raquo;</button>
+      <button type="submit" class="btn btn-success">Begin &raquo;</button>
     {% endbuttons %}
 </form>
 
