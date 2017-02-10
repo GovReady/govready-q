@@ -387,11 +387,13 @@ def next_question(request, taskid, taskslug):
             # Sort the instances:
             #  first: the current answer, if any
             #  then: tasks defined in the same project as this task
-            #  last: everything else
+            #  last: everything else by reverse update date
+            now = timezone.now()
             current_answer = answer.answered_by_task.first() if answer else None
             answer_tasks = sorted(answer_tasks, key = lambda t : (
                 not (t == current_answer),
                 not (t.project == task.project),
+                now-t.updated,
                 ))
 
         # Add instrumentation event.
