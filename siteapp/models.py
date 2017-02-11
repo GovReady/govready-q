@@ -220,11 +220,14 @@ class Folder(models.Model):
         return ret.distinct()
 
     @staticmethod
-    def get_all_folders_admin_of(user):
+    def get_all_folders_admin_of(user, organization):
         # Get all Folders that this user has privs to rename and add
         # new Projects to.
         return Folder.objects\
-            .filter(projects__members__user=user, projects__members__is_admin=True)\
+            .filter(
+                projects__organization=organization,
+                projects__members__user=user,
+                projects__members__is_admin=True)\
             .distinct()
 
 class Project(models.Model):

@@ -64,7 +64,7 @@ def new_project(request):
     from django.core.exceptions import ValidationError
 
     # What Folders can the new Project be added to?
-    folders = list(Folder.get_all_folders_admin_of(request.user))
+    folders = list(Folder.get_all_folders_admin_of(request.user, request.organization))
 
     # Get the list of project modules that this user has access to.
     # The built-in server-side form validation will ensure that the user can
