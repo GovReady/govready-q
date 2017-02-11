@@ -17,7 +17,8 @@ from .notifications_helpers import *
 def homepage(request):
     from allauth.account.forms import LoginForm
     return render(request, "index.html", {
-        "has_projects": len(Project.get_projects_with_read_priv(request.user, request.organization)) > 0,
+        "has_projects": (len(Project.get_projects_with_read_priv(request.user, request.organization)) > 0)
+            if hasattr(request, 'organization') else False,
         "login_form": LoginForm,
     })
 
