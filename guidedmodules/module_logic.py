@@ -321,6 +321,14 @@ def render_content(content, answers, output_format, source, additional_context={
             # Render with a custom renderer to control output.
             import CommonMark
             class q_renderer(CommonMark.HtmlRenderer):
+                def __init__(self):
+                    # Our module templates are currently trusted, so we can keep
+                    # safe mode off, and we're making use of that. Safe mode is
+                    # off by default, but I'm making it explicit. If we ever
+                    # have untrusted template content, we will need to turn
+                    # safe mode on.
+                    super().__init__(options={ "safe": False })
+
                 def heading(self, node, entering):
                     # Generate <h#> tags with one level down from
                     # what would be normal since they should not
@@ -442,11 +450,15 @@ def render_content(content, answers, output_format, source, additional_context={
         elif template_format == "html":
             def escapefunc(s, is_longtext):
                 if not is_longtext:
+                    # Regular text fields just get escaped.
                     import html
                     return html.escape(s)
                 else:
+                    # longtext fields are rendered into the output
+                    # using CommonMark.
                     import CommonMark
-                    return CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(s))
+                    parsed = CommonMark.Parser().parse(s)
+                    return CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
 
         # Execute the template.
 

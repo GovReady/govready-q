@@ -211,6 +211,61 @@ class RenderTests(TestCaseWithFixtureData):
             },
             '<blockquote>\n<p>This is a\nblockquote with\nnewlines\n\ncollapsed.</p>\n</blockquote>\n<blockquote>\n<p>This is blockquote has\n<p>substituted</p>\n<p>multi-paragraph</p>\n<p>text.</p>\n</p>\n</blockquote>')
 
+    def test_render_markdown_to_html_exploits(self):
+        def test(template, context, expected):
+            self.assertEqual(
+                self.render_content(
+                    "question_types_text",
+                    "markdown", template,
+                    context,
+                    "html"),
+                expected)
+
+        # Test that templates are rendered in safe mode.
+        # (We don't turn on safe mode currently because we are using those
+        # aspects of CommonMark in our templates.)
+
+        # # Unsafe URLs are blocked.
+        # test(
+        #     r"[link](javascript:alert\(window\))",
+        #     { },
+        #     "<p><a>link</a></p>")
+        # test(
+        #     r"![link](data:image/svg+xml,<svg></svg>)",
+        #     { },
+        #     '<p><img src="" alt="link" /></p>')
+
+        # # Raw HTML is blocked.
+        # test(
+        #     '''<a href="" onclick="alert('uh-oh')">click me</a>''',
+        #     { },
+        #     '<p><!-- raw HTML omitted -->click me<!-- raw HTML omitted --></p>')
+
+        # Since longtext fields are evaluated as CommonMark, they
+        # create another vector.
+
+        # Unsafe URLs are blocked.
+        test(
+            "{{q_longtext}}",
+            {
+                "q_longtext": r"[link](javascript:alert\(window\))",
+            },
+            "<p><p><a>link</a></p>\n</p>")
+        test(
+            "{{q_longtext}}",
+            {
+                "q_longtext": r"![image](data:image/svg+xml,<svg></svg>)",
+            },
+            '<p><p><img src="" alt="image" /></p>\n</p>')
+
+        # Raw HTML is blocked.
+        test(
+            "{{q_longtext}}",
+            {
+                "q_longtext": '''<a href="" onclick="alert('uh-oh')">click me</a>''',
+            },
+            '<p><p><!-- raw HTML omitted -->click me<!-- raw HTML omitted --></p>\n</p>')
+
     def render_content(self, module, template_format, template, answers, output_format):
         m = Module.objects.get(key=module)
         return render_content(

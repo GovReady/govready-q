@@ -5,12 +5,6 @@ from django.utils.safestring import mark_safe
 register = template.Library()
 
 @register.filter(is_safe=True)
-@stringfilter
-def markdown(value):
-    import CommonMark
-    return mark_safe(CommonMark.commonmark(str(value), safe_mode=True))
-
-@register.filter(is_safe=True)
 def json(value):
     # Encode value as JSON for inclusion within a <script></script> tag.
     # Since we are not using |escapejs (which would only be valid within

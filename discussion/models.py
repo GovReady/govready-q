@@ -345,7 +345,8 @@ def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
 
     # Render to HTML as if CommonMark.
     import CommonMark
-    text = CommonMark.commonmark(text)
+    parsed = CommonMark.Parser().parse(text)
+    text = CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
 
     if unwrap_p:
         # If it's a single paragraph, unwrap it.
