@@ -150,12 +150,66 @@ class RenderTests(TestCaseWithFixtureData):
             "*Hello*")
 
     def test_render_markdown_to_html(self):
-        self.assertEqual(
-            self.render_content(
-                "question_types_text",
-                "markdown", "*Hello*",
-                { }, "html"),
-            "<p><em>Hello</em></p>")
+        def test(template, context, expected):
+            self.assertEqual(
+                self.render_content(
+                    "question_types_text",
+                    "markdown", template,
+                    context,
+                    "html"),
+                expected)
+
+        # test that CommonMark rules are applied
+        test("*Hello*", { }, "<p><em>Hello</em></p>")
+
+        # test that some unsafe parts of CommonMark are applied, since we
+        # are using them, though this is probably bad.
+        test("<style>style tags</style>", { }, "<style>style tags</style>")
+
+        # test that CommonMark in a regular text field is *not* applied
+        test(
+            "{{q_text}}",
+            {
+                "q_text": "**Hello** <b>not bold</b>",
+            },
+            "<p>**Hello** &lt;b&gt;not bold&lt;/b&gt;</p>")
+
+        # test that CommonMark in a longtext field *is* applied
+        # (It's output isn't create because it nests <p>'s but
+        # that's something to fix later. TODO.)
+        test(
+            "{{q_longtext}}",
+            {
+                "q_longtext": "**Hello**",
+            },
+            "<p><p><strong>Hello</strong></p>\n</p>")
+
+        # test variable substitutions mixed with CommonMark links
+        test(
+            "[{{q_text}}](https://www.google.com/)",
+            {
+                "q_text": "**Hello**",
+            },
+            """<p><a href="https://www.google.com/">**Hello**</a></p>""")
+        test(
+            "[This is a Link!]({{q_text}})",
+            {
+               "q_text": "https://www.google.com/",
+            },
+            """<p><a href="https://www.google.com/">This is a Link!</a></p>""")
+
+        # test URL rewriting on links & images for module static content
+        test("![](relative/path.png)", { },
+            """<p><img src="/static/module-assets/relative/path.png" alt="" /></p>""")
+
+        # test variable substitutions mixed with CommonMark block elements
+        test(
+            "> This is a\n> blockquote with\n> {{q_text}}\n\n> This is blockquote has\n> {{q_longtext}}\n\n",
+            {
+                "q_text": "newlines\n\ncollapsed.",
+                "q_longtext": "substituted\n\nmulti-paragraph\n\ntext.",
+            },
+            '<blockquote>\n<p>This is a\nblockquote with\nnewlines\n\ncollapsed.</p>\n</blockquote>\n<blockquote>\n<p>This is blockquote has\n<p>substituted</p>\n<p>multi-paragraph</p>\n<p>text.</p>\n</p>\n</blockquote>')
 
     def render_content(self, module, template_format, template, answers, output_format):
         m = Module.objects.get(key=module)
