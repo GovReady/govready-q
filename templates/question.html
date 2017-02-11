@@ -47,6 +47,8 @@ h1 {
 label .onhover { display: none; }
 label:hover .onhover { display: inline; }
 
+#reference-text-wrapper *:first-child { margin-top: 0; }
+
 #discussion {
   margin-top: 1em;
   /*border-top: 1px solid #DDD;*/
@@ -398,17 +400,21 @@ label:hover .onhover { display: inline; }
         </form>
 
         {% if reference_text %}
-          <div id="reference-text" class="well" style="margin: 20px 0; position: relative;">
-            <div id="reference-text-wrapper" style="max-height: 7.5em; overflow: hidden;">
+          <div id="reference-text" class="well" style="margin: 20px 0; position: relative; background: none;">
+            <div id="reference-text-wrapper" style="max-height: 7.25em; overflow: hidden;">
               <div>
                 {{reference_text|safe}}
               </div>
             </div>
-            <div id="reference-text-more" style="margin: 0 -19px; position: absolute; bottom: 0; width: 100%; text-align: center; padding: 1em 1em .5em 1em; background: linear-gradient(0deg, white 20%, transparent);">
-              <a href="#" onclick="$('#reference-text-wrapper').data('original-height', $('#reference-text-wrapper').height()); $('#reference-text-wrapper').animate({ minHeight: $('#reference-text-wrapper>div').height() }); $('#reference-text-more').hide(); $('#reference-text-less').show(); return false;" style="font-weight: bold">Show More</a>
-            </div>
-            <div id="reference-text-less" style="text-align: center; padding: 1em 1em 0 1em; display: none;">
-              <a href="#" onclick="$('#reference-text-wrapper').animate({ minHeight: $('#reference-text-wrapper').data('original-height') }); $('#reference-text-more').show(); $('#reference-text-less').hide(); return false;" style="font-weight: bold">Show Less</a>
+            <div id="reference-text-toggle"
+                 style="margin: 0 -19px; position: absolute; bottom: 0; width: 100%; text-align: center; padding: .75em 1em .5em 1em; background: linear-gradient(0deg, white 75%, transparent); font-weight: bold;">
+              <a id="reference-text-more"
+                 href="#"
+                 onclick="$('#reference-text-wrapper').data('original-height', $('#reference-text-wrapper').height()); $('#reference-text-wrapper').animate({ minHeight: $('#reference-text-wrapper>div').outerHeight() + $('#reference-text-toggle').outerHeight() }); $('#reference-text-more').hide(); $('#reference-text-less').show(); return false;">Show More</a>
+              <a id="reference-text-less"
+                 href="#"
+                 style="display: none;"
+                 onclick="$('#reference-text-wrapper').animate({ minHeight: $('#reference-text-wrapper').data('original-height') }); $('#reference-text-more').show(); $('#reference-text-less').hide(); return false;">Show Less</a>
             </div>
           </div>
         {% endif %}
