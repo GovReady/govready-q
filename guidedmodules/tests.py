@@ -182,7 +182,7 @@ class RenderTests(TestCaseWithFixtureData):
             {
                 "q_longtext": "**Hello**",
             },
-            "<p><p><strong>Hello</strong></p>\n</p>")
+            "<p><strong>Hello</strong></p>")
 
         # test variable substitutions mixed with CommonMark links
         test(
@@ -200,7 +200,7 @@ class RenderTests(TestCaseWithFixtureData):
 
         # test URL rewriting on links & images for module static content
         test("![](relative/path.png)", { },
-            """<p><img src="/static/module-assets/relative/path.png" alt="" /></p>""")
+            """<p><img alt="" src="/static/module-assets/relative/path.png"></p>""")
 
         # test variable substitutions mixed with CommonMark block elements
         test(
@@ -209,7 +209,7 @@ class RenderTests(TestCaseWithFixtureData):
                 "q_text": "newlines\n\ncollapsed.",
                 "q_longtext": "substituted\n\nmulti-paragraph\n\ntext.",
             },
-            '<blockquote>\n<p>This is a\nblockquote with\nnewlines\n\ncollapsed.</p>\n</blockquote>\n<blockquote>\n<p>This is blockquote has\n<p>substituted</p>\n<p>multi-paragraph</p>\n<p>text.</p>\n</p>\n</blockquote>')
+            '<blockquote>\n<p>This is a\nblockquote with\nnewlines\n\ncollapsed.</p>\n</blockquote>\n<blockquote>\n<p>This is blockquote has\n</p><p>substituted</p>\n<p>multi-paragraph</p>\n<p>text.</p>\n\n</blockquote>')
 
     def test_render_markdown_to_html_exploits(self):
         def test(template, context, expected):
@@ -241,6 +241,31 @@ class RenderTests(TestCaseWithFixtureData):
         #     { },
         #     '<p><!-- raw HTML omitted -->click me<!-- raw HTML omitted --></p>')
 
+
+        # Test that unsafe script content cannot be inserted by
+        # variable substitution.
+
+        test(
+            "[This is a Link]({{q_text}})",
+            {
+                "q_text": r"javascript:alert(window)",
+            },
+            '<p><a href="javascript:alert(\'Invalid link.\');">This is a Link</a></p>')
+
+        test(
+            "![image]({{q_text}})",
+            {
+                "q_text": "data:image/svg+xml,<svg></svg>",
+            },
+            '<p><img alt="image" src="javascript:alert(\'Invalid link.\');"></p>')
+
+        test(
+            "```info{{q_text}}\nFenced block\n```",
+            {
+                "q_text": " myclass",
+            },
+            '<pre><code>Fenced block\n</code></pre>')
+
         # Since longtext fields are evaluated as CommonMark, they
         # create another vector.
 
@@ -250,13 +275,13 @@ class RenderTests(TestCaseWithFixtureData):
             {
                 "q_longtext": r"[link](javascript:alert\(window\))",
             },
-            "<p><p><a>link</a></p>\n</p>")
+            "<p><a>link</a></p>")
         test(
             "{{q_longtext}}",
             {
                 "q_longtext": r"![image](data:image/svg+xml,<svg></svg>)",
             },
-            '<p><p><img src="" alt="image" /></p>\n</p>')
+            '<p><img alt="image" src=""></p>')
 
         # Raw HTML is blocked.
         test(
@@ -264,7 +289,7 @@ class RenderTests(TestCaseWithFixtureData):
             {
                 "q_longtext": '''<a href="" onclick="alert('uh-oh')">click me</a>''',
             },
-            '<p><p><!-- raw HTML omitted -->click me<!-- raw HTML omitted --></p>\n</p>')
+            '<p><!-- raw HTML omitted -->click me<!-- raw HTML omitted --></p>')
 
     def render_content(self, module, template_format, template, answers, output_format):
         m = Module.objects.get(key=module)
@@ -311,8 +336,8 @@ class RenderTests(TestCaseWithFixtureData):
         test("q_url", None, escape("<url>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_url.text", None, escape("<not answered>"))
         
-        test("q_longtext", "This is a paragraph.\n\nThis is another paragraph.", "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>", 'This is a paragraph.\n\nThis is another paragraph.') # renders w/ Markdown, but impute condition gives it raw
-        test("q_longtext.text", "This is a paragraph.\n\nThis is another paragraph.", "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>", 'This is a paragraph.\n\nThis is another paragraph.') # renders w/ Markdown, but impute condition gives it raw
+        test("q_longtext", "This is a paragraph.\n\nThis is another paragraph.", "This is a paragraph.</p>\n<p>This is another paragraph.", 'This is a paragraph.\n\nThis is another paragraph.') # renders w/ Markdown, but impute condition gives it raw
+        test("q_longtext.text", "This is a paragraph.\n\nThis is another paragraph.", "This is a paragraph.</p>\n<p>This is another paragraph.", 'This is a paragraph.\n\nThis is another paragraph.') # renders w/ Markdown, but impute condition gives it raw
         test("q_longtext", None, escape("<longtext>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_longtext.text", None, escape("<not answered>"))
         
@@ -446,8 +471,9 @@ class RenderTests(TestCaseWithFixtureData):
         # unwrap the <p> tags for simplicity, so the caller doesn't have to supply it
         import re
         strip_p_tags = re.compile("^<p>(.*)</p>$", re.S)
-        self.assertRegex(actual, strip_p_tags)
-        actual = strip_p_tags.match(actual).group(1).strip()
+        m = strip_p_tags.match(actual)
+        if m:
+            actual = m.group(1).strip()
 
         # test that the output matches what the caller gave
         self.assertEqual(actual, expected)

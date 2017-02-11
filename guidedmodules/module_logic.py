@@ -336,27 +336,13 @@ def render_content(content, answers, output_format, source, additional_context={
                     if entering:
                         node.level += 1
                     super().heading(node, entering)
-                def link(self, node, entering):
-                    # Rewrite the target URL to be within the app's
-                    # static virtual path.
-                    if entering:
-                        self.rewrite_url(node)
-                    super().link(node, entering)
-                def image(self, node, entering):
-                    # Rewrite the image URL to be within the app's
-                    # static virtual path.
-                    if entering:
-                        self.rewrite_url(node)
-                    super().image(node, entering)
-                def rewrite_url(self, node):
-                    if "\uE000" in node.destination or answers is None:
-                        # Don't mess with the URL if it contains any template
-                        # tags. We can't tell what the URL will be, so let's
-                        # require that it be absolute. Also don't rewrite if
-                        # we are doing this outside of having a Module instance
-                        # (probably in unit tests).
-                        return node.destination
-                    node.destination = answers.module.get_static_asset_url(node.destination)
+
+                def code_block(self, node, entering):
+                    # Suppress info strings because with variable substitution
+                    # untrusted content could land in the <code> class attribute
+                    # without a language- prefix.
+                    node.info = None
+                    super().code_block(node, entering)
 
             template_format = "html"
             template_body = q_renderer().render(CommonMark.Parser().parse(template_body))
@@ -506,7 +492,47 @@ def render_content(content, answers, output_format, source, additional_context={
                 return "<pre>" + html.escape(output) + "</pre>"
         elif template_format == "html":
             if output_format == "html":
-                # html => html (nothing to do)
+                # html => html
+                #
+                # There is no data transformation, but we must check that no
+                # unsafe content was inserted by variable substitution ---
+                # in particular, unsafe URLs like javascript: and data: URLs.
+                # When the content comes from a Markdown template, unsafe content
+                # can only end up in <a> href's and <img> src's. If the template
+                # has unsafe content like raw HTML, then it is up to the template
+                # writer to ensure that variable substitution does not create
+                # a vulnerability.
+                #
+                # We also rewrite non-absolute URLs in <a> href's and <img> src
+                # to allow for linking to module-defined static content.
+                #
+                # This also fixes the nested <p>'s within <p>'s when a longtext
+                # field is rendered.
+
+                def rewrite_url(url):
+                    # Rewrite for static assets.
+                    if answers is not None:
+                        url = answers.module.get_static_asset_url(url)
+
+                    # Check final URL.
+                    import urllib.parse
+                    u = urllib.parse.urlparse(url)
+                    if u.scheme not in ("", "http", "https", "mailto"):
+                        return "javascript:alert('Invalid link.');"
+                    return url
+
+                import html5lib, xml.etree
+                dom = html5lib.HTMLParser().parseFragment(output)
+                for node in dom.iter():
+                    if node.get("href"):
+                        node.set("href", rewrite_url(node.get("href")))
+                    if node.get("src"):
+                        node.set("src", rewrite_url(node.get("src")))
+                output = html5lib.serialize(dom, quote_attr_values="always", omit_optional_tags=False, alphabetical_attributes=True)
+
+                # But the p's within p's fix gives us a lot of empty p's.
+                output = output.replace("<p></p>", "")
+
                 return output
 
         raise ValueError("Cannot render %s to %s." % (template_format, output_format))
