@@ -4,6 +4,8 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from unittest import skip
 
+import os
+import random
 import re
 
 def var_sleep(float):
@@ -34,7 +36,6 @@ class SeleniumTest(StaticLiveServerTestCase):
 
         # Start a headless browser.
         import selenium.webdriver
-        import os
         os.environ['PATH'] += ":/usr/lib/chromium-browser" # 'chromedriver' executable needs to be in PATH
         cls.browser = selenium.webdriver.Chrome()
         cls.browser.implicitly_wait(3) # seconds
@@ -179,8 +180,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def _accept_invitation(self, email):
         # Assumes an invitation email was sent.
-
-        import random
 
         # Extract the URL in the email and visit it.
         invitation_body = self.pop_email().body
@@ -459,7 +458,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5)
 
         # email-address
-        import random
         self.assertRegex(self.browser.title, "Next Question: email-address")
 
         # test a bad address
@@ -584,9 +582,83 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Make sure we haven't moved past the url page.
         self.assertRegex(self.browser.title, "Next Question: integer")
         var_sleep(0.5)
-        # Test a good integer.
 
+        # Test a good integer.
         self.clear_and_fill_field("#inputctrl", "5000")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # integer min/max
+        self.assertRegex(self.browser.title, "Next Question: integer min/max")
+
+        # Test a too-small number
+        self.clear_and_fill_field("#inputctrl", "0")
+        self.click_element("#save-button")
+        var_sleep(0.5)
+
+        self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # Test a too-large number
+        self.clear_and_fill_field("#inputctrl", "27")
+        self.click_element("#save-button")
+        var_sleep(0.5)
+
+        self.assertInNodeText("Must be at most 10.", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # Test a non-integer.
+        self.clear_and_fill_field("#inputctrl", "1.01")
+        self.click_element("#save-button")
+        var_sleep(0.5)
+
+        # This should be caught by the browser itself, so we don't have to dismiss anything.
+        # Make sure we haven't moved past the url page.
+        self.assertRegex(self.browser.title, "Next Question: integer min/max")
+        var_sleep(0.5)
+
+        # Test a good integer.
+        self.clear_and_fill_field("#inputctrl", "3")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # integer min/max big
+        # For max > 1000, we should expect that we can use commas in our numbers
+        # so we need to do slightly different tests.
+
+        self.assertRegex(self.browser.title, "Next Question: integer min/max big")
+
+        # Test a too-small number
+        self.clear_and_fill_field("#inputctrl", "0")
+        self.click_element("#save-button")
+        var_sleep(0.5)
+
+        self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # Test a too-large number
+        self.clear_and_fill_field("#inputctrl", "15000")
+        self.click_element("#save-button")
+        var_sleep(0.5)
+
+        self.assertInNodeText("Must be at most 10000.", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # Test a non-integer.
+        self.clear_and_fill_field("#inputctrl", "1.01")
+        self.click_element("#save-button")
+        var_sleep(0.5)
+
+        self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # Test a good integer that has a comma in it.
+        self.clear_and_fill_field("#inputctrl", "1,234")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -602,32 +674,40 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Make sure we haven't moved past the url page.
         self.assertRegex(self.browser.title, "Next Question: real")
 
-        # Test a number that's too small.
-        # self.clear_and_fill_field("#inputctrl", "0.01")
-        # self.click_element("#save-button")
-        # var_sleep(0.5)
-
-        # self.assertInNodeText("Must be at least 1", "#global_modal p") # make sure we get a stern message.
-        # self.click_element("#global_modal button") # dismiss the warning.
-        # var_sleep(.5)
-
-        # Test a number that's too large.
-        # self.clear_and_fill_field("#inputctrl", "1000")
-        # self.click_element("#save-button")
-        # var_sleep(0.5)
-
-        # self.assertInNodeText("Must be at most 200", "#global_modal p") # make sure we get a stern message.
-        # self.click_element("#global_modal button") # dismiss the warning.
-        # var_sleep(.5)
-
         # Test a real number.
         self.clear_and_fill_field("#inputctrl", "1.050")
         self.click_element("#save-button")
         var_sleep(.5)
 
+        # real min/max
+        self.assertRegex(self.browser.title, "Next Question: real min/max")
+
+        # Test a number that's too small.
+        self.clear_and_fill_field("#inputctrl", "0.01")
+        self.click_element("#save-button")
+        var_sleep(.5)
+        # var_sleep(60)
+        self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # Test a number that's too large.
+        self.clear_and_fill_field("#inputctrl", "1000")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        self.assertInNodeText("Must be at most 100.", "#global_modal p") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.5)
+
+        # Test a real number.
+        self.clear_and_fill_field("#inputctrl", "23.051")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Numeric Question Types - ")
-    
+
     def test_questions_media(self):
         # Log in and create a new project.
         self._login()
@@ -639,17 +719,27 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#save-button")
         var_sleep(.5)
 
-        # file
-        # TODO: Test an actual file upload. For now we're just skipping
-        # the question.
+        # file upload
         self.assertRegex(self.browser.title, "Next Question: file")
-        self.click_element("#skip-button")
-        var_sleep(.5)
+
+        # We need to upload a file that we know exists.
+        testFilePath = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            'modules',
+            'assets',
+            'testimage.png'
+        )
+        self.fill_field("#inputctrl", testFilePath)
+
+        self.click_element("#save-button")
+        var_sleep(1)
 
         # interstitial
-        # nothing to really test in terms of functionality, but we could check that
+        # nothing to really test in terms of functionality, but check that
         # page elements are present
         self.assertRegex(self.browser.title, "Next Question: interstitial")
+        self.assertInNodeText("This is an interstitial.", "#question-prompt")
+
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -661,8 +751,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#save-button")
         var_sleep(.5)
 
-        # Finished.
         self.assertRegex(self.browser.title, "^Test The Media Question Types - ")
+        self.assertInNodeText("Successfully ran an external function", ".output-document p")
 
     def test_questions_module(self):
         # Log in and create a new project.
@@ -755,4 +845,4 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
 def sample_external_function(question, answers, **kwargs):
     # For test_questions_media's module.
-    return repr((question, answers))
+    return 'Successfully ran an external function'
