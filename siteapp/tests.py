@@ -567,7 +567,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
         self.click_element("#save-button")
-        var_sleep(0.5)
+        var_sleep(.5)
 
         self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
@@ -581,7 +581,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # This is caught by the browser itself, so we don't have to dismiss anything.
         # Make sure we haven't moved past the url page.
         self.assertRegex(self.browser.title, "Next Question: integer")
-        var_sleep(0.5)
+        var_sleep(.5)
 
         # Test a good integer.
         self.clear_and_fill_field("#inputctrl", "5000")
@@ -594,7 +594,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test a too-small number
         self.clear_and_fill_field("#inputctrl", "0")
         self.click_element("#save-button")
-        var_sleep(0.5)
+        var_sleep(.5)
 
         self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
@@ -603,7 +603,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test a too-large number
         self.clear_and_fill_field("#inputctrl", "27")
         self.click_element("#save-button")
-        var_sleep(0.5)
+        var_sleep(.5)
 
         self.assertInNodeText("Must be at most 10.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
@@ -612,12 +612,12 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
         self.click_element("#save-button")
-        var_sleep(0.5)
+        var_sleep(.5)
 
         # This should be caught by the browser itself, so we don't have to dismiss anything.
         # Make sure we haven't moved past the url page.
         self.assertRegex(self.browser.title, "Next Question: integer min/max")
-        var_sleep(0.5)
+        var_sleep(.5)
 
         # Test a good integer.
         self.clear_and_fill_field("#inputctrl", "3")
@@ -633,7 +633,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test a too-small number
         self.clear_and_fill_field("#inputctrl", "0")
         self.click_element("#save-button")
-        var_sleep(0.5)
+        var_sleep(.5)
 
         self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
@@ -642,7 +642,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test a too-large number
         self.clear_and_fill_field("#inputctrl", "15000")
         self.click_element("#save-button")
-        var_sleep(0.5)
+        var_sleep(.5)
 
         self.assertInNodeText("Must be at most 10000.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
@@ -651,7 +651,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
         self.click_element("#save-button")
-        var_sleep(0.5)
+        var_sleep(.5)
 
         self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
