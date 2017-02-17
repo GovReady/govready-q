@@ -27,7 +27,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Override ALLOWED_HOSTS, SITE_ROOT_URL, and ORGANIZATION_PARENT_DOMAIN
         # because they may not be set or set properly in the local environment's
         # non-test settings for the URL assigned by the LiveServerTestCase server.
-        settings.ALLOWED_HOSTS = ['.localhost']
+        settings.ALLOWED_HOSTS = ['.localhost', 'testserver']
         settings.SITE_ROOT_URL = cls.live_server_url
         settings.ORGANIZATION_PARENT_DOMAIN = 'orgs.localhost'
 
