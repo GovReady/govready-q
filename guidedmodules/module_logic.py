@@ -1,4 +1,5 @@
 from django.conf import settings
+from jinja2.sandbox import SandboxedEnvironment
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta
@@ -6,6 +7,28 @@ def get_jinja2_template_vars(template):
     env = SandboxedEnvironment()
     return set(meta.find_undeclared_variables(env.parse(template)))
 
+
+class Jinja2Environment(SandboxedEnvironment):
+    # A Jinja2 Environment for template and expression execution.
+
+    intercepted_binops = frozenset(['+'])
+
+    def call_binop(self, context, operator, left, right):
+        # If the operands are RenderedAnswer instances, then unwrap them
+        # to the raw Python value before executing the operator.
+        def unwrap(operand):
+            if isinstance(operand, RenderedAnswer):
+                operand = operand.answer
+            return operand
+        left = unwrap(left)
+        right = unwrap(right)
+
+        # Example from Jinja2 docs about overriding an operator.
+        #if operator == '+':
+        #    return self.undefined('the power operator is unavailable')
+
+        # Call default operator logic.
+        return SandboxedEnvironment.call_binop(self, context, operator, left, right)
 
 def walk_module_questions(module, callback):
     # Walks the questions in depth-first order following the dependency
@@ -453,8 +476,7 @@ def render_content(content, answers, output_format, source, additional_context={
         # RenderedAnswer, which relies on autoescaping logic. This also lets
         # the template writer disable autoescaping with "|safe".
         import jinja2
-        from jinja2.sandbox import SandboxedEnvironment
-        env = SandboxedEnvironment(
+        env = Jinja2Environment(
             autoescape=True,
             undefined=jinja2.StrictUndefined)
         try:
@@ -627,8 +649,7 @@ def run_impute_conditions(conditions, context):
     # the imputed value. Be careful about values like 0 that
     # are false-y --- must check for "is None" to know if
     # something was imputed or not.
-    from jinja2.sandbox import SandboxedEnvironment
-    env = SandboxedEnvironment()
+    env = Jinja2Environment()
     for rule in conditions:
         condition_func = env.compile_expression(rule["condition"])
         try:
@@ -1303,6 +1324,15 @@ class RenderedAnswer:
             return iter(self.answer)
 
         raise TypeError("Answer of type %s is not iterable." % self.question_type)
+
+    def __len__(self):
+        if self.answer is None:
+            raise TypeError("Skipped answer has no length.")
+
+        if self.question_type in ("multiple-choice", "module-set", "external-function"):
+            return len(self.answer)
+
+        raise TypeError("Answer of type %s has no length." % self.question_type)
 
     def __getattr__(self, item):
         # For module-type questions, provide the answers of the
