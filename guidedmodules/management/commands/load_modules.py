@@ -20,7 +20,7 @@ class DependencyError(Exception):
         super().__init__("Invalid module ID %s in %s." % (to_module, from_module))
 
 class Command(BaseCommand):
-    help = 'Upadates the modules in the database using the YAML specifications in the filesystem.'
+    help = 'Updates the modules in the database using the YAML specifications in the filesystem.'
     args = '{force}'
 
     def handle(self, *args, **options):
