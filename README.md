@@ -102,6 +102,23 @@ See [Schema.md](Schema.md) for documentation on writing question and answer modu
 
 The recommended approach to adding new modules is by symbolic link from within `modules/linked_modules` to a separate directory containing your content modules.
 
+# Testing and Generating Screenshots
+
+It is possible to create a PDF containing screenshots of a module being completed automatically:
+
+* You must have the module loaded into your local database using `load_modules`.
+
+* Then create a fixture using the `create_fixture` management command containing a test user & test organization plus the modules you need to run the test.
+
+* Finally use the `take_module_screenshots` management command to start a Selenium browser session and take screenshots. Give it the fixture file and the ID of a question in the project specified in the `create_fixture` command.
+
+Like this:
+
+	./manage.py load_modules
+	./manage.py create_fixture local/ssp/project > /tmp/ssp.json
+	./manage.py take_module_screenshots /tmp/ssp.json fisma_level
+
+
 # Credits / License
 
 Emoji icons by http://emojione.com/developers/.

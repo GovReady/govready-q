@@ -3,13 +3,13 @@
 <p class="pull-right">
   module:
     {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/module/{{m.id}}">{% endif %}
-    {{m.key}}{% if user.is_staff %}</a>{% endif %}
+    <span id="debug-module-key">{{m.key}}</span>{% if user.is_staff %}</a>{% endif %}
     {% if not m.visible %}(obsolete){% endif %}
   {% if q %}
   <br />
   question:
     {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/modulequestion/{{q.id}}">{% endif %}
-    {{q.key}}{% if user.is_staff %}</a>{% endif %}
+    <span id="debug-question-key">{{q.key}}</span>{% if user.is_staff %}</a>{% endif %}
   {% endif %}
   <br />
   task:

@@ -25,3 +25,6 @@ exclusiveprocess==0.9.3 # CC0
 git+https://github.com/JoshData/commonmark-py-plaintext#egg=commonmark-to-text # CC0; we don't use this directly but it is a dependency of django-html-emailer
 git+https://github.com/if-then-fund/django-html-emailer#egg=django-html-emailer # MIT License
 git+https://github.com/if-then-fund/django-database-storage#egg=django-database-storage # CC0
+
+# Development & testing only
+fpdf==1.7.2 # LGPL

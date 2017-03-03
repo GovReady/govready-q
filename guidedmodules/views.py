@@ -322,8 +322,10 @@ def next_question(request, taskid, taskslug):
     }
 
     # Is this the user's settings page? Hide the blurb to do it.
-    if task == request.user.user_settings_task:
-        request.is_user_settings_page = True
+    # Actually just hide the blurb on all question pages - it's
+    # distracting from answering the question at hand.
+    if task == request.user.user_settings_task or q:
+       request.suppress_prompt_banner = True
 
     if not q:
         # There is no next question. Either the task is finished or there
