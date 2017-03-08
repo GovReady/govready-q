@@ -671,7 +671,7 @@ $(function() {
         // But there's a constructor that does this for us:
         var data = new FormData($('form')[0]);
         ajax_with_indicator({
-            url: window.location.pathname,
+            url: "{{task.get_absolute_url|escapejs}}/_save",
             method: "POST",
             data: data,
             keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect

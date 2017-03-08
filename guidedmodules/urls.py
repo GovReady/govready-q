@@ -6,7 +6,10 @@ admin.autodiscover()
 import guidedmodules.views
 
 urlpatterns = [
-    url(r'^(\d+)/([\w_-]+)$', guidedmodules.views.next_question),
+    url(r'^(\d+)/([\w_-]+)(/_save)()$', guidedmodules.views.save_answer),
+    url(r'^(\d+)/([\w_-]+)(/question/)([\w_-]+)$', guidedmodules.views.show_question),
+    url(r'^(\d+)/([\w_-]+)(/finished)()$', guidedmodules.views.task_finished),
+    url(r'^(\d+)/([\w_-]+)()()$', guidedmodules.views.next_question),
     url(r'^start$', guidedmodules.views.new_task),
     url(r'^_change_state$', guidedmodules.views.change_task_state, name="task_change_state"),
     url(r'^_instrumentation_record_interaction$', guidedmodules.views.instrumentation_record_interaction, name="task_instrumentation_record_interaction"),

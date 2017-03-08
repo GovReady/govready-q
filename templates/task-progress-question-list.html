@@ -1,6 +1,6 @@
 {% for q in context %}
   <li id="link-to-question-{{q.key}}" class="{% if q.is_this_question %}this{% else %}other{% endif %}">
-    {% if not q.is_this_question and q.can_link %}<a href="?q={{q.key}}&previous={{previous|urlencode}}">{% endif %}
+    {% if not q.is_this_question and q.can_link %}<a href="{{task.get_absolute_url}}/question/{{q.key|urlencode}}?previous={{previous|urlencode}}">{% endif %}
 
     {% if q.is_this_question  %}<span class="glyphicon glyphicon-play-circle"> </span>
     {% elif q.skipped %}<span class="glyphicon glyphicon-edit"> </span>

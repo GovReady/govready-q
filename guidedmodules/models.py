@@ -238,9 +238,13 @@ class Task(models.Model):
 
         return task
 
+    def get_slug(self):
+        from django.utils.text import slugify
+        return slugify(self.title)
+
     def get_absolute_url(self):
         from django.utils.text import slugify
-        return "/tasks/%d/%s" % (self.id, slugify(self.title))
+        return "/tasks/%d/%s" % (self.id, self.get_slug())
 
     def get_absolute_url_to_question(self, question):
         # The project root task displays at different URLs.
@@ -249,7 +253,7 @@ class Task(models.Model):
             return self.project.get_absolute_url() + "#tab=" + slugify(question.spec.get("tab", ""))
         else:
             import urllib.parse
-            return self.get_absolute_url() + "?" + urllib.parse.urlencode({"q": question.key })
+            return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
 
     def get_answers(self, decryption_provider=None):
         # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
@@ -725,7 +729,7 @@ class TaskAnswer(models.Model):
 
     def get_absolute_url(self):
         from urllib.parse import quote
-        return self.task.get_absolute_url() + "?q=" + quote(self.question.key)
+        return self.task.get_absolute_url_to_question(self.question)
 
     def get_current_answer(self):
         # The current answer is the one with the highest primary key.
