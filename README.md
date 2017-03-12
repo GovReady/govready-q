@@ -107,13 +107,21 @@ Your Q deployment can pull module content from local directories and Github by l
 		"system": {
 			"type": "local",
 			"path": "modules/system"
-		}
+		},
+		"my_modules": {
+			"type": "github",
+			"repo": "GovReady/my-modules",
+			"path": "modules",
+			"auth": { "user": "...", "pw": "..." }
+		},
 	}
 	...
 
 Each entry in `module-repos` binds a namespace in your local deployment (in this example: `system`, `my_modules/one`, and `my_modules/two`) to a repository of modules. All deployments must have the `system` namespace bound to the modules at the local path `modules/system`. The repositories can be of these types:
 
 * `"type": "local"` to load modules from a directory on the local file system. Specify a relative or absolute path in `path`.
+
+* `"type": "github"`, which uses the Github API and user credentials such as a Github username and a [personal access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
 
 After making changes to `module-repos`, run `python3 manage.py load_modules` to pull the modules from the module repositories into the database.
 

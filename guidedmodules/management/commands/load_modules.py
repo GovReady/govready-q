@@ -24,6 +24,8 @@ class ModuleRepository(object):
     def load(repo_spec):
         if repo_spec.get("type") == "local":
             return LocalModuleRepository(repo_spec)
+        elif repo_spec.get("type") == "github":
+            return GithubRepository(repo_spec)
         else:
             raise ValueError("Invalid module repository type: %s" % str(repo_spec.get("type")))
 
@@ -122,6 +124,38 @@ class LocalModuleRepository(VirtualFilesystemRepository):
     def open_file(self, path, mode):
         import os.path
         return open(os.path.join(self.path, *path), mode)
+
+class GithubRepository(VirtualFilesystemRepository):
+    """A repository of Q modules stored in Github. Initialize with
+      { "type": "github", "repo": "orgname/reponame", ["path": "/subpath",] "auth": { "user": "...", "pw": "..." } }
+    """
+
+    def __init__(self, spec):
+        from github import Github
+        g = Github(spec["auth"]["user"], spec["auth"]["pw"])
+        self.repo = g.get_repo(spec["repo"])
+        self.path = spec.get("path", "") + "/"
+
+    def listdir(self, path):
+        for cf in self.repo.get_dir_contents(self.path + "/".join(path)):
+            # cf.type is "file" or "dir" just like VirtualFilesystemRepository expects :)
+            yield (cf.type, cf.name)
+
+    def open_file(self, path, mode):
+        import base64, io
+        cf = self.repo.get_contents(self.path + "/".join(path))
+        if cf.type != "file": raise ValueError("path is a directory")
+        if cf.encoding != "base64": raise ValueError("content encoding is unrecognized")
+        content = base64.b64decode(cf.content)
+        if mode == "r": # not binary
+            content = io.StringIO(content.decode("utf8"))
+        else:
+            content = io.BytesIO(content)
+        class with_block_wrapper:
+            def read(self, size): return content.read(size)
+            def __enter__(self, *args): return self
+            def __exit__(*args): pass
+        return with_block_wrapper()
 
 class Command(BaseCommand):
     help = 'Updates the modules in the database using the YAML specifications in the filesystem.'
