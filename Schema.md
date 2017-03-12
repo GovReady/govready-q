@@ -117,20 +117,6 @@ Additionally, `glyphicon` can be set to an icon name (like `dashboard`) to add a
 	  template: |
 	      This is additional content displayed on the project page.
 
-### Advanced fields
-
-External Python functions can be made available in the template context when rendering documents. Add to the top-level module:
-
-	external-functions:
-	  - your_function_name
-
-The function name is resolved as in the `external-function` question type (see below). In general, the function is searched for in a Python module that is in the same directory and named the same as the module YAML file, except with a `.py` extension instead of `.yaml`.
-
-The function is called from templates (and impute conditions and value, but then without the outermost braces) as:
-
-	{{ your_function_name(arg1, arg2) }}
-
-The arguments can refer to any other template context variables.
 
 Documents
 ---------
@@ -196,6 +182,24 @@ In addition to the `output` documents described above, a project module may also
 	  template: |
 	    Project {{name}}
 
+### Accessing External Python Code
+
+External Python functions can be made available in the template context when rendering documents. Define a Python file with the same file name as the YAML module specification file, except with a `.py` extension instead of `.yaml`. Any functions, classes, and variables defined at the top (global) level of the Python module are exposed as variables in the template context.
+
+For example, define in `mymodule.py`:
+
+	def your_function_name(arg1, arg2):
+		return str(arg1) + str(arg2)
+
+In `mymodule.yaml`, you can call this function from templates as:
+
+	{{ your_function_name(arg1, arg2) }}
+
+The arguments can refer to any other template context variables, such as question variables.
+
+The function is also available in impute conditions and impute expression values, but then without the outermost braces.
+
+
 Module Assets
 -------------
 
@@ -223,15 +227,10 @@ Place the module and image files at the path:
 
 ### Private Assets
 
-Private assets are other files that are stored with a module but are not exposed by the web server. The assets are intended to be used by external Python code (see the `external-functions` Module field above and the `external-function` question type below).
+Private assets are other files that are stored with a module but are not exposed by the web server. The directory provides a place to store files for internal use during module development.
 
 Place private assets in a `private-assets` subdirectory next to the module YAML file.
 
-In the Python code, you can get a path to a private asset like this:
-
-	os.path.join(os.path.dirname(__file__), 'private-assets', 'assetfile.dat')
-
-(This works since the Python code is in the same directory as the module, and so the private-assets subdirectory is next to the Python code file as well as the module YAML file.)
 
 Questions
 ---------
@@ -426,12 +425,7 @@ The function is specified as
     type: external-function
     function: {function-name}
 
-where `{function-name}` identifies the Python function to be executed. If `{function-name}` does not have any dots, then the function is loaded from a Python module that is named the same as the YAML file, except with a `py` extension instead of `yaml`. If `{function-name}` has a dot, then it is a Python module/function path and the Python module must be globally available, like `guidedmodules.sample_external_functions.sample_function`.
-
-The function should have the following signature:
-
-	my_function(module=None, question=None, answers=None, **kwargs):
-	    pass
+where `{function-name}` identifies the Python function to be executed in an accompanying Python module. See Accessing External Python Code above for how Python functions are located (but the arguments provided to the function are different, see next paragraph).
 
 The arguments provide information about the module and the question being answered as well as all of the answers to the module that have been provided so far. `question` is a dict containing the question's specification (i.e. a dict containing keys `id`, `type`, and `function`, and whatever else might be in this part of the the YAML file). `answers` is a dict mapping question IDs to answer values. `**kwargs` ensures forwards-compatibility with future versions of Q.
 

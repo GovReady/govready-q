@@ -38,7 +38,7 @@ class Command(BaseCommand):
         org.subdomain = "test"
         org.allowed_modules = options["projects"]
         org.save()
-        org.get_organization_project().set_root_task("organization", user)
+        org.get_organization_project().set_root_task("system/organization", user)
 
         # Add user to organization.
         pm = ProjectMembership()
@@ -60,7 +60,8 @@ class Command(BaseCommand):
                 if mq.answer_type_module:
                     add_module(mq.answer_type_module)
 
-        required_projects = ["account_settings_project", "organization"]
+        required_projects = ["system/account_settings_project", "system/organization"]
+
         for prj_module_key in required_projects + options["projects"]:
             try:
                 m = Module.objects.get(key=prj_module_key, visible=True, superseded_by=None)

@@ -19,12 +19,116 @@ class DependencyError(Exception):
     def __init__(self, from_module, to_module):
         super().__init__("Invalid module ID %s in %s." % (to_module, from_module))
 
+class ModuleRepository(object):
+    @staticmethod
+    def load(repo_spec):
+        if repo_spec.get("type") == "local":
+            return LocalModuleRepository(repo_spec)
+        else:
+            raise ValueError("Invalid module repository type: %s" % str(repo_spec.get("type")))
+
+class VirtualFilesystemRepository(ModuleRepository):
+    # Subclasses must define:
+    #
+    # listdir(path) -> iterator over tuples of ("file|dir", subpath)
+    # open_file(path, mode) -> file-like object
+    #
+    # path is a list of path components (i.e. ["my", "directory"] for "my/directory")
+
+    def read_yaml_file(self, path):
+        # Use the safe YAML loader & catch errors.
+        import yaml, yaml.scanner, yaml.parser, yaml.constructor
+        with self.open_file(path, "r") as f:
+            try:
+                return yaml.safe_load(f)
+            except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
+                raise ValidationError(repr(self) + ":" + path, "reading file", "There was an error parsing the file: " + str(e))
+
+    def modules(self, path=[]):
+        # Returns a generator that loads all modules defined in this repository.
+        # Yields tuples of (module_id, module_spec).
+
+        from os.path import splitext
+        
+        subdir = list(self.listdir(path))
+        for ftype, fn in sorted(subdir):
+            if ftype == "file":
+                # If this is a file that ends in .yaml, it is a module file.
+                # Strip the extension and construct a module ID that concatenates
+                # the path on disk and the file name.
+                fn_name, fn_ext = splitext(fn)
+                if fn_ext == ".yaml":
+                    # The module ID combines its local path and the filename.
+                    module_id = "/".join(path + [fn_name])
+                    module_spec = self.read_yaml_file(path + [fn])
+
+                    # Load any associated Python code.
+                    if ("file", fn_name + ".py") in subdir:
+                        # Read the file.
+                        with self.open_file(path + [fn_name + ".py"], "r") as f:
+                            code = f.read()
+
+                        # Validate that it compiles.
+                        compile(code, module_id, "exec")
+
+                        # Store it in source form in the module specification.
+                        module_spec["python-module"] = code
+
+                    yield (module_id, module_spec)
+
+            elif fn in ("assets", "private-assets"):
+                # Don't recurisvely walk into directories named 'assets' or
+                # 'private-assets'. These directories provide static assets
+                # that go along with the modules in that directory. 'assets'
+                # are public assets that are exposed by the web server.
+                pass
+
+            elif ftype == "dir":
+                # Recursively walk directories.
+                for module in self.modules(path=path+[fn]):
+                    yield module
+
+    def assets(self, path=[]):
+        # Returns a generator over all static assets defined in this repository.
+        # Yields tuples of (path, blob) where path is the virtual path for the
+        # asset and blob is binary data. Assets at e.g. modules/mygroup/assets/image.jpeg
+        # are returned with the path mygroup/image.jpeg.
+
+        import os.path # for join because we return virtual unixy paths
+
+        # Is there an assets directory here?
+        subdir = self.listdir(path)
+        if ("dir", "assets") in subdir:
+            for fn_type, fn in self.listdir(path + ["assets"]):
+                if fn_type == "file":
+                    with self.open_file(path + ["assets", fn], "rb") as f:
+                        yield (os.path.join(* path+[fn]), f.read())
+
+        # Recurse into subdirectories except ones named "assets".
+        for fn_type, fn in sorted(subdir):
+            if fn_type == "dir" and fn != "assets":
+                for _ in self.assets(path=path+[fn]):
+                    yield _
+
+class LocalModuleRepository(VirtualFilesystemRepository):
+    def __init__(self, spec):
+        self.path = spec["path"]
+
+    def listdir(self, path):
+        import os, os.path
+        for item in os.listdir(os.path.join(self.path, *path)):
+            yield ("file" if os.path.isfile(os.path.join(*[self.path]+path+[item])) else "dir", item)
+
+    def open_file(self, path, mode):
+        import os.path
+        return open(os.path.join(self.path, *path), mode)
+
 class Command(BaseCommand):
     help = 'Updates the modules in the database using the YAML specifications in the filesystem.'
     args = '{force}'
 
     def handle(self, *args, **options):
-        # If "force" is given on the command line, then always update
+        # If "force" is True, then always update
         # modules with the YAML data even if there were incompatible
         # changes. Only use this in off-line testing, since it could
         # result in an inconsistent database state with answers to
@@ -32,15 +136,39 @@ class Command(BaseCommand):
         # choices, or restrictions. And since changes in modules can
         # trigger the updating of other modules, this could have a
         # large unintended impact.
-        self.force_update = "force" in args
+        self.force_update = False
 
-        # Process each YAML file. Because YAML files may refer to
-        # other YAML files, we also end up loading them recursively.
+        # Initialize all of the repositories that provide module specifications.
+        repos = Command.get_module_repos()
+
+        # Index all of the available modules.
+        available_modules = { }
+        for id, repo in repos.items():
+            for module_path, module_spec in repo.modules():
+                available_modules[id + "/" + module_path] = module_spec
+
+        # Load modules into the database.
+        self.load_modules(available_modules)
+
+        # Build static assets directory.
+        self.build_static_assets(repos)
+
+
+    @staticmethod
+    def get_module_repos():
+        ret = {}
+        for id, repo in settings.MODULE_REPOS.items():
+            ret[id] = ModuleRepository.load(repo)
+        return ret
+
+    def load_modules(self, available_modules):
+        # Process each module specification. Because modules may refer to
+        # other modules, we also end up loading them recursively.
         ok = True
         processed_modules = set()
-        for module_id in self.iter_modules():
+        for module_id in available_modules.keys():
             try:
-                self.process_module(module_id, processed_modules, [])
+                self.process_module(module_id, available_modules, processed_modules, [])
             except (ValidationError, CyclicDependency, DependencyError) as e:
                 print(str(e))
                 ok = False
@@ -54,67 +182,9 @@ class Command(BaseCommand):
             print("Marking modules as obsoleted: ", obsoleted_modules)
             obsoleted_modules.update(visible=False)
 
-        # Build static assets directory.
-        self.build_static_assets()
-
-    def iter_modules(self, path=[]):
-        # Returns a generator over all module IDs in YAML files on disk.
-        import os, os.path
-        for fn in sorted(os.listdir(os.path.join(settings.MODULES_PATH, *path))):
-            fullpath = os.path.join(*[settings.MODULES_PATH] + path + [fn])
-            if os.path.isfile(fullpath):
-                # If this is  a file that ends in .yaml, it is a module file.
-                # Strip the extension and construct a module ID that concatenates
-                # the path on disk and the file name.
-                fn_name, fn_ext = os.path.splitext(fn)
-                if fn_ext == ".yaml":
-                    yield "/".join(path + [fn_name])
-            elif fn in ("assets", "private-assets"):
-                # Don't recurisvely walk into directories named 'assets' or
-                # 'private-assets'. These directories provide static assets
-                # that go along with the modules in that directory. 'assets'
-                # are public assets that are exposed by the web server.
-                pass
-            else:
-                # Recursively walk directories.
-                for module_id in self.iter_modules(path=path+[fn]):
-                    yield module_id
-
-    def iter_module_dirs_with_assets(self, path=[]):
-        # Returns a generator over all relative paths to directories containing
-        # modules that have a static assets subdirectory. To aid build_static_assets,
-        # we return all parent directories before child directories so that we
-        # don't create implicit parent directories before trying to do a copytree
-        # with that directory as the destination, which will throw an error.
-        import os, os.path
-
-        # Is there an assets directory here?
-        if os.path.exists(os.path.join(* [settings.MODULES_PATH] + path + ["assets"])):
-        	yield os.sep.join(path) # os.path.join fails if path is empty
-
-        # Recurse into subdirectories except ones named "assets".
-        for fn in sorted(os.listdir(os.path.join(settings.MODULES_PATH, *path))):
-            fullpath = os.path.join(* [settings.MODULES_PATH] + path + [fn])
-            if not os.path.isfile(fullpath) and fn != "assets":
-                for d in self.iter_module_dirs_with_assets(path=path+[fn]):
-                    yield d
-
-    def open_module(self, module_id, referenced_by_module_id):
-        # Returns the file name and parsed YAML content of the module file on
-        # disk for module_id.
-        import os.path
-        import yaml, yaml.scanner, yaml.parser, yaml.constructor
-        fn = os.path.join(settings.MODULES_PATH, module_id + ".yaml")
-        if not os.path.exists(fn):
-            raise DependencyError(referenced_by_module_id, module_id)
-        with open(fn) as f:
-            try:
-                return (fn, yaml.safe_load(f))
-            except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
-                raise ValidationError(fn, "reading file", "There was an error parsing the file: " + str(e))
 
     @transaction.atomic # there can be an error mid-way through updating a Module
-    def process_module(self, module_id, processed_modules, path):
+    def process_module(self, module_id, available_modules, processed_modules, path):
         # Prevent cyclic dependencies between modules.
         if module_id in path:
             raise CyclicDependency(path)
@@ -127,25 +197,29 @@ class Command(BaseCommand):
         processed_modules.add(module_id)
 
         # Load the module's YAML file.
-        (fn, spec) = self.open_module(module_id, (path[-1] if len(path) > 0 else None))
+        if module_id not in available_modules:
+            raise DependencyError((path[-1] if len(path) > 0 else None), module_id)
+
+        spec = available_modules[module_id]
 
         # Sanity check that the 'id' in the YAML file matches just the last
         # part of the path of the module_id. This allows the IDs to be 
         # relative to the path in which the module is found.
         if spec.get("id") != module_id.split('/')[-1]:
-            raise ValidationError(fn, "module", "Module 'id' field (%s) doesn't match filename (\"%s\")." % (repr(spec.get("id")), module_id))
+            raise ValidationError(module_id, "module", "Module 'id' field (%s) doesn't match source file path (\"%s\")." % (repr(spec.get("id")), module_id))
 
-        # Replace spec["id"] with the full module_id.
+        # Replace spec["id"] (just the last part of the path) with the full module_id
+        # (a full path, minus y.aml).
         spec["id"] = module_id
 
         # Recursively update any modules this module references.
         for m1 in self.get_module_spec_dependencies(spec):
-            self.process_module(m1, processed_modules, path + [spec["id"]])
+            self.process_module(m1, available_modules, processed_modules, path + [spec["id"]])
 
         # Run some validation.
 
         if not isinstance(spec.get("questions"), list):
-            raise ValidationError(fn, "questions", "Invalid value for 'questions'.")
+            raise ValidationError(module_id, "questions", "Invalid value for 'questions'.")
 
         # Pre-process the module.
 
@@ -507,23 +581,24 @@ class Command(BaseCommand):
         # The changes to this question do not create a data inconsistency.
         return False
 
-    def build_static_assets(self):
-        # Copy the contents of each 'assets' directory to a corresponding
-        # path at a publicly accessible URL. Make hardlinks instead of
-        # copies.
+    def build_static_assets(self, repos):
+        # Store module assets into the public static directory served by the
+        # web server.
         import shutil, os, os.path
 
+        # This is the local path where static assets are stored initially
+        # prior to collectstatic.
         target_root = os.path.join("siteapp", "static", "module-assets")
 
-        # Clean out existing files because copytree will raise an exception
-        # if any target directory exists.
+        # Clean out existing files.
         if os.path.exists(target_root):
             shutil.rmtree(target_root)
 
-        # Copy.
-        for assets_dir in self.iter_module_dirs_with_assets():
-            target_dir = os.path.join(target_root, assets_dir)
-            assets_dir = os.path.join(settings.MODULES_PATH, assets_dir, "assets")
-            shutil.copytree(
-                assets_dir,
-                target_dir)
+        # Store.
+        for repo_id, repo in repos.items():
+            for asset_fn, asset_blob in repo.assets():
+                fn = os.path.join(target_root, repo_id, asset_fn)
+                d = os.path.dirname(fn)
+                os.makedirs(d, exist_ok=True)
+                with open(fn, "wb") as f:
+                    f.write(asset_blob)

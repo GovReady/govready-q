@@ -130,9 +130,16 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         super().setUp()
 
         # Load the Q modules from the fixtures directory.
-        # The account settings project and its one submodule are required
-        # in order to run the system.
-        settings.MODULES_PATH = 'fixtures/modules'
+        settings.MODULE_REPOS = {
+            "system": { # mandatory
+                "type": "local",
+                "path": "fixtures/modules/system",
+            },
+            "project": { # contains a test project
+                "type": "local",
+                "path": "fixtures/modules/other",
+            }
+        }
         from guidedmodules.management.commands.load_modules import Command as load_modules
         load_modules().handle()
 
@@ -148,7 +155,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         ProjectMembership.objects.get_or_create(user=self.user, project=org.get_organization_project())
 
         # And initialize the root Task of the Organization with this user as its editor.
-        org.get_organization_project().set_root_task("organization", self.user)
+        org.get_organization_project().set_root_task("system/organization", self.user)
 
     def url(self, path):
         # Within this test, we only generate URLs for the organization subdomain.
@@ -842,7 +849,3 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.browser.get(self.browser.current_url)
         var_sleep(.5)
         self.assertNotInNodeText('some text that will be encrypted', '#document-1-body')
-
-def sample_external_function(question, answers, **kwargs):
-    # For test_questions_media's module.
-    return 'Successfully ran an external function'

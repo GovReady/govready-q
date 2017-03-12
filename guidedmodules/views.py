@@ -212,10 +212,9 @@ def save_answer(request, task, answered, context, __, EncryptionProvider, set_ep
         if q.spec['type'] == "external-function":
             # Make a deepcopy of some things so that we don't allow the function
             # to mess with our data.
-            import copy
             try:
                 value = module_logic.run_external_function(
-                    copy.deepcopy(q.module.spec), copy.deepcopy(q.spec), answered,
+                    q, answered,
                     project_name=task.project.title,
                     project_url=task.project.organization.get_url(task.project.get_absolute_url())
                 )

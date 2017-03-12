@@ -20,7 +20,7 @@ questions:
     title: external-function
     prompt: I'm going to run a Python function.
     type: external-function
-    function: siteapp.tests.sample_external_function
+    function: sample_external_function
 
 output:
   - title: Your Answers

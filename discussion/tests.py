@@ -15,7 +15,16 @@ class DiscussionTests(SeleniumTest):
         # Load the Q modules from the fixtures directory.
         # The account settings project and its one submodule are required
         # in order to run the system.
-        settings.MODULES_PATH = 'fixtures/modules'
+        settings.MODULE_REPOS = {
+            "system": {
+                "type": "local",
+                "path": "fixtures/modules/system",
+            },
+            "project": { # contains a test project
+                "type": "local",
+                "path": "fixtures/modules/other",
+            }
+        }
 
         load_modules().handle()
 
@@ -31,7 +40,7 @@ class DiscussionTests(SeleniumTest):
         ProjectMembership.objects.get_or_create(user=self.user, project=org.get_organization_project())
 
         # And initialize the root Task of the Organization with this user as its editor.
-        org.get_organization_project().set_root_task("organization", self.user)
+        org.get_organization_project().set_root_task("system/organization", self.user)
 
     def url(self, path):
         # Within this test, we only generate URLs for the organization subdomain.

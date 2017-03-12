@@ -1080,8 +1080,8 @@ class TemplateContext(Mapping):
         # If 'item' matches an external function name (in the root template context only), return it.
         # Un-wrap RenderedAnswer instances so the external function gets the value and not the
         # RenderedAnswer instance.
-        if self.root and item in self.module_answers.module.spec.get("external-functions", []):
-            func = find_external_function(self.module_answers.module.key, item)
+        if self.root and item in self.module_answers.module.python_functions():
+            func = self.module_answers.module.python_functions()[item]
             def arg_filter(arg):
                 if isinstance(arg, RenderedAnswer):
                     return arg.answer
@@ -1402,27 +1402,16 @@ class RenderedAnswer:
             # say false.
             return False
 
-def find_external_function(module_id, function_name):
-    if "." not in function_name:
-        # Load the function from the Python module that is named the same
-        # as the questions module. Since our modules directory is in the
-        # Python path, those Python files will be available to us to load.
-        # See siteapp/wsgi.py.
-        module_name = module_id.replace("/", ".")
-    else:
-        # Split the function name into the module path and function name.
-        try:
-            module_name, function_name = function_name.rsplit(".", 1)
-        except:
-            raise Exception("Invalid function name.") # not trapped / not user-visible error
-
-    # Import the module and get the method.
-    import importlib
-    module = importlib.import_module(module_name)
-    return getattr(module, function_name)
-
-def run_external_function(module, question, answers, **additional_args):
+def run_external_function(question, answers, **additional_args):
     # Find and run the method.
-    function_name = question.get("function", "")
-    method = find_external_function(module["id"], function_name)
-    return method(module=module, question=question, answers=answers.as_dict(), **additional_args)
+    import copy # don't give the function referneces to ORM values
+    function_name = question.spec.get("function", question.key)
+    funcs = question.module.python_functions()
+    if function_name not in funcs:
+        raise Exception("Invalid function name %s in %s question %s. Available functions are %s." % (
+        function_name, question.module, question.key,
+        ",".join(name for name in funcs if callable(funcs[name]))
+          if funcs else "[no functions defined]"
+        )) # not trapped / not user-visible error
+    method = funcs[function_name]
+    return method(module=copy.deepcopy(question.module.spec), question=copy.deepcopy(question.spec), answers=answers.as_dict(), **additional_args)

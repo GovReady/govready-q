@@ -10,6 +10,8 @@ import uuid
 from .module_logic import ModuleAnswers, render_content, validator
 from siteapp.models import User, Project, ProjectMembership
 
+ModulePythonCode = { }
+
 class Module(models.Model):
     key = models.SlugField(max_length=100, db_index=True, help_text="A slug-like identifier for the Module.")
 
@@ -57,6 +59,18 @@ class Module(models.Model):
             return self.key in allowed_modules
 
         return True
+
+    def python_functions(self):
+        # Run exec() on the Python source code stored in the spec, and cache the
+        # globally defined functions, classes, and variables.
+        global ModulePythonCode
+        if self.id not in ModulePythonCode:
+            exec(
+                self.spec.get("python-module", ""),
+                None, # default globals - TODO: Make this safe?
+                ModulePythonCode.setdefault(self.id, {}) # put locals, i.e. global definitions, here
+            )
+        return ModulePythonCode[self.id]
 
     def export_json(self, serializer):
         # Exports this Module's metadata to a JSON-serializable Python data structure.

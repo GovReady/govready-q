@@ -78,7 +78,7 @@ You can copy the `secret-key` from what you see --- it was generated to be uniqu
 For production you might also want to make other changes to the `environment.json` file:
 
 * Set `debug` to false.
-* Set the `modules-path` key to a path to the YAML module files (the default is "modules" to use the built-in modules).
+* Set `module-repos` to access module definitions not in this repository, see below.
 * Add the administrators for unhandled server error emails (a list of pairs of [name, address]):
 
 	"admins": [["Name", "email@domain.com"], ...]
@@ -94,13 +94,28 @@ To update, run:
 	killall -HUP uwsgi_python3
 	   (...to just restart the Python process (works as root & site user))
 
-# Adding Module Content
+# Adding and Accessing Module Content
 
-GovReady Q content is stored in YAML files inside the `modules` directory. 
+GovReady Q content is stored in YAML files. Built-in modules are stored inside the `modules` directory in this repository. Other modules are stored in other repositories. 
 
 See [Schema.md](Schema.md) for documentation on writing question and answer modules.
 
-The recommended approach to adding new modules is by symbolic link from within `modules/linked_modules` to a separate directory containing your content modules.
+Your Q deployment can pull module content from local directories and Github by listing the module sources ("repositories") in the `module-repos` key in the `environment.json` file. For example:
+
+	...
+	"module-repos": {
+		"system": {
+			"type": "local",
+			"path": "modules/system"
+		}
+	}
+	...
+
+Each entry in `module-repos` binds a namespace in your local deployment (in this example: `system`, `my_modules/one`, and `my_modules/two`) to a repository of modules. All deployments must have the `system` namespace bound to the modules at the local path `modules/system`. The repositories can be of these types:
+
+* `"type": "local"` to load modules from a directory on the local file system. Specify a relative or absolute path in `path`.
+
+After making changes to `module-repos`, run `python3 manage.py load_modules` to pull the modules from the module repositories into the database.
 
 # Testing and Generating Screenshots
 
