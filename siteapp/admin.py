@@ -32,7 +32,7 @@ class OrganizationAdmin(admin.ModelAdmin):
             # so that that user can then invite others.
             self.add_me_as_admin(request, Organization.objects.filter(id=obj.id))
 
-            # And initialize the root Task.
+            # And initialize the root Task. See Organization.create.
             obj.get_organization_project().set_root_task("system/organization", request.user)
 
     def add_me_as_admin(self, request, queryset):

@@ -33,18 +33,11 @@ class Command(BaseCommand):
         user.save()
 
         # Create an organization.
-        org = Organization()
-        org.name = "Test Organization"
-        org.subdomain = "test"
-        org.allowed_modules = options["projects"]
-        org.save()
-        org.get_organization_project().set_root_task("system/organization", user)
-
-        # Add user to organization.
-        pm = ProjectMembership()
-        pm.user = user
-        pm.project = org.get_organization_project()
-        pm.save()
+        org = Organization.create(
+            name="Test Organization",
+            subdomain="test",
+            allowed_modules=options["projects"],
+            admin_user=user)
 
         # All Module and ModuleQuestion instances that are needed.
         # If the Module has questions that depend on other modules,

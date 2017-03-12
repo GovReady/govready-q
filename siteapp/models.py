@@ -189,6 +189,21 @@ class Organization(models.Model):
         profile = profile_task.get_answers().as_dict()
         return profile.get("logo")
 
+    @staticmethod
+    def create(admin_user=None, **kargs): # admin_user is a required kwarg
+        # See admin.py::OrganizationAdmin also.
+        
+        # Create instance by passing field values to the ORM.
+        org = Organization.objects.create(**kargs)
+
+        # And initialize the root Task of the Organization with this user as its editor.
+        org.get_organization_project().set_root_task("system/organization", admin_user)
+
+        # And make that user an admin of the Organization.
+        ProjectMembership.objects.get_or_create(user=admin_user, project=org.get_organization_project())
+
+        return org
+
 class Folder(models.Model):
     """A folder is a collection of Projects."""
 

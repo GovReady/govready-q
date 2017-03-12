@@ -28,19 +28,16 @@ class DiscussionTests(SeleniumTest):
 
         load_modules().handle()
 
-        # Create the Organization.
-
-        org = Organization.objects.create(name="Our Organization", subdomain="testorg")
-
         # Create a default user that is a member of the organization.
 
         self.user = User.objects.create(username="me")
         self.user.set_password("1234")
         self.user.save()
-        ProjectMembership.objects.get_or_create(user=self.user, project=org.get_organization_project())
 
-        # And initialize the root Task of the Organization with this user as its editor.
-        org.get_organization_project().set_root_task("system/organization", self.user)
+        # Create the Organization.
+
+        org = Organization.create(name="Our Organization", subdomain="testorg",
+            admin_user=self.user)
 
     def url(self, path):
         # Within this test, we only generate URLs for the organization subdomain.
