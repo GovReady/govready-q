@@ -20,31 +20,98 @@ class DependencyError(Exception):
         super().__init__("Invalid module ID %s in %s." % (to_module, from_module))
 
 class ModuleRepository(object):
+    # Subclasses must define:
+    #
+    # modules() => generator over tuples of module_id (str) and module spec data (dict)
+    # assets() => generator over tuples of unixy path (str) and asset binary blob data (bytes)
+    #
+    # and can override __exit__ to provide cleanup semantics
+
     @staticmethod
     def load(repo_spec):
         if repo_spec.get("type") == "local":
             return LocalModuleRepository(repo_spec)
         elif repo_spec.get("type") == "github":
-            return GithubRepository(repo_spec)
+            return GithubApiRepository(repo_spec)
+        elif repo_spec.get("type") == "git":
+            return GitRepository(repo_spec)
         else:
             raise ValueError("Invalid module repository type: %s" % str(repo_spec.get("type")))
 
+    # Adds "with ...:" semantics
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        return False
+
+class ModuleRepositories(ModuleRepository):
+    """A subclass of ModuleRepository that wraps other ModuleRepository classes
+       at given mount-points in the module naming space."""
+
+    def __init__(self, repos):
+        # Pass a dict of repo specs that map repo mount points to
+        # dicts of repo parameters, e.g.:
+        # {
+        #   "system": { "type": "local", ... }
+        # }
+        self.repos = { key: ModuleRepository.load(value) for key, value in repos.items() }
+
+    def modules(self):
+        # For each repo...
+        for repo_id, repo in self.repos.items():
+            try:
+                for module_id, module_spec in repo.modules():
+                    # Yield the module but re-locate its id under its mount point.
+                    yield (repo_id + "/" + module_id, module_spec)
+            except Exception as e:
+                raise Exception("In module repository %s: %s" % (repo_id, str(e)))
+
+    def assets(self):
+        # For each repo...
+        for repo_id, repo in self.repos.items():
+            try:
+                for asset_path, asset_blob in repo.assets():
+                    # Yield the asset but re-locate its id under its mount point.
+                    yield (repo_id + "/" + asset_path, asset_blob)
+            except Exception as e:
+                raise Exception("In module repository %s: %s" % (repo_id, str(e)))
+
+    # Override "with ...:" semantics
+    def __enter__(self):
+        for repo in self.repos.values():
+            repo.__enter__()
+        return self
+    def __exit__(self, *args):
+        exceptions = []
+        for repo in self.repos.values():
+            try:
+                repo.__exit__(None, None, None)
+            except e:
+                exceptions.append(e)
+        if exceptions:
+            raise Exception(exceptions)
+
 class VirtualFilesystemRepository(ModuleRepository):
+    """Abstract base class of ModuleRepository classes that load modules from
+       a filesystem-like source."""
+
     # Subclasses must define:
     #
     # listdir(path) -> iterator over tuples of ("file|dir", subpath)
-    # open_file(path, mode) -> file-like object
+    # open_file(path) -> file-like object
     #
     # path is a list of path components (i.e. ["my", "directory"] for "my/directory")
 
     def read_yaml_file(self, path):
         # Use the safe YAML loader & catch errors.
         import yaml, yaml.scanner, yaml.parser, yaml.constructor
-        with self.open_file(path, "r") as f:
-            try:
-                return yaml.safe_load(f)
-            except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
-                raise ValidationError(repr(self) + ":" + path, "reading file", "There was an error parsing the file: " + str(e))
+        f = self.open_file(path)
+        try:
+            return yaml.safe_load(f)
+        except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
+            raise ValidationError(repr(self) + ":" + path, "reading file", "There was an error parsing the file: " + str(e))
+        finally:
+            f.close()
 
     def modules(self, path=[]):
         # Returns a generator that loads all modules defined in this repository.
@@ -67,8 +134,13 @@ class VirtualFilesystemRepository(ModuleRepository):
                     # Load any associated Python code.
                     if ("file", fn_name + ".py") in subdir:
                         # Read the file.
-                        with self.open_file(path + [fn_name + ".py"], "r") as f:
-                            code = f.read()
+                        import io
+                        f = self.open_file(path + [fn_name + ".py"])
+                        try:
+                            with io.TextIOWrapper(f) as ff:
+                                code = ff.read()
+                        finally:
+                            f.close()
 
                         # Validate that it compiles.
                         compile(code, module_id, "exec")
@@ -103,8 +175,11 @@ class VirtualFilesystemRepository(ModuleRepository):
         if ("dir", "assets") in subdir:
             for fn_type, fn in self.listdir(path + ["assets"]):
                 if fn_type == "file":
-                    with self.open_file(path + ["assets", fn], "rb") as f:
+                    f = self.open_file(path + ["assets", fn])
+                    try:
                         yield (os.path.join(* path+[fn]), f.read())
+                    finally:
+                        f.close()
 
         # Recurse into subdirectories except ones named "assets".
         for fn_type, fn in sorted(subdir):
@@ -113,6 +188,13 @@ class VirtualFilesystemRepository(ModuleRepository):
                     yield _
 
 class LocalModuleRepository(VirtualFilesystemRepository):
+    """A ModuleRepository that loads modules from the local filesystem.
+
+       The spec dict for initializing this instance looks like:
+
+       { "type": "local", "path": "/path/to/yaml/files" }
+    """
+
     def __init__(self, spec):
         self.path = spec["path"]
 
@@ -121,12 +203,18 @@ class LocalModuleRepository(VirtualFilesystemRepository):
         for item in os.listdir(os.path.join(self.path, *path)):
             yield ("file" if os.path.isfile(os.path.join(*[self.path]+path+[item])) else "dir", item)
 
-    def open_file(self, path, mode):
+    def open_file(self, path):
         import os.path
-        return open(os.path.join(self.path, *path), mode)
+        return open(os.path.join(self.path, *path), "rb")
 
-class GithubRepository(VirtualFilesystemRepository):
-    """A repository of Q modules stored in Github. Initialize with
+class GithubApiRepository(VirtualFilesystemRepository):
+    """A ModuleRepository that loads modules from the Github API. Github user credentials
+       must be given, such as a username and a personal access token. Use GitRepository
+       to access a public repository or one that requires an SSH key (such as a Github
+       deploy key).
+
+       The spec dict for initializing this instance looks like:
+
       { "type": "github", "repo": "orgname/reponame", ["path": "/subpath",] "auth": { "user": "...", "pw": "..." } }
     """
 
@@ -141,21 +229,123 @@ class GithubRepository(VirtualFilesystemRepository):
             # cf.type is "file" or "dir" just like VirtualFilesystemRepository expects :)
             yield (cf.type, cf.name)
 
-    def open_file(self, path, mode):
+    def open_file(self, path):
         import base64, io
         cf = self.repo.get_contents(self.path + "/".join(path))
         if cf.type != "file": raise ValueError("path is a directory")
         if cf.encoding != "base64": raise ValueError("content encoding is unrecognized")
         content = base64.b64decode(cf.content)
-        if mode == "r": # not binary
-            content = io.StringIO(content.decode("utf8"))
-        else:
-            content = io.BytesIO(content)
-        class with_block_wrapper:
-            def read(self, size): return content.read(size)
-            def __enter__(self, *args): return self
-            def __exit__(*args): pass
-        return with_block_wrapper()
+        return io.BytesIO(content)
+
+class GitRepository(VirtualFilesystemRepository):
+    """A ModuleRepository that loads modules from a git repository using `git fetch`.
+       If the repository is not public, an SSH key can be provided.
+
+       The spec dict for initializing this instance looks like:
+
+      { "type": "git",
+        "url": "git@github.com:GovReady/myrepository",
+        "branch": "master", # optional - master is used by default
+        "path": "/subpath", # this is optional, if specified it's the directory in the repo to look at
+        "ssh_key": "-----BEGIN RSA PRIVATE KEY-----\nkey data\n-----END RSA PRIVATE KEY-----"
+            # ^ for private repos only
+      }
+    """
+
+    def __init__(self, spec):
+        self.spec = spec
+
+    def __enter__(self):
+        # Create a local git working directory.
+        import tempfile
+        self.tempdir_obj = tempfile.TemporaryDirectory()
+        self.tempdir = self.tempdir_obj.__enter__()
+        return self
+
+    def __exit__(self, *args):
+        # Release the temporary directory.
+        self.tempdir_obj.__exit__(None, None, None)
+        return False
+
+    def get_tree(self):
+        # Return cached tree.
+        if hasattr(self, "tree"):
+            return self.tree
+
+        import os, os.path
+        import git
+
+        # Create an empty git repo in the temporary directory.
+        self.repo = git.Repo.init(self.tempdir)
+
+        # Make SSH non-interactive.
+        ssh_options = "ssh -o StrictHostKeyChecking=no -o BatchMode=yes"
+
+        # If an SSH key is provided, store it in the temporary directory and
+        # then use it.
+        if "ssh_key" in self.spec:
+            ssh_key_file = os.path.join(self.tempdir, "ssh.key")
+            old_umask = os.umask(0o077) # ssh requires group/world permissions to be zero
+            try:
+                with open(ssh_key_file, "wb") as f:
+                    f.write(self.spec["ssh_key"].encode("ascii"))
+            finally:
+                os.umask(old_umask)
+            ssh_options += " -i " + ssh_key_file
+
+        self.repo.git.environment()["GIT_SSH_COMMAND"] = ssh_options
+
+        # Fetch.
+        try:
+            self.repo.git.execute(
+                [
+                    self.repo.git.git_exec_name,
+                    "fetch",
+                    "--depth", "1", # avoid getting whole repo history
+                    self.spec["url"], # repo URL
+                    self.spec.get("branch", "master"), # branch to fetch
+                ], kill_after_timeout=20)
+        except:
+            # This is where errors occur, which is hopefully about auth.
+            raise Exception("The repository URL is either not valid, not public, or ssh_key was not specified or not valid.")
+
+        # Get the tree for the remote branch's HEAD.
+        tree = self.repo.tree("FETCH_HEAD")
+
+        # The Pythonic way would be to add a remote for the remote repository, run
+        # fetch, and then access its ref.
+        #self.remote = self.repo.create_remote("origin", self.spec["url"])
+        #self.remote.fetch(self.spec.get("branch", "master"))
+        #tree = self.repo.tree(self.remote.refs[0])
+
+        # If a path was given, move to that subdirectory.
+        # TODO: Check that paths with subdirectories that have no other content
+        # but an inner subdirectory work, because git does something funny about
+        # flattening empty directories.
+        for pathitem in self.spec.get("path", "").split("/"):
+            if pathitem != "":
+                tree = tree[pathitem]
+
+        # Cache and return it.
+        self.tree = tree
+        return tree
+
+    def listdir(self, path):
+        # Get the root tree and then move to the desired subdirectory.
+        tree = self.get_tree()
+        for item in path:
+            tree = tree[item] # TODO: As above.
+        for item in tree:
+            if item.type not in ("tree", "blob"): continue
+            yield ("file" if item.type == "blob" else "dir", item.name)
+
+    def open_file(self, path):
+        # Get the root tree and then move to the desired item.
+        import io
+        tree = self.get_tree()
+        for item in path:
+            tree = tree[item] # TODO: As above.
+        return io.BytesIO(tree.data_stream.read())
 
 class Command(BaseCommand):
     help = 'Updates the modules in the database using the YAML specifications in the filesystem.'
@@ -173,27 +363,15 @@ class Command(BaseCommand):
         self.force_update = False
 
         # Initialize all of the repositories that provide module specifications.
-        repos = Command.get_module_repos()
+        with ModuleRepositories(settings.MODULE_REPOS) as repos:
+            # Index all of the available modules.
+            available_modules = dict(repos.modules())
 
-        # Index all of the available modules.
-        available_modules = { }
-        for id, repo in repos.items():
-            for module_path, module_spec in repo.modules():
-                available_modules[id + "/" + module_path] = module_spec
+            # Load modules into the database.
+            self.load_modules(available_modules)
 
-        # Load modules into the database.
-        self.load_modules(available_modules)
-
-        # Build static assets directory.
-        self.build_static_assets(repos)
-
-
-    @staticmethod
-    def get_module_repos():
-        ret = {}
-        for id, repo in settings.MODULE_REPOS.items():
-            ret[id] = ModuleRepository.load(repo)
-        return ret
+            # Build static assets directory.
+            self.build_static_assets(repos)
 
     def load_modules(self, available_modules):
         # Process each module specification. Because modules may refer to
@@ -629,10 +807,9 @@ class Command(BaseCommand):
             shutil.rmtree(target_root)
 
         # Store.
-        for repo_id, repo in repos.items():
-            for asset_fn, asset_blob in repo.assets():
-                fn = os.path.join(target_root, repo_id, asset_fn)
-                d = os.path.dirname(fn)
-                os.makedirs(d, exist_ok=True)
-                with open(fn, "wb") as f:
-                    f.write(asset_blob)
+        for asset_fn, asset_blob in repos.assets():
+            fn = os.path.join(target_root, asset_fn)
+            d = os.path.dirname(fn)
+            os.makedirs(d, exist_ok=True)
+            with open(fn, "wb") as f:
+                f.write(asset_blob)

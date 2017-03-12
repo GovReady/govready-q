@@ -108,7 +108,14 @@ Your Q deployment can pull module content from local directories and Github by l
 			"type": "local",
 			"path": "modules/system"
 		},
-		"my_modules": {
+		"my_modules/one": {
+			"type": "git",
+			"url": "git@github.com:GovReady/my-modules",
+			"branch": "master",
+			"path": "modules",
+			"ssh_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"
+		},
+		"my_modules/two": {
 			"type": "github",
 			"repo": "GovReady/my-modules",
 			"path": "modules",
@@ -121,7 +128,13 @@ Each entry in `module-repos` binds a namespace in your local deployment (in this
 
 * `"type": "local"` to load modules from a directory on the local file system. Specify a relative or absolute path in `path`.
 
-* `"type": "github"`, which uses the Github API and user credentials such as a Github username and a [personal access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
+There are two ways to pull modules from Github:
+
+* `"type": "git"`, where you specify the `https:...` or `git@...` URL of a git repository in the `url` field and, optionally, a branch name. If the repository requires authentication, you can put an SSH private key such as a [Github deploy key](https://developer.github.com/guides/managing-deploy-keys/) in the `ssh_key` field (paste the whole key using `\n` for newlines, not a filename).
+
+* `"type": "github"`, which uses the Github API and user credentials such as a Github username and a [personal access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/). Since the `github` method requires user credentials, it should be avoided for production deployments in favor of the `git` method with a deploy key if necessary.
+
+Both git methods have an optional `path` field which lets you choose a directory _within_ the git repository to scan for module YAML files.
 
 After making changes to `module-repos`, run `python3 manage.py load_modules` to pull the modules from the module repositories into the database.
 

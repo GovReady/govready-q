@@ -9,6 +9,8 @@ html5lib==0.999999999 # MIT License
 CommonMark==0.7.3 # BSD License
 cryptography==1.7.1 # BSD License
 graphviz==0.5.2 # MIT License
+PyGithub==1.32 # LGPL License
+GitPython==2.1.3 # BSD License
 
 # Common Django Packages
 Django==1.10.4 # BSD License
