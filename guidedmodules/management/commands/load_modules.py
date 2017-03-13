@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.conf import settings
 
-from guidedmodules.models import Module, ModuleQuestion, Task
+from guidedmodules.models import ModuleSource, Module, ModuleQuestion, Task
 from guidedmodules.module_logic import render_content
 
 import sys, json
@@ -19,24 +19,30 @@ class DependencyError(Exception):
     def __init__(self, from_module, to_module):
         super().__init__("Invalid module ID %s in %s." % (to_module, from_module))
 
-class ModuleRepository(object):
+class ModuleLoader(object):
     # Subclasses must define:
     #
-    # modules() => generator over tuples of module_id (str) and module spec data (dict)
+    # modules() => generator over tuples of (ModuleSource, module_id (str) and module spec data (dict))
     # assets() => generator over tuples of unixy path (str) and asset binary blob data (bytes)
     #
     # and can override __exit__ to provide cleanup semantics
 
+    def __init__(self, source):
+        self.source = source
+
     @staticmethod
-    def load(repo_spec):
-        if repo_spec.get("type") == "local":
-            return LocalModuleRepository(repo_spec)
-        elif repo_spec.get("type") == "github":
-            return GithubApiRepository(repo_spec)
-        elif repo_spec.get("type") == "git":
-            return GitRepository(repo_spec)
+    def create(source):
+        if source.spec.get("type") == "local":
+            return LocalModuleRepository(source)
+        elif source.spec.get("type") == "github":
+            return GithubApiRepository(source)
+        elif source.spec.get("type") == "git":
+            return GitRepository(source)
+        elif source.spec.get("type") == "null":
+            return NullModuleLoader(source)
         else:
-            raise ValueError("Invalid module repository type: %s" % str(repo_spec.get("type")))
+            raise ValueError("Invalid module repository type '%s' in %s." % (source.spec.get("type"),
+                str(source)))
 
     # Adds "with ...:" semantics
     def __enter__(self):
@@ -44,55 +50,58 @@ class ModuleRepository(object):
     def __exit__(self, *args):
         return False
 
-class ModuleRepositories(ModuleRepository):
-    """A subclass of ModuleRepository that wraps other ModuleRepository classes
+class NullModuleLoader(ModuleLoader):
+    """A subclass of ModuleLoader that provides no content. The 'null' type is used
+       in migrations on systems that have content before ModuleSources were added."""
+    def modules(self):
+        return # don't return anything
+        yield # make this a generator
+    def assets(self):
+        return # don't return anything
+        yield # make this a generator
+
+class MultiplexedModuleLoader(ModuleLoader):
+    """A subclass of ModuleLoader that wraps other ModuleLoader classes
        at given mount-points in the module naming space."""
 
-    def __init__(self, repos):
-        # Pass a dict of repo specs that map repo mount points to
-        # dicts of repo parameters, e.g.:
-        # {
-        #   "system": { "type": "local", ... }
-        # }
-        self.repos = { key: ModuleRepository.load(value) for key, value in repos.items() }
+    def __init__(self, sources):
+        self.loaders = [ModuleLoader.create(ms) for ms in sources]
 
     def modules(self):
-        # For each repo...
-        for repo_id, repo in self.repos.items():
+        # For each source...
+        for loader in self.loaders:
             try:
-                for module_id, module_spec in repo.modules():
-                    # Yield the module but re-locate its id under its mount point.
-                    yield (repo_id + "/" + module_id, module_spec)
+                for module_info in loader.modules():
+                    yield module_info
             except Exception as e:
-                raise Exception("In module repository %s: %s" % (repo_id, str(e)))
+                raise Exception("In module repository %s: %s" % (loader.source, str(e)))
 
     def assets(self):
-        # For each repo...
-        for repo_id, repo in self.repos.items():
+        # For each source...
+        for loader in self.loaders:
             try:
-                for asset_path, asset_blob in repo.assets():
-                    # Yield the asset but re-locate its id under its mount point.
-                    yield (repo_id + "/" + asset_path, asset_blob)
+                for asset_info in loader.assets():
+                    yield asset_info
             except Exception as e:
-                raise Exception("In module repository %s: %s" % (repo_id, str(e)))
+                raise Exception("In module repository %s: %s" % (loader.source, str(e)))
 
     # Override "with ...:" semantics
     def __enter__(self):
-        for repo in self.repos.values():
-            repo.__enter__()
+        for loader in self.loaders:
+            loader.__enter__()
         return self
     def __exit__(self, *args):
         exceptions = []
-        for repo in self.repos.values():
+        for loader in self.loaders:
             try:
-                repo.__exit__(None, None, None)
+                loader.__exit__(None, None, None)
             except e:
                 exceptions.append(e)
         if exceptions:
             raise Exception(exceptions)
 
-class VirtualFilesystemRepository(ModuleRepository):
-    """Abstract base class of ModuleRepository classes that load modules from
+class VirtualFilesystemRepository(ModuleLoader):
+    """Abstract base class of ModuleLoader classes that load modules from
        a filesystem-like source."""
 
     # Subclasses must define:
@@ -128,7 +137,7 @@ class VirtualFilesystemRepository(ModuleRepository):
                 fn_name, fn_ext = splitext(fn)
                 if fn_ext == ".yaml":
                     # The module ID combines its local path and the filename.
-                    module_id = "/".join(path + [fn_name])
+                    module_id = "/".join([self.source.namespace] + path + [fn_name])
                     module_spec = self.read_yaml_file(path + [fn])
 
                     # Load any associated Python code.
@@ -148,7 +157,7 @@ class VirtualFilesystemRepository(ModuleRepository):
                         # Store it in source form in the module specification.
                         module_spec["python-module"] = code
 
-                    yield (module_id, module_spec)
+                    yield (self.source, module_id, module_spec)
 
             elif fn in ("assets", "private-assets"):
                 # Don't recurisvely walk into directories named 'assets' or
@@ -177,7 +186,7 @@ class VirtualFilesystemRepository(ModuleRepository):
                 if fn_type == "file":
                     f = self.open_file(path + ["assets", fn])
                     try:
-                        yield (os.path.join(* path+[fn]), f.read())
+                        yield (os.path.join(* [self.source.namespace]+path+[fn]), f.read())
                     finally:
                         f.close()
 
@@ -188,15 +197,16 @@ class VirtualFilesystemRepository(ModuleRepository):
                     yield _
 
 class LocalModuleRepository(VirtualFilesystemRepository):
-    """A ModuleRepository that loads modules from the local filesystem.
+    """A ModuleLoader that loads modules from the local filesystem.
 
        The spec dict for initializing this instance looks like:
 
        { "type": "local", "path": "/path/to/yaml/files" }
     """
 
-    def __init__(self, spec):
-        self.path = spec["path"]
+    def __init__(self, source):
+        super().__init__(source)
+        self.path = source.spec["path"]
 
     def listdir(self, path):
         import os, os.path
@@ -208,7 +218,7 @@ class LocalModuleRepository(VirtualFilesystemRepository):
         return open(os.path.join(self.path, *path), "rb")
 
 class GithubApiRepository(VirtualFilesystemRepository):
-    """A ModuleRepository that loads modules from the Github API. Github user credentials
+    """A ModuleLoader that loads modules from the Github API. Github user credentials
        must be given, such as a username and a personal access token. Use GitRepository
        to access a public repository or one that requires an SSH key (such as a Github
        deploy key).
@@ -218,11 +228,12 @@ class GithubApiRepository(VirtualFilesystemRepository):
       { "type": "github", "repo": "orgname/reponame", ["path": "/subpath",] "auth": { "user": "...", "pw": "..." } }
     """
 
-    def __init__(self, spec):
+    def __init__(self, source):
+        super().__init__(source)
         from github import Github
-        g = Github(spec["auth"]["user"], spec["auth"]["pw"])
-        self.repo = g.get_repo(spec["repo"])
-        self.path = spec.get("path", "") + "/"
+        g = Github(source.spec["auth"]["user"], source.spec["auth"]["pw"])
+        self.repo = g.get_repo(source.spec["repo"])
+        self.path = source.spec.get("path", "") + "/"
 
     def listdir(self, path):
         for cf in self.repo.get_dir_contents(self.path + "/".join(path)):
@@ -238,7 +249,7 @@ class GithubApiRepository(VirtualFilesystemRepository):
         return io.BytesIO(content)
 
 class GitRepository(VirtualFilesystemRepository):
-    """A ModuleRepository that loads modules from a git repository using `git fetch`.
+    """A ModuleLoader that loads modules from a git repository using `git fetch`.
        If the repository is not public, an SSH key can be provided.
 
        The spec dict for initializing this instance looks like:
@@ -252,8 +263,9 @@ class GitRepository(VirtualFilesystemRepository):
       }
     """
 
-    def __init__(self, spec):
-        self.spec = spec
+    def __init__(self, source):
+        super().__init__(source)
+        self.spec = source.spec
 
     def __enter__(self):
         # Create a local git working directory.
@@ -363,9 +375,10 @@ class Command(BaseCommand):
         self.force_update = False
 
         # Initialize all of the repositories that provide module specifications.
-        with ModuleRepositories(settings.MODULE_REPOS) as repos:
+        with MultiplexedModuleLoader(ModuleSource.objects.all()) as repos:
             # Index all of the available modules.
-            available_modules = dict(repos.modules())
+            available_modules = { module_id: (module_source, module_spec)
+                for (module_source, module_id, module_spec) in repos.modules() }
 
             # Load modules into the database.
             self.load_modules(available_modules)
@@ -412,7 +425,7 @@ class Command(BaseCommand):
         if module_id not in available_modules:
             raise DependencyError((path[-1] if len(path) > 0 else None), module_id)
 
-        spec = available_modules[module_id]
+        source, spec = available_modules[module_id]
 
         # Sanity check that the 'id' in the YAML file matches just the last
         # part of the path of the module_id. This allows the IDs to be 
@@ -445,11 +458,11 @@ class Command(BaseCommand):
         
         if not m:
             # This module is new --- create it.
-            self.create_module(spec)
+            self.create_module(source, spec)
 
         else:
             # Has the module be chaned at all? Can it be updated in place?
-            change = self.is_module_changed(m, spec)
+            change = self.is_module_changed(m, source, spec)
             
             if change is None:
                 # The module hasn't changed at all. Go on. Don't cause a
@@ -466,7 +479,7 @@ class Command(BaseCommand):
                 # to maintain data consistency. Create it, and then mark the
                 # previous Module as superseded so that it is no longer used
                 # on new Tasks.
-                m1 = self.create_module(spec)
+                m1 = self.create_module(source, spec)
                 m.visible = False
                 m.superseded_by = m1
                 m.save()
@@ -503,10 +516,11 @@ class Command(BaseCommand):
                 q1.setdefault("ask-first", []).append(q["id"])
             spec.setdefault("questions", []).insert(0, q)
 
-    def create_module(self, spec):
+    def create_module(self, source, spec):
         # Create a new Module instance.
         print("Creating", spec["id"])
         m = Module()
+        m.source = source
         m.key = spec['id']
         self.update_module(m, spec)
         return m
@@ -686,7 +700,7 @@ class Command(BaseCommand):
         return spec
 
 
-    def is_module_changed(self, m, spec):
+    def is_module_changed(self, m, source, spec):
         # Returns whether a module specification has changed since
         # it was loaded into a Module object (and its questions).
         # Returns:
@@ -694,6 +708,12 @@ class Command(BaseCommand):
         #   False => Change, but is compatible with the database record
         #           and the database record can be updated in-place.
         #   True => Incompatible change - a new database record is needed.
+
+        # If the source changed, then force the creation of a new Module version.
+        if m.source != source:
+            return True
+
+        # If all other metadata is the same, then there are no changes.
         if \
                 json.dumps(m.spec, sort_keys=True) == json.dumps(self.transform_module_spec(spec), sort_keys=True) \
             and json.dumps([q.spec for q in m.get_questions()], sort_keys=True) \

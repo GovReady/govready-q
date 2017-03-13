@@ -12,7 +12,22 @@ from siteapp.models import User, Project, ProjectMembership
 
 ModulePythonCode = { }
 
+class ModuleSource(models.Model):
+    namespace = models.CharField(max_length=200, unique=True, help_text="The namespace that modules loaded from this source are added into.")
+    spec = JSONField(help_text="A load_modules ModuleRepository spec.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    def __str__(self):
+        # for the admin
+        return self.namespace
+
 class Module(models.Model):
+    source = models.ForeignKey(ModuleSource, help_text="The source of this module definition.")
+
     key = models.SlugField(max_length=100, db_index=True, help_text="A slug-like identifier for the Module.")
 
     visible = models.BooleanField(default=True, db_index=True, help_text="Whether the Module is offered to users.")

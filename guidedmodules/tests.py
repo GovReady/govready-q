@@ -11,13 +11,15 @@ class TestCaseWithFixtureData(TestCase):
         super().setUpClass()
 
         # Load modules from the fixtures directory.
-        settings.MODULE_REPOS = {
-            "fixture": {
+        from guidedmodules.models import ModuleSource
+        from guidedmodules.management.commands.load_modules import Command as load_modules
+        ModuleSource.objects.create(
+            namespace="fixture",
+            spec={
                 "type": "local",
                 "path": "fixtures/modules/other",
             }
-        }
-        from guidedmodules.management.commands.load_modules import Command as load_modules
+        )
         load_modules().handle()
 
         # Create a dummy organization, project, and user.

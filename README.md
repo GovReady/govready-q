@@ -100,31 +100,41 @@ GovReady Q content is stored in YAML files. Built-in modules are stored inside t
 
 See [Schema.md](Schema.md) for documentation on writing question and answer modules.
 
-Your Q deployment can pull module content from local directories and Github by listing the module sources ("repositories") in the `module-repos` key in the `environment.json` file. For example:
+Your Q deployment can pull module content from local directories and Github by creating Module Sources in the Django admin at [/admin/guidedmodules/modulesource/](http://localhost:8000/admin/guidedmodules/modulesource/).
 
-	...
-	"module-repos": {
-		"system": {
-			"type": "local",
-			"path": "modules/system"
-		},
-		"my_modules/one": {
-			"type": "git",
-			"url": "git@github.com:GovReady/my-modules",
-			"branch": "master",
-			"path": "modules",
-			"ssh_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"
-		},
-		"my_modules/two": {
-			"type": "github",
-			"repo": "GovReady/my-modules",
-			"path": "modules",
-			"auth": { "user": "...", "pw": "..." }
-		},
+Each source binds a namespace in your local deployment to a repository to fetch modules from. All deployments must have a Module Source that maps the `system` namespace bound to the modules at the local path `modules/system` using the following `Spec` string:
+
+	{
+	  "path":"modules/system",
+	  "type":"local"
 	}
-	...
 
-Each entry in `module-repos` binds a namespace in your local deployment (in this example: `system`, `my_modules/one`, and `my_modules/two`) to a repository of modules. All deployments must have the `system` namespace bound to the modules at the local path `modules/system`. The repositories can be of these types:
+This Module Source is created during the first run of `manage.py migrate`.
+
+The `Spec` field of Module Sources can be of these types (explanation follows below):
+
+	Local file system source:
+	{
+		"type": "local",
+		"path": "modules/system"
+	}
+
+	Git repository source using a URL:
+	{
+		"type": "git",
+		"url": "git@github.com:GovReady/my-modules",
+		"branch": "master",
+		"path": "modules",
+		"ssh_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"
+	}
+
+	Github repository using the Github API:
+	{
+		"type": "github",
+		"repo": "GovReady/my-modules",
+		"path": "modules",
+		"auth": { "user": "...", "pw": "..." }
+	}
 
 * `"type": "local"` to load modules from a directory on the local file system. Specify a relative or absolute path in `path`.
 
@@ -136,7 +146,7 @@ There are two ways to pull modules from Github:
 
 Both git methods have an optional `path` field which lets you choose a directory _within_ the git repository to scan for module YAML files.
 
-After making changes to `module-repos`, run `python3 manage.py load_modules` to pull the modules from the module repositories into the database.
+After making changes to Module Sources, run `python3 manage.py load_modules` to pull the modules from the sources into the database.
 
 # Testing and Generating Screenshots
 

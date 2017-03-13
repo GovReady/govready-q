@@ -40,14 +40,5 @@ NOTIFICATION_REPLY_TO_EMAIL_REGEX = r"q\+notification\+(\d+)\+([a-f\d\-]+)@mg.go
 DEFAULT_FILE_STORAGE = 'dbstorage.storage.DatabaseStorage'
 NOTIFICATIONS_USE_JSONFIELD = True # allows us to store extra data on Notification instances
 
-MODULE_REPOS = environment.get('module-repos',
-    {
-        "system": {
-            "type": "local",
-            "path": "modules/system",
-        },
-    }
-)
-
 GOVREADY_CMS_API_AUTH = environment.get('govready_cms_api_auth')
 MAILGUN_API_KEY = environment.get('mailgun_api_key', '') # for the incoming mail route

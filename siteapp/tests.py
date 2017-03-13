@@ -130,17 +130,22 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         super().setUp()
 
         # Load the Q modules from the fixtures directory.
-        settings.MODULE_REPOS = {
-            "system": { # mandatory
+        from guidedmodules.models import ModuleSource
+        from guidedmodules.management.commands.load_modules import Command as load_modules
+        ModuleSource.objects.create(
+            namespace="system",
+            spec={ # required system projects
                 "type": "local",
                 "path": "fixtures/modules/system",
-            },
-            "project": { # contains a test project
+            }
+        )
+        ModuleSource.objects.create(
+            namespace="project",
+            spec={ # contains a test project
                 "type": "local",
                 "path": "fixtures/modules/other",
             }
-        }
-        from guidedmodules.management.commands.load_modules import Command as load_modules
+        )
         load_modules().handle()
 
         # Create a default user that is a member of the organization.

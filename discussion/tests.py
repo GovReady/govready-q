@@ -1,7 +1,6 @@
 from django.conf import settings
 from siteapp.models import User, ProjectMembership, Organization
 from siteapp.tests import SeleniumTest, var_sleep
-from guidedmodules.management.commands.load_modules import Command as load_modules
 
 from selenium.common.exceptions import NoSuchElementException
 
@@ -12,20 +11,17 @@ class DiscussionTests(SeleniumTest):
     def setUp(self):
         super().setUp()
 
-        # Load the Q modules from the fixtures directory.
-        # The account settings project and its one submodule are required
-        # in order to run the system.
-        settings.MODULE_REPOS = {
-            "system": {
-                "type": "local",
-                "path": "fixtures/modules/system",
-            },
-            "project": { # contains a test project
+        # Load modules from the fixtures directory so that we have the required
+        # modules as well as a test project.
+        from guidedmodules.models import ModuleSource
+        from guidedmodules.management.commands.load_modules import Command as load_modules
+        ModuleSource.objects.create(
+            namespace="fixture",
+            spec={
                 "type": "local",
                 "path": "fixtures/modules/other",
             }
-        }
-
+        )
         load_modules().handle()
 
         # Create a default user that is a member of the organization.
