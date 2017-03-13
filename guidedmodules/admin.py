@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import \
-	ModuleSource, Module, ModuleQuestion, \
+	ModuleSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, \
 	Task, TaskAnswer, TaskAnswerHistory, \
 	InstrumentationEvent
 
@@ -10,10 +10,20 @@ class ModuleSourceAdmin(admin.ModelAdmin):
 
 class ModuleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'key', 'visible', 'superseded_by', 'created')
-	raw_id_fields = ('superseded_by',)
+	raw_id_fields = ('superseded_by', 'assets')
 
 class ModuleQuestionAdmin(admin.ModelAdmin):
 	raw_id_fields = ('module', 'answer_type_module')
+
+class ModuleAssetPackAdmin(admin.ModelAdmin):
+	list_display = ('id', 'source', 'basepath', 'created')
+	raw_id_fields = ('assets',)
+	readonly_fields = ('source','basepath','total_hash','assets','paths','extra')
+
+class ModuleAssetAdmin(admin.ModelAdmin):
+	list_display = ('id', 'source', 'content_hash', 'created')
+	raw_id_fields = ('source',)
+	readonly_fields = ('source','content_hash','file')
 
 class TaskAdmin(admin.ModelAdmin):
 	list_display = ('title', 'organization_and_project', 'editor', 'module', 'is_finished', 'submodule_of', 'created')
@@ -50,6 +60,8 @@ class InstrumentationEventAdmin(admin.ModelAdmin):
 admin.site.register(ModuleSource, ModuleSourceAdmin)
 admin.site.register(Module, ModuleAdmin)
 admin.site.register(ModuleQuestion, ModuleQuestionAdmin)
+admin.site.register(ModuleAssetPack, ModuleAssetPackAdmin)
+admin.site.register(ModuleAsset, ModuleAssetAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(TaskAnswer, TaskAnswerAdmin)
 admin.site.register(TaskAnswerHistory, TaskAnswerHistoryAdmin)

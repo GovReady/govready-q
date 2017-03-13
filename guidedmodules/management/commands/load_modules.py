@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.conf import settings
 
-from guidedmodules.models import ModuleSource, Module, ModuleQuestion, Task
+from guidedmodules.models import ModuleSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task
 from guidedmodules.module_logic import render_content
 
 import sys, json
@@ -23,7 +23,7 @@ class ModuleLoader(object):
     # Subclasses must define:
     #
     # modules() => generator over tuples of (ModuleSource, module_id (str) and module spec data (dict))
-    # assets() => generator over tuples of unixy path (str) and asset binary blob data (bytes)
+    # assets() => generator over asset packs
     #
     # and can override __exit__ to provide cleanup semantics
 
@@ -106,7 +106,7 @@ class VirtualFilesystemRepository(ModuleLoader):
 
     # Subclasses must define:
     #
-    # listdir(path) -> iterator over tuples of ("file|dir", subpath)
+    # listdir(path) -> iterator over tuples of ("file|dir", subpath, content_hash)
     # open_file(path) -> file-like object
     #
     # path is a list of path components (i.e. ["my", "directory"] for "my/directory")
@@ -129,7 +129,8 @@ class VirtualFilesystemRepository(ModuleLoader):
         from os.path import splitext
         
         subdir = list(self.listdir(path))
-        for ftype, fn in sorted(subdir):
+        subdir_without_hash = [(ftype, fn) for (ftype, fn, content_hash) in subdir]
+        for ftype, fn, content_hash in sorted(subdir):
             if ftype == "file":
                 # If this is a file that ends in .yaml, it is a module file.
                 # Strip the extension and construct a module ID that concatenates
@@ -141,7 +142,7 @@ class VirtualFilesystemRepository(ModuleLoader):
                     module_spec = self.read_yaml_file(path + [fn])
 
                     # Load any associated Python code.
-                    if ("file", fn_name + ".py") in subdir:
+                    if ("file", fn_name + ".py") in subdir_without_hash:
                         # Read the file.
                         import io
                         f = self.open_file(path + [fn_name + ".py"])
@@ -172,26 +173,47 @@ class VirtualFilesystemRepository(ModuleLoader):
                     yield module
 
     def assets(self, path=[]):
-        # Returns a generator over all static assets defined in this repository.
-        # Yields tuples of (path, blob) where path is the virtual path for the
-        # asset and blob is binary data. Assets at e.g. modules/mygroup/assets/image.jpeg
-        # are returned with the path mygroup/image.jpeg.
+        # Returns a generator over packs of assets. A pack of assets is updated
+        # atomically whenever any asset in the pack has changed.
+        #
+        # Each pack is a tuple of (ModuleSource, basepath (str), assets (list)) where basepath
+        # is the virtual path that the assets are containe in, in parallel to the
+        # naming of module IDs, and assets is a list of tuples of (filename, hash, content_loader).
+        # Hash is a hash defined by the subclass to detect when an asset has changed.
+        # content_loader is a function that takes no arguments are returns the asset's
+        # binary content.
+        #
+        # Assets at e.g. modules/mygroup/assets/image.jpeg are returned as:
+        #   ( ModuleSource(), "mygroup", [
+        #                  ("image.jpeg", "hashhashhash", [content_loader_func]),
+        #                ] )
 
         import os.path # for join because we return virtual unixy paths
 
         # Is there an assets directory here?
-        subdir = self.listdir(path)
-        if ("dir", "assets") in subdir:
-            for fn_type, fn in self.listdir(path + ["assets"]):
-                if fn_type == "file":
-                    f = self.open_file(path + ["assets", fn])
-                    try:
-                        yield (os.path.join(* [self.source.namespace]+path+[fn]), f.read())
-                    finally:
-                        f.close()
+        subdir = list(self.listdir(path))
+        subdir_without_hash = [(ftype, fn) for (ftype, fn, content_hash) in subdir]
+        if ("dir", "assets") in subdir_without_hash:
+            # Turn the assets directory into a pack of assets.
+            assets = []
+            for fn_type, fn, content_hash in self.listdir(path + ["assets"]):
+                if fn_type != "file": continue
+                def make_content_loader(fn):
+                    def content_loader():
+                        f = self.open_file(path + ["assets", fn])
+                        try:
+                            return f.read()
+                        finally:
+                            f.close()
+                    return content_loader
+                assets.append((fn, content_hash, make_content_loader(fn)))
+
+            # Yield the pack.
+            if len(assets) > 0:
+                yield (self.source, "/".join([self.source.namespace] + path), assets)
 
         # Recurse into subdirectories except ones named "assets".
-        for fn_type, fn in sorted(subdir):
+        for fn_type, fn, _ in sorted(subdir):
             if fn_type == "dir" and fn != "assets":
                 for _ in self.assets(path=path+[fn]):
                     yield _
@@ -209,9 +231,23 @@ class LocalModuleRepository(VirtualFilesystemRepository):
         self.path = source.spec["path"]
 
     def listdir(self, path):
-        import os, os.path
+        import os, os.path, hashlib
+
+        def compute_hash(item):
+            with self.open_file(path + [item]) as fh:
+                m = hashlib.sha256()
+                while True:
+                    data = fh.read(8192)
+                    if not data: break
+                    m.update(data)
+                return m.hexdigest()
+
         for item in os.listdir(os.path.join(self.path, *path)):
-            yield ("file" if os.path.isfile(os.path.join(*[self.path]+path+[item])) else "dir", item)
+            isfile = os.path.isfile(os.path.join(*[self.path]+path+[item]))
+            yield (
+                "file" if isfile else "dir",
+                item,
+                compute_hash(item) if isfile else None)
 
     def open_file(self, path):
         import os.path
@@ -238,7 +274,7 @@ class GithubApiRepository(VirtualFilesystemRepository):
     def listdir(self, path):
         for cf in self.repo.get_dir_contents(self.path + "/".join(path)):
             # cf.type is "file" or "dir" just like VirtualFilesystemRepository expects :)
-            yield (cf.type, cf.name)
+            yield (cf.type, cf.name, cf.sha)
 
     def open_file(self, path):
         import base64, io
@@ -349,7 +385,10 @@ class GitRepository(VirtualFilesystemRepository):
             tree = tree[item] # TODO: As above.
         for item in tree:
             if item.type not in ("tree", "blob"): continue
-            yield ("file" if item.type == "blob" else "dir", item.name)
+            yield (
+                "file" if item.type == "blob" else "dir",
+                item.name,
+                item.hexsha)
 
     def open_file(self, path):
         # Get the root tree and then move to the desired item.
@@ -375,25 +414,25 @@ class Command(BaseCommand):
         self.force_update = False
 
         # Initialize all of the repositories that provide module specifications.
-        with MultiplexedModuleLoader(ModuleSource.objects.all()) as repos:
+        with MultiplexedModuleLoader(ModuleSource.objects.all()) as sources:
             # Index all of the available modules.
             available_modules = { module_id: (module_source, module_spec)
-                for (module_source, module_id, module_spec) in repos.modules() }
+                for (module_source, module_id, module_spec) in sources.modules() }
+
+            # Load static assets.
+            asset_packs = self.load_static_assets(sources)
 
             # Load modules into the database.
-            self.load_modules(available_modules)
+            self.load_modules(available_modules, asset_packs)
 
-            # Build static assets directory.
-            self.build_static_assets(repos)
-
-    def load_modules(self, available_modules):
+    def load_modules(self, available_modules, asset_packs):
         # Process each module specification. Because modules may refer to
         # other modules, we also end up loading them recursively.
         ok = True
         processed_modules = set()
         for module_id in available_modules.keys():
             try:
-                self.process_module(module_id, available_modules, processed_modules, [])
+                self.process_module(module_id, available_modules, processed_modules, [], asset_packs)
             except (ValidationError, CyclicDependency, DependencyError) as e:
                 print(str(e))
                 ok = False
@@ -409,7 +448,7 @@ class Command(BaseCommand):
 
 
     @transaction.atomic # there can be an error mid-way through updating a Module
-    def process_module(self, module_id, available_modules, processed_modules, path):
+    def process_module(self, module_id, available_modules, processed_modules, path, asset_packs):
         # Prevent cyclic dependencies between modules.
         if module_id in path:
             raise CyclicDependency(path)
@@ -439,7 +478,7 @@ class Command(BaseCommand):
 
         # Recursively update any modules this module references.
         for m1 in self.get_module_spec_dependencies(spec):
-            self.process_module(m1, available_modules, processed_modules, path + [spec["id"]])
+            self.process_module(m1, available_modules, processed_modules, path + [spec["id"]], asset_packs)
 
         # Run some validation.
 
@@ -458,11 +497,11 @@ class Command(BaseCommand):
         
         if not m:
             # This module is new --- create it.
-            self.create_module(source, spec)
+            self.create_module(source, spec, asset_packs)
 
         else:
             # Has the module be chaned at all? Can it be updated in place?
-            change = self.is_module_changed(m, source, spec)
+            change = self.is_module_changed(m, source, spec, asset_packs)
             
             if change is None:
                 # The module hasn't changed at all. Go on. Don't cause a
@@ -472,14 +511,14 @@ class Command(BaseCommand):
             elif change is False:
                 # The changes can overwrite the existing module definition
                 # in the database.
-                self.update_module(m, spec)
+                self.update_module(m, spec, asset_packs)
 
             else:
                 # The changes require that a new database record be created
                 # to maintain data consistency. Create it, and then mark the
                 # previous Module as superseded so that it is no longer used
                 # on new Tasks.
-                m1 = self.create_module(source, spec)
+                m1 = self.create_module(source, spec, asset_packs)
                 m.visible = False
                 m.superseded_by = m1
                 m.save()
@@ -516,17 +555,17 @@ class Command(BaseCommand):
                 q1.setdefault("ask-first", []).append(q["id"])
             spec.setdefault("questions", []).insert(0, q)
 
-    def create_module(self, source, spec):
+    def create_module(self, source, spec, asset_packs):
         # Create a new Module instance.
         print("Creating", spec["id"])
         m = Module()
         m.source = source
         m.key = spec['id']
-        self.update_module(m, spec)
+        self.update_module(m, spec, asset_packs)
         return m
 
 
-    def update_module(self, m, spec):
+    def update_module(self, m, spec, asset_packs):
         # Update a module instance according to the specification data.
         # See is_module_changed.
         if m.id:
@@ -534,6 +573,7 @@ class Command(BaseCommand):
 
         m.visible = True
         m.spec = self.transform_module_spec(spec)
+        m.assets = asset_packs.get((m.source, m.parent_path))
         m.save()
 
         # Update its questions.
@@ -700,7 +740,7 @@ class Command(BaseCommand):
         return spec
 
 
-    def is_module_changed(self, m, source, spec):
+    def is_module_changed(self, m, source, spec, asset_packs):
         # Returns whether a module specification has changed since
         # it was loaded into a Module object (and its questions).
         # Returns:
@@ -716,6 +756,7 @@ class Command(BaseCommand):
         # If all other metadata is the same, then there are no changes.
         if \
                 json.dumps(m.spec, sort_keys=True) == json.dumps(self.transform_module_spec(spec), sort_keys=True) \
+            and m.assets == asset_packs.get((m.source, m.parent_path)) \
             and json.dumps([q.spec for q in m.get_questions()], sort_keys=True) \
                 == json.dumps([self.transform_question_spec(m.key, spec, q) for q in spec.get("questions", [])], sort_keys=True):
             return None
@@ -813,23 +854,53 @@ class Command(BaseCommand):
         # The changes to this question do not create a data inconsistency.
         return False
 
-    def build_static_assets(self, repos):
-        # Store module assets into the public static directory served by the
-        # web server.
-        import shutil, os, os.path
+    def load_static_assets(self, sources):
+        # Load all of the static assets from the sources into the database.
 
-        # This is the local path where static assets are stored initially
-        # prior to collectstatic.
-        target_root = os.path.join("siteapp", "static", "module-assets")
+        asset_packs = { }
 
-        # Clean out existing files.
-        if os.path.exists(target_root):
-            shutil.rmtree(target_root)
+        for source, pack_path, pack_assets in sources.assets():
+            # Provisionally create a ModuleAssetPack.
+            pack = ModuleAssetPack()
+            pack.source = source
+            pack.basepath = pack_path
+            pack.paths = {
+                file_path: file_hash
+                for file_path, file_hash, content_loader
+                in pack_assets
+            }
 
-        # Store.
-        for asset_fn, asset_blob in repos.assets():
-            fn = os.path.join(target_root, asset_fn)
-            d = os.path.dirname(fn)
-            os.makedirs(d, exist_ok=True)
-            with open(fn, "wb") as f:
-                f.write(asset_blob)
+            # Compute the total_hash over the pack to see if this already
+            # exists as a ModuleAssetPack in the database.
+            pack.set_total_hash()
+
+            existing_pack = ModuleAssetPack.objects.filter(source=source, total_hash=pack.total_hash).first()
+            if existing_pack:
+                # Nothing to update.
+                pack = existing_pack
+            else:
+                # Create a new ModuleAssetPack. Save the instance.
+                print("Creating asset pack for", pack_path, "...")
+                pack.save()
+
+                # Add the assets.
+                for file_path, file_hash, content_loader in pack_assets:
+                    # Get or create the ModuleAsset --- it might already exist in an earlier pack.
+                    asset, is_new = ModuleAsset.objects.get_or_create(
+                        source=source,
+                        content_hash=file_hash,
+                    )
+                    if is_new:
+                        # Set the new file content.
+                        print("Storing asset", file_path, "with hash", file_hash, "...")
+                        from django.core.files.base import ContentFile
+                        asset.file.save(file_path, ContentFile(content_loader()))
+                        asset.save()
+
+                    # Add to the pack.
+                    pack.assets.add(asset)
+
+            # Remember this pack for the basepath.
+            asset_packs[(source, pack_path)] = pack
+        
+        return asset_packs

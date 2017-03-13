@@ -34,6 +34,7 @@ class Module(models.Model):
     superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="When a Module is superseded by a new version, this points to the newer version.")
 
     spec = JSONField(help_text="Module definition data.")
+    assets = models.ForeignKey('ModuleAssetPack', blank=True, null=True, help_text="A mapping from asset paths to ModuleAsset instances with the binary content of the asset.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -45,6 +46,10 @@ class Module(models.Model):
     def __repr__(self):
         # For debugging.
         return "<Module [%d] %s%s %s>" % (self.id, "" if not self.superseded_by else "(old) ", self.key, self.spec.get("title", "<No Title>")[0:30])
+
+    @property
+    def parent_path(self):
+        return "/".join(self.key.split("/")[:-1])
 
     @property
     def title(self):
@@ -101,14 +106,23 @@ class Module(models.Model):
         ]))
 
     def get_static_asset_url(self, asset_path):
-        import urllib.parse
-        base_path = "/static/module-assets/"
-        if not asset_path.startswith("/"):
-            # Assets are relative to the module's 'path', which is based
-            # on its full id, unless the asset path begins with a slash,
-            # and then it is just relative to base_path.
-            base_path += "/".join(self.key.split("/")[0:-1]) + "/"
-        return urllib.parse.urljoin(base_path, asset_path)
+        if not self.assets:
+            # No assets are defined for this Module, so just return the
+            # path as it's probably an absolute URL.
+            return asset_path
+
+        # Look up the content_hash of the asset from its path.
+        content_hash = self.assets.paths.get(asset_path)
+        if not content_hash:
+            # This is not an asset so let it through as it might be an
+            # absolute URL.
+            return asset_path
+
+        # Look up the ModuleAsset based on the hash.
+        asset = self.assets.assets.get(source=self.source, content_hash=content_hash)
+
+        # Give the public URL of that asset.
+        return asset.get_absolute_url()
 
     @staticmethod
     def BuildNetworkDiagram(start_nodes, config):
@@ -193,6 +207,54 @@ class Module(models.Model):
                     "tooltip": lambda node : node.spec['title'],
                 }
             })
+
+
+class ModuleAsset(models.Model):
+    source = models.ForeignKey(ModuleSource, help_text="The source of the asset.")
+    content_hash = models.CharField(max_length=64, help_text="A hash of the asset binary content, as provided by the source.")
+    file = models.FileField(upload_to='guidedmodules/module-assets', help_text="The attached file.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    class Meta:
+        unique_together = [('source', 'content_hash')]
+
+    def get_absolute_url(self):
+        return self.file.url
+
+
+class ModuleAssetPack(models.Model):
+    source = models.ForeignKey(ModuleSource, help_text="The source of these assets.")
+    assets = models.ManyToManyField(ModuleAsset, help_text="The assets linked to this pack.")
+    basepath = models.SlugField(max_length=100, help_text="The base path of all assets in this pack.")
+    paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
+    total_hash = models.CharField(max_length=64, help_text="A SHA256 hash over the paths and the content_hashes of the assets.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    class Meta:
+        unique_together = [('source', 'total_hash')]
+
+    def set_total_hash(self):
+        import hashlib, json
+        m = hashlib.sha256()
+        m.update(
+            json.dumps({
+                    "basepath": self.basepath,
+                    "paths": self.paths,
+                },
+                sort_keys=True,
+            ).encode("utf8")
+        )
+        self.total_hash = m.hexdigest()
+
+
 
 class ModuleQuestion(models.Model):
     module = models.ForeignKey(Module, related_name="questions", on_delete=models.PROTECT, help_text="The Module that this ModuleQuestion is a part of.")

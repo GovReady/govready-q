@@ -206,8 +206,8 @@ class RenderTests(TestCaseWithFixtureData):
             """<p><a href="https://www.google.com/">This is a Link!</a></p>""")
 
         # test URL rewriting on links & images for module static content
-        test("![](relative/path.png)", { },
-            """<p><img alt="" src="/static/module-assets/fixture/relative/path.png"></p>""")
+        test("![](test_asset.png)", { },
+            """<p><img alt="" src="/user-mediaguidedmodules/module-assets/642396ce610f24a112d3feda9833dfddddd9fff7.png"></p>""")
 
         # test variable substitutions mixed with CommonMark block elements
         test(
