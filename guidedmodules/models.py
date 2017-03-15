@@ -16,6 +16,8 @@ class ModuleSource(models.Model):
     namespace = models.CharField(max_length=200, unique=True, help_text="The namespace that modules loaded from this source are added into.")
     spec = JSONField(help_text="A load_modules ModuleRepository spec.")
 
+    trust_javascript_assets = models.BooleanField(default=False, help_text="Are new Javascript static assets loaded from this source trusted to be served on our domain and run client side?")
+
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 

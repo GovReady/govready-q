@@ -897,12 +897,13 @@ class Command(BaseCommand):
                         asset.file.save(file_path, ContentFile(content_loader()))
                         asset.save()
 
-                        # Mark the asset as trusted so that we can serve Javascript from
-                        # our domain and have it be executed by the browser.
-                        from dbstorage.models import StoredFile
-                        sf = StoredFile.objects.get(path=asset.file.name)
-                        sf.trusted = True
-                        sf.save()
+                        if source.trust_javascript_assets:
+                            # Mark the asset as trusted so that we can serve Javascript from
+                            # our domain and have it be executed by the browser.
+                            from dbstorage.models import StoredFile
+                            sf = StoredFile.objects.get(path=asset.file.name)
+                            sf.trusted = True
+                            sf.save()
 
                     # Add to the pack.
                     pack.assets.add(asset)
