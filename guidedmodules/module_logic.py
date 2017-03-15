@@ -494,10 +494,14 @@ def render_content(content, answers, output_format, source, additional_context={
         # add rendered answers into it.
         context = dict(additional_context) # clone
         context['static_asset_path_for'] = answers.module.get_static_asset_url
-        context.update(TemplateContext(answers, escapefunc, root=True))
 
         # Render.
         try:
+            # context.update will immediately load all top-level values, which
+            # unfortuntately might throw an error if something goes wrong
+            context.update(TemplateContext(answers, escapefunc, root=True))
+
+            # Now really render.
             output = template.render(context)
         except Exception as e:
             raise ValueError("There was an error executing the template %s: %s" % (source, str(e)))
@@ -1135,8 +1139,8 @@ class TemplateContext(Mapping):
         seen_keys = set()
 
         # external functions, in the root template context only
-        if self.root:
-            for fname in self.module_answers.module.spec.get("external-functions", []):
+        if self.root and self.module_answers.module:
+            for fname in self.module_answers.module.python_functions():
                 seen_keys.add(fname)
                 yield fname
 

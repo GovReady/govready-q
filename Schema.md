@@ -472,7 +472,7 @@ In both conditions and `expression`-type values, as well as in documents, the va
 * `project`, which gives the project name
 * `project.question_id`, `project.question_id.subquestion_id`, etc. to access questions within the project
 * `organization`, which gives the organization name
-* The name of an external Python function (see `external-functions`)
+* The name of an external Python function (see Accessing External Python Code)
 
 We also have a funtion to retreive the URL of a module's static assets, e.g.:
 
