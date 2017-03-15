@@ -5,40 +5,129 @@
 Add System
 {% endblock %}
 
+{% block head %}
+<style>
+.assessment {
+  margin-bottom: 16px;
+  border: 1px solid #88A;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+}
+  .assessment h2 {
+    margin: -16px -16px 0 -16px;
+    padding: 16px;
+    background-color: #88A;
+    color: white;
+    font-size: 120%;
+    font-weight: bold;
+  }
+  .assessment .body {
+    padding: 16px 0 0 0;
+  }
+    .assessment .body p:last {
+      margin: 0; /* not working */
+    }
+
+#assessment_details h4 {
+  font-weight: bold;
+  font-size: 125%;
+}
+</style>
+{% endblock %}
+
 {% block breadcrumbs %}
-<li class="active">Begin New Assessment</li>
+<li class="active">Assessment Catalog</li>
 {% endblock %}
 
 {% block body %}
-<div class="row">
-  <div class="col-sm-push-1 col-sm-9">
-
-<h1 style="margin: 60px 0 30px 0"><span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span> Begin New Assessment</h1>
+<h1>Assessment Catalog</h1>
 
 <div style="margin: 30px 0">
   {% if first %}
-    <p>Begin your first assessment.</p>
+    <p>Choose your first assessment.</p>
   {% else %}
     <p>Begin a new assessment.</p>
   {% endif %}
 </div>
 
-<form role="form" method="post">
-    {% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
-      <button type="submit" class="btn btn-success">Begin &raquo;</button>
-    {% endbuttons %}
-</form>
+<div class="row">
+  {% for module in project_modules %}
+    <div class="col-sm-4">
+      <div class="assessment" data-assessment="{{module.key}}">
+        <h2>{{module.title}}</h2>
+        <div class="body">
+          {{module.short_description|safe}}
+        </div>
+        <button class="btn btn-success">Start &raquo;</button>
+        <div class="long-description" style="display: none">
+          {{module.long_description|safe}}
+        </div>
+      </div>
+    </div>
 
+    {% if forloop.counter|divisibleby:3 %}
+      <div class="visible-sm clearfix"> </div>
+      <div class="visible-md clearfix"> </div>
+      <div class="visible-lg clearfix"> </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<div id="assessment_details" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="assessment_details_title" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="assessment_details_title"> </h4>
+      </div>
+      <div class="modal-body">
+        <div class="long-description">
+        </div>
+        <hr>
+        <form role="form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="module_id">
+            {% bootstrap_form form %}
+            {% buttons %}
+            {% endbuttons %}
+        </form>        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="$('#assessment_details form').submit();">Start</button>
+      </div>
+    </div>
   </div>
 </div>
+
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-$(function() {
-  $('#id_title').focus();
+$('.assessment').click(function() {
+  var node = $(this);
+  var assessment = node.data("assessment");
+  var modal = $('#assessment_details');
+  modal.find('h4').text(node.find('h2').text());
+  modal.find('.long-description').html(node.find('.long-description').html());
+  modal.find('input[name=module_id]').val(assessment);
+  modal.on('shown.bs.modal', function() {
+    modal.find("input").focus();
+  });
+  modal.modal();
 })
+
+{% if request.POST.module_id %}
+// If there was a form validation error we end up back here. Show the modal
+// for the assessment that the user tried to start on the last request.
+$(function() {
+  $('.assessment').each(function() {
+    if ($(this).data("assessment") == "{{request.POST.module_id|escapejs}}")
+      $(this).find('button').click();
+  })
+});
+{% endif %}
 </script>
 {% endblock %}

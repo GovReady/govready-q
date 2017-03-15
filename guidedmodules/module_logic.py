@@ -493,13 +493,15 @@ def render_content(content, answers, output_format, source, additional_context={
         # by the caller, add additional context variables and functions, and
         # add rendered answers into it.
         context = dict(additional_context) # clone
-        context['static_asset_path_for'] = answers.module.get_static_asset_url
+        if answers:
+            context['static_asset_path_for'] = answers.module.get_static_asset_url
 
         # Render.
         try:
             # context.update will immediately load all top-level values, which
             # unfortuntately might throw an error if something goes wrong
-            context.update(TemplateContext(answers, escapefunc, root=True))
+            if answers:
+                context.update(TemplateContext(answers, escapefunc, root=True))
 
             # Now really render.
             output = template.render(context)

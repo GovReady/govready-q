@@ -67,13 +67,10 @@ def new_project(request):
     folders = list(Folder.get_all_folders_admin_of(request.user, request.organization))
 
     # Get the list of project modules that this user has access to.
-    # The built-in server-side form validation will ensure that the user can
-    # only choose one of these at POST.
-    project_modules = sorted(set(
-        (m.id, m.title)
+    project_modules = set(
+        m
         for m in Module.objects.filter(visible=True)
-        if m.is_startable_project_by(request.user, request.organization)),
-        key = lambda m : m[1])
+        if m.is_startable_project_by(request.user, request.organization))
 
     # Get the list of users who can be invited to the new project.
     invitable_users = (
@@ -107,7 +104,7 @@ def new_project(request):
             model = Project
             fields = ['title']
             labels = {
-                'title': 'Enter name of project or system'
+                'title': 'Give this assessment a unique name'
             }
             help_texts = {
                 'title': 'Give your web property, application or other IT system a descriptive name.',
@@ -118,8 +115,6 @@ def new_project(request):
                 choices=[("", "Add to New Folder")] + [(f.id, f) for f in folders],
                 required=False,
                 label="Add to a folder?")
-
-        module_id = ChoiceField(choices=project_modules, label="What do you need to do?", widget=RadioSelect)
 
         if len(invitable_users) > 0:
             invite_org_users = MultipleChoiceField(label='Select existing users to add to project',
@@ -148,8 +143,11 @@ def new_project(request):
                 project.save()
 
                 # assign root task module from the given module_id
+                module_id = request.POST.get("module_id")
                 try:
-                    project.set_root_task(int(form.cleaned_data["module_id"]), request.user)
+                    if module_id not in { m.key for m in project_modules }:
+                        raise ValueError("You do not have access to that module.")
+                    project.set_root_task(module_id, request.user)
                 except ValueError as e:
                     # module_id is invalid or doesn't refer to a project-type module
                     return HttpResponseForbidden(str(e))
@@ -197,8 +195,35 @@ def new_project(request):
 
             return HttpResponseRedirect(project.get_absolute_url() + "/start")
 
+    # Sort modules for display.
+    project_modules = sorted(project_modules, key = lambda m : m.title)
+
+    # Add some extra fields to the modules.
+    from guidedmodules.module_logic import render_content
+    for m in project_modules:
+        m.short_description = render_content(
+            {
+                "template": m.spec.get("catalog", {}).get("description", {}).get("short") or "",
+                "format": "markdown",
+            },
+            None,
+            "html",
+            "%s %s" % (repr(m), "short description")
+        )
+
+        m.long_description = render_content(
+            {
+                "template": m.spec.get("catalog", {}).get("description", {}).get("long") or "",
+                "format": "markdown",
+            },
+            None,
+            "html",
+            "%s %s" % (repr(m), "long description")
+        )
+
     return render(request, "new-project.html", {
         "first": not ProjectMembership.objects.filter(user=request.user).exists(),
+        "project_modules": project_modules,
         "form": form,
     })
 
