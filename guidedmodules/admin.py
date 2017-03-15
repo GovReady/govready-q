@@ -6,7 +6,9 @@ from .models import \
 	InstrumentationEvent
 
 class ModuleSourceAdmin(admin.ModelAdmin):
-	list_display = ('id', 'spec')
+	list_display = ('namespace', 'source')
+	def source(self, obj):
+		return obj.get_description()
 
 class ModuleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'key', 'visible', 'superseded_by', 'created')

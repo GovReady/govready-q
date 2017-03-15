@@ -27,6 +27,16 @@ class ModuleSource(models.Model):
         # for the admin
         return self.namespace
 
+    def get_description(self):
+        if self.spec["type"] == "null":
+            return "null source"
+        if self.spec["type"] == "local":
+            return "local filesystem at %s" % self.spec.get("path")
+        if self.spec["type"] == "git":
+            return self.spec.get("url")
+        if self.spec["type"] == "github":
+            return "github.com/%s" % self.spec.get("repo")
+
 class Module(models.Model):
     source = models.ForeignKey(ModuleSource, help_text="The source of this module definition.")
 
