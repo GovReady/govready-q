@@ -114,7 +114,7 @@ $('.assessment').click(function() {
   modal.find('.long-description').html(node.find('.long-description').html());
   modal.find('input[name=module_id]').val(assessment);
   modal.on('shown.bs.modal', function() {
-    modal.find("input").focus();
+    $(modal.find("input[type=text]")[0]).focus();
   });
   modal.modal();
 })
