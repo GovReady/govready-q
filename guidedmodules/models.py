@@ -531,7 +531,6 @@ class Task(models.Model):
                 % (self.title, self.project.title))
 
     def render_simple_string(self, field, default):
-        import jinja2
         try:
             return render_content(
                 {
