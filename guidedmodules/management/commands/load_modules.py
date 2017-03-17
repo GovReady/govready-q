@@ -410,7 +410,9 @@ class GitRepository(VirtualFilesystemRepository):
 
 class Command(BaseCommand):
     help = 'Updates the modules in the database using the YAML specifications in the filesystem.'
-    args = '{force}'
+
+    def add_arguments(self, parser):
+        parser.add_argument('force', nargs="?", type=bool)
 
     def handle(self, *args, **options):
         # If "force" is True, then always update
@@ -421,7 +423,7 @@ class Command(BaseCommand):
         # choices, or restrictions. And since changes in modules can
         # trigger the updating of other modules, this could have a
         # large unintended impact.
-        self.force_update = False
+        self.force_update = (options["force"] == True)
 
         # Initialize all of the repositories that provide module specifications.
         with MultiplexedModuleLoader(ModuleSource.objects.all()) as sources:
