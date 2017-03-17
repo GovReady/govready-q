@@ -180,9 +180,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
+        self.click_element(".assessment[data-assessment='project/simple_project']")
         self.fill_field("#id_title", "My Simple Project")
-        self.click_element("#id_module_id_0")
-        self.click_element("button[type=submit]")
+        self.click_element("#assessment_details button.btn-success")
         var_sleep(1)
         self.assertRegex(self.browser.title, "My Simple Project")
 
