@@ -106,6 +106,7 @@ class VirtualFilesystemRepository(ModuleLoader):
 
     # Subclasses must define:
     #
+    # describe_path(path) -> string describing the resource at the path for error messages
     # listdir(path) -> iterator over tuples of ("file|dir", subpath, content_hash)
     # open_file(path) -> file-like object
     #
@@ -118,7 +119,7 @@ class VirtualFilesystemRepository(ModuleLoader):
         try:
             return yaml.safe_load(f)
         except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
-            raise ValidationError(repr(self) + ":" + path, "reading file", "There was an error parsing the file: " + str(e))
+            raise ValidationError(self.describe_path(path), "reading file", "There was an error parsing the file: " + str(e))
         finally:
             f.close()
 
@@ -230,6 +231,9 @@ class LocalModuleRepository(VirtualFilesystemRepository):
         super().__init__(source)
         self.path = source.spec["path"]
 
+    def describe_path(self, path):
+        return "local file at " + self.path + "/" + "/".join(path)
+
     def listdir(self, path):
         import os, os.path, hashlib
 
@@ -271,6 +275,9 @@ class GithubApiRepository(VirtualFilesystemRepository):
         self.repo = g.get_repo(source.spec["repo"])
         self.path = source.spec.get("path", "") + "/"
 
+    def describe_path(self, path):
+        return "Github repository " + self.repo + " at " + "/".join(path)
+
     def listdir(self, path):
         for cf in self.repo.get_dir_contents(self.path + "/".join(path)):
             # cf.type is "file" or "dir" just like VirtualFilesystemRepository expects :)
@@ -302,6 +309,9 @@ class GitRepository(VirtualFilesystemRepository):
     def __init__(self, source):
         super().__init__(source)
         self.spec = source.spec
+
+    def describe_path(self, path):
+        return "git repository " + self.spec['url'] + " at " + "/".join(path)
 
     def __enter__(self):
         # Create a local git working directory.
