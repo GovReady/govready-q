@@ -1,15 +1,17 @@
 {% extends "email/template" %}
+{% load notification_helpers %}
 {% block content %}
-Hello,
+{% if not notification.description %}Hello,
 
 {{ notification.actor }} {{ notification.verb }}{% if notification.target %} [{{notification.target}}]({{url}}){% endif %}.
-{% if notification.description %}
-~~~~
-{{notification.description.strip}}
-~~~~
-{% endif %}
-Go to [{{notification.target}}]({{url}})
+{% else %}{{ notification.actor }} {{ notification.verb }}{% if notification.target %} [{{notification.target}}]({{url}}){% endif %}:
 
-Good luck!{% endblock %}
+---
+
+{% render_markdown_instead_of_escaping notification.description.strip %}
+
+---
+{% endif %}
+{% endblock %}
 
 {% block after_signature_note %}{% if whatreplydoes %}{{whatreplydoes}}{% endif %}{% endblock %}

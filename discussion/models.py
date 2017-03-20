@@ -135,7 +135,7 @@ class Discussion(models.Model):
             "commented on",
             self,
             recipients=self.get_notification_watchers() - mentioned_users,
-            description="“" + text + "”",
+            description=text,
             comment_id=comment.id)
 
         # Issue a notification to anyone @-mentioned in the comment.
@@ -145,7 +145,7 @@ class Discussion(models.Model):
             "mentioned you in a comment on",
             self,
             recipients=mentioned_users,
-            description="“" + text + "”",
+            description=text,
             comment_id=comment.id)
 
         return comment

@@ -22,3 +22,32 @@ def get_notification_link(obj, notification):
 
 	# Use get_absolute_url.
 	return obj.get_absolute_url()
+
+def render_markdown_instead_of_escaping(parser, token):
+	class Node(template.Node):
+		def __init__(self, variable_name):
+			self.variable = template.Variable(variable_name)
+		def render(self, context):
+			md = self.variable.resolve(context)
+			if not context.autoescape:
+				# Auto-escaping is off, so we're in the text portion
+				# of a notification email. Return the raw markdown.
+				return md
+			else:
+				# Auto-escaping is on, so we're in the HTML portion
+				# of a notification email. Rather than returning the
+				# raw Markdown, which will look funny because e.g.
+				# line breaks will be ignored when it is placed within
+				# HTML, render the Markdown to HTML. Turn on safe mode
+				# since the content can't be trusted.
+				import CommonMark
+				return CommonMark.HtmlRenderer({ "safe": True })\
+					.render(CommonMark.Parser().parse(md))
+	try:
+		tag_name, variable_name = token.split_contents()
+	except ValueError:
+		raise template.TemplateSyntaxError(
+			"%r tag requires a single argument naming a variable" % token.contents.split()[0]
+		)
+	return Node(variable_name)
+register.tag('render_markdown_instead_of_escaping', render_markdown_instead_of_escaping)
