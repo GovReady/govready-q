@@ -423,7 +423,7 @@ class Command(BaseCommand):
         # choices, or restrictions. And since changes in modules can
         # trigger the updating of other modules, this could have a
         # large unintended impact.
-        self.force_update = (options["force"] == True)
+        self.force_update = (options.get("force") == True)
 
         # Initialize all of the repositories that provide module specifications.
         with MultiplexedModuleLoader(ModuleSource.objects.all()) as sources:
