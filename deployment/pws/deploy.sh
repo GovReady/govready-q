@@ -16,8 +16,16 @@
 set -euf -o pipefail # abort script on error
 
 PWS_ORGANIZATION=GovReady
-PWS_SPACE=dev
-PWS_APPNAME=govready-q
+PWS_SPACE=${PWS_SPACE-dev}
+
+# The app name must be globally unique because blue-green deploy
+# will first launch into a temporary route that combines the app
+# name and the space's default PWS host domain (e.g. cfapps.io).
+# So the app name cannot clash with any other PWS app, including
+# the same app in other spaces. That's why we include the space
+# in the app name. The app name must already exist in PWS so
+# that blue-green deploy can copy an existing app's configuration.
+PWS_APPNAME=${PWS_APPNAME-govready-q}-${PWS_SPACE}
 
 PIP=pip3
 
