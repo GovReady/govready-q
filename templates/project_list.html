@@ -11,8 +11,10 @@ Home
 {% block head %}
 <style>
 .folder {
-  border-top:1px solid rgb(240,240,240); 
-  border-bottom:1px solid rgb(240,240,240); 
+  border-top:1px solid rgb(220,220,220);
+  /*border-bottom:1px solid rgb(220,220,220); */
+  padding-top: 20px;
+  padding-bottom: 40px;
 }
   .folder .rename_folder {
     margin: 0 1em;
@@ -28,35 +30,74 @@ Home
   .folder a:hover { text-decoration: none; }
   .folder a:hover span { text-decoration: underline; }
   .folder a:hover span.glyphicon { text-decoration: none; }
-.folder:hover{
+
+.project {
+  padding:4px 4px 4px 4px;
+  border-left: 1px solid white;}
+.project:hover{
   background-color: rgb(250,250,250); 
+  border-left: 1px solid rgb(220,220,220);
 }
+.project .small {
+  color: rgb(90,90,90);
+}
+
 .glyphicon-book { color: #888; }
 .glyphicon-plus { color: #FFF; }
+
+.jumbotron h2 {font-size: 2em; font-weight: normal;}
+.jumbotron {border-bottom: 0.5px solid rgb(220,220,220);}
 
 </style>
 {% endblock %}
 
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body-wide %}
+<div class="jumbotron" style="height:160px;border-bottom:0.5px solid:">
+
+  <div class="container" style="min-height: 80%;">
+
+    <div class="row" style="border:0px solid black;margin:0px auto;margin-bottom:30px;">
+      {% with picture=request.organization.get_logo %}
+        <div class="col-md-1" style="border: 0px solid black;">
+          {% if picture %}
+            <img src="{{picture.url}}" class="img-responsive" alt="Profile Picture" style="">
+          {% else %}
+            <span class="glyphicon glyphicon-globe" style="font-size:4em;"></span>
+          {% endif %}
+        </div>
+        <div class="col-md-11"  style="text-align: left; border: 0px solid black;">
+          <h2 style="margin-top:0px;">{{request.organization}} Assessments</h2>
+        </div>
+      {% endwith %}
+    </div>
+
+  </div>
+
+</div><!-- /jumbotron -->
+
+  <div class="container-fluid">
+      <div class="container" style="min-height: 80%; margin-top: 1em;">
+
 {% block body %}
-<h1 style="font-weight: bold;">
-  Assessments
-</h1>
-    
-    {% if folders|length == 0 %}
-      <p>Start by beginning your first assessment.</p>
-    {% else %}
-      <p>You are working on these {{request.organization.name}} assessments.</p>
-    {% endif %}
+
 
 <div style="text-align: right; margin-bottom: 1em">
   <a id="new-project" href="/new-project" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> New Assessment</a>
 </div>
+
+{% if folders|length == 0 %}
+  <p>Start by beginning your first assessment.</p>
+{% endif %}
 
 <!-- List projects -->
 {% for folder in folders %}
 <div class="folder" data-folder-id="{{folder.id}}">
   {% if folder.accessible_projects|length != 1 %}
   <h2>
+    <span class="glyphicon glyphicon-folder-open"></span>&nbsp;
     <span class="folder_name">{{folder.title}}</span>
     {% if folder.is_admin %}
     <span class="rename_folder" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
@@ -89,29 +130,35 @@ Home
   {% endif %}
 
 
-  {# what kind of project is this #}
-  <div class="small" style="margin-top: .5em">
-    Task: {{project.root_task.module.title}}
-  </div>
-
-  {% if project and any_have_members_besides_me %}
-  <div class="admins small" style="margin-top: .5em">
-    owners:
-    {% for user in project.get_admins %}
-      {{user}}
-    {% empty %}
-      (none) {# well that's odd #}
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  {% with snippet=project.render_snippet %}
-    {% if snippet %}
-      <div class="admins small" style="margin-top: .5em">
-        {{project.render_snippet|safe}}
+  <div class="row">
+    <div class="col-md-4">
+      {# what kind of project is this #}
+      <div class="small" style="margin-top: .5em">
+        {{project.root_task.module.title}}
       </div>
-    {% endif %}
-  {% endwith %}
+    </div>
+
+    <div class="col-md-8">
+      {% if project and any_have_members_besides_me %}
+      <div class="admins small" style="margin-top: .5em">
+        owners:
+        {% for user in project.get_admins %}
+          {{user}}
+        {% empty %}
+          (none) {# well that's odd #}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% with snippet=project.render_snippet %}
+        {% if snippet %}
+          <div class="admins small" style="margin-top: .5em">
+            {{project.render_snippet|safe}}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
+  </div>
 
   </div>
   {% endfor %}
@@ -124,6 +171,21 @@ Home
 
 
 {% endblock %}
+
+
+
+      <hr>
+      <footer>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-12">
+              <p class="pull-right">&copy; GovReady {% now "Y" %}</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div> <!-- /container -->
+    {% endblock %}
 
 
 {% block scripts %}
