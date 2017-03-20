@@ -555,7 +555,8 @@ class Command(BaseCommand):
 
     def preprocess_module_spec(self, spec):
         # 'introduction' fields are an alias for an interstitial
-        # question that all questions depend on.
+        # question that comes before all other questions, and since
+        # it is first it will be asked first
         if "introduction" in spec:
             q = {
                 "id": "_introduction",
@@ -563,8 +564,6 @@ class Command(BaseCommand):
                 "type": "interstitial",
                 "prompt": spec["introduction"]["template"],
             }
-            for q1 in spec.get("questions", []):
-                q1.setdefault("ask-first", []).append(q["id"])
             spec.setdefault("questions", []).insert(0, q)
 
     def create_module(self, source, spec, asset_packs):
