@@ -7,9 +7,20 @@
 # and then it performs a blue-green-deploy to push the update
 # without downtime.
 #
-# Run with:
+# First authenticate yourself (or set $PWS_USER $PWS_PASS environment
+# variables and skip this):
 #
-# ./deploy.sh
+# $ cf api https://api.run.pivotal.io
+# $ cf login
+#
+# Set the PWS "space" to deploy to. The default if you don't set a
+# variable is "dev," which is our test environment.
+#
+# $ export PWS_SPACE=sandbox
+#
+# Then start the deploy:
+#
+# $ ./deploy.sh
 #
 # See the README for more details.
 
@@ -23,8 +34,10 @@ PWS_SPACE=${PWS_SPACE-dev}
 # name and the space's default PWS host domain (e.g. cfapps.io).
 # So the app name cannot clash with any other PWS app, including
 # the same app in other spaces. That's why we include the space
-# in the app name. The app name must already exist in PWS so
-# that blue-green deploy can copy an existing app's configuration.
+# in the app name.
+# * The app name must already exist in PWS so that blue-green deploy
+#   can copy an existing app's manifest (including environment vars).
+# * That app must also have its route be set to the public URL.
 PWS_APPNAME=${PWS_APPNAME-govready-q}-${PWS_SPACE}
 
 PIP=pip3
