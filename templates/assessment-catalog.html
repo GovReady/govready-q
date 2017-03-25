@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+Assessment Catalog
+{% endblock %}
+
+{% block head %}
+<style>
+.assessment {
+  margin-bottom: 16px;
+  border: 1px solid #88A;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+}
+  .assessment h2 {
+    margin: -16px -16px 0 -16px;
+    padding: 16px;
+    background-color: #88A;
+    color: white;
+    font-size: 120%;
+    font-weight: bold;
+  }
+  .assessment .body {
+    padding: 16px 0 0 0;
+  }
+    .assessment .body p:last {
+      margin: 0; /* not working */
+    }
+
+#assessment_details h4 {
+  font-weight: bold;
+  font-size: 125%;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">Assessment Catalog</li>
+{% endblock %}
+
+{% block body %}
+<h1>Assessment Catalog</h1>
+
+<div style="margin: 30px 0">
+  {% if first %}
+    <p>Choose your first assessment.</p>
+  {% else %}
+    <p>Begin a new assessment.</p>
+  {% endif %}
+</div>
+
+<div class="row">
+  {% for module in project_modules %}
+    <div class="col-sm-4">
+      <div class="assessment"
+        data-assessment="{{module.key}}"
+        onclick="window.location='/assessment-catalog/{{module.key|urlencode}}'"">
+        <h2>{{module.title}}</h2>
+        <div class="body">
+          {{module.short_description|safe}}
+        </div>
+        <a class="btn btn-success" href="/assessment-catalog/{{module.key}}"
+          >Start &raquo;</a>
+      </div>
+    </div>
+
+    {% if forloop.counter|divisibleby:3 %}
+      <div class="visible-sm clearfix"> </div>
+      <div class="visible-md clearfix"> </div>
+      <div class="visible-lg clearfix"> </div>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}

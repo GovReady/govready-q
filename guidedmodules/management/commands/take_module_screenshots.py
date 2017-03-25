@@ -113,7 +113,7 @@ class Command(BaseCommand):
         time.sleep(1)
 
         # start a new project
-        browser.get(self.url("/new-project"))
+        browser.get(self.url("/assessment-catalog"))
         self.fill_field("#id_title", "Test Project")
         self.click_element("#id_module_id_0") # first available project type
         self.click_element("button.btn-success")

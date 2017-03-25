@@ -177,13 +177,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_password", password)
         self.click_element("form button.primaryAction")
 
-    def _new_project(self):
+    def _new_project(self, module_key="project/simple_project"):
         self.browser.get(self.url("/projects"))
-        self.click_element("#new-project")
-        self.click_element(".assessment[data-assessment='project/simple_project']")
+        self.click_element("#new-assessment")
+        self.click_element(".assessment[data-assessment='%s']" % module_key)
+        self.click_element("#start-assessment")
         self.fill_field("#id_title", "My Simple Project")
-        self.click_element("#assessment_details button.btn-success")
-        var_sleep(1)
+        self.click_element("#start-assessment")
+        var_sleep(.5)
         self.assertRegex(self.browser.title, "My Simple Project")
 
     def _start_task(self):

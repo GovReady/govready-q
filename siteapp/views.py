@@ -57,175 +57,196 @@ def project_list(request):
         "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
     })
 
-@login_required
-def new_project(request):
-    from django.forms import ModelForm, ChoiceField, RadioSelect, MultipleChoiceField, \
-        CheckboxSelectMultiple, CharField, Textarea
-    from django.core.exceptions import ValidationError
-
-    # What Folders can the new Project be added to?
-    folders = list(Folder.get_all_folders_admin_of(request.user, request.organization))
-
-    # Get the list of project modules that this user has access to.
-    project_modules = set(
-        m
-        for m in Module.objects.filter(visible=True)
-        if m.is_startable_project_by(request.user, request.organization))
-
-    # Get the list of users who can be invited to the new project.
-    invitable_users = (
-        User.objects
-            # members of this organization
-            .filter(projectmembership__project__organization=request.organization)
-            # distinct because the field ^ creates duplicates
-            .distinct()
-            # but not the user making this request
-            .exclude(id=request.user.id)
-        )
-
-    def validate_list_of_email_addresses(value):
-        # This is a form validator as well as a function to return the split and
-        # normalized addresses.
-        def validate_email(email):
-            import email_validator
-            try:
-                return email_validator.validate_email(email)["email"]
-            except ValueError as e:
-                raise ValidationError(email + ": " + str(e))
-        import re
-        return set(
-            validate_email(email)
-            for email in re.split(r"[\s,]+", value)
-            if email != "") # if value is the empty string, we will get one empty value after split
-
-    # The form.
-    class NewProjectForm(ModelForm):
-        class Meta:
-            model = Project
-            fields = ['title']
-            labels = {
-                'title': 'Give this assessment a unique name'
-            }
-            help_texts = {
-                'title': 'Give your web property, application or other IT system a descriptive name.',
-            }
-
-        if len(folders) > 0:
-            add_to_folder = ChoiceField(
-                choices=[("", "Add to New Folder")] + [(f.id, f) for f in folders],
-                required=False,
-                label="Add to a folder?")
-
-        if len(invitable_users) > 0:
-            invite_org_users = MultipleChoiceField(label='Select existing users to add to project',
-                choices=sorted([
-                    (user.id, user.render_context_dict(request.organization)['name'])
-                    for user in invitable_users ],
-                    key = lambda choice : choice[1]),
-                widget=CheckboxSelectMultiple,
-                required=False)
-
-        invite_by_email = CharField(label="Invite others to this project",
-            help_text="Separate email addresses by new lines, spaces, or commas.",
-            widget=Textarea(attrs={'rows': '2', 'placeholder': ''}),
-            required=False,
-            validators=[validate_list_of_email_addresses])
-
-    form = NewProjectForm()
-    if request.method == "POST":
-        # Save and then go back to the home page to see it.
-        form = NewProjectForm(request.POST)
-        if not form.errors:
-            with transaction.atomic():
-                # create object
-                project = form.save(commit=False)
-                project.organization = request.organization
-                project.save()
-
-                # assign root task module from the given module_id
-                module_id = request.POST.get("module_id")
-                try:
-                    if module_id not in { m.key for m in project_modules }:
-                        raise ValueError("You do not have access to that module.")
-                    project.set_root_task(module_id, request.user)
-                except ValueError as e:
-                    # module_id is invalid or doesn't refer to a project-type module
-                    return HttpResponseForbidden(str(e))
-
-                # add user as an admin
-                ProjectMembership.objects.create(
-                    project=project,
-                    user=request.user,
-                    is_admin=True)
-
-                # add to a folder that the user has privilege to, or a new folder
-                # (The form field isn't shown if there are no existing folders
-                # (get returns None), and if the user wants to create a new folder
-                # the value is the empty string, otherwise it is a string containing
-                # a primary key (positive integer).)
-                if form.cleaned_data.get("add_to_folder"):
-                    folder = Folder.objects.get(id=form.cleaned_data["add_to_folder"])
-                else:
-                    folder = Folder.objects.create(
-                        organization=project.organization,
-                        title=project.title)
-                folder.projects.add(project)
-
-                # add other invited users
-                # (the form field is absent in some cases so must check we have the field)
-                if 'invite_org_users' in form.cleaned_data:
-                    for user in invitable_users.filter(id__in=form.cleaned_data['invite_org_users']):
-                        ProjectMembership.objects.create(
-                            project=project,
-                            user=user)
-
-                # send other invitations
-                for email in validate_list_of_email_addresses(form.cleaned_data['invite_by_email']):
-                    inv = Invitation.objects.create(
-                        organization=request.organization,
-                        from_user=request.user, # sender
-                        from_project=project, # sender
-                        into_project=True, # action
-                        target=project, # action
-                        target_info={ "what": "join-team" }, # action
-                        to_email=email, # recipient
-                        text=""
-                    )
-                    inv.send()
-
-            return HttpResponseRedirect(project.get_absolute_url() + "/start")
-
-    # Sort modules for display.
-    project_modules = sorted(project_modules, key = lambda m : m.title)
-
-    # Add some extra fields to the modules.
+def add_assessment_catalog_metadata(module):
     from guidedmodules.module_logic import render_content
+
+    module.short_description = render_content(
+        {
+            "template": module.spec.get("catalog", {}).get("description", {}).get("short") or "",
+            "format": "markdown",
+        },
+        None,
+        "html",
+        "%s %s" % (repr(module), "short description")
+    )
+
+    module.long_description = render_content(
+        {
+            "template": module.spec.get("catalog", {}).get("description", {}).get("long")
+                        or module.spec.get("catalog", {}).get("description", {}).get("short")
+                        or "",
+            "format": "markdown",
+        },
+        None,
+        "html",
+        "%s %s" % (repr(module), "short description")
+    )
+
+@login_required
+def assessment_catalog(request):
+    # Get the project-type modules that the user(+org) has permission to start.
+    project_modules = Module.get_all_startable_projects(request.user, request.organization)
+
+    # Add some extra fields for the template.
     for m in project_modules:
-        m.short_description = render_content(
-            {
-                "template": m.spec.get("catalog", {}).get("description", {}).get("short") or "",
-                "format": "markdown",
-            },
-            None,
-            "html",
-            "%s %s" % (repr(m), "short description")
-        )
+        add_assessment_catalog_metadata(m)
 
-        m.long_description = render_content(
-            {
-                "template": m.spec.get("catalog", {}).get("description", {}).get("long") or "",
-                "format": "markdown",
-            },
-            None,
-            "html",
-            "%s %s" % (repr(m), "long description")
-        )
-
-    return render(request, "new-project.html", {
-        "first": not ProjectMembership.objects.filter(user=request.user).exists(),
+    return render(request, "assessment-catalog.html", {
+        "first": not ProjectMembership.objects.filter(user=request.user, project__organization=request.organization).exists(),
         "project_modules": project_modules,
-        "form": form,
     })
+
+@login_required
+def assessment_catalog_item(request, module_key):
+    # Is this a module the user has access to?
+    project_modules = Module.get_all_startable_projects(request.user, request.organization)
+    module = [m for m in project_modules if m.key == module_key]
+    if len(module) != 1: raise Http404()
+    module = module[0]
+
+    # Add some extra fields for the template.
+    add_assessment_catalog_metadata(module)
+
+    if request.method == "GET":
+        # Show the assessment "app" page.
+
+        return render(request, "assessment-catalog-item.html", {
+            "first": not ProjectMembership.objects.filter(user=request.user, project__organization=request.organization).exists(),
+            "module": module,
+        })
+    
+    else:
+        # Show the form to start the assessment.
+
+        from django.forms import ModelForm, ChoiceField, RadioSelect, MultipleChoiceField, \
+            CheckboxSelectMultiple, CharField, Textarea
+        from django.core.exceptions import ValidationError
+
+        # What Folders can the new Project be added to?
+        folders = list(Folder.get_all_folders_admin_of(request.user, request.organization))
+
+        # Get the list of users who can be invited to the new project.
+        invitable_users = (
+            User.objects
+                # members of this organization
+                .filter(projectmembership__project__organization=request.organization)
+                # distinct because the field ^ creates duplicates
+                .distinct()
+                # but not the user making this request
+                .exclude(id=request.user.id)
+            )
+
+        def validate_list_of_email_addresses(value):
+            # This is a form validator as well as a function to return the split and
+            # normalized addresses.
+            def validate_email(email):
+                import email_validator
+                try:
+                    return email_validator.validate_email(email)["email"]
+                except ValueError as e:
+                    raise ValidationError(email + ": " + str(e))
+            import re
+            return set(
+                validate_email(email)
+                for email in re.split(r"[\s,]+", value)
+                if email != "") # if value is the empty string, we will get one empty value after split
+
+        # The form.
+        class NewProjectForm(ModelForm):
+            class Meta:
+                model = Project
+                fields = ['title']
+                labels = {
+                    'title': 'Give this assessment a unique name'
+                }
+                help_texts = {
+                    'title': 'Give your web property, application or other IT system a descriptive name.',
+                }
+
+            if len(folders) > 0:
+                add_to_folder = ChoiceField(
+                    choices=[("", "Add to New Folder")] + [(f.id, f) for f in folders],
+                    required=False,
+                    label="Add to a folder?")
+
+            if len(invitable_users) > 0:
+                invite_org_users = MultipleChoiceField(label='Select existing users to add to project',
+                    choices=sorted([
+                        (user.id, user.render_context_dict(request.organization)['name'])
+                        for user in invitable_users ],
+                        key = lambda choice : choice[1]),
+                    widget=CheckboxSelectMultiple,
+                    required=False)
+
+            invite_by_email = CharField(label="Invite others to this project",
+                help_text="Separate email addresses by new lines, spaces, or commas.",
+                widget=Textarea(attrs={'rows': '2', 'placeholder': ''}),
+                required=False,
+                validators=[validate_list_of_email_addresses])
+
+        if "firstsubmit" in request.POST:
+            # When coming to this page for the first time, don't do validation since
+            # nothing has been submitted yet.
+            form = NewProjectForm()
+        else:
+            form = NewProjectForm(request.POST)
+            if not form.errors:
+                with transaction.atomic():
+                    # create object
+                    project = form.save(commit=False)
+                    project.organization = request.organization
+                    project.save()
+
+                    # assign root task module from the given module_id
+                    project.set_root_task(module, request.user)
+
+                    # add user as an admin
+                    ProjectMembership.objects.create(
+                        project=project,
+                        user=request.user,
+                        is_admin=True)
+
+                    # add to a folder that the user has privilege to, or a new folder
+                    # (The form field isn't shown if there are no existing folders
+                    # (get returns None), and if the user wants to create a new folder
+                    # the value is the empty string, otherwise it is a string containing
+                    # a primary key (positive integer).)
+                    if form.cleaned_data.get("add_to_folder"):
+                        folder = Folder.objects.get(id=form.cleaned_data["add_to_folder"])
+                    else:
+                        folder = Folder.objects.create(
+                            organization=project.organization,
+                            title=project.title)
+                    folder.projects.add(project)
+
+                    # add other invited users
+                    # (the form field is absent in some cases so must check we have the field)
+                    if 'invite_org_users' in form.cleaned_data:
+                        for user in invitable_users.filter(id__in=form.cleaned_data['invite_org_users']):
+                            ProjectMembership.objects.create(
+                                project=project,
+                                user=user)
+
+                    # send other invitations
+                    for email in validate_list_of_email_addresses(form.cleaned_data['invite_by_email']):
+                        inv = Invitation.objects.create(
+                            organization=request.organization,
+                            from_user=request.user, # sender
+                            from_project=project, # sender
+                            into_project=True, # action
+                            target=project, # action
+                            target_info={ "what": "join-team" }, # action
+                            to_email=email, # recipient
+                            text=""
+                        )
+                        inv.send()
+
+                return HttpResponseRedirect(project.get_absolute_url() + "/start")
+
+        return render(request, "assessment-catalog-item-start.html", {
+            "module": module,
+            "form": form,
+        })
 
 @login_required
 def begin_project(request, project_id):

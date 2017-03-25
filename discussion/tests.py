@@ -50,10 +50,11 @@ class DiscussionTests(SeleniumTest):
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
-        self.click_element("#new-project")
+        self.click_element("#new-assessment")
         self.click_element(".assessment[data-assessment='fixture/simple_project']")
+        self.click_element("#start-assessment")
         self.fill_field("#id_title", "My Simple Project")
-        self.click_element("#assessment_details button.btn-success")
+        self.click_element("#start-assessment")
         var_sleep(1)
         self.assertRegex(self.browser.title, "My Simple Project")
 

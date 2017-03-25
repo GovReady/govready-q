@@ -436,7 +436,9 @@ class Project(models.Model):
         # it can be a string key to specify a module ID from the YAML files
         try:
             M = Module.objects.filter(visible=True)
-            if isinstance(module_id, int):
+            if isinstance(module_id, Module):
+                m = module_id
+            elif isinstance(module_id, int):
                 m = M.get(id=module_id)
             elif isinstance(module_id, str):
                 m = M.get(key=module_id)

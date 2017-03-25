@@ -13,8 +13,11 @@ urlpatterns = [
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),
 
+    # assessment catalog
+    url(r'^assessment-catalog$', views.assessment_catalog),
+    url(r'^assessment-catalog/(?P<module_key>.*)$', views.assessment_catalog_item),
+
     # projects
-    url(r'^new-project$', views.new_project),
     url(r"^projects$", views.project_list),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__export$', views.export_project, name="export_project"),

@@ -92,6 +92,13 @@ class Module(models.Model):
 
         return True
 
+    @staticmethod
+    def get_all_startable_projects(user, org):
+        return set(
+            m
+            for m in Module.objects.filter(visible=True)
+            if m.is_startable_project_by(user, org))
+
     def python_functions(self):
         # Run exec() on the Python source code stored in the spec, and cache the
         # globally defined functions, classes, and variables.

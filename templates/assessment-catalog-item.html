@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{module.title}} - Assessment Catalog
+{% endblock %}
+
+{% block head %}
+<style>
+#start-container {
+  margin-top: 20px;
+  padding: 1em;
+  border: 1px solid #999;
+  background-color: #EEE;
+  border-radius: 15px;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active"><a href="/assessment-catalog">Assessment Catalog</a></li>
+<li class="active">{{module.title|truncatewords:6}}</li>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col-sm-6">
+    <h1>{{module.title}}</h1>
+
+    <div class="body">
+      {{module.long_description|safe}}
+    </div>
+  </div>
+  <div class="col-sm-push-1 col-sm-5">
+    <div id="start-container">
+      <form method="post">
+        {% csrf_token %}
+        <input type=hidden name=firstsubmit value=1>
+        <button id="start-assessment" type="submit" class="btn btn-success"
+          >Start This Assessment &raquo;</a>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

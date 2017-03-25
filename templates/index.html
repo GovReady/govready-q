@@ -44,7 +44,7 @@ Home
 
       {% if request.user.is_authenticated %}
       {% if not has_projects %}
-      <p><a class="btn btn-success btn-lg" role="button" href="/new-project">Begin an Assessment &raquo;</a></p>
+      <p><a class="btn btn-success btn-lg" role="button" href="/assessment-catalog">Begin an Assessment &raquo;</a></p>
       {% else %}
       <p><a class="btn btn-success btn-lg" role="button" href="/projects">View Assessments &raquo;</a></p>
       {% endif %}
