@@ -34,8 +34,9 @@
                 font-weight: bold;
             }
             #context-bar {
-               background-color: rgb(248,248,248);
+               background-color: rgb(242,242,242);
                padding: 14px 0 10px 0;
+               border: 1px solid rgb(207,207,207);
             }
               #context-bar .breadcrumb {
                 margin: 0; padding: 0; background: none;
@@ -48,6 +49,10 @@
             .glyphicon-globe { color: #888; }
             .glyphicon-plus { color: #FFF; }
             .btn { white-space: normal; font-size: inherit; }
+            footer { margin-top:60px;
+              font-size: .75em;
+              color: #888;
+            }
         </style>
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
         <link rel="stylesheet" href="{% static "vendor/fontawesome/css/font-awesome.min.css" %}">
@@ -241,12 +246,13 @@
       {% endblock %}
       </div>
 
-      <hr>
+      <!-- <hr> -->
       <footer>
         <div class="container">
           <div class="row">
             <div class="col-sm-12">
-              <p class="pull-right">&copy; GovReady {% now "Y" %}</p>
+              <hr>
+              <p class="pull-left">&copy; GovReady {% now "Y" %}</p>
             </div>
           </div>
         </div>

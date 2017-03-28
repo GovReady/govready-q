@@ -1,11 +1,14 @@
 body {
-    background-color: #EEE;
+    background-color: rgb(249,250,252);
 }
 
 
 #focus-area-wrapper {
-  border: 1px solid #CCC;
-  border-radius: 10px;
+  border: 1px solid #DDD;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
   padding: 1.5em;
   background-color: white;
 }
