@@ -29,7 +29,7 @@
                 font-size: 16px;
             }
             .navbar-brand { padding-top: 7px; }
-            .navbar-brand img { width: 153px; display: inline-block; }
+            .navbar-brand img { height: 36px; display: inline-block; padding-top: 4px; }
             .navbar .notification.unread a span {
                 font-weight: bold;
             }
@@ -78,9 +78,25 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="/">
-            <img alt="GovReady Q logo" src="{% static "img/brand/navbar-logo.png" %}">
-            <span style="position: relative; top: -4px; color: #7ee599; font-size: 12px; font-weight: bold;">BETA</span>
+              {% if request.organization  %}
+                {% with logo=request.organization.get_logo %}
+                  {% if logo %}
+                    <img src="{{logo.url}}" height="36" alt="Organization Logo"
+                              style="margin-top: -4px; margin-right: .5em;">
+                  {% else %}
+                  <span class="glyphicon glyphicon-globe"></span>
+                  {% endif %}
+                {% endwith %}
+              {% endif %}
           </a>
+        </div>
+        <div class="collapse navbar-collapse pull-left" style="color: white; padding-top:8px;">
+            {% if request.organization  %}
+                <a href="/projects" style="color: white; font-size: 1.3em; font-weight: bold;">
+                  {{request.organization.name}}</a>
+              {% else %}
+                {{request.get_host}}
+              {% endif %}
         </div>
 
         <div id="navbar-collapse-target" class="collapse navbar-collapse pull-right">
@@ -94,13 +110,7 @@
             <li class="dropdown">
 
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                {% with picture=request.organization.get_logo %}
-                  {% if picture %}
-                    <img src="{{picture.url}}" height="30" alt="Profile Picture"
-                      style="margin: -5px 5px;">
-                  {% endif %}
-                {% endwith %}
-                {{request.organization.name|truncatewords:5}}
+                MENU
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
@@ -191,23 +201,6 @@
     </div>
 
     <ol class="breadcrumb">
-      <li>
-      {# The login page is accessible to unauthenticated users, in which case request.organization is not set. #}
-      {% if request.organization  %}
-        {% with logo=request.organization.get_logo %}
-          {% if logo %}
-            <img src="{{logo.url}}" height="36" alt="Organization Logo"
-                      style="margin-top: -4px; margin-right: .5em;">
-          {% else %}
-          <span class="glyphicon glyphicon-globe"></span>
-          {% endif %}
-        {% endwith %}
-        <a href="/projects" style="color: black; font-size: 1.1em; font-weight: bold;">
-          {{request.organization.name}}</a>
-      {% else %}
-        {{request.get_host}}
-      {% endif %}
-      </li>
       {% block breadcrumbs %}
       {% endblock %}
     </ol> <!-- .breadcrumb -->
@@ -252,7 +245,10 @@
           <div class="row">
             <div class="col-sm-12">
               <hr>
-              <p class="pull-left">&copy; GovReady {% now "Y" %}</p>
+              <div class="row">
+                <div class="col-sm-4"><p class="pull-left">&copy; GovReady {% now "Y" %}</p></div>
+                <div class="col-sm-4"><img alt="GovReady Q logo" src="{% static "img/brand/govready_logo_transparent.png" %}" width="110px;"></div>
+                <div class="col-sm-4"><p class="pull-right">&nbsp;</p></div>
             </div>
           </div>
         </div>
