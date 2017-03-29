@@ -31,7 +31,10 @@ def project_list(request):
     # Collate into folders. Folders are accessible to a user
     # just when they can see a Project within it, so we go
     # backwards from Projects to Folders.
-    folders = list(Folder.objects.filter(projects__in=projects).distinct())
+    folders = list(
+        (Folder.objects.filter(projects__in=projects)
+            | Folder.objects.filter(admin_users=request.user))
+          .distinct())
 
     for folder in folders:
         # Set an attribute on the Folder with a list of
@@ -423,7 +426,21 @@ def project(request, project_id):
         "action_buttons": action_buttons,
     })
 
+
+@login_required
+def new_folder(request):
+    if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
+    f = Folder.objects.create(
+        organization=request.organization,
+        title=request.POST.get("title") or "New Folder",
+    )
+    f.admin_users.add(request.user)
+    return JsonResponse({ "status": "ok", "id": f.id, "title": f.title })
+
+@login_required
 def rename_folder(request):
+    if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
+
     # Get the folder.
     folder = get_object_or_404(Folder, id=request.POST.get("folder"))
 
@@ -434,6 +451,24 @@ def rename_folder(request):
     # Update.
     folder.title = request.POST.get("title")
     folder.save()
+    return JsonResponse({ "status": "ok" })
+
+
+@login_required
+def delete_folder(request):
+    if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
+
+    # Get the folder.
+    folder = get_object_or_404(Folder, id=request.POST.get("folder"))
+
+    # Validate that the user can rename it.
+    if request.user not in folder.get_admins():
+        return JsonResponse({ "status": "error", "message": "Not authorized." })
+    if folder.projects.count() > 0:
+        return JsonResponse({ "status": "error", "message": "The folder is not empty." })
+
+    # Delete.
+    folder.delete()
     return JsonResponse({ "status": "ok" })
 
 def project_admin_login_post_required(f):

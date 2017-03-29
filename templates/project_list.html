@@ -17,14 +17,14 @@ Home
   .folder .glyphicon {
     margin-right: 10px;
   }
-  .folder .rename_folder {
-    margin: 0 1em;
+  .folder h2 .action {
+    margin-left: 1em;
     color: #777;
     cursor: pointer;
     font-size: 13px;
     display: none;
   }
-    .folder h2:hover .rename_folder {
+    .folder h2:hover .action {
       display: inline-block;
     }
   h2 { font-size: 115%; font-weight: bold; margin: 1em 0; }
@@ -61,6 +61,7 @@ Home
 
 {% block body %}
 <div style="float: right; margin-top: 1em">
+  <a id="new-folder" href="#" class="btn btn-default" onclick="new_folder(); return false;"><i class="glyphicon glyphicon-folder-open"></i> New Folder</a>
   <a id="new-assessment" href="/assessment-catalog" class="btn btn-success"><i class="glyphicon glyphicon-play"></i> Start Assessment</a>
 </div>
 
@@ -70,14 +71,19 @@ Home
   <p>Start by beginning your first assessment.</p>
 {% endif %}
 
-<!-- List projects -->
+<div id="folder-list">
+
+<!-- List folders -->
 {% for folder in folders %}
 <div class="folder" data-folder-id="{{folder.id}}">
   <h2>
     <span class="glyphicon glyphicon-folder-open"></span>
     <span class="folder_name">{{folder.title}}</span>
     {% if folder.is_admin %}
-    <span class="rename_folder" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
+    <span class="action" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
+    {% if folder.accessible_projects|length == 0 %}
+      <span class="action" onclick="delete_folder(this);"><span class="glyphicon glyphicon-remove"></span></span>
+    {% endif %}
     {% endif %}
   </h2>
 
@@ -136,11 +142,40 @@ Home
 </div>
 {% endfor %}
 
+</div> <!--/folders-->
+
+<div id="new-folder-template" style="display: none">
+<div class="folder" data-folder-id="">
+  <h2>
+    <span class="glyphicon glyphicon-folder-open"></span>
+    <span class="folder_name"></span>
+    <span class="action" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
+    <span class="action" onclick="delete_folder(this);"><span class="glyphicon glyphicon-remove"></span></span>
+  </h2>
+</div>
+</div>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
+function new_folder() {
+  ajax_with_indicator({
+   url: '{% url "new_folder" %}',
+   method: "POST",
+   data: {
+    // could add title: later
+   },
+   success: function(res) {
+    var node = $('#new-folder-template > div').clone();
+    node.data("folder-id", res.id);
+    node.find("h2 .folder_name").text(res.title);
+    node.hide();
+    $('#folder-list').prepend(node);
+    node.slideDown();
+   }
+  });
+}
 function rename_folder(elem) {
   var folder = $(elem).parents(".folder");
   var folder_id = folder.data("folder-id");
@@ -156,6 +191,20 @@ function rename_folder(elem) {
    },
    success: function() {
      folder_name.text(new_title);
+   }
+  });
+}
+function delete_folder(elem) {
+  var folder = $(elem).parents(".folder");
+  var folder_id = folder.data("folder-id");
+  ajax_with_indicator({
+   url: '{% url "delete_folder" %}',
+   method: "POST",
+   data: {
+    folder: folder_id
+   },
+   success: function() {
+     folder.slideUp(function() { folder.remove(); });
    }
   });
 }

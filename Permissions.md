@@ -66,10 +66,12 @@ Folders
 
 A Folder is a collection of one or more Projects (see below) within the same Organization.
 
-Folder permissions are based on Project permissions:
+Folder permissions are based in part on Project permissions:
 
 * A user can see that a Project is a part of a Folder if the user has *read* access on the Project.
-* A user can add Projects to a Folder or rename a Folder if the user is an _administrator_ of any Project within the Folder. These users may not be able to see all Projects within the folder if they do not have *read* access to those Projects, but they will be told how many Projects they can't see in the Folder.
+* A user can add Projects to a Folder or rename a Folder if the user is an _administrator_ of any Project within the Folder *or* is an _administrator_ of the Folder itself. These users may not be able to see all Projects within the folder if they do not have *read* access to those Projects, but they will be told how many Projects they can't see in the Folder.
+
+There is no separate "read" permission on a Folder. A Folder can be seen just when a user has *read* access on a Project within it or is an _administrator_ of the Folder itself.
 
 Projects
 --------

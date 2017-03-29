@@ -211,7 +211,8 @@ class Folder(models.Model):
 
     title = models.CharField(max_length=256, help_text="The title of this Project.")
 
-    projects = models.ManyToManyField("Project", related_name="contained_in_folders", help_text="The Projects that are listed within this Folder.")
+    admin_users = models.ManyToManyField(User, blank=True, related_name="admin_of_folders", help_text="Users who have admin privs to the folder besides those who are admins of projects within the folder.")
+    projects = models.ManyToManyField("Project", blank=True, related_name="contained_in_folders", help_text="The Projects that are listed within this Folder.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -229,7 +230,7 @@ class Folder(models.Model):
         # Get all of the Users with admin privs on the folder --- which
         # is the set of users that have admin privs on any project within
         # it.
-        ret = User.objects.none()
+        ret = self.admin_users.all()
         for project in self.projects.all():
             ret |= project.get_admins()
         return ret.distinct()
@@ -238,11 +239,14 @@ class Folder(models.Model):
     def get_all_folders_admin_of(user, organization):
         # Get all Folders that this user has privs to rename and add
         # new Projects to.
-        return Folder.objects\
+        return (
+            Folder.objects.filter(admin_users=user)
+            | Folder.objects\
             .filter(
                 projects__organization=organization,
                 projects__members__user=user,
-                projects__members__is_admin=True)\
+                projects__members__is_admin=True))\
+            .filter(organization=organization)\
             .distinct()
 
 class Project(models.Model):

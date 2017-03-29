@@ -115,7 +115,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 class FolderAdmin(admin.ModelAdmin):
     list_display = ('title', 'created')
-    raw_id_fields = ('organization',)
+    raw_id_fields = ('organization','admin_users')
     readonly_fields = ('projects', 'extra')
 
 class ProjectAdmin(admin.ModelAdmin):
