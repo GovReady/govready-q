@@ -117,6 +117,10 @@
 {% endblock %}
 
 {% block breadcrumbs %}
+<li>
+  <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
+  {{project.folder_name}}
+</li>
 <li class="active">
     <span class="glyphicon glyphicon-hdd" style="color: #449d44; margin-right: .25em"></span>
   {{project.title}}

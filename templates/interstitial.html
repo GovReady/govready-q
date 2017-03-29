@@ -14,7 +14,7 @@ h1 { margin-top: 0; }
 
 {% block breadcrumbs %}
   {% for item in breadcrumbs_links %}
-    <li><a href="{{item.link}}">{{item.title}}</a></li>
+    <li>{% if item.link %}<a href="{{item.link}}">{% endif %}{{item.title}}{% if item.link %}</a>{% endif %}</li>
   {% endfor %}
   <li class="active">{{breadcrumbs_last}}</li>
 {% endblock %}

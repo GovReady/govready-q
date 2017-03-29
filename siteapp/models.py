@@ -420,6 +420,15 @@ class Project(models.Model):
 
         return projects
 
+    def folder_name(self):
+        folders = sorted(set(self.contained_in_folders.values_list("title", flat=True)))
+        if len(folders) == 0:
+            return "No Folder"
+        elif len(folders) == 1:
+            return folders[0]
+        else: # weirdly we allow in the db a Project to be in multiple Folders
+            return folders[0] + "+"
+
     def get_open_tasks(self, user):
         # Get all tasks that the user might want to continue working on
         # (except for the project root task).

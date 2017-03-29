@@ -213,7 +213,10 @@ def begin_project(request, project_id):
         return render(request, "interstitial.html", {
             "title": "Starting " + project.title,
             "body": project.root_task.render_field("interstitial"),
-            "breadcrumbs_links": [{ "link": project.get_absolute_url(), "title": project.title }],
+            "breadcrumbs_links": [
+                { "title": project.folder_name() },
+                { "link": project.get_absolute_url(), "title": project.title }
+            ],
             "breadcrumbs_last": "Start",
             "continue_url": project.get_absolute_url(),
             "continue_text": "I\u2019m Ready",
