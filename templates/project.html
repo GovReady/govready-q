@@ -128,11 +128,18 @@
 {% endblock %}
 
 {% block breadcrumbs_right %}
+<div style="margin-top: -4px">
 {% if not project.is_account_project or project.is_deletable %}
-  <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();" style="margin-top: -4px">
+  <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
     <i class="glyphicon glyphicon-wrench"></i> Assessment Settings</a>
   </button>
 {% endif %}
+{% if send_invitation.can_add_invitee_to_team %}
+  <button id="show-project-settings" class="btn btn-sm" onclick="invite_user_into_project()">
+    <i class="glyphicon glyphicon-plus"></i> <i class="glyphicon glyphicon-user"></i></a>
+  </button>
+{% endif %}
+</div>
 {% endblock %}
 
 {% block body %}
