@@ -127,17 +127,6 @@ def assessment_catalog_item(request, module_key):
         # What Folders can the new Project be added to?
         folders = list(Folder.get_all_folders_admin_of(request.user, request.organization))
 
-        # Get the list of users who can be invited to the new project.
-        invitable_users = (
-            User.objects
-                # members of this organization
-                .filter(projectmembership__project__organization=request.organization)
-                # distinct because the field ^ creates duplicates
-                .distinct()
-                # but not the user making this request
-                .exclude(id=request.user.id)
-            )
-
         def validate_list_of_email_addresses(value):
             # This is a form validator as well as a function to return the split and
             # normalized addresses.
@@ -157,34 +146,14 @@ def assessment_catalog_item(request, module_key):
         class NewProjectForm(ModelForm):
             class Meta:
                 model = Project
-                fields = ['title']
-                labels = {
-                    'title': 'Give this assessment a unique name'
-                }
-                help_texts = {
-                    'title': 'Give your web property, application or other IT system a descriptive name.',
-                }
+                fields = []
 
             if len(folders) > 0:
                 add_to_folder = ChoiceField(
-                    choices=[("", "Add to New Folder")] + [(f.id, f) for f in folders],
+                    choices=[(f.id, f) for f in folders] + [("", "Add to New Folder")],
                     required=False,
-                    label="Add to a folder?")
-
-            if len(invitable_users) > 0:
-                invite_org_users = MultipleChoiceField(label='Select existing users to add to project',
-                    choices=sorted([
-                        (user.id, user.render_context_dict(request.organization)['name'])
-                        for user in invitable_users ],
-                        key = lambda choice : choice[1]),
-                    widget=CheckboxSelectMultiple,
-                    required=False)
-
-            invite_by_email = CharField(label="Invite others to this project",
-                help_text="Separate email addresses by new lines, spaces, or commas.",
-                widget=Textarea(attrs={'rows': '2', 'placeholder': ''}),
-                required=False,
-                validators=[validate_list_of_email_addresses])
+                    label="Add this assessment to a folder:",
+                    widget=RadioSelect)
 
         if "firstsubmit" in request.POST:
             # When coming to this page for the first time, don't do validation since
@@ -194,21 +163,7 @@ def assessment_catalog_item(request, module_key):
             form = NewProjectForm(request.POST)
             if not form.errors:
                 with transaction.atomic():
-                    # create object
-                    project = form.save(commit=False)
-                    project.organization = request.organization
-                    project.save()
-
-                    # assign root task module from the given module_id
-                    project.set_root_task(module, request.user)
-
-                    # add user as an admin
-                    ProjectMembership.objects.create(
-                        project=project,
-                        user=request.user,
-                        is_admin=True)
-
-                    # add to a folder that the user has privilege to, or a new folder
+                    # Get or create the Folder the new Project is going into.
                     # (The form field isn't shown if there are no existing folders
                     # (get returns None), and if the user wants to create a new folder
                     # the value is the empty string, otherwise it is a string containing
@@ -217,31 +172,32 @@ def assessment_catalog_item(request, module_key):
                         folder = Folder.objects.get(id=form.cleaned_data["add_to_folder"])
                     else:
                         folder = Folder.objects.create(
-                            organization=project.organization,
-                            title=project.title)
+                            organization=request.organization,
+                            title="New Folder")
+
+                    # create project
+                    project = form.save(commit=False)
+                    project.organization = request.organization
+
+                    # assign a good title
+                    project.title = module.title
+                    projects_in_folder = folder.get_readable_projects(request.user)
+                    existing_project_titles = [p.title for p in projects_in_folder]
+                    ctr = 0
+                    while project.title in existing_project_titles:
+                        ctr += 1
+                        project.title = module.title + " " + str(ctr)
+
+                    # save and add to folder
+                    project.save()
+                    project.set_root_task(module, request.user)
                     folder.projects.add(project)
 
-                    # add other invited users
-                    # (the form field is absent in some cases so must check we have the field)
-                    if 'invite_org_users' in form.cleaned_data:
-                        for user in invitable_users.filter(id__in=form.cleaned_data['invite_org_users']):
-                            ProjectMembership.objects.create(
-                                project=project,
-                                user=user)
-
-                    # send other invitations
-                    for email in validate_list_of_email_addresses(form.cleaned_data['invite_by_email']):
-                        inv = Invitation.objects.create(
-                            organization=request.organization,
-                            from_user=request.user, # sender
-                            from_project=project, # sender
-                            into_project=True, # action
-                            target=project, # action
-                            target_info={ "what": "join-team" }, # action
-                            to_email=email, # recipient
-                            text=""
-                        )
-                        inv.send()
+                    # add user as an admin
+                    ProjectMembership.objects.create(
+                        project=project,
+                        user=request.user,
+                        is_admin=True)
 
                 return HttpResponseRedirect(project.get_absolute_url() + "/start")
 

@@ -249,6 +249,11 @@ class Folder(models.Model):
             .filter(organization=organization)\
             .distinct()
 
+    def get_readable_projects(self, user):
+        # Get all of the Projects within this Folder that the user can see.
+        # TODO: This is not very efficient?
+        return set(self.projects.all()) & set(Project.get_projects_with_read_priv(user, self.organization))
+
 class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
 
