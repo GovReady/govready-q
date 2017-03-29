@@ -357,10 +357,10 @@
               </div>
             {% endif %}
 
-
       {% if project.is_deletable and is_admin %}
-        <h3>Caution!</h3>
-              <button class="btn btn-danger" onclick="return delete_project();">Delete Assessment</button> 
+        <h3>Assessment Details</h3>
+          <p><button class="btn btn-default" onclick="return rename_project();">Change Assessment Title</button></p>
+          <p><button class="btn btn-danger" onclick="return delete_project();">Delete Assessment</button></p>
 
         <h3>Share Data</h3>
               {# export #}
@@ -473,6 +473,22 @@ function open_tab_from_url_fragment() {
     if (tab === 'document-1')
       window.location.hash = '#/site-list';
   }
+}
+
+function rename_project() {
+  var new_title = prompt("Rename this assessment?", "{{project.title|escapejs}}");
+  if (!new_title || new_title == "{{project.title|escapejs}}") return;
+  ajax_with_indicator({
+   url: '{% url "rename_project" project.id %}',
+   method: "POST",
+   data: {
+    title: new_title
+   },
+   keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the reload
+   success: function() {
+     window.location.reload();
+   }
+  });
 }
 
 function delete_project() {

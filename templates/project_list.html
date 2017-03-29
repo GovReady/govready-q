@@ -17,14 +17,14 @@ Home
   .folder .glyphicon {
     margin-right: 10px;
   }
-  .folder h2 .action {
+  .action {
     margin-left: 1em;
     color: #777;
     cursor: pointer;
     font-size: 13px;
     display: none;
   }
-    .folder h2:hover .action {
+    *:hover > .action {
       display: inline-block;
     }
   h2 { font-size: 115%; font-weight: bold; margin: 1em 0; }
@@ -88,11 +88,11 @@ Home
   </h2>
 
   {% for project in folder.accessible_projects %}
-  <div class="project">
+  <div class="project" data-project-id="{{project.id}}">
   <h3>
   <a href="{{project.get_absolute_url}}">
     <span class="glyphicon glyphicon-list-alt"></span>
-    <span>{{project.title}}</span>
+    <span class="project_title">{{project.title}}</span>
 
     {# how many open tasks for the user? #}
     {% with project.open_tasks|length as count %}
@@ -100,6 +100,10 @@ Home
         <span class="label label-primary">{{count}}</span>
       {% endif %}
     {% endwith %}
+
+    {% if project.user_is_admin %}
+      <span class="action" onclick="return rename_project(this);"><span class="glyphicon glyphicon-pencil"></span></span>
+    {% endif %}
   </a>
   </h3>
 
@@ -207,6 +211,24 @@ function delete_folder(elem) {
      folder.slideUp(function() { folder.remove(); });
    }
   });
+}
+
+function rename_project(elem) {
+  var project = $(elem).parents(".project");
+  var old_title = project.find('.project_title').text();
+  var new_title = prompt("Rename this assessment?", old_title);
+  if (!new_title || new_title == old_title) return false;
+  ajax_with_indicator({
+   url: 'projects/' + project.data("project-id") + '/__rename',
+   method: "POST",
+   data: {
+    title: new_title
+   },
+   success: function() {
+     project.find('.project_title').text(new_title);
+   }
+  });
+  return false;
 }
 </script>
 {% endblock %}

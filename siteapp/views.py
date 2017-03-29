@@ -23,7 +23,7 @@ def homepage(request):
     })
 
 def project_list(request):
-    # Get the projects.
+    # Get the projects. It handily marks Projects with user_is_admin.
     projects = Project.get_projects_with_read_priv(request.user, request.organization)
     for p in projects:
         p.open_tasks = p.get_open_tasks(request.user) # for the template
@@ -430,6 +430,15 @@ def project_admin_login_post_required(f):
     g = login_required(g)
 
     return g
+
+@project_admin_login_post_required
+def rename_project(request, project):
+    title = request.POST.get("title", "").strip()
+    if not title:
+        return JsonResponse({ "status": "error", "message": "The title cannot be empty." })
+    project.title = title
+    project.save()
+    return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required
 def delete_project(request, project):
