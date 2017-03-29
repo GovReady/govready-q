@@ -199,30 +199,12 @@ def assessment_catalog_item(request, module_key):
                         user=request.user,
                         is_admin=True)
 
-                return HttpResponseRedirect(project.get_absolute_url() + "/start")
+                return HttpResponseRedirect(project.get_absolute_url())
 
         return render(request, "assessment-catalog-item-start.html", {
             "module": module,
             "form": form,
         })
-
-@login_required
-def begin_project(request, project_id):
-    project = get_object_or_404(Project, id=project_id, organization=request.organization)
-    if project.root_task.module.spec.get("interstitial"):
-        return render(request, "interstitial.html", {
-            "title": "Starting " + project.title,
-            "body": project.root_task.render_field("interstitial"),
-            "breadcrumbs_links": [
-                { "title": project.folder_name() },
-                { "link": project.get_absolute_url(), "title": project.title }
-            ],
-            "breadcrumbs_last": "Start",
-            "continue_url": project.get_absolute_url(),
-            "continue_text": "I\u2019m Ready",
-        })
-    else:
-        return HttpResponseRedirect(project.get_absolute_url())
 
 @login_required
 def project(request, project_id):
