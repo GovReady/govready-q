@@ -92,7 +92,6 @@ def assessment_catalog(request):
         add_assessment_catalog_metadata(m)
 
     return render(request, "assessment-catalog.html", {
-        "first": not ProjectMembership.objects.filter(user=request.user, project__organization=request.organization).exists(),
         "project_modules": project_modules,
     })
 

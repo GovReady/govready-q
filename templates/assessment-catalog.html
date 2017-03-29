@@ -42,14 +42,6 @@ Assessment Catalog
 {% block body %}
 <h1>Assessment Catalog</h1>
 
-<div style="margin: 30px 0">
-  {% if first %}
-    <p>Choose your first assessment.</p>
-  {% else %}
-    <p>Begin a new assessment.</p>
-  {% endif %}
-</div>
-
 <div class="row">
   {% for module in project_modules %}
     <div class="col-sm-4">
@@ -61,7 +53,7 @@ Assessment Catalog
           {{module.short_description|safe}}
         </div>
         <a class="btn btn-success" href="/assessment-catalog/{{module.key}}"
-          >Start &raquo;</a>
+          >View &raquo;</a>
       </div>
     </div>
 
