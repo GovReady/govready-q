@@ -75,9 +75,9 @@ thead {
 </div> <!-- /accordion -->
 
 <div style="margin: 2em 0">
-  {% with supermodule=task.is_answer_to_unique %}
-    {% if supermodule and supermodule.task.editor == request.user %}
-      {% if supermodule.task == supermodule.task.project.root_task %}
+  {% with answers_question=task.is_answer_to_unique %}
+    {% if answers_question and answers_question.task.editor == request.user %}
+      {% if answers_question.task == answers_question.task.project.root_task %}
         {% if task.project.is_account_project %}
           {# there is nothing else in the account settings project #}
           <p><a id="return-to-projects" href="/projects" class="btn btn-success">
@@ -85,14 +85,14 @@ thead {
           </a></p>
         {% else %}
           {# return to project #}
-          <p><a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{supermodule.question.spec.tab|slugify}}/{{supermodule.question.spec.group|slugify}}/{{supermodule.question.key|slugify}}/{{task.id}}" class="btn btn-success">
+          <p><a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{answers_question.question.spec.tab|slugify}}/{{answers_question.question.spec.group|slugify}}/{{answers_question.question.key|slugify}}/{{task.id}}" class="btn btn-success">
             Continue with other modules in {{task.project.title}} &raquo;
           </a></p>
         {% endif %}
       {% else %}
         {# return to non-project parent task #}
-        <p><a id="return-to-supertask" href="{{supermodule.task.get_absolute_url}}" class="btn btn-success">
-          Continue Answering {{supermodule.task.title}} &raquo;
+        <p><a id="return-to-supertask" href="{{answers_question.task.get_absolute_url}}" class="btn btn-success">
+          Continue Answering {{answers_question.task.title}} &raquo;
         </a></p>
       {% endif %}
     {% else %}
