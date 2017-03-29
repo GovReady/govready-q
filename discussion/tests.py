@@ -53,10 +53,9 @@ class DiscussionTests(SeleniumTest):
         self.click_element("#new-assessment")
         self.click_element(".assessment[data-assessment='fixture/simple_project']")
         self.click_element("#start-assessment")
-        self.fill_field("#id_title", "My Simple Project")
         self.click_element("#start-assessment")
         var_sleep(1)
-        self.assertRegex(self.browser.title, "My Simple Project")
+        self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
     def _start_task(self):
         # Assumes _new_project() just finished.

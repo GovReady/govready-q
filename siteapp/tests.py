@@ -182,10 +182,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#new-assessment")
         self.click_element(".assessment[data-assessment='%s']" % module_key)
         self.click_element("#start-assessment")
-        self.fill_field("#id_title", "My Simple Project")
         self.click_element("#start-assessment")
-        var_sleep(.5)
-        self.assertRegex(self.browser.title, "My Simple Project")
+        var_sleep(1)
+        self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
     def _start_task(self):
         # Assumes _new_project() just finished.
@@ -346,7 +345,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#invite-user-to-project") # Re-open the invite box.
 
         do_invitation("test+project@q.govready.com")
-        self.assertRegex(self.browser.title, "My Simple Project") # user is on the project page
+        self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
         self.click_element('#question-simple_module .started-task a') # go to the task page
         self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
         self.assertInNodeText("is editing this module. You cannot make changes to it.", "#auth-status .text-danger")
