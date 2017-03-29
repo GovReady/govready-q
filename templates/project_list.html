@@ -12,7 +12,6 @@ Home
 <style>
 .folder {
   border-top:1px solid rgb(220,220,220);
-  /*border-bottom:1px solid rgb(220,220,220); */
   padding-top: 20px;
   padding-bottom: 40px;
 }
@@ -42,11 +41,7 @@ Home
   color: rgb(90,90,90);
 }
 
-.glyphicon-book { color: #888; }
 .glyphicon-plus { color: #FFF; }
-
-.jumbotron h2 {font-size: 2em; font-weight: normal;}
-.jumbotron {border-bottom: 0.5px solid rgb(220,220,220);}
 
 </style>
 {% endblock %}
@@ -54,35 +49,8 @@ Home
 <!-- Remove contextbar from top of page -->
 {% block contextbar %}{% endblock %}
 
-{% block body-wide %}
-<div class="jumbotron" style="height:160px;border-bottom:0.5px solid:">
-
-  <div class="container" style="min-height: 80%;">
-
-    <div class="row" style="border:0px solid black;margin:0px auto;margin-bottom:30px;">
-      {% with picture=request.organization.get_logo %}
-        <div class="col-md-1" style="border: 0px solid black;">
-          {% if picture %}
-            <img src="{{picture.url}}" class="img-responsive" alt="Profile Picture" style="">
-          {% else %}
-            <span class="glyphicon glyphicon-globe" style="font-size:4em;"></span>
-          {% endif %}
-        </div>
-        <div class="col-md-11"  style="text-align: left; border: 0px solid black;">
-          <h2 style="margin-top:0px;">{{request.organization}} Assessments</h2>
-        </div>
-      {% endwith %}
-    </div>
-
-  </div>
-
-</div><!-- /jumbotron -->
-
-  <div class="container-fluid">
-      <div class="container" style="min-height: 80%; margin-top: 1em;">
-
 {% block body %}
-
+<h1>Assessments</h1>
 
 <div style="text-align: right; margin-bottom: 1em">
   <a id="new-assessment" href="/assessment-catalog" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> New Assessment</a>
@@ -171,22 +139,6 @@ Home
 
 
 {% endblock %}
-
-
-
-      <hr>
-      <footer>
-        <div class="container">
-          <div class="row">
-            <div class="col-sm-12">
-              <p class="pull-right">&copy; GovReady {% now "Y" %}</p>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div> <!-- /container -->
-    {% endblock %}
-
 
 {% block scripts %}
 <script>
