@@ -77,23 +77,34 @@ thead {
 <div style="margin: 2em 0">
   {% with answers_question=task.is_answer_to_unique %}
     {% if answers_question and answers_question.task.editor == request.user %}
-      {% if answers_question.task == answers_question.task.project.root_task %}
-        {% if task.project.is_account_project %}
-          {# there is nothing else in the account settings project #}
-          <p><a id="return-to-projects" href="/projects" class="btn btn-success">
-            Return to Assessments &raquo;
-          </a></p>
-        {% else %}
+      {% if task.project.is_account_project %}
+        {# there is nothing else in the account settings project #}
+        <p><a id="return-to-projects" href="/projects" class="btn btn-success">
+          Return to Assessments &raquo;
+        </a></p>
+      {% else %}
+        {% if answers_question.task == answers_question.task.project.root_task %}
           {# return to project #}
           <p><a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{answers_question.question.spec.tab|slugify}}/{{answers_question.question.spec.group|slugify}}/{{answers_question.question.key|slugify}}/{{task.id}}" class="btn btn-success">
             Continue with other modules in {{task.project.title}} &raquo;
           </a></p>
+        {% else %}
+          {# return to non-project parent task #}
+          <p><a id="return-to-supertask" href="{{answers_question.task.get_absolute_url}}" class="btn btn-success">
+            Continue Answering {{answers_question.task.title}} &raquo;
+          </a></p>
         {% endif %}
-      {% else %}
-        {# return to non-project parent task #}
-        <p><a id="return-to-supertask" href="{{answers_question.task.get_absolute_url}}" class="btn btn-success">
-          Continue Answering {{answers_question.task.title}} &raquo;
-        </a></p>
+        {% if answers_question.question.spec.type == "module-set" %}
+          <form method="post" action="/tasks/start" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="project" value="{{task.project.id}}"/>
+            <input type="hidden" name="question" value="{{answers_question.question.key}}"/>
+            <input type="hidden" name="previous" value="task"/>
+            <a href="#" onclick="$(this).parent('form').submit(); return false;" class="btn btn-success" title="Add Another {{answers_question.question.answer_type_module.title}} to {{answers_question.question.spec.title}}.">
+              Start New {{answers_question.question.answer_type_module.title}} &raquo;
+            </a>
+          </form>
+        {% endif %}
       {% endif %}
     {% else %}
       {# every task, except projects, are now subtasks of other tasks, so this only occurs if a task is a subtask to multiple super-tasks #}
