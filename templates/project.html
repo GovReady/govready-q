@@ -129,7 +129,7 @@
 
 {% block breadcrumbs_right %}
 {% if not project.is_account_project or project.is_deletable %}
-  <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
+  <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();" style="margin-top: -4px">
     <i class="glyphicon glyphicon-wrench"></i> Assessment Settings</a>
   </button>
 {% endif %}
