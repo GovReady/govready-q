@@ -11,18 +11,23 @@ Home
 {% block head %}
 <style>
 .folder {
-  border-top:1px solid rgb(220,220,220);
-  padding-top: 20px;
-  padding-bottom: 40px;
+  border-top: 1px solid rgb(220,220,220);
+  padding: 10px 5px;
 }
+  .folder .glyphicon {
+    margin-right: 10px;
+  }
   .folder .rename_folder {
     margin: 0 1em;
     color: #777;
     cursor: pointer;
     font-size: 13px;
+    display: none;
   }
+    .folder h2:hover .rename_folder {
+      display: inline-block;
+    }
   h2 { font-size: 115%; font-weight: bold; margin: 1em 0; }
-  .folder .project { margin: 1em 0; }
   h3 { font-size: 100%; font-weight: bold; margin: 0; }
   h2 .label, h3 .label { margin-left: .75em; font-size: 12px; }
   .folder .project h2 { margin: 0; }
@@ -31,17 +36,22 @@ Home
   .folder a:hover span.glyphicon { text-decoration: none; }
 
 .project {
-  padding:4px 4px 4px 4px;
-  border-left: 1px solid white;}
-.project:hover{
-  background-color: rgb(250,250,250); 
-  border-left: 1px solid rgb(220,220,220);
-}
+  padding: .75em;
+  }
+  .project:hover{
+    background-color: rgb(240,240,240);
+    border-radius: 8px;
+  }
+  .project h3 a .glyphicon {
+    margin-right: 10px;
+    color: black;
+  }
 .project .small {
   color: rgb(90,90,90);
 }
 
-.glyphicon-plus { color: #FFF; }
+.btn .glyphicon { margin-right: 6px; }
+.btn.btn-success .glyphicon { color: #FFF; }
 
 </style>
 {% endblock %}
@@ -50,11 +60,11 @@ Home
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-<h1>Assessments</h1>
-
-<div style="text-align: right; margin-bottom: 1em">
-  <a id="new-assessment" href="/assessment-catalog" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> New Assessment</a>
+<div style="float: right; margin-top: 1em">
+  <a id="new-assessment" href="/assessment-catalog" class="btn btn-success"><i class="glyphicon glyphicon-play"></i> Start Assessment</a>
 </div>
+
+<h1>Assessments</h1>
 
 {% if folders|length == 0 %}
   <p>Start by beginning your first assessment.</p>
@@ -63,25 +73,19 @@ Home
 <!-- List projects -->
 {% for folder in folders %}
 <div class="folder" data-folder-id="{{folder.id}}">
-  {% if folder.accessible_projects|length != 1 %}
   <h2>
-    <span class="glyphicon glyphicon-folder-open"></span>&nbsp;
+    <span class="glyphicon glyphicon-folder-open"></span>
     <span class="folder_name">{{folder.title}}</span>
     {% if folder.is_admin %}
     <span class="rename_folder" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
     {% endif %}
   </h2>
-  {% endif %}
 
   {% for project in folder.accessible_projects %}
   <div class="project">
-  {% if folder.accessible_projects|length != 1 %}
   <h3>
-  {% else %}
-  <h2>
-  {% endif %}
   <a href="{{project.get_absolute_url}}">
-    <span class="glyphicon glyphicon-hdd" style="color:rgb(19,144,50)"></span>
+    <span class="glyphicon glyphicon-list-alt"></span>
     <span>{{project.title}}</span>
 
     {# how many open tasks for the user? #}
@@ -91,12 +95,7 @@ Home
       {% endif %}
     {% endwith %}
   </a>
-  {% if folder.accessible_projects|length != 1 %}
   </h3>
-  {% else %}
-  </h2>
-  {% endif %}
-
 
   <div class="row">
     <div class="col-md-4">
