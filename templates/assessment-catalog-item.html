@@ -9,9 +9,10 @@
 #start-container {
   margin-top: 20px;
   padding: 1em;
-  border: 1px solid #999;
+  border: 0px solid #999;
   background-color: #FAFAFA;
-  border-radius: 15px;
+  /*border-radius: 15px;*/
+  text-align: center;
 }
 </style>
 {% endblock %}
@@ -23,21 +24,22 @@
 
 {% block body %}
 <div class="row">
-  <div class="col-sm-6">
+  <div class="col-sm-10">
     <h1>{{module.title}}</h1>
 
     <div class="body">
       {{module.long_description|safe}}
     </div>
   </div>
-  <div class="col-sm-push-1 col-sm-5">
+  <div class="col-sm-2">
     <div id="start-container">
       <form method="post">
         {% csrf_token %}
         <input type=hidden name=firstsubmit value=1>
         <button id="start-assessment" type="submit" class="btn btn-success"
-          >Start This Assessment &raquo;</a>
+          >Start This Assessment &raquo;</button>
       </form>
+      <br /><a href="/assessment-catalog">return to catalog</a>
     </div>
   </div>
 </div>
