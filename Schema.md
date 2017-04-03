@@ -83,7 +83,7 @@ Modules whose type is `project` can also have some additional fields, e.g.:
 
 	access: private
 
-`access`: Set to `private` if the project should only be offered to organizations with special permission. The default is `public`. To grant an organization access, use the Django admin to edit the Organization and add the module's full ID to the allowed modules field. The full ID includes the local directory path to the module. If the module is stored in `modules/something/project.yaml` the full ID is `something/project`.
+`access`: Set to `private` if the project should only be offered to organizations with special permission. The default is `public`. See the main [README.md](README.md) for how the application grants access to private modules.
 
 #### Question Fields
 

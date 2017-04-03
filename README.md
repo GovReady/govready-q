@@ -96,20 +96,28 @@ To update, run:
 
 # Adding and Accessing Module Content
 
-GovReady Q content is stored in YAML files. Built-in modules are stored inside the `modules` directory in this repository. Other modules are stored in other repositories. 
+GovReady Q content is stored in YAML files. Built-in modules are stored inside the `modules` directory in this repository. Other modules are stored in other repositories. The Django admin site is used to configure the sources of module YAML cotent, and these YAML files are imported into the Django application's database through a management command. Private modules are also made available to organizations through the Django admin site.
+
+## Writing Module Content
 
 See [Schema.md](Schema.md) for documentation on writing question and answer modules.
 
-Your Q deployment can pull module content from local directories and Github by creating Module Sources in the Django admin at [/admin/guidedmodules/modulesource/](http://localhost:8000/admin/guidedmodules/modulesource/).
+## Loading Module Content
 
-Each source binds a namespace in your local deployment to a repository to fetch modules from. All deployments must have a Module Source that maps the `system` namespace bound to the modules at the local path `modules/system` using the following `Spec` string:
+Your Q deployment can pull module content from various sources --- including local directories and git repositories --- by creating Module Sources in the Django admin site at [/admin/guidedmodules/modulesource/](http://localhost:8000/admin/guidedmodules/modulesource/). Each Module Source specifies a source of module YAML files.
+
+Each Module Source has a `Spec` field which contains a JSON definition of how to fetch module YAML files. The default Module Source for system modules uses the following Spec string:
 
 	{
-	  "path":"modules/system",
 	  "type":"local"
+	  "path":"modules/system",
 	}
 
-This Module Source is created during the first run of `manage.py migrate`.
+This Spec string says to find module YAML files on the local file system at the path `modules/system`, which is relative to the root of this git repository. (An absolute local path could be used instead.)
+
+In addition to the Spec string, each Module Source has a namespace. Each source binds a namespace in your local deployment to a source of modules.
+
+All deployments must have a Module Source that binds the `system` namespace to the modules at the local path `modules/system`, as in the Spec string above. This Module Source is created during the first run of `manage.py migrate` for you.
 
 The `Spec` field of Module Sources can be of these types (explanation follows below):
 
@@ -136,17 +144,27 @@ The `Spec` field of Module Sources can be of these types (explanation follows be
 		"auth": { "user": "...", "pw": "..." }
 	}
 
-* `"type": "local"` to load modules from a directory on the local file system. Specify a relative or absolute path in `path`.
+Use `"type": "local"` to load modules from a directory on the local file system. Specify a relative (to working directory when the Django site is launched) or absolute path in `path`.
 
 There are two ways to pull modules from Github:
 
-* `"type": "git"`, where you specify the `https:...` or `git@...` URL of a git repository in the `url` field and, optionally, a branch name. If the repository requires authentication, you can put an SSH private key such as a [Github deploy key](https://developer.github.com/guides/managing-deploy-keys/) in the `ssh_key` field (paste the whole key using `\n` for newlines, not a filename; `cat .ssh/id_rsa | jq -Rs` will help you turn the SSH key into a JSON string).
+Use `"type": "git"`, where you specify the `https:...` or `git@...` URL of a git repository in the `url` field and, optionally, a branch name. If the repository requires authentication, you can put an SSH private key such as a [Github deploy key](https://developer.github.com/guides/managing-deploy-keys/) in the `ssh_key` field (paste the whole key using `\n` for newlines, not a filename; `cat .ssh/id_rsa | jq -Rs` will help you turn the SSH key into a JSON string).
 
-* `"type": "github"`, which uses the Github API and user credentials such as a Github username and a [personal access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/). Since the `github` method requires user credentials, it should be avoided for production deployments in favor of the `git` method with a deploy key if necessary.
+Use `"type": "github"`, which uses the Github API and user credentials such as a Github username and a [personal access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/). Since the `github` method requires user credentials, it should be avoided for production deployments in favor of the `git` method with a deploy key if necessary.
 
 Both git methods have an optional `path` field which lets you choose a directory _within_ the git repository to scan for module YAML files.
 
 After making changes to Module Sources, run `python3 manage.py load_modules` to pull the modules from the sources into the database.
+
+## Granting Access to Private Modules
+
+"Private Modules" are project modules with `access: private` specified in its YAML file. See [Schema.md](Schema.md) for details on setting the `access` flag in the YAML file.
+
+These modules are removed from the page that starts a new assessment, preventing users from starting new assessments marked as hidden. (If a user has already started an assessment, making it private does not prevent them from accessing and continuing their in-progress work.)
+
+To grant an Organization's users access to a private module, so that they can see it and start it on the new assessment page, use the Django admin site to edit the Organization. Add the module's full ID to the allowed modules field (which is a list of module IDs separated by newlines). The full ID includes the module's namespace, any subdirectories it is contained in within its source, and then the module's ID.
+
+Example: A Module Source binds the namespace `mymodules` to a Github repository using `"path": "modules"` in the Spec string. The repository contains a module YAML file at `modules/fisma/project.yaml`. This module's full ID to be listed in the allowed modules field is `mymodules/fisma/project`.
 
 # Testing and Generating Screenshots
 
