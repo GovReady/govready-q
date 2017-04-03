@@ -71,8 +71,8 @@ label:hover .onhover { display: inline; }
 </div>
 
 <div class="row">
-<div class="col-md-2 hidden-xs hidden-sm">
-  <div id="question-history-context">
+<div class="col-md-3 hidden-xs hidden-sm">
+  <div id="question-history-context" style="border:0px solid black; ; height:600px; overflow-y:scroll; padding:4px;">
       <ul>
       {% if context %}
         <p>Progress:</p>
@@ -91,7 +91,7 @@ label:hover .onhover { display: inline; }
     </div> <!-- /question-history-context -->
 </div>
 
-<div class="col-md-10">
+<div class="col-md-9">
   <div id="focus-area-wrapper">
 
     {% if source_invitation %}
