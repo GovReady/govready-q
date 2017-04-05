@@ -5,7 +5,7 @@ from django.conf import settings
 from guidedmodules.models import ModuleSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task
 from guidedmodules.module_logic import render_content
 
-import sys, json
+import sys, json, re
 
 class ValidationError(Exception):
     def __init__(self, file_name, scope, message):
@@ -672,6 +672,11 @@ class Command(BaseCommand):
         # clone dict before updating
         spec = dict(spec)
 
+        # Since question IDs become Jinja2 identifiers, they must be valid
+        # Jinaj2 identifiers. http://jinja.pocoo.org/docs/2.9/api/#notes-on-identifiers
+        if not re.match("^[a-zA-Z_][a-zA-Z0-9_]*$", spec["id"]):
+            invalid("The question ID may only contain ASCII letters, numbers, and underscores, and the first character must be a letter or underscore.")
+            
         # Perform type conversions, validation, and fill in some defaults in the YAML
         # schema so that the values are ready to use in the database.
         if spec.get("type") == "multiple-choice":
