@@ -12,5 +12,6 @@ urlpatterns = [
     url(r'^_discussion_comment_react', views.save_reaction, name="discussion-comment-react"),
     url(r'^_discussion_comment_attachments', views.create_attachments, name="discussion-comment-create-attachments"),
     url(r'^_discussion_poll', views.poll_for_events, name="discussion_poll_for_events"),
+    url(r'^attachment/(\d+)', views.download_attachment, name="discussion-attachment"),
 ]
 

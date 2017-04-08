@@ -112,9 +112,9 @@ def create_attachments(request):
     # Get the Discussion these attachments will be associated with.
     discussion = get_object_or_404(Discussion, id=request.POST['discussion'])
     if not discussion.is_participant(request.user):
-        raise Http404()
+        return HttpResponseForbidden()
 
-    # The user is uploading one or mor files to attach to a comment. The comment has
+    # The user is uploading one or more files to attach to a comment. The comment has
     # not yet been saved, so it is linked with the Discussion and User for now.
     ret = { }
     for fn in request.FILES:
@@ -129,7 +129,7 @@ def create_attachments(request):
         # the attachment is an image or not.
         from dbstorage.models import StoredFile
         sf = StoredFile.objects.get(path=attachment.file.name)
-        is_image = sf.mime_type.startswith("image/")
+        is_image = sf.mime_type and sf.mime_type.startswith("image/")
 
         ret[fn] = {
             "id": attachment.id,
@@ -140,3 +140,14 @@ def create_attachments(request):
     # Return a mapping from file field names in the upload to Attachment infos.
     return JsonResponse(ret)
 
+def download_attachment(request, attachment_id):
+    try:
+        attachment = get_object_or_404(Attachment, id=attachment_id)
+    except ValueError:
+        raise Http404()
+    if not attachment.discussion.is_participant(request.user):
+        return HttpResponseForbidden()
+
+    from dbstorage.views import get_file_content_view
+    return get_file_content_view(request, attachment.file.name)
+    

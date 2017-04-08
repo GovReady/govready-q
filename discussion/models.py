@@ -2,6 +2,7 @@ from django.db import models, transaction
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from django.urls import reverse
 from django.conf import settings
 
 import re
@@ -333,15 +334,10 @@ def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
             lambda text : "**" + text + "**")
 
     # Rewrite attachment:### URLs.
-    def get_attachment_url(attachment_id):
-        try:
-            attachment = Attachment.objects.filter(id=int(attachment_id.group(1)), comment=comment).first()
-            if attachment:
-                return attachment.get_absolute_url()
-        except ValueError:
-            pass
-        return attachment_id.group(0)
-    text = re.sub("(?<=\()attachment:(\d+)(?=\))", get_attachment_url, text)
+    if comment is not None:
+        def get_attachment_url(attachment_id):
+            return reverse("discussion-attachment", args=[attachment_id.group(1)])
+        text = re.sub("(?<=\()attachment:(\d+)(?=\))", get_attachment_url, text)
 
     # Render to HTML as if CommonMark.
     import CommonMark
