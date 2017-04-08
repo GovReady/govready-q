@@ -14,15 +14,55 @@ def makekwargs(request, prefix=""):
 
 @login_required
 @transaction.atomic
-def submit_discussion_comment(request):
+def update_discussion_comment_draft(request):
     # Get the discussion object.
     discussion = get_object_or_404(Discussion, id=request.POST['discussion'], **makekwargs(request))
 
-    # Post the reply.
+    # Get the text.
+    text = request.POST.get("text", "").rstrip()
+
+    comment = None
+    if request.POST.get('draft', '') != '':
+        # Update existing draft. It's possible the client-side draft
+        # ID migth become stale if another browser submits the same
+        # draft.
+        try:
+            comment = discussion.comments.get(id=request.POST['draft'], user=request.user, draft=True)
+        except:
+            pass
+        else:
+            comment.text = text
+            comment.save()
+
+    if comment is None:
+        # Create a new draft.
+        comment = discussion.post_comment(
+            request.user, text, "web",
+            is_draft=True)
+
+    # Return the comment's id and rendered text for displaying a preview.
+    return JsonResponse(comment.render_context_dict(request.user))
+
+
+@login_required
+@transaction.atomic
+def submit_discussion_comment(request):
+    # Get the discussion object.
+    discussion = get_object_or_404(Discussion, id=request.POST['discussion'], **makekwargs(request))
+    if not discussion.is_participant(request.user):
+        return HttpResponseForbidden()
+
+    # Get the Comment draft.
     try:
-        comment = discussion.post_comment(request.user, request.POST.get("text", ""), "web")
-    except ValueError as e:
-        return JsonResponse({ "status": "error", "message": str(e) })
+        comment = discussion.comments.get(id=request.POST['draft'], user=request.user)
+    except:
+        return JsonResponse({ "status": "error", "message": "No draft." })
+
+    if not comment.draft:
+        return JsonResponse({ "status": "error", "message": "It looks like the comment was already submitted from another browser session." })
+
+    # Publish it.
+    comment.publish()
 
     # Return the comment for display.
     return JsonResponse(comment.render_context_dict(request.user))
@@ -109,17 +149,22 @@ def poll_for_events(request):
 @login_required
 @transaction.atomic
 def create_attachments(request):
-    # Get the Discussion these attachments will be associated with.
+    # Get the Discussion.
     discussion = get_object_or_404(Discussion, id=request.POST['discussion'])
     if not discussion.is_participant(request.user):
         return HttpResponseForbidden()
 
-    # The user is uploading one or more files to attach to a comment. The comment has
-    # not yet been saved, so it is linked with the Discussion and User for now.
+    # Get the Comment draft.
+    try:
+        comment = discussion.comments.get(id=request.POST['draft'], user=request.user, draft=True)
+    except:
+        return JsonResponse({ "status": "error", "message": "No draft." })
+
+    # The user is uploading one or more files.
     ret = { }
     for fn in request.FILES:
         attachment = Attachment.objects.create(
-            discussion=discussion,
+            comment=comment,
             user=request.user,
             file=request.FILES[fn]
         )
@@ -145,7 +190,7 @@ def download_attachment(request, attachment_id):
         attachment = get_object_or_404(Attachment, id=attachment_id)
     except ValueError:
         raise Http404()
-    if not attachment.discussion.is_participant(request.user):
+    if not attachment.comment.discussion.is_participant(request.user):
         return HttpResponseForbidden()
 
     from dbstorage.views import get_file_content_view

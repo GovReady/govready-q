@@ -76,9 +76,17 @@ class Discussion(models.Model):
             comment.render_context_dict(user)
             for comment in self.comments.filter(
                 id__gt=comments_since,
-                deleted=False)
+                deleted=False,
+                draft=False)
         ])
         events.sort(key = lambda item : item["date_posix"])
+
+        # Is there a draft in progress?
+        draft = None
+        if user:
+            draft = self.comments.filter(user=user, draft=True).first()
+            if draft:
+                draft = draft.render_context_dict(user)
 
         # Get the initial state of the discussion to populate the HTML.
         return {
@@ -92,62 +100,36 @@ class Discussion(models.Model):
             "guests": [ user.render_context_dict(self.organization) for user in self.guests.all() ],
             "events": events,
             "autocomplete": self.get_autocompletes(user),
+            "draft": draft,
         }
 
     ##
 
-    def post_comment(self, user, text, post_method):
+    def post_comment(self, user, text, post_method, is_draft=False):
         # Does user have write privs?
         if not self.is_participant(user):
             raise ValueError("No access.")
 
-        # Validate.
-        text = text.strip()
-        if text == "":
-            raise ValueError("No comment entered.")
+        # Validate. Allow empty drafts so attachments can attach to them.
+        if not is_draft:
+            text = text.rstrip() # don't lstrip because markdown is sensitive to initial whitespace
+            if text.strip() == "":
+                raise ValueError("No comment entered.")
 
         # Save comment.
         comment = Comment.objects.create(
             discussion=self,
             user=user,
+            draft=is_draft,
             text=text,
             extra={
                 "post_method": post_method,
             }
             )
 
-        # Finish attachments. Since attachments are created before comments
-        # are saved, they must be associated with the Comment once it is saved.
-        for attachment_id in re.findall("\(attachment:(\d+)\)", text):
-            attachment = Attachment.objects.filter(id=attachment_id, user=user).first()
-            if attachment:
-                # Silently ignore any invalid attachment IDs.
-                attachment.comment = comment
-                attachment.save()
-
-        # Issue a notification to anyone watching the discussion
-        # via discussion.get_notification_watchers() except to
-        # anyone @-mentioned because they'll get a different
-        # notification.
-        from siteapp.views import issue_notification
-        _, mentioned_users = match_autocompletes(text, self.get_autocompletes(user))
-        issue_notification(
-            user,
-            "commented on",
-            self,
-            recipients=self.get_notification_watchers() - mentioned_users,
-            description=text,
-            comment_id=comment.id)
-
-        # Issue a notification to anyone @-mentioned in the comment.
-        # Compile a big regex for all usernames.
-        issue_notification(
-            user,
-            "mentioned you in a comment on",
-            self,
-            recipients=mentioned_users,
-            description=text,
-            comment_id=comment.id)
+        # If not a draft, issue notifications.
+        if not is_draft:
+            comment.issue_notifications()
 
         return comment
 
@@ -221,6 +203,7 @@ class Comment(models.Model):
     emojis = models.CharField(max_length=256, blank=True, null=True, help_text="A comma-separated list of emoji names that the user is reacting with.")
     text = models.TextField(blank=True, help_text="The text of the user's comment.")
     proposed_answer = JSONField(blank=True, null=True, help_text="A proposed answer to the question that this discussion is about.")
+    draft = models.BooleanField(default=False, help_text="Set to true if the comment is a draft.")
     deleted = models.BooleanField(default=False, help_text="Set to true if the comment has been 'deleted'.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -232,8 +215,10 @@ class Comment(models.Model):
             ('discussion', 'user'),
         ]
 
+    # auth
+
     def can_see(self, user):
-        if self.deleted:
+        if self.deleted or self.draft:
             return False
         return self.discussion.is_participant(user)
 
@@ -251,6 +236,39 @@ class Comment(models.Model):
     def can_delete(self, user):
         return self.can_edit(user)
 
+    # draft / publish / update
+
+    def publish(self):
+        if not self.draft: raise Exception("I'm not a draft.")
+        self.draft = False
+        self.save()
+        self.issue_notifications()
+
+    def issue_notifications(self):
+        # Issue a notification to anyone watching the discussion
+        # via discussion.get_notification_watchers() except to
+        # anyone @-mentioned because they'll get a different
+        # notification.
+        if self.draft: raise Exception("I'm still a draft.")
+        from siteapp.views import issue_notification
+        _, mentioned_users = match_autocompletes(self.text, self.discussion.get_autocompletes(self.user))
+        issue_notification(
+            self.user,
+            "commented on",
+            self.discussion,
+            recipients=self.discussion.get_notification_watchers() - mentioned_users,
+            description=self.text,
+            comment_id=self.id)
+
+        # Issue a notification to anyone @-mentioned in the comment.
+        issue_notification(
+            self.user,
+            "mentioned you in a comment on",
+            self.discussion,
+            recipients=mentioned_users,
+            description=self.text,
+            comment_id=self.id)
+
     def push_history(self, field):
         if not isinstance(self.extra, dict):
             self.extra = { }
@@ -259,8 +277,12 @@ class Comment(models.Model):
             "previous-" + field: getattr(self, field),
         })
 
+    # render
+
     def render_context_dict(self, whose_asking):
         if self.deleted:
+            raise ValueError()
+        if self.draft and whose_asking != self.user:
             raise ValueError()
 
         # Render for a notification.
@@ -295,8 +317,8 @@ class Comment(models.Model):
             "emojis": self.emojis.split(",") if self.emojis else None,
         }
 
+
 class Attachment(models.Model):
-    discussion = models.ForeignKey(Discussion, related_name="attachments", help_text="The Discussion that this Attachment is attached to.")
     user = models.ForeignKey(User, help_text="The user uploading this attachment.")
     comment = models.ForeignKey(Comment, blank=True, null=True, related_name="attachments", help_text="The Comment that this Attachment is attached to. Null when the file has been uploaded before the Comment has been saved.")
     file = models.FileField(upload_to='discussion/attachments', help_text="The attached file.")

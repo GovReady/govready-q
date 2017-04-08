@@ -119,7 +119,10 @@
         <label id="discussion-your-comment-label" for="discussion-your-comment">
           ...
         </label>
-        <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder=""></textarea>
+        <div style="position: relative;">
+          <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder=""></textarea>
+          <div id="discussion-your-comment-saved" style="display: none; position: absolute; bottom: 8px; right: 8px; padding: .25em; background-color: rgba(255,255,255,.9); border: 1px solid #DDD; border-radius: .25em;"></div>
+        </div>
         <div id="discussion-your-comment-tips">
           <a href="http://commonmark.org/help/" target="_blank">
             <span><b>**bold**</b></span> <span><i>*italic*</i></span> <span>* list</span> <span>[link](http://to)</span> <span># heading.</span>
@@ -332,6 +335,14 @@ function display_discussion(discussion, is_page_load) {
     }
     $('#discussion .fillin-guests').text(text);
   }
+
+  // show an existing draft and poll for updating the draft
+  if (discussion.draft) {
+    draft_id = discussion.draft.id;
+    draft_saved_text = discussion.draft.text;
+    $('#discussion-your-comment').text(discussion.draft.text);
+  }
+  start_update_draft_poller();
 
   // for polling, what did we last see
   discussion_info.max_comment_id = 0;
@@ -562,45 +573,119 @@ function render_event(item, initial) {
     window.on_discussion_event(item);
 }
 
-function submit_comment(callback) {
-  var text = $('#discussion .comment-input form textarea').val();
-  if (!text) {
-    // execute callback immediately
+function start_update_draft_poller() {
+  // Record the last time of a keypress in the comment box.
+  var last_keypress_time = Date.now();
+  $('#discussion-your-comment').keypress(function() {
+    last_keypress_time = Date.now();
+  })
+
+  // Check at intervals.
+  setInterval(function() {
+    if (is_submitting)
+      return;
+    if (Date.now() - last_keypress_time < 1000)
+      return;
+    update_draft();
+  }, 500);
+}
+
+var draft_id = null;
+var draft_saved_text = null;
+var is_submitting = false;
+function update_draft(force, callback) {
+  var current_text = $('#discussion .comment-input form textarea').val();
+  if ((draft_id && current_text == draft_saved_text)
+      || (!force && !/\S/.test(current_text) && draft_saved_text == null)) {
     if (callback)
       callback();
     return;
   }
 
+  is_submitting = true;
   ajax_with_indicator({
-    url: "{% url 'discussion-comment-create' %}",
+    url: "{% url 'discussion-comment-draft' %}",
     method: "POST",
     data: {
       discussion: discussion_info.id,
-      text: text
+      draft: draft_id,
+      text: current_text
     },
-    controls: $('#discussion .comment-input form').find('textarea, input, button'),
+    controls: $('#discussion .comment-input form').find('button'),
     success: function(c) {
-      // keep the window scrolled such that the input box stays
-      // in the same place -- i.e., the new comment pushes things
-      // up.
-      var y = $('#discussion .comment-input').offset().top - $(window).scrollTop();
+      // Update state.
+      draft_id = c.id;
+      draft_saved_text = current_text;
 
-      // clear text input, trigger events
-      $('#discussion .comment-input form textarea')
-        .val('')
-        .trigger("change");
-
-      // render the comment in the thread
-      render_comment(c)
-
-      // adjust scroll position
-      $(window).scrollTop($('#discussion .comment-input').offset().top - y);
-
+      // Show status in UI.
+      if (!callback) {
+        $('#discussion-your-comment-saved')
+          .text("Draft saved.")
+          .fadeIn('fast');
+        setTimeout(function() {
+          $('#discussion-your-comment-saved').fadeOut()
+        }, 1000);
+      }
+      
       // execute callback
       if (callback)
         callback();
+    },
+    complete: function() {
+      is_submitting = false;
     }
-  })
+  });  
+}
+
+function submit_comment(callback) {
+  var text = $('#discussion .comment-input form textarea').val();
+  if (!/\S/.test(text)) {
+    // The comment is only whitespace. Don't save.
+    // Execute callback immediately.
+    if (callback)
+      callback();
+    return;
+  }
+
+  // First update the draft, then publish the draft.
+  update_draft(true, function() {
+    is_submitting = true;
+    ajax_with_indicator({
+      url: "{% url 'discussion-comment-submit' %}",
+      method: "POST",
+      data: {
+        discussion: discussion_info.id,
+        draft: draft_id
+      },
+      controls: $('#discussion .comment-input form').find('textarea, input, button'),
+      success: function(c) {
+        // keep the window scrolled such that the input box stays
+        // in the same place -- i.e., the new comment pushes things
+        // up.
+        var y = $('#discussion .comment-input').offset().top - $(window).scrollTop();
+
+        // clear text input, trigger events
+        $('#discussion .comment-input form textarea')
+          .val('')
+          .trigger("change");
+        draft_id = null;
+        draft_saved_text = null;
+
+        // render the comment in the thread
+        render_comment(c)
+
+        // adjust scroll position
+        $(window).scrollTop($('#discussion .comment-input').offset().top - y);
+
+        // execute callback
+        if (callback)
+          callback();
+      },
+      complete: function() {
+        is_submitting = false;
+      }
+    })
+  });
 }
 
 function get_comment_from_command_elem(command_elem) {
@@ -734,29 +819,34 @@ function save_emoji_reaction() {
 }
 
 function attach_files(files) {
-  // Create an AJAX request to upload all of the files at once.
-  var data = new FormData();
-  data.append("discussion", discussion_info.id);
-  for (var i = 0; i < files.length; i++)
-    data.append("file" + i, files[i])
-  
-  // Submit the ajax request.
-  ajax_with_indicator({
-    url: "{% url 'discussion-comment-create-attachments' %}",
-    data: data,
-    controls: $('#discussion .comment-input form').find('textarea, input, button'),
-    success: function(res) {
-      // We get back a mapping indicating what was uploaded.
-      Object.keys(res).forEach(function(key) {
-        var attachment = res[key];
-        var ins;
-        if (attachment.is_image)
-          ins = "\n![Uploaded File](attachment:" + attachment.id + ")\n";
-        else
-          ins = " [" + attachment.original_fn.replace(/[\\[\]]/g, "") + "](attachment:" + attachment.id + ") ";
-        $('#discussion-your-comment').insertAtCaret(ins);
-      });
-    }
+  // Update the draft to ensure there is a draft to attach the
+  // attachments to.
+  update_draft(true, function() {
+    // Create an AJAX request to upload all of the files at once.
+    var data = new FormData();
+    data.append("discussion", discussion_info.id);
+    data.append("draft", draft_id);
+    for (var i = 0; i < files.length; i++)
+      data.append("file" + i, files[i])
+    
+    // Submit the ajax request.
+    ajax_with_indicator({
+      url: "{% url 'discussion-comment-create-attachments' %}",
+      data: data,
+      controls: $('#discussion .comment-input form').find('textarea, input, button'),
+      success: function(res) {
+        // We get back a mapping indicating what was uploaded.
+        Object.keys(res).forEach(function(key) {
+          var attachment = res[key];
+          var ins;
+          if (attachment.is_image)
+            ins = "\n![Uploaded File](attachment:" + attachment.id + ")\n";
+          else
+            ins = " [" + attachment.original_fn.replace(/[\\[\]]/g, "") + "](attachment:" + attachment.id + ") ";
+          $('#discussion-your-comment').insertAtCaret(ins);
+        });
+      }
+    });
   });
 }
 
