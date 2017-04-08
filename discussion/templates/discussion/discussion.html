@@ -24,6 +24,16 @@
     cursor: pointer;
   }
 
+  #discussion-your-comment-preview-container {
+    border: 1px solid #DDD;
+    border-radius: .25em;
+    background-color: white;
+    padding: .5em;
+  }
+  #discussion-your-comment-preview-container p:last-child {
+    margin: 0;
+  }
+
 #discussion .comment-thread {
   margin-bottom: 1.5em;
 }
@@ -116,21 +126,28 @@
     </div>
     <div class="comment-input active-discussion-only" style="display: none">
       <form onsubmit="submit_comment(); return false;">
+        <div style="float: right">
+          <a id="preview_comment_toggle" href="#" onclick="preview_comment_toggle(); return false;">Preview</a>
+        </div>
         <label id="discussion-your-comment-label" for="discussion-your-comment">
           ...
         </label>
-        <div style="position: relative;">
-          <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder=""></textarea>
-          <div id="discussion-your-comment-saved" style="display: none; position: absolute; bottom: 8px; right: 8px; padding: .25em; background-color: rgba(255,255,255,.9); border: 1px solid #DDD; border-radius: .25em;"></div>
+        <div id="discussion-your-comment-input-container">
+          <div style="position: relative;">
+            <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder=""></textarea>
+            <div id="discussion-your-comment-saved" style="display: none; position: absolute; bottom: 8px; right: 8px; padding: .25em; background-color: rgba(255,255,255,.9); border: 1px solid #DDD; border-radius: .25em;"></div>
+          </div>
+          <div id="discussion-your-comment-tips">
+            <a href="http://commonmark.org/help/" target="_blank">
+              <span><b>**bold**</b></span> <span><i>*italic*</i></span> <span>* list</span> <span>[link](http://to)</span> <span># heading.</span>
+            </a>
+            Attach files by <label for="discussion-attach-file">selecting them</label>.
+           <div style="display: none">
+              <input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" />
+           </div>
+          </div>
         </div>
-        <div id="discussion-your-comment-tips">
-          <a href="http://commonmark.org/help/" target="_blank">
-            <span><b>**bold**</b></span> <span><i>*italic*</i></span> <span>* list</span> <span>[link](http://to)</span> <span># heading.</span>
-          </a>
-          Attach files by <label for="discussion-attach-file">selecting them</label>.
-         <div style="display: none">
-            <input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" />
-         </div>
+        <div id="discussion-your-comment-preview-container" style="display: none;">
         </div>
         <div style="margin-top: 1em; text-align: right">
           {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
@@ -338,8 +355,7 @@ function display_discussion(discussion, is_page_load) {
 
   // show an existing draft and poll for updating the draft
   if (discussion.draft) {
-    draft_id = discussion.draft.id;
-    draft_saved_text = discussion.draft.text;
+    draft_state = discussion.draft;
     $('#discussion-your-comment').text(discussion.draft.text);
   }
   start_update_draft_poller();
@@ -590,13 +606,12 @@ function start_update_draft_poller() {
   }, 500);
 }
 
-var draft_id = null;
-var draft_saved_text = null;
+var draft_state = null;
 var is_submitting = false;
 function update_draft(force, callback) {
   var current_text = $('#discussion .comment-input form textarea').val();
-  if ((draft_id && current_text == draft_saved_text)
-      || (!force && !/\S/.test(current_text) && draft_saved_text == null)) {
+  if ((draft_state && current_text == draft_state.text)
+      || (!force && !/\S/.test(current_text) && draft_state == null)) {
     if (callback)
       callback();
     return;
@@ -608,14 +623,18 @@ function update_draft(force, callback) {
     method: "POST",
     data: {
       discussion: discussion_info.id,
-      draft: draft_id,
+      draft: draft_state ? draft_state.id : null,
       text: current_text
     },
     controls: $('#discussion .comment-input form').find('button'),
     success: function(c) {
       // Update state.
-      draft_id = c.id;
-      draft_saved_text = current_text;
+      draft_state = c;
+
+      // Track the text we submitted, in case there is server-side
+      // sanitization. We need to know what we submitted so we
+      // can know if the textarea has been changed.
+      draft_state.text = current_text;
 
       // Show status in UI.
       if (!callback) {
@@ -655,7 +674,7 @@ function submit_comment(callback) {
       method: "POST",
       data: {
         discussion: discussion_info.id,
-        draft: draft_id
+        draft: draft_state.id
       },
       controls: $('#discussion .comment-input form').find('textarea, input, button'),
       success: function(c) {
@@ -668,8 +687,7 @@ function submit_comment(callback) {
         $('#discussion .comment-input form textarea')
           .val('')
           .trigger("change");
-        draft_id = null;
-        draft_saved_text = null;
+        draft_state = null;
 
         // render the comment in the thread
         render_comment(c)
@@ -686,6 +704,26 @@ function submit_comment(callback) {
       }
     })
   });
+}
+
+function preview_comment_toggle() {
+  var state = $('#preview_comment_toggle').text();
+  if (state == "Preview") {
+    update_draft(false, function() {
+      var text_rendered = "<i>your comment is empty</i>";
+      if (draft_state)
+        text_rendered = draft_state.text_rendered;
+      $("#discussion-your-comment-preview-container").css({ minHeight: $("#discussion-your-comment-input-container").outerHeight() });
+      $("#discussion-your-comment-input-container").hide();
+      $("#discussion-your-comment-preview-container").show();
+      $("#discussion-your-comment-preview-container").html(text_rendered);
+      $('#preview_comment_toggle').text('Hide Preview');
+    })
+  } else {
+    $("#discussion-your-comment-input-container").show();
+    $("#discussion-your-comment-preview-container").hide();
+    $('#preview_comment_toggle').text('Preview');
+  }
 }
 
 function get_comment_from_command_elem(command_elem) {
@@ -825,7 +863,7 @@ function attach_files(files) {
     // Create an AJAX request to upload all of the files at once.
     var data = new FormData();
     data.append("discussion", discussion_info.id);
-    data.append("draft", draft_id);
+    data.append("draft", draft_state.id);
     for (var i = 0; i < files.length; i++)
       data.append("file" + i, files[i])
     
