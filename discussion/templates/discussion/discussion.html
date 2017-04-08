@@ -507,7 +507,7 @@ function render_comment(item) {
     n.find('.comment-avatar').attr('src', item.user.picture.url).show();
   else
     n.find('.comment-avatar').hide();
-  n.find('.comment-author').text(item.user.name);
+  n.find('.comment-author').text(item.user.display_name || item.user.name);
   n.find('.comment-date').text(item.date_relative);
   n.find('.comment-date').attr('title', new Date(item.date_posix * 1000));
   n.find('.comment-author-role').text(item.user_role ? ("(" + item.user_role + ")") : "");
