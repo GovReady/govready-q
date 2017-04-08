@@ -36,8 +36,12 @@ class SeleniumTest(StaticLiveServerTestCase):
 
         # Start a headless browser.
         import selenium.webdriver
+        from selenium.webdriver.chrome.options import Options as ChromeOptions
         os.environ['PATH'] += ":/usr/lib/chromium-browser" # 'chromedriver' executable needs to be in PATH
-        cls.browser = selenium.webdriver.Chrome()
+        options = selenium.webdriver.ChromeOptions()
+        options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
+        options.add_argument("--incognito")
+        cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
 
     @classmethod
