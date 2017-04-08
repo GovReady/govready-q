@@ -249,7 +249,7 @@ class Comment(models.Model):
         return self.user == user and self.discussion.is_participant(user)
 
     def can_delete(self, user):
-        return self.can_edit(user) and (not isinstance(self.extra, dict) or self.extra.get("deletable", True))
+        return self.can_edit(user)
 
     def push_history(self, field):
         if not isinstance(self.extra, dict):
@@ -305,8 +305,6 @@ class Attachment(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
-    def get_absolute_url(self):
-        return self.file.url
 
 def reldate(date, ref=None):
     import dateutil.relativedelta

@@ -16,8 +16,11 @@ class CommentAdmin(admin.ModelAdmin):
 	]
 
 class AttachmentAdmin(admin.ModelAdmin):
-	list_display = ('id', 'discussion', 'comment', 'user', 'file')
-	readonly_fields = ('id', 'discussion', 'comment', 'user', 'file')
+	list_display = ('id', 'comment', 'user')
+	fieldsets = [ # hide the file field because we can't render it
+		(None, { "fields": ('id', 'comment', 'user') })
+	]
+	readonly_fields = ('id', 'comment', 'user')
 
 admin.site.register(Discussion, DiscussionAdmin)
 admin.site.register(Comment, CommentAdmin)
