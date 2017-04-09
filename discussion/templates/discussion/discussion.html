@@ -26,7 +26,7 @@
 #discussion .comment {
   margin-bottom: 15px;
 }
-#discussion .comment .comment-avatar {
+#discussion .comment .comment-avatar, #discussion .event .event-avatar {
   border-radius: 10px;
   border: 1px solid #CCC;
 }
@@ -70,26 +70,18 @@
   margin-bottom: 0;
 }
 #discussion .event {
-  margin: 15px 0;
+  margin-bottom: 20px; /* comments look like they have a margin-bottom of 15px but the panel within it has a margin-bottom of 20px */
 }
-#discussion .event .event-icon {
-  float: left;
-}
-  #discussion .event .event-icon img {
-    max-width: 37px;
-    max-height: 37px; /* same as the height of the rest of the event */
-    border: 1px solid #CCC;
-    margin: 0 .75em .5em 0;
+  #discussion .event-body {
+    margin-left: .5em;
   }
-#discussion .event .event-info {
-  font-size: 85%;
-  color: #555;
-}
-#discussion .event .event-info > div {
-  display: inline;
-  padding-bottom: 5px;
-  border-top: 1px solid #AAA;
-}
+  #discussion .event .event-text {
+  }
+  #discussion .event .event-info {
+    font-size: 85%;
+    color: #555;
+    margin: 4px 0;
+  }
 
 #emoji-selector .emoji {
   display: inline-block;
@@ -225,13 +217,19 @@
 
 <div id="event-template" style="display: none">
   <div class="event">
-    <div class="event-icon"><img style="display: none"></div>
-    <div class="body"> </div>
-    <div>
-      <div class="event-info">
-        <div>
-          <span class="event-date"></span>
-          <span class="event-who"></span>
+    <div class="row">
+      <div class="col-xs-2 col-lg-1" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
+        <img class="event-avatar img-responsive" style="display: none">
+      </div>
+      <div class="col-xs-10 col-lg-11">
+        <div class="event-body">
+          <div class="event-text"> </div>
+          <div class="event-info">
+            <div>
+              <span class="event-date"></span>
+              <span class="event-who"></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -577,13 +575,13 @@ function render_event(item, initial) {
   var n = $('#event-template > div').clone();
   n.attr('data-sort-order', item.date_posix);
 
-  n.find('.body').html(item.html);
+  n.find('.event-text').html(item.html);
   n.find('.event-date').text(item.date_relative);
   n.find('.event-date').attr('title', new Date(item.date_posix * 1000));
   if (item.user && !item.user_is_in_text)
     n.find('.event-who').text("by " + item.user.name);
   if (item.user && item.user.picture)
-    n.find('.event-icon img').attr('src', item.user.picture.url).show();
+    n.find('img.event-avatar').attr('src', item.user.picture.url).show();
 
   var c = $('#discussion .comment-thread')
   c.append(n);
