@@ -4,34 +4,19 @@
 
 <script src="{% static "vendor/push.js" %}"> </script>
 
+<link href="https://cdn.quilljs.com/1.2.3/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.2.3/quill.js"></script>
+
 <style>
 #discussion-your-comment-tips {
   padding: 2px;
   font-size: 85%;
   color: #555;
 }
-  #discussion-your-comment-tips a {
-    color: inherit;
-  }
-    #discussion-your-comment-tips a span {
-      margin-right: .5em;
-    }
-  #discussion-your-comment-tips a:hover {
-    text-decoration: none;
-  }
   #discussion-your-comment-tips label {
-    color: #44A;
+    color: inherit;
+    font-weight: normal;
     cursor: pointer;
-  }
-
-  #discussion-your-comment-preview-container {
-    border: 1px solid #DDD;
-    border-radius: .25em;
-    background-color: white;
-    padding: .5em;
-  }
-  #discussion-your-comment-preview-container p:last-child {
-    margin: 0;
   }
 
 #discussion .comment-thread {
@@ -126,28 +111,18 @@
     </div>
     <div class="comment-input active-discussion-only" style="display: none">
       <form onsubmit="submit_comment(); return false;">
-        <div style="float: right">
-          <a id="preview_comment_toggle" href="#" onclick="preview_comment_toggle(); return false;">Preview</a>
-        </div>
         <label id="discussion-your-comment-label" for="discussion-your-comment">
           ...
         </label>
-        <div id="discussion-your-comment-input-container">
-          <div style="position: relative;">
-            <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder=""></textarea>
-            <div id="discussion-your-comment-saved" style="display: none; position: absolute; bottom: 8px; right: 8px; padding: .25em; background-color: rgba(255,255,255,.9); border: 1px solid #DDD; border-radius: .25em;"></div>
-          </div>
-          <div id="discussion-your-comment-tips">
-            <a href="http://commonmark.org/help/" target="_blank">
-              <span><b>**bold**</b></span> <span><i>*italic*</i></span> <span>* list</span> <span>[link](http://to)</span> <span># heading.</span>
-            </a>
-            Attach files by <label for="discussion-attach-file">selecting them</label>.
-           <div style="display: none">
-              <input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" />
-           </div>
-          </div>
+        <div style="position: relative;">
+          <div id="discussion-your-comment"></div>
+          <div id="discussion-your-comment-saved" style="display: none; position: absolute; bottom: 8px; right: 8px; padding: .25em; background-color: rgba(255,255,255,.9); border: 1px solid #DDD; border-radius: .25em;"></div>
         </div>
-        <div id="discussion-your-comment-preview-container" style="display: none;">
+        <div id="discussion-your-comment-tips">
+         <label for="discussion-attach-file">Attach a File</label>
+         <div style="display: none">
+            <input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" />
+         </div>
         </div>
         <div style="margin-top: 1em; text-align: right">
           {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
@@ -322,17 +297,55 @@ function display_discussion(discussion, is_page_load) {
   $('#discussion .active-discussion-only').show();
   $('#discussion-your-comment-label').text("Add your comment:")
   $('#discussion #invite-guest').toggle(discussion_info.can_invite);
-  if (!is_page_load) $('#discussion-your-comment').focus();
+
+  // INITIALIZE THE COMMENT EDITOR
+
+  // initialize the editor
+  quill = new Quill('#discussion-your-comment', {
+    theme: 'snow',
+    formats: ['bold', 'italic', 'code', 'link', 'blockquote', 'header', 'list', 'code-block', 'image'],
+    modules: {
+      toolbar: [['bold', 'italic', 'code'], [{ header: 1 }, { header: 2 }, { list: 'ordered' }, { list: 'bullet' }, 'blockquote', 'code-block'], ['link', 'image']]
+    }
+  });
+  $('#discussion-your-comment').keydown(function(e) {
+    if ((e.ctrlKey || e.metaKey) && (e.keyCode == 13 || e.keyCode == 10))
+      $(this).parents('form').submit();
+  });
+
+  if (!is_page_load || discussion.events.length == 0) quill.focus();
+
+  // show an existing draft and poll for updating the draft
+  if (discussion.draft) {
+    draft_state = discussion.draft;
+    quill.clipboard.dangerouslyPasteHTML(0, discussion.draft.text_rendered);
+  }
+
+  // start polling for changes to save as draft
+  start_update_draft_poller();
+
+  // BUTTON LABEL TOGGLES
 
   // toggle a class depending on whether the user's comment textarea has
   // anything in it, which is used if we have a "Close & Comment" / "Re-open & Comment"
   // button
+  quill.isEmpty = function() {
+    var content = this.getContents();
+    var ret = true;
+    content.ops.forEach(function(op) {
+        if (typeof op.insert != "string" || /\S/.test(op.insert))
+          ret = false;
+    })
+    return ret;
+  }
   function discussion_update_your_comment_empty_class() {
-    var isEmpty = $('#discussion-your-comment').val() == "";
+    var isEmpty = quill.isEmpty();
     $('#discussion .comment-input').toggleClass('user-input-empty', isEmpty);
     $('#discussion .comment-input').toggleClass('user-input-not-empty', !isEmpty);
   }
-  $('#discussion-your-comment').on("keyup change paste", discussion_update_your_comment_empty_class);
+  quill.on('text-change', function(delta, oldDelta, source) {
+    discussion_update_your_comment_empty_class();
+  });
   discussion_update_your_comment_empty_class();
 
   // fill in the context block on the right side
@@ -353,12 +366,7 @@ function display_discussion(discussion, is_page_load) {
     $('#discussion .fillin-guests').text(text);
   }
 
-  // show an existing draft and poll for updating the draft
-  if (discussion.draft) {
-    draft_state = discussion.draft;
-    $('#discussion-your-comment').text(discussion.draft.text);
-  }
-  start_update_draft_poller();
+  // POLLING FOR NEW COMMENTS
 
   // for polling, what did we last see
   discussion_info.max_comment_id = 0;
@@ -411,11 +419,11 @@ function display_discussion(discussion, is_page_load) {
       replace: function(value, event) { return "$1" + (trigger_character + value.tag).replace(/\$/g, "$$$$") + " "; } // must escape any dollar signs in the replacement text, and since we're using replace to do it we need to escape the literal $ twice!
     }
   };
-  $('#discussion-your-comment').textcomplete(
+  /* broken  $('#discussion-your-comment').textcomplete(
     Object.keys(discussion.autocomplete).map(make_autocomplete_strategy)
   , {
     // options
-  });
+  });*/
 
   // start polling the server for new events
   discussion_poll();
@@ -592,9 +600,10 @@ function render_event(item, initial) {
 function start_update_draft_poller() {
   // Record the last time of a keypress in the comment box.
   var last_keypress_time = Date.now();
-  $('#discussion-your-comment').keypress(function() {
-    last_keypress_time = Date.now();
-  })
+  quill.on('text-change', function(delta, oldDelta, source) {
+    if (source == "user")
+      last_keypress_time = Date.now();
+  });
 
   // Check at intervals.
   setInterval(function() {
@@ -609,7 +618,7 @@ function start_update_draft_poller() {
 var draft_state = null;
 var is_submitting = false;
 function update_draft(force, callback) {
-  var current_text = $('#discussion .comment-input form textarea').val();
+  var current_text = quill_delta_to_markdown(quill.getContents());
   if ((draft_state && current_text == draft_state.text)
       || (!force && !/\S/.test(current_text) && draft_state == null)) {
     if (callback)
@@ -657,10 +666,9 @@ function update_draft(force, callback) {
 }
 
 function submit_comment(callback) {
-  var text = $('#discussion .comment-input form textarea').val();
-  if (!/\S/.test(text)) {
+  if (quill.isEmpty()) {
     // The comment is only whitespace. Don't save.
-    // Execute callback immediately.
+    // Execute callbazck immediately.
     if (callback)
       callback();
     return;
@@ -683,10 +691,8 @@ function submit_comment(callback) {
         // up.
         var y = $('#discussion .comment-input').offset().top - $(window).scrollTop();
 
-        // clear text input, trigger events
-        $('#discussion .comment-input form textarea')
-          .val('')
-          .trigger("change");
+        // clear text input, reset draft state
+        quill.setText("");
         draft_state = null;
 
         // render the comment in the thread
@@ -704,26 +710,6 @@ function submit_comment(callback) {
       }
     })
   });
-}
-
-function preview_comment_toggle() {
-  var state = $('#preview_comment_toggle').text();
-  if (state == "Preview") {
-    update_draft(false, function() {
-      var text_rendered = "<i>your comment is empty</i>";
-      if (draft_state)
-        text_rendered = draft_state.text_rendered;
-      $("#discussion-your-comment-preview-container").css({ minHeight: $("#discussion-your-comment-input-container").outerHeight() });
-      $("#discussion-your-comment-input-container").hide();
-      $("#discussion-your-comment-preview-container").show();
-      $("#discussion-your-comment-preview-container").html(text_rendered);
-      $('#preview_comment_toggle').text('Hide Preview');
-    })
-  } else {
-    $("#discussion-your-comment-input-container").show();
-    $("#discussion-your-comment-preview-container").hide();
-    $('#preview_comment_toggle').text('Preview');
-  }
 }
 
 function get_comment_from_command_elem(command_elem) {
@@ -877,15 +863,129 @@ function attach_files(files) {
         Object.keys(res).forEach(function(key) {
           var attachment = res[key];
           var ins;
-          if (attachment.is_image)
-            ins = "\n![Uploaded File](attachment:" + attachment.id + ")\n";
-          else
-            ins = " [" + attachment.original_fn.replace(/[\\[\]]/g, "") + "](attachment:" + attachment.id + ") ";
-          $('#discussion-your-comment').insertAtCaret(ins);
+          if (attachment.is_image) {
+            quill.insertEmbed(
+              quill.getSelection(true).index,
+              'image',
+              attachment.url);
+          } else {
+            // Insert a link to the attachment.
+            quill.insertText(
+              quill.getSelection(true).index, 
+              attachment.original_fn.replace(/[\\[\]]/g, ""),
+              {
+                'link': attachment.url
+              });
+          }
         });
       }
     });
   });
+}
+
+function quill_delta_to_markdown(delta) {
+  // Render the Quill widget's content, which we can only obtain
+  // in its "Delta" format, into CommonMark.
+
+  if (quill.isEmpty())
+    return "";
+
+  // Form the Markdown document as an array of block, where each
+  // block is an array of inlines (strings).
+  var md = [[ { raw: "", md: "" } ]];
+  delta.ops.forEach(function(op) {
+    var block = md[md.length-1];
+
+    if (typeof op.insert === "string") {
+      // Text insertion.
+      op.insert.split(/(\n)/).forEach(function(text) {
+        if (text != "\n") {
+          var raw_text = text;
+
+          // Escape punctuation.
+          // Backslash escapes do not work in code blocks or code spans.
+          // We'll handle code blocks later.
+          if (!op.attributes || !op.attributes.code) {
+            text = text.replace(
+              /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~]/g,
+              function(p) { return "\\" + p },
+              text);
+          }
+
+          // Add text as an inline.
+          if (op.attributes) {
+            var inlink = false;
+
+            if (op.attributes.link) {
+              // In order to join consecutive ops with the same link target,
+              // we'll insert this text in parts. If we see that we're in the
+              // same link, pop the end of the link so we can continue it.
+              // Do this ahead of bold/italics so that we can see if we need
+              // to alernate the symbol.
+              if (block[block.length-1].md == "](" + op.attributes.link + ")") {
+                block.pop(); // pop and re-add after the text.
+                inlink = true;
+              }
+            }
+
+            // To avoid clashing emphasis markers, if the last inline
+            // ended with * or _, use the other for this inline.
+            var em = "*";
+            if (/\*$/.test(block[block.length-1].md))
+              em = "_";
+
+            if (op.attributes.italic)
+              text = em + text + em;
+            if (op.attributes.bold)
+              text = em + em + text + em + em;
+            
+            if (op.attributes.code)
+              text = "`" + text + "`";
+
+            if (op.attributes.link) {
+              if (!inlink)
+                block.push({ raw: "", md: "[" });
+              block.push({ raw: raw_text, md: text });
+              block.push({ raw: "", md: "](" + op.attributes.link + ")" });
+              return;
+            }
+          }
+
+          block.push({ raw: raw_text, md: text });
+
+        } else {
+          // This is a newline. Apply block-level attributes to the
+          // current block, then start a new block.
+          if (op.attributes) {
+            if (op.attributes.header) {
+              var h = "";
+              for (var i = 0; i < op.attributes.header; i++)
+                h += "#";
+              block.unshift({ raw: "", md: h + " "});
+            } else if (op.attributes.list == "ordered") {
+              block.unshift({ raw: "", md: "1. "});
+            } else if (op.attributes.list == "bullet") {
+              block.unshift({ raw: "", md: "* "});
+            } else if (op.attributes.blockquote) {
+              block.unshift({ raw: "", md: "> "});
+            } else if ("code-block" in op.attributes) {
+              // Use only raw text in code blocks - no markdown formatting.
+              block.forEach(function(inline) { inline.md = inline.raw; });
+              block.unshift({ raw: "", md: "    "});
+            }
+          }
+          md.push([{ raw: "", md: "" }]);
+        }
+      });
+
+    } else if (op.insert.image) {
+      // This holds a URL or data URI. We'll convert the data URI
+      // to an attachment + a safe URI on the server side, since data URIs
+      // are not safe in CommonMark.
+      block.push({ raw: "", md: "![](" + op.insert.image + ")"})
+    }
+  });
+  return md.map(function(block) { return block.map(function(inline) { return inline.md }).join(""); }).join("\n\n");
 }
 
 </script>

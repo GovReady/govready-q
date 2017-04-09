@@ -40,6 +40,37 @@ def update_discussion_comment_draft(request):
             request.user, text, "web",
             is_draft=True)
 
+    # Rewrite attachment URLs from absolute URLs, which is how they must be for the
+    # rich editor to display them live, into attachment:### URLs so we can track
+    # that this is an attachment in a structured way.
+    text = comment.text
+    import re
+    from django.urls import reverse
+    pattern = re.escape(settings.SITE_ROOT_URL + reverse("discussion-attachment", args=["0123456789"]))\
+        .replace("0123456789", r"(\d+)")
+    text = re.sub(pattern, lambda m : "attachment:" + m.group(1), text)
+
+    # Move embedded data URLs to attachments. We get these from the Quill editor, where
+    # image inserts turn into data URLs.
+    import re, base64, io
+    from django.core.files.base import ContentFile
+    def handle_data_url(m):
+        try:
+            content = base64.b64decode(m.group(2))
+        except:
+            return ""
+        attachment = Attachment.objects.create(
+            comment=comment,
+            user=request.user,
+        )
+        attachment.file.save("noname." + m.group(1), ContentFile(content))
+        return "attachment:%d" % attachment.id
+    text = re.sub("(?<=\]\()data:image/(png|jpeg);base64,(.*?)(?=\))", handle_data_url, text)
+    
+    if text != comment.text:
+        comment.text = text
+        comment.save()
+
     # Return the comment's id and rendered text for displaying a preview.
     return JsonResponse(comment.render_context_dict(request.user))
 
@@ -177,7 +208,7 @@ def create_attachments(request):
         is_image = sf.mime_type and sf.mime_type.startswith("image/")
 
         ret[fn] = {
-            "id": attachment.id,
+            "url": settings.SITE_ROOT_URL + attachment.get_absolute_url(),
             "original_fn": request.FILES[fn].name,
             "is_image": is_image,
         }
