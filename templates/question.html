@@ -388,9 +388,30 @@ label:hover .onhover { display: inline; }
                 </button>
             {% endif %}
 
+        {% if not is_discussion_guest %}
+
+        <span id="need-help" style="padding: 0;margin-top: 1.25em; list-style:none;">
+          {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
+            <button id="start-a-discussion" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" onclick="javascript:start_a_discussion();return false;">
+                {# if you can see this page, you can start a conversation #}
+                <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-comment"></span> Discuss</a>
+            </button>
+          {% endif %}
+          {% if task.can_transfer_owner %}
+            <button id="transfer-editorship" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" onclick="javascript:invite_to_transfer_editor();return false;">
+              {% if write_priv %}
+                <a href="javascript:invite_to_transfer_editor()"><span class="glyphicon glyphicon-user"></span> Assign</a>
+              {% else %}
+                The editor of this module can ask a colleague to finish this module
+              {% endif %}
+            </button>
+          {% endif %}
+        </span>
+        {% endif %}
+
+
             {% if not is_discussion_guest %}
             {% if not task.project.is_account_project or task.can_transfer_owner %}
-            <br /><br />
             {% endif %}
             {% endif %}
 
@@ -419,26 +440,7 @@ label:hover .onhover { display: inline; }
           </div>
         {% endif %}
 
-        {% if not is_discussion_guest %}
 
-        <div id="need-help" style="padding: 0; margin-top: 1.25em; list-style:none;">
-          {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
-            <span id="start-a-discussion">
-                {# if you can see this page, you can start a conversation #}
-                <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-comment"></span> Comment</a>
-            </span>&nbsp;&nbsp;&nbsp;&nbsp;
-          {% endif %}
-          {% if task.can_transfer_owner %}
-            <span id="transfer-editorship">
-              {% if write_priv %}
-                <a href="javascript:invite_to_transfer_editor()"><span class="glyphicon glyphicon-user"></span> Assign</a>
-              {% else %}
-                The editor of this module can ask a colleague to finish this module
-              {% endif %}
-            </span>
-          {% endif %}
-        </div>
-        {% endif %}
 
     </div> <!-- /question -->
 
@@ -695,7 +697,7 @@ function start_a_discussion(is_page_load) {
         },
         success: function(res) {
           // replace link that starts discussion with static text
-          $('#start-a-discussion').html('<span class="glyphicon glyphicon-comment"></span> <b>Comment</b>');
+          $('#start-a-discussion').html('<span class="glyphicon glyphicon-comment"></span> <b>Discuss</b>');
 
           // load the discussion
           display_discussion(res, is_page_load);
