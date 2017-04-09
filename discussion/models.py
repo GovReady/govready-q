@@ -327,6 +327,8 @@ class Attachment(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
+    def get_absolute_url(self):
+        return reverse("discussion-attachment", args=[self.id])
 
 def reldate(date, ref=None):
     import dateutil.relativedelta
@@ -356,7 +358,10 @@ def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
     # Rewrite attachment:### URLs.
     if comment is not None:
         def get_attachment_url(attachment_id):
-            return reverse("discussion-attachment", args=[attachment_id.group(1)])
+            try:
+                return Attachment.objects.get(id=attachment_id.group(1)).get_absolute_url()
+            except:
+                return "about:blank"
         text = re.sub("(?<=\()attachment:(\d+)(?=\))", get_attachment_url, text)
 
     # Render to HTML as if CommonMark.
