@@ -66,9 +66,12 @@
   #discussion .comment .replies .reply {
     margin: 15px 0;
   }
-#discussion .comment .comment-text p:last-child {
-  margin-bottom: 0;
+#discussion .comment .comment-text {
+  overflow-wrap: break-word;
 }
+  #discussion .comment .comment-text p:last-child {
+    margin-bottom: 0;
+  }
 #discussion .event {
   margin-bottom: 20px; /* comments look like they have a margin-bottom of 15px but the panel within it has a margin-bottom of 20px */
 }
@@ -896,7 +899,7 @@ function quill_delta_to_markdown(delta) {
       // Text insertion.
       op.insert.split(/(\n)/).forEach(function(text) {
         var block = md[md.length-1];
-        
+
         if (text != "\n") {
           var raw_text = text;
 
