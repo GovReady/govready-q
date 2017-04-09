@@ -892,11 +892,11 @@ function quill_delta_to_markdown(delta) {
   // block is an array of inlines (strings).
   var md = [[ { raw: "", md: "" } ]];
   delta.ops.forEach(function(op) {
-    var block = md[md.length-1];
-
     if (typeof op.insert === "string") {
       // Text insertion.
       op.insert.split(/(\n)/).forEach(function(text) {
+        var block = md[md.length-1];
+        
         if (text != "\n") {
           var raw_text = text;
 
@@ -980,6 +980,7 @@ function quill_delta_to_markdown(delta) {
       // This holds a URL or data URI. We'll convert the data URI
       // to an attachment + a safe URI on the server side, since data URIs
       // are not safe in CommonMark.
+      var block = md[md.length-1];
       block.push({ raw: "", md: "![](" + op.insert.image + ")"})
     }
   });
