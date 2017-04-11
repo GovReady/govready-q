@@ -44,6 +44,7 @@
         <div class="panel-body">
           You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
           (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
+          <br />You may <a href="{{task.project.get_absolute_url}}">close</a> this task.
         </div>
       </div>
     {% endfor %}
