@@ -240,7 +240,14 @@ class Comment(models.Model):
 
     def publish(self):
         if not self.draft: raise Exception("I'm not a draft.")
+
+        # Mark as not a draft.
         self.draft = False
+
+        # Reset the creation date to the moment it's published.
+        self.created = timezone.now()
+
+        # Save & issue notifications.
         self.save()
         self.issue_notifications()
 

@@ -109,10 +109,8 @@
         <label id="discussion-your-comment-label" for="discussion-your-comment">
           ...
         </label>
-        <div style="position: relative;">
-          <div id="discussion-your-comment"></div>
-          <div id="discussion-your-comment-saved" style="display: none; position: absolute; bottom: 8px; right: 8px; padding: .25em; background-color: rgba(255,255,255,.9); border: 1px solid #DDD; border-radius: .25em;"></div>
-        </div>
+        <div id="discussion-your-comment"></div>
+        <div id="discussion-your-comment-saved" style="display: none; float: right; margin-top: 2px; font-size: 12px; color: #666;"></div>
         <div id="discussion-your-comment-tips">
          <label for="discussion-attach-file">Attach a File</label>
          <div style="display: none">
@@ -610,7 +608,7 @@ function start_update_draft_poller() {
   setInterval(function() {
     if (is_submitting)
       return;
-    if (Date.now() - last_keypress_time < 1000)
+    if (Date.now() - last_keypress_time < 2000)
       return;
     update_draft();
   }, 500);
@@ -618,17 +616,31 @@ function start_update_draft_poller() {
 
 var draft_state = null;
 var is_submitting = false;
+var publish_draft_after_save = null;
 function update_draft(force, callback) {
+  var show_saved = (callback == null);
+
+  // Simplify the code below - if no callback was given, make it a dummy.
+  if (!callback) {
+    callback = function(next) {
+      if (next)
+        next();
+    }
+  }
+
+  // Has there been a change since the last saved draft?
+  // If force is not truthy, then don't save an empty editor if there's
+  // no draft yet. Attachments require saving an empty editor so there is
+  // something to attach the attachment to, so it passes force=true.
   var current_text = quill_delta_to_markdown(quill.getContents());
   if ((draft_state && current_text == draft_state.text)
       || (!force && !/\S/.test(current_text) && draft_state == null)) {
-    if (callback)
-      callback();
+    callback();
     return;
   }
 
   is_submitting = true;
-  ajax_with_indicator({
+  $.ajax({
     url: "{% url 'discussion-comment-draft' %}",
     method: "POST",
     data: {
@@ -636,7 +648,6 @@ function update_draft(force, callback) {
       draft: draft_state ? draft_state.id : null,
       text: current_text
     },
-    controls: $('#discussion .comment-input form').find('button'),
     success: function(c) {
       // Update state.
       draft_state = c;
@@ -646,8 +657,9 @@ function update_draft(force, callback) {
       // can know if the textarea has been changed.
       draft_state.text = current_text;
 
-      // Show status in UI.
-      if (!callback) {
+      // Show status in UI, but not when there was a callback since
+      // then we're doing this because of some other action.
+      if (show_saved) {
         $('#discussion-your-comment-saved')
           .text("Draft saved.")
           .fadeIn('fast');
@@ -656,9 +668,15 @@ function update_draft(force, callback) {
         }, 1000);
       }
       
-      // execute callback
-      if (callback)
-        callback();
+      // Execute callback. If the user clicked the Comment button
+      // while we were saving the draft, do that too. We might
+      // have to wait for our own callback to finish first if
+      // e.g. this draft is being saved because the user is adding
+      // an attachment, and the we publish after the attachment is
+      // added.
+      is_submitting = false;
+      callback(publish_draft_after_save);
+      publish_draft_after_save = null;
     },
     complete: function() {
       is_submitting = false;
@@ -669,9 +687,15 @@ function update_draft(force, callback) {
 function submit_comment(callback) {
   if (quill.isEmpty()) {
     // The comment is only whitespace. Don't save.
-    // Execute callbazck immediately.
+    // Execute callback immediately.
     if (callback)
       callback();
+    return;
+  }
+
+  // If a draft is currently being saved, then store this call for later.
+  if (is_submitting) {
+    publish_draft_after_save = function() { submit_comment(callback); } ;
     return;
   }
 
@@ -846,7 +870,7 @@ function save_emoji_reaction() {
 function attach_files(files) {
   // Update the draft to ensure there is a draft to attach the
   // attachments to.
-  update_draft(true, function() {
+  update_draft(true, function(next) {
     // Create an AJAX request to upload all of the files at once.
     var data = new FormData();
     data.append("discussion", discussion_info.id);
@@ -879,6 +903,9 @@ function attach_files(files) {
               });
           }
         });
+
+        if (next)
+          next();
       }
     });
   });
