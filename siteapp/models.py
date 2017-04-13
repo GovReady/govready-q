@@ -116,10 +116,32 @@ class User(AbstractUser):
         profile = self.get_settings_task(organization).get_answers().as_dict()
         profile.update({
             "id": self.id,
+            "fallback_avatar": self.get_avatar_fallback_css(),
         })
         if not profile.get("name"):
             profile["name"] = self.email or "Anonymous User"
         return profile
+
+
+    random_colors = ('#5cb85c', '#337ab7', '#AFB', '#ABF', '#FAB', '#FBA', '#BAF', '#BFA')
+    def get_avatar_fallback_css(self):
+        # Compute a hash over the user ID and username to generate
+        # a stable random number.
+        import hashlib
+        digest = hashlib.md5()
+        digest.update(("%d|%s|" % (self.id, self.username)).encode("utf8"))
+        digest = digest.digest()
+
+        # Choose two colors at random using the bytes of the digest.
+        color1 = User.random_colors[digest[0] % len(User.random_colors)]
+        color2 = User.random_colors[digest[1] % len(User.random_colors)]
+
+        # Generate some CSS using a gradient and a fallback style.
+        return {
+            "css": "background: {color1}; background: linear-gradient({color1}, {color2}); color: black;"
+                .format(color1=color1, color2=color2),
+            "text": self.username[0:2].upper(),
+            }
 
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):

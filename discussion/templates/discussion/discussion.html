@@ -26,7 +26,7 @@
 #discussion .comment {
   margin-bottom: 15px;
 }
-#discussion .comment .comment-avatar, #discussion .event .event-avatar {
+#discussion .avatar {
   border-radius: 10px;
   border: 1px solid #CCC;
 }
@@ -145,8 +145,7 @@
 
 <div id="comment-template" style="display: none">
   <div class="comment row">
-    <div class="col-xs-2 col-lg-1" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
-      <img class="comment-avatar img-responsive" style="display: none">
+    <div class="col-xs-2 col-lg-1 avatar-container" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
     </div>
     <div class="col-xs-10 col-lg-11">
     <div class="panel panel-default">
@@ -219,8 +218,7 @@
 <div id="event-template" style="display: none">
   <div class="event">
     <div class="row">
-      <div class="col-xs-2 col-lg-1" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
-        <img class="event-avatar img-responsive" style="display: none">
+      <div class="col-xs-2 col-lg-1 avatar-container" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
       </div>
       <div class="col-xs-10 col-lg-11">
         <div class="event-body">
@@ -510,10 +508,8 @@ function render_comment(item) {
   // Fill in.
   n.attr('data-id', item.id);
   n.attr('data-sort-order', item.date_posix);
-  if (item.user && item.user.picture)
-    n.find('.comment-avatar').attr('src', item.user.picture.url).show();
-  else
-    n.find('.comment-avatar').hide();
+  if (item.user)
+    render_avatar(n.find('.avatar-container'), item.user)
   n.find('.comment-author').text(item.user.display_name || item.user.name);
   n.find('.comment-date').text(item.date_relative);
   n.find('.comment-date').attr('title', new Date(item.date_posix * 1000));
@@ -581,9 +577,9 @@ function render_event(item, initial) {
   n.find('.event-date').attr('title', new Date(item.date_posix * 1000));
   if (item.user && !item.user_is_in_text)
     n.find('.event-who').text("by " + item.user.name);
-  if (item.user && item.user.picture)
-    n.find('img.event-avatar').attr('src', item.user.picture.url).show();
-
+  if (item.user)
+    render_avatar(n.find('.avatar-container'), item.user)
+    
   var c = $('#discussion .comment-thread')
   c.append(n);
 
@@ -594,6 +590,31 @@ function render_event(item, initial) {
   // For integration with outer template-
   if (!initial && window.on_discussion_event)
     window.on_discussion_event(item);
+}
+
+function render_avatar(container, user) {
+  var n;
+
+  if (user.picture) {
+    n = $('<img class="avatar img-responsive">');
+    n.attr('src', user.picture.url);
+  
+  } else if (user.fallback_avatar) {
+    n = $('<div class="avatar">'
+    +'<table height="100%" width="100%">'
+    +'<tr valign="middle">'
+    +'<td style="text-align: center; font-weight: bold;">'
+    +user.fallback_avatar.text
+    +'</td>'
+    +'</tr>'
+    +'</table>'
+    +'</div>');
+    n.attr('style', user.fallback_avatar.css);
+    n.css({ width: "48px", height: "48px", border: '1px solid #444' });
+  }
+
+  n.css({ float: "right" })
+  container.append(n);
 }
 
 function start_update_draft_poller() {
