@@ -14,19 +14,34 @@
   /*border-radius: 15px;*/
   text-align: center;
 }
+#app-metadata {
+  font-size: 0.9em;
+  text-align: left;
+}
+#app-metadata a {
+  color: black;
+}
+.meta-key {
+  color: #888;
+}
+.meta-heading {
+  margin-top: 20px;
+  color: #888;
+  border-bottom: 0.5px solid #888;
+  margin-bottom: 6px;
+}
 </style>
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active"><a href="/assessment-catalog">Assessment Catalog</a></li>
+<li class="active"><a href="/assessment-catalog">Compliance App Store</a></li>
 <li class="active">{{module.title|truncatewords:6}}</li>
 {% endblock %}
 
 {% block body %}
 <div class="row">
   <div class="col-sm-10">
-    <h1>{{module.title}}</h1>
-
+    <h1><small>{{module.provider}}</small><br/>{{module.title}}</h1>
     <div class="body">
       {{module.long_description|safe}}
     </div>
@@ -37,11 +52,26 @@
         {% csrf_token %}
         <input type=hidden name=firstsubmit value=1>
         <button id="start-assessment" type="submit" class="btn btn-success"
-          >Start This Assessment &raquo;</button>
+          >Add to project folder</button>
       </form>
-      <br /><a href="/assessment-catalog">return to catalog</a>
+      <br /><a href="/assessment-catalog">return to app store</a>
+
+      <div id="app-metadata">
+        <div class="meta-heading"><strong>Information</strong></div>
+        <div><span class="meta-key">Provider</span>: <a href="{{module.provider_url}}">{{module.provider}}</a></div>
+        <div><span class="meta-key">Status</span>: {{module.status}}</div>
+        <div><span class="meta-key">Version</span>: {{module.version}}</div>
+        <div><span class="meta-key">Source</span>: <a href="{{module.source_url}}">{{module.access}}</a></div>
+
+        <div class="meta-heading"><strong>Recommended for</strong></div>
+        <div><span class="meta-key">Org</span>: {{module.org}}</div>
+        <div><span class="meta-key">Tech</span>: {{module.tech}}</div>
+        <div><span class="meta-key">Role</span>: {{module.role}}</div>
+      </div>
+
     </div>
+
+
   </div>
 </div>
-
 {% endblock %}
