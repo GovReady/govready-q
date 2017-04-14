@@ -595,6 +595,11 @@ function render_event(item, initial) {
 function render_avatar(container, user) {
   var n;
 
+  // Clear any previous avatar. When comments are edited,
+  // we update the node in place, so a previous avatar
+  // will still be there.
+  container.html('');
+
   if (user.picture) {
     n = $('<img class="avatar img-responsive">');
     n.attr('src', user.picture.url);
