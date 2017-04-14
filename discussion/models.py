@@ -127,8 +127,13 @@ class Discussion(models.Model):
             }
             )
 
-        # If not a draft, issue notifications.
+        # If not a draft...
         if not is_draft:
+            # Kick the attached_to object to update its auto-now updated field,
+            # if present.
+            self.attached_to.save()
+
+            # Issue notifications.
             comment.issue_notifications()
 
         return comment
@@ -249,6 +254,7 @@ class Comment(models.Model):
 
         # Save & issue notifications.
         self.save()
+        self.discussion.attached_to.save()
         self.issue_notifications()
 
     def issue_notifications(self):
