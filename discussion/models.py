@@ -129,12 +129,7 @@ class Discussion(models.Model):
 
         # If not a draft...
         if not is_draft:
-            # Kick the attached_to object to update its auto-now updated field,
-            # if present.
-            self.attached_to.save()
-
-            # Issue notifications.
-            comment.issue_notifications()
+            comment._on_published()
 
         return comment
 
@@ -245,19 +240,22 @@ class Comment(models.Model):
 
     def publish(self):
         if not self.draft: raise Exception("I'm not a draft.")
+        self._on_published()
 
+    def _on_published(self):
         # Mark as not a draft.
         self.draft = False
 
         # Reset the creation date to the moment it's published.
         self.created = timezone.now()
 
-        # Save & issue notifications.
+        # Save.
         self.save()
-        self.discussion.attached_to.save()
-        self.issue_notifications()
 
-    def issue_notifications(self):
+        # Kick the attached object.
+        if hasattr(self.discussion.attached_to, 'on_discussion_comment'):
+            self.discussion.attached_to.on_discussion_comment(self)
+
         # Issue a notification to anyone watching the discussion
         # via discussion.get_notification_watchers() except to
         # anyone @-mentioned because they'll get a different
@@ -281,6 +279,7 @@ class Comment(models.Model):
             recipients=mentioned_users,
             description=self.text,
             comment_id=self.id)
+
 
     def push_history(self, field):
         if not isinstance(self.extra, dict):

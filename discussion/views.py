@@ -118,6 +118,10 @@ def edit_discussion_comment(request):
     # save
     comment.save()
 
+    # Kick the attached object.
+    if hasattr(comment.discussion.attached_to, 'on_discussion_comment_edited'):
+        comment.discussion.attached_to.on_discussion_comment_edited(comment)
+
     # return new comment info
     return JsonResponse(comment.render_context_dict(request.user))
 
