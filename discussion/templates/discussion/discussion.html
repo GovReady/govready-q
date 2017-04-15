@@ -713,7 +713,8 @@ function update_draft(force, callback) {
 function submit_comment(callback) {
   if (quill.isEmpty()) {
     // The comment is only whitespace. Don't save.
-    // Execute callback immediately.
+    // Put focus back. Execute callback immediately.
+    quill.focus();
     if (callback)
       callback();
     return;
@@ -742,8 +743,9 @@ function submit_comment(callback) {
         // up.
         var y = $('#discussion .comment-input').offset().top - $(window).scrollTop();
 
-        // clear text input, reset draft state
+        // clear text input, put focus back, reset draft state
         quill.setText("");
+        quill.focus();
         draft_state = null;
 
         // render the comment in the thread
