@@ -56,6 +56,12 @@ wget -O $VENDOR/emojione.min.css \
 wget -O $VENDOR/emojione.min.js \
         https://raw.githubusercontent.com/Ranks/emojione/v2.2.7/lib/js/emojione.min.js
 
+# quill rich text editor (BSD License)
+wget -O /tmp/quill.tar.gz \
+        https://github.com/quilljs/quill/releases/download/v1.2.3/quill.tar.gz
+tar -zx -C $VENDOR -f /tmp/quill.tar.gz
+rm -f /tmp/quill.tar.gz
+
 # google fonts
 #  Hind: SIL Open Font License 1.1
 # first download a helper (note: we're about to run a foriegn script locally)
