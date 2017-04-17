@@ -8,11 +8,6 @@
 {% block head %}
 <style>
 {% include "focus-area-styles.css" %}
-#action-buttons {
-  margin: 1em 0;
-  text-align: right;
-}
-
 
 .tab-pane {
 }
@@ -113,35 +108,19 @@
   font-style: italic;
   font-size: 85%;
 }
+
+@media screen and (min-width: 992px) {
+  #action-buttons button, #action-buttons a {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+}
 </style>
 {% endblock %}
 
-{% block breadcrumbs %}
-<li>
-  <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-  {% with folder=project.primary_folder %} {# TODO #}
-    <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
-  {% endwith %}
-</li>
-<li class="active">
-    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
-  {{project.title}}
-</li>
-{% endblock %}
-
-{% block breadcrumbs_right %}
-<div style="margin-top: -4px">
-{% if not project.is_account_project or project.is_deletable %}
-  <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
-    <i class="glyphicon glyphicon-wrench"></i> Assessment Settings</a>
-  </button>
-{% endif %}
-{% if send_invitation.can_add_invitee_to_team %}
-  <button id="show-project-settings" class="btn btn-sm" onclick="invite_user_into_project()">
-    <i class="glyphicon glyphicon-plus"></i> <i class="glyphicon glyphicon-user"></i></a>
-  </button>
-{% endif %}
-</div>
+{% block contextbar %}
+  {# kill #}
 {% endblock %}
 
 {% block body %}
@@ -152,11 +131,37 @@
 </div>
 {% endcomment %}
 
+<div id="folder-project-context" style="margin-bottom: 20px;">
+  {% with folder=project.primary_folder %} {# TODO #}
+  <p style="font-size: 120%;">
+    <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
+      <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
+  </p>
+  {% endwith %}
+  <p style="font-size: 110%; margin-left: 15px;">
+      <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+      {{project.title}}
+  </p>
+</div>
+
 <div class="row">
-<div class="col-md-2">
+  <div class="col-md-push-10 col-md-2">
+    <div id="action-buttons" style="margin-bottom: 1em">
+
+    {% if not project.is_account_project or project.is_deletable %}
+      <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
+        <i class="glyphicon glyphicon-wrench"></i> Settings</a>
+      </button>
+    {% endif %}
+    {% if send_invitation.can_add_invitee_to_team %}
+      <button id="show-project-settings" class="btn btn-sm" onclick="invite_user_into_project()">
+        <i class="glyphicon glyphicon-plus"></i> <i class="glyphicon glyphicon-user"></i>
+        Invite
+      </button>
+    {% endif %}
+
     {# action buttons #}
     {% if action_buttons %}
-    <div id="action-buttons">
       {% for rec in action_buttons %}
         {% for t in rec.tasks %}
           <a
@@ -179,11 +184,11 @@
           {% endif %}
         {% endfor %}
       {% endfor %}
-    </div> <!-- /action-buttons -->
     {% endif %}
+    </div> <!-- /action-buttons -->
 </div>
 
-<div class="col-md-10">
+<div class="col-md-pull-2 col-md-10">
   <div id="focus-area-wrapper">
     {# tabs #}
 

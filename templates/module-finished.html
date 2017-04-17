@@ -4,8 +4,8 @@
 {{m.title}}
 {% endblock %}
 
-{% block breadcrumbs %}
-  {% include "task-breadcrumbs.html" %}
+{% block contextbar %}
+  {# turn off #}
 {% endblock %}
 
 {% block body %}
@@ -24,9 +24,9 @@ thead {
 <div class="row">
 
 <div class="col-md-10">
-  <div id="focus-area-wrapper">
+  {% include "task-header.html" %}
 
-    {% include "task-header.html" with col_width="4" col_active="review" %}
+  <div id="focus-area-wrapper">
 
     {% if had_any_questions %}
     <div id="page-transition-paragraph">

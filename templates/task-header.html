@@ -36,6 +36,29 @@
 }
 </style>
 
+<div id="folder-project-task-context" style="margin-bottom: 20px;">
+  {% if not task.project.is_account_project %}
+  {% with folder=task.project.primary_folder %} {# TODO #}
+  {% if folder %} {# system projects aren't in a folder #}
+  <p style="font-size: 120%;">
+    <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
+      <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
+  </p>
+  {% endif %}
+  {% endwith %}
+  <p style="font-size: 110%; margin-left: 15px;">
+    <a href="{{task.project.get_absolute_url}}">
+      <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+      {{task.project.title}}
+    </a>
+  </p>
+  {% endif %}
+  <p style="font-size: 100%; margin-left: 30px;">
+      <span class="glyphicon glyphicon-th-list" style="margin-right: .25em"></span>
+    {{task.title}}
+  </p>
+</div>
+
 <div id="auth-status">
 {% if task.editor == request.user %}
 

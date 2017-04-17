@@ -5,8 +5,8 @@
 Next Question: {{q.spec.title}} | {{task.title}}
 {% endblock %}
 
-{% block breadcrumbs %}
-  {% include "task-breadcrumbs.html" %}
+{% block contextbar %}
+  {# turn off #}
 {% endblock %}
 
 {% block body %}
@@ -57,22 +57,10 @@ label:hover .onhover { display: inline; }
 </style>
 
 <div class="row">
-  <div class="col-md-9">
-    {% comment %}
-    {% if previous_page_type == "project" or previous_page_type == "nquestion" %}
-      <p><em>Please complete the next question to make progress on this module...</em></p>
-    {% elif previous_page_type == "parent" %}
-      <p><em>You&rsquo;ve begun a new {{m.title}} module. You will return to the previous module when you finish this one.</em></p>
-    {% endif %}
-    {% endcomment %}
-
-    {% include "task-header.html" with col_width="4" col_active=header_col_active %}
-  </div>
-</div>
-
-<div class="row">
 
 <div class="col-md-9">
+  {% include "task-header.html" %}
+  
   <div id="focus-area-wrapper">
 
     {% if source_invitation %}
