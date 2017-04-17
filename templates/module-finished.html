@@ -22,13 +22,6 @@ thead {
 </style>
 
 <div class="row">
-<div class="col-md-2">
-  <div id="question-history-context">
-    <ul>
-      {% include "task-progress-question-list.html" with previous="task-finished" %}
-    </ul>
-  </div> <!-- /question-history-context -->
-</div>
 
 <div class="col-md-10">
   <div id="focus-area-wrapper">
@@ -114,7 +107,16 @@ thead {
     {% endif %}
   {% endwith %}
 </div> <!-- / continue panel -->
+</div> <!-- focus-area-wrapper -->
 </div> <!-- /col -->
+
+<div class="col-md-2">
+  <div id="question-history-context">
+    <ul>
+      {% include "task-progress-question-list.html" with previous="task-finished" %}
+    </ul>
+  </div> <!-- /question-history-context -->
+</div>
 </div> <!-- /row -->
 
 {% endblock %}

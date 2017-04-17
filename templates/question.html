@@ -57,7 +57,7 @@ label:hover .onhover { display: inline; }
 </style>
 
 <div class="row">
-  <div class="col-md-push-2 col-md-8">
+  <div class="col-md-9">
     {% comment %}
     {% if previous_page_type == "project" or previous_page_type == "nquestion" %}
       <p><em>Please complete the next question to make progress on this module...</em></p>
@@ -71,25 +71,6 @@ label:hover .onhover { display: inline; }
 </div>
 
 <div class="row">
-<div class="col-md-3 hidden-xs hidden-sm">
-  <div id="question-history-context" style="border:0px solid black; ; height:600px; overflow-y:scroll; padding:4px;">
-      <ul>
-      {% if context %}
-        <p>Progress:</p>
-        {% include "task-progress-question-list.html" with previous="question" %}
-        <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
-        <li>&middot;</li>
-        <li>&middot;</li>
-        <li>&middot;</li>
-        </div>
-        <li>
-          ...and we&rsquo;re done
-        </li>
-      {% endif %}
-      </ul>
-
-    </div> <!-- /question-history-context -->
-</div>
 
 <div class="col-md-9">
   <div id="focus-area-wrapper">
@@ -446,7 +427,30 @@ label:hover .onhover { display: inline; }
 
     {% include "discussion/discussion.html" %}
 
+    </div> <!-- /focus-area-wrapper -->
+
   </div> <!-- /col -->
+
+  <div class="col-md-3">
+    <div id="question-history-context" style="border:0px solid black; max-height:600px; overflow-y:scroll; padding:4px;">
+        <ul>
+        {% if context %}
+          <p>Progress:</p>
+          {% include "task-progress-question-list.html" with previous="question" %}
+          <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
+          <li>&middot;</li>
+          <li>&middot;</li>
+          <li>&middot;</li>
+          </div>
+          <li>
+            ...and we&rsquo;re done
+          </li>
+        {% endif %}
+        </ul>
+
+      </div> <!-- /question-history-context -->
+  </div>
+
 </div> <!-- /row -->
 
 {% endblock %}
