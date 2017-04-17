@@ -393,8 +393,12 @@ def match_autocompletes(text, autocompletes, replace_mentions=None):
     from siteapp.models import User
 
     # Make a big regex for all mentions of all autocompletable things.
+    # Since we're matching against Markdown, allow the prefix character
+    # (@ or #) to be preceded by a backslash, since punctuation can
+    # be escaped. Since we're generating Markdown from the Quill editor,
+    # we get escapes in funny places.
     pattern = "|".join(
-        "(" + char + ")(" + "|".join(
+        r"\\?" + char + "(" + "|".join(
             re.escape(item["tag"])
             for item in items
         ) + ")"
@@ -415,12 +419,14 @@ def match_autocompletes(text, autocompletes, replace_mentions=None):
     mentioned_users = set()
     def replace_func(m):
         char, tag = (m.group(0)[:1], m.group(0)[1:])
+        if char == "\\": # was escaped
+            char, tag = (m.group(0)[1:2], m.group(0)[2:])
         item = reverse_mapping[(char, tag)]
         if item.get("user_id"):
             user = User.objects.get(id=item["user_id"])
             mentioned_users.add(user)
             if replace_mentions:
-                return replace_mentions(char+tag)
+                return replace_mentions(m.group(0))
         return m.group(0)
     text = re.sub(pattern, replace_func, text)
 

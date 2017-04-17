@@ -393,7 +393,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # We're now on the first actual question.
         # Start a team conversation.
         self.click_element("#start-a-discussion a")
-        self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
+        self.fill_field("#discussion-your-comment .ql-editor", "Hello is anyone *here*?")
         var_sleep(.5) # wait for options to slideDown
         self.click_element("#discussion .comment-input button.btn-primary")
 
@@ -418,7 +418,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # This takes the user directly to the discussion they were invited to join.
         # Leave a comment.
-        self.fill_field("#discussion-your-comment", "Yes, @me, I am here!\n\nI am here with you!")
+        self.fill_field("#discussion-your-comment .ql-editor", "Yes, @me, I am here!\n\nI am here with you!")
         self.click_element("#discussion .comment-input button.btn-primary")
         var_sleep(.5) # wait for it to submit
 
@@ -439,8 +439,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#emoji-selector .emoji[data-emoji-name=heart]") # makes active
         self.click_element("body") # closes emoji panel and submits via ajax
         var_sleep(.5) # emoji reaction submitted
-
-        var_sleep(5)
 
         # Log back in as the original user.
         discussion_page = self.browser.current_url
