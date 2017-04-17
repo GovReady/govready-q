@@ -28,7 +28,7 @@ def folder_list(request):
     # are an admin of the folder, so we go backwards from Projects
     projects = Project.get_projects_with_read_priv(request.user, request.organization)
     folders = (Folder.objects.filter(projects__in=projects)
-            | Folder.objects.filter(admin_users=request.user))\
+            | Folder.objects.filter(organization=request.organization, admin_users=request.user))\
           .distinct()
 
     # Count up the total number of projects in each folder. For admins, so they
