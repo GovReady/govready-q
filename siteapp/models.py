@@ -248,6 +248,10 @@ class Folder(models.Model):
         # For debugging.
         return "<Folder %d %s>" % (self.id, self.title[0:30])
 
+    def get_absolute_url(self):
+        from django.utils.text import slugify
+        return "/projects/folders/%d/%s" % (self.id, slugify(self.title))
+
     def get_admins(self):
         # Get all of the Users with admin privs on the folder --- which
         # is the set of users that have admin privs on any project within
@@ -398,7 +402,7 @@ class Project(models.Model):
         return sorted(participants.items(), key = lambda kv : kv[0].username)
 
     @staticmethod
-    def get_projects_with_read_priv(user, organization):
+    def get_projects_with_read_priv(user, organization, filters={}):
         # Gets all projects a user has read priv to, excluding
         # account and organization profile projects, and sorted
         # in reverse chronological order by modified date.
@@ -412,6 +416,7 @@ class Project(models.Model):
         # that the user is on the subdomain of.
         for pm in ProjectMembership.objects\
             .filter(project__organization=organization, user=user)\
+            .filter(**{ "project__"+k: v for k, v in filters.items() })\
             .select_related('project'):
             projects.add(pm.project)
             if pm.is_admin:
@@ -422,6 +427,7 @@ class Project(models.Model):
         # the user isn't a team member of that project.
         from guidedmodules.models import Task
         for task in Task.get_all_tasks_readable_by(user, organization)\
+            .filter(**{ "project__"+k: v for k, v in filters.items() })\
             .order_by('-created')\
             .select_related('project'):
             projects.add(task.project)
@@ -431,7 +437,8 @@ class Project(models.Model):
         from discussion.models import Discussion
         for d in Discussion.objects.filter(organization=organization, guests=user):
             if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
-                projects.add(d.attached_to.task.project)
+                if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
+                    projects.add(d.attached_to.task.project)
 
         # Don't show system projects.
         system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
@@ -442,14 +449,9 @@ class Project(models.Model):
 
         return projects
 
-    def folder_name(self):
-        folders = sorted(set(self.contained_in_folders.values_list("title", flat=True)))
-        if len(folders) == 0:
-            return "No Folder"
-        elif len(folders) == 1:
-            return folders[0]
-        else: # weirdly we allow in the db a Project to be in multiple Folders
-            return folders[0] + "+"
+    def primary_folder(self):
+        # weirdly we allow in the db a Project to be in multiple Folders
+        return self.contained_in_folders.first()
 
     def get_open_tasks(self, user):
         # Get all tasks that the user might want to continue working on

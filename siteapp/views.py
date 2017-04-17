@@ -22,43 +22,71 @@ def homepage(request):
         "login_form": LoginForm,
     })
 
-def project_list(request):
-    # Get the projects. It handily marks Projects with user_is_admin.
+def folder_list(request):
+    # Get the folders the user can see. Folders are accessible to a user
+    # just when they can see a Project within it or if they
+    # are an admin of the folder, so we go backwards from Projects
     projects = Project.get_projects_with_read_priv(request.user, request.organization)
+    folders = (Folder.objects.filter(projects__in=projects)
+            | Folder.objects.filter(admin_users=request.user))\
+          .distinct()
+
+    # Count up the total number of projects in each folder. For admins, so they
+    # can know why they can't delete a folder.
+    from django.db.models import Count
+    folders = folders.annotate(project_count=Count('projects'))
+
+    # Mark whether the user is an admin of any folders.
+    folders = list(folders)
+    for folder in folders:
+        folder.is_admin = (request.user in folder.get_admins())
+
+    # Sort the folders by name.
+    folders.sort(key = lambda folder : folder.title)
+
+    return render(request, "folder_list.html", {
+        "folders": folders,
+    })
+
+
+def folder_view(request, folder_id):
+    # Get the folder.
+    folder = get_object_or_404(Folder, id=folder_id, organization=request.organization)
+    is_admin = (request.user in folder.get_admins())
+
+    # Get the projects that are in the folder that the user can see. This also handily
+    # sets user_is_admin.
+    projects = Project.get_projects_with_read_priv(request.user, request.organization,
+        { "contained_in_folders": folder })
+
+    # Count up the open tasks in each project.
     for p in projects:
         p.open_tasks = p.get_open_tasks(request.user) # for the template
 
-    # Collate into folders. Folders are accessible to a user
-    # just when they can see a Project within it, so we go
-    # backwards from Projects to Folders.
-    folders = list(
-        (Folder.objects.filter(projects__in=projects)
-            | Folder.objects.filter(admin_users=request.user))
-          .distinct())
+    # Check authorization. Users can see folders just when they are an admin or they
+    # can see any project within it.
+    if not is_admin and len(projects) == 0:
+        return HttpResponseForbidden()
 
-    for folder in folders:
-        # Set an attribute on the Folder with a list of
-        # projects that the user has access to.
-        projects_in_folder = set(folder.projects.all())
-        folder.accessible_projects = [p for p in projects if p in projects_in_folder]
+    # Redirect if slug is not canonical. We do this after checking for
+    # read privs so that we don't reveal the folder's title to unpriv'd users.
+    if request.path != folder.get_absolute_url():
+        return HttpResponseRedirect(folder.get_absolute_url())
 
-        # Mark folders that the user is an admin of, i.e. can rename it and
-        # see all projects within it.
-        folder.is_admin = (request.user in folder.get_admins())
+    # Count the number of projects in the folder the user can't see in case,
+    # as a folder admin, there are projects the user can't see that block
+    # deleting the folder.
+    total_projcts = folder.projects.count()
+    num_hidden_projects = folder.projects.count() - len(projects)
 
-        # If the user is an admin and there are projects in the folder the
-        # user can't see, mark that too.
-        if folder.is_admin:
-            folder.num_hidden_projects = len(projects_in_folder - set(folder.accessible_projects))
-
-    # Sort the folders by the sort order of the first project
-    # in each folder.
-    folders.sort(key = lambda folder : [projects.index(p) for p in folder.accessible_projects])
-
-    return render(request, "project_list.html", {
-        "folders": folders,
+    return render(request, "folder_view.html", {
+        "folder": folder,
+        "is_admin": is_admin,
+        "projects": projects,
+        "num_hidden_projects": num_hidden_projects,
         "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
     })
+
 
 def add_assessment_catalog_metadata(module):
     from guidedmodules.module_logic import render_content

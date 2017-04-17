@@ -18,12 +18,13 @@ urlpatterns = [
     url(r'^assessment-catalog/(?P<module_key>.*)$', views.assessment_catalog_item),
 
     # projects
-    url(r"^projects$", views.project_list),
+    url(r"^projects$", views.folder_list),
     url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__export$', views.export_project, name="export_project"),
     url(r'^projects/(\d+)/__import$', views.import_project_data, name="import_project_data"),
     url(r'^projects/(\d+)/(?:[\w\-]+)$', views.project), # must be last because regex matches some previous URLs
+    url(r'^projects/folders/(\d+)/(?:[\w\-]+)$', views.folder_view),
     url(r'^__rename_folder$', views.rename_folder, name="rename_folder"),
     url(r'^__new_folder$', views.new_folder, name="new_folder"),
     url(r'^__delete_folder$', views.delete_folder, name="delete_folder"),

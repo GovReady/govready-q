@@ -1,36 +1,29 @@
 {% extends "base.html" %}
 
 {% block title %}
-Home
+{{folder.title}} -- Assessments
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active">Assessments</li>
+<li>Assessments</li>
+<li class="active">{{folder.title}}</li>
 {% endblock %}
 
 {% block head %}
 <style>
-.folder {
-  border-top: 1px solid rgb(220,220,220);
-  padding: 10px 5px;
+h1 .glyphicon, h2 .glyphicon {
+  margin-right: 10px;
 }
-  .folder .glyphicon {
-    margin-right: 10px;
-  }
-  .action {
+  .folder_action, .project_action {
     margin-left: 1em;
     color: #777;
     cursor: pointer;
     font-size: 13px;
     display: none;
   }
-    h2:hover .action, h3:hover .action {
+    h1:hover .folder_action, h2:hover .project_action {
       display: inline-block;
     }
-  h2 { font-size: 115%; font-weight: bold; margin: 1em 0; }
-  h3 { font-size: 100%; font-weight: bold; margin: 0; }
-  h2 .label, h3 .label { margin-left: .75em; font-size: 12px; }
-  .folder .project h2 { margin: 0; }
   .folder a:hover { text-decoration: none; }
   .folder a:hover span { text-decoration: underline; }
   .folder a:hover span.glyphicon { text-decoration: none; }
@@ -38,7 +31,7 @@ Home
 .project {
   padding: .75em;
   }
-  .project:hover{
+  .project:hover {
     background-color: rgb(240,240,240);
     border-radius: 8px;
   }
@@ -61,35 +54,27 @@ Home
 
 {% block body %}
 <div style="float: right; margin-top: 1em">
-  <a id="new-folder" href="#" class="btn btn-default" onclick="new_folder(); return false;"><i class="glyphicon glyphicon-folder-open"></i> New Folder</a>
   <a id="new-assessment" href="/assessment-catalog" class="btn btn-success"><i class="glyphicon glyphicon-list-alt"></i> New Assessment</a>
 </div>
 
-<h1>My Assessments</h1>
+<h1>
+  <span class="glyphicon glyphicon-folder-open"></span>
+  <span class="folder_name">{{folder.title}}</span>
+  {% if is_admin %}
+    <span class="folder_action" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
+    {% if projects|length == 0 and num_hidden_projects == 0 %}
+      <span class="folder_action" onclick="delete_folder(this);"><span class="glyphicon glyphicon-remove"></span></span>
+    {% endif %}
+  {% endif %}
+</h1>
 
-{% if folders|length == 0 %}
-  <p>Start by beginning your first assessment.</p>
+{% if projects|length == 0 %}
+  <p>Start by beginning your first assessment in this folder.</p>
 {% endif %}
 
-<div id="folder-list">
-
-<!-- List folders -->
-{% for folder in folders %}
-<div class="folder" data-folder-id="{{folder.id}}">
-  <h2>
-    <span class="glyphicon glyphicon-folder-open"></span>
-    <span class="folder_name">{{folder.title}}</span>
-    {% if folder.is_admin %}
-    <span class="action" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
-    {% if folder.accessible_projects|length == 0 %}
-      <span class="action" onclick="delete_folder(this);"><span class="glyphicon glyphicon-remove"></span></span>
-    {% endif %}
-    {% endif %}
-  </h2>
-
-  {% for project in folder.accessible_projects %}
+{% for project in projects %}
   <div class="project" data-project-id="{{project.id}}">
-  <h3>
+  <h2>
   <a href="{{project.get_absolute_url}}">
     <span class="glyphicon glyphicon-list-alt"></span>
     <span class="project_title">{{project.title}}</span>
@@ -102,7 +87,7 @@ Home
     {% endwith %}
 
     {% if project.user_is_admin %}
-      <span class="action" onclick="return rename_project(this);"><span class="glyphicon glyphicon-pencil"></span></span>
+      <span class="project_action" onclick="return rename_project(this);"><span class="glyphicon glyphicon-pencil"></span></span>
     {% endif %}
   </a>
   </h3>
@@ -138,59 +123,25 @@ Home
   </div>
 
   </div>
-  {% endfor %}
-
-  {% if folder.is_admin and folder.num_hidden_projects > 0 %}
-  <p><i>There are {{folder.num_hidden_projects}} other assessment{{folder.num_hidden_projects|pluralize}} in this folder that you do not have permission to see.</i></p>
-  {% endif %}
-</div>
 {% endfor %}
 
-</div> <!--/folders-->
-
-<div id="new-folder-template" style="display: none">
-<div class="folder" data-folder-id="">
-  <h2>
-    <span class="glyphicon glyphicon-folder-open"></span>
-    <span class="folder_name"></span>
-    <span class="action" onclick="rename_folder(this);"><span class="glyphicon glyphicon-pencil"></span></span>
-    <span class="action" onclick="delete_folder(this);"><span class="glyphicon glyphicon-remove"></span></span>
-  </h2>
-</div>
-</div>
+{% if is_admin and num_hidden_projects > 0 %}
+<p><i>There are {{num_hidden_projects}} other assessment{{num_hidden_projects|pluralize}} in this folder that you do not have permission to see.</i></p>
+{% endif %}
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-function new_folder() {
-  ajax_with_indicator({
-   url: '{% url "new_folder" %}',
-   method: "POST",
-   data: {
-    // could add title: later
-   },
-   success: function(res) {
-    var node = $('#new-folder-template > div').clone();
-    node.data("folder-id", res.id);
-    node.find("h2 .folder_name").text(res.title);
-    node.hide();
-    $('#folder-list').prepend(node);
-    node.slideDown();
-   }
-  });
-}
 function rename_folder(elem) {
-  var folder = $(elem).parents(".folder");
-  var folder_id = folder.data("folder-id");
-  var folder_name = folder.find(".folder_name");
+  var folder_name = $(".folder_name");
   var new_title = prompt("Rename this folder?", folder_name.text());
   if (!new_title) return;
   ajax_with_indicator({
    url: '{% url "rename_folder" %}',
    method: "POST",
    data: {
-    folder: folder_id,
+    folder: {{folder.id}},
     title: new_title
    },
    success: function() {
@@ -199,16 +150,15 @@ function rename_folder(elem) {
   });
 }
 function delete_folder(elem) {
-  var folder = $(elem).parents(".folder");
-  var folder_id = folder.data("folder-id");
   ajax_with_indicator({
    url: '{% url "delete_folder" %}',
    method: "POST",
    data: {
-    folder: folder_id
+    folder: {{folder.id}}
    },
+   keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
    success: function() {
-     folder.slideUp(function() { folder.remove(); });
+    window.location = "/projects";
    }
   });
 }
@@ -219,7 +169,7 @@ function rename_project(elem) {
   var new_title = prompt("Rename this assessment?", old_title);
   if (!new_title || new_title == old_title) return false;
   ajax_with_indicator({
-   url: 'projects/' + project.data("project-id") + '/__rename',
+   url: '/projects/' + project.data("project-id") + '/__rename',
    method: "POST",
    data: {
     title: new_title

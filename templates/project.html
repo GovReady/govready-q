@@ -119,7 +119,9 @@
 {% block breadcrumbs %}
 <li>
   <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-  {{project.folder_name}}
+  {% with folder=project.primary_folder %} {# TODO #}
+    <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
+  {% endwith %}
 </li>
 <li class="active">
     <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
