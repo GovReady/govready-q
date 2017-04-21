@@ -3,9 +3,9 @@ from django.db import transaction
 from django.conf import settings
 
 from guidedmodules.models import ModuleSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task
-from guidedmodules.module_logic import render_content
+from guidedmodules.validate_module_specification import validate_module, ValidationError as ModuleValidationError
 
-import sys, json, re
+import sys, json
 
 class ValidationError(Exception):
     def __init__(self, file_name, scope, message):
@@ -485,21 +485,30 @@ class Command(BaseCommand):
             raise ValidationError(module_id, "module", "Module 'id' field (%s) doesn't match source file path (\"%s\")." % (repr(spec.get("id")), module_id))
 
         # Replace spec["id"] (just the last part of the path) with the full module_id
-        # (a full path, minus y.aml).
+        # (a full path, minus .yaml).
         spec["id"] = module_id
+
+        # Validate and normalize the module specification.
+
+        try:
+            spec = validate_module(spec)
+        except ModuleValidationError as e:
+            raise ValidationError(spec['id'], e.context, e.message)
 
         # Recursively update any modules this module references.
         for m1 in self.get_module_spec_dependencies(spec):
             self.process_module(m1, available_modules, processed_modules, path + [spec["id"]], asset_packs)
 
-        # Run some validation.
-
-        if not isinstance(spec.get("questions"), list):
-            raise ValidationError(module_id, "questions", "Invalid value for 'questions'.")
-
-        # Pre-process the module.
-
-        self.preprocess_module_spec(spec)
+        # Now that dependent modules are loaded, replace module string IDs with database numeric IDs
+        # for the current Module instance representing that module. Since dependencies are processed
+        # first, we know that the current one in the database is the one that the YAML file meant to
+        # reference.
+        for q in spec.get("questions", []):
+            if "module-id" not in q: continue
+            try:
+                q["module-id"] = Module.objects.get(key=q["module-id"], superseded_by=None).id
+            except Module.DoesNotExist:
+                raise DependencyError(module_key, q["module-id"])
 
         # Ok now actually do the database update for this module...
 
@@ -544,27 +553,8 @@ class Command(BaseCommand):
         if not isinstance(questions, list): questions = []
         for question in questions:
             if question.get("type") in ("module", "module-set"):
-                yield self.resolve_relative_module_id(spec, question.get("module-id"))
+                yield question["module-id"]
 
-    def resolve_relative_module_id(self, within_module, module_id):
-        # Module IDs specified in the YAML are relative to the directory in which
-        # they are found. Unless they start with '/'.
-        if module_id.startswith("/"):
-            return module_id[1:]
-        return "/".join(within_module["id"].split("/")[:-1] + [module_id])
-
-    def preprocess_module_spec(self, spec):
-        # 'introduction' fields are an alias for an interstitial
-        # question that comes before all other questions, and since
-        # it is first it will be asked first
-        if "introduction" in spec:
-            q = {
-                "id": "_introduction",
-                "title": "Introduction",
-                "type": "interstitial",
-                "prompt": spec["introduction"]["template"],
-            }
-            spec.setdefault("questions", []).insert(0, q)
 
     def create_module(self, source, spec, asset_packs):
         # Create a new Module instance.
@@ -576,14 +566,23 @@ class Command(BaseCommand):
         return m
 
 
+    def remove_questions(self, spec):
+        spec = dict(spec) # clone
+        if "questions" in spec:
+            del spec["questions"]
+        return spec
+
+
     def update_module(self, m, spec, asset_packs):
         # Update a module instance according to the specification data.
         # See is_module_changed.
         if m.id:
             print("Updating", repr(m))
 
+        # Remove the questions from the module spec because they'll be
+        # stored with the ModuleQuestion instances.
         m.visible = True
-        m.spec = self.transform_module_spec(spec)
+        m.spec = self.remove_questions(spec)
         m.assets = asset_packs.get((m.source, m.parent_path))
         m.save()
 
@@ -600,41 +599,11 @@ class Command(BaseCommand):
                 q.delete()
 
 
-    def transform_module_spec(self, spec):
-        def invalid(msg):
-            raise ValidationError(spec['id'], "module", msg)
-
-        # Validate that the introduction and output documents are renderable.
-        if "introduction" in spec:
-            if not isinstance(spec["introduction"], dict):
-                invalid("Introduction field must be a dictionary, not a %s." % str(type(spec["introduction"])))
-            try:
-                render_content(spec["introduction"], None, "PARSE_ONLY", "(introduction)")
-            except ValueError as e:
-                invalid("Introduction is an invalid Jinja2 template: " + str(e))
-
-        if not isinstance(spec.get("output", []), list):
-            invalid("Output field must be a list, not a %s." % str(type(spec.get("output"))))
-        for i, doc in enumerate(spec.get("output", [])):
-            try:
-                render_content(doc, None, "PARSE_ONLY", "(output document)")
-            except ValueError as e:
-                invalid("Output document #%d is an invalid Jinja2 template: %s" % (i+1, str(e)))
-
-        # Delete 'questions' from it because it is stored within
-        # ModuleQuestion instances.
-        spec = dict(spec) # clone
-        if "questions" in spec:
-            del spec["questions"]
-        return spec
 
 
     def update_question(self, m, definition_order, spec):
         # Adds or updates a ModuleQuestion within Module m given its
         # YAML specification data in 'question'.
-
-        # Run some transformations on the specification data first.
-        spec = self.transform_question_spec(m.key, m.spec, spec)
 
         # Create/update database record.
         field_values = {
@@ -662,100 +631,6 @@ class Command(BaseCommand):
         return q
 
 
-    def transform_question_spec(self, module_key, mspec, spec):
-        if not spec.get("id"):
-            raise ValidationError(mspec['id'], "questions", "Question is missing an id.")
-
-        def invalid(msg):
-            raise ValidationError(mspec['id'], "question %s" % spec['id'], msg)
-
-        # clone dict before updating
-        spec = dict(spec)
-
-        # Since question IDs become Jinja2 identifiers, they must be valid
-        # Jinaj2 identifiers. http://jinja.pocoo.org/docs/2.9/api/#notes-on-identifiers
-        if not re.match("^[a-zA-Z_][a-zA-Z0-9_]*$", spec["id"]):
-            invalid("The question ID may only contain ASCII letters, numbers, and underscores, and the first character must be a letter or underscore.")
-            
-        # Perform type conversions, validation, and fill in some defaults in the YAML
-        # schema so that the values are ready to use in the database.
-        if spec.get("type") == "multiple-choice":
-            # validate and type-convert min and max
-
-            spec["min"] = spec.get("min", 0)
-            if not isinstance(spec["min"], int) or spec["min"] < 0:
-                invalid("min must be a positive integer")
-
-            spec["max"] = None if ("max" not in spec) else spec["max"]
-            if spec["max"] is not None:
-                if not isinstance(spec["max"], int) or spec["max"] < 0:
-                    invalid("max must be a positive integer")
-        
-        elif spec.get("type") in ("module", "module-set"):
-            # Replace the module ID (a string) from the specification with
-            # the integer ID of the module instance in the database for
-            # the current Module representing that module in the filesystem.
-            # Since dependencies are processed first, we know that the current
-            # one in the database is the one that the YAML file meant to reference.
-            try:
-                spec["module-id"] = \
-                    Module.objects.get(
-                        key=self.resolve_relative_module_id(mspec, spec.get("module-id")),
-                        superseded_by=None)\
-                        .id
-            except Module.DoesNotExist:
-                raise DependencyError(module_key, spec.get("module-id"))
-        
-        elif spec.get("type") == None:
-            invalid("Question is missing a type.")
-
-        # Check that the prompt is a valid Jinja2 template.
-        if spec.get("prompt") is None:
-            # Prompts are optional in project modules but required elsewhere.
-            if mspec.get("type") not in ("project", "system-project"):
-                invalid("Question prompt is missing.")
-        else:
-            if not isinstance(spec.get("prompt"), str):
-                invalid("Question prompt must be a string, not a %s." % str(type(spec.get("prompt"))))
-            try:
-                render_content({
-                        "format": "markdown",
-                        "template": spec["prompt"],
-                    },
-                    None, "PARSE_ONLY", "(question prompt)")
-            except ValueError as e:
-                invalid("Question prompt is an invalid Jinja2 template: " + str(e))
-
-        # Validate impute conditions.
-        imputes = spec.get("impute", [])
-        if not isinstance(imputes, list):
-            invalid("Impute's value must be a list.")
-        for i, rule in enumerate(imputes):
-            def invalid_rule(msg):
-                raise ValidationError(mspec['id'], "question %s, impute condition %d" % (spec['id'], i+1), msg)
-
-            # Check that the condition is a string, and that it's a valid Jinja2 expression.
-            if not isinstance(rule.get("condition"), str):
-                invalid_rule("Impute condition must be a string, not a %s." % str(type(rule["condition"])))
-            from jinja2.sandbox import SandboxedEnvironment
-            env = SandboxedEnvironment()
-            try:
-                env.compile_expression(rule["condition"])
-            except Exception as e:
-                invalid_rule("Impute condition %s is an invalid Jinja2 expression: %s." % (repr(rule["condition"]), str(e)))
-
-            # Check that the value is valid. If the value-mode is raw, which
-            # is the default, then any Python/YAML value is valid. We only
-            # check expression values.
-            if rule.get("value-mode") == "expression":
-                try:
-                    env.compile_expression(rule["value"])
-                except Exception as e:
-                    invalid_rule("Impute condition value %s is an invalid Jinja2 expression: %s." % (repr(rule["value"]), str(e)))
-        
-        return spec
-
-
     def is_module_changed(self, m, source, spec, asset_packs):
         # Returns whether a module specification has changed since
         # it was loaded into a Module object (and its questions).
@@ -771,10 +646,10 @@ class Command(BaseCommand):
 
         # If all other metadata is the same, then there are no changes.
         if \
-                json.dumps(m.spec, sort_keys=True) == json.dumps(self.transform_module_spec(spec), sort_keys=True) \
+                json.dumps(m.spec, sort_keys=True) == json.dumps(self.remove_questions(spec), sort_keys=True) \
             and m.assets == asset_packs.get((m.source, m.parent_path)) \
             and json.dumps([q.spec for q in m.get_questions()], sort_keys=True) \
-                == json.dumps([self.transform_question_spec(m.key, spec, q) for q in spec.get("questions", [])], sort_keys=True):
+                == json.dumps([q for q in spec.get("questions", [])], sort_keys=True):
             return None
 
         # Define some symbols.
@@ -809,7 +684,6 @@ class Command(BaseCommand):
             # Is there an incompatible change in the question? (If there
             # is a change that is compatible, we will return that the
             # module is changed anyway at the end of this method.)
-            q = self.transform_question_spec(mq.module.key, spec, q)
             if self.is_question_changed(mq, definition_order, q) is True:
                 return incompatible_change
 
