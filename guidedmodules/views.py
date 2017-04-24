@@ -412,7 +412,7 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
     }
 
     # Construct the page.
-    def render_markdown_field(field, output_format):
+    def render_markdown_field(field, output_format, **kwargs):
         template = q.spec.get(field)
         if not template:
             return None
@@ -424,19 +424,38 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
             },
             answered,
             output_format,
-            "%s question %s %s" % (repr(q.module), q.key, field)
+            "%s question %s %s" % (repr(q.module), q.key, field),
+            **kwargs
         )
+
+    # Get any existing answer for this question.
+    existing_answer = None
+    if answer and not answer.cleared:
+        existing_answer = answer.get_value(decryption_provider=EncryptionProvider())
+
+        # For longtext questions, because the WYSIWYG editor is initialized with HTML,
+        # render the value as HTML.
+        if existing_answer and q.spec["type"] == "longtext":
+            import CommonMark
+            existing_answer = CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(existing_answer))
+    
+    # Get a default answer for this question. Render Jinja2 template, but don't turn
+    # Markdown into HTML for plain text fields. For longtext fields, turn it into
+    # HTML because the WYSIWYG editor is initialized with HTML.
+    default_answer = render_markdown_field("default",
+        "text" if q.spec["type"] != "longtext" else "html",
+        demote_headings=False)
 
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
         "prompt": render_markdown_field("prompt", "html"),
-        "placeholder_answer": render_markdown_field("placeholder", "text"), # Reder Jinja2 template but don't turn Markdown into HTML.
-        "default_answer": render_markdown_field("default", "text"), # Reder Jinja2 template but don't turn Markdown into HTML.
+        "placeholder_answer": render_markdown_field("placeholder", "text"), # Render Jinja2 template but don't turn Markdown into HTML.
         "reference_text": render_markdown_field("reference_text", "html"),
         "history": taskq.get_history() if taskq else None,
         "answer_obj": answer,
-        "answer": answer.get_value(decryption_provider=EncryptionProvider()) if (answer and not answer.cleared) else None,
+        "answer": existing_answer,
+        "default_answer": default_answer,
         "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
         "show_discussion_members_count": True,
 

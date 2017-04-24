@@ -511,7 +511,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # longtext
         self.assertRegex(self.browser.title, "Next Question: longtext")
-        self.fill_field("#inputctrl", "This is a paragraph.\n\nThis is another paragraph.")
+        self.fill_field("#inputctrl .ql-editor", "This is a paragraph.\n\nThis is another paragraph.")
         self.click_element("#save-button")
         var_sleep(.5)
 

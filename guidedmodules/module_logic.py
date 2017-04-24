@@ -260,7 +260,9 @@ def get_question_context(answers, question):
     return context
 
 
-def render_content(content, answers, output_format, source, additional_context={}):
+def render_content(content, answers, output_format, source, additional_context={},
+    demote_headings=True):
+
     # Renders content (which is a dict with keys "format" and "template")
     # into the requested output format, using the ModuleAnswers in answers
     # to provide the template context.
@@ -356,7 +358,7 @@ def render_content(content, answers, output_format, source, additional_context={
                     # Generate <h#> tags with one level down from
                     # what would be normal since they should not
                     # conflict with the page <h1>.
-                    if entering:
+                    if entering and demote_headings:
                         node.level += 1
                     super().heading(node, entering)
 
@@ -441,6 +443,7 @@ def render_content(content, answers, output_format, source, additional_context={
             return output
         else:
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
+
 
     elif template_format in ("text", "html"):
         # The plain-text and HTML template types are rendered using Jinja2.

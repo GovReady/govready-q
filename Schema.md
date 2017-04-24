@@ -280,13 +280,13 @@ This type asks the user for a web address (a URL). It is the same as the `text` 
 
 #### `longtext`
 
-This type asks the user for free-form text using a large text input area that allows for multiple lines of text. The text cannot be empty.
+This type asks the user for free-form text using a large rich text input area that allows for multiple lines of text and some simple formatting. The text cannot be empty.
 
-A `default` value can be specified, which fills in the field with a value that the user can edit (or not) before submitting the answer. The field is rendered like other Module documents --- just like the `prompt`.
+A `default` value can be specified, which fills in the field with a value that the user can edit (or not) before submitting the answer. The field is rendered like other Module documents --- just like the `prompt`. It is given in Markdown.
 
 `help` text can be specified which provides an additional prompt smaller and below the field input.
 
-In document templates and impute conditions, the value of `longtext` questions is simply the text the user entered.
+In document templates and impute conditions, the value of `longtext` questions is the text the user entered, as a string, with rich formatted represented in CommonMark. In document templates, the text is automatically converted back to rich formatting.
 
 #### `date`
 

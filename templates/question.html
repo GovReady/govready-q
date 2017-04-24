@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% load q %}
 
 {% block title %}
@@ -129,14 +130,13 @@ label:hover .onhover { display: inline; }
 
             {% elif q.spec.type == "longtext" %}
               <div class="form-group">
-                <textarea
-                  id="inputctrl"
-                  name="value"
-                  class="form-control"
-                  rows="10"
-                  >{% if answer %}{{answer}}{% elif default_answer %}{{default_answer}}{% endif %}</textarea>
+                <div id="inputctrl">
+                  <div style="display: none"> {# dont flicker content before widget is added #}
+                    {% if answer %}{{answer|safe}}
+                    {% elif default_answer %}{{default_answer|safe}}{% endif %}
+                  </div>
+                </div>
                 <p class="help-block">{{q.spec.help}}</p>
-
               </div>
 
             {% elif q.spec.type == "date" %}
@@ -461,18 +461,40 @@ label:hover .onhover { display: inline; }
 {% endblock %}
 
 {% block scripts %}
+
 {% include "task-question-debug-links.html" %}
+
+{% if q.spec.type == "longtext" %}
+  <link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
+  <script src="{% static "vendor/quill/quill.min.js" %}"></script>
+  <script src="{% static "js/quill_commonmark.js" %}"></script>
+{% endif %}
 
 <script>
 $(function() {
     var form = $("#question > form");
 
+    // CONTROL INITIALIZATION
+    {% if q.spec.type == "longtext" %}
+      window.inputctrl_quill = CommonMarkQuill("#inputctrl", {});
+    {% endif %}
+
     // DEFAULT STATE
 
     {% if write_priv %}
+      {# If the control is editable, give it focus. #}
       $('#inputctrl').focus();
+      {% if q.spec.type == "longtext" %}
+        window.inputctrl_quill.focus();
+      {% endif %}
+
     {% else %}
+      {# If the control is not editable, make it disabled. #}
       form.find('input, textarea').prop('disabled', true);
+      {% if q.spec.type == "longtext" %}
+        window.inputctrl_quill.enable(false);
+      {% endif %}
+
     {% endif %}
 
     // DEFAULT VALUE
@@ -525,7 +547,7 @@ $(function() {
 
     // VALIDATION
 
-    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
+    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
     
     function validate_answer() {
         var val = $('#inputctrl').val();
@@ -549,6 +571,28 @@ $(function() {
     {# dont reveal for password-type questions #}
     function is_answer_unchanged() { }
     {% endif %}
+
+    {% elif q.spec.type == "longtext" %}
+
+    function validate_answer() {
+        var val = window.inputctrl_quill.getContentsAsCommonMark();
+        if (/^ *$/.exec(val))
+            return "You must enter something."
+        return undefined;
+    }
+    function on_input_changed(handler) {
+      window.inputctrl_quill.on('text-change', function(delta, oldDelta, source) {
+        if (source == 'user')
+          handler();
+      });
+    }
+    function is_answer_unchanged() {
+      // TODO: The values might need to be normalized because things can
+      // have non-significant changes in the markdown-HTML-markdown conversion.
+      var val = window.inputctrl_quill.getContentsAsCommonMark();
+      if (val == "{{answer|escapejs}}")
+        return true;
+    }
 
     {% elif q.spec.type == "date" %}
 
@@ -669,8 +713,8 @@ $(function() {
         //
         // var data = form.serialize();
         //
-        // it does not handle file uploads. For file uploads
-        // we must use a FormData object. We could assemble
+        // it does not handle file uploads or the rich text editor.
+        // For file uploads we must use a FormData object. We could assemble
         // the FormData instance by hand:
         //
         // var form_fields = form.serializeArray();
@@ -681,6 +725,12 @@ $(function() {
         //
         // But there's a constructor that does this for us:
         var data = new FormData($('form')[0]);
+
+        {% if q.spec.type == "longtext" %}
+        // Add the rich text.
+        data.set("value", window.inputctrl_quill.getContentsAsCommonMark());
+        {% endif %}
+
         ajax_with_indicator({
             url: "{{task.get_absolute_url|escapejs}}/_save",
             method: "POST",
