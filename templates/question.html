@@ -90,22 +90,30 @@ label:hover .onhover { display: inline; }
               {{prompt|safe}}
             </div>
 
-            {% if q.spec.type == "text" %}
+            {% if q.spec.type == "text" or q.spec.type == "email-address" or q.spec.type == "url" %}
               <div class="form-group">
-                <input name="value" type="text" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer %}value="{{answer}}"{% endif %}>
-                <p class="help-block">{{q.spec.help}}</p>
-              </div>
-
-            {% elif q.spec.type == "email-address" %}
-              <div class="form-group">
-                <input name="value" type="email" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer %}value="{{answer}}"{% endif %}>
-                <p class="help-block">{% if q.spec.help %}{{q.spec.help}}{% else %}Enter an email address.{% endif %}</p>
-              </div>
-
-            {% elif q.spec.type == "url" %}
-              <div class="form-group">
-                <input name="value" type="url" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer %}value="{{answer}}"{% endif %}>
-                <p class="help-block">{% if q.spec.help %}{{q.spec.help}}{% else %}Paste a web address.{% endif %}</p>
+                <input
+                  id="inputctrl"
+                  name="value"
+                  class="form-control"
+                  {% if q.spec.type == "email-address" %}
+                  type="email"
+                  {% elif q.spec.type == "url" %}
+                  type="url"
+                  {% else %}
+                  type="text"
+                  {% endif %}
+                  placeholder="{{q.spec.placeholder}}"
+                  {% if answer %}value="{{answer}}"{% endif %}>
+                <p class="help-block">
+                  {% if q.spec.help %}
+                    {{q.spec.help}}
+                  {% elif q.spec.type == "email-address" %}
+                    Enter an email address.
+                  {% elif q.spec.type == "url" %}
+                    Paste a web address.
+                  {% endif %}
+                </p>
               </div>
 
             {% elif q.spec.type == "password" %}
