@@ -6,6 +6,7 @@
 
 <link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
 <script src="{% static "vendor/quill/quill.min.js" %}"></script>
+<script src="{% static "js/quill_commonmark.js" %}"></script>
 
 <style>
 #discussion-your-comment-tips {
@@ -299,18 +300,7 @@ function display_discussion(discussion, is_page_load) {
   // INITIALIZE THE COMMENT EDITOR
 
   // initialize the editor
-  quill = new Quill('#discussion-your-comment', {
-    theme: 'snow',
-    formats: ['bold', 'italic', 'code', 'link', 'blockquote', 'header', 'list', 'code-block', 'image'],
-    modules: {
-      toolbar: [['bold', 'italic', 'code'], [{ header: 1 }, { header: 2 }, { list: 'ordered' }, { list: 'bullet' }, 'blockquote', 'code-block'], ['link', 'image']]
-    }
-  });
-  $('#discussion-your-comment').keydown(function(e) {
-    if ((e.ctrlKey || e.metaKey) && (e.keyCode == 13 || e.keyCode == 10))
-      $(this).parents('form').submit();
-  });
-
+  quill = new CommonMarkQuill('#discussion-your-comment', { });
   if (!is_page_load || discussion.events.length == 0) quill.focus();
 
   // show an existing draft and poll for updating the draft
@@ -327,15 +317,6 @@ function display_discussion(discussion, is_page_load) {
   // toggle a class depending on whether the user's comment textarea has
   // anything in it, which is used if we have a "Close & Comment" / "Re-open & Comment"
   // button
-  quill.isEmpty = function() {
-    var content = this.getContents();
-    var ret = true;
-    content.ops.forEach(function(op) {
-        if (typeof op.insert != "string" || /\S/.test(op.insert))
-          ret = false;
-    })
-    return ret;
-  }
   function discussion_update_your_comment_empty_class() {
     var isEmpty = quill.isEmpty();
     $('#discussion .comment-input').toggleClass('user-input-empty', isEmpty);
@@ -659,7 +640,7 @@ function update_draft(force, callback) {
   // If force is not truthy, then don't save an empty editor if there's
   // no draft yet. Attachments require saving an empty editor so there is
   // something to attach the attachment to, so it passes force=true.
-  var current_text = quill_delta_to_markdown(quill.getContents());
+  var current_text = quill.getContentsAsCommonMark();
   if ((draft_state && current_text == draft_state.text)
       || (!force && !/\S/.test(current_text) && draft_state == null)) {
     callback();
@@ -939,111 +920,4 @@ function attach_files(files) {
     });
   });
 }
-
-function quill_delta_to_markdown(delta) {
-  // Render the Quill widget's content, which we can only obtain
-  // in its "Delta" format, into CommonMark.
-
-  if (quill.isEmpty())
-    return "";
-
-  // Form the Markdown document as an array of block, where each
-  // block is an array of inlines (strings).
-  var md = [[ { raw: "", md: "" } ]];
-  delta.ops.forEach(function(op) {
-    if (typeof op.insert === "string") {
-      // Text insertion.
-      op.insert.split(/(\n)/).forEach(function(text) {
-        var block = md[md.length-1];
-
-        if (text != "\n") {
-          var raw_text = text;
-
-          // Escape punctuation.
-          // Backslash escapes do not work in code blocks or code spans.
-          // We'll handle code blocks later.
-          if (!op.attributes || !op.attributes.code) {
-            text = text.replace(
-              /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~]/g,
-              function(p) { return "\\" + p },
-              text);
-          }
-
-          // Add text as an inline.
-          if (op.attributes) {
-            var inlink = false;
-
-            if (op.attributes.link) {
-              // In order to join consecutive ops with the same link target,
-              // we'll insert this text in parts. If we see that we're in the
-              // same link, pop the end of the link so we can continue it.
-              // Do this ahead of bold/italics so that we can see if we need
-              // to alernate the symbol.
-              if (block[block.length-1].md == "](" + op.attributes.link + ")") {
-                block.pop(); // pop and re-add after the text.
-                inlink = true;
-              }
-            }
-
-            // To avoid clashing emphasis markers, if the last inline
-            // ended with * or _, use the other for this inline.
-            var em = "*";
-            if (/\*$/.test(block[block.length-1].md))
-              em = "_";
-
-            if (op.attributes.italic)
-              text = em + text + em;
-            if (op.attributes.bold)
-              text = em + em + text + em + em;
-            
-            if (op.attributes.code)
-              text = "`" + text + "`";
-
-            if (op.attributes.link) {
-              if (!inlink)
-                block.push({ raw: "", md: "[" });
-              block.push({ raw: raw_text, md: text });
-              block.push({ raw: "", md: "](" + op.attributes.link + ")" });
-              return;
-            }
-          }
-
-          block.push({ raw: raw_text, md: text });
-
-        } else {
-          // This is a newline. Apply block-level attributes to the
-          // current block, then start a new block.
-          if (op.attributes) {
-            if (op.attributes.header) {
-              var h = "";
-              for (var i = 0; i < op.attributes.header; i++)
-                h += "#";
-              block.unshift({ raw: "", md: h + " "});
-            } else if (op.attributes.list == "ordered") {
-              block.unshift({ raw: "", md: "1. "});
-            } else if (op.attributes.list == "bullet") {
-              block.unshift({ raw: "", md: "* "});
-            } else if (op.attributes.blockquote) {
-              block.unshift({ raw: "", md: "> "});
-            } else if ("code-block" in op.attributes) {
-              // Use only raw text in code blocks - no markdown formatting.
-              block.forEach(function(inline) { inline.md = inline.raw; });
-              block.unshift({ raw: "", md: "    "});
-            }
-          }
-          md.push([{ raw: "", md: "" }]);
-        }
-      });
-
-    } else if (op.insert.image) {
-      // This holds a URL or data URI. We'll convert the data URI
-      // to an attachment + a safe URI on the server side, since data URIs
-      // are not safe in CommonMark.
-      var block = md[md.length-1];
-      block.push({ raw: "", md: "![](" + op.insert.image + ")"})
-    }
-  });
-  return md.map(function(block) { return block.map(function(inline) { return inline.md }).join(""); }).join("\n\n");
-}
-
 </script>
