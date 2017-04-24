@@ -508,7 +508,7 @@ class Command(BaseCommand):
             try:
                 q["module-id"] = Module.objects.get(key=q["module-id"], superseded_by=None).id
             except Module.DoesNotExist:
-                raise DependencyError(module_key, q["module-id"])
+                raise DependencyError(module_id, q["module-id"])
 
         # Ok now actually do the database update for this module...
 

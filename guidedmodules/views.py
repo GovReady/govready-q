@@ -412,24 +412,28 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
     }
 
     # Construct the page.
-    def render_markdown_field(field):
+    def render_markdown_field(field, output_format):
         template = q.spec.get(field)
         if not template:
             return None
+        if not isinstance(template, str):
+            raise ValueError("%s question %s %s is not a string" % (repr(q.module), q.key, field))
         return module_logic.render_content({
                 "template": template,
                 "format": "markdown",
             },
             answered,
-            "html",
+            output_format,
             "%s question %s %s" % (repr(q.module), q.key, field)
         )
 
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
-        "prompt": render_markdown_field("prompt"),
-        "reference_text": render_markdown_field("reference_text"),
+        "prompt": render_markdown_field("prompt", "html"),
+        "placeholder_answer": render_markdown_field("placeholder", "text"), # Reder Jinja2 template but don't turn Markdown into HTML.
+        "default_answer": render_markdown_field("default", "text"), # Reder Jinja2 template but don't turn Markdown into HTML.
+        "reference_text": render_markdown_field("reference_text", "html"),
         "history": taskq.get_history() if taskq else None,
         "answer_obj": answer,
         "answer": answer.get_value(decryption_provider=EncryptionProvider()) if (answer and not answer.cleared) else None,

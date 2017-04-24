@@ -88,22 +88,25 @@ def validate_question(mspec, spec):
     elif spec.get("type") == None:
         invalid("Question is missing a type.")
 
-    # Check that the prompt is a valid Jinja2 template.
+    # Check that required fields are present.
     if spec.get("prompt") is None:
         # Prompts are optional in project modules but required elsewhere.
         if mspec.get("type") not in ("project", "system-project"):
             invalid("Question prompt is missing.")
-    else:
-        if not isinstance(spec.get("prompt"), str):
-            invalid("Question prompt must be a string, not a %s." % str(type(spec.get("prompt"))))
+
+    # Check that the prompt, placeholder, and default are valid Jinja2 templates.
+    for field in ("prompt", "placeholder", "default"):
+        if field not in spec: continue
+        if not isinstance(spec.get(field), str):
+            invalid("Question %s must be a string, not a %s." % (field, str(type(spec.get(field)))))
         try:
             render_content({
                     "format": "markdown",
-                    "template": spec["prompt"],
+                    "template": spec[field],
                 },
-                None, "PARSE_ONLY", "(question prompt)")
+                None, "PARSE_ONLY", "(question %s)" % field)
         except ValueError as e:
-            invalid("Question prompt is an invalid Jinja2 template: " + str(e))
+            invalid("Question %s is an invalid Jinja2 template: %s" % (field, e))
 
     # Validate impute conditions.
     imputes = spec.get("impute", [])

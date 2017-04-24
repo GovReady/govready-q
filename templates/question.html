@@ -103,8 +103,12 @@ label:hover .onhover { display: inline; }
                   {% else %}
                   type="text"
                   {% endif %}
-                  placeholder="{{q.spec.placeholder}}"
-                  {% if answer %}value="{{answer}}"{% endif %}>
+                  placeholder="{{placeholder_answer}}"
+                  {% if answer %}
+                    value="{{answer}}"
+                  {% elif default_answer %}
+                    value="{{default_answer}}"
+                  {% endif %}>
                 <p class="help-block">
                   {% if q.spec.help %}
                     {{q.spec.help}}
@@ -125,7 +129,12 @@ label:hover .onhover { display: inline; }
 
             {% elif q.spec.type == "longtext" %}
               <div class="form-group">
-                <textarea name="value" class="form-control" id="inputctrl" rows="10">{% if answer %}{{answer}}{% endif %}</textarea>
+                <textarea
+                  id="inputctrl"
+                  name="value"
+                  class="form-control"
+                  rows="10"
+                  >{% if answer %}{{answer}}{% elif default_answer %}{{default_answer}}{% endif %}</textarea>
                 <p class="help-block">{{q.spec.help}}</p>
 
               </div>
@@ -215,10 +224,10 @@ label:hover .onhover { display: inline; }
                 {% endcomment %}
                 {% if q.spec.min > -1000 and q.spec.max < 1000 %}
                   {# the range doesn't admit thousands, so we don't need to worry about thousands-commmas #}
-                  <input name="value" type="number" {% if q.spec.type == "integer" %}step="1"{% else %}step="any"{% endif %} class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer %}value="{{answer}}"{% endif %}>
+                  <input name="value" type="number" {% if q.spec.type == "integer" %}step="1"{% else %}step="any"{% endif %} class="form-control" id="inputctrl" placeholder="{{placeholder_answer}}" {% if answer %}value="{{answer}}"{% endif %}>
                 {% else %}
                   {# to let users enter thousands-commas by using a plain text field #}
-                  <input name="value" type="text" pattern="[0-9,\.]+" class="form-control" id="inputctrl" placeholder="{{q.spec.placeholder}}" {% if answer %}value="{{answer}}"{% endif %}>
+                  <input name="value" type="text" pattern="[0-9,\.]+" class="form-control" id="inputctrl" placeholder="{{placeholder_answer}}" {% if answer %}value="{{answer}}"{% endif %}>
                 {% endif %}
                 <p class="help-block">{{q.spec.help}}</p>
                 {% if q.spec.min|default_if_none:"NONE" != "NONE" and q.spec.max|default_if_none:"NONE" != "NONE" %}

@@ -467,6 +467,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#save-button")
         var_sleep(.5)
 
+        # text w/ default
+        self.assertRegex(self.browser.title, "Next Question: text_with_default")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # password
         self.assertRegex(self.browser.title, "Next Question: password")
         self.fill_field("#inputctrl", "th1s1z@p@ssw0rd!")
@@ -510,6 +515,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#save-button")
         var_sleep(.5)
 
+        # longtext w/ default
+        self.assertRegex(self.browser.title, "Next Question: longtext_with_default")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # date
         self.assertRegex(self.browser.title, "Next Question: date")
 
@@ -532,6 +542,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Text Input Question Types - ")
+        self.assertInNodeText("I am a kiwi.", "#document-1-body") # text default should appear
+        self.assertInNodeText("Peaches are sweet.", "#document-1-body") # text default should appear
 
     def test_questions_choice(self):
         # Log in and create a new project.

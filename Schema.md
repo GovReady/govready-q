@@ -251,7 +251,7 @@ Removing a question, changing a question type, and other changes as noted below 
 
 This type asks the user for a single line of free-form text. The text cannot be empty.
 
-A `placeholder` can be specified which provides "placeholder" text displayed inside the form field when the user has not yet entered anything.
+A `placeholder` can be specified which places ghosted "placeholder" text inside the form field when the user has not yet entered anything. A `default` value can be specified, instead, which fills in the field with a value that the user can edit (or not) before submitting the answer. The placeholder and default fields are rendered like other Module documents --- just like the `prompt`.
 
 `help` text can be specified which provides an additional prompt smaller and below the field input.
 
@@ -268,19 +268,21 @@ In document templates and impute conditions, the value of `text` questions is si
 
 #### `password`
 
-This type asks the user for a password. It is the same as the `text` question type, except that a password input field is used to mask the input. `placeholder` and `help` can be specified.
+This type asks the user for a password. It is the same as the `text` question type, except that a password input field is used to mask the input. `help` can be specified. `placeholder` and `default` are not allowed.
 
 #### `email-address`
 
-This type asks the user for an email address. It is the same as the `text` question type, except that the value entered must be a valid email address. `placeholder` and `help` can be specified.
+This type asks the user for an email address. It is the same as the `text` question type, except that the value entered must be a valid email address. `placeholder`, `default`, and `help` can be specified.
 
 #### `url`
 
-This type asks the user for a web address (a URL). It is the same as the `text` question type, except that the value entered must be a valid web address. `placeholder` and `help` can be specified. The web address is not checked for existence --- only the form (syntax) of the address is checked.
+This type asks the user for a web address (a URL). It is the same as the `text` question type, except that the value entered must be a valid web address. `placeholder`, `default`, and `help` can be specified. The web address is not checked for existence --- only the form (syntax) of the address is checked.
 
 #### `longtext`
 
 This type asks the user for free-form text using a large text input area that allows for multiple lines of text. The text cannot be empty.
+
+A `default` value can be specified, which fills in the field with a value that the user can edit (or not) before submitting the answer. The field is rendered like other Module documents --- just like the `prompt`.
 
 `help` text can be specified which provides an additional prompt smaller and below the field input.
 

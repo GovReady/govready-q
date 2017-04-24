@@ -11,6 +11,11 @@ questions:
     type: text
     placeholder: this is placeholder text
     help: This is help text.
+  - id: q_text_with_default
+    title: text_with_default
+    prompt: Enter some text -- or not because there's a default value for you.
+    type: text
+    default: I am a k{% if 1 %}iw{% endif %}i.
   - id: q_password
     title: password
     prompt: Enter a password.
@@ -34,6 +39,14 @@ questions:
     prompt: Enter some text.
     type: longtext
     help: This is help text.
+  - id: q_longtext_with_default
+    title: longtext_with_default
+    prompt: Enter some text -- or not, there's a default!
+    type: longtext
+    default: |
+      P{% if 1 %}eache{% endif %}s are sweet.
+
+      That's why I write two paragraphs about peaches.
   - id: q_date
     title: date
     prompt: Choose a date.
@@ -45,8 +58,10 @@ output:
     format: markdown
     template: |
       {{q_text}}
+      {{q_text_with_default}}
       {{q_password}}
       {{q_email_address}}
       {{q_url}}
       {{q_longtext}}
+      {{q_longtext_with_default}}
       {{q_date}}

@@ -9,7 +9,7 @@ questions:
     title: integer
     prompt: Enter a whole number.
     type: integer
-    placeholder: 123
+    placeholder: "123"
     help: This is some help text.
 
   - id: q_integer_minmax
@@ -18,7 +18,7 @@ questions:
     type: integer
     min: 1
     max: 10
-    placeholder: 1
+    placeholder: "1"
     help: This is some help text.
 
   - id: q_integer_minmax_big
@@ -27,14 +27,14 @@ questions:
     type: integer
     min: 1
     max: 10000
-    placeholder: 1
+    placeholder: "1"
     help: This is some help text.
 
   - id: q_real
     title: real
     prompt: Enter a fractional number.
     type: real
-    placeholder: 123.456
+    placeholder: "123.456"
     help: This is some help text.
 
   - id: q_real_minmax
@@ -43,7 +43,7 @@ questions:
     type: real
     min: 1
     max: 100
-    placeholder: 23.456
+    placeholder: "23.456"
     help: This is some help text.
 
 output:
