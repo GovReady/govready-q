@@ -190,6 +190,12 @@
 
 <div class="col-md-pull-2 col-md-10">
   <div id="focus-area-wrapper">
+    {% if project.root_task.module.spec.is_app_stub %}
+      {# This project is tied to an app that has not yet been imported. #}
+      <h2>Activate App</h2>
+      <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
+    {% endif %}
+
     {# tabs #}
 
     <ul id="project-tabs" class="nav nav-tabs">

@@ -156,15 +156,6 @@ Both git methods have an optional `path` field which lets you choose a directory
 
 After making changes to Module Sources, run `python3 manage.py load_modules` to pull the modules from the sources into the database.
 
-## Granting Access to Private Modules
-
-"Private Modules" are project modules with `access: private` specified in its YAML file. See [Schema.md](Schema.md) for details on setting the `access` flag in the YAML file.
-
-These modules are removed from the page that starts a new assessment, preventing users from starting new assessments marked as hidden. (If a user has already started an assessment, making it private does not prevent them from accessing and continuing their in-progress work.)
-
-To grant an Organization's users access to a private module, so that they can see it and start it on the new assessment page, use the Django admin site to edit the Organization. Add the module's full ID to the allowed modules field (which is a list of module IDs separated by newlines). The full ID includes the module's namespace, any subdirectories it is contained in within its source, and then the module's ID.
-
-Example: A Module Source binds the namespace `mymodules` to a Github repository using `"path": "modules"` in the Spec string. The repository contains a module YAML file at `modules/fisma/project.yaml`. This module's full ID to be listed in the allowed modules field is `mymodules/fisma/project`.
 
 # Testing and Generating Screenshots
 

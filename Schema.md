@@ -77,14 +77,6 @@ The schema for questions is documented in a later section.
 
 ### Additional fields for projects
 
-#### Project Fields
-
-Modules whose type is `project` can also have some additional fields, e.g.:
-
-	access: private
-
-`access`: Set to `private` if the project should only be offered to organizations with special permission. The default is `public`. See the main [README.md](README.md) for how the application grants access to private modules.
-
 #### Question Fields
 
 The questions of projects are displayed in a layout of tabs and groups within each tab pane. Each question that shows up on a project page should specify its tab and group name (which are also the display strings):

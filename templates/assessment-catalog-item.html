@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{module.title}} - Assessment Catalog
+{{app.title}} - Assessment Catalog
 {% endblock %}
 
 {% block head %}
@@ -35,15 +35,15 @@
 
 {% block breadcrumbs %}
 <li class="active"><a href="/assessment-catalog">Compliance App Store</a></li>
-<li class="active">{{module.title|truncatewords:6}}</li>
+<li class="active">{{app.title|truncatewords:6}}</li>
 {% endblock %}
 
 {% block body %}
 <div class="row">
   <div class="col-sm-10">
-    <h1><small>{{module.provider}}</small><br/>{{module.title}}</h1>
+    <h1><small>{{app.vendor}}</small><br/>{{app.title}}</h1>
     <div class="body">
-      {{module.long_description|safe}}
+      {{app.description.long|safe}}
     </div>
   </div>
   <div class="col-sm-2">
@@ -58,15 +58,20 @@
 
       <div id="app-metadata">
         <div class="meta-heading"><strong>Information</strong></div>
-        <div><span class="meta-key">Provider</span>: <a href="{{module.provider_url}}">{{module.provider}}</a></div>
-        <div><span class="meta-key">Status</span>: {{module.status}}</div>
-        <div><span class="meta-key">Version</span>: {{module.version}}</div>
-        <div><span class="meta-key">Source</span>: <a href="{{module.source_url}}">{{module.access}}</a></div>
+        <div><span class="meta-key">Provider</span>: <a href="{{app.vendor_url}}">{{app.vendor}}</a></div>
+        <div><span class="meta-key">Status</span>: {{app.status}}</div>
+        <div><span class="meta-key">Version</span>: {{app.version}}</div>
+        <div><span class="meta-key">Source</span>: <a href="{{app.source_url}}">{{app.source_url}}</a></div>
+        {% if app.authz == "none" %}
+          <div><span class="meta-key">Startable</span>: Yes
+        {% else %}
+          <div><span class="meta-key">Startable</span>: Requires Admin
+        {% endif %}
 
         <div class="meta-heading"><strong>Recommended for</strong></div>
-        <div><span class="meta-key">Org</span>: {{module.org}}</div>
-        <div><span class="meta-key">Tech</span>: {{module.tech}}</div>
-        <div><span class="meta-key">Role</span>: {{module.role}}</div>
+        {% for item in app.recommended_for %}
+        <div><span class="meta-key">{{item.key_short}}</span>: {{item.value}}</div>
+        {% endfor %}
       </div>
 
     </div>

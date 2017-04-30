@@ -50,16 +50,21 @@ Assessment Catalog
 {% block body %}
 <h1><img alt="GovReady Q logo" src="{% static "img/brand/govready_logo_transparent.png" %}" width="190px" style="margin-top:-18.5px;"> Compliance App Store</h1>
 <div class="row">
-  {% for module in project_modules %}
+  {% for app in apps %}
     <div class="col-sm-4">
       <div class="assessment"
-        data-assessment="{{module.key}}"
-        onclick="window.location='/assessment-catalog/{{module.key|urlencode}}'"">
-        <h2><small>{{module.provider}}</small><br/>{{module.title}}</h2>
+        data-assessment="{{app.key}}"
+        onclick="window.location='/assessment-catalog/{{app.key|urlencode}}'"">
+        <h2><small>{{app.vendor}}</small><br/>{{app.title}}</h2>
         <div class="body">
-          {{module.short_description|safe}}
+          {{app.description.short|safe}}
         </div>
-        <div class="app-metadata pull-right">{{module.status}} v{{module.version}}</div>
+        <div class="app-metadata pull-right">
+          <div>{{app.status}} v{{app.version}}</div>
+          {% if app.authz == "none" %}
+            <div>Start Immediately!</div>
+          {% endif %}
+        </div>
       </div>
     </div>
 

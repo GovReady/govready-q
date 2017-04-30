@@ -88,81 +88,81 @@ def folder_view(request, folder_id):
     })
 
 
-def add_assessment_catalog_metadata(module):
+# Cache the contents of the app store by the organization, since we
+# may show different apps on different organization sites.
+_app_store_cache = { }
+def get_app_store(request):
+    global _app_store_cache
+    if request.organization not in _app_store_cache:
+        _app_store_cache[request.organization] = list(load_app_store(request.organization))
+    return _app_store_cache[request.organization]
+
+def load_app_store(organization):
+    from guidedmodules.models import ModuleSource
+    from guidedmodules.module_sources import MultiplexedAppStore
     from guidedmodules.module_logic import render_content
 
-    module.short_description = render_content(
-        {
-            "template": module.spec.get("catalog", {}).get("description", {}).get("short") or "",
-            "format": "markdown",
-        },
-        None,
-        "html",
-        "%s %s" % (repr(module), "short description")
-    )
+    with MultiplexedAppStore(ms for ms in ModuleSource.objects.all()) as store:
+        for app in store.list_apps():
+            if app.store.source.namespace == "system":
+                continue
 
-    module.long_description = render_content(
-        {
-            "template": module.spec.get("catalog", {}).get("description", {}).get("long")
-                        or module.spec.get("catalog", {}).get("description", {}).get("short")
+            catalog_info = dict(app.get_catalog_info())
+
+            catalog_info["modulesource_id"] = app.store.source.id
+            catalog_info["key"] = "{source}/{name}".format(source=app.store.source.namespace, name=app.name)
+
+            catalog_info.setdefault("description", {})
+
+            catalog_info["description"]["short"] = render_content(
+                {
+                    "template": catalog_info.get("description", {}).get("short") or "",
+                    "format": "markdown",
+                },
+                None,
+                "html",
+                "%s %s" % (repr(catalog_info["name"]), "short description")
+            )
+
+            catalog_info["description"]["long"] = render_content(
+                {
+                    "template": catalog_info.get("description", {}).get("long")
+                        or catalog_info.get("description", {}).get("short")
                         or "",
-            "format": "markdown",
-        },
-        None,
-        "html",
-        "%s %s" % (repr(module), "short description")
-    )
+                    "format": "markdown",
+                },
+                None,
+                "html",
+                "%s %s" % (repr(catalog_info["name"]), "short description")
+            )
 
-    module.org = module.spec.get("org", {}) or ""
-    module.tech = module.spec.get("tech", {}) or ""
-    module.role = module.spec.get("role", {}) or ""
-    module.type = module.spec.get("type", {}) or ""
-    module.access = module.spec.get("access", {}) or ""
-    module.source_url = module.spec.get("source_url", {}) or ""
-    module.version = module.spec.get("version", {}) or ""
-    module.status = module.spec.get("status", {})  or ""
-    module.provider = module.spec.get("provider", {})  or ""
-    module.provider_url = module.spec.get("provider_url", {})
-    # module.title = module.spec.get("title", {})
-
-#     title: "Agile Security Stories 2"
-# control_index:
-#   - standard: NIST RMF
-#     controls: 
-#       - id: AT-3
-#       - id: AT-4
+            yield catalog_info
 
 
 @login_required
 def assessment_catalog(request):
-    # Get the project-type modules that the user(+org) has permission to start.
-    project_modules = Module.get_all_startable_projects(request.user, request.organization)
-
-    # Add some extra fields for the template.
-    for m in project_modules:
-        add_assessment_catalog_metadata(m)
-
     return render(request, "assessment-catalog.html", {
-        "project_modules": project_modules,
+        "apps": get_app_store(request),
     })
 
 @login_required
-def assessment_catalog_item(request, module_key):
+def assessment_catalog_item(request, app_namespace, app_name):
     # Is this a module the user has access to?
-    project_modules = Module.get_all_startable_projects(request.user, request.organization)
-    module = [m for m in project_modules if m.key == module_key]
-    if len(module) != 1: raise Http404()
-    module = module[0]
-
-    # Add some extra fields for the template.
-    add_assessment_catalog_metadata(module)
+    from guidedmodules.models import ModuleSource
+    for app in get_app_store(request):
+        if app["key"] == app_namespace + "/" + app_name:
+            # We found it.
+            break
+    else:
+        raise Http404()
+    module_source = get_object_or_404(ModuleSource, id=app["modulesource_id"])
 
     if request.method == "GET":
         # Show the assessment "app" page.
 
         return render(request, "assessment-catalog-item.html", {
             "first": not ProjectMembership.objects.filter(user=request.user, project__organization=request.organization).exists(),
-            "module": module,
+            "app": app,
         })
     
     else:
@@ -228,18 +228,46 @@ def assessment_catalog_item(request, module_key):
                     project.organization = request.organization
 
                     # assign a good title
-                    project.title = module.title
+                    project.title = app["title"]
                     projects_in_folder = folder.get_readable_projects(request.user)
                     existing_project_titles = [p.title for p in projects_in_folder]
                     ctr = 0
                     while project.title in existing_project_titles:
                         ctr += 1
-                        project.title = module.title + " " + str(ctr)
+                        project.title = app["title"] + " " + str(ctr)
 
                     # save and add to folder
                     project.save()
-                    project.set_root_task(module, request.user)
                     folder.projects.add(project)
+
+                    # initialize the project module
+                    if app["authz"] == "none":
+                        # We can instantiate the app immediately.
+                        # 1) Get the AppStore instance from the ModuleSource.
+                        from guidedmodules.module_sources import AppStore, AppImportUpdateMode
+                        with AppStore.create(module_source) as store:
+                            # 2) Get the App.
+                            app = store.get_app(app_name)
+
+                            # 3) Validate.
+                            if app.get_catalog_info()["authz"] != "none":
+                                raise ValueError("Invalid access.")
+
+                            # 4) Import. Use the module named "app".
+                            modules = app.import_into_database(AppImportUpdateMode.New)
+                            module = modules["app"]
+
+                    else:
+                        # create a stub Module -- we'll download the app later. This
+                        # is just a placeholder.
+                        module = Module()
+                        module.source = module_source
+                        module.key = app_namespace + "/" + app_name
+                        module.spec = dict(app)
+                        module.spec["type"] = "project"
+                        module.spec["is_app_stub"] = True
+                        module.save()
+                    project.set_root_task(module, request.user)
 
                     # add user as an admin
                     ProjectMembership.objects.create(
@@ -250,7 +278,7 @@ def assessment_catalog_item(request, module_key):
                 return HttpResponseRedirect(project.get_absolute_url())
 
         return render(request, "assessment-catalog-item-start.html", {
-            "module": module,
+            "app": app,
             "form": form,
         })
 

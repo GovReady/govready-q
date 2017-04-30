@@ -28,6 +28,8 @@ class AppStore(object):
 
     def list_apps(self):
         raise Exception("Not implemented!")
+    def get_app(self, name):
+        raise Exception("Not implemented!")
 
 class App(object):
     """An App is a remote definition of Modules and
@@ -70,6 +72,8 @@ class App(object):
                 [], asset_pack, update_mode)
 
         print()
+
+        return processed_modules
 
 
 ### IMPLEMENTATIONS ###
@@ -156,6 +160,20 @@ class PyFsAppStore(AppStore):
                         entry.name,
                         self.root.opendir(entry.name))
 
+    def get_app(self, name):
+        if len(list(self.root.scandir(name))) == 0:
+            raise ValueError("App not found.")
+        return PyFsApp(self,
+            name,
+            self.root.opendir(name))
+
+    def get_app_catalog_info(self, app):
+        # All apps from a filesystem-based store require no credentials
+        # to get their contents because... we already got their contents.
+        return {
+            "authz": "none",
+        }
+
 class PyFsApp(App):
     """An App whose modules and assets are stored in a directory
        layout rooted at a PyFilesystem2 file system."""
@@ -171,9 +189,11 @@ class PyFsApp(App):
             try:
                 yaml = read_yaml_file(f)
                 ret = {
+                    "name": self.name,
                     "title": yaml["title"],
                 }
                 ret.update(yaml.get("catalog", {}))
+                ret.update(self.store.get_app_catalog_info(self))
                 return ret
             except ModuleDefinitionError as e:
                 raise ModuleDefinitionError("There was an error loading the module at %s: %s" % (

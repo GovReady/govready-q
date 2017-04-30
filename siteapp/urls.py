@@ -15,7 +15,7 @@ urlpatterns = [
 
     # assessment catalog
     url(r'^assessment-catalog$', views.assessment_catalog),
-    url(r'^assessment-catalog/(?P<module_key>.*)$', views.assessment_catalog_item),
+    url(r'^assessment-catalog/(?P<app_namespace>.*)/(?P<app_name>.*)$', views.assessment_catalog_item),
 
     # projects
     url(r"^projects$", views.folder_list),
