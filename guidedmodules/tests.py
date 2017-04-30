@@ -34,7 +34,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
     # blocks in templates.
 
     def _test_condition_helper(self, module, context_key, context_value, condition, expected):
-        m = Module.objects.get(key="fixture/" + module)
+        m = Module.objects.get(key="fixture/simple_project/" + module)
         answers = ModuleAnswers(m, None, { context_key: context_value })
 
         # Test that the impute condition works correctly.
@@ -128,7 +128,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test = lambda *args : self._test_condition_helper("question_types_module", *args)
 
         # Create a sub-task that answers a question.
-        m = Module.objects.get(key="fixture/simple") # the module ID that can answer the q_module question
+        m = Module.objects.get(key="fixture/simple_project/simple") # the module ID that can answer the q_module question
         value = ModuleAnswers(
             m,
             Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project),
@@ -299,7 +299,7 @@ class RenderTests(TestCaseWithFixtureData):
             '<p><!-- raw HTML omitted -->click me<!-- raw HTML omitted --></p>')
 
     def render_content(self, module, template_format, template, answers, output_format):
-        m = Module.objects.get(key="fixture/" + module)
+        m = Module.objects.get(key="fixture/simple_project/" + module)
         return render_content(
             {
                 "format": template_format,
@@ -433,7 +433,7 @@ class RenderTests(TestCaseWithFixtureData):
         from html import escape
 
         # Create a sub-task that answers a question.
-        m = Module.objects.get(key="fixture/simple") # the module ID that can answer the q_module question
+        m = Module.objects.get(key="fixture/simple_project/simple") # the module ID that can answer the q_module question
         value = ModuleAnswers(
             m,
             Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project),
@@ -461,7 +461,7 @@ class RenderTests(TestCaseWithFixtureData):
 
     def _test_render_single_question_md(self, module, expression, value, expected, expected_impute_value="__NOT__PROVIDED__"):
         # Render the "{{question}}" or "{{question.text}}" using the given module.
-        m = Module.objects.get(key="fixture/" + module)
+        m = Module.objects.get(key="fixture/simple_project/" + module)
         answers = ModuleAnswers(m, None, {
             expression.split(".")[0]: value # if expression looks like "id.text" just use "id" here to set the answer
         })
@@ -504,7 +504,7 @@ class RenderTests(TestCaseWithFixtureData):
 class EncryptionTests(TestCaseWithFixtureData):
     def test_encryption(self):
         # Create an empty Task.
-        m = Module.objects.get(key="fixture/question_types_encrypted")
+        m = Module.objects.get(key="fixture/simple_project/question_types_encrypted")
         task = Task.objects.create(module=m, title="Test Task", editor=self.user, project=self.project)
         answer, _ = TaskAnswer.objects.get_or_create(
             task=task,
@@ -598,7 +598,7 @@ class ImportExportTests(TestCaseWithFixtureData):
 
     def _test_round_trip(self, module_name, question_name, value_dict):
         # Create an empty Task.
-        m = Module.objects.get(key="fixture/" + module_name)
+        m = Module.objects.get(key="fixture/simple_project/" + module_name)
         task = Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project)
 
         # Import some data to set answers.

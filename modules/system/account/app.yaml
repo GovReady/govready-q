@@ -1,6 +1,6 @@
-id: account_settings_project
-type: system-project
+id: app
 title: Account Settings Project
+type: system-project
 short_description: The structure of the account settings Project.
 questions:
   - id: account_settings

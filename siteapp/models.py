@@ -93,7 +93,7 @@ class User(AbstractUser):
             is_admin=True)
 
         # Construct the root task.
-        m = Module.objects.get(key="system/account_settings_project", visible=True)
+        m = Module.objects.get(key="system/account/app", visible=True)
         task = Task.objects.create(
             project=p,
             editor=self,
@@ -219,7 +219,7 @@ class Organization(models.Model):
         org = Organization.objects.create(**kargs)
 
         # And initialize the root Task of the Organization with this user as its editor.
-        org.get_organization_project().set_root_task("system/organization", admin_user)
+        org.get_organization_project().set_root_task("system/organization/app", admin_user)
 
         # And make that user an admin of the Organization.
         ProjectMembership.objects.get_or_create(user=admin_user, project=org.get_organization_project())

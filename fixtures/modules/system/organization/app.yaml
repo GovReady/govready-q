@@ -1,4 +1,4 @@
-id: organization
+id: app
 title: About the Organization
 type: project
 hidden: true
@@ -12,24 +12,10 @@ introduction:
     Tell us about your organization.
 
 questions:
-  - id: organization_profile
-    title: Organization Profile
-    type: module
-    module-id: organization_profile
-    tab: Basic Info
-    group: About the Organization
-
   - id: organization_details
     title: Organization Details
     type: module
     module-id: organization_classification
     tab: Basic Info
-    group: About the Organization
-
-  - id: point_of_contacts
-    title: Points of Contact
-    type: module-set
-    module-id: point_of_contact
-    tab: Basic Info
-    group: Define Points of Contact
+    group: About the Project
 

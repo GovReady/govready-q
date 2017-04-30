@@ -141,8 +141,7 @@ class DiscussionTests(SeleniumTest):
         # We need to upload a file that we know exists.
         testFilePath = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            'modules',
-            'assets',
+            'fixtures',
             'testimage.png'
         )
 

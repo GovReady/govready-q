@@ -181,7 +181,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_password", password)
         self.click_element("form button.primaryAction")
 
-    def _new_project(self, module_key="project/simple_project"):
+    def _new_project(self, module_key="project/simple_project/app"):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-assessment")
         self.click_element(".assessment[data-assessment='%s']" % module_key)
@@ -753,8 +753,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # We need to upload a file that we know exists.
         testFilePath = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            'modules',
-            'assets',
+            'fixtures',
             'testimage.png'
         )
         self.fill_field("#inputctrl", testFilePath)
