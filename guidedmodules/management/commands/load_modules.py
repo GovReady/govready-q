@@ -14,6 +14,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with MultiplexedAppStore(ms for ms in ModuleSource.objects.all()) as store:
             for app in store.list_apps():
+                # Only load system modules.
+                if app.store.source.namespace != "system":
+                    continue
+
+                # Import.
                 app.import_into_database(
                     AppImportUpdateMode.ForceUpdateInPlace
                      if options.get("force") == True
