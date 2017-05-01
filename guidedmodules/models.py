@@ -8,7 +8,7 @@ from collections import OrderedDict
 import uuid
 
 from .module_logic import ModuleAnswers, render_content, validator
-from siteapp.models import User, Project, ProjectMembership
+from siteapp.models import User, Organization, Project, ProjectMembership
 
 ModulePythonCode = { }
 
@@ -17,6 +17,8 @@ class ModuleSource(models.Model):
     spec = JSONField(help_text="A load_modules ModuleRepository spec.")
 
     trust_javascript_assets = models.BooleanField(default=False, help_text="Are new Javascript static assets loaded from this source trusted to be served on our domain and run client side?")
+    available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
+    available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this ModuleSource.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)

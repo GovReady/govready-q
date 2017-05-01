@@ -104,7 +104,14 @@ def load_app_store(organization):
 
     with MultiplexedAppStore(ms for ms in ModuleSource.objects.all()) as store:
         for app in store.list_apps():
+            # System apps are not listed the app store.
             if app.store.source.namespace == "system":
+                continue
+
+            # Apps from private sources are only listed if the organization
+            # is white-listed.
+            if not app.store.source.available_to_all \
+              and organization not in app.store.source.available_to_orgs.all():
                 continue
 
             catalog_info = dict(app.get_catalog_info())
@@ -147,7 +154,8 @@ def assessment_catalog(request):
 
 @login_required
 def assessment_catalog_item(request, app_namespace, app_name):
-    # Is this a module the user has access to?
+    # Is this a module the user has access to? The app store
+    # does some authz based on the organization.
     from guidedmodules.models import ModuleSource
     for app in get_app_store(request):
         if app["key"] == app_namespace + "/" + app_name:
