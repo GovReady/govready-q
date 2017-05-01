@@ -333,7 +333,7 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
             })
 
     def openbin(self, path, mode="r", **options):
-        if mode != "r": raise ValueError("Invalid open mode.")
+        if mode != "rb": raise ValueError("Invalid open mode. Must be 'rb'.")
         import base64, io
         cf = self.repo.get_contents(self.path + path)
         if cf.type != "file": raise ValueError("path is a directory")
@@ -458,7 +458,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
 
     def openbin(self, path, mode="r", **options):
         # Get the root tree and then move to the desired item.
-        if mode != "r": raise ValueError("Invalid open mode.")
+        if mode != "rb": raise ValueError("Invalid open mode. Must be 'rb'.")
         import io
         tree = self.get_repo_root()
         for item in path.split("/"):
