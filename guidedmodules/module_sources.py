@@ -295,7 +295,13 @@ class LocalDirectoryAppStore(PyFsAppStore):
 class SimplifiedReadonlyFilesystem(fsFS):
     def listdir(self, path):
         return [entry.name for entry in self.scandir(path)]
-    def getinfo(self, *args): raise Exception("Not implemented.")
+    def getinfo(self, path, namespaces=[]):
+        parent_path = "/".join(path.split("/")[:-1])
+        name = path.split("/")[-1]
+        for entry in self.scandir(parent_path):
+            if entry.name == name:
+                return entry
+        raise ValueError("Path not found.")
     def makedir(self, *args): raise Exception("Not implemented.")
     def remove(self, *args): raise Exception("Not implemented.")
     def removedir(self, *args): raise Exception("Not implemented.")
