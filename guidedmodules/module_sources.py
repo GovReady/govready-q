@@ -206,13 +206,12 @@ class PyFsApp(App):
 
     def get_modules(self):
         # Return a generator over parsed YAML data for modules.
-        return self.iter_modules(self.fs, [])
+        return self.iter_modules([])
 
-    @staticmethod
-    def iter_modules(fs, path):
+    def iter_modules(self, path):
         from os.path import splitext
-        path_entries = fs.listdir('/'.join(path))
-        for entry in fs.scandir('/'.join(path)):
+        path_entries = self.fs.listdir('/'.join(path))
+        for entry in self.fs.scandir('/'.join(path)):
             if not entry.is_dir:
                 # If this is a file that ends in .yaml, it is a module file.
                 # Strip the extension and construct a module ID that concatenates
@@ -223,13 +222,13 @@ class PyFsApp(App):
                     module_id = "/".join(path + [fn_name])
 
                     # Read the YAML file.
-                    with fs.open(entry.name) as f:
+                    with self.fs.open(entry.name) as f:
                         module_spec = read_yaml_file(f)
 
                     # Load any associated Python code.
-                    if (fn_name + ".py") in path_entries:
+                    if (fn_name + ".py") in path_entries and self.store.source.trust_javascript_assets:
                         # Read the file.
-                        with fs.open(fn_name + ".py") as f:
+                        with self.fs.open(fn_name + ".py") as f:
                             code = f.read()
 
                         # Validate that it compiles.
@@ -249,7 +248,7 @@ class PyFsApp(App):
 
             else:
                 # Recursively walk directories.
-                for module in PyFsApp.iter_modules(fs, path+[entry.name]):
+                for module in self.iter_modules(path+[entry.name]):
                     yield module
 
     def get_assets(self):
