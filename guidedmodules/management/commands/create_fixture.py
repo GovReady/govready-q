@@ -53,7 +53,7 @@ class Command(BaseCommand):
                 if mq.answer_type_module:
                     add_module(mq.answer_type_module)
 
-        required_projects = ["system/account_settings_project", "system/organization"]
+        required_projects = ["system/account_settings_project", "system/organization/app"]
 
         for prj_module_key in required_projects + options["projects"]:
             try:
