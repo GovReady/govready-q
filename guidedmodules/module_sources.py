@@ -194,6 +194,7 @@ class PyFsApp(App):
                 }
                 ret.update(yaml.get("catalog", {}))
                 ret.update(self.store.get_app_catalog_info(self))
+                if "protocol" in yaml: ret["protocol"] = yaml["protocol"]
                 return ret
             except ModuleDefinitionError as e:
                 raise ModuleDefinitionError("There was an error loading the module at %s: %s" % (
@@ -554,7 +555,8 @@ def load_module_into_database(app, module_id, available_modules, processed_modul
     for q in spec.get("questions", []):
         if q.get("type") not in ("module", "module-set"): continue
         if "module-id" not in q: continue
-        q["module-id"] = dependencies[q["module-id"]].id
+        mdb = dependencies[q["module-id"]]
+        q["module-id"] = mdb.id
 
     # Ok now actually do the database update for this module...
 
@@ -607,7 +609,8 @@ def get_module_spec_dependencies(spec):
     if not isinstance(questions, list): questions = []
     for question in questions:
         if question.get("type") in ("module", "module-set"):
-            yield question["module-id"]
+            if "module-id" in question:
+                yield question["module-id"]
 
 
 def create_module(app, spec, asset_pack):
@@ -786,7 +789,9 @@ def is_question_changed(mq, definition_order, spec):
     # been transformed so that it stores an integer module database ID
     # rather than the string module ID in the YAML files.
     if mq.spec["type"] in ("module", "module-set"):
-        if mq.spec["module-id"] != spec.get("module-id"):
+        if mq.spec.get("module-id") != spec.get("module-id"):
+            return True
+        if mq.spec.get("protocol") != spec.get("protocol"):
             return True
 
     # The changes to this question do not create a data inconsistency.

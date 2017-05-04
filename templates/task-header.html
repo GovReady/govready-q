@@ -42,13 +42,21 @@
   {% if folder %} {# system projects aren't in a folder #}
   <p style="font-size: 120%;">
     <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-      <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
+    <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
   </p>
   {% endif %}
   {% endwith %}
+  {% for parent_project in task.project.get_parent_projects %}
   <p style="font-size: 110%; margin-left: 15px;">
+    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+    <a href="{{parent_project.get_absolute_url}}">
+      {{parent_project.title}}
+    </a>
+  </p>
+  {% endfor %}
+  <p style="font-size: 110%; margin-left: 15px;">
+    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
     <a href="{{task.project.get_absolute_url}}">
-      <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
       {{task.project.title}}
     </a>
   </p>

@@ -583,13 +583,20 @@ class Task(models.Model):
 
         else:
             # There is no Task yet (for "module"-type questions) or
-            # we're creating and appending a new task. Create the Task.
+            # we're creating and appending a new task.
+
+            # Which module will the Task instantiate?
+            module = q.answer_type_module
+            if module is None:
+                raise ValueError("The question specifies a protocol -- it can't be answered this way.")
+
+            # Create the Task.
             task = Task.create(
                 parent_task_answer=ans, # for instrumentation only, doesn't go into Task instance
                 project=self.project,
                 editor=user,
-                module=q.answer_type_module,
-                title=q.answer_type_module.title)
+                module=module,
+                title=module.title)
 
             # Create a new TaskAnswerHistory instance. We never modify
             # existing instances!

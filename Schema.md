@@ -379,7 +379,7 @@ In document templates and impute conditions, the value of these questions is a P
 
 These question type prompt the user to select another completed module as the answer to the question. The `module-id` field specifies the ID of another module specification. The `module` question type allows for a single other module to answer the question. The `module-set` question type allows for zero or more other modules to answer the question.
 
-The `module-id` field specifies a module ID as it occurs in the `id` field of another YAML file, if referring to a module in the same directory as the YAML file containing this question.
+The `module-id` field specifies a module ID as it occurs in the `id` field of another YAML file in the same application.
 
 Here's an example of the `module` question type:
 
@@ -393,7 +393,9 @@ Here's an example of the `module` question type:
 	      - condition: not(have_other_dmz == 'ad_hoc_dmz')
 	        value: ~
 
-Changing the `module-id` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
+Alternatively, instead of using `module-id`, the `protocol` field may be set instead. The `protocol` field specifies a globally unique string identifying a protocol.. But when a user attempts to answer the question, instead of starting a named module they instead can start any app from the app store that implements the protocol by having a `protocol: ` field at the top level of the app's YAML specification.
+
+Changing the `module-id` or `protocol` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
 
 In document templates and impute conditions, the value of `module` questions is a dictionary of the answers to that module. For example, if `q5` is the ID of a question whose type is `module`, then `{{q5.q1}}` will provide the answer to `q1` within the module the user selected that answers `q5`.
 

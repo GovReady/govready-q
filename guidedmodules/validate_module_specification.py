@@ -82,15 +82,22 @@ def validate_question(mspec, spec):
                 invalid("max must be a positive integer")
     
     elif spec.get("type") in ("module", "module-set"):
-        # Resolve the relative module ID.
-        spec["module-id"] = resolve_relative_module_id(mspec, spec.get("module-id"))
+        if "module-id" in spec:
+            # Resolve the relative module ID to an absolute path relative
+            # to the root of this app. It's optional because a protocol
+            # can be specified instead.
+            spec["module-id"] = resolve_relative_module_id(mspec, spec.get("module-id"))
+        elif "protocol" in spec:
+            pass
+        else:
+            invalid("Question must have a module-id or protocol field.")
 
     elif spec.get("type") == None:
         invalid("Question is missing a type.")
 
     # Check that required fields are present.
     if spec.get("prompt") is None:
-        # Prompts are optional in project modules but required elsewhere.
+        # Prompts are optional in project and system modules but required elsewhere.
         if mspec.get("type") not in ("project", "system-project"):
             invalid("Question prompt is missing.")
 

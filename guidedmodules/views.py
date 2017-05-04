@@ -36,6 +36,10 @@ def task_view(view_func):
         # Get the Task.
         task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
 
+        # If this task is actually a project root, redirect away from here.
+        if task.root_of.first() is not None:
+            return HttpResponseRedirect(task.root_of.first().get_absolute_url())
+
         # Is this page about a particular question?
         question = None
         if pagepath == "/question/":

@@ -121,12 +121,20 @@
   {% with folder=project.primary_folder %} {# TODO #}
   <p style="font-size: 120%;">
     <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-      <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
+    <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
   </p>
   {% endwith %}
+  {% for parent_project in project.get_parent_projects %}
   <p style="font-size: 110%; margin-left: 15px;">
-      <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
-      {{project.title}}
+    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+    <a href="{{parent_project.get_absolute_url}}">
+      {{parent_project.title}}
+    </a>
+  </p>
+  {% endfor %}
+  <p style="font-size: 110%; margin-left: 15px;">
+    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+    {{project.title}}
   </p>
 </div>
 
@@ -242,11 +250,17 @@
                     {# For a module-type question, this question is unstarted. For a module-set question, it is always possible to start a new one. Icon and title from the question specification, link goes to app store to start a new app. #}
                     
                     {% if can_begin_module %}
-                      <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
-                        {% csrf_token %}
-                        <input type="hidden" name="project" value="{{project.id}}"/>
-                        <input type="hidden" name="question" value="{{rec.question.key}}"/>
-                        <input type="hidden" name="previous" value="project"/>
+                      {% if not rec.question.spec.protocol %}
+                        {# start a task directly using the module type in the specification #}
+                        <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+                          {% csrf_token %}
+                          <input type="hidden" name="project" value="{{project.id}}"/>
+                          <input type="hidden" name="question" value="{{rec.question.key}}"/>
+                          <input type="hidden" name="previous" value="project"/>
+                      {% else %}
+                        {# start an app that satisfies the interface of the specified module #}
+                        <a href="/assessment-catalog?q={{project.root_task.id}}/{{rec.question.key}}">
+                      {% endif %}
                     {% endif %}
 
                     <div class="question-icon">
@@ -261,7 +275,11 @@
                     </div>
 
                     {% if can_begin_module %}
-                      </form>
+                      {% if not rec.question.spec.protocol %}
+                        </form>
+                      {% else %}
+                        </a>
+                      {% endif %}
                     {% endif %}
 
                     {# For a module-set question, list the existing tasks #}

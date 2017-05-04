@@ -145,11 +145,41 @@ def load_app_store(organization):
 
             yield catalog_info
 
+def get_task_question(request):
+    # Filter catalog by apps that satisfy the right protocol.
+    # Get the task and question referred to by the filter.
+    try:
+        task_id, question_key = request.GET["q"].split("/", 1)
+        task = get_object_or_404(Task, id=task_id)
+        q = task.module.questions.get(key=question_key)
+    except (IndexError, ValueError):
+        raise Http404()
+    return (task, q)
+
+
+def app_satifies_interface(app, question):
+    if "protocol" not in question.spec: raise ValueError("Question does not expect a protocol.")
+    return app.get("protocol") == question.spec["protocol"]
+
+
+def filter_app_catalog(catalog, request):
+    if request.GET.get("q"):
+        # Check if the app satisfies the interface.
+        task, q = get_task_question(request)
+        catalog = filter(lambda app : app_satifies_interface(app, q), catalog)
+
+    return catalog
+
 
 @login_required
 def assessment_catalog(request):
+    from urllib.parse import urlencode
+    forward_qsargs = { }
+    if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
+
     return render(request, "assessment-catalog.html", {
-        "apps": get_app_store(request),
+        "apps": filter_app_catalog(get_app_store(request), request),
+        "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
     })
 
 @login_required
@@ -157,20 +187,20 @@ def assessment_catalog_item(request, app_namespace, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
     from guidedmodules.models import ModuleSource
-    for app in get_app_store(request):
-        if app["key"] == app_namespace + "/" + app_name:
+    for app_catalog_info in get_app_store(request):
+        if app_catalog_info["key"] == app_namespace + "/" + app_name:
             # We found it.
             break
     else:
         raise Http404()
-    module_source = get_object_or_404(ModuleSource, id=app["modulesource_id"])
+    module_source = get_object_or_404(ModuleSource, id=app_catalog_info["modulesource_id"])
 
     if request.method == "GET":
         # Show the assessment "app" page.
 
         return render(request, "assessment-catalog-item.html", {
             "first": not ProjectMembership.objects.filter(user=request.user, project__organization=request.organization).exists(),
-            "app": app,
+            "app": app_catalog_info,
         })
     
     else:
@@ -204,7 +234,7 @@ def assessment_catalog_item(request, app_namespace, app_name):
                 model = Project
                 fields = []
 
-            if len(folders) > 0:
+            if len(folders) > 0 and ("q" not in request.GET):
                 add_to_folder = ChoiceField(
                     choices=[(f.id, f) for f in folders] + [("", "Add to New Folder")],
                     required=False,
@@ -219,37 +249,9 @@ def assessment_catalog_item(request, app_namespace, app_name):
             form = NewProjectForm(request.POST)
             if not form.errors:
                 with transaction.atomic():
-                    # Get or create the Folder the new Project is going into.
-                    # (The form field isn't shown if there are no existing folders
-                    # (get returns None), and if the user wants to create a new folder
-                    # the value is the empty string, otherwise it is a string containing
-                    # a primary key (positive integer).)
-                    if form.cleaned_data.get("add_to_folder"):
-                        folder = Folder.objects.get(id=form.cleaned_data["add_to_folder"])
-                    else:
-                        folder = Folder.objects.create(
-                            organization=request.organization,
-                            title="New Folder")
-
-                    # create project
-                    project = form.save(commit=False)
-                    project.organization = request.organization
-
-                    # assign a good title
-                    project.title = app["title"]
-                    projects_in_folder = folder.get_readable_projects(request.user)
-                    existing_project_titles = [p.title for p in projects_in_folder]
-                    ctr = 0
-                    while project.title in existing_project_titles:
-                        ctr += 1
-                        project.title = app["title"] + " " + str(ctr)
-
-                    # save and add to folder
-                    project.save()
-                    folder.projects.add(project)
-
-                    # initialize the project module
-                    if app["authz"] == "none":
+                    # Turn the app catalog entry into an App instance,
+                    # and then import it into the database as Module instance.
+                    if app_catalog_info["authz"] == "none":
                         # We can instantiate the app immediately.
                         # 1) Get the AppStore instance from the ModuleSource.
                         from guidedmodules.module_sources import AppStore, AppImportUpdateMode
@@ -257,7 +259,7 @@ def assessment_catalog_item(request, app_namespace, app_name):
                             # 2) Get the App.
                             app = store.get_app(app_name)
 
-                            # 3) Validate.
+                            # 3) Re-validate that the catalog information is the same.
                             if app.get_catalog_info()["authz"] != "none":
                                 raise ValueError("Invalid access.")
 
@@ -266,27 +268,80 @@ def assessment_catalog_item(request, app_namespace, app_name):
                             module = modules["app"]
 
                     else:
-                        # create a stub Module -- we'll download the app later. This
+                        # Create a stub Module -- we'll download the app later. This
                         # is just a placeholder.
                         module = Module()
                         module.source = module_source
                         module.key = app_namespace + "/" + app_name
-                        module.spec = dict(app)
+                        module.spec = dict(app_catalog_info)
                         module.spec["type"] = "project"
                         module.spec["is_app_stub"] = True
                         module.save()
-                    project.set_root_task(module, request.user)
 
-                    # add user as an admin
+                    if not request.GET.get("q"):
+                        # Get or create the Folder the new Project is going into.
+                        # (The form field isn't shown if there are no existing folders
+                        # (get returns None), and if the user wants to create a new folder
+                        # the value is the empty string, otherwise it is a string containing
+                        # a primary key (positive integer).)
+                        if form.cleaned_data.get("add_to_folder"):
+                            folder = Folder.objects.get(id=form.cleaned_data["add_to_folder"])
+                        else:
+                            folder = Folder.objects.create(
+                                organization=request.organization,
+                                title="New Folder")
+                    else:
+                        # This app is going to answer a question.
+                        # Don't put it into a folder.
+                        folder = None #  task.project.contained_in_folders.first()
+
+                    # Create project.
+                    project = form.save(commit=False)
+                    project.organization = request.organization
+
+                    # Assign a good title.
+                    project.title = app_catalog_info["title"]
+                    if folder:
+                        projects_in_folder = folder.get_readable_projects(request.user)
+                        existing_project_titles = [p.title for p in projects_in_folder]
+                        ctr = 0
+                        while project.title in existing_project_titles:
+                            ctr += 1
+                            project.title = app_catalog_info["title"] + " " + str(ctr)
+
+                    # Save and add to folder
+                    project.save()
+                    project.set_root_task(module, request.user)
+                    if folder:
+                        folder.projects.add(project)
+
+                    # Add user as the first admin. admin.
                     ProjectMembership.objects.create(
                         project=project,
                         user=request.user,
                         is_admin=True)
 
-                return HttpResponseRedirect(project.get_absolute_url())
+                    if request.GET.get("q"):
+                        # It will also answer a task.
+                        task, q = get_task_question(request)
+                        
+                        # Validate that we're starting an app that
+                        # can answer that question.
+                        if not app_satifies_interface(app_catalog_info, q):
+                            raise ValueError("Invalid protocol.")
+
+                        # Can't do this because we have to attach it to a project.
+                        #subtask = task.get_or_create_subtask(request.user, q.key, module=module)
+                        ans, is_new = task.answers.get_or_create(question=q)
+                        ansh = ans.get_current_answer()
+                        if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count():
+                            raise ValueError("Question is already answered.")
+                        ans.save_answer(None, list([] if not ansh else ansh.answered_by_task.all()) + [project.root_task], None, request.user)
+
+                    return HttpResponseRedirect(project.get_absolute_url())
 
         return render(request, "assessment-catalog-item-start.html", {
-            "app": app,
+            "app": app_catalog_info,
             "form": form,
         })
 

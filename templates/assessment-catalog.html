@@ -54,7 +54,7 @@ Assessment Catalog
     <div class="col-sm-4">
       <div class="assessment"
         data-assessment="{{app.key}}"
-        onclick="window.location='/assessment-catalog/{{app.key|urlencode}}'"">
+        onclick="window.location='/assessment-catalog/{{app.key|urlencode}}{{forward_qsargs}}'"">
         <h2><small>{{app.vendor}}</small><br/>{{app.title}}</h2>
         <div class="body">
           {{app.description.short|safe}}
@@ -73,6 +73,11 @@ Assessment Catalog
       <div class="visible-md clearfix"> </div>
       <div class="visible-lg clearfix"> </div>
     {% endif %}
+
+  {% empty %}
+    <div class="col-sm-12">
+      <p>There are currently no apps available that can be used to complete that question, sorry!</p>
+    </div>
   {% endfor %}
 </div>
 {% endblock %}
