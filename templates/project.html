@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% load q %}
 
 {% block title %}
@@ -33,38 +34,40 @@
   color: black;
 }
 
-.task-group {
+.question-group {
   margin: 50px 0 0 0;
 }
 
-.task-group-title {
+.question-group-title {
   color: #777;
   padding: 16px 18px;
 }
 
-.task {
-  max-width: 350px;
-  margin: auto;
-  margin-bottom: 8px;
-  padding: 8px;
-  text-align: center;
-  border:1px solid #ccc;
+.question {
+  padding-top: .75em;
+  padding-bottom: .75em;
 }
-  .task:hover {
+  .question:hover {
     background-color: rgb(248,248,248);
   }
-  .task.task_finished {
-    border-left: 4px solid #96B;
-    padding-left: 17px;
+  .question .question-icon {
+    margin: 0 auto;
+    width: 4vw;
+    height: 4vw;
+    border: 1px solid black;
   }
-  .task.first_start {
-    border-left: 4px solid #449d44;
-    padding-left: 17px;
-  }
-  .task .task-title {
+    .question.task_finished .question-icon {
+      border-left: 4px solid #96B;
+    }
+    .question.first_start .question-icon {
+      border-left: 4px solid #449d44;
+    }
+  .question .question-title {
+    margin-top: .5em;
+    text-align: center;
     color: #222;
   }
-  .task .task-commands a {
+  .question .task-commands a {
     display: inline-block;
     padding: 0 0.25em;
     color: #666;
@@ -74,31 +77,14 @@
   .task-commands a:hover {
     color: rgb(55,123,181);
   }
-    .task.first_start .start-task a {
+    .question.first_start .start-task a {
       color: #449d44;
       font-weight: bold;
     }
 
-  .task .invitation {
+  .question .invitation {
     font-size: 14px;
     line-height: 128%;
-  }
-
-.task.deleted span {
-  color: #DDD;
-  text-decoration: line-through;
-}
-.task .delete-task {
-	display: none;
-	color: #F66;
-	cursor: pointer;
-  text-decoration: none;
-}
-	.task:hover .delete-task {
-		display: inline;
-	}
-  .task.deleted .delete-task:after {
-    content: "(undo)";
   }
 
 #project-members {
@@ -239,23 +225,51 @@
 
 
             {% for group in tab.groups.values %}
-            <div class="task-group">
-              <!-- <div class="task-group-title">{{group.title}}</div> -->
+            <div class="row question-group">
+              {% if tab.groups.values|length > 1 %}
+              <div class="question-group-title">{{group.title}}</div>
+              {% endif %}
 
               {% for rec in group.modules %}
-                <div id="question-{{rec.question.key}}" class="task {% if rec.is_finished %}task_finished{% endif %} {% if rec.first_start %}first_start{% endif %}">
+                <div id="question-{{rec.question.key}}"
+                  class="col-sm-3 question {% if rec.is_finished %}task_finished{% endif %} {% if rec.first_start %}first_start{% endif %}"
+                  onclick="$(this).find('form').submit();"
+                  style="cursor: pointer;">
 
-                  <div class="task-title">
-                    {{rec.question.spec.title}}
-                  </div>
+                  {# For module-type questions, the question is either unstarted, in which case the app icon and title are from the question, or started in which case the app icon and title are from the task (falling back to the question if no icon is set for the task). #}
 
-                  <div class="task-body">
+                  {% if rec.can_start_new_task %}
+                    {# For a module-type question, this question is unstarted. For a module-set question, it is always possible to start a new one. Icon and title from the question specification, link goes to app store to start a new app. #}
+                    
+                    {% if can_begin_module %}
+                      <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="project" value="{{project.id}}"/>
+                        <input type="hidden" name="question" value="{{rec.question.key}}"/>
+                        <input type="hidden" name="previous" value="project"/>
+                    {% endif %}
+
+                    <div class="question-icon">
+                      <img
+                        src="{% static "img/default_app_icon.png" %}"
+                        class="img-responsive"
+                        title="Begin new app.">
+                    </div>
+
+                    <div class="question-title">
+                      {{rec.question.spec.title}}
+                    </div>
+
+                    {% if can_begin_module %}
+                      </form>
+                    {% endif %}
+
+                    {# For a module-set question, list the existing tasks #}
+                    <div class="question-task-list">
                       {% for t in rec.tasks %}
-                        <div class="task-commands started-task">
-                            {% if rec.question.spec.type == "module-set" %}
-                              {{t.render_title}} &mdash;
-                            {% endif %}
+                        <div class="started-task">
                             <a href="{{t.get_absolute_url}}?previous=project">
+                            {{t.render_title}} &mdash;
                             {% if t.is_finished %}
                               <span style="color: #96B">
                                 <span class="glyphicon glyphicon-check"></span>
@@ -269,22 +283,27 @@
                             </a>
                         </div>
                       {% endfor %}
+                    </div>
+                    
+                  {% else %}
+                    {# This is a module-type question that has been started. Icon, title, and link are for the started task. #}
 
-                      {% if can_begin_module and rec.can_start_new_task %}
-                      <div class="task-commands">
-                        <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
-                          {% csrf_token %}
-                          <input type="hidden" name="project" value="{{project.id}}"/>
-                          <input type="hidden" name="question" value="{{rec.question.key}}"/>
-                          <input type="hidden" name="previous" value="project"/>
-                          <a href="#" onclick="$(this).parent('form').submit(); return false;">
-                            <span class="glyphicon glyphicon-unchecked"></span> Start
-                          </a>
-                        </form>
-                        <a href="#" class="assign-task" onclick="return invite_user_to_start_module('{{rec.module.title|escapejs}}', {{rec.question.id}});"><span class="glyphicon glyphicon-share"></span> Assign</a>
-                      </div> <!-- /task-commands -->
-                      {% endif %}
+                    {% for t in rec.tasks %} {# there's just one #}
+                    <a href="{{t.get_absolute_url}}">
+                      <div class="question-icon">
+                        <img
+                          src="{% static "img/default_app_icon.png" %}"
+                          class="img-responsive">
+                      </div>
 
+                      <div class="question-title">
+                        {{t.title}}
+                      </div>
+                    </a>
+                    {% endfor %}
+                  {% endif %}
+
+                  <div class="question-body">
                     {% for inv in rec.invitations %}
                       <p class="invitation" data-invitation-id="{{inv.id}}">
                         You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
@@ -302,10 +321,10 @@
                         {% endfor %}
                       </div>
                       {% endif %}
-                  </div> <!-- /.task-body -->
-                </div> <!-- /#question-__.task -->
+                  </div> <!-- /.question-body -->
+                </div> <!-- /#question-__.question -->
               {% endfor %}
-              </div> <!-- /task-group -->
+              </div> <!-- /question-group -->
             {% endfor %}
         </div> <!-- /.tabpanel -->
       {% endfor %}
@@ -420,23 +439,6 @@ $(function() {
     var tabid = e.target.getAttribute('href').substring(1); // old IE might return absolute URL here?
     window.location.hash = "#tab=" + encodeURIComponent(tabid);
   })
-
-	$('.task .delete-task').click(function() {
-    var task_node = $(this).parent('p');
-		var task_id = task_node.attr('data-id');
-    var task_is_deleted = task_node.hasClass('deleted');
-    ajax_with_indicator({
-     url: '{% url "task_change_state" %}',
-     method: "POST",
-     data: {
-      id: task_id,
-      state: (task_is_deleted ? 'undelete' : 'delete')
-     },
-     success: function(res) {
-       task_node.toggleClass('deleted', !task_is_deleted);
-     }
-    });
-	})
 })
 
 function invite_user_into_project() {
