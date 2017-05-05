@@ -416,6 +416,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         self.repo.git.environment()["GIT_SSH_COMMAND"] = ssh_options
 
         # Fetch.
+        import git.exc
         try:
             self.repo.git.execute(
                 [
@@ -425,9 +426,9 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
                     self.url, # repo URL
                     self.branch, # branch to fetch
                 ], kill_after_timeout=20)
-        except:
+        except git.exc.GitCommandError as e:
             # This is where errors occur, which is hopefully about auth.
-            raise Exception("The repository URL is either not valid, not public, or ssh_key was not specified or not valid.")
+            raise Exception("The repository URL is either not valid, not public, or ssh_key was not specified or not valid (%s)." % e.stderr)
 
         # Get the tree for the remote branch's HEAD.
         tree = self.repo.tree("FETCH_HEAD")
