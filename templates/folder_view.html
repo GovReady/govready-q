@@ -72,10 +72,12 @@ h1 .glyphicon, h3 .glyphicon {
   {% endif %}
 </h1>
 
+{% if is_admin or folder.description %} {# if not admin and no description don't show the help text #}
 <div style="margin: 1em 0 2em 0">
   <div id="folder-description" data-value="{{folder.description}}"
     data-none-text='Click to add a description of this folder.'>{% firstof folder.description 'Click to add a description of this folder.' %}</div>
 </div>
+{% endif %}
 
 {% if projects|length == 0 %}
   <p>Start by beginning your first app in this folder.</p>
@@ -146,6 +148,7 @@ h1 .glyphicon, h3 .glyphicon {
 
 {% block scripts %}
 <script>
+{% if is_admin %}
 make_editable_div($('#folder-description'), function(new_description) {
   $.ajax({
    url: '{% url "set_folder_description" %}',
@@ -158,6 +161,7 @@ make_editable_div($('#folder-description'), function(new_description) {
    }
   });
 });
+{% endif %}
 
 function rename_folder(elem) {
   var folder_name = $(".folder_name");
