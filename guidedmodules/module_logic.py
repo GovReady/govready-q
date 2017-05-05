@@ -1283,12 +1283,16 @@ class RenderedAnswer:
         # Return a link to edit this question.
         return self.task.get_absolute_url_to_question(self.question)
 
-    def rendered_outputs(self):
+    @property
+    def output_documents(self):
         if self.question_type == "module":
             try:
-                return self.answer.task.render_output_documents()
+                return {
+                    doc["id"]: doc["html"]
+                    for doc in self.answer.task.render_output_documents()
+                }
             except:
-                return []
+                return {}
         raise AttributeError()
 
     def __bool__(self):
