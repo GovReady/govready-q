@@ -48,14 +48,22 @@
   {% endwith %}
   {% for parent_project in task.project.get_parent_projects %}
   <p style="font-size: 110%; margin-left: 15px;">
-    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+    {% if parent_project.root_task.get_app_icon_url %}
+      <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1.5em">
+    {% else %}
+      <span class="glyphicon glyphicon-list-alt"></span>
+    {% endif %}
     <a href="{{parent_project.get_absolute_url}}">
       {{parent_project.title}}
     </a>
   </p>
   {% endfor %}
   <p style="font-size: 110%; margin-left: 15px;">
-    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
+    {% if task.project.root_task.get_app_icon_url %}
+      <img src="{{task.project.root_task.get_app_icon_url}}" style="height: 1.5em">
+    {% else %}
+      <span class="glyphicon glyphicon-list-alt"></span>
+    {% endif %}
     <a href="{{task.project.get_absolute_url}}">
       {{task.project.title}}
     </a>
