@@ -19,12 +19,15 @@ Several optional fields can be specified:
 	version: 1
 	instance-name: "Module for {{q1}}"
 	invitation-message: "Can you tell me about {{question.text}} and let me know when you are done?"
+	icon: app.png
 
 The `type` field is set to `project` just when the Module is to be offered to users when they start a new Project. (`system-project` is used for project-like modules that are system controlled and not offered to the user.)
 
 The `version` field is used only to force changes in the specification to be considered incompatible with any existing user answers (see Updating Modules).
 
 The `instance-name` is a template to generate a dynamic title for in-progress and completed modules. The `instance-name` is rendered like other Module documents but it is always specified in `text` format (see Documents).
+
+For modules that define the root of an application, `icon` specifies a static asset (in the `assets` directory) to use as an application icon.
 
 In addition, a Module must have an `introduction` document and a list of one or more `output` documents. For example:
 
@@ -88,6 +91,9 @@ The questions of projects are displayed in a layout of tabs and groups within ea
 	  module-id: howto_ssp
 	  tab: How To
 	  group: Start Here
+	  icon: ssp.png
+
+`icon` specifies a static asset (in the `assets` directory) to use as an icon for the question. If the question's type is `module` and it is answered and the answer is a Task that has a top-level `icon` field, then the answer's icon is used instead.
 
 Instead of `tab` and `group`, `placement: action-buttons` can be used instead to show the question in an action bar above the tabs, rather than in tabs.
 

@@ -474,6 +474,10 @@ def project(request, project_id):
         elif mq.spec.get("placement") == "action-buttons":
             action_buttons.append(d)
 
+        # What icon to show? (If there's an app, it'll use the app's icon instead.)
+        if "icon" in mq.spec:
+            d["icon"] = project.root_task.module.get_static_asset_url(mq.spec["icon"])
+
     # Find any open invitations and if they are for particular modules,
     # display them with the module.
     other_open_invitations = []

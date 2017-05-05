@@ -63,9 +63,9 @@
   }
   .question .question-icon {
     margin: 0 auto;
-    width: 4vw;
-    height: 4vw;
-    border: 1px solid black;
+    width: 72px;
+    height: 72px;
+    border: 1px solid #DDD;
   }
     .question.task_finished .question-icon {
       border-left: 4px solid #96B;
@@ -138,8 +138,12 @@
   </p>
   {% for parent_project in project.get_parent_projects %}
   <p style="font-size: 110%; margin-left: 15px;">
-    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
-    <a href="{{parent_project.get_absolute_url}}">
+    {% if parent_project.root_task.get_app_icon_url %}
+    <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1.5em">
+    {% else %}
+    <span class="glyphicon glyphicon-list-alt"></span>
+    {% endif %}
+    <a href="{{parent_project.get_absolute_url}}" style="margin-left: .25em">
       {{parent_project.title}}
     </a>
   </p>
@@ -193,6 +197,9 @@
 <div class="col-md-pull-2 col-md-10">
   <div id="focus-area-wrapper">
     <h1 style="text-align: center;">
+      {% if project.root_task.get_app_icon_url %}
+      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1.5em">
+      {% endif %}
       {{project.title}}
     </h1>
 
@@ -279,7 +286,11 @@
 
                     <div class="question-icon">
                       <img
-                        src="{% static "img/default_app_icon.png" %}"
+                        {% if rec.icon %}
+                          src="{{rec.icon}}"
+                        {% else %}
+                          src="{% static "img/default_app_icon.png" %}"
+                        {% endif %}
                         class="img-responsive"
                         title="Begin new app.">
                     </div>
@@ -327,7 +338,13 @@
                     <a href="{{t.get_absolute_url}}">
                       <div class="question-icon">
                         <img
+                          {% if t.get_app_icon_url %}
+                          src="{{t.get_app_icon_url}}"
+                          {% elif rec.icon %}
+                          src="{{rec.icon}}"
+                          {% else %}
                           src="{% static "img/default_app_icon.png" %}"
+                          {% endif %}
                           class="img-responsive">
                       </div>
 

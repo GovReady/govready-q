@@ -549,6 +549,13 @@ class Task(models.Model):
             "%s snippet" % repr(self.module)
         )
 
+
+    def get_app_icon_url(self):
+        icon_img = self.module.spec.get("icon")
+        if icon_img:
+            return self.module.get_static_asset_url(icon_img)
+        return None
+
     def get_subtask(self, question_id):
         return self.get_or_create_subtask(None, question_id, create=False)
 
