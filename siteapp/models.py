@@ -229,7 +229,8 @@ class Folder(models.Model):
 
     organization = models.ForeignKey(Organization, related_name="folders", help_text="The Organization that this project belongs to.")
 
-    title = models.CharField(max_length=256, help_text="The title of this Project.")
+    title = models.CharField(max_length=256, help_text="The title of this Folder.")
+    description = models.CharField(max_length=512, blank=True, help_text="A description of this Folder.")
 
     admin_users = models.ManyToManyField(User, blank=True, related_name="admin_of_folders", help_text="Users who have admin privs to the folder besides those who are admins of projects within the folder.")
     projects = models.ManyToManyField("Project", blank=True, related_name="contained_in_folders", help_text="The Projects that are listed within this Folder.")

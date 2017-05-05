@@ -28,6 +28,10 @@ h1 .glyphicon, h3 .glyphicon {
   .folder a:hover span { text-decoration: underline; }
   .folder a:hover span.glyphicon { text-decoration: none; }
 
+#folder-description[data-value=""] {
+  font-style: italic;
+}
+
 .project {
   padding: .75em;
   }
@@ -67,6 +71,11 @@ h1 .glyphicon, h3 .glyphicon {
     {% endif %}
   {% endif %}
 </h1>
+
+<div style="margin: 1em 0 2em 0">
+  <div id="folder-description" data-value="{{folder.description}}"
+    data-none-text='Click to add a description of this folder.'>{% firstof folder.description 'Click to add a description of this folder.' %}</div>
+</div>
 
 {% if projects|length == 0 %}
   <p>Start by beginning your first app in this folder.</p>
@@ -137,6 +146,19 @@ h1 .glyphicon, h3 .glyphicon {
 
 {% block scripts %}
 <script>
+make_editable_div($('#folder-description'), function(new_description) {
+  $.ajax({
+   url: '{% url "set_folder_description" %}',
+   method: "POST",
+   data: {
+    folder: {{folder.id}},
+    value: new_description
+   },
+   success: function() {
+   }
+  });
+});
+
 function rename_folder(elem) {
   var folder_name = $(".folder_name");
   var new_title = prompt("Rename this folder?", folder_name.text());

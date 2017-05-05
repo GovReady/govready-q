@@ -557,6 +557,22 @@ def rename_folder(request):
 
 
 @login_required
+def set_folder_description(request):
+    if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
+
+    # Get the folder.
+    folder = get_object_or_404(Folder, id=request.POST.get("folder"))
+
+    # Validate that the user can edit it.
+    if request.user not in folder.get_admins():
+        return JsonResponse({ "status": "error", "message": "Not authorized." })
+
+    # Update.
+    folder.description = request.POST.get("value")
+    folder.save()
+    return JsonResponse({ "status": "ok" })
+
+@login_required
 def delete_folder(request):
     if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
 

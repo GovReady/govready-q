@@ -133,3 +133,34 @@ function mark_notifications_read(data, callback) {
   $('.notification.unread' + f).removeClass('unread');
   return false;
 }
+
+function make_editable_div(elem, save_func) {
+  // Create the input field, initially hidden.
+  var input = $("<input type='text' class='form-control' style='display:none; font-size: inherit; height: inherit; padding: 0; margin: 0; border: 1px;'>");
+  input.insertAfter(elem);
+  input.keydown(function(e) {
+    if (e.keyCode == 13 || e.keyCode == 10)
+      $(this).blur();
+  });
+
+  // Toggle it on click.
+  var field = elem.data('field');
+  elem.css({ cursor: "pointer" });
+  elem.click(function() {
+    elem.hide();
+    input.val(elem.attr("data-value"));
+    input.show();
+    input.focus();
+  })
+
+  // Update and restore on blur.
+  input.blur(function() {
+    var value = $(this).val();
+    var none_text = elem.attr("data-none-text");
+    elem.text(value || none_text);
+    elem.attr("data-value", value);
+    input.hide();
+    elem.show();
+    save_func(value);
+  });
+}

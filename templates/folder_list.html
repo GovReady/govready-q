@@ -69,7 +69,9 @@ Project Folders
     {% endif %}
   </div>
 
-  {% if folder.is_admin %}
+  <div class="meta">{{folder.description}}</div>
+
+  {% if folder.is_admin and 0 %}
   <div class="meta">{{folder.project_count}} project{{folder.project_count|pluralize}}</div>
   {% endif %}
 </div>
