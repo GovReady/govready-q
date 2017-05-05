@@ -41,25 +41,11 @@ Home
   <div class="row" style="margin-top: 2em">
     <div class="col-md-6">
 			<p>Stop suffering and start answering simple questions with your teammates. We'll help you identify security risks, learn compliance controls, and prepare required documents.</p>
-
-      {% if request.user.is_authenticated %}
-      {% if not has_projects %}
-      <p><a class="btn btn-success btn-lg" role="button" href="/store">Find a Compliance App &raquo;</a></p>
-      {% else %}
-      <p><a class="btn btn-success btn-lg" role="button" href="/projects">View Projects &raquo;</a></p>
-      {% endif %}
-      {% endif %}
-
     </div>
 
 
 
 		<div class="col-md-6">
-      {% if request.user.is_authenticated %}
-        <div class="embed-responsive embed-responsive-16by9">
-          <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/F5QN28WGTbs"></iframe>
-        </div>
-      {% else %}
         <div style="border: 1px solid #DDD; padding: 1em; background-color: white;">
           <h3 style="margin-top: 0; font-weight: bold;">{% trans "Sign In" %}</h3>
 
@@ -90,7 +76,6 @@ Home
             <div><a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a></div>
           </form>
         </div>
-      {% endif %}
 		</div>
 
 	</div>
