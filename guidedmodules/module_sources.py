@@ -13,6 +13,7 @@ class AppImportUpdateMode(enum.Enum):
     New = 1
     UpdateIfCompatible = 2
     ForceUpdateInPlace = 3
+    UpdateIfCompatibleOnly = 4
 
 class ModuleDefinitionError(Exception):
     pass
@@ -558,47 +559,50 @@ def load_module_into_database(app, module_id, available_modules, processed_modul
         mdb = dependencies[q["module-id"]]
         q["module-id"] = mdb.id
 
-    # Ok now actually do the database update for this module...
+    # Get or create a Module instance for this specification.
 
-    # Get the most recent version of this module in the database,
-    # if it exists.
-    m = Module.objects.filter(source=app.store.source, key=app.store.source.namespace+"/"+app.name+"/"+spec['id'], superseded_by=None).first()
-    
-    if not m or update_mode == AppImportUpdateMode.New:
-        # This module is new or we're asked to always create a new
-        # Module instance --- create it.
-        m = create_module(app, spec, asset_pack)
-        processed_modules[module_id] = m
-        return m
+    return_modules = set()
+    supersede_modules = set()
 
-    else:
-        # Has the module be changed at all? Can it be updated in place?
+    for m in Module.objects.filter(source=app.store.source, key=app.store.source.namespace+"/"+app.name+"/"+spec['id'], superseded_by=None):
+        # What is the difference between the app's module and the module in the database?
         change = is_module_changed(m, app.store.source, spec, asset_pack)
-        
-        if change is False or update_mode == AppImportUpdateMode.ForceUpdateInPlace:
-            # The changes can overwrite the existing module definition
-            # in the database.
-            update_module(m, spec, asset_pack, True)
-            processed_modules[module_id] = m
-            return m
+    
+        if change is None:
+            # There is no difference, so we can go on immediately.
+            return_modules.add(m)
 
-        elif change is None:
-            # The module hasn't changed at all. Go on. Don't cause a
-            # bump in the m.updated date.
-            processed_modules[module_id] = m
-            return m
+        elif (change is False and update_mode in (AppImportUpdateMode.UpdateIfCompatible, AppImportUpdateMode.UpdateIfCompatibleOnly)) \
+            or update_mode == AppImportUpdateMode.ForceUpdateInPlace:
+            # There are no incompatible changes and we're allowed to update modules,
+            # or we're forcing an update, so we'll update this one in place.
+            update_module(m, spec, asset_pack, True)
+            return_modules.add(m)
 
         else:
-            # The changes require that a new database record be created
-            # to maintain data consistency. Create it, and then mark the
-            # previous Module as superseded so that it is no longer used
-            # on new Tasks.
-            m1 = create_module(app, spec, asset_pack)
-            m.visible = False
-            m.superseded_by = m1
-            m.save()
-            processed_modules[module_id] = m1
-            return m1
+            # This module is going out of date. Mark it as superseded.
+            supersede_modules.add(m)
+
+    if len(return_modules) == 0:
+        # No Modules in the database match what we need. Create one.
+        if update_mode == AppImportUpdateMode.UpdateIfCompatibleOnly:
+            # Don't create any new Modules.
+            raise ValueError("There is no module to update.")
+
+        new_module = create_module(app, spec, asset_pack)
+    else:
+        # Return any of the modules in the database that now match this app.
+        new_module = list(return_modules)[0]
+
+    # Mark the previous Modules as superseded so that they are no longer used
+    # on new Tasks.
+    for m in supersede_modules:
+        m.visible = False
+        m.superseded_by = new_module
+        m.save()
+
+    processed_modules[module_id] = new_module
+    return new_module
 
 
 def get_module_spec_dependencies(spec):
