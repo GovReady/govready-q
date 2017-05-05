@@ -61,7 +61,7 @@ class DiscussionTests(SeleniumTest):
         # Assumes _new_project() just finished.
 
         # Start the task.
-        self.click_element('#question-simple_module .task-commands form.start-task a')
+        self.click_element('#question-simple_module')
 
     def _accept_invitation(self, email):
         # Assumes an invitation email was sent.

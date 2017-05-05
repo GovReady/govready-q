@@ -13,6 +13,7 @@ class TestCaseWithFixtureData(TestCase):
         # Load modules from the fixtures directory.
         from guidedmodules.models import ModuleSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
+        from guidedmodules.module_sources import MultiplexedAppStore, AppImportUpdateMode
         ModuleSource.objects.create(
             namespace="fixture",
             spec={
@@ -20,7 +21,10 @@ class TestCaseWithFixtureData(TestCase):
                 "path": "fixtures/modules/other",
             }
         )
-        load_modules().handle()
+        with MultiplexedAppStore(ms for ms in ModuleSource.objects.all()) as store:
+            for app in store.list_apps():
+                app.import_into_database(AppImportUpdateMode.ForceUpdateInPlace)
+
 
         # Create a dummy organization, project, and user.
         self.organization = Organization.objects.create(name="Organization")

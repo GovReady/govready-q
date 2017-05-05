@@ -153,7 +153,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             spec={ # contains a test project
                 "type": "local",
                 "path": "fixtures/modules/other",
-            }
+            },
+            trust_javascript_assets=True
         )
         load_modules().handle()
 
@@ -181,7 +182,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_password", password)
         self.click_element("form button.primaryAction")
 
-    def _new_project(self, module_key="project/simple_project/app"):
+    def _new_project(self, module_key="project/simple_project"):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
         self.click_element(".app[data-app='%s']" % module_key)
@@ -194,7 +195,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Assumes _new_project() just finished.
 
         # Start the task.
-        self.click_element('#question-simple_module .task-commands form.start-task a')
+        self.click_element('#question-simple_module')
 
     def _accept_invitation(self, email):
         # Assumes an invitation email was sent.
@@ -350,14 +351,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         do_invitation("test+project@q.govready.com")
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
-        self.click_element('#question-simple_module .started-task a') # go to the task page
+        self.click_element('#question-simple_module') # go to the task page
         self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
         self.assertInNodeText("is editing this module. You cannot make changes to it.", "#auth-status .text-danger")
 
         reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
-        self.click_element('#question-simple_module .started-task a') # go to the task page
+        self.click_element('#question-simple_module') # go to the task page
         var_sleep(.5) # wait for page to load
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         var_sleep(.5) # wait for page to load
@@ -368,12 +369,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.assertNodeNotVisible("#auth-status .text-danger")
 
         reset_login()
-
-        # Test an invitation for a user to begin a new task within a Project.
-        self.click_element('#question-simple_module_two .task-commands a.assign-task')
-        do_invitation("test+begintask@q.govready.com")
-        self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
-        self.assertNodeNotVisible("#auth-status .text-danger")
 
         # Invitations to join discussions are tested in test_discussion.
 
@@ -454,7 +449,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log in and create a new project.
         self._login()
         self._new_project()
-        self.click_element('#question-question_types_text .task-commands form.start-task a')
+        self.click_element('#question-question_types_text')
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
@@ -549,7 +544,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log in and create a new project.
         self._login()
         self._new_project()
-        self.click_element('#question-question_types_choice .task-commands form.start-task a')
+        self.click_element('#question-question_types_choice')
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
@@ -582,7 +577,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log in and create a new project.
         self._login()
         self._new_project()
-        self.click_element('#question-question_types_numeric .task-commands form.start-task a')
+        self.click_element('#question-question_types_numeric')
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
@@ -740,7 +735,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log in and create a new project.
         self._login()
         self._new_project()
-        self.click_element('#question-question_types_media .task-commands form.start-task a')
+        self.click_element('#question-question_types_media')
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
@@ -785,7 +780,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log in and create a new project.
         self._login()
         self._new_project()
-        self.click_element('#question-question_types_module .task-commands form.start-task a')
+        self.click_element('#question-question_types_module')
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
@@ -846,7 +841,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log in and create a new project.
         self._login()
         self._new_project()
-        self.click_element('#question-question_types_encrypted .task-commands form.start-task a')
+        self.click_element('#question-question_types_encrypted')
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
