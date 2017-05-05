@@ -576,9 +576,9 @@ function delete_project() {
       ajax_with_indicator({
        url: '{% url "delete_project" project.id %}',
        method: "POST",
-       success: function() {
+       success: function(res) {
          // redirect to home to see other projects
-         window.location = "/";
+         window.location = res.redirect;
        }
       });
     }

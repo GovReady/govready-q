@@ -474,6 +474,17 @@ class Project(models.Model):
         parents.reverse()
         return parents
 
+    def get_up_url(self):
+        parents = self.get_parent_projects()
+        if len(parents) > 0:
+            return parents[-1].get_absolute_url()
+        
+        folder = self.primary_folder()
+        if folder:
+            return folder.get_absolute_url()
+
+        return "/"
+
     def get_open_tasks(self, user):
         # Get all tasks that the user might want to continue working on
         # (except for the project root task).

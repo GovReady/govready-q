@@ -627,8 +627,11 @@ def rename_project(request, project):
 def delete_project(request, project):
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
+    
+    redirect = project.get_up_url()
     project.delete()
-    return JsonResponse({ "status": "ok" })
+
+    return JsonResponse({ "status": "ok", "redirect": redirect })
 
 @project_admin_login_post_required
 def export_project(request, project):
