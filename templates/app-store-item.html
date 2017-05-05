@@ -55,8 +55,13 @@
       <form method="post">
         {% csrf_token %}
         <input type=hidden name=firstsubmit value=1>
-        <button id="start-project" type="submit" class="btn btn-success"
-          >Add to project folder</button>
+        <button id="start-project" type="submit" class="btn btn-success">
+          {% if not request.GET.q %}
+          Add to project folder
+          {% else %}
+          Start app
+          {% endif %}
+        </button>
       </form>
       <br /><a href="/store">return to app store</a>
 

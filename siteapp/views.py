@@ -251,9 +251,10 @@ def app_store_item(request, app_namespace, app_name):
                     label="Add this app to which project folder?",
                     widget=RadioSelect)
 
-        if "firstsubmit" in request.POST:
+        if "firstsubmit" in request.POST and "q" not in request.GET:
             # When coming to this page for the first time, don't do validation since
-            # nothing has been submitted yet.
+            # nothing has been submitted yet. Unless the 'q' are is specified, in
+            # which case there are no form items and we can submit immediately.
             form = NewProjectForm()
         else:
             form = NewProjectForm(request.POST)
