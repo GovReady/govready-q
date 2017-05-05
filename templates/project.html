@@ -35,7 +35,7 @@
 }
 
 .question-group {
-  margin: 50px 0 0 0;
+  margin: 30px 0 20px 0;
 }
 
 .question-group-title {
@@ -132,10 +132,6 @@
     </a>
   </p>
   {% endfor %}
-  <p style="font-size: 110%; margin-left: 15px;">
-    <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
-    {{project.title}}
-  </p>
 </div>
 
 <div class="row">
@@ -184,6 +180,10 @@
 
 <div class="col-md-pull-2 col-md-10">
   <div id="focus-area-wrapper">
+    <h1 style="text-align: center;">
+      {{project.title}}
+    </h1>
+
     {% if project.root_task.module.spec.is_app_stub %}
       {# This project is tied to an app that has not yet been imported. #}
       <h2>Activate App</h2>
@@ -192,6 +192,7 @@
 
     {# tabs #}
 
+    {% if tabs|add:additional_tabs|length > 1 %}
     <ul id="project-tabs" class="nav nav-tabs">
       {# question tabs #}
       {% for tab in tabs %}
@@ -221,6 +222,7 @@
         </li>
       {% endfor %}
     </ul>
+    {% endif %}
 
     {# tab content #}
 
@@ -272,6 +274,9 @@
 
                     <div class="question-title">
                       {{rec.question.spec.title}}
+                      {% if can_begin_module and rec.question.spec.protocol %}
+                      <br><small><i>Select from Store</i></small>
+                      {% endif %}
                     </div>
 
                     {% if can_begin_module %}
@@ -315,7 +320,9 @@
                       </div>
 
                       <div class="question-title">
+                        {{rec.question.spec.title}}{% if can_begin_module and rec.question.spec.protocol %}:<br>
                         {{t.title}}
+                        {% endif %}
                       </div>
                     </a>
                     {% endfor %}

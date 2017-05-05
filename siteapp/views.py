@@ -488,7 +488,7 @@ def project(request, project_id):
             if doc.get("tab") in tabs:
                 # Assign this to one of the tabs.
                 tabs[doc["tab"]]["intro"] = doc
-            else:
+            elif doc.get("title"):
                 # Add tab to end.
                 additional_tabs.append(doc)
 
