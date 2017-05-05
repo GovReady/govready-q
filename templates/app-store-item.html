@@ -20,6 +20,7 @@
 }
 #app-metadata a {
   color: black;
+  text-decoration: underline;
 }
 .meta-key {
   color: #888;
@@ -70,7 +71,7 @@
         <div><span class="meta-key">Provider</span>: <a href="{{app.vendor_url}}">{{app.vendor}}</a></div>
         <div><span class="meta-key">Status</span>: {{app.status}}</div>
         <div><span class="meta-key">Version</span>: {{app.version}}</div>
-        <div><span class="meta-key">Source</span>: <a href="{{app.source_url}}">{{app.source_url}}</a></div>
+        <div><span class="meta-key">Source</span>: <a href="{{app.source_url}}">link</a></div>
         {% if app.authz == "none" %}
           <div><span class="meta-key">Startable</span>: Yes
         {% else %}
