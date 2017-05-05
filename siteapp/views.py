@@ -182,18 +182,18 @@ def filter_app_catalog(catalog, request):
 
 
 @login_required
-def assessment_catalog(request):
+def app_store(request):
     from urllib.parse import urlencode
     forward_qsargs = { }
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
-    return render(request, "assessment-catalog.html", {
+    return render(request, "app-store.html", {
         "apps": filter_app_catalog(get_app_store(request), request),
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
     })
 
 @login_required
-def assessment_catalog_item(request, app_namespace, app_name):
+def app_store_item(request, app_namespace, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
     from guidedmodules.models import ModuleSource
@@ -206,15 +206,15 @@ def assessment_catalog_item(request, app_namespace, app_name):
     module_source = get_object_or_404(ModuleSource, id=app_catalog_info["modulesource_id"])
 
     if request.method == "GET":
-        # Show the assessment "app" page.
+        # Show the "app" page.
 
-        return render(request, "assessment-catalog-item.html", {
+        return render(request, "app-store-item.html", {
             "first": not ProjectMembership.objects.filter(user=request.user, project__organization=request.organization).exists(),
             "app": app_catalog_info,
         })
     
     else:
-        # Show the form to start the assessment.
+        # Show the form to start the app.
 
         from django.forms import ModelForm, ChoiceField, RadioSelect, MultipleChoiceField, \
             CheckboxSelectMultiple, CharField, Textarea
@@ -350,7 +350,7 @@ def assessment_catalog_item(request, app_namespace, app_name):
 
                     return HttpResponseRedirect(project.get_absolute_url())
 
-        return render(request, "assessment-catalog-item-start.html", {
+        return render(request, "app-store-item-start.html", {
             "app": app_catalog_info,
             "form": form,
         })

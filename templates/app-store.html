@@ -2,12 +2,12 @@
 {% load static %}
 
 {% block title %}
-Assessment Catalog
+Compliance App Store
 {% endblock %}
 
 {% block head %}
 <style>
-.assessment {
+.app {
   border: 1px solid #D0D0D0;
   border-top: 4px solid #88A;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
@@ -17,7 +17,7 @@ Assessment Catalog
   height: 240px;
   cursor: pointer;
 }
-  .assessment h2 {
+  .app h2 {
     margin: -16px -16px 0 -16px;
     padding: 16px;
     /*background-color: #88A;
@@ -25,14 +25,14 @@ Assessment Catalog
     font-size: 120%;
     font-weight: bold;
   }
-  .assessment .body {
+  .app .body {
     padding: 16px 0 0 0;
   }
-    .assessment .body p:last {
+    .app .body p:last {
       margin: 0; /* not working */
     }
 
-#assessment_details h4 {
+#app_details h4 {
   font-weight: bold;
   font-size: 125%;
 }
@@ -52,9 +52,9 @@ Assessment Catalog
 <div class="row">
   {% for app in apps %}
     <div class="col-sm-4">
-      <div class="assessment"
-        data-assessment="{{app.key}}"
-        onclick="window.location='/assessment-catalog/{{app.key|urlencode}}{{forward_qsargs}}'"">
+      <div class="app"
+        data-app="{{app.key}}"
+        onclick="window.location='/store/{{app.key|urlencode}}{{forward_qsargs}}'"">
         {% if app.app_icon_dataurl %}
           <img src="{{app.app_icon_dataurl}}" class="img-responsive" style="float: right; margin: 0 0 5px 4px;">
         {% endif %}

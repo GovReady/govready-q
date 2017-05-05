@@ -280,7 +280,7 @@
                           <input type="hidden" name="previous" value="project"/>
                       {% else %}
                         {# start an app that satisfies the interface of the specified module #}
-                        <a href="/assessment-catalog?q={{project.root_task.id}}/{{rec.question.key}}">
+                        <a href="/store?q={{project.root_task.id}}/{{rec.question.key}}">
                       {% endif %}
                     {% endif %}
 
@@ -405,7 +405,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="project_settings_title">Assessment Settings</h4>
+        <h4 class="modal-title" id="project_settings_title">Project Settings</h4>
       </div>
       <div class="modal-body">
         <h3>Participants</h3>
@@ -432,7 +432,7 @@
 
             {% if send_invitation.can_add_invitee_to_team %}
               <div style="margin: 1em 0">
-                <button id="invite-user-to-project" class="btn btn-success" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Invite Colleague to Join Assessment ...</button>
+                <button id="invite-user-to-project" class="btn btn-success" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Invite Colleague to Join Project ...</button>
               </div>
             {% endif %}
 
@@ -451,16 +451,16 @@
             {% endif %}
 
       {% if project.is_deletable and is_admin %}
-        <h3>Assessment Details</h3>
-          <p><button class="btn btn-default" onclick="return rename_project();">Change Assessment Title</button></p>
-          <p><button class="btn btn-danger" onclick="return delete_project();">Delete Assessment</button></p>
+        <h3>Project Details</h3>
+          <p><button class="btn btn-default" onclick="return rename_project();">Change Project Title</button></p>
+          <p><button class="btn btn-danger" onclick="return delete_project();">Delete Project</button></p>
 
         <h3>Share Data</h3>
               {# export #}
               <form method="post" action="{% url "export_project" project.id %}">{% csrf_token %}
                 <button class="btn btn-success" style="margin-bottom: 1em">
                   <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
-                  Export Assessment Data
+                  Export Project Data
                 </button>
               </form>
 
@@ -498,10 +498,10 @@ $(function() {
 function invite_user_into_project() {
   var info = project_invitation_info;
   show_invite_modal(
-    'Invite To Assessment Team (' + info.project_title + ')',
-    'Invite a colleague to join this assessment team.',
+    'Invite To Project Team (' + info.project_title + ')',
+    'Invite a colleague to join this project team.',
     info,
-    'Please join the assessment team for ' + info.project_title + '.',
+    'Please join the project team for ' + info.project_title + '.',
     {
       project: info.project_id,
       add_to_team: "1"
@@ -552,7 +552,7 @@ function open_tab_from_url_fragment() {
 }
 
 function rename_project() {
-  var new_title = prompt("Rename this assessment?", "{{project.title|escapejs}}");
+  var new_title = prompt("Rename this project?", "{{project.title|escapejs}}");
   if (!new_title || new_title == "{{project.title|escapejs}}") return;
   ajax_with_indicator({
    url: '{% url "rename_project" project.id %}',
@@ -569,8 +569,8 @@ function rename_project() {
 
 function delete_project() {
   show_modal_confirm(
-    "Delete Assessment",
-    "Are you sure you want to delete this assessment? All information will be permanently deleted.",
+    "Delete Project",
+    "Are you sure you want to delete this project? All information will be permanently deleted.",
     "Delete",
     function() {
       ajax_with_indicator({

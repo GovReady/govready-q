@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-Your Assessments
+Project Folders
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active">Assessments</li>
+<li class="active">Project Folders</li>
 {% endblock %}
 
 {% block head %}
@@ -44,13 +44,13 @@ Your Assessments
 {% block body %}
 <div style="float: right; margin-top: 1em">
   <a id="new-folder" href="#" class="btn btn-default" onclick="new_folder(); return false;"><i class="glyphicon glyphicon-folder-open"></i> New Folder</a>
-  <a id="new-assessment" href="/assessment-catalog" class="btn btn-success"><i class="glyphicon glyphicon-list-alt"></i> Add app to project folder</a>
+  <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-list-alt"></i> Add app to project folder</a>
 </div>
 
-<h1>My Assessments</h1>
+<h1>Project Folders</h1>
 
 {% if folders|length == 0 %}
-  <p>Start by beginning your first assessment.</p>
+  <p>Start your first app.</p>
 {% endif %}
 
 <div id="folder-list">
@@ -70,7 +70,7 @@ Your Assessments
   </div>
 
   {% if folder.is_admin %}
-  <div class="meta">{{folder.project_count}} assessment{{folder.project_count|pluralize}}</div>
+  <div class="meta">{{folder.project_count}} project{{folder.project_count|pluralize}}</div>
   {% endif %}
 </div>
 {% endfor %}
@@ -145,7 +145,7 @@ function delete_folder(elem) {
 function rename_project(elem) {
   var project = $(elem).parents(".project");
   var old_title = project.find('.project_title').text();
-  var new_title = prompt("Rename this assessment?", old_title);
+  var new_title = prompt("Rename this project?", old_title);
   if (!new_title || new_title == old_title) return false;
   ajax_with_indicator({
    url: 'projects/' + project.data("project-id") + '/__rename',

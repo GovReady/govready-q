@@ -2,7 +2,7 @@
 {% load bootstrap3 %}
 
 {% block title %}
-{{app.title}} - Assessment Catalog
+{{app.title}} - App Store
 {% endblock %}
 
 {% block head %}
@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active"><a href="/assessment-catalog">Assessment Catalog</a></li>
+<li class="active"><a href="/store">Compliance App Store</a></li>
 <li class="active">{{app.title|truncatewords:6}}</li>
 {% endblock %}
 
@@ -33,7 +33,7 @@
     {% csrf_token %}
     {% bootstrap_form form %}
     {% buttons %}
-      <button id="start-assessment" type="submit" class="btn btn-success">Begin &raquo;</button>
+      <button id="start-project" type="submit" class="btn btn-success">Begin &raquo;</button>
     {% endbuttons %}
 </form>
 {% endblock %}

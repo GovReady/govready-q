@@ -13,9 +13,9 @@ urlpatterns = [
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),
 
-    # assessment catalog
-    url(r'^assessment-catalog$', views.assessment_catalog),
-    url(r'^assessment-catalog/(?P<app_namespace>.*)/(?P<app_name>.*)$', views.assessment_catalog_item),
+    # app store
+    url(r'^store$', views.app_store),
+    url(r'^store/(?P<app_namespace>.*)/(?P<app_name>.*)$', views.app_store_item),
 
     # projects
     url(r"^projects$", views.folder_list),

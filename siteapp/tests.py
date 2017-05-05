@@ -183,10 +183,10 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
     def _new_project(self, module_key="project/simple_project/app"):
         self.browser.get(self.url("/projects"))
-        self.click_element("#new-assessment")
-        self.click_element(".assessment[data-assessment='%s']" % module_key)
-        self.click_element("#start-assessment")
-        self.click_element("#start-assessment")
+        self.click_element("#new-project")
+        self.click_element(".app[data-app='%s']" % module_key)
+        self.click_element("#start-project")
+        self.click_element("#start-project")
         var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
@@ -268,7 +268,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.assertNodeNotVisible('#return-to-project')
         self.click_element("#return-to-projects")
         var_sleep(1.5)
-        self.assertRegex(self.browser.title, "Your Assessments")
+        self.assertRegex(self.browser.title, "Project Folders")
         self.assertNodeNotVisible('#please-complete-account-settings')
 
     def test_simple_module(self):

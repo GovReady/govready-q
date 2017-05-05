@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{app.title}} - Assessment Catalog
+{{app.title}} - App Store
 {% endblock %}
 
 {% block head %}
@@ -34,7 +34,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active"><a href="/assessment-catalog">Compliance App Store</a></li>
+<li class="active"><a href="/store">Compliance App Store</a></li>
 <li class="active">{{app.title|truncatewords:6}}</li>
 {% endblock %}
 
@@ -55,10 +55,10 @@
       <form method="post">
         {% csrf_token %}
         <input type=hidden name=firstsubmit value=1>
-        <button id="start-assessment" type="submit" class="btn btn-success"
+        <button id="start-project" type="submit" class="btn btn-success"
           >Add to project folder</button>
       </form>
-      <br /><a href="/assessment-catalog">return to app store</a>
+      <br /><a href="/store">return to app store</a>
 
       <div id="app-metadata">
         <div class="meta-heading"><strong>Information</strong></div>

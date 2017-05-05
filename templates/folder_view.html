@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{folder.title}} -- Assessments
+{{folder.title}} -- Projects
 {% endblock %}
 
 {% block breadcrumbs %}
-<li>Assessments</li>
+<li>Projects</li>
 <li class="active">{{folder.title}}</li>
 {% endblock %}
 
@@ -54,7 +54,7 @@ h1 .glyphicon, h3 .glyphicon {
 
 {% block body %}
 <div style="float: right; margin-top: 1em">
-  <a id="new-assessment" href="/assessment-catalog" class="btn btn-success"><i class="glyphicon glyphicon-list-alt"></i> Add app to project folder</a>
+  <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-list-alt"></i> Add app to project folder</a>
 </div>
 
 <h1>
@@ -69,7 +69,7 @@ h1 .glyphicon, h3 .glyphicon {
 </h1>
 
 {% if projects|length == 0 %}
-  <p>Start by beginning your first assessment in this folder.</p>
+  <p>Start by beginning your first app in this folder.</p>
 {% endif %}
 
 {% for project in projects %}
@@ -130,7 +130,7 @@ h1 .glyphicon, h3 .glyphicon {
 {% endfor %}
 
 {% if is_admin and num_hidden_projects > 0 %}
-<p><i>There are {{num_hidden_projects}} other assessment{{num_hidden_projects|pluralize}} in this folder that you do not have permission to see.</i></p>
+<p><i>There are {{num_hidden_projects}} other project{{num_hidden_projects|pluralize}} in this folder that you do not have permission to see.</i></p>
 {% endif %}
 
 {% endblock %}
@@ -170,7 +170,7 @@ function delete_folder(elem) {
 function rename_project(elem) {
   var project = $(elem).parents(".project");
   var old_title = project.find('.project_title').text();
-  var new_title = prompt("Rename this assessment?", old_title);
+  var new_title = prompt("Rename this project?", old_title);
   if (!new_title || new_title == old_title) return false;
   ajax_with_indicator({
    url: '/projects/' + project.data("project-id") + '/__rename',

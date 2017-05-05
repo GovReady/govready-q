@@ -30,7 +30,7 @@ Home
         {% endif %}
       {% endwith %}
         <h1 style="margin-top:0px;">
-          {{request.organization}} Assessment Kit
+          {{request.organization}}
           <div class="small">powered by GovReady Q</div>
         </h1>
         <p><b>Open source compliance software for everyone to innovate securely</b></p>
@@ -44,9 +44,9 @@ Home
 
       {% if request.user.is_authenticated %}
       {% if not has_projects %}
-      <p><a class="btn btn-success btn-lg" role="button" href="/assessment-catalog">Begin an Assessment &raquo;</a></p>
+      <p><a class="btn btn-success btn-lg" role="button" href="/store">Find a Compliance App &raquo;</a></p>
       {% else %}
-      <p><a class="btn btn-success btn-lg" role="button" href="/projects">View Assessments &raquo;</a></p>
+      <p><a class="btn btn-success btn-lg" role="button" href="/projects">View Projects &raquo;</a></p>
       {% endif %}
       {% endif %}
 
