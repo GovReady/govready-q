@@ -17,7 +17,7 @@ from .notifications_helpers import *
 def homepage(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
-        
+
     from allauth.account.forms import LoginForm
     return render(request, "index.html", {
         "login_form": LoginForm,
