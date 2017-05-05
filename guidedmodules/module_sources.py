@@ -450,13 +450,21 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         self.repo_root_tree = tree
         return tree
 
-    def scandir(self, path, namespaces=None, page=None):
-        # Get the root tree and then move to the desired subdirectory.
-        from fs.info import Info
+    def getdir(self, path):
+        import fs.errors
         tree = self.get_repo_root()
         for item in path.split("/"):
             if item != "":
-                tree = tree[item] # TODO: As above.
+                try:
+                    tree = tree[item] # TODO: As above.
+                except KeyError:
+                    raise fs.errors.ResourceNotFound(path)
+        return tree
+
+    def scandir(self, path, namespaces=None, page=None):
+        # Get the root tree and then move to the desired subdirectory.
+        from fs.info import Info
+        tree = self.getdir(path)
         for item in tree:
             if item.type not in ("tree", "blob"): continue
             yield Info({
@@ -473,10 +481,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         # Get the root tree and then move to the desired item.
         if mode not in ("r", "rb"): raise ValueError("Invalid open mode. Must be 'r' or 'rb'.")
         import io
-        tree = self.get_repo_root()
-        for item in path.split("/"):
-            if item != "":
-                tree = tree[item] # TODO: As above.
+        tree = self.getdir(path)
         return io.BytesIO(tree.data_stream.read())
 
 
