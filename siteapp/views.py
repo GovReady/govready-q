@@ -493,10 +493,16 @@ def project(request, project_id):
                 additional_tabs.append(doc)
 
     # Render.
+    folder = project.primary_folder()
     return render(request, "project.html", {
+        "project": project,
+
         "is_admin": request.user in project.get_admins(),
         "can_begin_module": can_begin_module,
-        "project": project,
+
+        "folder": folder,
+        "is_folder_admin": (request.user in folder.get_admins()),
+
         "title": project.title,
         "intro" : project.root_task.render_field('introduction') if project.root_task.module.spec.get("introduction") else "",
         "additional_tabs": additional_tabs,

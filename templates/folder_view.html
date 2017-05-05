@@ -136,7 +136,7 @@ h1 .glyphicon, h2 .glyphicon {
 function rename_folder(elem) {
   var folder_name = $(".folder_name");
   var new_title = prompt("Rename this folder?", folder_name.text());
-  if (!new_title) return;
+  if (!new_title || new_title == folder_name.text()) return;
   ajax_with_indicator({
    url: '{% url "rename_folder" %}',
    method: "POST",

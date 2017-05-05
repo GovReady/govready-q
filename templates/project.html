@@ -13,6 +13,17 @@
 .tab-pane {
 }
 
+.folder_action {
+  margin-left: 1em;
+  color: #777;
+  cursor: pointer;
+  font-size: 13px;
+  display: none;
+}
+  *:hover > .folder_action {
+    display: inline-block;
+  }
+
 .nav-tabs {
     border-bottom: none;
 }
@@ -118,12 +129,13 @@
 {% endcomment %}
 
 <div id="folder-project-context" style="margin-bottom: 20px;">
-  {% with folder=project.primary_folder %} {# TODO #}
   <p style="font-size: 120%;">
     <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-    <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
+    <a id="folder-link" href="{{folder.get_absolute_url}}" data-folder-id="{{folder.id}}">{{folder.title}}</a>
+    {% if is_folder_admin %}
+      <span class="folder_action" onclick="rename_folder();"><span class="glyphicon glyphicon-pencil"></span></span>
+    {% endif %}
   </p>
-  {% endwith %}
   {% for parent_project in project.get_parent_projects %}
   <p style="font-size: 110%; margin-left: 15px;">
     <span class="glyphicon glyphicon-list-alt" style="margin-right: .25em"></span>
@@ -555,5 +567,24 @@ function delete_project() {
     }
   )
 }
+
+{% if is_folder_admin %}
+function rename_folder(elem) {
+  var folder_elem = $("#folder-link");
+  var new_title = prompt("Rename this folder?", folder_elem.text());
+  if (!new_title || new_title == folder_elem.text()) return;
+  ajax_with_indicator({
+   url: '{% url "rename_folder" %}',
+   method: "POST",
+   data: {
+    folder: folder_elem.data("folder-id"),
+    title: new_title
+   },
+   success: function() {
+     folder_elem.text(new_title);
+   }
+  });
+}
+{% endif %}
 </script>
 {% endblock %}
