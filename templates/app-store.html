@@ -7,6 +7,10 @@ Compliance App Store
 
 {% block head %}
 <style>
+h1 {
+  margin-bottom: 30px;
+}
+
 .app {
   border: 1px solid #D0D0D0;
   border-top: 4px solid #88A;
@@ -48,7 +52,15 @@ Compliance App Store
 {% endblock %}
 
 {% block body %}
-<h1><img alt="GovReady Q logo" src="{% static "img/brand/govready_logo_transparent.png" %}" width="190px" style="margin-top:-18.5px;"> Compliance App Store</h1>
+<h1>
+  <img alt="GovReady Q logo" src="{% static "img/brand/govready_logo_transparent.png" %}" width="190px" style="margin-top:-18.5px;">
+  Compliance App Store
+</h1>
+
+{% if filter_description %}
+<p style="margin-bottom: 30px">These apps can help you with <i>{{filter_description}}</i>.</p>
+{% endif %}
+
 <div class="row">
   {% for app in apps %}
     <div class="col-sm-4">

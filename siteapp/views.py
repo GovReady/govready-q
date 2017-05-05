@@ -174,12 +174,15 @@ def app_satifies_interface(app, question):
 
 
 def filter_app_catalog(catalog, request):
+    filer_description = None
+
     if request.GET.get("q"):
         # Check if the app satisfies the interface.
         task, q = get_task_question(request)
         catalog = filter(lambda app : app_satifies_interface(app, q), catalog)
+        filer_description = q.spec["title"]
 
-    return catalog
+    return catalog, filer_description
 
 
 @login_required
@@ -188,8 +191,11 @@ def app_store(request):
     forward_qsargs = { }
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
+    catalog, filter_description = filter_app_catalog(get_app_store(request), request)
+
     return render(request, "app-store.html", {
-        "apps": filter_app_catalog(get_app_store(request), request),
+        "apps": catalog,
+        "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
     })
 
