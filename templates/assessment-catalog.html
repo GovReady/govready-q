@@ -55,6 +55,9 @@ Assessment Catalog
       <div class="assessment"
         data-assessment="{{app.key}}"
         onclick="window.location='/assessment-catalog/{{app.key|urlencode}}{{forward_qsargs}}'"">
+        {% if app.app_icon_dataurl %}
+          <img src="{{app.app_icon_dataurl}}" class="img-responsive" style="float: right; margin: 0 0 5px 4px;">
+        {% endif %}
         <h2><small>{{app.vendor}}</small><br/>{{app.title}}</h2>
         <div class="body">
           {{app.description.short|safe}}

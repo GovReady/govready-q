@@ -143,6 +143,16 @@ def load_app_store(organization):
                 "%s %s" % (repr(catalog_info["name"]), "short description")
             )
 
+            # Convert the app icon to a data URL.
+            if "app-icon" in catalog_info:
+                import io, base64
+                from PIL import Image
+                im = Image.open(io.BytesIO(catalog_info["app-icon"]))
+                im.thumbnail((128,128))
+                buf = io.BytesIO()
+                im.save(buf, 'png')
+                catalog_info["app_icon_dataurl"] = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+
             yield catalog_info
 
 def get_task_question(request):

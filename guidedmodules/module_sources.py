@@ -189,14 +189,6 @@ class PyFsApp(App):
             err_str = "%s/app.yaml" % self.fs.desc('')
             try:
                 yaml = read_yaml_file(f)
-                ret = {
-                    "name": self.name,
-                    "title": yaml["title"],
-                }
-                ret.update(yaml.get("catalog", {}))
-                ret.update(self.store.get_app_catalog_info(self))
-                if "protocol" in yaml: ret["protocol"] = yaml["protocol"]
-                return ret
             except ModuleDefinitionError as e:
                 raise ModuleDefinitionError("There was an error loading the module at %s: %s" % (
                     err_str,
@@ -205,6 +197,25 @@ class PyFsApp(App):
                 raise ModuleDefinitionError("There was an unhandled error loading the module at %s." % (
                     err_str,
                     str(e)))
+
+        # Construct catalog info.
+        ret = {
+            "name": self.name,
+            "title": yaml["title"],
+        }
+        ret.update(yaml.get("catalog", {}))
+        ret.update(self.store.get_app_catalog_info(self))
+        if "protocol" in yaml: ret["protocol"] = yaml["protocol"]
+
+        # Load the app icon.
+        import fs.errors
+        try:
+            with self.fs.open("assets/app.png", "rb") as f:
+                ret["app-icon"] = f.read()
+        except fs.errors.ResourceNotFound:
+            pass
+
+        return ret
 
     def get_modules(self):
         # Return a generator over parsed YAML data for modules.

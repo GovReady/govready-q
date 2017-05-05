@@ -41,6 +41,10 @@
 {% block body %}
 <div class="row">
   <div class="col-sm-10">
+    {% if app.app_icon_dataurl %}
+      <img src="{{app.app_icon_dataurl}}" class="img-responsive" style="float: right; margin: 0 0 5px 4px;">
+    {% endif %}
+
     <h1><small>{{app.vendor}}</small><br/>{{app.title}}</h1>
     <div class="body">
       {{app.description.long|safe}}
