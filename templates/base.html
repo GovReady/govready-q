@@ -28,8 +28,6 @@
             body, blockquote {
                 font-size: 16px;
             }
-            .navbar-brand { padding-top: 7px; }
-            .navbar-brand img { height: 36px; display: inline-block; padding-top: 4px; }
             .navbar .notification.unread a span {
                 font-weight: bold;
             }
@@ -67,7 +65,7 @@
     <!--[if lt IE 8]><p>Internet Explorer version 8 or any modern web browser is required to use this website, sorry.<![endif]-->
     <!--[if gt IE 7]><!-->
 
-    <nav class="navbar navbar-default navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-target" aria-expanded="false">
@@ -76,29 +74,22 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/">
+          <a class="navbar-brand" href="/" style="color: #EEE; font-weight: bold;">
               {% if request.organization  %}
                 {% with logo=request.organization.get_logo %}
                   {% if logo %}
-                    <img src="{{logo.url}}" height="36" alt="Organization Logo"
-                              style="margin-top: -4px; margin-right: .5em;">
+                    <img src="{{logo.url}}" height="36" alt="Organization Logo">
                   {% else %}
-                  <span class="glyphicon glyphicon-globe"></span>
+                    <span class="glyphicon glyphicon-globe"></span>
                   {% endif %}
                 {% endwith %}
-              {% endif %}
-          </a>
-        </div>
-        <div class="collapse navbar-collapse pull-left" style="color: white; padding-top:8px;">
-            {% if request.organization  %}
-                <a href="/projects" style="color: white; font-size: 1.3em; font-weight: bold;">
-                  {{request.organization.name}}</a>
+                <span style="margin-left: .5em">{{request.organization.name}}</span>
               {% else %}
                 {{request.get_host}}
               {% endif %}
+          </a>
         </div>
-
-        <div id="navbar-collapse-target" class="collapse navbar-collapse pull-right">
+        <div id="navbar-collapse-target" class="collapse navbar-collapse">
           {% comment %}
           <ul class="nav navbar-nav">
             <li class="active"><a href="/">System Catalog</a></li>
