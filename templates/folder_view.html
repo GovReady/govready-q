@@ -28,6 +28,10 @@ h1 .glyphicon, h3 .glyphicon {
   .folder a:hover span { text-decoration: underline; }
   .folder a:hover span.glyphicon { text-decoration: none; }
 
+#folder-description {
+  font-size: 1.2em;
+  color: #666;
+}
 #folder-description[data-value=""] {
   font-style: italic;
 }
@@ -58,7 +62,7 @@ h1 .glyphicon, h3 .glyphicon {
 
 {% block body %}
 <div style="float: right; margin: 1em 0;">
-  <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-list-alt"></i> Add app to project folder</a>
+  <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add app </a>
 </div>
 
 <h1>
@@ -80,7 +84,9 @@ h1 .glyphicon, h3 .glyphicon {
 {% endif %}
 
 {% if projects|length == 0 %}
-  <p>Start by beginning your first app in this folder.</p>
+  <p>Welcome to your {{folder.title}} project folder!<p>
+  <p>Looks like you need some stuff to help you manage your project.</p>
+  <p>To get started, <a href="/store">add an app</a> from the compliance app store.</p>
 {% endif %}
 
 {% for project in projects %}
