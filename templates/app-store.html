@@ -13,24 +13,25 @@ h1 {
 
 .app {
   border: 1px solid #D0D0D0;
-  border-top: 4px solid #88A;
+  /*border-top: 4px solid #88A;*/
   box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
   padding: 1.5em;
   background-color: white;
   margin-bottom: 24px;
-  height: 240px;
+  height: 200px;
   cursor: pointer;
 }
   .app h2 {
-    margin: -16px -16px 0 -16px;
+    margin: -24px -16px 0 -16px;
     padding: 16px;
     /*background-color: #88A;
     color: white;*/
     font-size: 120%;
     font-weight: bold;
+    height: 80px;
   }
   .app .body {
-    padding: 16px 0 0 0;
+    padding: 0 0 0 0;
   }
     .app .body p:last {
       margin: 0; /* not working */
@@ -38,11 +39,16 @@ h1 {
 
 #app_details h4 {
   font-weight: bold;
-  font-size: 125%;
+  font-size: 115%;
 }
 .app-metadata {
-  font-size: 0.9em;
+  font-size: 0.7em;
   text-align: left;
+  color: #666;
+}
+.body {
+  font-size: 0.8em;
+  height: 100px;
 }
 </style>
 {% endblock %}
@@ -63,27 +69,29 @@ h1 {
 
 <div class="row">
   {% for app in apps %}
-    <div class="col-sm-4">
+    <div class="col-sm-3">
       <div class="app"
         data-app="{{app.key}}"
         onclick="window.location='/store/{{app.key|urlencode}}{{forward_qsargs}}'"">
-        {% if app.app_icon_dataurl %}
-          <img src="{{app.app_icon_dataurl}}" class="img-responsive" style="float: right; margin: 0 0 5px 4px;">
-        {% endif %}
+
         <h2><small>{{app.vendor}}</small><br/>{{app.title}}</h2>
+        {% if app.app_icon_dataurl %}
+          <img src="{{app.app_icon_dataurl}}" class="img-responsive" style="float: right; margin: 0 0 5px 4px; width:80px;">
+        {% endif %}
         <div class="body">
-          {{app.description.short|safe}}
+          {{app.description.short|safe|truncatewords:18}}
         </div>
-        <div class="app-metadata pull-right">
-          <div>{{app.status}} v{{app.version}}</div>
+        <div class="app-metadata pull-left">
           {% if app.authz == "none" %}
-            <div>Start Immediately!</div>
+            &nbsp;
+          {% else %}
+            <div>Admin approval required</div>
           {% endif %}
         </div>
       </div>
     </div>
 
-    {% if forloop.counter|divisibleby:3 %}
+    {% if forloop.counter|divisibleby:4 %}
       <div class="visible-sm clearfix"> </div>
       <div class="visible-md clearfix"> </div>
       <div class="visible-lg clearfix"> </div>
