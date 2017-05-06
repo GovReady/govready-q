@@ -14,8 +14,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with MultiplexedAppStore(ms for ms in ModuleSource.objects.all()) as store:
             for app in store.list_apps():
-                app.import_into_database(
-                    AppImportUpdateMode.ForceUpdateInPlace
-                     if options.get("force") == True
-                     else AppImportUpdateMode.UpdateIfCompatibleOnly)
+                try:
+                    app.import_into_database(
+                        AppImportUpdateMode.ForceUpdateInPlace
+                         if options.get("force") == True
+                         else AppImportUpdateMode.UpdateIfCompatibleOnly)
+                except Exception as e:
+                    # If there's an error with this app, just print it and
+                    # continue to try to refresh other apps.
+                    print(app, e)
 

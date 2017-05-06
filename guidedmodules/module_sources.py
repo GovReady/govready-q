@@ -114,7 +114,7 @@ class MultiplexedAppStore(AppStore):
             raise Exception(exceptions)
 
     def __repr__(self):
-        return "<MultiplexedAppStore>"
+        return "<MultiplexedAppStore %s>" % repr(self.loaders)
 
     def list_apps(self):
         # List all of the apps in all of the stores.
@@ -383,6 +383,11 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         self.tempdir_obj = tempfile.TemporaryDirectory()
         self.tempdir = self.tempdir_obj.__enter__()
 
+        self.description = self.url + "/" + self.path.strip("/") + "@" + self.branch
+
+    def __repr__(self):
+        return "<gitfs '%s'>" % self.description
+
     def close(self):
         # Release the temporary directory.
         self.tempdir_obj.__exit__(None, None, None)
@@ -414,6 +419,10 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
             ssh_options += " -i " + ssh_key_file
 
         self.repo.git.environment()["GIT_SSH_COMMAND"] = ssh_options
+
+        # For debugging, log a command that we could try on the command line.
+        print("SSH_COMMAND=\"{ssh_options}\" git fetch --depth 1 {url} {branch}".format(
+            ssh_options=ssh_options, url=self.url, branch=self.branch))
 
         # Fetch.
         import git.exc

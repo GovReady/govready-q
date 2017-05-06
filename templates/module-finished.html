@@ -79,7 +79,8 @@ thead {
         {% if answers_question.task == answers_question.task.project.root_task %}
           {# return to project #}
           <p><a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{answers_question.question.spec.tab|slugify}}/{{answers_question.question.spec.group|slugify}}/{{answers_question.question.key|slugify}}/{{task.id}}" class="btn btn-success">
-            Continue with other modules in {{task.project.title}} &raquo;
+          	{# we used to say 'with other modules in {{task.project.title}}' but there may not be any other modules #}
+            Continue &raquo;
           </a></p>
         {% else %}
           {# return to non-project parent task #}
@@ -102,7 +103,8 @@ thead {
     {% else %}
       {# every task, except projects, are now subtasks of other tasks, so this only occurs if a task is a subtask to multiple super-tasks #}
       <p><a href="{{task.project.get_absolute_url}}" class="btn btn-success">
-        Continue with other modules in {{task.project.title}} &raquo;
+	  	{# we used to say 'with other modules in {{task.project.title}}' but there may not be any other modules #}
+        Continue &raquo;
       </a></p>
     {% endif %}
   {% endwith %}
