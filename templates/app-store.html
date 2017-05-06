@@ -54,13 +54,13 @@ h1 {
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active">Compliance App Store</li>
+<li class="active">App Store</li>
 {% endblock %}
 
 {% block body %}
 <h1>
   <img alt="GovReady Q logo" src="{% static "img/brand/govready_logo_transparent.png" %}" width="190px" style="margin-top:-18.5px;">
-  Compliance App Store
+  App Store
 </h1>
 
 {% if filter_description %}
@@ -79,7 +79,7 @@ h1 {
           <img src="{{app.app_icon_dataurl}}" class="img-responsive" style="float: right; margin: 0 0 5px 4px; width:80px;">
         {% endif %}
         <div class="body">
-          {{app.description.short|safe|truncatewords:18}}
+          {{app.description.short|safe|truncatewords_html:18}}
         </div>
         <div class="app-metadata pull-left">
           {% if app.authz == "none" %}
