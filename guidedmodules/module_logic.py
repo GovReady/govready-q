@@ -1286,14 +1286,15 @@ class RenderedAnswer:
     @property
     def output_documents(self):
         if self.question_type == "module":
-            try:
-                return {
-                    doc["id"]: doc["html"]
-                    for doc in self.answer.task.render_output_documents()
-                }
-            except:
-                return {}
-        raise AttributeError()
+            # Return a class that lazy-renders output documents on request.
+            answers = self.answer
+            class LazyRenderer:
+                def __getattr__(self, item):
+                    for doc in answers.task.module.spec.get("output", []):
+                        if doc.get("id") == item:
+                            return render_content(doc, answers, "html", "%s output document" % (repr(answers.module)), {})
+                    raise AttributeError()
+            return LazyRenderer()
 
     def __bool__(self):
         # How the template converts a question variable to
