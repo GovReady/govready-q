@@ -67,11 +67,26 @@ h1 {
 <p style="margin-bottom: 30px">These apps can help you with <i>{{filter_description}}</i>.</p>
 {% endif %}
 
+<div class="pull-right" style="margin-bottom: 1em">
+  <form class="form-inline" onsubmit="return false;">
+    <div class="form-group">
+      <label class="sr-only" for="app-search">search apps for</label>
+      <div class="input-group">
+        <div class="input-group-addon">search</div>
+        <input type="text" class="form-control" id="app-search" placeholder="search apps">
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="clearfix"> </div>
+
 <div class="row">
   {% for app in apps %}
     <div class="col-sm-3">
       <div class="app"
         data-app="{{app.key}}"
+        data-search-haystack="{{app.search_haystak}}"
         onclick="window.location='/store/{{app.key|urlencode}}{{forward_qsargs}}'"">
 
         <h2><small>{{app.vendor}}</small><br/>{{app.title}}</h2>
@@ -91,7 +106,7 @@ h1 {
       </div>
     </div>
 
-    {% if forloop.counter|divisibleby:4 %}
+    {% if forloop.counter|divisibleby:4 and 0 %} {# breaks dont play well with client-side search #}
       <div class="visible-sm clearfix"> </div>
       <div class="visible-md clearfix"> </div>
       <div class="visible-lg clearfix"> </div>
@@ -103,4 +118,35 @@ h1 {
     </div>
   {% endfor %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+RegExp.escape = function(s) {
+  // http://stackoverflow.com/a/18151038
+  return String(s).replace(/([-()\[\]{}+?*.$\^|,:#<!\\])/g, '\\$1').
+  replace(/\x08/g, '\\x08');
+};
+
+// Periodically check if the search box has changed and if so run
+// client-side search filtering. Pause until there are no recent
+// keypresses so the UI isn't updated while the user is typing.
+var app_search_last_keypress_time = Date.now();
+var last_app_search = null;
+$('#app-search').on('keydown', function() { app_search_last_keypress_time = Date.now(); });
+setInterval(do_app_search, 250);
+function do_app_search() {
+  if ((Date.now() - app_search_last_keypress_time) < 500) return;
+
+  var app_search = $('#app-search').val();
+  if (app_search == last_app_search) return;
+  last_app_search = app_search;
+
+  $('.app').each(function() {
+    var pattern = new RegExp(".*" + RegExp.escape(app_search.toLowerCase()));
+    var visible = pattern.test($(this).attr('data-search-haystack').toLowerCase());
+    $(this).parent()[visible ? "fadeIn" : "hide"]();
+  })
+}
+</script>
 {% endblock %}

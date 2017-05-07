@@ -144,6 +144,14 @@ def load_app_store(organization):
                 "%s %s" % (repr(catalog_info["name"]), "short description")
             )
 
+            catalog_info["search_haystak"] = "".join([
+                app.name,
+                catalog_info["title"],
+                catalog_info["vendor"],
+                catalog_info["description"]["short"],
+                catalog_info["description"]["long"],
+            ])
+
             # Convert the app icon to a data URL.
             if "app-icon" in catalog_info:
                 import io, base64
