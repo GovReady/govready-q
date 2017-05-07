@@ -147,7 +147,7 @@ def load_app_store(organization):
             catalog_info["search_haystak"] = "".join([
                 app.name,
                 catalog_info["title"],
-                catalog_info["vendor"],
+                catalog_info.get("vendor"),
                 catalog_info["description"]["short"],
                 catalog_info["description"]["long"],
             ])
