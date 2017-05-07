@@ -57,6 +57,9 @@
 .question {
   padding-top: .75em;
   padding-bottom: .75em;
+  {% if layout_mode == "grid" %}
+    text-align: center;
+  {% endif %}
 }
   .question:hover {
     background-color: rgb(248,248,248);
@@ -75,7 +78,6 @@
     }
   .question .question-title {
     margin-top: .5em;
-    text-align: center;
     color: #222;
   }
   .question .task-commands a {
@@ -261,7 +263,11 @@
 
               {% for rec in group.modules %}
                 <div id="question-{{rec.question.key}}"
-                  class="col-sm-3 question {% if rec.is_finished %}task_finished{% endif %} {% if rec.first_start %}first_start{% endif %}"
+                  class="
+                    {% if layout_mode == "grid" %}col-sm-3{% else %}col-xs-12{% endif %}
+                    question
+                    {% if rec.is_finished %}task_finished{% endif %}
+                    {% if rec.first_start %}first_start{% endif %}"
                   onclick="$(this).find('form').submit();"
                   style="cursor: pointer;">
 
@@ -284,6 +290,11 @@
                       {% endif %}
                     {% endif %}
 
+                    {% if layout_mode == "rows" %}
+                      <div class="row">
+                      <div class="col-sm-3">
+                    {% endif %}
+
                     <div class="question-icon">
                       <img
                         {% if rec.icon %}
@@ -295,12 +306,22 @@
                         title="Begin new app.">
                     </div>
 
+                    {% if layout_mode == "rows" %}
+                      </div> <!-- /col -->
+                      <div class="col-sm-9">
+                    {% endif %}
+
                     <div class="question-title">
                       {{rec.question.spec.title}}
                       {% if can_begin_module and rec.question.spec.protocol %}
                       <br><small><i>Select from Store</i></small>
                       {% endif %}
                     </div>
+
+                    {% if layout_mode == "rows" %}
+                      </div> <!-- /col -->
+                      </div> <!-- /row -->
+                    {% endif %}
 
                     {% if can_begin_module %}
                       {% if not rec.question.spec.protocol %}
@@ -311,31 +332,39 @@
                     {% endif %}
 
                     {# For a module-set question, list the existing tasks #}
+                    {% if layout_mode == "rows" %}
+                      <div class="row">
+                      <div class="col-sm-push-3 col-sm-9">
+                    {% endif %}
                     <div class="question-task-list">
                       {% for t in rec.tasks %}
                         <div class="started-task">
                             <a href="{{t.get_absolute_url}}?previous=project">
-                            {{t.render_title}} &mdash;
+                              {{t.render_title}}
+                            </a>
                             {% if t.is_finished %}
-                              <span style="color: #96B">
-                                <span class="glyphicon glyphicon-check"></span>
-                                View
-                              </span>
+                              <span class="label label-primary" style="background-color: #96B">finished</span>
                             {% else %}
                               <span class="label label-primary">in progress</span>
-                              <span class="glyphicon glyphicon-edit"></span>
-                              Continue
                             {% endif %}
-                            </a>
                         </div>
                       {% endfor %}
                     </div>
+                    {% if layout_mode == "rows" %}
+                      </div> <!-- /col -->
+                      </div> <!-- /row -->
+                    {% endif %}
                     
                   {% else %}
-                    {# This is a module-type question that has been started. Icon, title, and link are for the started task. #}
+                    {# This is a module-type question that has been started. Icon, title, and link are for the started task. There is no list of answered modules. #}
 
                     {% for t in rec.tasks %} {# there's just one #}
                     <a href="{{t.get_absolute_url}}">
+                      {% if layout_mode == "rows" %}
+                        <div class="row">
+                        <div class="col-sm-3">
+                      {% endif %}
+
                       <div class="question-icon">
                         <img
                           {% if t.get_app_icon_url %}
@@ -348,11 +377,31 @@
                           class="img-responsive">
                       </div>
 
+                      {% if layout_mode == "rows" %}
+                        </div> <!-- /col -->
+                        <div class="col-sm-9">
+                      {% endif %}
+
                       <div class="question-title">
                         {{rec.question.spec.title}}{% if can_begin_module and rec.question.spec.protocol %}:<br>
                         {{t.title}}
                         {% endif %}
+
+                        {% if layout_mode == "rows" %}
+                          {% if t.is_finished %}
+                            <span class="label label-primary" style="background-color: #96B">finished</span>
+                          {% else %}
+                            <span class="label label-primary">in progress</span>
+                          {% endif %}
+                        {% endif %}
+
                       </div>
+
+                      {% if layout_mode == "rows" %}
+                        </div> <!-- /col -->
+                        </div> <!-- /row -->
+                      {% endif %}
+
                     </a>
                     {% endfor %}
                   {% endif %}

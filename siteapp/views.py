@@ -402,6 +402,7 @@ def project(request, project_id):
     action_buttons = []
     question_dict = { }
     first_start = True
+    layout_mode = "rows"
     for mq in project.root_task.module.questions.all().order_by('definition_order'):
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
@@ -452,6 +453,10 @@ def project(request, project_id):
         # Is this the first Start?
         d_first_start = first_start and (len(tasks) == 0)
         if d_first_start: first_start = False
+
+        # Is this a protocol question? Switch to grid layout.
+        if mq.spec.get("protocol"):
+            layout_mode = "grid"
 
         # Create template context dict.
         d = {
@@ -540,6 +545,8 @@ def project(request, project_id):
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "tabs": list(tabs.values()),
         "action_buttons": action_buttons,
+
+        "layout_mode": layout_mode,
     })
 
 
