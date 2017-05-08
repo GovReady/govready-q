@@ -66,15 +66,19 @@
   }
   .question .question-icon {
     margin: 0 auto;
-    width: 72px;
-    height: 72px;
+    width: 96px;
+    height: 96px;
     border: 1px solid #DDD;
+    padding:12px;
+    margin-top:20px;
+    border-radius: 10px;
+    background-color: #DDD;
   }
     .question.task_finished .question-icon {
-      border-left: 4px solid #96B;
+      border-left: 0px solid #96B;
     }
     .question.first_start .question-icon {
-      border-left: 4px solid #449d44;
+      border-left: 0px solid #449d44;
     }
   .question .question-title {
     margin-top: .5em;
@@ -275,7 +279,7 @@
 
                   {% if rec.can_start_new_task %}
                     {# For a module-type question, this question is unstarted. For a module-set question, it is always possible to start a new one. Icon and title from the question specification, link goes to app store to start a new app. #}
-                    
+
                     {% if can_begin_module %}
                       {% if not rec.question.spec.protocol %}
                         {# start a task directly using the module type in the specification #}
@@ -299,8 +303,10 @@
                       <img
                         {% if rec.icon %}
                           src="{{rec.icon}}"
-                        {% else %}
+                        {% elif not rec.question.spec.protocol %}
                           src="{% static "img/default_app_icon.png" %}"
+                        {% else %}
+                          src="{% static "img/default_cart_icon_sm.png" %}"
                         {% endif %}
                         class="img-responsive"
                         title="Begin new app.">
@@ -312,10 +318,11 @@
                     {% endif %}
 
                     <div class="question-title">
-                      {{rec.question.spec.title}}
+
                       {% if can_begin_module and rec.question.spec.protocol %}
-                      <br><small><i>Select from Store</i></small>
+                      <small><i>Choose</i></small><br>
                       {% endif %}
+                      {{rec.question.spec.title}}
                     </div>
 
                     {% if layout_mode == "rows" %}
@@ -371,9 +378,11 @@
                           src="{{t.get_app_icon_url}}"
                           {% elif rec.icon %}
                           src="{{rec.icon}}"
-                          {% else %}
+                          {% elif not rec.question.spec.protocol %}
                           src="{% static "img/default_app_icon.png" %}"
-                          {% endif %}
+                        {% else %}
+                          src="{% static "img/default_cart_icon_sm.png" %}"
+                        {% endif %}
                           class="img-responsive">
                       </div>
 
@@ -383,9 +392,11 @@
                       {% endif %}
 
                       <div class="question-title">
-                        {{rec.question.spec.title}}{% if can_begin_module and rec.question.spec.protocol %}:<br>
+                        {{rec.question.spec.title}}
+                        <!-- {% if can_begin_module and rec.question.spec.protocol %}:<br>
                         {{t.title}}
                         {% endif %}
+                        -->
 
                         {% if layout_mode == "rows" %}
                           {% if t.is_finished %}
