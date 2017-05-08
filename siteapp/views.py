@@ -536,7 +536,7 @@ def project(request, project_id):
         "can_begin_module": can_begin_module,
 
         "folder": folder,
-        "is_folder_admin": (request.user in folder.get_admins()),
+        "is_folder_admin": folder and (request.user in folder.get_admins()),
 
         "title": project.title,
         "intro" : project.root_task.render_field('introduction') if project.root_task.module.spec.get("introduction") else "",
