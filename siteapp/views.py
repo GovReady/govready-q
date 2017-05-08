@@ -95,7 +95,10 @@ _app_store_cache = { }
 def get_app_store(request):
     global _app_store_cache
     if request.organization not in _app_store_cache:
-        _app_store_cache[request.organization] = list(load_app_store(request.organization))
+        _app_store_cache[request.organization] = \
+            sorted(
+                load_app_store(request.organization),
+                key=lambda app : app["title"])
     return _app_store_cache[request.organization]
 
 def load_app_store(organization):
