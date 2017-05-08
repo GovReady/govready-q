@@ -60,6 +60,7 @@
   {% if layout_mode == "grid" %}
     text-align: center;
   {% endif %}
+  border-radius: 15px; /* good for highlighting */
 }
   .question:hover {
     background-color: rgb(248,248,248);
@@ -543,8 +544,8 @@
 var project_invitation_info = {{send_invitation|json}};
 
 $(function() {
-  open_tab_from_url_fragment();
-  $(window).on('hashchange', open_tab_from_url_fragment);
+  set_state_from_url_fragment();
+  $(window).on('hashchange', set_state_from_url_fragment);
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     var tabid = e.target.getAttribute('href').substring(1); // old IE might return absolute URL here?
     window.location.hash = "#tab=" + encodeURIComponent(tabid);
@@ -585,15 +586,17 @@ function invite_user_to_start_module(module_title, question_id) {
   return false;
 }
 
-function open_tab_from_url_fragment() {
-  var tabpath = window.location.hash.substring(1); // chop off the "#"
+function set_state_from_url_fragment() {
+  var fragment = window.location.hash.substring(1); // chop off the "#"
 
   // The GovReady Dashboard React app appends a random code like `?_k=h9zm95` to the
   // hashbang, so we need to strip that out.
-  tabpath = tabpath.split('?').shift();
+  fragment = fragment.split('?').shift();
+
+  var fragment = parse_qs(fragment);
 
   // Open the tab specified in the fragment.
-  tabpath = parse_qs(tabpath).tab;
+  var tabpath = fragment.tab;
   if (tabpath) {
     tabpath = tabpath.split('/');
     var tab = tabpath.shift();
@@ -604,6 +607,17 @@ function open_tab_from_url_fragment() {
     // so that the React app works.
     if (tab === 'document-1')
       window.location.hash = '#/site-list';
+  }
+
+  // Highlight the question.
+  if (fragment.q) {
+    $('.question').each(function() {
+      if (this.id == "question-" + fragment.q) {
+        var elem = $(this);
+        elem.css({ backgroundColor: "#FFA" });
+        setTimeout(function() { elem.css({ backgroundColor: "#FFF" }); }, 2000);
+      }
+    });
   }
 }
 

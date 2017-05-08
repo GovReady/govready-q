@@ -364,6 +364,10 @@ def app_store_item(request, app_namespace, app_name):
                             raise ValueError("Question is already answered.")
                         ans.save_answer(None, list([] if not ansh else ansh.answered_by_task.all()) + [project.root_task], None, request.user)
 
+                        # Redirect to the task containing the question that was just answered.
+                        from urllib.parse import urlencode
+                        return HttpResponseRedirect(task.get_absolute_url() + "#" + urlencode({ "q": q.key }))
+
                     return HttpResponseRedirect(project.get_absolute_url())
 
         return render(request, "app-store-item-start.html", {
