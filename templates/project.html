@@ -550,6 +550,14 @@ $(function() {
     var tabid = e.target.getAttribute('href').substring(1); // old IE might return absolute URL here?
     window.location.hash = "#tab=" + encodeURIComponent(tabid);
   })
+
+  // Resize questions so they all have the same height, to the max height of any.
+  var max_height = 0;
+  $('.question').each(function() {
+    var h = $(this).outerHeight();
+    if (h > max_height) max_height = h;
+  });
+  $('.question').css({ height: max_height });
 })
 
 function invite_user_into_project() {
