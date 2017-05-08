@@ -364,7 +364,10 @@ def app_store_item(request, app_namespace, app_name):
                         ans, is_new = task.answers.get_or_create(question=q)
                         ansh = ans.get_current_answer()
                         if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count():
-                            raise ValueError("Question is already answered.")
+                            from django.contrib import messages
+                            messages.add_message(request, messages.ERROR, 'The question %s already has an app associated with it.'
+                                % q.spec["title"])
+                            return HttpResponseRedirect(task.get_absolute_url())
                         ans.save_answer(None, list([] if not ansh else ansh.answered_by_task.all()) + [project.root_task], None, request.user)
 
                         # Redirect to the task containing the question that was just answered.
