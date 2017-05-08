@@ -186,6 +186,10 @@ if not environment.get('db'):
 	# database.
 	if not os.path.exists(os.path.dirname(local('.'))):
 		os.mkdir(os.path.dirname(local('.')))
+elif isinstance(environment['db'], str):
+	# Set up the database using a connection string.
+	import dj_database_url
+	DATABASES['default'] = dj_database_url.parse(environment['db'], conn_max_age=600)
 else:
 	# Enable database connection pooling (unless overridden in the
 	# environment settings).
