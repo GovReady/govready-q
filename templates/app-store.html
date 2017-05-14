@@ -18,24 +18,34 @@ h1 {
   padding: 1.5em;
   background-color: white;
   margin-bottom: 24px;
-  height: 220px;
+  height: 236px;
   cursor: pointer;
+  overflow: hidden;
 }
   .app h2 {
     margin: -24px -16px 0 -16px;
     padding: 16px;
-    /*background-color: #88A;
-    color: white;*/
-    font-size: 120%;
+    font-size: 1.75vw;
     font-weight: bold;
-    height: 80px;
+    height: 98px;
+    overflow: hidden;
+    margin-bottom: 6px;
   }
   .app .body {
     padding: 0 0 0 0;
+    height: 124px;
+    overflow-x: hidden;
   }
     .app .body p:last {
       margin: 0; /* not working */
     }
+
+  .app .img-responsive {
+    float: right;
+    margin: 0 0 5px 4px;
+    width:40%;
+    max-width:80px;
+  }
 
 #app_details h4 {
   font-weight: bold;
@@ -90,11 +100,12 @@ h1 {
         onclick="window.location='/store/{{app.key|urlencode}}{{forward_qsargs}}'"">
 
         <h2><small>{{app.vendor}}</small><br/>{{app.title}}</h2>
-        {% if app.app_icon_dataurl %}
-          <img src="{{app.app_icon_dataurl}}" class="img-responsive" style="float: right; margin: 0 0 5px 4px; width:80px;">
-        {% endif %}
+
         <div class="body">
-          {{app.description.short|safe|truncatewords_html:18}}
+          {% if app.app_icon_dataurl %}
+          <img src="{{app.app_icon_dataurl}}" class="img-responsive">
+        {% endif %}
+        {{app.description.short|safe|truncatewords_html:18}}
         </div>
         <div class="app-metadata pull-left">
           {% if app.authz == "none" %}
