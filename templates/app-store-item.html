@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{app.title}} - App Store
+{{app.title}} - Compliance Apps
 {% endblock %}
 
 {% block head %}
@@ -35,7 +35,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active"><a href="/store">Compliance App Store</a></li>
+<li class="active"><a href="/store">Compliance Apps</a></li>
 <li class="active">{{app.title|truncatewords:6}}</li>
 {% endblock %}
 
@@ -64,7 +64,7 @@
           {% endif %}
         </button>
       </form>
-      <br /><a href="/store">return to app store</a>
+      <br /><a href="/store">return to compliance apps</a>
 
       <div id="app-metadata">
         <div class="meta-heading"><strong>Information</strong></div>

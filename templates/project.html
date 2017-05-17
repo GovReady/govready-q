@@ -279,7 +279,7 @@
                   {# For module-type questions, the question is either unstarted, in which case the app icon and title are from the question, or started in which case the app icon and title are from the task (falling back to the question if no icon is set for the task). #}
 
                   {% if rec.can_start_new_task %}
-                    {# For a module-type question, this question is unstarted. For a module-set question, it is always possible to start a new one. Icon and title from the question specification, link goes to app store to start a new app. #}
+                    {# For a module-type question, this question is unstarted. For a module-set question, it is always possible to start a new one. Icon and title from the question specification, link goes to compliance apps to start a new app. #}
 
                     {% if can_begin_module %}
                       {% if not rec.question.spec.protocol %}
