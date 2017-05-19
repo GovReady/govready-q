@@ -11,6 +11,12 @@ h1 {
   margin-bottom: 30px;
 }
 
+h2 {
+  margin: 1em 0 .5em 0;
+  font-variant: small-caps;
+  font-size: 25px;
+}
+
 .app {
   border: 1px solid #D0D0D0;
   /*border-top: 4px solid #88A;*/
@@ -23,14 +29,14 @@ h1 {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-  .app h2 {
+  .app h3 {
     margin: 0;
     font-size: 23px;
     font-weight: bold;
     margin-bottom: 6px;
   }
     @media screen and (max-width: 1200px) {
-      .app h2 {
+      .app h3 {
         font-size: 19px;
       }
     }
@@ -89,15 +95,21 @@ h1 {
 
 <div class="clearfix"> </div>
 
+{% for app_category in apps %}
+<div class="app-category">
+{% if apps|length > 1 %} {# only display category titles if there is more than one category available #}
+<h2>{{app_category.title}}</h2>
+{% endif %}
+
 <div class="row">
-  {% for app in apps %}
+  {% for app in app_category.apps %}
     <div class="col-sm-4 col-md-3">
       <div class="app"
         data-app="{{app.key}}"
         data-search-haystack="{{app.search_haystak}}"
         onclick="window.location='/store/{{app.key|urlencode}}{{forward_qsargs}}'"">
 
-        <h2><small>{{app.vendor}}</small><br/>{{app.title}}</h2>
+        <h3><small>{{app.vendor}}</small><br/>{{app.title}}</h3>
 
         <div class="body">
           {% if app.app_icon_dataurl %}
@@ -120,13 +132,14 @@ h1 {
       <div class="visible-md clearfix"> </div>
       <div class="visible-lg clearfix"> </div>
     {% endif %}
+{% endfor %}
+</div> <!--/row-->
+</div> <!--/.app-category-->
 
-  {% empty %}
-    <div class="col-sm-12">
-      <p>There are currently no apps available that can be used to complete that question, sorry!</p>
-    </div>
-  {% endfor %}
-</div>
+{% empty %}
+  <p>There are currently no apps available that can be used to complete that question, sorry!</p>
+{% endfor %}
+
 {% endblock %}
 
 {% block scripts %}
@@ -154,7 +167,13 @@ function do_app_search() {
   $('.app').each(function() {
     var pattern = new RegExp(".*" + RegExp.escape(app_search.toLowerCase()));
     var visible = pattern.test($(this).attr('data-search-haystack').toLowerCase());
-    $(this).parent()[visible ? "fadeIn" : "hide"]();
+    $(this).parent()[visible ? "fadeIn" : "hide"](); // go from .app to the .col
+  })
+
+  // Hide category titles if there are no apps visible in it.
+  $('.app-category').each(function() {
+  	var visible = $(this).find(".app:visible").length > 0;
+    $(this).find('h2')[visible ? "fadeIn" : "hide"]();
   })
 }
 </script>

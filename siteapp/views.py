@@ -198,14 +198,26 @@ def filter_app_catalog(catalog, request):
 
 @login_required
 def app_store(request):
+    # We use the querystring to remember which question the user is selecting
+    # an app to answer, when starting an app from within a project.
     from urllib.parse import urlencode
     forward_qsargs = { }
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
+    # Get the app catalog. If the user is answering a question, then filter to
+    # just the apps that can answer that question.
     catalog, filter_description = filter_app_catalog(get_app_store(request), request)
 
+    # Group by category from catalog metadata.
+    from collections import defaultdict
+    catalog_by_category = defaultdict(lambda : { "title": None, "apps": [] })
+    for app in catalog:
+        catalog_by_category[app.get("category")]["title"] = app.get("category") or "Uncategorized"
+        catalog_by_category[app.get("category")]["apps"].append(app)
+    catalog_by_category = sorted(catalog_by_category.values(), key = lambda category : category["title"])
+
     return render(request, "app-store.html", {
-        "apps": catalog,
+        "apps": catalog_by_category,
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
     })
