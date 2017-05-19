@@ -116,7 +116,7 @@ h2 {
     <div class="col-sm-4 col-md-3">
       <div class="app"
         data-app="{{app.key}}"
-        data-search-haystack="{{app.search_haystak}}"
+        data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}"
         onclick="window.location='/store/{{app.key|urlencode}}{{forward_qsargs}}'"">
 
         <h3><small>{{app.vendor}}</small><br/>{{app.title}}</h3>
