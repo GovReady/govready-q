@@ -15,27 +15,29 @@ h1 {
   border: 1px solid #D0D0D0;
   /*border-top: 4px solid #88A;*/
   box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
-  padding: 1.5em;
+  padding: 12px;
   background-color: white;
   margin-bottom: 24px;
   height: 236px;
   cursor: pointer;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
   .app h2 {
-    margin: -24px -16px 0 -16px;
-    padding: 16px;
-    font-size: 1.75vw;
+    margin: 0;
+    font-size: 23px;
     font-weight: bold;
-    height: 98px;
-    overflow: hidden;
     margin-bottom: 6px;
   }
+    @media screen and (max-width: 1200px) {
+      .app h2 {
+        font-size: 19px;
+      }
+    }
   .app .body {
-    padding: 0 0 0 0;
-    height: 124px;
-    overflow-x: hidden;
   }
+  	.app .body p {
+  	}
     .app .body p:last {
       margin: 0; /* not working */
     }
@@ -47,10 +49,6 @@ h1 {
     max-width:80px;
   }
 
-#app_details h4 {
-  font-weight: bold;
-  font-size: 115%;
-}
 .app-metadata {
   font-size: 0.7em;
   text-align: left;
@@ -93,7 +91,7 @@ h1 {
 
 <div class="row">
   {% for app in apps %}
-    <div class="col-sm-3">
+    <div class="col-sm-4 col-md-3">
       <div class="app"
         data-app="{{app.key}}"
         data-search-haystack="{{app.search_haystak}}"
