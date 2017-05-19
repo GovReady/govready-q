@@ -64,6 +64,16 @@ h2 {
   font-size: 0.8em;
   height: 100px;
 }
+
+.if-has-more-apps {
+	display: none;
+	text-align: right;
+	font-size: 95%;
+}
+	.if-has-more-apps .show-less { display: none; }
+	.has-more-apps .if-has-more-apps { display: block; }
+	.show-more-apps .if-has-more-apps .show-more { display: none; }
+	.show-more-apps .if-has-more-apps .show-less { display: inline; }
 </style>
 {% endblock %}
 
@@ -134,6 +144,13 @@ h2 {
     {% endif %}
 {% endfor %}
 </div> <!--/row-->
+
+<a class="if-has-more-apps" href="#" onclick="$(this).parent().toggleClass('show-more-apps'); do_app_search(last_app_search); return false;">
+  Show
+  <span class="show-more">More</span>
+  <span class="show-less">Fewer</span>
+</a>
+
 </div> <!--/.app-category-->
 
 {% empty %}
@@ -156,25 +173,47 @@ RegExp.escape = function(s) {
 var app_search_last_keypress_time = Date.now();
 var last_app_search = null;
 $('#app-search').on('keydown', function() { app_search_last_keypress_time = Date.now(); });
-setInterval(do_app_search, 250);
-function do_app_search() {
+setInterval(function() {
   if ((Date.now() - app_search_last_keypress_time) < 500) return;
+  var query = $('#app-search').val();
+  if (query == last_app_search) return;
+  last_app_search = query;
+  do_app_search(query);
+}, 250);
+function do_app_search(query) {
+  var pattern = new RegExp(".*" + RegExp.escape(query.toLowerCase()));
 
-  var app_search = $('#app-search').val();
-  if (app_search == last_app_search) return;
-  last_app_search = app_search;
+  // reset state
+  $('.app-category').removeClass("has-more-apps");
 
-  $('.app').each(function() {
-    var pattern = new RegExp(".*" + RegExp.escape(app_search.toLowerCase()));
+  $('.app').each(function(index) {
+  	// Does the app match the search query?
     var visible = pattern.test($(this).attr('data-search-haystack').toLowerCase());
+
+    // Hide apps after the first row if they aren't toggled on. Since we'll toggle
+    // the show more/show less buttons, they'll be toggled if there is more or
+    // less to show, which will be applied *after* the client-side search filters
+    // are applied, hence we wrap this in if (visible).
+    if (visible) {
+      if (($(window).width() < 992 && index >= 4) || index >= 5) {
+      	// If more apps aren't toggled, hide.
+      	if (!$(this).parents('.app-category').is('.show-more-apps'))
+          visible = false;
+
+        // Indicate this category has more apps that could be displayed.
+        $(this).parents('.app-category').addClass("has-more-apps");
+      }
+    }
+
     $(this).parent()[visible ? "fadeIn" : "hide"](); // go from .app to the .col
   })
 
   // Hide category titles if there are no apps visible in it.
   $('.app-category').each(function() {
-  	var visible = $(this).find(".app:visible").length > 0;
+    var visible = $(this).find(".app:visible").length > 0;
     $(this).find('h2')[visible ? "fadeIn" : "hide"]();
   })
 }
+do_app_search(""); // kick it off
 </script>
 {% endblock %}
