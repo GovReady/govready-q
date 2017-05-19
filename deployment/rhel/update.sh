@@ -16,5 +16,5 @@ python3 manage.py load_modules &&
 python3 manage.py collectstatic --noinput &&
 
 # Kick the processes to reload modules.
-killall -HUP /home/govready-q/.local/bin/uwsgi
-pkill -f send_notification_emails
+pkill -u govready-q -f uwsgi
+pkill -u govready-q -f send_notification_emails

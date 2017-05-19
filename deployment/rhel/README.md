@@ -2,11 +2,11 @@
 
 ## Preparing System Packages
 
-Ensure `pip`, `psql`, and `pkill` command line tools are installed:
+Ensure `pip` and `psql` command line tools are installed:
 
-    yum install python34-pip postgresql psmisc
+    yum install python34-pip postgresql
 
-(Our update script in `deployment/rhel/update.sh` uses `killall` to kick the Django Python process, which is provided by the psmisc package. (We also use `pkill` which seems to be available by default in RHEL. Maybe we can switch to just using pkill.))
+(Our update script in `deployment/rhel/update.sh` uses `killall` to kick the Django Python process, which is provided by the psmisc package.
 
 Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
 
