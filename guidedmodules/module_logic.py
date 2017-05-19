@@ -1283,17 +1283,29 @@ class RenderedAnswer:
         # Return a link to edit this question.
         return self.task.get_absolute_url_to_question(self.question)
 
+    def make_key_error(self, key, context):
+        return "<p class='text-danger'>Template Error: {key} is not the name of {context}.</p>".format(
+            key=key,
+            context=context,
+        )
+
     @property
     def output_documents(self):
         if self.question_type == "module":
             # Return a class that lazy-renders output documents on request.
             answers = self.answer
+            make_key_error = self.make_key_error
             class LazyRenderer:
                 def __getattr__(self, item):
+                    # Find the requested output document in the module.
                     for doc in answers.task.module.spec.get("output", []):
                         if doc.get("id") == item:
                             return render_content(doc, answers, "html", "%s output document" % (repr(answers.module)), {})
-                    raise AttributeError()
+
+                    # If the key doesn't match a document name we could throw an error but
+                    # that's disruptive so we show an error in the document itself.
+                    #raise AttributeError()
+                    return make_key_error(item, "an output document in " + answers.task.module.spec["title"])
             return LazyRenderer()
 
     def __bool__(self):
