@@ -31,6 +31,7 @@
             .navbar .notification.unread a span {
                 font-weight: bold;
             }
+
             #context-bar {
                background-color: rgb(242,242,242);
                padding: 14px 0 10px 0;
@@ -78,12 +79,12 @@
               {% if request.organization  %}
                 {% with logo=request.organization.get_logo %}
                   {% if logo %}
-                    <img src="{{logo.url}}" height="36" alt="Organization Logo">
+                    <img src="{{logo.url}}" height="30" alt="Organization Logo" style="float: left; margin: -5px 5px;">
                   {% else %}
                     <span class="glyphicon glyphicon-globe"></span>
                   {% endif %}
                 {% endwith %}
-                <span style="margin-left: .5em">{{request.organization.name}}</span>
+                <span style="margin-left: .5em;">{{request.organization.name}}</span>
               {% else %}
                 {{request.get_host}}
               {% endif %}
