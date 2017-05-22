@@ -156,6 +156,8 @@ Both git methods have an optional `path` field which lets you choose a directory
 
 After making changes to Module Sources, run `python3 manage.py load_modules` to pull the modules from the sources into the database.
 
+Your Q deployment can also limit which organizations can access and use module content. When you create a module source, you can make source's modules "Available to all" organizations or just to selected organizations.  To restrict module access to particular organizations, uncheck the "Available to all" flag in the Module sources table in the Django administration interface and then select one or more organizations in the "Available to orgs" list. Then save the record.
+
 
 # Testing and Generating Screenshots
 
