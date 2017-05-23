@@ -42,7 +42,7 @@ class ModuleSource(models.Model):
 class Module(models.Model):
     source = models.ForeignKey(ModuleSource, help_text="The source of this module definition.")
 
-    key = models.SlugField(max_length=100, db_index=True, help_text="A slug-like identifier for the Module.")
+    key = models.SlugField(max_length=200, db_index=True, help_text="A slug-like identifier for the Module.")
 
     visible = models.BooleanField(default=True, db_index=True, help_text="Whether the Module is offered to users.")
     superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="When a Module is superseded by a new version, this points to the newer version.")
