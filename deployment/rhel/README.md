@@ -101,6 +101,8 @@ Then in our GovReady Q `local/environment.json` file, configure the database (re
 
         "db": "postgresql://govready_q:THEPASSWORDHERE@dbserver.hostname.com/govready_q?sslmode=verify-full&sslrootcert=/home/govready-q/pgsql.crt",
 
+(Make sure the environment.json file is not world-readable.)
+
 Then initialize the database content:
 
     pip3 install --user psycopg2
