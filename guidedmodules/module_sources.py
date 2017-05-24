@@ -208,12 +208,13 @@ class PyFsApp(App):
         if "protocol" in yaml: ret["protocol"] = yaml["protocol"]
 
         # Load the app icon.
-        import fs.errors
-        try:
-            with self.fs.open("assets/app.png", "rb") as f:
-                ret["app-icon"] = f.read()
-        except fs.errors.ResourceNotFound:
-            pass
+        if "icon" in yaml:
+            import fs.errors
+            try:
+                with self.fs.open("assets/" + yaml["icon"], "rb") as f:
+                    ret["app-icon"] = f.read()
+            except fs.errors.ResourceNotFound:
+                pass
 
         return ret
 
