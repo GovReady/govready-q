@@ -399,7 +399,7 @@ Here's an example of the `module` question type:
 	      - condition: not(have_other_dmz == 'ad_hoc_dmz')
 	        value: ~
 
-Alternatively, instead of using `module-id`, the `protocol` field may be set instead. The `protocol` field specifies a globally unique string identifying a protocol.. But when a user attempts to answer the question, instead of starting a named module they instead can start any app from the app store that implements the protocol by having a `protocol: ` field at the top level of the app's YAML specification.
+Alternatively, instead of using `module-id`, the `protocol` field may be set instead. The `protocol` field specifies a globally unique string identifying a protocol. When a user attempts to answer the question, instead of starting a named module they instead can start any app from the app store that implements the protocol by having a `protocol: ` field at the top level of the app's YAML specification with the same value.
 
 Changing the `module-id` or `protocol` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
 

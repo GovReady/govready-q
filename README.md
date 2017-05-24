@@ -94,70 +94,18 @@ To update, run:
 	killall -HUP uwsgi_python3
 	   (...to just restart the Python process (works as root & site user))
 
-# Adding and Accessing Module Content
+# Apps and Module Content
 
-GovReady Q content is stored in YAML files. Built-in modules are stored inside the `modules` directory in this repository. Other modules are stored in other repositories. The Django admin site is used to configure the sources of module YAML cotent, and these YAML files are imported into the Django application's database through a management command. Private modules are also made available to organizations through the Django admin site.
+Content in Q is organized around apps and modules:
 
-## Writing Module Content
+* A "module" is a linear sequence of questions that produces zero or more output documents.
+* An "app" is a collection of modules, one of which is named "app" that defines the layout of the app when it is started by a user.
 
-See [Schema.md](Schema.md) for documentation on writing question and answer modules.
+Modules are stored in YAML files. Built-in apps and modules are stored inside the `modules` directory in this repository. Other apps and modules are stored in other repositories that can be linked to a Q deployment through the `ModuleSource` model in the Django admin.
 
-## Loading Module Content
+See [Apps.md](Apps.md) for documentation on creating apps and having them appear in the Q app catalog.
 
-Your Q deployment can pull module content from various sources --- including local directories and git repositories --- by creating Module Sources in the Django admin site at [/admin/guidedmodules/modulesource/](http://localhost:8000/admin/guidedmodules/modulesource/). Each Module Source specifies a source of module YAML files.
-
-Each Module Source has a `Spec` field which contains a JSON definition of how to fetch module YAML files. The default Module Source for system modules uses the following Spec string:
-
-	{
-	  "type":"local"
-	  "path":"modules/system",
-	}
-
-This Spec string says to find module YAML files on the local file system at the path `modules/system`, which is relative to the root of this git repository. (An absolute local path could be used instead.)
-
-In addition to the Spec string, each Module Source has a namespace. Each source binds a namespace in your local deployment to a source of modules.
-
-All deployments must have a Module Source that binds the `system` namespace to the modules at the local path `modules/system`, as in the Spec string above. This Module Source is created during the first run of `manage.py migrate` for you.
-
-The `Spec` field of Module Sources can be of these types (explanation follows below):
-
-	Local file system source:
-	{
-		"type": "local",
-		"path": "modules/system"
-	}
-
-	Git repository source using a URL:
-	{
-		"type": "git",
-		"url": "git@github.com:GovReady/my-modules",
-		"branch": "master",
-		"path": "modules",
-		"ssh_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"
-	}
-
-	Github repository using the Github API:
-	{
-		"type": "github",
-		"repo": "GovReady/my-modules",
-		"path": "modules",
-		"auth": { "user": "...", "pw": "..." }
-	}
-
-Use `"type": "local"` to load modules from a directory on the local file system. Specify a relative (to working directory when the Django site is launched) or absolute path in `path`.
-
-There are two ways to pull modules from Github:
-
-Use `"type": "git"`, where you specify the `https:...` or `git@...` URL of a git repository in the `url` field and, optionally, a branch name. If the repository requires authentication, you can put an SSH private key such as a [Github deploy key](https://developer.github.com/guides/managing-deploy-keys/) in the `ssh_key` field (paste the whole key using `\n` for newlines, not a filename; `cat .ssh/id_rsa | jq -Rs` will help you turn the SSH key into a JSON string).
-
-Use `"type": "github"`, which uses the Github API and user credentials such as a Github username and a [personal access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/). Since the `github` method requires user credentials, it should be avoided for production deployments in favor of the `git` method with a deploy key if necessary.
-
-Both git methods have an optional `path` field which lets you choose a directory _within_ the git repository to scan for module YAML files.
-
-After making changes to Module Sources, run `python3 manage.py load_modules` to pull the modules from the sources into the database.
-
-Your Q deployment can also limit which organizations can access and use module content. When you create a module source, you can make source's modules "Available to all" organizations or just to selected organizations.  To restrict module access to particular organizations, uncheck the "Available to all" flag in the Module sources table in the Django administration interface and then select one or more organizations in the "Available to orgs" list. Then save the record.
-
+See [Schema.md](Schema.md) for documentation on writing modules, which contain questions.
 
 # Testing and Generating Screenshots
 
