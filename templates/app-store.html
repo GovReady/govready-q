@@ -183,36 +183,42 @@ setInterval(function() {
 function do_app_search(query) {
   var pattern = new RegExp(".*" + RegExp.escape(query.toLowerCase()));
 
-  // reset state
-  $('.app-category').removeClass("has-more-apps");
-
-  $('.app').each(function(index) {
-  	// Does the app match the search query?
-    var visible = pattern.test($(this).attr('data-search-haystack').toLowerCase());
-
-    // Hide apps after the first row if they aren't toggled on. Since we'll toggle
-    // the show more/show less buttons, they'll be toggled if there is more or
-    // less to show, which will be applied *after* the client-side search filters
-    // are applied, hence we wrap this in if (visible).
-    if (visible) {
-      if (($(window).width() < 992 && index >= 4) || index >= 5) {
-      	// If more apps aren't toggled, hide.
-      	if (!$(this).parents('.app-category').is('.show-more-apps'))
-          visible = false;
-
-        // Indicate this category has more apps that could be displayed.
-        $(this).parents('.app-category').addClass("has-more-apps");
-      }
-    }
-
-    $(this).parent()[visible ? "fadeIn" : "hide"](); // go from .app to the .col
-  })
-
-  // Hide category titles if there are no apps visible in it.
   $('.app-category').each(function() {
-    var visible = $(this).find(".app:visible").length > 0;
+    var app_category = $(this);
+
+    // reset state for whether the show more/fewer link should be shown
+    app_category.removeClass("has-more-apps");
+
+    // update visibility of apps within the category
+    app_category.find('.app').each(function(index) {
+    	// Does the app match the search query?
+      var visible = pattern.test($(this).attr('data-search-haystack').toLowerCase());
+
+      // Hide apps after the first row if they aren't toggled on. Since we'll toggle
+      // the show more/show less buttons, they'll be toggled if there is more or
+      // less to show, which will be applied *after* the client-side search filters
+      // are applied, hence we wrap this in if (visible).
+      if (visible) {
+        if (($(window).width() < 992 && index >= 3) || index >= 4) {
+        	// This is an app in the second or later row.
+          // If the "show more" link isn't active, hide.
+        	if (!app_category.is('.show-more-apps'))
+            visible = false;
+
+          // Indicate this category has more apps that could be displayed
+          // by adding a class, which makes "show more/fewer" show up.
+          app_category.addClass("has-more-apps");
+        }
+      }
+
+      // Show/hide the .col around the .app.
+      $(this).parent()[visible ? "fadeIn" : "hide"](); // go from .app to the .col
+    })
+
+    // Hide category titles if there are no apps visible in it.
+    var visible = app_category.find(".app:visible").length > 0;
     $(this).find('h2')[visible ? "fadeIn" : "hide"]();
-  })
+  });
 }
 do_app_search(""); // kick it off
 </script>
