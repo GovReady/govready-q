@@ -146,8 +146,6 @@ Other modules that have already been started as apps will not be updated. But fo
 
 ## Controlling access to apps
 
-It is possible to limit which organizations can access which apps via ModuleSources.
-
 Controlling which organizations in a Q deployment can access which apps is done via the ModuleSources table.
 
 The "Available to all" field of ModuleSource, which is on by default, gives all users of all organizations the ability to start an app provided by the ModuleSource. 
