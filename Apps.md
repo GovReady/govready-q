@@ -138,6 +138,37 @@ Use `"type": "github"`, which uses the Github API and user credentials such as a
 
 Both git methods have an optional `path` field which lets you choose a directory _within_ the git repository to scan for module YAML files.
 
+### Creating read-only SSH deployment keys
+
+1) Open a terminal.
+
+2) Generate a SSH key pair with the following command:
+
+```
+ssh-keygen -t rsa -b 4096 -C "_your-repo-name_-deployment-key" -f ./id_rsa_deploy_key
+```
+
+3) When prompted for a passphrase, hit enter to set an empty passphrase.
+
+4) Next, `cat` the contents of the public key file so you can copy the public key to your GitHub repository deployment keys:
+
+```
+cat ./id_rsa_deploy_key.pub
+```
+
+5) Copy the public key to your clipboard. Then navigate to your your GitHub repo > Settings > Deploy keys. Click the "Add deploy key" button. Paste the content of your public key into the `Key` field. Add a memborable name to the `Title` field like "GovReady Q Deployment Key". 
+
+6) Make the key read only by leaving "Allow write access" field unchecked and click `Add the key` to save the key.
+
+7) Finally, `cat` the contents of the private key file to your terminal while replacing the line breaks. (The line breaks will confuse the json format.)
+
+```
+cat ./id_rsa_deploy_key | perl -ne 's/\n/\\n/g; print'
+```
+
+8) Add the contents of the private key file as the value to the `ssh_key` of your spec file for the Modulesources as specified above.
+
+
 ### Updating modules
 
 After making changes to modules or ModuleSources for system modules (like account settings), run `python3 manage.py load_modules` to pull the modules from the sources into the database. This only updates system modules.
