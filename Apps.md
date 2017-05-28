@@ -1,10 +1,10 @@
 # Creating Q Apps
 
-Content in Q is organized around app sources, apps and modules.
+Content in Q is organized around "apps." Apps handle the relationship between parts of a IT system and a compliance framework.
 
-* A "module" is a linear sequence of questions that produces zero or more output documents. Modules are stored in YAML files. (See [Schema.md](Schema.md) for documentation on writing modules.)
-* An "app" is a collection of modules, one of which must be named "app." Other modules in the app typically define the questions the user will be presented with in using the app.
-* A collection of apps are stored in a "app source," which can be a local directory, a Github repository, etc. App sources are linked to a Q deployment through the `ModuleSource` model in the Django admin.
+An "app" is a collection of "modules,"" one of which must be named "app." Modules are linear sequence of questions presented to users that produces zero or more output documents. Modules are stored in YAML files. Output documents of various types are supported such as markdown, HTML, and YAML. (See [Schema.md](Schema.md) for documentation on writing modules.)
+
+Aps are loaded into Q from an "app source," which can be a local directory, a Github repository, etc. App sources are linked to a Q deployment through the `ModuleSource` model in the Django admin.
 
 ## App Directory Layout
 
@@ -21,7 +21,6 @@ Each Q app is defined by a set of YAML files, an icon, and associated static ass
 Other module YAML file may be includes in the app as well, as needed.
 
 The `assets` subdirectory can contain any static assets that will be served when showing the app's modules for the user, such as images included in document templates. A file typically named `app.png` in the assets directory is the app's icon, which is displayed when browsing the app catalog as well as when the app is used within another app, if `icon: app.png` is specified in `app.yaml`.
-
 
 
 ## App YAML
@@ -145,10 +144,14 @@ After making changes to modules or ModuleSources for system modules (like accoun
 
 Other modules that have already been started as apps will not be updated. But for debugging (only), you can run `python3 manage.py refresh_modules` to update started apps in-place so that you don't have to start an app anew (on the site) each time you make a change to an app.
 
-## Access permissions
+## Controlling access to apps
 
-By default, apps provided by a ModuleSource are availble to all users. A Q deployment can limit which Organizations can start which apps on a per-ModuleSource level.
+It is possible to limit which organizations can access which apps via ModuleSources.
 
-The "Available to all" field of ModuleSource, which is on by default, gives all users the ability to start an app provided by the ModuleSource. If the field is unchecked, then only users within white-listed Organizations can start apps provided by the ModuleSource. The white-list is a multi-select box on the ModuleSource page.
+Controlling which organizations in a Q deployment can access which apps is done via the ModuleSources table.
+
+The "Available to all" field of ModuleSource, which is on by default, gives all users of all organizations the ability to start an app provided by the ModuleSource. 
+
+If the "Available to all" field is unchecked, then only users within white-listed organizations can start apps provided by the ModuleSource. The white-list is a multi-select box on the ModuleSource page.
 
 Removing access to a ModuleSource does not affect any apps that have already been started by a user.
