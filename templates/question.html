@@ -728,7 +728,7 @@ $(function() {
 
         {% if q.spec.type == "longtext" %}
         // Add the rich text.
-        data.set("value", window.inputctrl_quill.getContentsAsCommonMark());
+        data.append("value", window.inputctrl_quill.getContentsAsCommonMark());
         {% endif %}
 
         ajax_with_indicator({
