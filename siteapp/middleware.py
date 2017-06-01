@@ -93,6 +93,14 @@ class OrganizationSubdomainMiddleware:
         # Otherwise the login page redirects to the home page, and then we
         # get back here and redirect to the login page, infinitely.
         if request.user.is_authenticated():
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error("invalidorg subdomain={subdomain} ip={ip} username={username}".format(
+                subdomain=subdomain,
+                ip=request.META.get("REMOTE_ADDR"),
+                username=request.POST.get("username")
+            ))
+
             from django.contrib.auth import logout
             from django.contrib import messages
             logout(request)

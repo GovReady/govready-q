@@ -5,6 +5,7 @@ from django.conf import settings
 admin.autodiscover()
 
 import siteapp.views as views
+from .good_settings_helpers import signup_wrapper
 
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
@@ -36,6 +37,7 @@ urlpatterns = [
     url(r'^invitation/accept/(?P<code>.+)$', views.accept_invitation, name="accept_invitation"),
 
     # auth
+    url(r'^accounts/signup/', signup_wrapper, name="account_signup"),
     url(r'^accounts/', include('allauth.urls')),
 
     # has to be repeated here for the reverse() to work
