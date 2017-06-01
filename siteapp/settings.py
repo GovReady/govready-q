@@ -210,6 +210,37 @@ if environment.get('memcached'):
 	CACHES['default']['BACKEND'] = 'django.core.cache.backends.memcached.MemcachedCache'
 	SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
+# Logging.
+from django.utils.log import DEFAULT_LOGGING
+LOGGING = DEFAULT_LOGGING
+LOGGING['loggers'].update({
+	'': {
+		'handlers': ['console'],
+		'level': 'INFO',
+	},
+})
+if "syslog" in environment:
+	# install the rfc5424-logging-handler package
+	import socket
+	hostname, port = environment["syslog"].split(":", 1)
+	LOGGING['formatters'].update({
+		'syslog': {
+			'format': '%(levelname)s %(message)s',
+			'datefmt': '%Y-%m-%dT%H:%M:%S',
+		},
+	})
+	LOGGING['handlers'].update({
+		'syslog': {
+			'level': 'WARNING',
+			'class': 'rfc5424logging.handler.Rfc5424SysLogHandler',
+			'address': (hostname, int(port)),
+			'socktype': socket.SOCK_STREAM,
+			'formatter': 'syslog',
+			'hostname': environment['host'] + "@" + socket.gethostname()
+		}
+	})
+	LOGGING['loggers']['']['handlers'].append('syslog')
+
 # Settings that have normal values based on the primary app
 # (the app this file resides in).
 

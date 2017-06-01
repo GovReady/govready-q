@@ -3,6 +3,7 @@ python-dateutil==2.6.0 # Simplified BSD License
 Pillow==4.1.0 # MIT-like License
 Jinja2==2.9.6 # BSD License
 selenium==3.3.3 # Apache License 2.0
+rfc5424-logging-handler==1.0.0 # BSD License
 
 # Less Common Python Packages
 html5lib==0.999999999 # MIT License
