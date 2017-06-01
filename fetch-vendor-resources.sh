@@ -58,7 +58,7 @@ wget -O $VENDOR/emojione.min.js \
 
 # quill rich text editor (BSD License)
 wget -O /tmp/quill.tar.gz \
-        https://github.com/quilljs/quill/releases/download/v1.2.3/quill.tar.gz
+        https://github.com/quilljs/quill/releases/download/v1.2.5/quill.tar.gz
 tar -zx -C $VENDOR -f /tmp/quill.tar.gz
 rm -f /tmp/quill.tar.gz
 
