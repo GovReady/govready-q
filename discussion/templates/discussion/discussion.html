@@ -177,7 +177,7 @@
       <div class="comment-text"> </div>
 
       <form class="comment-edit clearfix" style="display: none" onsubmit="do_comment_save(this); return false;">
-        <textarea class="form-control" style="width: 100%;"> </textarea>
+        <div class='quill-holder'> </div>
         <div style="margin: 1em 0; float: right">
           <button type="submit" class="btn btn-cancel" onclick="return close_comment_edit(this);">Cancel</button>
           <button type="submit" class="btn btn-primary">Save</button>
@@ -498,7 +498,6 @@ function render_comment(item) {
   n.find('.comment-author-role').text(item.user_role ? ("(" + item.user_role + ")") : "");
   n.find('.comment-text').html(item.text_rendered);
     n.find('.comment-text').find("img").addClass("img-responsive");
-  n.attr('data-text', item.text);
   if (item.can_edit)
     n.addClass('has-edit-priv');
   if (item.can_delete)
@@ -753,10 +752,26 @@ function get_comment_from_command_elem(command_elem) {
   return c;
 }
 
+var open_editors = { };
+
 function begin_comment_edit(command_elem) {
   var c = get_comment_from_command_elem(command_elem);
-  c.find('.comment-edit textarea').css({ minHeight: c.find('.comment-text').height()+30 });
-  c.find('.comment-edit textarea').val(c.attr('data-text'));
+
+  // Create a place that will hold the Quill editor and clone the DOM content
+  // of the comment's text that the Quill editor will initialize from. Quill
+  // will create the editor in the div we give it, but it will put the toolbar
+  // in a preceding sibling, so we put the content in a div within a div so that
+  // we can reliably destroy all of the editor if we need to make a new one for
+  // this comment.
+  c.find('.comment-edit .quill-holder').html("");
+  c.find('.comment-edit .quill-holder').append($("<div></div>"));
+  c.find('.comment-edit .quill-holder div').html(c.find('.comment-text').html());
+
+  // Create the editor. (Any previous editor )
+  var q = new CommonMarkQuill(c.find('.comment-edit .quill-holder > div')[0], { });
+  q.focus()
+  open_editors[c.attr("data-id")] = q;
+
   c.find('.comment-text').hide();
   c.find('.comment-edit').show();
   return false;
@@ -766,6 +781,7 @@ function close_comment_edit(command_elem) {
   var c = get_comment_from_command_elem(command_elem);
   c.find('.comment-text').show();
   c.find('.comment-edit').hide();
+  open_editors[c.attr("data-id")] = null; // release Quill data structures
   return false;
 }
 
@@ -776,7 +792,7 @@ function do_comment_save(command_elem) {
     method: "POST",
     data: {
       id: c.attr('data-id'),
-      text: c.find('.comment-edit textarea').val()
+      text: open_editors[c.attr("data-id")].getContentsAsCommonMark()
     },
     controls: c.find('textarea, input, button'),
     success: function(res) {
@@ -801,6 +817,7 @@ function do_delete_comment(command_elem) {
           id: c.attr('data-id')
         },
         success: function(res) {
+          open_editors[c.attr("data-id")] = null; // release Quill data structures
           c.slideUp();
         }
       })

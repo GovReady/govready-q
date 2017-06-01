@@ -40,10 +40,26 @@ def update_discussion_comment_draft(request):
             request.user, text, "web",
             is_draft=True)
 
-    # Rewrite attachment URLs from absolute URLs, which is how they must be for the
-    # rich editor to display them live, into attachment:### URLs so we can track
-    # that this is an attachment in a structured way.
+    # Process attachments submitted in-line.
+    text = process_attachments(comment, request.user)
+
+    if text != comment.text:
+        comment.text = text
+        comment.save()
+
+    # Return the comment's id and rendered text for displaying a preview.
+    return JsonResponse(comment.render_context_dict(request.user))
+
+def process_attachments(comment, user):
+    # Although attachments can be created on drafts with create_attachments,
+    # the Quill editor also allows attachments to come in in two other ways.
+
     text = comment.text
+
+    # In order for the Quill editor to show live previews of attachments, we
+    # populate the editor with an absolute URL to the resource. On save, we'll
+    # convert the absolute URL back to our attachment:### format so we can
+    # track in a structured way that there is a reference to an attachment.
     import re
     from django.urls import reverse
     pattern = re.escape(settings.SITE_ROOT_URL + reverse("discussion-attachment", args=["0123456789"]))\
@@ -61,19 +77,13 @@ def update_discussion_comment_draft(request):
             return ""
         attachment = Attachment.objects.create(
             comment=comment,
-            user=request.user,
+            user=user,
         )
         attachment.file.save("noname." + m.group(1), ContentFile(content))
         return "attachment:%d" % attachment.id
-    text = re.sub("(?<=\]\()data:image/(png|jpeg);base64,(.*?)(?=\))", handle_data_url, text)
-    
-    if text != comment.text:
-        comment.text = text
-        comment.save()
+    text = re.sub("(?<=\]\()data:image/(png|jpeg)(?:;|%3B)base64,(.*?)(?=\))", handle_data_url, text)
 
-    # Return the comment's id and rendered text for displaying a preview.
-    return JsonResponse(comment.render_context_dict(request.user))
-
+    return text 
 
 @login_required
 @transaction.atomic
@@ -114,6 +124,9 @@ def edit_discussion_comment(request):
 
     # edit
     comment.text = request.POST['text']
+
+    # handle changes in attachments
+    comment.text = process_attachments(comment, request.user)
 
     # save
     comment.save()
