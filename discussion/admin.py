@@ -7,7 +7,7 @@ class DiscussionAdmin(admin.ModelAdmin):
 	readonly_fields = ('attached_to_content_type', 'attached_to_object_id', 'guests', 'extra')
 
 class CommentAdmin(admin.ModelAdmin):
-	list_display = ('discussion', 'user', 'text')
+	list_display = ('discussion', 'user', 'created', 'draft', 'deleted')
 	readonly_fields = ('discussion', 'user', 'replies_to')
 	fieldsets = [
 		(None, { "fields": ('discussion', 'user', 'replies_to',)}),
