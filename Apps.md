@@ -82,6 +82,8 @@ The questions in the app YAML file can only be of type `module` and `module-set`
 
 A Q deployment can pull module content from various sources --- including local directories and git repositories --- by creating Module Sources in the Django admin site at [/admin/guidedmodules/modulesource/](http://localhost:8000/admin/guidedmodules/modulesource/). Each Module Source specifies a virtual filesystem from which apps are located.
 
+### App Source virtual filesystem layout
+
 Whether the source is a local directory or a git repository, the source must have a directory layout in which each app is stored in its own directory. (The directory name becomes an internal name for the app.) For instance:
 
 	app1/app.yaml
@@ -89,6 +91,8 @@ Whether the source is a local directory or a git repository, the source must hav
 	app2/app.yaml
 	app2/...other_app2_files
 	...
+
+### App Source JSON "Spec" field
 
 Each Module Source has a `Spec` field which contains a JSON definition of how to fetch module YAML files. The default Module Source for system modules uses the following Spec string:
 
@@ -167,6 +171,22 @@ cat ./id_rsa_deploy_key | perl -ne 's/\n/\\n/g; print'
 ```
 
 8) Add the contents of the private key file as the value to the `ssh_key` of your spec file for the Modulesources as specified above.
+
+### App executable content
+
+Apps can contain executable content (some of which is disabled by default):
+
+* JavaScript executed by the client browser contained within page HTML, via module template content.
+
+* JavaScript executed by the client browser served as a static asset and referenced by a `<script>` tag.
+
+* Python scripts executed by the GovReady Q server for `external-function` questions.
+
+Both sources of Javascript execute within the context of pages on the domain that the Q site itself runs on, which means the scripts have access to the page DOM, cookies, localStorage, etc. Server-side Python executes as the local Unix user within the Q Django process. These scripts must only be enabled if they are trusted for these environments.
+
+Javascript static assets and Python scripts (**but not Javascript in module templates** - this is a TODO) are therefore disabled by default. (Javascript static assets are disabled by serving them with an incorrect MIME type. Python assets are not loaded if disabled.)
+
+To enable these scripts, the `Trust javascript assets` flag must be true on the ModuleSource that provides the app. This flag must only be true if any Apps provided by the ModuleSource, including Apps already loaded into Q, are trusted to have executable content that may have as much client or server-side access as the Q instance does itself.
 
 
 ### Updating modules
