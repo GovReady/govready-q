@@ -239,6 +239,7 @@ class ModuleAssetPack(models.Model):
         m = hashlib.sha256()
         m.update(
             json.dumps({
+                    "trust_javascript_assets": self.source.trust_javascript_assets,
                     "basepath": self.basepath,
                     "paths": self.paths,
                 },

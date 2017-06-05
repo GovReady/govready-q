@@ -877,13 +877,17 @@ def load_module_assets_into_database(app):
             asset.file.save(file_path, ContentFile(content_loader()))
             asset.save()
 
-            # Mark the asset as trusted if the source is trusted so that we can
-            # serve Javascript from our domain and have it be executed by the browser.
-            if source.trust_javascript_assets:
-                from dbstorage.models import StoredFile
-                sf = StoredFile.objects.get(path=asset.file.name)
-                sf.trusted = True
-                sf.save()
+        # Mark the asset as trusted if the source is trusted so that we can
+        # serve Javascript from our domain and have it be executed by the browser.
+        # Since the source's trust_javascript_assets flag can change but the
+        # asset's binary content may already be loaded, update the flag on
+        # each update. Note that this could cause existing apps to break if
+        # binary assets are reused and the source's flag is changed from true
+        # to false.
+        from dbstorage.models import StoredFile
+        sf = StoredFile.objects.get(path=asset.file.name)
+        sf.trusted = source.trust_javascript_assets
+        sf.save()
 
         # Add to the pack.
         pack.assets.add(asset)
