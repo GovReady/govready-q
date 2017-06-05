@@ -25,7 +25,8 @@ class AllauthAccountAdapter(DefaultAccountAdapter):
             context
         )
 
-
+# This view overrides allauth's signup view so we can monitor what happens.
+# The override takes place in urls.py.
 def signup_wrapper(request, *args, **kwargs):
     from allauth.account.views import signup
     ret = signup(request, *args, **kwargs)

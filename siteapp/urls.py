@@ -37,6 +37,7 @@ urlpatterns = [
     url(r'^invitation/accept/(?P<code>.+)$', views.accept_invitation, name="accept_invitation"),
 
     # auth
+    # next line overrides signup with our own view so we can monitor signup attempts, can comment out to go back to allauth's functionality
     url(r'^accounts/signup/', signup_wrapper, name="account_signup"),
     url(r'^accounts/', include('allauth.urls')),
 
