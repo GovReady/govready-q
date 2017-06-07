@@ -164,12 +164,15 @@ def save_reaction(request):
     if not comment.can_see(request.user):
         return HttpResponseForbidden()
 
-    # get the Comment that *reacts* to it
+    # get the Comment that holds the reaction to it
     comment, is_new = Comment.objects.get_or_create(
         discussion=comment.discussion,
         replies_to=comment,
         user=request.user,
     )
+
+    # get previous value
+    old_value = comment.get_emoji_list()
 
     # record edit history
     comment.push_history('emojis')
@@ -177,8 +180,31 @@ def save_reaction(request):
     # edit
     comment.emojis = request.POST['emojis']
 
-    # save
-    comment.save()
+    # if there are changes...
+    new_value = comment.get_emoji_list()
+    if old_value != new_value:
+        # save
+        comment.save()
+
+        # issue notification to the parent comment's author, unless it's
+        # the user making the reaction
+        if new_value - old_value:
+            # There are new reactions.
+            msg = "reacted " + ", ".join(sorted(new_value-old_value)) + " to"
+
+            # There were also emojis un-reacted.
+            if old_value - new_value:
+                msg += " and removed their reaction " + ", ".join(sorted(old_value-new_value))
+        elif old_value - new_value:
+            # Emojis were removed (and nothing else).
+            msg = "removed their reaction " + ", ".join(sorted(old_value-new_value)) + " to"
+        from siteapp.views import issue_notification
+        issue_notification(
+            comment.user,
+            msg,
+            comment.discussion,
+            recipients=[comment.replies_to.user],
+            comment_id=comment.id)
 
     # return new comment info
     return JsonResponse(comment.render_context_dict(request.user))

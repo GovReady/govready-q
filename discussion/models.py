@@ -289,6 +289,10 @@ class Comment(models.Model):
             "previous-" + field: getattr(self, field),
         })
 
+    def get_emoji_list(self):
+        if self.emojis == "": return set()
+        return set(self.emojis.split(","))
+
     # render
 
     def render_context_dict(self, whose_asking):
