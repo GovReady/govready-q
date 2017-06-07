@@ -29,7 +29,8 @@ INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 # parent domain.
 ORGANIZATION_PARENT_DOMAIN = environment.get('organization-parent-domain', 'localhost')
 ALLOWED_HOSTS += ['.' + ORGANIZATION_PARENT_DOMAIN]
-REVEAL_ORGS_TO_ANON_USERS = environment.get('organization-seen-anonymously', False)
+SINGLE_ORGANIZATION_KEY = environment.get('single-organization')
+REVEAL_ORGS_TO_ANON_USERS = (SINGLE_ORGANIZATION_KEY is not None) or environment.get('organization-seen-anonymously', False)
 
 LOGIN_REDIRECT_URL = "/projects"
 SERVER_EMAIL = "GovReady Q <q@mg.govready.com>"

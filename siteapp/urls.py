@@ -56,3 +56,9 @@ if settings.DEBUG: # also in urls_landing
     urlpatterns += [
         url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
     ]
+
+if settings.SINGLE_ORGANIZATION_KEY:
+    # If we're operating in single-organization mode, then non-org URLs must be made available
+    # here because the landing domain is not used.
+    from .urls_landing import urlpatterns as urls_landing_urlpatterns
+    urlpatterns += urls_landing_urlpatterns

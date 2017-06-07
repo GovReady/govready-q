@@ -1,0 +1,6 @@
+{
+  "debug": true,
+  "host": "localhost:8000",
+  "https": false,
+  "single-organization": "main"
+}

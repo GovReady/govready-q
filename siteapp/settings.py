@@ -19,31 +19,29 @@ primary_app = os.path.basename(os.path.dirname(__file__))
 def local(fn):
 	return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'local', fn)
 
+# This is how 'manage.py startproject' does it:
+def make_secret_key():
+	from django.utils.crypto import get_random_string
+	return get_random_string(50, 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)')
+
 if os.path.exists(local("environment.json")):
 	environment = json.load(open(local("environment.json")))
 else:
-	# Make some defaults.
-
-	# This is how 'manage.py startproject' does it:
-	def make_secret_key():
-		from django.utils.crypto import get_random_string
-		return get_random_string(50, 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)')
-
+	# Make some defaults and show the user.
 	environment = {
 		"secret-key": make_secret_key(),
 		"debug": True,
 		"host": "localhost:8000",
 		"https": False,
 	}
-
 	print("Create a %s file! It should contain something like this:" % local("environment.json"))
 	print(json.dumps(environment, sort_keys=True, indent=2))
 
 # DJANGO SETTINGS #
 ###################
 
-# The SECRET_KEY must be specified in the environment.
-SECRET_KEY = environment["secret-key"]
+# The SECRET_KEY should be specified in the environment file, otherwise generate a fresh one on each run.
+SECRET_KEY = environment.get("secret-key") or make_secret_key()
 
 # The DEBUG flag must be set in the environment.
 DEBUG = environment["debug"]

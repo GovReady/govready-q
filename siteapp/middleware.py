@@ -48,16 +48,22 @@ class OrganizationSubdomainMiddleware:
         s = urlsplit(settings.SITE_ROOT_URL)
         main_landing_domain = s[1].split(":")[0]
 
-        # Is this a request for our main landing domain?
-        if request_host == main_landing_domain:
+        # Is this a request for our main landing domain? The main landing domain is not
+        # used when the "single-oroganization" mode is used.
+        if request_host == main_landing_domain and not settings.SINGLE_ORGANIZATION_KEY:
             # This is one of our recognized main domain names. We serve
             # a special set of URLs for our main domain landing pages.
             request.urlconf = 'siteapp.urls_landing'
             return None # continue with normal request processing
 
         # Is this a request for an organization subdomain?
-        if request_host.endswith('.' + settings.ORGANIZATION_PARENT_DOMAIN):
-            subdomain = request_host[:-len(settings.ORGANIZATION_PARENT_DOMAIN)-1]
+        if request_host.endswith('.' + settings.ORGANIZATION_PARENT_DOMAIN) or settings.SINGLE_ORGANIZATION_KEY:
+            if not settings.SINGLE_ORGANIZATION_KEY:
+                # Get the subdomain from the request host.
+                subdomain = request_host[:-len(settings.ORGANIZATION_PARENT_DOMAIN)-1]
+            else:
+                # The subdomain is fixed as the value of the setting.
+                subdomain = settings.SINGLE_ORGANIZATION_KEY
 
             # Does this subdomain correspond with a known organization?
             org = Organization.objects.filter(subdomain=subdomain).first()
