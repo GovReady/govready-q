@@ -41,7 +41,7 @@
 }
   #discussion .comment .comment-commands > a:link {
     margin-left: 8px;
-    color: #999;
+    color: #AAA;
     font-size: 85%;
   }
     #discussion .comment .comment-commands > a:hover {
@@ -154,22 +154,22 @@
     <div class="panel-body">
       <div class="comment-meta">
         <div class="row">
-          <div class="col-sm-10">
+          <div class="col-sm-9">
             <span class="comment-author">...</span>
             <span class="comment-author-role">...</span>
             commented
             <span class="comment-date"></span>
           </div>
-          <div class="col-sm-2 comment-commands">
+          <div class="col-sm-3 comment-commands">
             <a title="Edit your comment" class="ifeditpriv" href="#" onclick="return begin_comment_edit(this);">
               <i class="glyphicon glyphicon-pencil"></i>
             </a>
-            <a title="React to this comment with an emoji" class="ifnotauthor react-with-emoji" href="#" onclick="return begin_emoji_reaction(event, this);">
-              <i class="glyphicon glyphicon-plus"></i>
-              <i class="glyphicon glyphicon-heart"></i>
-            </a>
             <a title="Delete this comment" class="ifdeletepriv" href="#" onclick="return do_delete_comment(this);">
               <i class="glyphicon glyphicon-trash"></i>
+            </a>
+            <a title="React to this comment with an emoji" class="react-with-emoji" href="#" onclick="return begin_emoji_reaction(event, this);">
+              <i class="glyphicon glyphicon-plus" style="font-size: 80%;"></i>
+              <i class="glyphicon glyphicon-heart" style="position: relative; left: -6px"></i>
             </a>
           </div>
         </div> <!-- /row -->
@@ -271,7 +271,7 @@ function init_discussion_html() {
     var shortname = $(this).text();
     $(this)
       .html(emojione.toImage(":" + shortname + ":"))
-      .click(function() { $(this).toggleClass('active'); })
+      .click(function() { $(this).toggleClass('active'); save_emoji_reaction(); })
       .attr('data-emoji-name', shortname);
   });
 };
@@ -842,7 +842,7 @@ function begin_emoji_reaction(event, command_elem) {
   // Initialize and show.
   var c = get_comment_from_command_elem(command_elem);
   current_emoji_reaction = c;
-  var et = c.find('.comment-meta .react-with-emoji');
+  var et = $(command_elem);
   var es = $('#emoji-selector');
 
   // reset state to previously reacted emojis
@@ -857,12 +857,20 @@ function begin_emoji_reaction(event, command_elem) {
     });
   }
 
+  var left = et.offset().left + et.width() + 5;
+  var top = et.offset().top - 30;
+  if (left + es.width() + 15 > $(window).width()) {
+    es.show(); // need width
+    left = et.offset().left + et.outerWidth() - es.width();
+    top = et.offset().top + et.outerHeight();
+  }
+
   es.css({
     display: 'block',
     position: 'absolute',
     width: '20em',
-    left: et.offset().left + et.width() + 5,
-    top: et.offset().top - 30
+    left: left,
+    top: top
   })
   return false;
 }
