@@ -290,7 +290,7 @@ class Comment(models.Model):
         })
 
     def get_emoji_list(self):
-        if self.emojis == "": return set()
+        if self.emojis in (None, ""): return set()
         return set(self.emojis.split(","))
 
     # render
