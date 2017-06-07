@@ -38,4 +38,9 @@ COPY deployment/docker/environment.json ./local/
 RUN python manage.py migrate
 RUN python manage.py load_modules
 
+# Add a built-in ModuleSource that has public apps.
+COPY deployment/docker/modulesources.json ./
+RUN python manage.py loaddata modulesources.json
+RUN rm modulesources.json
+
 CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000" ]

@@ -1,0 +1,16 @@
+[
+  {
+    "model": "guidedmodules.modulesource",
+    "pk": 3,
+    "fields": {
+      "namespace": "public",
+      "spec": "{\"type\":\"git\",\"url\":\"https://github.com/GovReady/govready-q-ssp-module\",\"path\":\"modules\"}",
+      "trust_javascript_assets": true,
+      "available_to_all": true,
+      "created": "2017-06-07T18:44:02.339Z",
+      "updated": "2017-06-07T18:44:02.339Z",
+      "extra": "null",
+      "available_to_orgs": []
+    }
+  }
+]
