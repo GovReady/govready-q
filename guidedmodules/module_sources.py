@@ -108,7 +108,7 @@ class MultiplexedAppStore(AppStore):
         for loader in self.loaders:
             try:
                 loader.__exit__(None, None, None)
-            except e:
+            except Exception as e:
                 exceptions.append(e)
         if exceptions:
             raise Exception(exceptions)
@@ -136,22 +136,33 @@ class PyFsAppStore(AppStore):
     def __enter__(self):
         # Initialize at the start of the "with" block that this
         # object is used in.
-        self.root = self.fstype(*self.fsargs)
+        import fs.errors
+        try:
+            self.root = self.fstype(*self.fsargs)
+        except fs.errors.CreateFailed as e:
+            self.root = None
+            self.root_create_error = str(e)
         return self
     def __exit__(self, *args):
         # Clean up the filesystem object at the end of the "with"
         # block.
-        self.root.close()
+        if self.root:
+            self.root.close()
 
     def __repr__(self):
-        if hasattr(self, 'root'):
+        if getattr(self, 'root', False):
             return "<AppStore {fs}>".format(fs=self.root)
         else:
             return "<AppStore {fstype} {fsargs}>".format(fstype=self.fstype, fsargs=self.fsargs)
 
+    def _raise_if_error(self):
+        if not self.root:
+            raise ValueError("There was an error opening %s: %s" % (repr(self), self.root_create_error))
+
     def list_apps(self):
         # Every directory is an app containing app.yaml
         # which is the app's root module YAML.
+        self._raise_if_error()
         for entry in self.root.scandir(""):
             if entry.is_dir:
                 # Check for presence of app.yaml.
@@ -162,6 +173,7 @@ class PyFsAppStore(AppStore):
                         self.root.opendir(entry.name))
 
     def get_app(self, name):
+        self._raise_if_error()
         if len(list(self.root.scandir(name))) == 0:
             raise ValueError("App not found.")
         return PyFsApp(self,
