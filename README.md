@@ -1,6 +1,23 @@
 # Q (by GovReady)
 
-Q is an information gathering platform for people, tuned to the specific needs of information security and compliance professionals.
+GovReady-Q does for cyber security compliance what tax prep software does for filing taxes.
+
+GovReady-Q helps system integrators and small businesses programmatically generate and maintain their System Security Plan (SSP) and other compliance artifacts. GovReady-Q guides your team step-by-step through FISMA’s NIST Risk Management Framework Authorization and Accreditation (A&A) with easy-to-use "compliance apps" that interact with you and each other to generate policies, plans, and evidence to impress your auditors.
+
+When using GovReady-Q, your team selects "apps" from a compliance store. Apps represents system components, organization processes and team roles. Our open source Expert System uses the apps to interactively teach security and ask simple questions about your software and system. As your team collaboratively answers questions, the Expert System analyzes compliance and maintains human and machine-readable versions of your SSP and compliance artifacts.
+
+GovReady Q works with and compliments existing cyber security GRC software with user-friendly assessments, inline security training and tutorials you can customize to take your system teams step-by-step through implementing security controls and preparing control descriptions and evidence.
+
+GovReady-Q is open source and incorporates the emerging [OpenControl](http://open-control.org) data standard for re-usable compliance content.
+
+[Join our mailing list](http://eepurl.com/cN7oJL) and stay informed of developments.
+
+# Target Audience
+GovReady-Q was made by developers for developers who value security, but never want to hear again better technology "can't be used because its not compliant."
+
+Our target audience is forward thinking system integrators, security and compliance teams who need faster, modern cyber security assessments and compliance aligned with their Agile practices and DevOps culture and automation. They are tired of writing SSP's by hand and need a more scale-able, self-service approach to compliance. They want to contribute to and benefit from a supply chain of shared, re-usable, Don't Repeat Yourself compliance content.  
+
+The compliance apps and Expert System are under heavy, active development. GovReady Q should only be used at this time by those capable and comfortable of working with pre-release software.
 
 ---
 
