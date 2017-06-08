@@ -6,7 +6,7 @@ GovReady-Q helps system integrators and small businesses programmatically genera
 
 When using GovReady-Q, your team selects "apps" from a compliance store. Apps represents system components, organization processes and team roles. Our open source Expert System uses the apps to interactively teach security and ask simple questions about your software and system. As your team collaboratively answers questions, the Expert System analyzes compliance and maintains human and machine-readable versions of your SSP and compliance artifacts.
 
-GovReady Q works with and compliments existing cyber security GRC software with user-friendly assessments, inline security training and tutorials you can customize to take your system teams step-by-step through implementing security controls and preparing control descriptions and evidence.
+GovReady-Q works with and compliments existing cyber security GRC software with user-friendly assessments, inline security training and tutorials you can customize to take your system teams step-by-step through implementing security controls and preparing control descriptions and evidence.
 
 GovReady-Q is open source and incorporates the emerging [OpenControl](http://open-control.org) data standard for re-usable compliance content.
 
