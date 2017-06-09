@@ -90,7 +90,7 @@ def process_attachments(comment, user):
 def submit_discussion_comment(request):
     # Get the discussion object.
     discussion = get_object_or_404(Discussion, id=request.POST['discussion'], **makekwargs(request))
-    if not discussion.is_participant(request.user):
+    if not discussion.can_comment(request.user):
         return HttpResponseForbidden()
 
     # Get the Comment draft.

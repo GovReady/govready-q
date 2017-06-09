@@ -106,7 +106,7 @@
     <div class="comment-thread">
       
     </div>
-    <div class="comment-input active-discussion-only" style="display: none">
+    <div class="comment-input" style="display: none">
       <form onsubmit="submit_comment(); return false;">
         <label id="discussion-your-comment-label" for="discussion-your-comment">
           ...
@@ -294,38 +294,42 @@ function display_discussion(discussion, is_page_load) {
   // show the discussion
   $('#discussion').show();
   $('#discussion .active-discussion-only').show();
-  $('#discussion-your-comment-label').text("Add the first comment:")
   $('#discussion #invite-guest').toggle(discussion_info.can_invite);
 
   // INITIALIZE THE COMMENT EDITOR
 
-  // initialize the editor
-  quill = new CommonMarkQuill('#discussion-your-comment', { });
-  if (!is_page_load || discussion.events.length == 0) quill.focus();
+  if (discussion_info.can_comment) {
+    $('#discussion .comment-input').show();
+    $('#discussion-your-comment-label').text("Add the first comment:")
 
-  // show an existing draft and poll for updating the draft
-  if (discussion.draft) {
-    draft_state = discussion.draft;
-    quill.clipboard.dangerouslyPasteHTML(0, discussion.draft.text_rendered);
-  }
+    // initialize the editor
+    quill = new CommonMarkQuill('#discussion-your-comment', { });
+    if (!is_page_load || discussion.events.length == 0) quill.focus();
 
-  // start polling for changes to save as draft
-  start_update_draft_poller();
+    // show an existing draft and poll for updating the draft
+    if (discussion.draft) {
+      draft_state = discussion.draft;
+      quill.clipboard.dangerouslyPasteHTML(0, discussion.draft.text_rendered);
+    }
 
-  // BUTTON LABEL TOGGLES
+    // start polling for changes to save as draft
+    start_update_draft_poller();
 
-  // toggle a class depending on whether the user's comment textarea has
-  // anything in it, which is used if we have a "Close & Comment" / "Re-open & Comment"
-  // button
-  function discussion_update_your_comment_empty_class() {
-    var isEmpty = quill.isEmpty();
-    $('#discussion .comment-input').toggleClass('user-input-empty', isEmpty);
-    $('#discussion .comment-input').toggleClass('user-input-not-empty', !isEmpty);
-  }
-  quill.on('text-change', function(delta, oldDelta, source) {
+    // BUTTON LABEL TOGGLES
+
+    // toggle a class depending on whether the user's comment textarea has
+    // anything in it, which is used if we have a "Close & Comment" / "Re-open & Comment"
+    // button
+    function discussion_update_your_comment_empty_class() {
+      var isEmpty = quill.isEmpty();
+      $('#discussion .comment-input').toggleClass('user-input-empty', isEmpty);
+      $('#discussion .comment-input').toggleClass('user-input-not-empty', !isEmpty);
+    }
+    quill.on('text-change', function(delta, oldDelta, source) {
+      discussion_update_your_comment_empty_class();
+    });
     discussion_update_your_comment_empty_class();
-  });
-  discussion_update_your_comment_empty_class();
+  }
 
   // fill in the context block on the right side
   $('#discussion .fillin-project_name').text(discussion_info.project.title);
@@ -405,7 +409,10 @@ function display_discussion(discussion, is_page_load) {
   });*/
 
   // start polling the server for new events
-  discussion_poll();
+  // don't poll if the user can't comment because the discussion view
+  // will say they don't have permission to poll
+  if (discussion_info.can_comment)
+    discussion_poll();
 }
 
 function render_events(discussion, initial) {

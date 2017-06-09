@@ -96,6 +96,7 @@ class Discussion(models.Model):
                 "title": self.title,
                 "project": self.attached_to.get_project_context_dict(),
                 "can_invite": self.can_invite_guests(user),
+                "can_comment": self.can_comment(user),
             },
             "guests": [ user.render_context_dict(self.organization) for user in self.guests.all() ],
             "events": events,
@@ -134,6 +135,9 @@ class Discussion(models.Model):
         return comment
 
     ##
+
+    def can_comment(self, user):
+        return user is not None and self.is_participant(user)
 
     def can_invite_guests(self, user):
         return self.attached_to.can_invite_guests(user)
