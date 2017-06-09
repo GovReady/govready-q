@@ -1,10 +1,12 @@
 # Dockerized Q - Version 1
 
+A demo of GovReady Q is available on the Docker Hub at [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/).
+
 ## Running
 
 Start the container in the background:
 
-	CONTAINER=$(docker container run --detach -p 8000:8000 govready/q)
+	CONTAINER=$(docker container run --detach -p 8000:8000 govready/govready-q)
 
 Create a Django database superuser and set up your first organization:
 
@@ -29,11 +31,15 @@ Notes:
 * The Q instance cannot send email until it is configured to use a transactional mail provider like Mailgun. (TODO: How?)
 * This image is not meant to be used for a public website because it uses Django's debug server to serve the site with `DEBUG = True`.
 
-## Building the Docker image
+## Building and publishing the Docker image
 
-In the root of the Q source code, run:
+You may build the Docker image locally from the current source code rather than obtaining it from the Docker Hub. In the root directory of this repository, build the Docker image:
 
-	docker image build --tag govready/q .
+	docker image build --tag govready/govready-q .
+
+If you are a GovReady team member, you can then push the image to hub.docker.com:
+
+	docker image push govready/govready-q
 
 TODO:
 
