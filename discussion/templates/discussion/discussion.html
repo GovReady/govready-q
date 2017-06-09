@@ -462,7 +462,9 @@ function show_notification(discussion) {
   var notification = "";
   discussion.events.forEach(function(item) {
     if (!item.notification_text) return;
+    {% if request.user.is_authenticated %}
     if (item.user && item.user.id == {{request.user.id}}) return; // no notifications for actions the user took themself
+    {% endif %}
     notification += truncate(item.notification_text) + "\n\n";
   })
 
@@ -509,8 +511,10 @@ function render_comment(item) {
     n.addClass('has-edit-priv');
   if (item.can_delete)
     n.addClass('has-delete-priv');
+  {% if request.user.is_authenticated %}
   if (item.user.id == {{request.user.id}})
     n.addClass('author-is-self');
+  {% endif %}
   n.find('.comment-emojis').html('');
   if (!item.emojis) item.emojis = []; // if null, turn into empty array
   n.attr('data-emojis', item.emojis.join(','));
@@ -525,8 +529,10 @@ function render_comment(item) {
   // Update state - if any comments are present, change label.
   $('#discussion-your-comment-label').text("Add your comment:")
   discussion_has_any_comment = true;
+  {% if request.user.is_authenticated %}
   if (item.user.id != {{request.user.id}})
     discussion_has_any_comment_from_someone_else = true;
+  {% endif %}
   var show_youre_alone = discussion_has_any_comment && !discussion_has_any_comment_from_someone_else;
   $('#discussion-you-are-alone').toggle(show_youre_alone && discussion_info.can_invite);
   $('#discussion #invite-guest').toggle(!show_youre_alone && discussion_info.can_invite);

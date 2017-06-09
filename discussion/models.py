@@ -136,6 +136,9 @@ class Discussion(models.Model):
 
     ##
 
+    def is_public(self):
+        return getattr(self.attached_to, 'is_discussion_public', lambda : False)
+
     def can_comment(self, user):
         return user is not None and self.is_participant(user)
 
@@ -224,7 +227,7 @@ class Comment(models.Model):
     def can_see(self, user):
         if self.deleted or self.draft:
             return False
-        return self.discussion.is_participant(user)
+        return self.discussion.is_public() or self.discussion.is_participant(user)
 
     def can_edit(self, user):
         # If the comment has been deleted, it becomes locked for editing. This

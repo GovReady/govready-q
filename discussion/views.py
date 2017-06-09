@@ -264,7 +264,7 @@ def download_attachment(request, attachment_id):
         attachment = get_object_or_404(Attachment, id=attachment_id)
     except ValueError:
         raise Http404()
-    if not attachment.comment.discussion.is_participant(request.user):
+    if not attachment.comment.discussion.is_public() and not attachment.comment.discussion.is_participant(request.user):
         return HttpResponseForbidden()
 
     from dbstorage.views import get_file_content_view
