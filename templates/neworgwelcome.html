@@ -1,0 +1,33 @@
+{% extends "base-landing.html" %}
+
+{% block title %}
+Welcome to GovReady Q - {{org.name}}
+{% endblock %}
+
+{% block body-wide %}
+    <div class="jumbotron">
+      <div class="container">
+        <h1>{{org.name}} is all set</h1>
+      </div>
+    </div>
+
+    <div class="container">
+        <div class="well">
+            <p>Welcome to GovReady-Q, {{org.name}}!</p>
+            <p>To access your organization&rsquo;s site, please visit:</p>
+            <p><a href="{{org.get_url}}">{{org.get_url}}</a></p>
+            {% if request.user.is_authenticated %}
+            <p>Once you get there you will need to log in again with your username {{request.user.username}} and your {{domain}} account password.</p>
+            {% else %}
+            <p>Once you get there you will need to log in again with your {{domain}} account username and password.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {{ block.super }} 
+{% endblock %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock %}

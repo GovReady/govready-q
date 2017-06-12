@@ -9,7 +9,7 @@ import guidedmodules.views
 
 urlpatterns = [
     url(r"^$", views_landing.homepage),
-    url(r"^about/", views_landing.aboutpage),
+    url(r"^welcome/(?P<org_slug>.*)$", views_landing.org_welcome_page),
 
     # serve user file uploads from the main domain because the raw
     # storage data is not associated with an organization

@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import RegexValidator
 
 from jsonfield import JSONField
 
@@ -153,9 +154,11 @@ class DirectLoginBackend(ModelBackend):
     def authenticate(self, user_object=None):
         return user_object
 
+subdomain_regex = r"^([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])$"
+
 class Organization(models.Model):
     name = models.CharField(max_length=256, help_text="The display name of the Organization.")
-    subdomain = models.CharField(max_length=256, help_text="The subdomain of q.govready.com that this Organization exists at.")
+    subdomain = models.CharField(max_length=256, unique=True, help_text="The subdomain of the host site that this Organization's site is served at.", validators=[RegexValidator(regex=subdomain_regex)])
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -191,12 +194,24 @@ class Organization(models.Model):
         # * they have read permission on any Project within the Organization
         # * they are an editor of a Task within a Project within the Organization (but might not otherwise be a Project member)
         # * they are a guest in any Discussion on TaskQuestion in a Task in a Project in the Organization
+        # The inverse function is below.
         from guidedmodules.models import Task
         from discussion.models import Discussion
         return \
                ProjectMembership.objects.filter(user=user, project__organization=self).exists() \
             or Task.objects.filter(editor=user, project__organization=self).exists() \
             or Discussion.objects.filter(guests=user).exists()
+
+    @staticmethod
+    def get_all_readable_by(user):
+        # See can_read.
+        from guidedmodules.models import Task
+        from discussion.models import Discussion
+        return (
+              Organization.objects.filter(projects__members__user=user)
+            | Organization.objects.filter(projects__tasks__editor=user)
+            | Organization.objects.filter(discussions__guests=user)
+            ).order_by("name", "created").distinct()
 
     def get_organization_project(self):
         prj, isnew = Project.objects.get_or_create(organization=self, is_organization_project=True,
