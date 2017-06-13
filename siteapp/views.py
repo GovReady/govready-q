@@ -45,8 +45,14 @@ def folder_list(request):
     # Sort the folders by name.
     folders.sort(key = lambda folder : folder.title)
 
+    # don't show the prompt to complete account settings in the banner,
+    # we'll show it ourselves
+    request.suppress_prompt_banner = True
+
     return render(request, "folder_list.html", {
         "folders": folders,
+        "is_lonely_admin": request.user.can_see_org_settings and not request.organization.get_who_can_read().exclude(id=request.user.id).exists(),
+        "send_invitation": Invitation.form_context_dict(request.user, request.organization.get_organization_project(), [request.user]),
     })
 
 

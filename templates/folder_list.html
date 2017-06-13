@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load q %}
 
 {% block title %}
 Project Folders
@@ -42,15 +43,36 @@ Project Folders
 {% block contextbar %}{% endblock %}
 
 {% block body %}
+<h1>Your Compliance Dashboard</h1>
+
+{% if request.user.user_settings_task and not request.user.user_settings_task.is_finished  %}
+  <p style="margin: 30px 0;">Welcome to GovReady-Q. There are a few things you&rsquo;ll need to do before getting started.</p>
+
+  <h2>Complete your account settings</h2>
+  <p id="please-complete-account-settings">Start by completing <a href="{{request.user.user_settings_task.get_absolute_url}}">your account settings</a>.</p>
+{% endif %}
+
+{% if request.user.can_see_org_settings and not request.organization.get_organization_project.root_task.is_finished %}
+  <h2>Complete your organization profile</h2>
+  <p>Fill out your <a href="{{request.organization.get_organization_project.get_absolute_url}}">your organization&rsquo;s profile</a>.</p>
+{% endif %}
+
+{% if is_lonely_admin %}
+  <h2>Invite collaborators to work with you</h2>
+  <p>You&rsquo;re the only one working on compliance for {{request.organization.name}}. You can <a href="#" onclick="show_invite_to_org(); return false;">invite others</a> to begin working on compliance apps.</p>
+{% endif %}
+
 <div style="float: right; margin: 1em 0;">
   <a id="new-folder" href="#" class="btn btn-default" onclick="new_folder(); return false;"><i class="glyphicon glyphicon-folder-open"></i> New Folder</a>
   <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add app </a>
+  <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
 </div>
 
-<h1>Project Folders</h1>
+
+<h2>Project Folders</h2>
 
 {% if folders|length == 0 %}
-  <p>Start your first app.</p>
+  <a href="/store" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add my first app </a>
 {% endif %}
 
 <div id="folder-list">
@@ -161,5 +183,21 @@ function rename_project(elem) {
   });
   return false;
 }
+
+{% if is_lonely_admin %}
+function show_invite_to_org() {
+  show_invite_modal(
+    'Invite To {{request.organization.name|escapejs}}',
+    'Invite a colleague to join your organization on GovReady-Q.',
+    {{send_invitation|json}},
+    'Please join me on GovReady-Q to work on compliance for {{request.organization.name|escapejs}}.',
+    {
+      project: {{request.organization.get_organization_project.id}},
+      add_to_team: "1"
+    },
+    function() { }
+  );
+}
+{% endif %}
 </script>
 {% endblock %}
