@@ -18,7 +18,7 @@ class Discussion(models.Model):
     attached_to_object_id = models.PositiveIntegerField()
     attached_to = GenericForeignKey('attached_to_content_type', 'attached_to_object_id')
 
-    guests = models.ManyToManyField(User, blank=True, help_text="Additional Users who are participating in this chat, besides those that are implicit discussion members via the Discussion's attached_to object.")
+    guests = models.ManyToManyField(User, related_name="guest_in_discussions", blank=True, help_text="Additional Users who are participating in this chat, besides those that are implicit discussion members via the Discussion's attached_to object.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)

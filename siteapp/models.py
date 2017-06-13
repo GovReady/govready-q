@@ -189,7 +189,7 @@ class Organization(models.Model):
             '' # fragment
             ))
 
-    def can_read(self, user):
+    def get_who_can_read(self):
         # A user can see an Organization if:
         # * they have read permission on any Project within the Organization
         # * they are an editor of a Task within a Project within the Organization (but might not otherwise be a Project member)
@@ -197,10 +197,14 @@ class Organization(models.Model):
         # The inverse function is below.
         from guidedmodules.models import Task
         from discussion.models import Discussion
-        return \
-               ProjectMembership.objects.filter(user=user, project__organization=self).exists() \
-            or Task.objects.filter(editor=user, project__organization=self).exists() \
-            or Discussion.objects.filter(guests=user).exists()
+        return (
+               User.objects.filter(projectmembership__project__organization=self)
+             | User.objects.filter(tasks_editor_of__project__organization=self)
+             | User.objects.filter(guest_in_discussions__organization=self)
+             ).distinct()
+
+    def can_read(self, user):
+        return user in self.get_who_can_read()
 
     @staticmethod
     def get_all_readable_by(user):
