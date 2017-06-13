@@ -46,6 +46,11 @@ def homepage(request):
     neworg_form = NewOrgForm()
     login_form = LoginForm()
 
+    # The allauth forms have 'autofocus' set on their widgets that draw the
+    # focus in a way that doesn't make sense here.
+    signup_form.fields['username'].widget.attrs.pop("autofocus", None)
+    login_form.fields['login'].widget.attrs.pop("autofocus", None)
+
     if request.POST.get("action") == "neworg":
         signup_form = SignupForm(request.POST)
         neworg_form = NewOrgForm(request.POST)
