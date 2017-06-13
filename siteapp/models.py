@@ -239,7 +239,9 @@ class Organization(models.Model):
         org.get_organization_project().set_root_task("system/organization/app", admin_user)
 
         # And make that user an admin of the Organization.
-        ProjectMembership.objects.get_or_create(user=admin_user, project=org.get_organization_project())
+        pm, isnew = ProjectMembership.objects.get_or_create(user=admin_user, project=org.get_organization_project())
+        pm.is_admin = True
+        pm.save()
 
         return org
 
