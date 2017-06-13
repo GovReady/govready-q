@@ -32,6 +32,7 @@ To develop locally, run the following commands:
 	./fetch-vendor-resources.sh
 	python3 manage.py migrate
 	python3 manage.py load_modules
+	python3 manage.py loaddata deployment/docker/modulesources.json
 	python3 manage.py createsuperuser
 	python3 manage.py runserver
 
