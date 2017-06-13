@@ -68,4 +68,4 @@ rm -f /tmp/quill.tar.gz
 # TODO: Requires bash v4 not available on macOS.
 wget -O /tmp/google-font-download \
         https://raw.githubusercontent.com/neverpanic/google-font-download/master/google-font-download
-(cd $VENDOR; bash /tmp/google-font-download -f woff,woff2 -o google-fonts.css Hind:400 Hind:700)
+(cd $VENDOR; bash /tmp/google-font-download -f woff,woff2 -o google-fonts.css Hind:400 Hind:700 Lato:900)
