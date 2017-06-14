@@ -39,7 +39,9 @@ The file looks like this:
 	protocol: globally_unique_protocol_name # for inner apps only
 
 	catalog:
-	  category: Category Name
+	  categories:
+	    - Category Name
+	    - Another category name
 	  vendor: GovReady PBC
 	  vendor_url: https://www.govready.com
 	  status: Operational

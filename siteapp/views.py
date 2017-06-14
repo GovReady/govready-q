@@ -218,9 +218,13 @@ def app_store(request):
     from collections import defaultdict
     catalog_by_category = defaultdict(lambda : { "title": None, "apps": [] })
     for app in catalog:
-        catalog_by_category[app.get("category")]["title"] = app.get("category") or "Uncategorized"
-        catalog_by_category[app.get("category")]["apps"].append(app)
-    catalog_by_category = sorted(catalog_by_category.values(), key = lambda category : category["title"])
+        for category in app.get("categories", [app.get("category")]):
+            catalog_by_category[category]["title"] = (category or "Uncategorized")
+            catalog_by_category[category]["apps"].append(app)
+    catalog_by_category = sorted(catalog_by_category.values(), key = lambda category : (
+        category["title"] != "Great starter apps", # this category goes first
+        category["title"],
+        ))
 
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
