@@ -104,18 +104,12 @@ class Module(models.Model):
             # path as it's probably an absolute URL.
             return asset_path
 
-        # Look up the content_hash of the asset from its path.
-        content_hash = self.assets.paths.get(asset_path)
-        if not content_hash:
+        try:
+            return self.assets.get_url_for(asset_path)
+        except ValueError:
             # This is not an asset so let it through as it might be an
             # absolute URL.
             return asset_path
-
-        # Look up the ModuleAsset based on the hash.
-        asset = self.assets.assets.get(source=self.source, content_hash=content_hash)
-
-        # Give the public URL of that asset.
-        return asset.get_absolute_url()
 
     @staticmethod
     def BuildNetworkDiagram(start_nodes, config):
@@ -248,6 +242,20 @@ class ModuleAssetPack(models.Model):
         )
         self.total_hash = m.hexdigest()
 
+    def get_url_for(self, asset_path):
+        # Look up the content_hash of the asset from its path.
+        content_hash = self.paths.get(asset_path)
+        if not content_hash:
+            raise ValueError("Path is not an asset.")
+
+        # Look up the ModuleAsset based on the hash.
+        #asset = self.assets.get(content_hash=content_hash)
+        if not hasattr(self, '_asset_cache'):
+            self._asset_cache = { asset.content_hash: asset for asset in self.assets.all() }
+        asset = self._asset_cache[content_hash]
+
+        # Give the public URL of that asset.
+        return asset.get_absolute_url()
 
 
 class ModuleQuestion(models.Model):

@@ -435,7 +435,9 @@ def project(request, project_id):
     question_dict = { }
     first_start = True
     layout_mode = "rows"
-    for mq in project.root_task.module.questions.all().order_by('definition_order'):
+    for mq in project.root_task.module.questions.all()\
+        .select_related("answer_type_module")\
+        .order_by('definition_order'):
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
         if mq.spec.get("type") not in ("module", "module-set"):

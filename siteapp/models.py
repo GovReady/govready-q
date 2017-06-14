@@ -39,26 +39,12 @@ class User(AbstractUser):
         if not self._get_settings_task():
             return None
 
-        # initialize cache
+        # initialize cache by fetching all of the answers to the settings
+        # task, as a dict from question keys to Pythonic values.
         if not hasattr(self, "_settings"):
-            self._settings = { }
+            self._settings = self._get_settings_task().get_answers().answers
 
-        # return from cache
-        if key in self._settings:
-            return self._settings[key]
-
-        from guidedmodules.models import TaskAnswer
-        ans = TaskAnswer.objects.filter(
-            task=self._get_settings_task(),
-            question__key=key).first()
-        if ans is not None:
-            ans = ans.get_current_answer()
-            if ans.cleared:
-                ans = None
-            else:
-                ans = ans.get_value()
-        self._settings[key] = ans
-        return ans
+        return self._settings.get(key)
 
     def get_account_project(self, org):
         p = getattr(self, "_account_project", None)
@@ -393,10 +379,10 @@ class Project(models.Model):
         })
 
         # Fetch users with read access.
-        for pm in ProjectMembership.objects.filter(project=self):
+        for pm in ProjectMembership.objects.filter(project=self).select_related("user"):
             participants[pm.user]["is_member"] = True
             participants[pm.user]["is_admin"] = pm.is_admin
-        for task in Task.objects.filter(project=self):
+        for task in Task.objects.filter(project=self).select_related("editor"):
             participants[task.editor]["editor_of"].append(task)
         for ta in TaskAnswer.objects.filter(task__project=self, task__deleted_at=None):
             d = Discussion.get_for(self.organization, ta)
