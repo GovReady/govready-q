@@ -1041,13 +1041,31 @@ class ModuleAnswers:
 
     def render_output(self, additional_context):
         # Now that all questions have been answered, generate this
-        # module's output. The output is a set of documents.
-        def render_document(d, i):
-            ret = { }
-            ret.update(d) # keep all original fields (especially 'name', 'tab')
-            ret["html"] = render_content(d, self, "html", "%s output document %d" % (repr(self.module), i), additional_context)
-            return ret
-        return [ render_document(d, i) for i, d in enumerate(self.module.spec.get("output", [])) ]
+        # module's output. The output is a set of documents. The
+        # documents are lazy-rendered because not all of them may
+        # be used by the caller.
+        class LazyRenderedDocument:
+            def __init__(self, module_answers, document, index):
+                self.module_answers = module_answers
+                self.document = document
+                self.index = index
+                self.rendered_content = None
+            def __getitem__(self, key):
+                if key == "html":
+                    if self.rendered_content is None:
+                        try:
+                            self.rendered_content = render_content(self.document, self.module_answers, "html", "%s output document %d" % (repr(self.module_answers.module), self.index), additional_context)
+                        except Exception as e:
+                            print(e)
+                            raise
+                    return self.rendered_content
+                elif key in self.document:
+                    return self.document[key]
+                raise KeyError
+            def get(self, key, default=None):
+                if key == "html" or key in self.document:
+                    return self[key]
+        return [ LazyRenderedDocument(self, d, i) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
 from collections.abc import Mapping
 class TemplateContext(Mapping):
