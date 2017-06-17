@@ -1262,7 +1262,9 @@ class RenderedAnswer:
         elif self.question_type == "file":
             value = "<uploaded file: " + self.answer['url'] + ">"
         elif self.question_type == "module":
-            raise Exception() # not reachable because getattr is overridden
+            # This field is not present for module-type questions because
+            # the keys are attributes exposed by the answer.
+            raise AttributeError()
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)
@@ -1300,7 +1302,7 @@ class RenderedAnswer:
                     # Find the requested output document in the module.
                     for doc in answers.task.module.spec.get("output", []):
                         if doc.get("id") == item:
-                            return render_content(doc, answers, "html", "%s output document" % (repr(answers.module)), {})
+                            return render_content(doc, answers, "html", "%s output document %s" % (repr(answers.module), item), {})
 
                     # If the key doesn't match a document name we could throw an error but
                     # that's disruptive so we show an error in the document itself.
