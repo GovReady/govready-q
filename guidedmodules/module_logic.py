@@ -1026,6 +1026,7 @@ class ModuleAnswers:
         self.module = module
         self.task = task
         self.answers = answers
+        self._cached_questions = None
 
     def as_dict(self):
         if self.answers is None:
@@ -1038,6 +1039,11 @@ class ModuleAnswers:
         # Return a new ModuleAnswers instance that has imputed values added
         # and information about the next question(s) and unanswered questions.
         return evaluate_module_state(self, required, parent_context=parent_context)
+
+    def get_questions(self):
+        if self._cached_questions is None:
+            self._cached_questions = list(self.module.questions.order_by('definition_order'))
+        return self._cached_questions
 
     def render_output(self, additional_context):
         # Now that all questions have been answered, generate this
@@ -1096,7 +1102,7 @@ class TemplateContext(Mapping):
         if not self._module_questions_map.get(self.module_answers.module):
             from collections import OrderedDict
             module_questions = OrderedDict()
-            for q in self.module_answers.module.questions.order_by('definition_order'):
+            for q in self.module_answers.get_questions():
                 module_questions[q.key] = q
             self._module_questions_map[self.module_answers.module] = module_questions
         self._module_questions = self._module_questions_map[self.module_answers.module]
