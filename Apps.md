@@ -166,10 +166,11 @@ cat ./id_rsa_deploy_key.pub
 
 6) Make the key read only by leaving "Allow write access" field unchecked and click `Add the key` to save the key.
 
-7) Finally, `cat` the contents of the private key file to your terminal while replacing the line breaks. (The line breaks will confuse the json format.)
+7) Finally, `cat` the contents of the private key file to your terminal while replacing the line breaks. (The line breaks will confuse the json format.) This perl one-liner or the `jq` tool can be used to convert the raw key data into a JSON string:
 
 ```
 cat ./id_rsa_deploy_key | perl -ne 's/\n/\\n/g; print'
+cat ./id_rsa_deploy_key | jq -Rs
 ```
 
 8) Add the contents of the private key file as the value to the `ssh_key` of your spec file for the Modulesources as specified above.
