@@ -49,7 +49,7 @@ class OrganizationSubdomainMiddleware:
         main_landing_domain = s[1].split(":")[0]
 
         # Is this a request for our main landing domain? The main landing domain is not
-        # used when the "single-oroganization" mode is used.
+        # used when the "single-organization" mode is used.
         if request_host == main_landing_domain and not settings.SINGLE_ORGANIZATION_KEY:
             # This is one of our recognized main domain names. We serve
             # a special set of URLs for our main domain landing pages.
@@ -57,7 +57,7 @@ class OrganizationSubdomainMiddleware:
             return None # continue with normal request processing
 
         # Is this a request for an organization subdomain?
-        if request_host.endswith('.' + settings.ORGANIZATION_PARENT_DOMAIN) or settings.SINGLE_ORGANIZATION_KEY:
+        elif request_host.endswith('.' + settings.ORGANIZATION_PARENT_DOMAIN) or settings.SINGLE_ORGANIZATION_KEY:
             if not settings.SINGLE_ORGANIZATION_KEY:
                 # Get the subdomain from the request host.
                 subdomain = request_host[:-len(settings.ORGANIZATION_PARENT_DOMAIN)-1]
@@ -92,11 +92,22 @@ class OrganizationSubdomainMiddleware:
                     request.organization = org
                     return None
 
-        # The HTTP host did not match a domain we can serve or that the user is authenticated
-        # to see.
+        # The HTTP host did not match a domain we can serve.
+        else:
+            from django.core.exceptions import DisallowedHost
+            import json
+            parent_domain = ".".join(request_host.split(".")[1:]) or "<not applicable, domain has no parent>"
+            raise DisallowedHost(
+                ("You've requested a page at %s but this instance has been configured to only serve pages at '%s' and '*.%s'. "
+                    + "To serve pages on this domain, edit your local/environment.json and set the 'host' key to %s or set the 'organization-parent-domain' "
+                    + "key to %s.")
+                    % (request_host,
+                       main_landing_domain, settings.ORGANIZATION_PARENT_DOMAIN,
+                       json.dumps(request.get_host()), json.dumps(parent_domain)))
 
-        # Log the user out if they don't have permission to see this subdomain.
-        # Otherwise the login page redirects to the home page, and then we
+        # The user is not authenticated to see the organization subdomain page they requested.
+
+        # Log the user out. Otherwise the login page redirects to the home page, and then we
         # get back here and redirect to the login page, infinitely.
         if request.user.is_authenticated():
             import logging
