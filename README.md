@@ -1,27 +1,76 @@
 # Q (by GovReady)
 
-GovReady-Q does for cyber security compliance what tax prep software does for filing taxes.
+GovReady-Q is an open source, self-service portal to help teams build and operate compliant IT systems.
 
-GovReady-Q helps system integrators and small businesses programmatically generate and maintain their System Security Plan (SSP) and other compliance artifacts. GovReady-Q guides your team step-by-step through FISMA’s NIST Risk Management Framework Authorization and Accreditation (A&A) with easy-to-use "compliance apps" that interact with you and each other to generate policies, plans, and evidence to impress your auditors.
+GovReady-Q offers easy-to-use "compliance apps" that manage and generate documentation of your IT systems. Compliance apps represents system components, organization processes and team roles. When using GovReady-Q, your IT project teams select "apps" from a compliance store. The apps interactively teach security and ask simple questions about your software and system. As you pick apps and collaboratively answers questions with your team, GovReady-Q analyzes tracks your system's compliance and maintains human and machine-readable versions of your compliance documentation.
 
-When using GovReady-Q, your team selects "apps" from a compliance store. Apps represents system components, organization processes and team roles. Our open source Expert System uses the apps to interactively teach security and ask simple questions about your software and system. As your team collaboratively answers questions, the Expert System analyzes compliance and maintains human and machine-readable versions of your SSP and compliance artifacts.
+GovReady-Q can be used on its own or as a compliment to an organization's existing GRC software providing step-by-step guideance and pre-written control implementation descriptions.
 
-GovReady-Q works with and compliments existing cyber security GRC software with user-friendly assessments, inline security training and tutorials you can customize to take your system teams step-by-step through implementing security controls and preparing control descriptions and evidence.
+GovReady-Q is in public beta and recommended for innovators and early adopters interested in furthering the platform's development.
+
+Our vision is to make Governance, Risk and Compliance easy and pratical for small businesses, developers, managers, and others who are not security or compliance experts.
 
 GovReady-Q is open source and incorporates the emerging [OpenControl](http://open-control.org) data standard for re-usable compliance content.
 
 [Join our mailing list](http://eepurl.com/cN7oJL) and stay informed of developments.
 
-# Target Audience
-GovReady-Q was made by developers for developers who value security, but never want to hear again better technology "can't be used because its not compliant."
+# Installation / Deployment
 
-Our target audience is forward thinking system integrators, security and compliance teams who need faster, modern cyber security assessments and compliance aligned with their Agile practices and DevOps culture and automation. They are tired of writing SSP's by hand and need a more scale-able, self-service approach to compliance. They want to contribute to and benefit from a supply chain of shared, re-usable, Don't Repeat Yourself compliance content.  
+GovReady-Q can be installed by [cloning the GitHub repository](https://github.com/govready/govready-q) or launching the [dockerized version](https://hub.docker.com/r/govready/govready-q/).
 
-The compliance apps and Expert System are under heavy, active development. GovReady Q should only be used at this time by those capable and comfortable of working with pre-release software.
+GovReady-Q will create an SQLite3 database by default and can be configured to work with Postgres, MariaDB, or MySQL.
 
----
+GovReady-Q currently installs with a small set of compliance apps primarily for demonstration purposes. Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principle benefit of compliance apps is their modularization and reusability.
 
-## Development
+To install/deploy on a fresh machine, create a Unix user named "site" and in its home directory run:
+
+	git clone https://github.com/GovReady/govready-q q
+	cd q
+	mkdir local
+
+Then run:
+
+	sudo deployment/setup.sh
+
+(If you get a gateway error from nginx, you may need to `sudo service supervisor restart` to start the uWSGI process.)
+
+If this is truly on a new machine, it will create a new SQlite database. You'll also see some output instructing you to create a file named `local/environment.json`. Make it look like this:
+
+	{
+	  "debug": true,
+	  "host": "q.govready.com",
+	  "organization-parent-domain": "govready.com",
+	  "organization-seen-anonymously": false,
+	  "https": true,
+	  "secret-key": "something random here",
+	  "static": "/root/public_html"
+	}
+
+You can copy the `secret-key` from what you see --- it was generated to be unique.
+
+For production you might also want to make other changes to the `environment.json` file:
+
+* Set `debug` to false.
+* Set `module-repos` to access module definitions not in this repository, see below.
+* Add the administrators for unhandled server error emails (a list of pairs of [name, address]):
+
+	"admins": [["Name", "email@domain.com"], ...]
+
+You must set up the first organization (i.e. end-user/client) domain from the Django admin. Log into http://localhost:8000/admin with the superuser account that you created above. Add a Siteapp -> Organization (http://localhost:8000/admin/siteapp/organization/add/). Then visit the site at subdomains.localhost:8000 (using the subdomain for the organization you just created) and log in using the super user credentials again. (If you are using a domain other than `localhost`, then you must set it as the value of `"organization-parent-domain"` in the `local/environment/json` file.) When you log in for the first time it will ask you questions about the user and about the organization.
+
+To update, run:
+
+	sudo -iu site /home/site/q/deployment/update.sh
+	   (as root, or...)
+
+	~/q/deployment/update.sh
+	   (...as the 'site' user, or...)
+
+	killall -HUP uwsgi_python3
+	   (...to just restart the Python process (works as root & site user))
+
+
+# Development
 
 Q is developed in Python 3 on top of Django.
 
@@ -57,61 +106,6 @@ Once the modules are loaded, you can create the first "project" a.k.a. "system" 
 
 After logging in as the superuser, you will probably want to invite non-superusers into the organization from within the application (from organization settings or project settings) and then possibly switch to that account. The debug server is configured to dump all outbound emails to the console. So if you "invite" others to join you within the application, you'll need to go to the console to get the invitation acceptance link.
 
-## Testing
-
-To run the integration tests you'll also need to install `chromedriver` e.g., `brew install chromedriver`
-
-The test suite is run with: `./manage.py test`
-
-We have continuous integration set up with CircleCI at https://circleci.com/gh/GovReady/govready-q.
-
-## Interactive Deployment
-
-To deploy, on a fresh machine, create a Unix user named "site" and in its home directory run:
-
-	git clone https://github.com/GovReady/govready-q q
-	cd q
-	mkdir local
-
-Then run:
-
-	sudo deployment/setup.sh
-
-(If you get a gateway error from nginx, you may need to `sudo service supervisor restart` to start the uWSGI process.)
-
-If this is truly on a new machine, it will create a new Sqlite database. You'll also see some output instructing you to create a file named `local/environment.json`. Make it look like this:
-
-	{
-	  "debug": true,
-	  "host": "q.govready.com",
-	  "organization-parent-domain": "govready.com",
-	  "organization-seen-anonymously": false,
-	  "https": true,
-	  "secret-key": "something random here",
-	  "static": "/root/public_html"
-	}
-
-You can copy the `secret-key` from what you see --- it was generated to be unique.
-
-For production you might also want to make other changes to the `environment.json` file:
-
-* Set `debug` to false.
-* Set `module-repos` to access module definitions not in this repository, see below.
-* Add the administrators for unhandled server error emails (a list of pairs of [name, address]):
-
-	"admins": [["Name", "email@domain.com"], ...]
-
-To update, run:
-
-	sudo -iu site /home/site/q/deployment/update.sh
-	   (as root, or...)
-
-	~/q/deployment/update.sh
-	   (...as the 'site' user, or...)
-
-	killall -HUP uwsgi_python3
-	   (...to just restart the Python process (works as root & site user))
-
 # Apps and Module Content
 
 Content in Q is organized around apps and modules:
@@ -126,6 +120,16 @@ See [Apps.md](Apps.md) for documentation on creating apps and having them appear
 See [Schema.md](Schema.md) for documentation on writing modules, which contain questions.
 
 # Testing and Generating Screenshots
+
+## Testing
+
+To run the integration tests you'll also need to install `chromedriver` e.g., `brew install chromedriver`
+
+The test suite is run with: `./manage.py test`
+
+We have continuous integration set up with CircleCI at https://circleci.com/gh/GovReady/govready-q.
+
+## Generating screenshots
 
 It is possible to create a PDF containing screenshots of a module being completed automatically:
 
