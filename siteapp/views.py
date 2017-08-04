@@ -286,7 +286,7 @@ def app_store_item(request, app_namespace, app_name):
 
             if len(folders) > 0 and ("q" not in request.GET):
                 add_to_folder = ChoiceField(
-                    choices=[(f.id, f) for f in folders] + [("", "Add to New Folder")],
+                    choices=[(f.id, f) for f in folders] + [("", "Create a new folder")],
                     required=False,
                     label="Add this app to which project folder?",
                     widget=RadioSelect)
@@ -340,7 +340,7 @@ def app_store_item(request, app_namespace, app_name):
                         else:
                             folder = Folder.objects.create(
                                 organization=request.organization,
-                                title="New Folder")
+                                title=app_catalog_info["title"] + " started on " + timezone.now().strftime("%x %X"))
                     else:
                         # This app is going to answer a question.
                         # Don't put it into a folder.
