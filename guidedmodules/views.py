@@ -465,9 +465,9 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
-        "placeholder_answer": render_markdown_field("placeholder", "text"), # Render Jinja2 template but don't turn Markdown into HTML.
         "title": title,
         "prompt": prompt,
+        "placeholder_answer": render_markdown_field("placeholder", "text") or "", # Render Jinja2 template but don't turn Markdown into HTML.
         "reference_text": render_markdown_field("reference_text", "html"),
         "history": taskq.get_history() if taskq else None,
         "answer_obj": answer,
