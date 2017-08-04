@@ -29,7 +29,7 @@ The `instance-name` is a template to generate a dynamic title for in-progress an
 
 For modules that define the root of an application, `icon` specifies a static asset (in the `assets` directory) to use as an application icon.
 
-In addition, a Module must have an `introduction` document and a list of one or more `output` documents. For example:
+In addition, a Module may have an `introduction` document (for projects, the introduction appears at the top of the project page; for other module types, it appears as an implicit initial interstitial) and a list of one or more `output` documents. For example:
 
 	introduction:
 	  format: markdown

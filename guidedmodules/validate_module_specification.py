@@ -33,8 +33,9 @@ def validate_module(spec):
 
     # 'introduction' fields are an alias for an interstitial
     # question that comes before all other questions, and since
-    # it is first it will be asked first
-    if "introduction" in spec:
+    # it is first it will be asked first. Except in projects,
+    # where it's just a renderable field.
+    if "introduction" in spec and spec.get("type") != "project":
         q = {
             "id": "_introduction",
             "title": "Introduction",

@@ -210,6 +210,10 @@
       {{project.title}}
     </h1>
 
+    {% if project.root_task.module.spec.introduction %}
+      {{project.root_task.render_introduction|safe}}
+    {% endif %}
+
     {% if project.root_task.module.spec.is_app_stub %}
       {# This project is tied to an app that has not yet been imported. #}
       <h2>Activate App</h2>

@@ -515,6 +515,10 @@ class Task(models.Model):
             return self.project.title
         return self.render_simple_string("instance-name", self.module.title)
 
+    def render_introduction(self):
+        # Project tasks have an introduction field.
+        return self.render_field("introduction")
+
     def render_invitation_message(self):
         return self.render_simple_string("invitation-message",
             'Can you take over answering %s for %s and let me know when it is done?'
