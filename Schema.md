@@ -443,7 +443,7 @@ The answer to one question may provide the answer to another. In such cases, the
 
 This example says that if the answer to `q1` is `no`, then the answer to this question is `don't know`.
 
-The `condition` is a [Jinja2 expression](http://jinja.pocoo.org/docs/dev/templates/#expressions). Any question can be referred to in the expression (by its `id`). Questions are tested on their internal values. For `choice` and `multiple-choice` questions, their values are their `key`s, not their label text, and `multiple-choice` questions are _lists_ of keys.
+The `condition` is a [Jinja2 expression](http://jinja.pocoo.org/docs/dev/templates/#expressions). Any question can be referred to in the expression (by its `id`). Questions are tested on their internal values. For `choice` and `multiple-choice` questions, their values are their `key`s, not their label text, and `multiple-choice` questions are _lists_ of keys. If `condition` is omitted, the imputed value is always taken (i.e. the condition is implicitly met).
 
 The `value` provided must be a valid value for the question type it is a part of. For `choice` questions, the value must be a choice `key`, not the label text. For `multiple-choice` questions, the value must be a _list_ of keys.
 

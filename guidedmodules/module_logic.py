@@ -628,13 +628,14 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
     # All questions mentioned in the impute conditions become dependencies.
     # And when impute values are expressions, then similarly for those.
     for rule in question.spec.get("impute", []):
-        for qid in get_jinja2_template_vars(
-                r"{% if " + rule["condition"] + r" %}...{% endif %}"
-                ):
-            if rule.get("value") is None:
-                ret.append(("skip-condition", qid))
-            else:
-                ret.append(("impute-condition", qid))
+        if "condition" in rule:
+            for qid in get_jinja2_template_vars(
+                    r"{% if " + rule["condition"] + r" %}...{% endif %}"
+                    ):
+                if rule.get("value") is None:
+                    ret.append(("skip-condition", qid))
+                else:
+                    ret.append(("impute-condition", qid))
 
         if rule.get("value-mode") == "expression":
             for qid in get_jinja2_template_vars(
@@ -660,11 +661,15 @@ def run_impute_conditions(conditions, context):
     # something was imputed or not.
     env = Jinja2Environment()
     for rule in conditions:
-        condition_func = env.compile_expression(rule["condition"])
-        try:
-            value = condition_func(context)
-        except:
-            value = None
+        if "condition" in rule:
+            condition_func = env.compile_expression(rule["condition"])
+            try:
+                value = condition_func(context)
+            except:
+                value = None
+        else:
+            value = True
+
         if value:
             # The condition is met. Compute the imputed value.
             if rule.get("value-mode", "raw") == "raw":
