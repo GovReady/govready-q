@@ -1350,6 +1350,28 @@ class RenderedAnswer:
                     return make_key_error(item, "an output document in " + answers.task.module.spec["title"])
             return LazyRenderer()
 
+    @property
+    def choices_selected(self):
+        # Return the dicts for each choice that is a part of the answer.
+        if self.question_type == "multiple-choice":
+            return [
+                choice
+                for choice in self.question.spec["choices"]
+                if self.answer is not None and choice["key"] in self.answer
+            ]
+        raise AttributeError
+
+    @property
+    def choices_not_selected(self):
+        # Return the dicts for each choice that is not a part of the answer.
+        if self.question_type == "multiple-choice":
+            return [
+                choice
+                for choice in self.question.spec["choices"]
+                if choice["key"] not in self.answer or self.answer is None
+            ]
+        raise AttributeError
+
     def __bool__(self):
         # How the template converts a question variable to
         # a boolean within an expression (i.e. within an if).
