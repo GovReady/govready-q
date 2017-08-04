@@ -462,6 +462,8 @@ The `value` field can be evaluated as a [Jinja2 expression](http://jinja.pocoo.o
         value: q0
         value-mode: expression
 
+`value-mode` can also be `template` to evaluate the value as a Jinja2 template, which will yield a text value.
+
 In both conditions and `expression`-type values, as well as in documents, the variables you can use are:
 
 * `id`s of questions in the module

@@ -643,6 +643,10 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
                     ):
                 ret.append(("impute-value", qid))
 
+        if rule.get("value-mode") == "template":
+            for qid in get_jinja2_template_vars(rule["value"]):
+                ret.append(("impute-value", qid))
+
     # Other dependencies can just be listed.
     for qid in question.spec.get("ask-first", []):
         ret.append(("ask-first", qid))
@@ -687,6 +691,13 @@ def run_impute_conditions(conditions, context):
                 elif hasattr(value, "as_raw_value"):
                     # RenderedProject, RenderedOrganization
                     value = value.as_raw_value()
+            elif rule.get("value-mode", "raw") == "template":
+                env = Jinja2Environment(autoescape=True)
+                try:
+                    template = env.from_string(rule["value"])
+                except jinja2.TemplateSyntaxError as e:
+                    raise ValueError("There was an error loading the template %s: %s" % (rule["value"], str(e)))
+                value = template.render(context)
             else:
                 raise ValueError("Invalid impute condition value-mode.")
 

@@ -142,6 +142,11 @@ def validate_question(mspec, spec):
                 env.compile_expression(rule["value"])
             except Exception as e:
                 invalid_rule("Impute condition value %s is an invalid Jinja2 expression: %s." % (repr(rule["value"]), str(e)))
+        if rule.get("value-mode") == "template":
+            try:
+                env.from_string(rule["value"])
+            except Exception as e:
+                invalid_rule("Impute condition value %s is an invalid Jinja2 template: %s." % (repr(rule["value"]), str(e)))
     
     return spec
 
