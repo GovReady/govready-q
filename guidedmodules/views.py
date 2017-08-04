@@ -5,6 +5,8 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 
+import re
+
 from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 import guidedmodules.module_logic as module_logic
 from discussion.models import Discussion
@@ -442,7 +444,17 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
         if existing_answer and q.spec["type"] == "longtext":
             import CommonMark
             existing_answer = CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(existing_answer))
-    
+
+    # What's the title/h1 of the page and the rest of the prompt? Render the
+    # prompt field. If it starts with a paragraph, turn that paragraph into
+    # the title.
+    title = q.spec["title"]
+    prompt = render_markdown_field("prompt", "html")
+    m = re.match(r"^<p>(.*?)</p>\s*", prompt)
+    if m:
+        title = m.group(1)
+        prompt = prompt[m.end():]
+
     # Get a default answer for this question. Render Jinja2 template, but don't turn
     # Markdown into HTML for plain text fields. For longtext fields, turn it into
     # HTML because the WYSIWYG editor is initialized with HTML.
@@ -453,8 +465,9 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
-        "prompt": render_markdown_field("prompt", "html"),
         "placeholder_answer": render_markdown_field("placeholder", "text"), # Render Jinja2 template but don't turn Markdown into HTML.
+        "title": title,
+        "prompt": prompt,
         "reference_text": render_markdown_field("reference_text", "html"),
         "history": taskq.get_history() if taskq else None,
         "answer_obj": answer,

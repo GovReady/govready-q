@@ -239,7 +239,9 @@ The question `id` is used to refer to this Question in other questions and in th
 
 The `title` is used to describe the Question in places where a long-form prompt would not be appropriate.
 
-The `prompt` is the text the user is prompted with when presented with the question. The prompt is rendered like other Module documents but it is always specified in `markdown` format (see Documents). A question may optionally have a `reference_text` field for additional content to show with the question, and like the `prompt` it is a Markdown template.
+The `prompt` is the text the user is prompted with when presented with the question. The prompt is rendered like other Module documents but it is always specified in `markdown` format (see Documents). The first line (paragraph) of the prompt is shown in larger, bold type.
+
+A question may optionally have a `reference_text` field for additional content to show with the question, and like the `prompt` it is a Markdown template.
 
 Removing a question, changing a question type, and other changes as noted below are incompatible changes (see Updating Modules).
 

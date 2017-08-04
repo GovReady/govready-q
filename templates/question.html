@@ -80,7 +80,7 @@ label:hover .onhover { display: inline; }
       </div>
     {% endif %}
 
-    <h1>{{q.spec.title|safe}}</h1>
+    <h1>{{title|safe}}</h1>
 
     <div id="question">
         <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
