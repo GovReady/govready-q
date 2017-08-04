@@ -11,6 +11,11 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {% endblock %}
 
 {% block body %}
+
+{% if q.spec.type == "longtext" %}
+  <link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
+{% endif %}
+
 <style>
 h1 {
   margin: 4px 0 18px 0;
@@ -20,6 +25,7 @@ h1 {
 
 .form-control {
   font-size: 14pt;
+  height: 34pt;
 }
 
 #question {
@@ -43,6 +49,12 @@ h1 {
     display: block; /* so that horizontal auto margin centers */
     margin: 30px auto;
   }
+{% endif %}
+
+{% if q.spec.type == "longtext" %}
+.ql-container {
+  font-size: 14pt !important; /* override default quill style */
+}
 {% endif %}
 
 label .onhover { display: none; }
@@ -465,7 +477,6 @@ label:hover .onhover { display: inline; }
 {% include "task-question-debug-links.html" %}
 
 {% if q.spec.type == "longtext" %}
-  <link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
   <script src="{% static "vendor/quill/quill.min.js" %}"></script>
   <script src="{% static "js/quill_commonmark.js" %}"></script>
 {% endif %}
