@@ -1434,10 +1434,8 @@ class RenderedAnswer:
         raise TypeError("Answer of type %s is not iterable." % self.question_type)
 
     def __len__(self):
-        if self.answer is None:
-            raise TypeError("Skipped answer has no length.")
-
         if self.question_type in ("multiple-choice", "module-set", "external-function"):
+            if self.answer is None: return 0
             return len(self.answer)
 
         raise TypeError("Answer of type %s has no length." % self.question_type)
