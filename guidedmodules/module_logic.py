@@ -1075,11 +1075,24 @@ class ModuleAnswers:
             def __getitem__(self, key):
                 if key == "html":
                     if self.rendered_content is None:
+                        # For errors, what is the name of this document?
+                        if "id" in self.document:
+                            doc_name = self.document["id"]
+                        else:
+                            doc_name = "at index " + str(self.index)
+                            if "title" in self.document:
+                                doc_name = repr(self.document["title"]) + " (" + doc_name + ")"
+                        doc_name = "%s output document %s" % (self.module_answers.module.key, doc_name)
+
+                        # Try to render it.
                         try:
-                            self.rendered_content = render_content(self.document, self.module_answers, "html", "%s output document %d" % (repr(self.module_answers.module), self.index), additional_context)
+                            self.rendered_content = render_content(self.document, self.module_answers, "html", doc_name, additional_context)
                         except Exception as e:
-                            print(e)
-                            raise
+                            # Put errors into the output. Errors should not occur if the
+                            # template is designed correctly.
+                            import html
+                            self.rendered_content = "<p class=text-danger>" + html.escape(str(e)) + "</p>"
+
                     return self.rendered_content
                 elif key in self.document:
                     return self.document[key]
@@ -1325,30 +1338,35 @@ class RenderedAnswer:
         # Return a link to edit this question.
         return self.task.get_absolute_url_to_question(self.question)
 
-    def make_key_error(self, key, context):
-        return "<p class='text-danger'>Template Error: {key} is not the name of {context}.</p>".format(
-            key=key,
-            context=context,
-        )
-
     @property
     def output_documents(self):
-        if self.question_type == "module":
-            # Return a class that lazy-renders output documents on request.
-            answers = self.answer
-            make_key_error = self.make_key_error
-            class LazyRenderer:
-                def __getattr__(self, item):
-                    # Find the requested output document in the module.
-                    for doc in answers.task.module.spec.get("output", []):
-                        if doc.get("id") == item:
-                            return render_content(doc, answers, "html", "%s output document %s" % (repr(answers.module), item), {})
+        def make_error(item, msg):
+            import html
+            return "<p class='text-danger'>Template Error: output document %s in %s could not be rendered: %s</p>" % (
+                item,
+                html.escape(self.question.spec["id"]
+                    + ("" if self.answer is None else "=>" + str(answers.task.module))),
+                html.escape(str(msg)))
 
-                    # If the key doesn't match a document name we could throw an error but
-                    # that's disruptive so we show an error in the document itself.
-                    #raise AttributeError()
-                    return make_key_error(item, "an output document in " + answers.task.module.spec["title"])
-            return LazyRenderer()
+        # Return a class that lazy-renders output documents on request.
+        answer = self.answer
+        class LazyRenderer:
+            def __getattr__(self, item):
+                if answer is None:
+                    return make_error(item, "The question is not answered.")
+
+                try:
+                    # Find the requested output document in the module.
+                    for doc in answer.task.module.spec.get("output", []):
+                        if doc.get("id") == item:
+                            return render_content(doc, answer, "html", "%s output document %s" % (repr(answer.module), item), {})
+                except AttributeError as e:
+                    return make_error(item, e)
+
+                # If the key doesn't match a document name we could throw an error but
+                # that's disruptive so we show an error in the document itself.
+                return make_error(item, "That is not the name of an output document.")
+        return LazyRenderer()
 
     @property
     def choices_selected(self):
