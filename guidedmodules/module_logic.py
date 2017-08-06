@@ -1345,7 +1345,7 @@ class RenderedAnswer:
             return "<p class='text-danger'>Template Error: output document %s in %s could not be rendered: %s</p>" % (
                 item,
                 html.escape(self.question.spec["id"]
-                    + ("" if self.answer is None else "=>" + str(answers.task.module))),
+                    + ("" if self.answer is None else "=>" + str(self.answer.task.module))),
                 html.escape(str(msg)))
 
         # Return a class that lazy-renders output documents on request.
