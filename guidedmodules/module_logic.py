@@ -1459,8 +1459,26 @@ class RenderedAnswer:
             else:
                 # The question was skipped -- i.e. we have no ModuleAnswers for
                 # the question that this RenderedAnswer represents. But we want
-                # to gracefully represent the item attribute as skipped too.
-                tc = TemplateContext(ModuleAnswers(self.question.answer_type_module, None, {}), self.escapefunc, parent_context=self.parent_context)
+                # to gracefully represent the inner item attribute as skipped too.
+                # If self.question.answer_type_module is set, then we know the
+                # inner Module type, so we can create a dummy instance that
+                # represents an unanswered instance of the Module.
+                if self.question.answer_type_module is not None:
+                    tc = TemplateContext(ModuleAnswers(self.question.answer_type_module, None, {}), self.escapefunc, parent_context=self.parent_context)
+                else:
+                    # It is None when the question specifies a "protocol", in
+                    # which case we don't know what questions the inner Module
+                    # would have. Return a value that acts like a dict but always
+                    # yields empty values.
+                    class DD:
+                        def __init__(self, path):
+                            self.path = path
+                        def __html__(self):
+                            import html
+                            return html.escape("<not answered>")
+                        def __getattr__(self, key):
+                            return DD(self.path+[key])
+                    return DD([self.question.spec['id']])
             return tc[item]
 
         # For external-function and "raw" question types, the answer value is any
