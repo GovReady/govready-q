@@ -52,9 +52,15 @@ h1 {
 {% endif %}
 
 {% if q.spec.type == "longtext" %}
-.ql-container {
+#question .ql-container {
   font-size: 14pt !important; /* override default quill style */
 }
+#question .ql-container p {
+  margin-bottom: .75em;
+}
+  #question .ql-container p:last-child {
+    margin-bottom: 0;
+  }
 {% endif %}
 
 label .onhover { display: none; }
