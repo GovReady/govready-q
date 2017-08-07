@@ -760,7 +760,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # nothing to really test in terms of functionality, but check that
         # page elements are present
         self.assertRegex(self.browser.title, "Next Question: interstitial")
-        self.assertInNodeText("This is an interstitial.", "#question-prompt")
+        self.assertInNodeText("This is an interstitial.", "h1")
 
         self.click_element("#save-button")
         var_sleep(.5)

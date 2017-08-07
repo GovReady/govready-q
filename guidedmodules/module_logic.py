@@ -229,7 +229,7 @@ def get_question_context(answers, question):
             "key": q.key,
             "title": q.spec['title'],
             "can_link": True, # any non-imputed (checked above) question can be re-answered
-            "skipped": answers.answers[q.key] is not None,
+            "skipped": (answers.answers[q.key] is None) and (q.spec["type"] != "interstitial"),
             "answered": True,
             "is_this_question": (question is not None) and (q.key == question.key),
         })
