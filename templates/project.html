@@ -365,7 +365,7 @@
                     {% endif %}
                     
                   {% else %}
-                    {# This is a module-type question that has been started. Icon, title, and link are for the started task. There is no list of answered modules. #}
+                    {# This is a module-type question that has been started. Icon, title, and link are for the started task. There is no list of answered modules. Unless rec.question.spec.app_overrides_name_and_icon is false. #}
 
                     {% for t in rec.tasks %} {# there's just one #}
                     <a href="{{t.get_absolute_url}}">
@@ -376,7 +376,7 @@
 
                       <div class="question-icon">
                         <img
-                          {% if t.get_app_icon_url %}
+                          {% if t.get_app_icon_url and rec.question.spec.app_overrides_name_and_icon is None %}
                           src="{{t.get_app_icon_url}}"
                           {% elif rec.icon %}
                           src="{{rec.icon}}"
@@ -394,7 +394,11 @@
                       {% endif %}
 
                       <div class="question-title">
-                        {{t.title}}
+                        {% if rec.question.spec.app_overrides_name_and_icon is None %}
+                          {{t.title}}
+                        {% else %}
+                          {{rec.question.spec.title}}
+                        {% endif %}
 
                         {% if layout_mode == "rows" %}
                           {% if t.is_finished %}
