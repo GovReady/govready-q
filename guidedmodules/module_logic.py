@@ -220,25 +220,17 @@ def get_question_context(answers, question):
     # before and after that point accurately reflect the questions the user
     # actually answered before and after that point.
     context = []
-    for ans in answers.task.answers.order_by('created').select_related('question'):
-        # We may have a TaskAnswer record (to attach a Discussion to, for
-        # instance) but no actual answers yet.
-        if not ans.has_answer():
-            continue
-
+    for ans in answers.task.answers\
+        .filter(question__key__in=set(answers.answers)-answers.was_imputed)\
+        .order_by('created')\
+        .select_related('question'):
         q = ans.question
-
-        # Don't show questions that are overridden by imputed values.
-        if q.key in answers.was_imputed:
-            continue
-
-        # Add this record.
         context.append({
             "key": q.key,
             "title": q.spec['title'],
             "can_link": True, # any non-imputed (checked above) question can be re-answered
-            "skipped": ans.get_current_answer().is_skipped(),
-            "answered": ans.has_answer(),
+            "skipped": answers.answers[q.key] is not None,
+            "answered": True,
             "is_this_question": (question is not None) and (q.key == question.key),
         })
 
