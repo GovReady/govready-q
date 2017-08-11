@@ -16,6 +16,9 @@ class User(AbstractUser):
     notifemails_last_notif_id = models.PositiveIntegerField(default=0, help_text="The primary key of the last notifications.Notification sent by email.")
     notifemails_last_at = models.DateTimeField(blank=True, null=True, default=None, help_text="The time when the last notification email was sent to the user.")
 
+    api_key_ro = models.CharField(max_length=32, blank=True, null=True, unique=True, help_text="The user's API key with read-only permission.")
+    api_key_rw = models.CharField(max_length=32, blank=True, null=True, unique=True, help_text="The user's API key with read-write permission.")
+
     # Methods
 
     def __str__(self):
@@ -129,6 +132,11 @@ class User(AbstractUser):
                 .format(color1=color1, color2=color2),
             "text": self.username[0:2].upper(),
             }
+
+    def reset_api_keys(self):
+       self.api_key_ro = crypto.get_random_string(32)
+       self.api_key_rw = crypto.get_random_string(32)
+       self.save()
 
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):

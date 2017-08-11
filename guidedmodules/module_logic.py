@@ -699,18 +699,26 @@ def run_impute_conditions(conditions, context):
             return (value,)
     return None
 
-def evaluate_expression(task, expr):
-    # Compile the expression as a Jinja2 expression.
-    env = Jinja2Environment()
-    expr = env.compile_expression(expr)
-
+def evaluate_expression(task, expr, unwrap=True):
     # Form a TemplateContext for the task in which the expression is evaluated.
     context = TemplateContext(
         task.get_answers().with_extended_info(),
         lambda v : str(v), root=True)
 
-    # Evaluate the expression.
-    value = expr(context)
+    if expr.strip():
+        # Compile the expression as a Jinja2 expression.
+        env = Jinja2Environment()
+        expr = env.compile_expression(expr)
+
+        # Evaluate the expression.
+        value = expr(context)
+    else:
+        # The query expression is empty, so return the task
+        # answers.
+        value = task.get_answers()
+
+    if not unwrap:
+        return value
 
     # If it returned a RenderedAnswer, unwrap it to the Python data structure.
     if isinstance(value, RenderedAnswer):
@@ -862,7 +870,7 @@ class validator:
 
     def validate_text(question, value):
         if not isinstance(value, str):
-            raise ValueError("Invalid data type (%s)." % type(value))
+            raise ValueError("Invalid data type (%s)." % type(value).__name__)
         value = value.strip()
         if value == "":
             raise ValueError("Value is empty.")

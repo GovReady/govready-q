@@ -10,6 +10,7 @@ import guidedmodules.views
 urlpatterns = [
     url(r"^$", views_landing.homepage),
     url(r"^welcome/(?P<org_slug>.*)$", views_landing.org_welcome_page),
+    url(r'^api/v1/organizations/(?P<org_slug>.*)/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
 
     # serve user file uploads from the main domain because the raw
     # storage data is not associated with an organization

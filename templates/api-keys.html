@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+Your API Keys
+{% endblock %}
+
+{% block head %}
+<style>
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">API Keys</li>
+{% endblock %}
+
+{% block body %}
+
+	<h1>Your API Keys</h1>
+
+	<p>Your API keys allow you to programmatically access and update your system data on Q.</p>
+
+	<p>Your API keys are:</p>
+
+	<p>Read-only key: <code>{{api_key_ro}}</code>
+	<br>Your read-only key gives external tools the ability to see anything you can see on Q but those tools cannot make any changes.</p>
+
+	<p>Full access key: <code>{{api_key_rw}}</code>
+	<br>Your full access key gives external tools the ability to see and make changes to anything you can see and make changes to on Q.</p>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

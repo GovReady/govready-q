@@ -25,12 +25,14 @@ urlpatterns = [
     url(r'^projects/(\d+)/__export$', views.export_project, name="export_project"),
     url(r'^projects/(\d+)/__import$', views.import_project_data, name="import_project_data"),
     url(r'^projects/(\d+)/(?:[\w\-]+)$', views.project), # must be last because regex matches some previous URLs
-    url(r'^projects/(\d+)/(?:[\w\-]+)/api$', views.project_api), # must be last because regex matches some previous URLs
     url(r'^projects/folders/(\d+)/(?:[\w\-]+)$', views.folder_view),
     url(r'^__rename_folder$', views.rename_folder, name="rename_folder"),
     url(r'^__set_folder_description$', views.set_folder_description, name="set_folder_description"),
     url(r'^__new_folder$', views.new_folder, name="new_folder"),
     url(r'^__delete_folder$', views.delete_folder, name="delete_folder"),
+
+    # api
+    url(r'^api-keys$', views.show_api_keys, name="show_api_keys"),
 
     # invitations
     url(r'^invitation/_send$', views.send_invitation, name="send_invitation"),
