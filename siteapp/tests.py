@@ -159,19 +159,37 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         load_modules().handle()
 
         # Create a default user that is a member of the organization.
+        # Log the user into the test client.
         from siteapp.models import User, ProjectMembership
         self.user = User.objects.create(username="me")
         self.user.set_password("1234")
         self.user.save()
+        self.user.reset_api_keys()
+        self.client.login(username="me", password="1234")
 
         # Create the Organization.
         from siteapp.models import Organization
-        org = Organization.create(name="Our Organization", subdomain="testorg",
+        self.org = Organization.create(name="Our Organization", subdomain="testorg",
             admin_user=self.user)
+
+    def client_get(self, *args, domain=None, **kwargs):
+        # Wrap the Django test client's get/post functions that sets the HTTP
+        # Host: header so that the request gets to the organization site.
+        assert domain in ("LANDING", "ORG")
+        if domain == "LANDING":
+            host = settings.LANDING_DOMAIN
+        else:
+            host = self.org.subdomain + "." + settings.ORGANIZATION_PARENT_DOMAIN
+        resp = self.client.get(
+            *args,
+            **kwargs,
+            HTTP_HOST=host)
+        self.assertEqual(resp.status_code, 200, msg=repr(resp))
+        return resp # .content.decode("utf8")
 
     def url(self, path):
         # Within this test, we only generate URLs for the organization subdomain.
-        return super().url("testorg", path)
+        return super().url(self.org.subdomain, path)
 
     def _login(self, username="me", password="1234"):
         # Fill in the login form and submit.
@@ -190,6 +208,10 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#start-project")
         var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
+
+        from siteapp.models import Project
+        m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
+        self.current_projet = Project.objects.get(id=m.group(1))
 
     def _start_task(self):
         # Assumes _new_project() just finished.
@@ -445,6 +467,21 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
+    def _test_api_get(self, module_id, question_id, expected_value):
+        resp = self.client_get(
+                "/api/v1/organizations/" + self.org.subdomain + "/projects/" + str(self.current_projet.id) + "/answers",
+                domain="LANDING",
+                HTTP_AUTHORIZATION=self.user.api_key_rw)
+        resp = resp.json()
+        self.assertTrue(isinstance(resp, dict))
+        self.assertEqual(resp.get("status"), "ok")
+        self.assertIn("value", resp)
+        self.assertTrue(isinstance(resp["value"], dict))
+        self.assertIn(module_id, resp["value"])
+        self.assertTrue(isinstance(resp["value"][module_id], dict))
+        self.assertIn(question_id, resp["value"][module_id])
+        self.assertEqual(resp["value"][module_id][question_id], expected_value)
+
     def test_questions_text(self):
         # Log in and create a new project.
         self._login()
@@ -461,17 +498,20 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#inputctrl", "This is some text.")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get("question_types_text", "q_text", "This is some text.")
 
         # text w/ default
         self.assertRegex(self.browser.title, "Next Question: text_with_default")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get("question_types_text", "q_text_with_default", "I am a kiwi.")
 
         # password
         self.assertRegex(self.browser.title, "Next Question: password")
         self.fill_field("#inputctrl", "th1s1z@p@ssw0rd!")
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1)
+        self._test_api_get("question_types_text", "q_password", "th1s1z@p@ssw0rd!")
 
         # email-address
         self.assertRegex(self.browser.title, "Next Question: email-address")
@@ -485,9 +525,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(.5)
 
         # test a good address
-        self.clear_and_fill_field("#inputctrl", "test+%d@q.govready.com" % random.randint(10000, 99999))
+        val = "test+%d@q.govready.com" % random.randint(10000, 99999)
+        self.clear_and_fill_field("#inputctrl", val)
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1)
+        self._test_api_get("question_types_text", "q_email_address", val)
 
         # url
         self.assertRegex(self.browser.title, "Next Question: url")
@@ -503,17 +545,21 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.clear_and_fill_field("#inputctrl", "https://q.govready.com")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get("question_types_text", "q_url", "https://q.govready.com")
 
         # longtext
+        val = "This is a paragraph.\n\nThis is another paragraph."
         self.assertRegex(self.browser.title, "Next Question: longtext")
-        self.fill_field("#inputctrl .ql-editor", "This is a paragraph.\n\nThis is another paragraph.")
+        self.fill_field("#inputctrl .ql-editor", val)
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get("question_types_text", "q_longtext", val)
 
         # longtext w/ default
         self.assertRegex(self.browser.title, "Next Question: longtext_with_default")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get("question_types_text", "q_longtext_with_default", val)
 
         # date
         self.assertRegex(self.browser.title, "Next Question: date")
@@ -534,6 +580,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.select_option("select[name='value_day']", "22")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get("question_types_text", "q_date", "2016-08-22")
 
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Text Input Question Types - ")

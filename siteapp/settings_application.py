@@ -27,6 +27,7 @@ INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 # ALLWOED_HOSTS is set based on environment['host'], which gives us
 # our landing page domain. Also allow all subdomains of the organization
 # parent domain.
+LANDING_DOMAIN = environment["host"]
 ORGANIZATION_PARENT_DOMAIN = environment.get('organization-parent-domain', 'localhost')
 ALLOWED_HOSTS += ['.' + ORGANIZATION_PARENT_DOMAIN]
 SINGLE_ORGANIZATION_KEY = environment.get('single-organization')

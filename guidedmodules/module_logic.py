@@ -701,6 +701,8 @@ def run_impute_conditions(conditions, context):
 
 def evaluate_expression(task, expr, unwrap=True):
     # Form a TemplateContext for the task in which the expression is evaluated.
+    # The TemplateContext wraps the Project data.
+    # This gets fed into Jinja2 in evaluating the expression.
     context = TemplateContext(
         task.get_answers().with_extended_info(),
         lambda v : str(v), root=True)
