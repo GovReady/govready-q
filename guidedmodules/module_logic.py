@@ -699,6 +699,35 @@ def run_impute_conditions(conditions, context):
             return (value,)
     return None
 
+def evaluate_expression(task, expr):
+    # Compile the expression as a Jinja2 expression.
+    env = Jinja2Environment()
+    expr = env.compile_expression(expr)
+
+    # Form a TemplateContext for the task in which the expression is evaluated.
+    context = TemplateContext(
+        task.get_answers().with_extended_info(),
+        lambda v : str(v), root=True)
+
+    # Evaluate the expression.
+    value = expr(context)
+
+    # If it returned a RenderedAnswer, unwrap it to the Python data structure.
+    if isinstance(value, RenderedAnswer):
+        value = value.answer
+
+    # If the answer is another Task...
+    if isinstance(value, ModuleAnswers):
+        value = value\
+            .with_extended_info(context)\
+            .as_dict(recursively=True, parent_context=context)
+
+    # Turn it into something JSON-serializable if it isn't.
+    if not isinstance(value, (type(None), bool, str, int, float, dict, type([]))):
+        value = str(value)
+
+    return value
+
 class question_input_parser:
     # Turns client-side input into the correct JSON-serializable
     # Python data structure for a particular question type.
@@ -1036,12 +1065,34 @@ class ModuleAnswers:
         self.answers = answers
         self._cached_questions = None
 
-    def as_dict(self):
+    def as_dict(self, recursively=False, cache=None, parent_context=None):
         if self.answers is None:
             # Lazy-load by calling the task's get_answers function
             # and copying its answers dictionary.
             self.answers = self.task.get_answers().answers
-        return self.answers
+
+        if not recursively:
+            return self.answers
+        else:
+            ret = { }
+
+            if cache is None:
+                cache = { self.task: ret }
+
+            for key, value in self.answers.items():
+                # Expand an inner ModuleAnswers instance, but if we're
+                # revisiting a task we've already seen, re-use the existing
+                # dict that we outputted.
+                if isinstance(value, ModuleAnswers):
+                    if value.task in cache:
+                        value = cache[value.task]
+                    else:
+                        value = value.with_extended_info(parent_context=parent_context)\
+                            .as_dict(recursively=True, cache=cache, parent_context=parent_context)
+
+                ret[key] = value
+
+            return ret
 
     def with_extended_info(self, required=False, parent_context=None):
         # Return a new ModuleAnswers instance that has imputed values added
@@ -1463,9 +1514,11 @@ class RenderedAnswer:
                     class DD:
                         def __init__(self, path):
                             self.path = path
+                        def __str__(self):
+                            return "<not answered>"
                         def __html__(self):
                             import html
-                            return html.escape("<not answered>")
+                            return html.escape(str(self))
                         def __getattr__(self, key):
                             return DD(self.path+[key])
                     return DD([self.question.spec['id']])

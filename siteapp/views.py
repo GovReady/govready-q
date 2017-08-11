@@ -583,6 +583,23 @@ def project(request, project_id):
         "layout_mode": layout_mode,
     })
 
+@login_required
+def project_api(request, project_id):
+    # Check project and check authorization.
+    project = get_object_or_404(Project, id=project_id, organization=request.organization)
+    if not project.has_read_priv(request.user):
+        return HttpResponseForbidden()
+
+    if request.method == "GET":
+        # Run the query.
+        from guidedmodules.module_logic import evaluate_expression
+        try:
+            value = evaluate_expression(project.root_task, request.GET.get('q', ""))
+        except Exception as e:
+            return JsonResponse({ "status": "error", "error": str(e) }, status=400)
+
+        # Return.
+        return JsonResponse({ "status": "ok", "value": value }, json_dumps_params={ "indent": 2 })
 
 @login_required
 def new_folder(request):
