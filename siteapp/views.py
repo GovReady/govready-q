@@ -583,6 +583,50 @@ def project(request, project_id):
         "layout_mode": layout_mode,
     })
 
+@login_required
+def project_api(request, project_id):
+    # Explanatory page for an API for this project.
+
+    # Check project and check authorization.
+    project = get_object_or_404(Project, id=project_id, organization=request.organization)
+    if not project.has_read_priv(request.user):
+        return HttpResponseForbidden()
+
+    # Create sample output.
+    sample = project.export_json(False)
+
+    # Create sample POST body data by randomly choosing question
+    # answers.
+    def select_randomly(sample, level=0):
+        import collections, random
+        if not isinstance(sample, dict): return sample
+        if level == 0:
+            keys = list(sample)
+        else:
+            keys = random.sample(list(sample), min(level, len(sample)))
+        return collections.OrderedDict([
+            (k, select_randomly(v, level=level+1))
+            for k, v in sample.items()
+            if k in keys and "." not in k
+        ])
+    sample_post = select_randomly(sample)
+
+    # Format sample output.
+    def format_sample(sample):
+        import json
+        from pygments import highlight
+        from pygments.lexers import JsonLexer
+        from pygments.formatters import HtmlFormatter
+        sample = json.dumps(sample, indent=2)
+        return highlight(sample, JsonLexer(), HtmlFormatter())
+
+    return render(request, "project-api.html", {
+        "project": project,
+        "folder": project.primary_folder(),
+        "SITE_ROOT_URL": settings.SITE_ROOT_URL,
+        "sample": format_sample(sample),
+        "sample_post": format_sample(sample_post),
+    })
 
 @login_required
 def show_api_keys(request):

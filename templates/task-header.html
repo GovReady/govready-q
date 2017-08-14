@@ -49,7 +49,7 @@
   {% for parent_project in task.project.get_parent_projects %}
   <p style="font-size: 110%; margin-left: 15px;">
     {% if parent_project.root_task.get_app_icon_url %}
-      <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1.5em">
+      <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1em">
     {% else %}
       <span class="glyphicon glyphicon-list-alt"></span>
     {% endif %}
@@ -60,7 +60,7 @@
   {% endfor %}
   <p style="font-size: 110%; margin-left: 15px;">
     {% if task.project.root_task.get_app_icon_url %}
-      <img src="{{task.project.root_task.get_app_icon_url}}" style="height: 1.5em">
+      <img src="{{task.project.root_task.get_app_icon_url}}" style="height: 1em">
     {% else %}
       <span class="glyphicon glyphicon-list-alt"></span>
     {% endif %}

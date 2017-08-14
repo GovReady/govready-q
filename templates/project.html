@@ -146,7 +146,7 @@
   {% for parent_project in project.get_parent_projects %}
   <p style="font-size: 110%; margin-left: 15px;">
     {% if parent_project.root_task.get_app_icon_url %}
-    <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1.5em">
+    <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1em">
     {% else %}
     <span class="glyphicon glyphicon-list-alt"></span>
     {% endif %}
@@ -172,6 +172,11 @@
         Invite
       </button>
     {% endif %}
+
+    <a class="btn btn-sm" href="{{project.get_absolute_url}}/api">
+      <i class="glyphicon glyphicon-sort"></i>
+      API Docs
+    </a>
 
     {# action buttons #}
     {% if action_buttons %}
@@ -205,7 +210,7 @@
   <div id="focus-area-wrapper">
     <h1 style="text-align: center;">
       {% if project.root_task.get_app_icon_url %}
-      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1.5em">
+      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
       {% endif %}
       {{project.title}}
     </h1>

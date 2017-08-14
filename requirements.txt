@@ -13,6 +13,7 @@ graphviz==0.6 # MIT License
 fs==2.0.3 # BSD License
 PyGithub==1.34 # LGPL License
 GitPython==2.1.3 # BSD License
+Pygments==2.2.0 # BSD License
 
 # Common Django Packages
 Django==1.10.7 # BSD License

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+API: {{title}}
+{% endblock %}
+
+{% block head %}
+<style>
+{% include "focus-area-styles.css" %}
+h1 { margin-bottom: .75em; }
+h2 { margin-top: 1.5em; }
+</style>
+{% endblock %}
+
+{% block contextbar %}
+  {# kill #}
+{% endblock %}
+
+{% block body %}
+
+<div id="folder-project-context" style="margin-bottom: 20px;">
+  <p style="font-size: 120%;">
+    <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
+    <a id="folder-link" href="{{folder.get_absolute_url}}" data-folder-id="{{folder.id}}">{{folder.title}}</a>
+  </p>
+  {% for parent_project in project.get_parent_projects %}
+  <p style="font-size: 110%; margin-left: 15px;">
+    {% if parent_project.root_task.get_app_icon_url %}
+    <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1em">
+    {% else %}
+    <span class="glyphicon glyphicon-list-alt"></span>
+    {% endif %}
+    <a href="{{parent_project.get_absolute_url}}" style="margin-left: .25em">
+      {{parent_project.title}}
+    </a>
+  </p>
+  {% endfor %}
+  <p style="font-size: 110%; margin-left: 15px;">
+    {% if project.root_task.get_app_icon_url %}
+      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
+    {% else %}
+      <span class="glyphicon glyphicon-list-alt"></span>
+    {% endif %}
+    <a href="{{project.get_absolute_url}}">
+      {{project.title}}
+    </a>
+  </p>
+</div>
+
+<div class="row">
+<div class="col-md-10">
+  <div id="focus-area-wrapper">
+    <h1 style="text-align: center;">
+      {% if project.root_task.get_app_icon_url %}
+      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
+      {% endif %}
+      {{project.title}}
+      API
+    </h1>
+
+    <p>An API is provided for programmatically getting and updating information stored in this {{project.title}} app. The API can be used from command-line tools and programming languages that allow making GET and/or POST HTTP requests.</p>
+
+
+    <h2>Getting data from the app using the GET API</h2>
+
+    <p>Project data can be read from the API using an HTTP get request to the following URL:</p>
+
+    <pre>{{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+
+    <p>An API key must be passed in the HTTP <code>Authorization</code> header. You can get your API key from the <a href="/api-keys">API keys page</a>.</p>
+
+    <p>You&rsquo;ll get the following response from the API:</p>
+
+    <style>
+    pre { background-color: white; }
+    .highlight .p, .highlight .nt { color: #337ab7; font-weight: bold; }
+    .highlight .s2 { color: black; }
+    </style>
+    <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
+    {{sample|safe}}
+    </div>
+
+    <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API by running the following command. Replace <code>your-api-key</code> with <a href="/api-keys">your API key</a>. (The slash in the command below indicates a continued line.)</p>
+
+    <pre>curl --header "Authorization: <i>your-api-key</i>" \
+      {{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+
+
+
+    <h2>Updating data using a POST request</h2>
+
+    <p>Use a POST request instead a GET request to update data stored in the app. Data values to save in the app are included in the request body as JSON in the same format as returned by the GET request.</p>
+
+    <p>The POST request body always includes:</p>
+
+    <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
+    <div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">"schema"</span><span class="p">:</span> <span class="s2">"GovReady Q Project API 1.0"</span><span class="p">,</span>
+  <span class="nt">"project"</span><span class="p">:</span> <span class="p">{</span>
+    ...
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+    </div>
+
+    <p>Inside the <code>project</code>, replace <code>...</code> just with the data fields you want to change, including any structure nesting.</p>
+
+    <p>For example:</p>
+
+    <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
+    {{sample_post|safe}}
+    </div>
+
+    <p>As with the GET API, an API key must be passed in the HTTP <code>Authorization</code> header. An API key with write permission must be used. You can get an API key from the <a href="/api-keys">API keys page</a>.</p>
+
+    <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API using <code>curl</code>. First copy the sample POST request body or make your own and save it in a file named <code>data.json</code>. Replace <code>your-api-key</code> in the command below with <a href="/api-keys">your full access API key</a>. Then run the following command. (The slash in the command below indicates a continued line.)</p>
+
+    <pre>curl --header "Authorization: <i>your-api-key</i>" \
+      -XPOST --data @data.json --header "Content-Type: application/json" \
+      {{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+
+  </div> <!-- /focus-area-wrapper -->
+</div> <!-- /col -->
+</div> <!-- /row -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+</script>
+{% endblock %}
