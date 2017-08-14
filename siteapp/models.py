@@ -613,7 +613,7 @@ class Project(models.Model):
     def get_notification_watchers(self):
         return self.get_members()
 
-    def export_json(self):
+    def export_json(self, include_metadata):
         # Exports all project data to a JSON-serializable Python data structure.
         # The caller should have administrative permissions because no authorization
         # is performed within this.
@@ -631,6 +631,12 @@ class Project(models.Model):
             def __init__(self):
                 self.objects = { }
                 self.keys = { }
+                self.include_metadata = include_metadata
+            def get_schema(self):
+                if self.include_metadata:
+                    return "GovReady Q Project Export Data 1.0"
+                else:
+                    return "GovReady Q Project API 1.0"
             def serializeOnce(self, object, preferred_key, serialize_func):
                 if object not in self.objects:
                     # This is the first use of this object instance.
@@ -655,18 +661,28 @@ class Project(models.Model):
                         ("__reference__", self.keys[object]),
                     ])
 
-        # Serialize this Project instance.
+        serializer = Serializer()
+
+        # Serialize this Project metadata.
         from collections import OrderedDict
-        return OrderedDict([
-            ("name", "GovReady Q Project Data"), # just something human readable at the top, ignored in import
-            ("schema", "1.0"), # serialization format
-            ("project", OrderedDict([
+        ret = OrderedDict([
+            ("schema", serializer.get_schema()), # serialization format
+            ("project", OrderedDict()),
+        ])
+        if serializer.include_metadata:
+            ret["project"].update(OrderedDict([
                 ("title", self.title),
                 ("created", self.created.isoformat()), # ignored in import
                 ("modified", self.updated.isoformat()), # ignored in import
-                ("content", self.root_task.export_json(Serializer())),
-            ])),
-        ])
+            ]))
+
+        # Add metadata from the root task but don't overwrite existing fields
+        # that have project metadata.
+        for key, value in self.root_task.export_json(serializer).items():
+            if key in ("id", "title", "created", "modified"): continue
+            ret["project"][key] = value
+
+        return ret
 
     def import_json(self, data, user, logger):
         # Imports project data from the 'data' value created by export_json.
@@ -682,25 +698,22 @@ class Project(models.Model):
 
         if not isinstance(data, dict):
             logger("Invalid data type for argument.")
-            return
+            return False
         
-        if data.get("schema") != "1.0":
-            logger("Data does not look like it was exported from this application.")
-            return
-
-        if not isinstance(data.get("project"), dict):
-            logger("Data does not look like it was exported from this application.")
-            return
-
-        # Move to the project field.
-        data = data["project"]
-
         # Create a deserialization helper.
         class Deserializer:
             def __init__(self):
                 self.user = user
                 self.ref_map = { }
                 self.log = logger
+
+                if data.get("schema") == "GovReady Q Project Data 1.0":
+                    self.included_metadata = True
+                elif data.get("schema") == "GovReady Q Project API 1.0":
+                    self.included_metadata = False
+                else:
+                    raise ValueError("Data does not look like it was exported from this application.")
+
             def deserializeOnce(self, dictdata, deserialize_func):
                 # If dictdata is a reference to something we've already
                 # deserialized.
@@ -719,15 +732,29 @@ class Project(models.Model):
                         
                 return ret
 
+        try:
+            deserializer = Deserializer()
+        except ValueError as e:
+            logger(str(e))
+            return False
 
-        # Overwrite project metadata if the fields are present, i.e. allow for
-        # missing or empty fields, which will preserve the existing metadata we have.
-        self.title = data.get("title") or self.title
-        self.save(update_fields=["title"])
+        if not isinstance(data.get("project"), dict):
+            logger("Data does not look like it was exported from this application.")
+            return False
 
-        # Update answers.
-        if "content" in data:
-            self.root_task.import_json_update(data["content"], Deserializer())
+        # Move to the project field.
+        data = data["project"]
+
+        if deserializer.included_metadata:
+            # Overwrite project metadata if the fields are present, i.e. allow for
+            # missing or empty fields, which will preserve the existing metadata we have.
+            self.title = data.get("title") or self.title
+            self.save(update_fields=["title"])
+
+        # Update root task.
+        self.root_task.import_json_update(data, deserializer)
+
+        return True
 
 
 class ProjectMembership(models.Model):

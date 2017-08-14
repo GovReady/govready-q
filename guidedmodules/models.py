@@ -348,13 +348,13 @@ class Task(models.Model):
             import urllib.parse
             return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
 
-    def get_answers(self, decryption_provider=None):
-        # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
-
+    def get_current_answer_records(self):
+        # Efficiently get the current answer to every question.
+        #
         # Since we track the history of answers to each question, we need to get the most
         # recent answer for each question. It's fastest if we pre-load the complete history
-        # of every question rather than making a separate database call for each to find
-        # its most recent answer. See TaskAnswer.get_current_answer().
+        # of every question rather than making a separate database call for each question
+        # to find its most recent answer. See TaskAnswer.get_current_answer().
         answers = list(
             TaskAnswerHistory.objects
                 .filter(taskanswer__task=self)
@@ -364,26 +364,27 @@ class Task(models.Model):
                 )
         def get_current_answer(q):
             for a in answers:
-                if a.taskanswer == q:
+                if a.taskanswer.question == q:
                     return a
             return None
 
         # Loop over all of the questions and fetch each's answer.
-        # The internal dict of answers is ordered to preserve the question definition order.
-        answered = OrderedDict()
-        for q in self.answers.all()\
-            .order_by("question__definition_order")\
-            .select_related("question"):
+        for q in self.module.questions.all().order_by("definition_order"):
             # Get the latest TaskAnswerHistory instance for this TaskAnswer,
             # if there is any (there should be). If the answer is marked as
             # cleared, then treat as if it had not been answered.
             a = get_current_answer(q) # faster than but equivalent to q.get_current_answer()
-            if not a or a.cleared:
-                continue
+            if a and a.cleared: a = None
+            yield (q, a)
 
+    def get_answers(self, decryption_provider=None):
+        # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
+        # The dict of answers is ordered to preserve the question definition order.
+        answered = OrderedDict()
+        for q, a in self.get_current_answer_records():
             # Get the value of that answer.
-            answered[q.question.key] = a.get_value(decryption_provider=decryption_provider)
-
+            if a is None: continue
+            answered[q.key] = a.get_value(decryption_provider=decryption_provider)
         return ModuleAnswers(self.module, self, answered)
 
     def can_transfer_owner(self):
@@ -663,22 +664,46 @@ class Task(models.Model):
         # assign the Task a unique ID in the output and then if it's attempted to
         # be serialized again, serializeOnce just outputs a reference to the ID
         # and doesn't call the lambda function below.
+
         from collections import OrderedDict
+
+        def build_dict():
+            if serializer.include_metadata:
+                return OrderedDict([
+                    ("id", str(self.uuid)), # a uuid.UUID instance is JSON-serializable but let's just make it a string so there are no surprises
+                    ("title", self.title),
+                    ("created", self.created.isoformat()),
+                    ("modified", self.updated.isoformat()),
+                    ("module", self.module.export_json(serializer)),
+                    ("answers", build_answers()),
+                ])
+            else:
+                return build_answers()
+
+        def build_answers():
+            # Create a dict holding the user-entered and imputed answers to
+            # questions in this task.
+            ret = OrderedDict()
+            answers = self.get_answers().with_extended_info()
+            for q, a in self.get_current_answer_records():
+                if q.key in answers.was_imputed:
+                    # This was imputed. Ignore any user answer and serialize
+                    # with a dummy TaskAnswerHistory.
+                    a = TaskAnswerHistory(taskanswer=TaskAnswer(question=q), stored_value=answers.answers[q.key])
+                elif a is None:
+                    continue
+                elif not serializer.include_metadata and q.spec["type"] == "interstitial":
+                    # If we're not including metadata, there's no reason to
+                    # include interstitials in output because their value is
+                    # always null.
+                    continue
+                a.export_json(ret, serializer)
+            return ret
+
         return serializer.serializeOnce(
             self,
             "task:" + str(self.uuid), # used to create a unique key if the Task is attempted to be serialzied more than once
-            lambda : OrderedDict([ # "lambda :" makes this able to be evaluated lazily
-                ("id", str(self.uuid)), # a uuid.UUID instance is JSON-serializable but let's just make it a string so there are no surprises
-                ("title", self.title),
-                ("created", self.created.isoformat()),
-                ("modified", self.updated.isoformat()),
-                ("module", self.module.export_json(serializer)),
-                ("answers", OrderedDict([
-                    (q.question.key, q.export_json(serializer))
-                    for q in self.answers.all().order_by("question__definition_order")
-                    ])),
-            ])
-            )
+            build_dict)
 
     @staticmethod
     def import_json(data, deserializer, for_question):
@@ -738,10 +763,11 @@ class Task(models.Model):
             deserializer.log("Data format error.")
             return
 
-        # Overwrite metadata if the fields are present, i.e. allow for
-        # missing or empty fields, which will preserve the existing metadata we have.
-        self.title = data.get("title") or self.title
-        self.save(update_fields=["title"])
+        if deserializer.included_metadata:
+            # Overwrite metadata if the fields are present, i.e. allow for
+            # missing or empty fields, which will preserve the existing metadata we have.
+            self.title = data.get("title") or self.title
+            self.save(update_fields=["title"])
 
         # We don't chek that the module listed in the data matches the module
         # this Task actually uses in the database. We don't have a way to test
@@ -752,68 +778,96 @@ class Task(models.Model):
         did_update_any_questions = False
 
         # Merge answers to questions.
+        if deserializer.included_metadata:
+            data = data.get("answers", {})
+        if not isinstance(data, dict):
+            deserializer.log("Data format error.")
+            return
 
-        if "answers" in data:
-            if not isinstance(data["answers"], dict):
-                deserializer.log("Data format error.")
-                return
+        # Loop through the key-value pairs.
+        for qkey, answer in data.items():
+            # Get the ModuleQuestion instance for this question.
+            q = self.module.questions.filter(key=qkey).first()
+            if q is None:
+                deserializer.log("Task %s question %s ignored (not a valid question ID)." % (my_name, qkey))
+                continue
 
-            # Loop through the key-value pairs.
-            for qkey, answer in data["answers"].items():
-                # Get the ModuleQuestion instance for this question.
-                q = self.module.questions.filter(key=qkey).first()
-                if q is None:
-                    deserializer.log("Task %s question %s ignored (not a valid question ID)." % (my_name, qkey))
+            # For logging.
+            qname = q.spec.get("title") or qkey
+
+            if deserializer.included_metadata:
+                # Skip exported values of imputed questions. We must not write values
+                # for questions that are imputed. In the short format where we don't
+                # have this metadata, ideally we would not write imputed values back
+                # to the database but we can't know if it's imputed unless we run
+                # the impute conditions after each question update, which is expensive,
+                # so we'll just write the value to the database - but it will be ignored
+                # because when retreiving the value it will be overridden by the
+                # imputed value.
+                if answer and answer.get("imputed") is True:
                     continue
-
-                # For logging.
-                qname = q.spec.get("title") or qkey
 
                 # Ensure the data type matches the current question specification.
                 if answer and q.spec["type"] != answer.get("questionType"):
                     deserializer.log("Task %s question %s ignored (question type mismatch)." % (my_name, qname))
                     continue
 
-                # Validate the answer value (check data type, range), if it is answered.
-                # (Any question can be skipped.)
-                if answer and answer.get("value") is not None:
-                    try:
-                        value = validator.validate(q, answer["value"])
-                    except ValueError as e:
-                        deserializer.log("Task %s question %s ignored: %s" % (my_name, qname, str(e)))
-                        continue
+                if answer is None or "value" not in answer:
+                    has_value = False
                 else:
-                    # The value is None so we don't validate. Any question
-                    # can be answered with None, meaning it was skipped.
-                    value = None
+                    has_value = True
+                    value = answer["value"]
 
-                # Get or create the TaskAnswer instance for this question.
-                taskanswer, _ = TaskAnswer.objects.get_or_create(
-                    task=self,
-                    question=q,
-                )
+            else:
+                # In the short format, answer is the value itself.
+                has_value = True
+                value = answer
 
-                if answer is None:
-                    # A null answer means the question has no answer - it's cleared.
-                    # (A "skipped" question has an answer whose value is null.)
-                    taskanswer.clear_answer(deserializer.user)
+            # Validate the answer value (check data type, range), if it is answered.
+            # (Any question can be skipped.)
+            if has_value and value is not None:
+                try:
+                    value = validator.validate(q, value)
+                except ValueError as e:
+                    deserializer.log("Task %s question %s ignored: %s" % (my_name, qname, str(e)))
                     continue
 
-                # Prepare the fields for saving.
-                prep_fields = TaskAnswerHistory.import_json_prep(taskanswer, value, deserializer)
-                if prep_fields is None:
-                    deserializer.log("Task %s question %s has been skipped because a sub-task could not be used." % (my_name, qname))
-                    continue
+            # Get or create the TaskAnswer instance for this question.
+            taskanswer, _ = TaskAnswer.objects.get_or_create(
+                task=self,
+                question=q,
+            )
 
-                value, answered_by_tasks, answered_by_file = prep_fields
+            if not has_value:
+                # A null answer means the question has no answer - it's cleared.
+                # (A "skipped" question has an answer whose value is null.)
+                taskanswer.clear_answer(deserializer.user)
+                continue
 
-                # And save the answer.
-                if taskanswer.save_answer(value, answered_by_tasks, answered_by_file, deserializer.user):
-                    deserializer.log("Task %s question %s was updated." % (my_name, qname))
-                    did_update_any_questions = True
-                
-            if not did_update_any_questions:
-                deserializer.log("Task %s had no new answers to save." % (my_name,))
+            # Prepare the fields for saving.
+            prep_fields = TaskAnswerHistory.import_json_prep(taskanswer, value, deserializer)
+            if prep_fields is None:
+                deserializer.log("Task %s question %s has been skipped because a sub-task could not be used." % (my_name, qname))
+                continue
+
+            value, answered_by_tasks, answered_by_file, subtasks_updated = prep_fields
+
+            # And save the answer.
+            if taskanswer.save_answer(value, answered_by_tasks, answered_by_file, deserializer.user):
+                deserializer.log("Task %s question %s was updated." % (my_name, qname))
+                did_update_any_questions = True
+            elif not subtasks_updated:
+                # Warn if a value was not changed.
+                deserializer.log("Task %s question %s was not changed." % (my_name, qname))
+
+            # If any sub-task data was updated, don't warn about this task not being updated.
+            if subtasks_updated:
+                did_update_any_questions = True
+            
+        if not did_update_any_questions:
+            deserializer.log("Task %s had no new answers to save." % (my_name,))
+
+        return did_update_any_questions
 
 
 class TaskAnswer(models.Model):
@@ -1078,17 +1132,6 @@ class TaskAnswer(models.Model):
         }
 
 
-
-    def export_json(self, serializer):
-        # Exports this TaskAnswer's current answer to a JSON-serializable Python data structure.
-        # Called via siteapp.Project::export_json.
-        ans = self.get_current_answer()
-        if ans is None or ans.cleared:
-            # There is no current answer.
-            return None
-        # Call the TaskAnswerHistory serialiation function.
-        return ans.export_json(serializer)
-
 class TaskAnswerHistory(models.Model):
     taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
 
@@ -1233,7 +1276,7 @@ class TaskAnswerHistory(models.Model):
             except TaskAnswerHistory.CantDecrypt:
                 return "[encrypted]"
 
-    def export_json(self, serializer):
+    def export_json(self, parent_dict, serializer):
         # Exports this TaskAnswerHistory's value to a JSON-serializable Python data structure.
         # Called via siteapp.Project::export_json.
         #
@@ -1273,13 +1316,49 @@ class TaskAnswerHistory(models.Model):
                 # content, or else we need to update this.
                 pass
 
-        from collections import OrderedDict
-        return OrderedDict([
-            ("questionType", q.spec["type"]), # so that deserialization can interpret the value
-            ("answeredBy", str(self.answered_by)),
-            ("answeredAt", self.created.isoformat()),
-            ("value", value),
-        ])
+        # Get a human-readable form to include in the output.
+        human_readable_text = None
+        if value is not None:
+            if q.spec["type"] == "longtext":
+                # Longtext is Markdown. Turn into HTML.
+                import CommonMark
+                human_readable_text_key = "html"
+                human_readable_text = CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(value)).strip()
+
+            elif q.spec["type"] in ("choice", "multiple-choice"):
+                # Get the 'text' values for the choices.
+                human_readable_text_key = "text"
+                choices = { c["key"]: c["text"] for c in q.spec["choices"] }
+                if q.spec["type"] == "choice":
+                    human_readable_text = choices.get(value)
+                elif q.spec["type"] == "multiple-choice":
+                    human_readable_text = [choices.get(v) for v in value]
+
+            elif q.spec["type"] == "yesno":
+                human_readable_text_key = "text"
+                human_readable_text = "Yes" if (value == "yes") else "No"
+
+        if not serializer.include_metadata:
+            # Just return the value.
+            parent_dict[q.key] = value
+            if human_readable_text is not None:
+                parent_dict[q.key + "." + human_readable_text_key] = human_readable_text
+
+        else:
+            # The export should also include metadata about the answer, like
+            # who answered it and when.
+            from collections import OrderedDict
+            ret = OrderedDict()
+            if self.id:
+                ret["answeredBy"] = str(self.answered_by)
+                ret["answeredAt"] = self.created.isoformat()
+            else:
+                ret["imputed"] = True
+            ret["questionType"] = q.spec["type"] # so that deserialization can validate the value
+            ret["value"] = value
+            if human_readable_text is not None:
+                ret[human_readable_text_key] = human_readable_text
+            parent_dict[q.key] = ret
 
     @staticmethod
     def import_json_prep(taskanswer, value, deserializer):
@@ -1289,35 +1368,53 @@ class TaskAnswerHistory(models.Model):
 
         answered_by_tasks = set()
         answered_by_file = None
+        subtasks_updated = False
 
         # Skipped questions.
         if value is None:
-            return value, answered_by_tasks, answered_by_file
+            return value, answered_by_tasks, answered_by_file, subtasks_updated
 
         # Special question types that aren't stored in the stored_value field.
         q = taskanswer.question
         if q.spec["type"] in ("module", "module-set"):
-            # These questions are stored
+            # These questions are stored in the answered_by_tasks field
+            # as foreign keys to other Task instances.
 
-            # Make module-type questions look like module-set questions
-            # so we can handle the rest the same.
-            if q.spec["type"] == "module":
-                value = [value]
+            if deserializer.included_metadata:
+                # Make module-type questions look like module-set questions
+                # so we can handle the rest the same.
+                if q.spec["type"] == "module":
+                    value = [value]
 
-            # For each sub-taks, get or create the Task instance (and
-            # recurse to update its answers). Task.import_json can return
-            # None, and we handle that below.
-            for task in value:
-                task = Task.import_json(task, deserializer, taskanswer)
-                answered_by_tasks.add(task)
+                # For each sub-taks, get or create the Task instance (and
+                # recurse to update its answers). Task.import_json can return
+                # None, and we handle that below.
+                for task in value:
+                    task = Task.import_json(task, deserializer, taskanswer)
+                    answered_by_tasks.add(task)
+                    subtasks_updated = True # TODO: Should be False if task existed and no change made.
 
-            # Skip updating this question if there was any error fetching
-            # a Task.
-            if None in answered_by_tasks:
-                # Could not import.
-                return None
+                # Skip updating this question if there was any error fetching
+                # a Task.
+                if None in answered_by_tasks:
+                    # Could not import.
+                    return None
 
-            # Reset this part.
+            else:
+                # In the short form, the inner tasks are serialized as dicts
+                # of answers. No UUIDs are stored to associate new tasks.
+                # It's too much trouble to try to update module-set questions
+                # or to create new Tasks for unanswered module questions, for
+                # now. We'll just update module questions in-place.
+                if q.spec["type"] != "module": return None
+                curans = taskanswer.get_current_answer()
+                if curans is None: return None
+                if not curans.answered_by_task.exists(): return None
+                t = curans.answered_by_task.first()
+                answered_by_tasks.add(t)
+                subtasks_updated = t.import_json_update(value, deserializer)
+
+            # Reset this variable so stored_value is set to None.
             value = None
 
         elif q.spec["type"] == "file":
@@ -1325,7 +1422,7 @@ class TaskAnswerHistory(models.Model):
             answered_by_file = value
             value = None
 
-        return value, answered_by_tasks, answered_by_file
+        return value, answered_by_tasks, answered_by_file, subtasks_updated
 
 
 class InstrumentationEvent(models.Model):

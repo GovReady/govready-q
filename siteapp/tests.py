@@ -467,20 +467,19 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
-    def _test_api_get(self, module_id, question_id, expected_value):
+    def _test_api_get(self, path, expected_value):
         resp = self.client_get(
                 "/api/v1/organizations/" + self.org.subdomain + "/projects/" + str(self.current_projet.id) + "/answers",
                 domain="LANDING",
                 HTTP_AUTHORIZATION=self.user.api_key_rw)
         resp = resp.json()
         self.assertTrue(isinstance(resp, dict))
-        self.assertEqual(resp.get("status"), "ok")
-        self.assertIn("value", resp)
-        self.assertTrue(isinstance(resp["value"], dict))
-        self.assertIn(module_id, resp["value"])
-        self.assertTrue(isinstance(resp["value"][module_id], dict))
-        self.assertIn(question_id, resp["value"][module_id])
-        self.assertEqual(resp["value"][module_id][question_id], expected_value)
+        self.assertEqual(resp.get("schema"), "GovReady Q Project API 1.0")
+        for p in ["project"]+path:
+            self.assertTrue(isinstance(resp, dict))
+            self.assertIn(p, resp)
+            resp = resp[p]
+        self.assertEqual(resp, expected_value)
 
     def test_questions_text(self):
         # Log in and create a new project.
@@ -498,20 +497,20 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#inputctrl", "This is some text.")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get("question_types_text", "q_text", "This is some text.")
+        self._test_api_get(["question_types_text", "q_text"], "This is some text.")
 
         # text w/ default
         self.assertRegex(self.browser.title, "Next Question: text_with_default")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get("question_types_text", "q_text_with_default", "I am a kiwi.")
+        self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
 
         # password
         self.assertRegex(self.browser.title, "Next Question: password")
         self.fill_field("#inputctrl", "th1s1z@p@ssw0rd!")
         self.click_element("#save-button")
         var_sleep(1)
-        self._test_api_get("question_types_text", "q_password", "th1s1z@p@ssw0rd!")
+        self._test_api_get(["question_types_text", "q_password"], "th1s1z@p@ssw0rd!")
 
         # email-address
         self.assertRegex(self.browser.title, "Next Question: email-address")
@@ -528,8 +527,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         val = "test+%d@q.govready.com" % random.randint(10000, 99999)
         self.clear_and_fill_field("#inputctrl", val)
         self.click_element("#save-button")
-        var_sleep(1)
-        self._test_api_get("question_types_text", "q_email_address", val)
+        var_sleep(1.5)
+        self._test_api_get(["question_types_text", "q_email_address"], val)
 
         # url
         self.assertRegex(self.browser.title, "Next Question: url")
@@ -544,22 +543,23 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # test a good address
         self.clear_and_fill_field("#inputctrl", "https://q.govready.com")
         self.click_element("#save-button")
-        var_sleep(.5)
-        self._test_api_get("question_types_text", "q_url", "https://q.govready.com")
+        var_sleep(1.5)
+        self._test_api_get(["question_types_text", "q_url"], "https://q.govready.com")
 
         # longtext
-        val = "This is a paragraph.\n\nThis is another paragraph."
         self.assertRegex(self.browser.title, "Next Question: longtext")
-        self.fill_field("#inputctrl .ql-editor", val)
+        self.fill_field("#inputctrl .ql-editor", "This is a paragraph.\n\nThis is another paragraph.")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get("question_types_text", "q_longtext", val)
+        self._test_api_get(["question_types_text", "q_longtext"], 'This is a paragraph\\.\r\n\r\n\r\n\r\nThis is another paragraph\\.')
+        self._test_api_get(["question_types_text", "q_longtext.html"], "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>")
 
         # longtext w/ default
         self.assertRegex(self.browser.title, "Next Question: longtext_with_default")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get("question_types_text", "q_longtext_with_default", val)
+        self._test_api_get(["question_types_text", "q_longtext_with_default"], "Peaches are sweet\\.\r\n\r\nThat\\'s why I write two paragraphs about peaches\\.")
+        self._test_api_get(["question_types_text", "q_longtext_with_default.html"], "<p>Peaches are sweet.</p>\n<p>That's why I write two paragraphs about peaches.</p>")
 
         # date
         self.assertRegex(self.browser.title, "Next Question: date")
@@ -580,7 +580,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.select_option("select[name='value_day']", "22")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get("question_types_text", "q_date", "2016-08-22")
+        self._test_api_get(["question_types_text", "q_date"], "2016-08-22")
 
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Text Input Question Types - ")
@@ -603,12 +603,16 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element('#question input[name="value"][value="choice2"]')
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get(["question_types_choice", "q_choice"], "choice2")
+        self._test_api_get(["question_types_choice", "q_choice.text"], "Choice 2")
 
         # yesno
         self.assertRegex(self.browser.title, "Next Question: yesno")
         self.click_element('#question input[name="value"][value="yes"]')
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get(["question_types_choice", "q_yesno"], "yes")
+        self._test_api_get(["question_types_choice", "q_yesno.text"], "Yes")
 
         # multiple-choice
         self.assertRegex(self.browser.title, "Next Question: multiple-choice")
@@ -616,6 +620,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element('#question input[name="value"][value="choice3"]')
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get(["question_types_choice", "q_multiple_choice"], ["choice1", "choice3"])
+        self._test_api_get(["question_types_choice", "q_multiple_choice.text"], ["Choice 1", "Choice 3"])
 
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Choice Question Types - ")
@@ -657,6 +663,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.clear_and_fill_field("#inputctrl", "5000")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get(["question_types_numeric", "q_integer"], 5000)
 
         # integer min/max
         self.assertRegex(self.browser.title, "Next Question: integer min/max")
@@ -693,6 +700,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.clear_and_fill_field("#inputctrl", "3")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get(["question_types_numeric", "q_integer_minmax"], 3)
 
         # integer min/max big
         # For max > 1000, we should expect that we can use commas in our numbers
@@ -731,6 +739,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.clear_and_fill_field("#inputctrl", "1,234")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get(["question_types_numeric", "q_integer_minmax_big"], 1234)
 
         # real
         self.assertRegex(self.browser.title, "Next Question: real")
@@ -748,6 +757,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.clear_and_fill_field("#inputctrl", "1.050")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get(["question_types_numeric", "q_real"], 1.050)
 
         # real min/max
         self.assertRegex(self.browser.title, "Next Question: real min/max")
@@ -774,6 +784,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.clear_and_fill_field("#inputctrl", "23.051")
         self.click_element("#save-button")
         var_sleep(.5)
+        self._test_api_get(["question_types_numeric", "q_real_minmax"], 23.051)
 
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Numeric Question Types - ")

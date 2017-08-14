@@ -123,72 +123,37 @@ def project_api(request, org_slug, project_id):
     if not project.has_read_priv(user):
         return JsonResponse(OrderedDict([("status", "error"), ("error", "The user associated with the API key does not have read perission on the project.")]), json_dumps_params={ "indent": 2 }, status=403)
 
-    # Run the query.
-    query = request.GET.get('q') or request.POST.get('q') or ""
-    try:
-        from guidedmodules.module_logic import evaluate_expression
-        value = evaluate_expression(
-            project.root_task,
-            query,
-            unwrap=not(request.method == "POST"))
-    except Exception as e:
-        return JsonResponse(OrderedDict([("status", "error"), ("error", str(e))]), json_dumps_params={ "indent": 2 }, status=400)
-
     if request.method == "GET":
+        # Export data.
+        value = project.export_json(include_metadata=False)
+
         # Return the value as JSON.
-        return JsonResponse(OrderedDict([("status", "ok"), ("value", value)]), json_dumps_params={ "indent": 2 })
+        return JsonResponse(value, json_dumps_params={ "indent": 2 })
 
     elif request.method == "POST":
         # Update the value.
 
-        # Parse the new value.
-        if request.META.get("CONTENT_TYPE") in ("", "text/plain"):
-            try:
-                new_value = request.body.decode("utf-8")
-            except ValueError as e:
-                return JsonResponse(OrderedDict([("status", "error"), ("error", "Invalid UTF-8 character data in request body. " + str(e))]), json_dumps_params={ "indent": 2 }, status=400)
-        elif request.META.get("CONTENT_TYPE") == "application/json":
+        # Parse the new project body.
+        if request.META.get("CONTENT_TYPE") == "application/json":
             import json
             try:
-                new_value = json.loads(request.body.decode("utf-8"))
+                value = json.loads(request.body.decode("utf-8"))
             except json.decoder.JSONDecodeError as e:
                 return JsonResponse(OrderedDict([("status", "error"), ("error", "Invalid JSON in request body. " + str(e))]), json_dumps_params={ "indent": 2 }, status=400)
         else:
-            return JsonResponse(OrderedDict([("status", "error"), ("error", "The Content-Type header must be set to text/plain (the default) or application/json.")]), json_dumps_params={ "indent": 2 }, status=400)
-
-        # Check that the (old) value is a RenderedAnswer instance that tells us
-        # the task and question that this value comes from.
-        from guidedmodules.module_logic import RenderedAnswer, validator
-        if not isinstance(value, RenderedAnswer) or not value.task:
-            return JsonResponse(OrderedDict([("status", "error"), ("error", "Expression is not updatable.")]), json_dumps_params={ "indent": 2 }, status=400)
+            return JsonResponse(OrderedDict([("status", "error"), ("error", "The Content-Type header must be set to application/json.")]), json_dumps_params={ "indent": 2 }, status=400)
 
         # Check that the API key has write access.
-        if not value.task.has_write_priv(user):
+        if not project.root_task.has_write_priv(user):
             return JsonResponse(OrderedDict([("status", "error"), ("error", "The user associated with the API key does not have write perission on the project.")]), json_dumps_params={ "indent": 2 }, status=403)
         if api_key != user.api_key_rw:
             return JsonResponse(OrderedDict([("status", "error"), ("error", "The API key does not have write perission on the project.")]), json_dumps_params={ "indent": 2 }, status=403)
 
-        # Validate the new value, unless it is None which is always permitted.
-        if new_value is not None:
-            try:
-                new_value = validator.validate(value.question, new_value)
-            except ValueError as e:
-                return JsonResponse(OrderedDict([("status", "error"), ("error", "Invalid value: " + str(e))]), json_dumps_params={ "indent": 2 }, status=400)
-
-        # Block if this question is currently imputed.
-        if value.question.key in value.task.get_answers().with_extended_info().was_imputed:
-            return JsonResponse(OrderedDict([("status", "error"), ("error", "This question cannot be answered because its value is currently imputed from other answers.")]), json_dumps_params={ "indent": 2 }, status=400)
-
-        # Save the answer.
-        with transaction.atomic():
-            from guidedmodules.models import TaskAnswer
-            answer, _ = TaskAnswer.objects.get_or_create(
-                task=value.task,
-                question=value.question,
-            )
-            changed = answer.save_answer(new_value, [], None, user)
+        # Update.
+        log = []
+        ret = project.import_json(value, user, lambda msg : log.append(msg))
 
         return JsonResponse(OrderedDict([
-            ("status", "ok"),
-            ("message", "Value updated." if changed else "No change.")
+            ("status", "ok" if ret else "error"),
+            ("details", log),
         ]), json_dumps_params={ "indent": 2 })

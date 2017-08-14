@@ -548,16 +548,19 @@ class EncryptionTests(TestCaseWithFixtureData):
 
 
 class ImportExportTests(TestCaseWithFixtureData):
-    ## GENERAL RENDER TESTS ##
+    ## IMPORT/EXPORT TASK DATA TESTS ##
 
     class DummySerializer:
+        def __init__(self, include_metadata):
+            self.include_metadata = include_metadata
         def serializeOnce(self, object, preferred_key, value_func):
             return value_func()
 
     class DummyDeserializer:
-        def __init__(self, user):
+        def __init__(self, user, included_metadata):
             self.user = user
             self.log_capture = []
+            self.included_metadata = included_metadata
             def logger(message):
                 print(message)
                 self.log_capture.append(message)
@@ -593,31 +596,37 @@ class ImportExportTests(TestCaseWithFixtureData):
         for module_name, tests in tests.items():
             for qtype, test_values in tests.items():
                 for test_value in [None] + test_values:
-                    self._test_round_trip(module_name, "q_" + qtype.replace("-", "_"), {
-                        "questionType": qtype,
-                        "value": test_value,
-                    })
+                    for include_metadata in (True, False):
+                        self._test_round_trip(module_name, "q_" + qtype.replace("-", "_"), include_metadata, qtype, test_value)
 
         # TODO: file, module, module-set
 
-    def _test_round_trip(self, module_name, question_name, value_dict):
+    def _test_round_trip(self, module_name, question_name, include_metadata, question_type, answer_value):
         # Create an empty Task.
         m = Module.objects.get(key="fixture/simple_project/" + module_name)
         task = Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project)
 
         # Import some data to set answers.
-        task_dict = {
-            "answers": {
-                question_name: value_dict
+        if include_metadata:
+            task_dict = {
+                "answers": {
+                    question_name: {
+                        "questionType": question_type,
+                        "value": answer_value,
+                    }
+                }
             }
-        }
-        task.import_json_update(task_dict, ImportExportTests.DummyDeserializer(self.user))
+        else:
+            task_dict = {
+                question_name: answer_value
+            }
+        task.import_json_update(task_dict, ImportExportTests.DummyDeserializer(self.user, include_metadata))
 
         # Export it and check that the exported JSON matches the JSON that we imported.
         # In other words, it should round-trip. Only check that the keys in the test JSON
         # are present and have the correct values in the exported JSON. The exported JSON
         # may have other keys that we don't care about. Check recursively.
-        export = task.export_json(ImportExportTests.DummySerializer())
+        export = task.export_json(ImportExportTests.DummySerializer(include_metadata))
         def check_dict(a, b, path):
             for k, v in a.items():
                 if isinstance(v, dict):
