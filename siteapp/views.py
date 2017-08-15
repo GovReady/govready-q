@@ -620,12 +620,45 @@ def project_api(request, project_id):
         sample = json.dumps(sample, indent=2)
         return highlight(sample, JsonLexer(), HtmlFormatter())
 
+    # Construct a schema.
+    schema = []
+    def make_schema(path, task, module):
+        # Get the questions within this task/module and, if we have a
+        # task, get the current answers too.
+        if task:
+            items = list(task.get_current_answer_records())
+        else:
+            items = [(q, None) for q in module.questions.order_by('definition_order')]
+        
+        # Create row in the output table for the fields.
+        for q, a in items:
+            if q.spec["type"] == "interstitial": continue
+            schema.append( (
+                path,
+                module,
+                q ))
+
+        # Document the fields of the sub-modules together.
+        for q, a in items:
+            if q.spec["type"] in ("module", "module-set"):
+                if a and a.answered_by_task.exists():
+                    # Follow an instantiated task where possible.
+                    t = a.answered_by_task.first()
+                    make_schema(path + [q.key], t, t.module)
+                elif q.answer_type_module:
+                    # Follow a module specified in the module specification.
+                    make_schema(path + [q.key], None, q.answer_type_module)
+
+    # Start at the root task and compute a table of fields, recursively.
+    make_schema(["project"], project.root_task, project.root_task.module)
+
     return render(request, "project-api.html", {
         "project": project,
         "folder": project.primary_folder(),
         "SITE_ROOT_URL": settings.SITE_ROOT_URL,
         "sample": format_sample(sample),
         "sample_post": format_sample(sample_post),
+        "schema": schema,
     })
 
 @login_required

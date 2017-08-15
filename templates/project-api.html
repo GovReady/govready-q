@@ -65,7 +65,7 @@ h2 { margin-top: 1.5em; }
 
     <h2>Getting data from the app using the GET API</h2>
 
-    <p>Project data can be read from the API using an HTTP get request to the following URL:</p>
+    <p>Project data can be read from the API using an HTTP GET request to the following URL:</p>
 
     <pre>{{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
 
@@ -81,6 +81,8 @@ h2 { margin-top: 1.5em; }
     <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
     {{sample|safe}}
     </div>
+
+    <p>The schema of the response object is documented below.</p>
 
     <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API by running the following command. Replace <code>your-api-key</code> with <a href="/api-keys">your API key</a>. (The slash in the command below indicates a continued line.)</p>
 
@@ -113,6 +115,8 @@ h2 { margin-top: 1.5em; }
     {{sample_post|safe}}
     </div>
 
+    <p>The fields are documented below.</p>
+
     <p>As with the GET API, an API key must be passed in the HTTP <code>Authorization</code> header. An API key with write permission must be used. You can get an API key from the <a href="/api-keys">API keys page</a>.</p>
 
     <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API using <code>curl</code>. First copy the sample POST request body or make your own and save it in a file named <code>data.json</code>. Replace <code>your-api-key</code> in the command below with <a href="/api-keys">your full access API key</a>. Then run the following command. (The slash in the command below indicates a continued line.)</p>
@@ -120,6 +124,82 @@ h2 { margin-top: 1.5em; }
     <pre>curl --header "Authorization: <i>your-api-key</i>" \
       -XPOST --data @data.json --header "Content-Type: application/json" \
       {{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+
+
+    <h2>Data Schema</h2>
+
+    <p>The fields returned in the GET response and expected by the POST request body inside the <code>project</code> field are as follows:</p>
+
+    <table class="table">
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for path, module, question in schema %}
+        {% ifchanged path module %}
+        <tr>
+          <th colspan=3>
+            <h3 style="font-weight: bold;">{{module.spec.title}}</h3>
+            <p style="font-size: 90%; font-weight: 400">
+              These fields occur within
+              {% for item in path %}
+                <code>{{item}}</code>
+                {% if not forloop.last %}→{% endif %}
+              {% endfor %}.
+            </p>
+          </th>
+        </tr>
+        {% endifchanged %}
+        <tr>
+          <td><code>{{question.key}}</code></td>
+          <td>
+            <p>{{question.spec.title}}</p>
+            <small>
+            <p>{{question.spec.help}}</p>
+            {% if question.spec.type == "module" or question.spec.type == "module-set" %}
+              {% if question.answer_type_module %}
+               <p>This data field is a JSON object which has sub-fields documented in the &ldquo;<b>{{question.answer_type_module.spec.title}}</b>&rdquo; section below.</p>
+              {% else %}
+               <p>An app must be selected manually in Q before schema information for this field can be determined.</p>
+              {% endif %}
+            {% elif question.spec.type == "text" or question.spec.type == "password" %}
+              <p>Data type: string (or null).</p>
+            {% elif question.spec.type == "email-address" %}
+              <p>Data type: string (or null); if set, must be a valid email address.</p>
+            {% elif question.spec.type == "url" %}
+              <p>Data type: string (or null); if set, must be a valid web address (URL.</p>
+            {% elif question.spec.type == "longtext" %}
+              <p>Data type: string (or null); if set, uses CommonMark (Markdown) encoding.</p>
+            {% elif question.spec.type == "date" %}
+              <p>Data type: string representing a date in YYYY-MM-DD format (or null).</p>
+            {% elif question.spec.type == "choice" or question.spec.type == "multiple-choice" %}
+              <p>Data type:
+              {% if question.spec.type == "choice" %}string;
+              {% else %}array of strings; each element{% endif %}
+              one of
+              {% for item in question.spec.choices %}
+                <code>{{item.key}}</code> ({{item.text}})
+                {% if not forloop.last %}, {% endif %}
+              {% endfor %}; or null.
+            {% elif question.spec.type == "yesno" %}
+              <p>Data type: string; either <code>yes</code> or <code>no</code>; or null.</p>
+            {% elif question.spec.type == "integer" %}
+              <p>Data type: integer (or null).</p>
+            {% elif question.spec.type == "real" %}
+              <p>Data type: number (or null).</p>
+            {% else %}
+              <p>Data type: {{question.spec.type}}.</p>
+            {% endif %}
+            {% if question.spec.impute %}<p><i>This field&rsquo;s value might be imputed from other values and if so is read-only.</i></p>{% endif %}
+            </small>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    </table>
 
   </div> <!-- /focus-area-wrapper -->
 </div> <!-- /col -->
