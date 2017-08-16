@@ -686,6 +686,15 @@ def project_api(request, project):
         else:
             items = [(q, None) for q in module.questions.order_by('definition_order')]
         
+        def add_filter_field(q, suffix, title):
+            from guidedmodules.models import ModuleQuestion
+            schema.append( (path, module, ModuleQuestion(
+                key=q.key+'.'+suffix,
+                spec={
+                    "type": "text",
+                    "title": title + " of " + q.spec["title"] + ". Read-only."
+                })))
+
         # Create row in the output table for the fields.
         for q, a in items:
             if q.spec["type"] == "interstitial": continue
@@ -693,6 +702,11 @@ def project_api(request, project):
                 path,
                 module,
                 q ))
+
+            if q.spec["type"] == "longtext": add_filter_field(q, "html", "HTML rendering")
+            if q.spec["type"] == "choice": add_filter_field(q, "html", "Human-readable value")
+            if q.spec["type"] == "yesno": add_filter_field(q, "html", "Human-readable value ('Yes' or 'No')")
+            if q.spec["type"] == "multiple-choice": add_filter_field(q, "html", "Comma-separated human-readable value")
 
         # Document the fields of the sub-modules together.
         for q, a in items:
