@@ -380,12 +380,17 @@ class Task(models.Model):
     def get_answers(self, decryption_provider=None):
         # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
         # The dict of answers is ordered to preserve the question definition order.
-        answered = OrderedDict()
+        answertuples = OrderedDict()
         for q, a in self.get_current_answer_records():
             # Get the value of that answer.
-            if a is None: continue
-            answered[q.key] = a.get_value(decryption_provider=decryption_provider)
-        return ModuleAnswers(self.module, self, answered)
+            if a is not None:
+                is_answered = True
+                value = a.get_value(decryption_provider=decryption_provider)
+            else:
+                is_answered = False
+                value = None
+            answertuples[q.key] = (q, is_answered, a, value)
+        return ModuleAnswers(self.module, self, answertuples)
 
     def can_transfer_owner(self):
         return not self.project.is_account_project
@@ -689,7 +694,7 @@ class Task(models.Model):
                 if q.key in answers.was_imputed:
                     # This was imputed. Ignore any user answer and serialize
                     # with a dummy TaskAnswerHistory.
-                    a = TaskAnswerHistory(taskanswer=TaskAnswer(question=q), stored_value=answers.answers[q.key])
+                    a = TaskAnswerHistory(taskanswer=TaskAnswer(question=q), stored_value=answers.as_dict()[q.key])
                 elif a is None:
                     continue
                 elif not serializer.include_metadata and q.spec["type"] == "interstitial":

@@ -39,7 +39,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
 
     def _test_condition_helper(self, module, context_key, context_value, condition, expected):
         m = Module.objects.get(key="fixture/simple_project/" + module)
-        answers = ModuleAnswers(m, None, { context_key: context_value })
+        answers = ModuleAnswers(m, None, { context_key: (m.questions.get(key=context_key), True, None, context_value) })
 
         # Test that the impute condition works correctly.
         # Run the impute condition and test whether or not
@@ -137,8 +137,8 @@ class ImputeConditionTests(TestCaseWithFixtureData):
             m,
             Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project),
             {
-                "_introduction": None, # must be answered for q1 to have a value
-                "q1": "My Answer",
+                "_introduction": (m.questions.get(key="_introduction"), True, None, None), # must be answered for q1 to have a value
+                "q1": (m.questions.get(key="q1"), True, None, "My Answer"),
             })
 
         test("q_module", value, "q_module", True) # answered is truthy
@@ -309,7 +309,7 @@ class RenderTests(TestCaseWithFixtureData):
                 "format": template_format,
                 "template": template,
             },
-            ModuleAnswers(m, None, answers),
+            ModuleAnswers(m, None, { k: (m.questions.get(key=k), True, None, v) for k, v in answers.items() }),
             output_format,
             str(self), # source
         ).strip()
@@ -442,19 +442,12 @@ class RenderTests(TestCaseWithFixtureData):
             m,
             Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project),
             {
-                "_introduction": None, # must be answered for q1 to have a value
-                "q1": "My Answer",
+                "_introduction": (m.questions.get(key="_introduction"), True, None, None), # must be answered for q1 to have a value
+                "q1": (m.questions.get(key="q1"), True, None, "My Answer"),
             })
 
-        # When substituting the module plainly ("{{q_module}}") it substitutes
-        # with the title of the sub-task, but because this sub-module has an
-        # instance-name attribute and that attribute says to give the value
-        # of "{{q1}}", but the Task object itself doesn't have any answers
-        # because we faked it above, we get back the same as "{{q_module.q1}}",
-        # which is the title of q1. But in an impute condition w/ value-mode
-        # "expression", we get back the ModuleAnswers instance.
-        test("q_module", value, escape("<The Question>"), value)
 
+        test("q_module", value, escape("A Simple Module"), value)
         test("q_module.q1", value, "My Answer")
         test("q_module.q1.text", value, "My Answer")
         test("q_module", None, escape("<module>"), None) # renders as the title of the question q_module, but in an impute condition value gives None
@@ -466,8 +459,9 @@ class RenderTests(TestCaseWithFixtureData):
     def _test_render_single_question_md(self, module, expression, value, expected, expected_impute_value="__NOT__PROVIDED__"):
         # Render the "{{question}}" or "{{question.text}}" using the given module.
         m = Module.objects.get(key="fixture/simple_project/" + module)
+        key = expression.split(".")[0]
         answers = ModuleAnswers(m, None, {
-            expression.split(".")[0]: value # if expression looks like "id.text" just use "id" here to set the answer
+            key: (m.questions.get(key=key), True, None, value) # if expression looks like "id.text" just use "id" here to set the answer
         })
         actual = render_content(
             {

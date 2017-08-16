@@ -108,7 +108,8 @@ def evaluate_module_state(current_answers, required, parent_context=None):
     unanswered = set()
 
     # Build a new array of answer values.
-    answers = { }
+    from collections import OrderedDict
+    answertuples = OrderedDict()
 
     # Build a list of questions whose answers were imputed.
     was_imputed = set()
@@ -128,6 +129,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
         for qq in deps:
             if qq.key not in state:
                 unanswered.add(q)
+                answertuples[q.key] = (q, False, None, None)
                 return { }
 
         # Can this question's answer be imputed from answers that
@@ -148,11 +150,13 @@ def evaluate_module_state(current_answers, required, parent_context=None):
         v = run_impute_conditions(q.spec.get("impute", []), impute_context)
         if v:
             # An impute condition matched. Unwrap to get the value.
+            answerobj = None
             v = v[0]
             was_imputed.add(q.key)
 
         elif q.key in current_answers.as_dict():
             # The user has provided an answer to this question.
+            answerobj = current_answers.answertuples[q.key][2]
             v = current_answers.as_dict()[q.key]
 
             # If q is a required question and the required argument is true,
@@ -160,12 +164,15 @@ def evaluate_module_state(current_answers, required, parent_context=None):
             if q.spec.get("required") and required and v is None:
                 can_answer.add(q)
                 unanswered.add(q)
+                answertuples[q.key] = (q, False, None, None)
                 return state
 
         elif current_answers.module.spec.get("type") == "project" and q.key == "_introduction":
             # Projects have an introduction but it isn't displayed as a question.
             # It's not explicitly answered, but treat it as answered so that questions
             # that implicitly depend on it can be evaluated.
+            # TODO: Is this still necessary?
+            answerobj = None
             v = None
 
         else:
@@ -177,12 +184,13 @@ def evaluate_module_state(current_answers, required, parent_context=None):
             # by the user, and that it's not answered yet.
             can_answer.add(q)
             unanswered.add(q)
+            answertuples[q.key] = (q, False, None, None)
             return state
 
         # Update the state that's passed to questions that depend on this
         # and also the global state of all answered questions.
-        state[q.key] = v
-        answers[q.key] = v
+        state[q.key] = (q, True, answerobj, v)
+        answertuples[q.key] = (q, True, answerobj, v)
         return state
 
     # Walk the dependency tree.
@@ -203,7 +211,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
     # Create a new ModuleAnswers object that holds the user answers,
     # imputed answers (which override user answers), and next-question
     # information.
-    ret = ModuleAnswers(current_answers.module, current_answers.task, answers)
+    ret = ModuleAnswers(current_answers.module, current_answers.task, answertuples)
     ret.was_imputed = was_imputed
     ret.unanswered = unanswered
     ret.can_answer = can_answer
@@ -221,7 +229,7 @@ def get_question_context(answers, question):
     # actually answered before and after that point.
     context = []
     for ans in answers.task.answers\
-        .filter(question__key__in=set(answers.answers)-answers.was_imputed)\
+        .filter(question__key__in=set(answers.as_dict())-answers.was_imputed)\
         .order_by('created')\
         .select_related('question'):
         q = ans.question
@@ -229,7 +237,7 @@ def get_question_context(answers, question):
             "key": q.key,
             "title": q.spec['title'],
             "can_link": True, # any non-imputed (checked above) question can be re-answered
-            "skipped": (answers.answers[q.key] is None) and (q.spec["type"] != "interstitial"),
+            "skipped": (answers.as_dict()[q.key] is None) and (q.spec["type"] != "interstitial"),
             "answered": True,
             "is_this_question": (question is not None) and (q.key == question.key),
         })
@@ -1027,21 +1035,26 @@ def get_question_choice(question, key):
             return choice
     raise KeyError(repr(key) + " is not a choice")
 
-class ModuleAnswers:
+class ModuleAnswers(object):
     """Represents a set of answers to a Task."""
 
-    def __init__(self, module, task, answers):
+    def __init__(self, module, task, answertuples):
         self.module = module
         self.task = task
-        self.answers = answers
-        self._cached_questions = None
+        self.answertuples = answertuples
+        self.answers_dict = None
 
     def as_dict(self):
-        if self.answers is None:
+        if self.answertuples is None:
             # Lazy-load by calling the task's get_answers function
             # and copying its answers dictionary.
-            self.answers = self.task.get_answers().answers
-        return self.answers
+            if self.task is None:
+                self.answertuples = { q.key: (q, False, None, None) for q in self.module.questions.order_by('definition_order') }
+            else:
+                self.answertuples = self.task.get_answers().answertuples
+        if self.answers_dict is None:
+            self.answers_dict = { q.key: value for q, is_ans, ansobj, value in self.answertuples.values() if is_ans }
+        return self.answers_dict
 
     def with_extended_info(self, required=False, parent_context=None):
         # Return a new ModuleAnswers instance that has imputed values added
@@ -1049,9 +1062,8 @@ class ModuleAnswers:
         return evaluate_module_state(self, required, parent_context=parent_context)
 
     def get_questions(self):
-        if self._cached_questions is None:
-            self._cached_questions = list(self.module.questions.order_by('definition_order'))
-        return self._cached_questions
+        self.as_dict() # lazy load if necessary
+        return [v[0] for v in self.answertuples.values()]
 
     def render_output(self, additional_context):
         # Now that all questions have been answered, generate this
@@ -1107,7 +1119,6 @@ class TemplateContext(Mapping):
         self.root = root
         self._cache = { }
         self.parent_context = parent_context
-        self._module_questions_map = parent_context._module_questions_map if parent_context is not None else { }
 
     def __getitem__(self, item):
         # Cache every context variable's value, since some items are expensive.
@@ -1118,15 +1129,7 @@ class TemplateContext(Mapping):
     def _execute_lazy_module_answers(self):
         if callable(self.module_answers):
             self.module_answers = self.module_answers()
-
-        # Pre-load all of the ModuleQuestions for the Module from the database.
-        if not self._module_questions_map.get(self.module_answers.module):
-            from collections import OrderedDict
-            module_questions = OrderedDict()
-            for q in self.module_answers.get_questions():
-                module_questions[q.key] = q
-            self._module_questions_map[self.module_answers.module] = module_questions
-        self._module_questions = self._module_questions_map[self.module_answers.module]
+        self._module_questions = { q.key: q for q in self.module_answers.get_questions() }
 
     def getitem(self, item):
         self._execute_lazy_module_answers()
@@ -1454,7 +1457,8 @@ class RenderedAnswer:
                 # inner Module type, so we can create a dummy instance that
                 # represents an unanswered instance of the Module.
                 if self.question.answer_type_module is not None:
-                    tc = TemplateContext(ModuleAnswers(self.question.answer_type_module, None, {}), self.escapefunc, parent_context=self.parent_context)
+                    ans = ModuleAnswers(self.question.answer_type_module, None, None)
+                    tc = TemplateContext(ans, self.escapefunc, parent_context=self.parent_context)
                 else:
                     # It is None when the question specifies a "protocol", in
                     # which case we don't know what questions the inner Module

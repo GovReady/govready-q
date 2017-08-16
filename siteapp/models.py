@@ -45,7 +45,7 @@ class User(AbstractUser):
         # initialize cache by fetching all of the answers to the settings
         # task, as a dict from question keys to Pythonic values.
         if not hasattr(self, "_settings"):
-            self._settings = self._get_settings_task().get_answers().answers
+            self._settings = self._get_settings_task().get_answers().as_dict()
 
         return self._settings.get(key)
 
