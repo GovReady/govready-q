@@ -684,7 +684,7 @@ class Project(models.Model):
 
         return ret
 
-    def import_json(self, data, user, logger):
+    def import_json(self, data, user, answer_method, logger):
         # Imports project data from the 'data' value created by export_json.
         # Each answer to a question becomes a new TaskAnswerHistory entry for
         # the question, if the value has changed. For module-type questions, the
@@ -704,6 +704,7 @@ class Project(models.Model):
         class Deserializer:
             def __init__(self):
                 self.user = user
+                self.answer_method = answer_method
                 self.ref_map = { }
                 self.log = logger
 

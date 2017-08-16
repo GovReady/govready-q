@@ -292,7 +292,7 @@ def save_answer(request, task, answered, context, __, EncryptionProvider, set_ep
     else:
         # Save the answer.
         had_answer = question.has_answer()
-        if question.save_answer(value, answered_by_tasks, answered_by_file, request.user, encryption_provider=EncryptionProvider()):
+        if question.save_answer(value, answered_by_tasks, answered_by_file, request.user, "web", encryption_provider=EncryptionProvider()):
             # The answer was changed (not just saved as a new answer).
             if request.POST.get("method") == "skip":
                 instrumentation_event_type = "skip"

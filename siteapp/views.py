@@ -390,7 +390,12 @@ def app_store_item(request, app_namespace, app_name):
                             messages.add_message(request, messages.ERROR, 'The question %s already has an app associated with it.'
                                 % q.spec["title"])
                             return HttpResponseRedirect(task.get_absolute_url())
-                        ans.save_answer(None, list([] if not ansh else ansh.answered_by_task.all()) + [project.root_task], None, request.user)
+                        ans.save_answer(
+                            None, # not used for module-type questions
+                            list([] if not ansh else ansh.answered_by_task.all()) + [project.root_task],
+                            None,
+                            request.user,
+                            "web")
 
                         # Redirect to the task containing the question that was just answered.
                         from urllib.parse import urlencode
@@ -792,7 +797,7 @@ def import_project_data(request, project):
             object_pairs_hook=OrderedDict)
 
         # Update project data.
-        project.import_json(data, request.user, lambda x : log_output.append(x))
+        project.import_json(data, request.user, "imp", lambda x : log_output.append(x))
     except Exception as e:
         log_output.append(str(e))
 

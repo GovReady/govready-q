@@ -853,7 +853,7 @@ class Task(models.Model):
             value, answered_by_tasks, answered_by_file, subtasks_updated = prep_fields
 
             # And save the answer.
-            if taskanswer.save_answer(value, answered_by_tasks, answered_by_file, deserializer.user):
+            if taskanswer.save_answer(value, answered_by_tasks, answered_by_file, deserializer.user, deserializer.answer_method):
                 deserializer.log("Task %s question %s was updated." % (my_name, qname))
                 did_update_any_questions = True
             elif not subtasks_updated:
@@ -979,7 +979,7 @@ class TaskAnswer(models.Model):
         self.save(update_fields=[])
         return True
 
-    def save_answer(self, value, answered_by_tasks, answered_by_file, user, encryption_provider=None):
+    def save_answer(self, value, answered_by_tasks, answered_by_file, user, method, encryption_provider=None):
         # Apply any encoding/encryption.
 
         value_encoding = None
@@ -1044,6 +1044,7 @@ class TaskAnswer(models.Model):
         answer = TaskAnswerHistory.objects.create(
             taskanswer=self,
             answered_by=user,
+            answered_by_method=method,
             stored_value=value,
             stored_encoding=value_encoding,
             answered_by_file=answered_by_file)
@@ -1136,6 +1137,7 @@ class TaskAnswerHistory(models.Model):
     taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
 
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
+    answered_by_method = models.CharField(max_length=3, choices=[("web", "Web"), ("imp", "Import"), ("api", "API")], help_text="How this answer was submitted, via the website by a user, via the Export/Import mechanism, or via an API programmatically.")
 
     stored_value = JSONField(blank=True, help_text="The actual answer value for the Question, or None/null if the question is not really answered yet.")
     stored_encoding = JSONField(blank=True, null=True, default=None, help_text="If not null, this field describes how stored_value is encoded and/or encrypted.")
@@ -1352,6 +1354,7 @@ class TaskAnswerHistory(models.Model):
             if self.id:
                 ret["answeredBy"] = str(self.answered_by)
                 ret["answeredAt"] = self.created.isoformat()
+                ret["answeredByMethod"] = str(self.answered_by_method)
             else:
                 ret["imputed"] = True
             ret["questionType"] = q.spec["type"] # so that deserialization can validate the value

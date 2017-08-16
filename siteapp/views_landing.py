@@ -151,7 +151,7 @@ def project_api(request, org_slug, project_id):
 
         # Update.
         log = []
-        ret = project.import_json(value, user, lambda msg : log.append(msg))
+        ret = project.import_json(value, user, "api", lambda msg : log.append(msg))
 
         return JsonResponse(OrderedDict([
             ("status", "ok" if ret else "error"),

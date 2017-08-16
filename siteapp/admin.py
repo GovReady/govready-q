@@ -106,7 +106,7 @@ class OrganizationAdmin(admin.ModelAdmin):
                     if prev_profile_task.get_answers().as_dict(): # not empty
                         prev_profile_json = prev_profile.export_json()
                         new_profile = user.get_account_project_(org)
-                        new_profile.import_json(prev_profile_json, user, lambda msg : print(msg))
+                        new_profile.import_json(prev_profile_json, user, "web", lambda msg : print(msg))
 
     add_me_as_admin.short_description = "Add me as an administrator to the organization"
     populate_test_organization.short_description = "Populate with the test users"

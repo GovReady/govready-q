@@ -532,7 +532,7 @@ class EncryptionTests(TestCaseWithFixtureData):
 
         # Save answer to database.
         self.assertTrue(answer.save_answer(value, [], None,
-            self.user, encryption_provider=encryptionProvider))
+            self.user, "web", encryption_provider=encryptionProvider))
 
         # Check that we got a key of 44 characters.
         self.assertEqual(len(encryptionProvider.keys), 1)
@@ -561,6 +561,7 @@ class ImportExportTests(TestCaseWithFixtureData):
             self.user = user
             self.log_capture = []
             self.included_metadata = included_metadata
+            self.answer_method = "web"
             def logger(message):
                 print(message)
                 self.log_capture.append(message)
