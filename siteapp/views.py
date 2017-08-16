@@ -408,19 +408,25 @@ def app_store_item(request, app_namespace, app_name):
             "form": form,
         })
 
-@login_required
-def project(request, project_id):
-    project = get_object_or_404(Project, id=project_id, organization=request.organization)
+def project_read_required(f):
+    @login_required
+    def g(request, project_id, project_url_suffix):
+        project = get_object_or_404(Project, id=project_id, organization=request.organization)
 
-    # Check authorization.
-    if not project.has_read_priv(request.user):
-        return HttpResponseForbidden()
+        # Check authorization.
+        if not project.has_read_priv(request.user):
+            return HttpResponseForbidden()
 
-    # Redirect if slug is not canonical. We do this after checking for
-    # read privs so that we don't reveal the task's slug to unpriv'd users.
-    if request.path != project.get_absolute_url():
-        return HttpResponseRedirect(project.get_absolute_url())
+        # Redirect if slug is not canonical. We do this after checking for
+        # read privs so that we don't reveal the task's slug to unpriv'd users.
+        if request.path != project.get_absolute_url()+project_url_suffix:
+            return HttpResponseRedirect(project.get_absolute_url())
 
+        return f(request, project)
+    return g
+
+@project_read_required
+def project(request, project):
     # Get all of the discussions I'm participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
     # certain questions within those tasks.
@@ -588,14 +594,59 @@ def project(request, project_id):
         "layout_mode": layout_mode,
     })
 
-@login_required
-def project_api(request, project_id):
-    # Explanatory page for an API for this project.
+@project_read_required
+def project_list_all_answers(request, project):
+    from guidedmodules.module_logic import TemplateContext, RenderedAnswer
 
-    # Check project and check authorization.
-    project = get_object_or_404(Project, id=project_id, organization=request.organization)
-    if not project.has_read_priv(request.user):
-        return HttpResponseForbidden()
+    def my_esc(s, ismd=False):
+        if not ismd:
+            import html
+            return html.escape(s)
+        else:
+            import CommonMark
+            return CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(s))
+
+    sections = []
+
+    def recursively_find_answers(path, task):
+        answers = task.get_answers().with_extended_info()
+        tc = TemplateContext(answers, my_esc)
+        
+        # Create row in the output table for the answers.
+        section = {
+            "task": task,
+            "path": path,
+            "answers": [],
+        }
+        for q, is_answered, a, value in answers.answertuples.values():
+            if not is_answered: continue # skip questions that have no answers
+            if not a: continue # skip imputed answers
+            if q.spec["type"] in ("interstitial", "module"): continue # skip question types that display awkwardly
+            value_display = RenderedAnswer(task, q, value, tc).__html__()
+            section["answers"].append((q, value_display))
+        
+        if section["answers"]:
+            sections.append(section)
+
+        for q, is_answered, a, value in answers.answertuples.values():
+            # Recursively go into submodules.
+            if q.spec["type"] in ("module", "module-set"):
+                if a and a.answered_by_task.exists():
+                    for t in a.answered_by_task.all():
+                        recursively_find_answers(path + [q.spec["title"]], t)
+
+    # Start at the root task and compute a table of all answers, recursively.
+    recursively_find_answers([], project.root_task)
+
+    return render(request, "project-list-answers.html", {
+        "project": project,
+        "folder": project.primary_folder(),
+        "answers": sections,
+    })
+
+@project_read_required
+def project_api(request, project):
+    # Explanatory page for an API for this project.
 
     # Create sample output.
     sample = project.export_json(False)
@@ -803,6 +854,7 @@ def import_project_data(request, project):
 
     # Show an unfriendly response containing log output.
     return JsonResponse(log_output, safe=False, json_dumps_params={"indent": 2})
+
 
 # INVITATIONS
 
