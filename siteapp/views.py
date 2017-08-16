@@ -623,7 +623,7 @@ def project_list_all_answers(request, project):
             if not a: continue # skip imputed answers
             if q.spec["type"] in ("interstitial", "module"): continue # skip question types that display awkwardly
             value_display = RenderedAnswer(task, q, value, tc).__html__()
-            section["answers"].append((q, value_display))
+            section["answers"].append((q, a, value_display))
         
         if section["answers"]:
             sections.append(section)

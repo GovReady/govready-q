@@ -229,6 +229,17 @@ def save_answer(request, task, answered, context, __, EncryptionProvider, set_ep
 
         cleared = False
 
+    elif request.POST.get("method") == "review":
+        # Update the reviewed flag on the answer.
+        ta = TaskAnswer.objects.filter(task=task, question=q).first()
+        if ta:
+            ans = ta.get_current_answer()
+            if ans and not ans.cleared and ans.id == int(request.POST["answer"]):
+                ans.reviewed = int(request.POST["reviewed"])
+                ans.save(update_fields=["reviewed"])
+                return JsonResponse({ "status": "ok" })
+        return JsonResponse({ "status": "error", "message": "Invalid question." })
+
     else:
         raise ValueError("invalid 'method' parameter %s" + request.POST.get("method", "<not set>"))
 
@@ -473,6 +484,7 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
         "answer_obj": answer,
         "answer": existing_answer,
         "default_answer": default_answer,
+        "review_choices": [(0, 'Not Reviewed'), (1, 'Reviewed'), (2, 'Approved')],
         "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
         "show_discussion_members_count": True,
 

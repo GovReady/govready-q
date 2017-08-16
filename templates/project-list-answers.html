@@ -88,7 +88,7 @@ h2 { margin-top: 1.5em; }
           </tr>
         </thead>
         <tbody>
-        {% for question, value in section.answers %}
+        {% for question, answer, value in section.answers %}
           <tr>
             <td>
               {{question.spec.title}}
@@ -97,6 +97,11 @@ h2 { margin-top: 1.5em; }
               </a>
             </td>
             <td>
+              <div style="float: right">
+              {% if answer.reviewed == 0 %}<span class="label label-danger">New</span>{% endif %}
+              {% if answer.reviewed == 1 %}<span class="label label-info">Reviewed</span>{% endif %}
+              {% if answer.reviewed == 2 %}<span class="label label-success">Approved</span>{% endif %}
+              </div>
               {{value|safe}}
             </td>
           </tr>

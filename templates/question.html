@@ -421,7 +421,28 @@ label:hover .onhover { display: inline; }
 
             {% endif %} {# not interstitial #}
 
-            {% endif %} {# write_priv #}
+            {% if answer_obj %}
+              <select style="display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this)">
+                {% for key, label in review_choices %}
+                  <option value="{{key}}" {% if answer_obj.reviewed == key %}selected{% endif %}>
+                    {{label}}
+                  </option>
+                {% endfor %}
+              </select>
+            {% endif %}
+
+          {% else %} {# write_priv #}
+            {# User does not have write permission. #}
+
+            {% if answer_obj %}
+              {% for key, label in review_choices %}
+                {% if answer_obj.reviewed == key %}
+                  <p style="margin-top: 1em; font-size: 85%; color: #666">This question&rsquo;s review status is {{label}}.</p>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+          {% endif %} {# write_priv #}
         </form>
 
         {% if reference_text %}
@@ -762,6 +783,22 @@ $(function() {
         return false;
     });
 })
+
+{% if answer_obj %}
+function update_review_status(elem) {
+  var reviewed = $(elem).val();
+  ajax_with_indicator({
+      url: "{{task.get_absolute_url|escapejs}}/_save",
+      method: "POST",
+      data: {
+        question: "{{q.id|escapejs}}",
+        answer: {{answer_obj.id}},
+        method: "review",
+        reviewed: reviewed
+      }
+  });
+}
+{% endif %}
 
 function start_a_discussion(is_page_load) {
     ajax_with_indicator({
