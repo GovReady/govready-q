@@ -58,6 +58,20 @@
               font-size: .75em;
               color: #888;
             }
+
+            .question-answer[data-reviewed="0"] {
+              background-color: #d9534f;
+              color: white;
+              padding: 1px .33em;
+            }
+            .question-answer[data-reviewed="1"] {
+              border: 1px solid #DD7;
+              padding: 1px 3px;
+            }
+            .question-answer[data-reviewed="2"] {
+              border: 1px solid #DD7;
+              padding: 1px 3px;
+            }
         </style>
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
         <link rel="stylesheet" href="{% static "vendor/fontawesome/css/font-awesome.min.css" %}">

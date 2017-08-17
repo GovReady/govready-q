@@ -493,7 +493,7 @@ class RenderTests(TestCaseWithFixtureData):
         # test that we get the same thing if we use an impute condition with value-mode: expression,
         # but since the test is only given its string output convert the impute condition value
         # to a string
-        def escapefunc(question, value):
+        def escapefunc(question, answerobj, value):
             # ignores longtext rendering
             return value
         context = TemplateContext(answers, escapefunc) # parallels evaluate_module_state

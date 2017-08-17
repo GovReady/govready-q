@@ -119,7 +119,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
     # cleared from the context's cache for each question because each question sees
     # a different set of dependencies.
     impute_context_parent = TemplateContext(
-        ModuleAnswers(current_answers.module, current_answers.task, {}), lambda q, v : str(v),
+        ModuleAnswers(current_answers.module, current_answers.task, {}), lambda q, a, v : str(v),
         parent_context=parent_context)
 
     # Visitor function.
@@ -455,7 +455,7 @@ def render_content(content, answers, output_format, source, additional_context={
         # For other values we perform standard HTML escaping.
 
         if template_format == "text":
-            def escapefunc(question, value):
+            def escapefunc(question, answerobj, value):
                 # Don't perform any escaping.
                 return value
     
@@ -562,11 +562,12 @@ def render_content(content, answers, output_format, source, additional_context={
         raise ValueError("Invalid template format encountered: %s." % template_format)
 
 
-def HtmlAnswerRenderer(question, value):
+def HtmlAnswerRenderer(question, answerobj, value):
+    import html
     if question is None or question.spec["type"] != "longtext":
         # Regular text fields just get escaped.
-        import html
-        return html.escape(value)
+        value = html.escape(value)
+        wrappertag = "span"
     else:
         # longtext fields are rendered into the output
         # using CommonMark. Escape initial <'s so they
@@ -577,7 +578,23 @@ def HtmlAnswerRenderer(question, value):
         if value.startswith("<"): value = "\\" + value
         import CommonMark
         parsed = CommonMark.Parser().parse(value)
-        return CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
+        value = CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
+        wrappertag = "div"
+    return """<{tag} class='question-answer'
+      data-module='{module}'
+      data-question='{question}'
+      data-answered-by='{answered_by}'
+      data-answered-on='{answered_on}'
+      data-reviewed='{reviewed}'
+      >{value}</{tag}>""".format(
+        tag=wrappertag,
+        module=html.escape(question.module.spec['title']),
+        question=html.escape(question.spec["title"]),
+        answered_by=html.escape(str(answerobj.answered_by)) if answerobj else "(value was imputed)",
+        answered_on=html.escape(answerobj.created.strftime("%c")) if answerobj else "(n/a)",
+        reviewed=str(answerobj.reviewed) if answerobj else "",
+        value=value,
+    )
 
 
 def get_all_question_dependencies(module):
@@ -841,8 +858,9 @@ class TemplateContext(Mapping):
         question = self._module_questions.get(item)
         if question:
             # The question might or might not be answered. If not, its value is None.
-            answer = self.module_answers.as_dict().get(item, None)
-            return RenderedAnswer(self.module_answers.task, question, answer, self)
+            self.module_answers.as_dict() # trigger lazy-loading
+            answerobj, answervalue = self.module_answers.answertuples.get(item, (None, None, None, None))[2:4]
+            return RenderedAnswer(self.module_answers.task, question, answerobj, answervalue, self)
 
         # The context also provides the project and organization that the Task belongs to,
         # and other task attributes, assuming the keys are not overridden by question IDs.
@@ -913,7 +931,7 @@ class RenderedProject(TemplateContext):
     def as_raw_value(self):
         return self.project.title
     def __html__(self):
-        return self.escapefunc(None, self.as_raw_value())
+        return self.escapefunc(None, None, self.as_raw_value())
 
 class RenderedOrganization(TemplateContext):
     def __init__(self, organization, parent_context=None):
@@ -927,12 +945,13 @@ class RenderedOrganization(TemplateContext):
     def as_raw_value(self):
         return self.organization.name
     def __html__(self):
-        return self.escapefunc(None, self.as_raw_value())
+        return self.escapefunc(None, None, self.as_raw_value())
 
 class RenderedAnswer:
-    def __init__(self, task, question, answer, parent_context):
+    def __init__(self, task, question, answerobj, answer, parent_context):
         self.task = task
         self.question = question
+        self.answerobj = answerobj
         self.answer = answer
         self.parent_context = parent_context
         self.escapefunc = parent_context.escapefunc
@@ -956,7 +975,7 @@ class RenderedAnswer:
             value = str(self.answer)
 
         # And in all cases, escape the result.
-        return self.escapefunc(self.question, value)
+        return self.escapefunc(self.question, self.answerobj, value)
 
     @property
     def text(self):
@@ -1009,7 +1028,7 @@ class RenderedAnswer:
                 self.value = value
                 self.ra = ra
             def __html__(self):
-                return self.ra.escapefunc(self.ra.question, self.value)
+                return self.ra.escapefunc(self.ra.question, self.ra.answerobj, self.value)
         return SafeString(value, self)
 
     @property
@@ -1097,6 +1116,7 @@ class RenderedAnswer:
                     "type": "choice",
                     "choices": self.question.spec["choices"],
                     }),
+                self.answerobj,
                 ans, self.parent_context)
                 for ans in self.answer)
         

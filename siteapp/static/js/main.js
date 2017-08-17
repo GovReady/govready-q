@@ -11,6 +11,14 @@ $(function() {
   // Make all tab navs responsive.
   $(".nav-tabs, .tab-content").addClass('responsive');
   fakewaffle.responsiveTabs(['xs', 'sm'])
+
+  // Make question answers show popovers with additional information.
+  $('.question-answer').popover({
+    content: function() {
+      return "Answered by " + this.getAttribute("data-answered-by") + " on " + this.getAttribute("data-answered-on")
+        + ". The question was: " + this.getAttribute("data-question") + " in " + this.getAttribute("data-module") + ".";
+    }
+  })
 })
 
 function textarea_ctrlenter_handler(e) {
