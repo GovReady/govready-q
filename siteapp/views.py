@@ -596,21 +596,13 @@ def project(request, project):
 
 @project_read_required
 def project_list_all_answers(request, project):
-    from guidedmodules.module_logic import TemplateContext, RenderedAnswer
-
-    def my_esc(s, ismd=False):
-        if not ismd:
-            import html
-            return html.escape(s)
-        else:
-            import CommonMark
-            return CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(s))
+    from guidedmodules.module_logic import TemplateContext, RenderedAnswer, HtmlAnswerRenderer
 
     sections = []
 
     def recursively_find_answers(path, task):
         answers = task.get_answers().with_extended_info()
-        tc = TemplateContext(answers, my_esc)
+        tc = TemplateContext(answers, HtmlAnswerRenderer)
         
         # Create row in the output table for the answers.
         section = {

@@ -119,7 +119,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
     # cleared from the context's cache for each question because each question sees
     # a different set of dependencies.
     impute_context_parent = TemplateContext(
-        ModuleAnswers(current_answers.module, current_answers.task, {}), lambda v, mode : str(v),
+        ModuleAnswers(current_answers.module, current_answers.task, {}), lambda q, v : str(v),
         parent_context=parent_context)
 
     # Visitor function.
@@ -455,22 +455,12 @@ def render_content(content, answers, output_format, source, additional_context={
         # For other values we perform standard HTML escaping.
 
         if template_format == "text":
-            def escapefunc(s, is_longtext):
+            def escapefunc(question, value):
                 # Don't perform any escaping.
-                return s
+                return value
     
         elif template_format == "html":
-            def escapefunc(s, is_longtext):
-                if not is_longtext:
-                    # Regular text fields just get escaped.
-                    import html
-                    return html.escape(s)
-                else:
-                    # longtext fields are rendered into the output
-                    # using CommonMark.
-                    import CommonMark
-                    parsed = CommonMark.Parser().parse(s)
-                    return CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
+            escapefunc = HtmlAnswerRenderer
 
         # Execute the template.
 
@@ -570,6 +560,24 @@ def render_content(content, answers, output_format, source, additional_context={
          
     else:
         raise ValueError("Invalid template format encountered: %s." % template_format)
+
+
+def HtmlAnswerRenderer(question, value):
+    if question is None or question.spec["type"] != "longtext":
+        # Regular text fields just get escaped.
+        import html
+        return html.escape(value)
+    else:
+        # longtext fields are rendered into the output
+        # using CommonMark. Escape initial <'s so they
+        # are not treated as the start of HTML tags,
+        # which are not permitted in safe mode, but
+        # <'s appear tag-like in certain cases like
+        # when we say <not answerd>.
+        if value.startswith("<"): value = "\\" + value
+        import CommonMark
+        parsed = CommonMark.Parser().parse(value)
+        return CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
 
 
 def get_all_question_dependencies(module):
@@ -844,11 +852,11 @@ class TemplateContext(Mapping):
             if item == "project":
                 if self.parent_context is not None: # use parent's cache
                     return self.parent_context[item]
-                return RenderedProject(self.module_answers.task.project, self.escapefunc, parent_context=self)
+                return RenderedProject(self.module_answers.task.project, parent_context=self)
             if item == "organization":
                 if self.parent_context is not None: # use parent's cache
                     return self.parent_context[item]
-                return RenderedOrganization(self.module_answers.task.project.organization, self.escapefunc, parent_context=self)
+                return RenderedOrganization(self.module_answers.task.project.organization, parent_context=self)
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
                 # call the method here because that leads to infinite
@@ -895,31 +903,31 @@ class TemplateContext(Mapping):
         return len([x for x in self])
 
 class RenderedProject(TemplateContext):
-    def __init__(self, project, escapefunc, parent_context=None):
+    def __init__(self, project, parent_context=None):
         self.project = project
         def _lazy_load():
             if self.project.root_task:
                 return self.project.root_task.get_answers()
-        super().__init__(_lazy_load, escapefunc, parent_context=parent_context)
+        super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
 
     def as_raw_value(self):
         return self.project.title
     def __html__(self):
-        return self.escapefunc(self.as_raw_value(), False)
+        return self.escapefunc(None, self.as_raw_value())
 
 class RenderedOrganization(TemplateContext):
-    def __init__(self, organization, escapefunc, parent_context=None):
+    def __init__(self, organization, parent_context=None):
         self.organization = organization
         def _lazy_load():
             project = organization.get_organization_project()
             if project.root_task:
                 return project.root_task.get_answers()
-        super().__init__(_lazy_load, escapefunc, parent_context=parent_context)
+        super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
 
     def as_raw_value(self):
         return self.organization.name
     def __html__(self):
-        return self.escapefunc(self.as_raw_value(), False)
+        return self.escapefunc(None, self.as_raw_value())
 
 class RenderedAnswer:
     def __init__(self, task, question, answer, parent_context):
@@ -935,9 +943,6 @@ class RenderedAnswer:
         # How the template renders a question variable used plainly, i.e. {{q0}}.
         if self.answer is None:
             value = "<%s>" % self.question.spec['title']
-        elif self.question_type == "longtext":
-            # Use a different escapefunc mode.
-            return self.escapefunc(self.answer, True)
         elif self.question_type == "multiple-choice":
             # Render multiple-choice as a comma+space-separated list
             # of the choice keys.
@@ -951,7 +956,7 @@ class RenderedAnswer:
             value = str(self.answer)
 
         # And in all cases, escape the result.
-        return self.escapefunc(value, False)
+        return self.escapefunc(self.question, value)
 
     @property
     def text(self):
@@ -1000,12 +1005,12 @@ class RenderedAnswer:
         # method to override Jinja2 escaping so we can use our
         # own function.
         class SafeString:
-            def __init__(self, value, escapefunc):
+            def __init__(self, value, ra):
                 self.value = value
-                self.escapefunc = escapefunc
+                self.ra = ra
             def __html__(self):
-                return self.escapefunc(value)
-        return SafeString(value, lambda value : self.escapefunc(value, self.question_type == "longtext" and self.answer is not None))
+                return self.ra.escapefunc(self.ra.question, self.value)
+        return SafeString(value, self)
 
     @property
     def edit_link(self):

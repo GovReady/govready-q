@@ -298,9 +298,9 @@ class RenderTests(TestCaseWithFixtureData):
         test(
             "{{q_longtext}}",
             {
-                "q_longtext": '''<a href="" onclick="alert('uh-oh')">click me</a>''',
+                "q_longtext": '''this is bad: <a href="" onclick="alert('uh-oh')">click me</a>''',
             },
-            '<p><!-- raw HTML omitted -->click me<!-- raw HTML omitted --></p>')
+            '<p>this is bad: <!-- raw HTML omitted -->click me<!-- raw HTML omitted --></p>')
 
     def render_content(self, module, template_format, template, answers, output_format):
         m = Module.objects.get(key="fixture/simple_project/" + module)
@@ -493,7 +493,10 @@ class RenderTests(TestCaseWithFixtureData):
         # test that we get the same thing if we use an impute condition with value-mode: expression,
         # but since the test is only given its string output convert the impute condition value
         # to a string
-        context = TemplateContext(answers, lambda v, mode : str(v)) # parallels evaluate_module_state
+        def escapefunc(question, value):
+            # ignores longtext rendering
+            return value
+        context = TemplateContext(answers, escapefunc) # parallels evaluate_module_state
         actual = run_impute_conditions([{ "condition": "1", "value": expression, "value-mode": "expression" }], context)
         self.assertIsNotNone(actual, msg="'1' impute condition failed")
         actual = actual[0] # unwrap
