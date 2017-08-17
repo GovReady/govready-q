@@ -446,8 +446,15 @@ class RenderTests(TestCaseWithFixtureData):
                 "q1": (m.questions.get(key="q1"), True, None, "My Answer"),
             })
 
+        # When substituting the module plainly ("{{q_module}}") it substitutes
+        # with the title of the sub-task, but because this sub-module has an
+        # instance-name attribute and that attribute says to give the value
+        # of "{{q1}}", but the Task object itself doesn't have any answers
+        # because we faked it above, we get back the same as "{{q_module.q1}}",
+        # which is the title of q1. But in an impute condition w/ value-mode
+        # "expression", we get back the ModuleAnswers instance.
+        test("q_module", value, escape("<The Question>"), value)
 
-        test("q_module", value, escape("A Simple Module"), value)
         test("q_module.q1", value, "My Answer")
         test("q_module.q1.text", value, "My Answer")
         test("q_module", None, escape("<module>"), None) # renders as the title of the question q_module, but in an impute condition value gives None
