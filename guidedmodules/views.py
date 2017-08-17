@@ -9,6 +9,7 @@ import re
 
 from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 import guidedmodules.module_logic as module_logic
+import guidedmodules.answer_validation as answer_validation
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
 
@@ -208,8 +209,8 @@ def save_answer(request, task, answered, context, __, EncryptionProvider, set_ep
 
         # parse & validate
         try:
-            value = module_logic.question_input_parser.parse(q, value)
-            value = module_logic.validator.validate(q, value)
+            value = answer_validation.question_input_parser.parse(q, value)
+            value = answer_validation.validator.validate(q, value)
         except ValueError as e:
             # client side validation should have picked this up
             return JsonResponse({ "status": "error", "message": str(e) })

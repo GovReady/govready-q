@@ -7,7 +7,8 @@ from jsonfield import JSONField
 from collections import OrderedDict
 import uuid
 
-from .module_logic import ModuleAnswers, render_content, validator
+from .module_logic import ModuleAnswers, render_content
+from .answer_validation import validator
 from siteapp.models import User, Organization, Project, ProjectMembership
 
 ModulePythonCode = { }
@@ -1288,8 +1289,8 @@ class TaskAnswerHistory(models.Model):
         # Exports this TaskAnswerHistory's value to a JSON-serializable Python data structure.
         # Called via siteapp.Project::export_json.
         #
-        # The data structure should match the output format of module_logic.question_input_parser
-        # and the input format expected by module_logic.validator.validate() because the
+        # The data structure should match the output format of answer_validation.question_input_parser
+        # and the input format expected by answer_validation.validator.validate() because the
         # validate function is called during import.
 
         # Get the answer's current value.
