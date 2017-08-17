@@ -219,6 +219,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Start the task.
         self.click_element('#question-simple_module')
 
+class GeneralTests(OrganizationSiteFunctionalTests):
+
     def _accept_invitation(self, email):
         # Assumes an invitation email was sent.
 
@@ -466,6 +468,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Test that we can see the comment and the reaction.
         self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
+
+class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def _test_api_get(self, path, expected_value):
         resp = self.client_get(
