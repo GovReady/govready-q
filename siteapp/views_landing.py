@@ -125,7 +125,7 @@ def project_api(request, org_slug, project_id):
 
     if request.method == "GET":
         # Export data.
-        value = project.export_json(include_metadata=False)
+        value = project.export_json(include_file_content=False, include_metadata=False)
 
         # Return the value as JSON.
         return JsonResponse(value, json_dumps_params={ "indent": 2 })

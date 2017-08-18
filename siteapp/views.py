@@ -641,7 +641,7 @@ def project_api(request, project):
     # Explanatory page for an API for this project.
 
     # Create sample output.
-    sample = project.export_json(False)
+    sample = project.export_json(include_file_content=False, include_metadata=False)
 
     # Create sample POST body data by randomly choosing question
     # answers.
@@ -834,7 +834,8 @@ def delete_project(request, project):
 @project_admin_login_post_required
 def export_project(request, project):
     from urllib.parse import quote
-    resp = JsonResponse(project.export_json(include_metadata=True), json_dumps_params={"indent": 2})
+    data = project.export_json(include_metadata=True, include_file_content=True)
+    resp = JsonResponse(data, json_dumps_params={"indent": 2})
     resp["content-disposition"] = "attachment; filename=%s.json" % quote(project.title)
     return resp
 

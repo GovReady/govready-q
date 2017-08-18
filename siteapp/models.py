@@ -613,7 +613,7 @@ class Project(models.Model):
     def get_notification_watchers(self):
         return self.get_members()
 
-    def export_json(self, include_metadata):
+    def export_json(self, include_file_content=True, include_metadata=True):
         # Exports all project data to a JSON-serializable Python data structure.
         # The caller should have administrative permissions because no authorization
         # is performed within this.
@@ -631,6 +631,7 @@ class Project(models.Model):
             def __init__(self):
                 self.objects = { }
                 self.keys = { }
+                self.include_file_content = include_file_content
                 self.include_metadata = include_metadata
             def get_schema(self):
                 if self.include_metadata:

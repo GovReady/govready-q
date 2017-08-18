@@ -190,6 +190,8 @@ h2 { margin-top: 1.5em; }
               <p>Data type: number (or null).</p>
             {% elif question.spec.type == "real" %}
               <p>Data type: number (or null).</p>
+            {% elif question.spec.type == "file" %}
+              <p>Data type: object containing the properties <code>url</code> (a link to download the file content), <code>type</code> (the MIME type), and <code>size</code> (the size of the file in bytes).</p>
             {% else %}
               <p>Data type: {{question.spec.type}}.</p>
             {% endif %}

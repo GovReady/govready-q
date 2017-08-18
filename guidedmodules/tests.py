@@ -555,8 +555,9 @@ class ImportExportTests(TestCaseWithFixtureData):
     ## IMPORT/EXPORT TASK DATA TESTS ##
 
     class DummySerializer:
-        def __init__(self, include_metadata):
+        def __init__(self, include_metadata=True):
             self.include_metadata = include_metadata
+            self.include_file_content = True
         def serializeOnce(self, object, preferred_key, value_func):
             return value_func()
 

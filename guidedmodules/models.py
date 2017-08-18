@@ -1312,11 +1312,12 @@ class TaskAnswerHistory(models.Model):
                 # format because it doesn't include the file content (only a URL to it).
                 # Add the file content to it. It's other important field is 'type' which
                 # holds the MIME type.
-                import re
-                from base64 import b64encode
-                value.update({
-                    "content": re.findall(".{1,64}", b64encode(self.answered_by_file.read()).decode("ascii")),
-                })
+                if serializer.include_file_content:
+                    import re
+                    from base64 import b64encode
+                    value.update({
+                        "content": re.findall(".{1,64}", b64encode(self.answered_by_file.read()).decode("ascii")),
+                    })
 
             else:
                 # Any value that we might have stored in the database is definitely
