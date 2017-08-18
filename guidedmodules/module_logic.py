@@ -457,7 +457,7 @@ def render_content(content, answers, output_format, source, additional_context={
         if template_format == "text":
             def escapefunc(question, answerobj, value):
                 # Don't perform any escaping.
-                return value
+                return str(value)
     
         elif template_format == "html":
             escapefunc = HtmlAnswerRenderer(show_metadata=show_answer_metadata)
@@ -567,11 +567,8 @@ class HtmlAnswerRenderer:
         self.show_metadata = show_metadata
     def __call__(self, question, answerobj, value):
         import html
-        if question is None or question.spec["type"] != "longtext":
-            # Regular text fields just get escaped.
-            value = html.escape(value)
-            wrappertag = "span"
-        else:
+
+        if question is not None and question.spec["type"] == "longtext":
             # longtext fields are rendered into the output
             # using CommonMark. Escape initial <'s so they
             # are not treated as the start of HTML tags,
@@ -583,6 +580,17 @@ class HtmlAnswerRenderer:
             parsed = CommonMark.Parser().parse(value)
             value = CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
             wrappertag = "div"
+
+        elif question is not None and question.spec["type"] == "file" and question.spec.get("file-type") == "image" \
+            and hasattr(value, "file_data"):
+            # Image files turn into image tags.
+            value = "<img src=\"" + html.escape(value.file_data['url']) + "\" style=\"display: block; margin: 1em\">"
+            wrappertag = "div"
+
+        else:
+            # Regular text fields just get escaped.
+            value = html.escape(str(value))
+            wrappertag = "span"
 
         if not self.show_metadata:
             return value
@@ -975,7 +983,14 @@ class RenderedAnswer:
             # of the choice keys.
             value = ", ".join(self.answer)
         elif self.question_type == "file":
-            value = "<uploaded file: " + self.answer['url'] + ">"
+            # Pass something to the escapefunc that HTML rendering can
+            # recognize as a file but non-HTML rendering sees as a string.
+            class FileValueWrapper:
+                def __init__(self, answer):
+                    self.file_data = answer
+                def __str__(self):
+                    return "<uploaded file: " + self.file_data['url'] + ">"
+            value = FileValueWrapper(self.answer)
         elif self.question_type == "module":
             value = self.answer.task.render_title()
         else:
