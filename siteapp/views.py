@@ -657,7 +657,28 @@ def project_api(request, project):
             for k, v in sample.items()
             if k in keys and "." not in k
         ])
-    sample_post = select_randomly(sample)
+    sample_post_json = select_randomly(sample)
+
+    # Turn the sample JSON POST into a key-value version.
+    def flatten_json(path, node, output):
+        if isinstance(node, dict):
+            if set(node.keys()) == set(["type", "url", "size"]):
+                # This looks like a file field.
+                flatten_json(path, "<binary file content>", output)
+            else:
+                for key, value in node.items():
+                    if "." in key: continue # a read-only field
+                    flatten_json(path+[key], value, output)
+        elif isinstance(node, list):
+            for item in node:
+                flatten_json(path, item, output)
+        else:
+            if node is None:
+                # Can't convert this to a string - it will be the string "None".
+                node = "some value here"
+            output.append((".".join(path), str(node).replace("\n", "\\n").replace("\r", "\\r")))
+    sample_post_keyvalue = []
+    flatten_json(["project"], sample["project"], sample_post_keyvalue)
 
     # Format sample output.
     def format_sample(sample):
@@ -719,7 +740,8 @@ def project_api(request, project):
         "folder": project.primary_folder(),
         "SITE_ROOT_URL": settings.SITE_ROOT_URL,
         "sample": format_sample(sample),
-        "sample_post": format_sample(sample_post),
+        "sample_post_keyvalue": sample_post_keyvalue,
+        "sample_post_json": format_sample(sample_post_json),
         "schema": schema,
     })
 

@@ -86,14 +86,46 @@ h2 { margin-top: 1.5em; }
 
     <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API by running the following command. Replace <code>your-api-key</code> with <a href="/api-keys">your API key</a>. (The slash in the command below indicates a continued line.)</p>
 
-    <pre>curl --header "Authorization: <i>your-api-key</i>" \
+    <pre>curl \
+      --header "Authorization: <i>your-api-key</i>" \
       {{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
 
 
+    <!-- -->
 
-    <h2>Updating data using a POST request</h2>
+    <h2>Updating answers using a POST request with key-value pairs</h2>
 
-    <p>Use a POST request instead a GET request to update data stored in the app. Data values to save in the app are included in the request body as JSON in the same format as returned by the GET request.</p>
+    <p>There are two types of POST requests that can be used to update app data. In the first type, described in this section, data values are provided as key-value pairs using the regular web browser form submission method. (In the second form, described below, answers are provided using a JSON data structure that is formatted the same as the JSON data structure returned by a GET request, which may be more appropriate when submitting non-textual and non-binary content.) 
+
+    <p>In each of the key-value pairs submitted in the POST request, the <b>key</b> is a dotted-path question ID. The key always begins with <code>project.</code> and is followed by the property names on the path to the question being updated, according to the JSON data structure, with property names separated by the <code>.</code> character.</p>
+
+    <p>The <b>value</b> of each key-value pair is an answer submitted either as plain text or, for file-type questions, as a binary file. If submitted as plain text and the question expects non-text data, such as a number, the value will be converted. When uploading a binary file, the <a href="https://tools.ietf.org/html/rfc2388">multipart/form-data</a> content type must be used for the POST request.</p>
+
+    <p>For example:</p>
+
+    <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
+    <pre>{% for key, value in sample_post_keyvalue %}{{key}}={{value}}
+{% endfor %}</pre>
+    </div>
+
+    <p>The fields are documented below.</p>
+
+    <p>As with the GET API, an API key must be passed in the HTTP <code>Authorization</code> header. An API key with write permission must be used. You can get an API key from the <a href="/api-keys">API keys page</a>.</p>
+
+    <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API using <code>curl</code>. Replace <code>your-api-key</code> in the command below with <a href="/api-keys">your full access API key</a>. Then run the following command. (The slash in the command below indicates a continued line.)</p>
+
+    <pre>curl \
+      --header "Authorization: <i>your-api-key</i>" \
+      {% for key, value in sample_post_keyvalue %}-F "{{key}}={% if value != "<binary file content>" %}{{value}}{% else %}@filename.ext{% endif %}" \
+      {% endfor %}{{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+
+    <p>(<code>curl</code>&rsquo;s <code>-d</code> option can be used in place of <code>-F</code> if none of the fields are file uploads.)
+
+    <!-- -->
+
+    <h2>Updating data using a POST request with JSON</h2>
+
+    <p>The second type of POST request uses a request body in JSON format in the same structure as that returned by the GET request.</p>
 
     <p>The POST request body always includes:</p>
 
@@ -112,19 +144,22 @@ h2 { margin-top: 1.5em; }
     <p>For example:</p>
 
     <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
-    {{sample_post|safe}}
+    {{sample_post_json|safe}}
     </div>
 
     <p>The fields are documented below.</p>
+
+    <p>The <code>Content-Type</code> header in the request must be set to <code>application/json</code>.</p>
 
     <p>As with the GET API, an API key must be passed in the HTTP <code>Authorization</code> header. An API key with write permission must be used. You can get an API key from the <a href="/api-keys">API keys page</a>.</p>
 
     <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API using <code>curl</code>. First copy the sample POST request body or make your own and save it in a file named <code>data.json</code>. Replace <code>your-api-key</code> in the command below with <a href="/api-keys">your full access API key</a>. Then run the following command. (The slash in the command below indicates a continued line.)</p>
 
-    <pre>curl --header "Authorization: <i>your-api-key</i>" \
-      -XPOST --data @data.json --header "Content-Type: application/json" \
+    <pre>curl \
+      --header "Authorization: <i>your-api-key</i>" \
+      -XPOST --data @data.json \
+      --header "Content-Type: application/json" \
       {{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
-
 
     <h2>Data Schema</h2>
 
@@ -175,15 +210,18 @@ h2 { margin-top: 1.5em; }
               <p>Data type: string (or null); if set, uses CommonMark (Markdown) encoding.</p>
             {% elif question.spec.type == "date" %}
               <p>Data type: string representing a date in YYYY-MM-DD format (or null).</p>
-            {% elif question.spec.type == "choice" or question.spec.type == "multiple-choice" %}
-              <p>Data type:
-              {% if question.spec.type == "choice" %}string;
-              {% else %}array of strings; each element{% endif %}
-              one of
+            {% elif question.spec.type == "choice" %}
+              <p>Data type: string, one of
               {% for item in question.spec.choices %}
                 <code>{{item.key}}</code> ({{item.text}})
                 {% if not forloop.last %}, {% endif %}
               {% endfor %}; or null.
+            {% elif question.spec.type == "multiple-choice" %}
+              <p>Data type: array of strings; each element is one of
+              {% for item in question.spec.choices %}
+                <code>{{item.key}}</code> ({{item.text}})
+                {% if not forloop.last %}, {% endif %}
+              {% endfor %}; or null. When uploading with the key-value POST method, repeat the key multiple times in the request to set multiple values
             {% elif question.spec.type == "yesno" %}
               <p>Data type: string; either <code>yes</code> or <code>no</code>; or null.</p>
             {% elif question.spec.type == "integer" %}
@@ -191,7 +229,9 @@ h2 { margin-top: 1.5em; }
             {% elif question.spec.type == "real" %}
               <p>Data type: number (or null).</p>
             {% elif question.spec.type == "file" %}
-              <p>Data type: object containing the properties <code>url</code> (a link to download the file content), <code>type</code> (the MIME type), and <code>size</code> (the size of the file in bytes).</p>
+              <p>Data type: object containing file metadata and/or content.</p>
+              <p>In GET requests, the properties of file objects are <code>url</code> (a link to download the file content), <code>type</code> (the MIME type), and <code>size</code> (the size of the file in bytes).</p>
+              <p>In JSON POST requests, the properties must be <code>type</code> and <code>content</code>, which must hold an array of one or more strings containing Base64-encoded binary data.</p>
             {% else %}
               <p>Data type: {{question.spec.type}}.</p>
             {% endif %}

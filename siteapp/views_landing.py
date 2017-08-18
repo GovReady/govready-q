@@ -133,27 +133,77 @@ def project_api(request, org_slug, project_id):
     elif request.method == "POST":
         # Update the value.
 
-        # Parse the new project body.
-        if request.META.get("CONTENT_TYPE") == "application/json":
-            import json
-            try:
-                value = json.loads(request.body.decode("utf-8"))
-            except json.decoder.JSONDecodeError as e:
-                return JsonResponse(OrderedDict([("status", "error"), ("error", "Invalid JSON in request body. " + str(e))]), json_dumps_params={ "indent": 2 }, status=400)
-        else:
-            return JsonResponse(OrderedDict([("status", "error"), ("error", "The Content-Type header must be set to application/json.")]), json_dumps_params={ "indent": 2 }, status=400)
-
         # Check that the API key has write access.
         if not project.root_task.has_write_priv(user):
             return JsonResponse(OrderedDict([("status", "error"), ("error", "The user associated with the API key does not have write perission on the project.")]), json_dumps_params={ "indent": 2 }, status=403)
         if api_key != user.api_key_rw:
             return JsonResponse(OrderedDict([("status", "error"), ("error", "The API key does not have write perission on the project.")]), json_dumps_params={ "indent": 2 }, status=403)
 
-        # Update.
-        log = []
-        ret = project.import_json(value, user, "api", lambda msg : log.append(msg))
+        # Parse the new project body.
+        if request.META.get("CONTENT_TYPE") == "application/json":
+            # A JSON object is given in the import/export format. Parse it.
+            import json
+            try:
+                value = json.loads(request.body.decode("utf-8"))
+            except json.decoder.JSONDecodeError as e:
+                return JsonResponse(OrderedDict([("status", "error"), ("error", "Invalid JSON in request body. " + str(e))]), json_dumps_params={ "indent": 2 }, status=400)
+
+            # Update.
+            log = []
+            ok = project.import_json(value, user, "api", lambda msg : log.append(msg))
+
+        else:
+            # Form fields are given in POST and FILES. Process each item...
+
+            from guidedmodules.models import TaskAnswer
+            from guidedmodules.answer_validation import question_input_parser, validator
+            import django.core.files.uploadedfile
+
+            log = []
+            ok = True
+            for key, v in list(request.POST.lists()) + list(request.FILES.items()):
+                try:
+                    # Find the Task and ModuleQuestion that corresponds to
+                    # this key-value pair.
+                    task = project.root_task
+                    question = None
+                    if not key.startswith("project."): raise ValueError("Invalid question ID: " + key)
+                    for pathitem in key.split(".")[1:]:
+                        # Advance to the task pointed to by the last question.
+                        if question is not None:
+                            if question.spec["type"] != "module": raise ValueError("Invalid question ID: " + key)
+                            ta = task.answers.filter(question=question).first()
+                            if ta is None: raise ValueError("Invalid question ID (question on path is not answered yet): " + key)
+                            a = ta.get_current_answer()
+                            if not a or a.cleared: raise ValueError("Invalid question ID (question on path is not answered yet): " + key)
+                            task = a.answered_by_task.first()
+
+                        # Get the question this corresponds to within the task
+                        question = task.module.questions.filter(key=pathitem).first()
+                        if not question: raise ValueError("Invalid question ID: " + key)
+
+                    # Parse and validate the answer.
+                    v = question_input_parser.parse(question, v)
+                    v = validator.validate(question, v)
+
+                    # Save.
+                    v_file = None
+                    if question.spec["type"] == "file":
+                        v_file = v
+                        v = None
+                    ta, _ = TaskAnswer.objects.get_or_create(task=task, question=question)
+                    saved = ta.save_answer(v, [], v_file, user, "api")
+                    if saved:
+                        log.append(key + " updated")
+                    else:
+                        log.append(key + " unchanged")
+                
+                except ValueError as e:
+                    log.append(key + ": " + str(e))
+                    ok = False
+
 
         return JsonResponse(OrderedDict([
-            ("status", "ok" if ret else "error"),
+            ("status", "ok" if ok else "error"),
             ("details", log),
         ]), json_dumps_params={ "indent": 2 })

@@ -67,7 +67,27 @@ If you are using an operating system with a command line and the `curl` tool, yo
 	curl --header "Authorization: {your-api-key}" \
 	  {site base URL}/api/v1/organizations/{organization subdomain}/projects/{project id}/answers
 
-### Updating data using a POST request
+### Updating data using a POST request with form data
+
+There are two types of POST requests that can be used to update app data. In the first type, described in this section, data values are provided as key-value pairs using the regular web browser form submission method. (In the second form, described below, answers are provided using a JSON data structure that is formatted the same as the JSON data structure returned by a GET request, which may be more appropriate when submitting non-textual and non-binary content.) 
+
+In each of the key-value pairs submitted in the POST request, the *key* is a dotted-path question ID. The key always begins with `project.` and is followed by the property names on the path to the question being updated, according to the JSON data structure, with property names separated by the `.` character.
+
+The *value* of each key-value pair is an answer submitted either as plain text or, for file-type questions, as a binary file. If submitted as plain text and the question expects non-text data, such as a number, the value will be converted. When uploading a binary file, the [multipart/form-data](https://tools.ietf.org/html/rfc2388) content type must be used for the POST request.
+
+As with the GET API, an API key must be passed in the HTTP <code>Authorization</code> header. An API key with write permission must be used. You can get an API key from the <a href="/api-keys">API keys page</a>.
+
+If you are using an operating system with a command line and the `curl` tool, you can try out the API by running:
+
+    curl \
+      --header "Authorization: <i>your-api-key</i>" \
+      -F project.question.subquestion1=datavalue \
+      -F project.question.subquestion2=datavalue \
+	  {site base URL}/api/v1/organizations/{organization subdomain}/projects/{project id}/answers
+
+For a file upload, use `-F @filename.ext`. `curl`&rsquo;s `-d` option can be used in place of `-F` if none of the fields are file uploads.
+
+### Updating data using a POST request with JSON
 
 Use a POST request instead a GET request to the same URL to update data stored in the app. Data values to save in the app are included in the request body as JSON in the same format as returned by the GET request.
 
