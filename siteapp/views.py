@@ -602,7 +602,7 @@ def project_list_all_answers(request, project):
 
     def recursively_find_answers(path, task):
         answers = task.get_answers().with_extended_info()
-        tc = TemplateContext(answers, HtmlAnswerRenderer)
+        tc = TemplateContext(answers, HtmlAnswerRenderer(show_metadata=False))
         
         # Create row in the output table for the answers.
         section = {

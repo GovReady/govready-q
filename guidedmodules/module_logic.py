@@ -261,7 +261,7 @@ def get_question_context(answers, question):
 
 
 def render_content(content, answers, output_format, source, additional_context={},
-    demote_headings=True):
+    demote_headings=True, show_answer_metadata=False):
 
     # Renders content (which is a dict with keys "format" and "template")
     # into the requested output format, using the ModuleAnswers in answers
@@ -460,7 +460,7 @@ def render_content(content, answers, output_format, source, additional_context={
                 return value
     
         elif template_format == "html":
-            escapefunc = HtmlAnswerRenderer
+            escapefunc = HtmlAnswerRenderer(show_metadata=show_answer_metadata)
 
         # Execute the template.
 
@@ -562,39 +562,47 @@ def render_content(content, answers, output_format, source, additional_context={
         raise ValueError("Invalid template format encountered: %s." % template_format)
 
 
-def HtmlAnswerRenderer(question, answerobj, value):
-    import html
-    if question is None or question.spec["type"] != "longtext":
-        # Regular text fields just get escaped.
-        value = html.escape(value)
-        wrappertag = "span"
-    else:
-        # longtext fields are rendered into the output
-        # using CommonMark. Escape initial <'s so they
-        # are not treated as the start of HTML tags,
-        # which are not permitted in safe mode, but
-        # <'s appear tag-like in certain cases like
-        # when we say <not answerd>.
-        if value.startswith("<"): value = "\\" + value
-        import CommonMark
-        parsed = CommonMark.Parser().parse(value)
-        value = CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
-        wrappertag = "div"
-    return """<{tag} class='question-answer'
-      data-module='{module}'
-      data-question='{question}'
-      data-answered-by='{answered_by}'
-      data-answered-on='{answered_on}'
-      data-reviewed='{reviewed}'
-      >{value}</{tag}>""".format(
-        tag=wrappertag,
-        module=html.escape(question.module.spec['title']),
-        question=html.escape(question.spec["title"]),
-        answered_by=html.escape(str(answerobj.answered_by)) if answerobj else "(value was imputed)",
-        answered_on=html.escape(answerobj.created.strftime("%c")) if answerobj else "(n/a)",
-        reviewed=str(answerobj.reviewed) if answerobj else "",
-        value=value,
-    )
+class HtmlAnswerRenderer:
+    def __init__(self, show_metadata):
+        self.show_metadata = show_metadata
+    def __call__(self, question, answerobj, value):
+        import html
+        if question is None or question.spec["type"] != "longtext":
+            # Regular text fields just get escaped.
+            value = html.escape(value)
+            wrappertag = "span"
+        else:
+            # longtext fields are rendered into the output
+            # using CommonMark. Escape initial <'s so they
+            # are not treated as the start of HTML tags,
+            # which are not permitted in safe mode, but
+            # <'s appear tag-like in certain cases like
+            # when we say <not answerd>.
+            if value.startswith("<"): value = "\\" + value
+            import CommonMark
+            parsed = CommonMark.Parser().parse(value)
+            value = CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
+            wrappertag = "div"
+
+        if not self.show_metadata:
+            return value
+
+        # Wrap the output in a tag that holds metadata.
+        return """<{tag} class='question-answer'
+          data-module='{module}'
+          data-question='{question}'
+          data-answered-by='{answered_by}'
+          data-answered-on='{answered_on}'
+          data-reviewed='{reviewed}'
+          >{value}</{tag}>""".format(
+            tag=wrappertag,
+            module=html.escape(question.module.spec['title']),
+            question=html.escape(question.spec["title"]),
+            answered_by=html.escape(str(answerobj.answered_by)) if answerobj else "(value was imputed)",
+            answered_on=html.escape(answerobj.created.strftime("%c")) if answerobj else "(n/a)",
+            reviewed=str(answerobj.reviewed) if answerobj else "",
+            value=value,
+        )
 
 
 def get_all_question_dependencies(module):
@@ -794,7 +802,7 @@ class ModuleAnswers(object):
 
                         # Try to render it.
                         try:
-                            self.rendered_content = render_content(self.document, self.module_answers, "html", doc_name, additional_context)
+                            self.rendered_content = render_content(self.document, self.module_answers, "html", doc_name, additional_context, show_answer_metadata=True)
                         except Exception as e:
                             # Put errors into the output. Errors should not occur if the
                             # template is designed correctly.
