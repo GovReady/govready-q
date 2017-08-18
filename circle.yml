@@ -22,4 +22,5 @@ test:
   override:
     - ./manage.py test guidedmodules
     - ./manage.py test siteapp.tests.LandingSiteFunctionalTests
-    - ./manage.py test siteapp.tests.OrganizationSiteFunctionalTests
+    - ./manage.py test siteapp.tests.GeneralTests
+    - ./manage.py test siteapp.tests.QuestionsTests
