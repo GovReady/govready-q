@@ -709,10 +709,11 @@ class Project(models.Model):
                 self.ref_map = { }
                 self.log = logger
 
-                if data.get("schema") == "GovReady Q Project Data 1.0":
+                if data.get("schema") == "GovReady Q Project Export Data 1.0":
                     self.included_metadata = True
                 elif data.get("schema") == "GovReady Q Project API 1.0":
                     self.included_metadata = False
+
                 else:
                     raise ValueError("Data does not look like it was exported from this application.")
 
