@@ -27,8 +27,8 @@ class TestCaseWithFixtureData(TestCase):
 
 
         # Create a dummy organization, project, and user.
-        self.organization = Organization.objects.create(name="Organization")
-        self.project = Project.objects.create(title="Project", organization=self.organization)
+        self.organization = Organization.objects.create(name="My Supreme Organization")
+        self.project = Project.objects.create(title="The Singleton Project", organization=self.organization)
         self.user = User.objects.create(username="unit.test")
 
 
@@ -463,13 +463,39 @@ class RenderTests(TestCaseWithFixtureData):
 
         # TODO: Test module-set questions.
 
-    def _test_render_single_question_md(self, module, expression, value, expected, expected_impute_value="__NOT__PROVIDED__"):
+    def test_render_global_context_variables(self):
+        # test that the organization and project render as their names
+
+        # Create a Task instance to include in the render context so
+        # that it is tied to a project and organization.
+        module = Module.objects.get(key="fixture/simple_project/simple")
+        task = Task.objects.create(module=module, project=self.project, editor=self.user)
+        answers = ModuleAnswers(module, task, {})
+
+        def test(expression, expected):
+            self._test_render_single_question_md(
+                "simple",
+                expression,
+                None,
+                expected,
+                answers=answers
+                )
+
+        test("organization", "My Supreme Organization")
+        test("project", "The Singleton Project")
+
+    def _test_render_single_question_md(self, module, expression, value, expected, expected_impute_value="__NOT__PROVIDED__", answers=None):
         # Render the "{{question}}" or "{{question.text}}" using the given module.
-        m = Module.objects.get(key="fixture/simple_project/" + module)
-        key = expression.split(".")[0]
-        answers = ModuleAnswers(m, None, {
-            key: (m.questions.get(key=key), True, None, value) # if expression looks like "id.text" just use "id" here to set the answer
-        })
+
+        # create a ModuleAnswers instance that provides context for evaluating the template
+        if answers is None:
+            m = Module.objects.get(key="fixture/simple_project/" + module)
+            key = expression.split(".")[0]
+            answers = ModuleAnswers(m, None, {
+                key: (m.questions.get(key=key), True, None, value) # if expression looks like "id.text" just use "id" here to set the answer
+            })
+
+        # render the template. Wrap `expression` in "{{...}}"
         actual = render_content(
             {
                 "format": "markdown",
@@ -489,6 +515,19 @@ class RenderTests(TestCaseWithFixtureData):
 
         # test that the output matches what the caller gave
         self.assertEqual(actual, expected)
+
+        # test that including answer metadata doesn't break. just executed it. if
+        # it doesn't crash, good.
+        render_content(
+            {
+                "format": "markdown",
+                "template": "{{%s}}" % expression,
+            },
+            answers,
+            "html",
+            str(self), # source
+            show_answer_metadata=True,
+        )
 
         # test that we get the same thing if we use an impute condition with value-mode: expression,
         # but since the test is only given its string output convert the impute condition value
