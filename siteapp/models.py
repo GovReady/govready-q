@@ -18,6 +18,7 @@ class User(AbstractUser):
 
     api_key_ro = models.CharField(max_length=32, blank=True, null=True, unique=True, help_text="The user's API key with read-only permission.")
     api_key_rw = models.CharField(max_length=32, blank=True, null=True, unique=True, help_text="The user's API key with read-write permission.")
+    api_key_wo = models.CharField(max_length=32, blank=True, null=True, unique=True, help_text="The user's API key with write-only permission.")
 
     # Methods
 
@@ -136,6 +137,7 @@ class User(AbstractUser):
     def reset_api_keys(self):
        self.api_key_ro = crypto.get_random_string(32)
        self.api_key_rw = crypto.get_random_string(32)
+       self.api_key_wo = crypto.get_random_string(32)
        self.save()
 
 from django.contrib.auth.backends import ModelBackend

@@ -113,7 +113,7 @@ def project_api(request, org_slug, project_id):
     from .models import User, Project
     
     try:
-        user = User.objects.get(Q(api_key_rw=api_key)|Q(api_key_ro=api_key))
+        user = User.objects.get(Q(api_key_rw=api_key)|Q(api_key_ro=api_key)|Q(api_key_wo=api_key))
     except User.DoesNotExist:
         return JsonResponse(OrderedDict([("status", "error"), ("error", "A valid API key was not present in the Authorization header.")]), json_dumps_params={ "indent": 2 }, status=403)
 
@@ -136,7 +136,7 @@ def project_api(request, org_slug, project_id):
         # Check that the API key has write access.
         if not project.root_task.has_write_priv(user):
             return JsonResponse(OrderedDict([("status", "error"), ("error", "The user associated with the API key does not have write perission on the project.")]), json_dumps_params={ "indent": 2 }, status=403)
-        if api_key != user.api_key_rw:
+        if api_key not in (user.api_key_rw, user.api_key_wo):
             return JsonResponse(OrderedDict([("status", "error"), ("error", "The API key does not have write perission on the project.")]), json_dumps_params={ "indent": 2 }, status=403)
 
         # Parse the new project body.

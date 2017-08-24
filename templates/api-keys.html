@@ -7,6 +7,7 @@ Your API Keys
 
 {% block head %}
 <style>
+dd p:first-child { margin-bottom: .25em; }
 </style>
 {% endblock %}
 
@@ -20,13 +21,31 @@ Your API Keys
 
 	<p>Your API keys allow you to programmatically access and update your system data on Q.</p>
 
-	<p>Your API keys are:</p>
+	<p>Your three API keys are:</p>
 
-	<p>Read-only key: <code>{{api_key_ro}}</code>
-	<br>Your read-only key gives external tools the ability to see anything you can see on Q but those tools cannot make any changes.</p>
+	<dl>
 
-	<p>Full access key: <code>{{api_key_rw}}</code>
-	<br>Your full access key gives external tools the ability to see and make changes to anything you can see and make changes to on Q.</p>
+	<dt>Read-only key</dt>
+	<dd>
+	<p><code>{{api_key_ro}}</code></p>
+	<p>Your read-only key gives external tools the ability to see anything you can see on Q but those tools cannot make any changes.</p>
+	</dd>
+
+	<dt>Full access key</dt>
+	<dd>
+	<p><code>{{api_key_rw}}</code></p>
+	<p>Your full access key gives external tools the ability to see and make changes to anything you can see and make changes to on Q.</p>
+	</dd>
+
+	<dt>Write-only key</dt>
+	<dd>
+	<p><code>{{api_key_wo}}</code></p>
+	<p>Your write-only key gives external tools the ability to make changes to anything you can make changes to on Q but does not include the abiliy to see any data values stored in Q. The write-only key is useful in situations where the external tool needs to be able to upload data but does not need to read existing data values.</p>
+	</dd>
+	</dl>
+
+	<p>Choose the API key that is most appropriate for the acccess level required by the external application.</p>
+
 {% endblock %}
 
 {% block scripts %}

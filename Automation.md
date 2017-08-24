@@ -50,6 +50,16 @@ Using the Compliance API
 
 To use a compliance app API, an app must already be started in GovReady Q by adding it to a project folder **and** its modules must be started (but need not be completed) for them to be accessible from the API.
 
+### API keys
+
+Every call to the API requires an API key. Each user has three API keys listed on their API Keys page, which can be found in the user drop-down menu on Q: a read-only API key, a read-write API key, and a write-only API key:
+
+* The read-only API key gives external tools the ability to see all data values that the associated user can see on Q, but the API key cannot be used to change any data values.
+
+* The read-write API key gives external tools the ability to see and make changes to anything the associated user can see and make changes to on Q. 
+
+* The write-only API key gives external tools the ability to make changes to anything the associated user can make changes to on Q but does not include the abiliy to see any data values stored in Q. The write-only key is useful in situations where the external tool needs to be able to upload data but does not need to read existing data values.
+
 ### Getting data from the app using the GET API
 
 Project data can be read from the API using an HTTP GET request to a URL of the following pattern:
@@ -75,7 +85,7 @@ In each of the key-value pairs submitted in the POST request, the *key* is a dot
 
 The *value* of each key-value pair is an answer submitted either as plain text or, for file-type questions, as a binary file. If submitted as plain text and the question expects non-text data, such as a number, the value will be converted. When uploading a binary file, the [multipart/form-data](https://tools.ietf.org/html/rfc2388) content type must be used for the POST request.
 
-As with the GET API, an API key must be passed in the HTTP <code>Authorization</code> header. An API key with write permission must be used. You can get an API key from the <a href="/api-keys">API keys page</a>.
+As with the GET API, an API key must be passed in the HTTP <code>Authorization</code> header. An API key with write permission must be used. You can get an API key from the API keys page on your Q site.
 
 If you are using an operating system with a command line and the `curl` tool, you can try out the API by running:
 

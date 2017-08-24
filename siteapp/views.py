@@ -753,6 +753,7 @@ def show_api_keys(request):
     return render(request, "api-keys.html", {
         "api_key_ro": request.user.api_key_ro,
         "api_key_rw": request.user.api_key_rw,
+        "api_key_wo": request.user.api_key_wo,
     })
 
 @login_required
