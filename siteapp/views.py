@@ -747,8 +747,18 @@ def project_api(request, project):
 
 @login_required
 def show_api_keys(request):
+    # Initialize on first use.
     if request.user.api_key_ro is None:
         request.user.reset_api_keys()
+
+    # Reset.
+    if request.method == "POST" and request.POST.get("method") == "resetkeys":
+        request.user.reset_api_keys()
+
+        from django.contrib import messages
+        messages.add_message(request, messages.INFO, 'Your API keys have been reset.')
+
+        return HttpResponseRedirect(request.path)
 
     return render(request, "api-keys.html", {
         "api_key_ro": request.user.api_key_ro,

@@ -21,6 +21,8 @@ dd p:first-child { margin-bottom: .25em; }
 
 	<p>Your API keys allow you to programmatically access and update your system data on Q.</p>
 
+	<h2>Get your API keys</h2>
+
 	<p>Your three API keys are:</p>
 
 	<dl>
@@ -46,8 +48,24 @@ dd p:first-child { margin-bottom: .25em; }
 
 	<p>Choose the API key that is most appropriate for the acccess level required by the external application.</p>
 
+	<h2>Reset your API keys</h2>
+
+	<p>If any of your API keys have been compromised, you may reset your API keys. Your old API keys will be revoked and any external applications that are using the API must be given a new API key.</p>
+
+	<form id="reset-api-keys" method="post">
+	{% csrf_token %}
+	<input type=hidden name=method value=resetkeys>
+	</form>
+	<button class="btn btn-danger" onclick="confirm_reset_api_keys();">Reset API Keys</button>
+
 {% endblock %}
 
 {% block scripts %}
-
+<script>
+function confirm_reset_api_keys(elem) {
+	if (confirm("Reset your API keys?")) {
+		$('form#reset-api-keys').submit();
+	}
+}
+</script>
 {% endblock %}
