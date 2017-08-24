@@ -592,7 +592,7 @@ class HtmlAnswerRenderer:
             value = html.escape(str(value))
             wrappertag = "span"
 
-        if not self.show_metadata or question is None:
+        if not self.show_metadata or question is None or answerobj is None:
             return value
 
         # Wrap the output in a tag that holds metadata.
