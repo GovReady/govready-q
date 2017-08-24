@@ -14,9 +14,17 @@ $(function() {
 
   // Make question answers show popovers with additional information.
   $('.question-answer').popover({
+    html: true,
     content: function() {
-      return "Answered by " + this.getAttribute("data-answered-by") + " on " + this.getAttribute("data-answered-on")
-        + ". The question was: " + this.getAttribute("data-question") + " in " + this.getAttribute("data-module") + ".";
+      var template = $(
+          "<div><p>Answered by <span class='answered-by'></span> on <span class='answered-on'></span>.</p>"
+        + "<p>Edit answer to <a><span class='question'></span></a> in <span class='module'></span>.</p></div>");
+      template.find('.answered-by').text(this.getAttribute("data-answered-by"));
+      template.find('.answered-on').text(this.getAttribute("data-answered-on"));
+      template.find('.question').text(this.getAttribute("data-question"));
+      template.find('.module').text(this.getAttribute("data-module"));
+      template.find('a').attr('href', this.getAttribute("data-edit-link"));
+      return template.html();
     }
   })
 })

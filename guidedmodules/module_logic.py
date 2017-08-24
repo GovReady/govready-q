@@ -599,6 +599,7 @@ class HtmlAnswerRenderer:
         return """<{tag} class='question-answer'
           data-module='{module}'
           data-question='{question}'
+          data-edit-link='{edit_link}'
           data-answered-by='{answered_by}'
           data-answered-on='{answered_on}'
           data-reviewed='{reviewed}'
@@ -606,6 +607,7 @@ class HtmlAnswerRenderer:
             tag=wrappertag,
             module=html.escape(question.module.spec['title']),
             question=html.escape(question.spec["title"]),
+            edit_link=answerobj.taskanswer.get_absolute_url(),
             answered_by=html.escape(str(answerobj.answered_by)) if answerobj else "(value was imputed)",
             answered_on=html.escape(answerobj.created.strftime("%c")) if answerobj else "(n/a)",
             reviewed=str(answerobj.reviewed) if answerobj else "",
