@@ -358,6 +358,11 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
     # distracting from answering the question at hand. See task_view.
     request.suppress_prompt_banner = True
 
+    # If this question cannot currently be answered (i.e. dependencies are unmet),
+    # then redirect away from this page.
+    if q.key in answered.was_imputed or (q in answered.unanswered and q not in answered.can_answer):
+        return HttpResponseRedirect(task.get_absolute_url())
+
     # Is there a TaskAnswer for this yet?
     taskq = TaskAnswer.objects.filter(task=task, question=q).first()
 
