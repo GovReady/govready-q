@@ -467,7 +467,7 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
     # the title.
     title = q.spec["title"]
     prompt = render_markdown_field("prompt", "html")
-    m = re.match(r"^<p>(.*?)</p>\s*", prompt)
+    m = re.match(r"^<p>([\w\W]*?)</p>\s*", prompt)
     if m:
         title = m.group(1)
         prompt = prompt[m.end():]
