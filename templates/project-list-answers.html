@@ -59,27 +59,41 @@ h2 { margin-top: 1.5em; }
       {{project.title}}
     </h1>
 
-    <h2>All Answers</h2>
-
     {% for section in answers %}
-
-      <h3>
-        {{section.task.title}}
-        <a href="{{section.task.get_absolute_url}}" style="margin-left: .5em; font-size: 65%;">
-          <span class="glyphicon glyphicon-pencil"></span>
-        </a>
-      </h3>
+      {% if not forloop.first %}<hr>{% endif %}
 
       {% if section.path %}
-      <p style="font-size: 90%; font-weight: 400">
-        These fields occur within
+      <p style="font-size: 90%; font-weight: 400; margin: 2em 0 .5em -2px;">
         {% for item in section.path %}
-          <code>{{item}}</code>
+          <span style="color: #666">{{item}}</span>
           {% if not forloop.last %}→{% endif %}
-        {% endfor %}.
+        {% endfor %}
       </p>
       {% endif %}
 
+      <h2 id="task-{{section.task.id}}" style="margin-top: 0">
+        <a href="{{section.task.get_absolute_url}}" style="color: #224;">
+        
+        {% if section.task.get_app_icon_url %}
+          <img src="{{section.task.get_app_icon_url}}" style="height: 1em">
+        {% else %}
+          <span class="glyphicon glyphicon-list-alt"></span>
+        {% endif %}
+
+          {{section.task.render_title}}
+        </a>
+      </h2>
+
+      <div style="margin: 0 0 .5em 0">
+      <p style="margin: 0 0 .25em 0">Started: {{section.task.created|date}}</p>
+      {% with m=section.task.get_last_modification %}
+      {% if m %}
+        <p style="margin: 0 0 .25em 0">Last change: {{m.answered_by}} answered <a href="{{m.taskanswer.get_absolute_url}}">{{m.taskanswer.question.spec.title}}</a> on {{m.created|date}}.</p>
+      {% endif %}
+      {% endwith %}
+      </div>
+
+      {% if section.answers %}
       <table class="table">
         <thead>
           <tr>
@@ -88,12 +102,11 @@ h2 { margin-top: 1.5em; }
           </tr>
         </thead>
         <tbody>
-        {% for question, answer, value in section.answers %}
+        {% for question, answer, value, value_html in section.answers %}
           <tr>
             <td>
-              {{question.spec.title}}
-              <a href="{{answer.taskanswer.get_absolute_url}}" style="margin-right: .5em; font-size: 65%;">
-                <span class="glyphicon glyphicon-pencil"></span>
+              <a href="{{answer.taskanswer.get_absolute_url}}">
+                {{question.spec.title}}
               </a>
             </td>
             <td>
@@ -102,12 +115,25 @@ h2 { margin-top: 1.5em; }
               {% if answer.reviewed == 1 %}<span class="label label-info">Reviewed</span>{% endif %}
               {% if answer.reviewed == 2 %}<span class="label label-success">Approved</span>{% endif %}
               </div>
-              {{value|safe}}
+
+              {{value_html|safe}}
+
+              {% if question.spec.type == "module" %}
+                [<a href="#task-{{section.task.id}}">see below</a>]
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
         </tbody>
       </table>
+      {% else %}
+      <p>There are no answered questions in this module.</p>
+      {% endif %}
+
+    {% empty %}
+
+      <p>No questions have been answered in this app yet.</p>
+
     {% endfor %}
 
   </div> <!-- /focus-area-wrapper -->

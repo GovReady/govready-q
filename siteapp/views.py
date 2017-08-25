@@ -610,18 +610,20 @@ def project_list_all_answers(request, project):
             "path": path,
             "answers": [],
         }
+        sections.append(section)
         for q, is_answered, a, value in answers.answertuples.values():
             if not is_answered: continue # skip questions that have no answers
             if not a: continue # skip imputed answers
-            if q.spec["type"] in ("interstitial", "module"): continue # skip question types that display awkwardly
+            if q.spec["type"] == "interstitial": continue # skip question types that display awkwardly
             if value is None:
                 value_display = "<i>skipped</i>"
+                a.reviewed = None # reset
             else:
                 value_display = RenderedAnswer(task, q, a, value, tc).__html__()
-            section["answers"].append((q, a, value_display))
-        
-        if section["answers"]:
-            sections.append(section)
+            section["answers"].append((q, a, value, value_display))
+
+        if len(path) == 0:
+            path = path + [task.render_title()]
 
         for q, is_answered, a, value in answers.answertuples.values():
             # Recursively go into submodules.

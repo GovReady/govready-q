@@ -65,11 +65,13 @@
                   {% endif %}
                 </td>
                 <td>
+                 {% if not q.skipped %}
                   <div style="float: right">
                   {% if q.reviewed == 0 %}<span class="label label-danger">New</span>{% endif %}
                   {% if q.reviewed == 1 %}<span class="label label-info">Reviewed</span>{% endif %}
                   {% if q.reviewed == 2 %}<span class="label label-success">Approved</span>{% endif %}
                   </div>
+                  {% endif %}
                   {{q.value|safe}}
                 </td>
               </tr>

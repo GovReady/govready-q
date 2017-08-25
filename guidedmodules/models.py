@@ -349,6 +349,8 @@ class Task(models.Model):
             import urllib.parse
             return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
 
+    # ANSWERS
+
     def get_current_answer_records(self):
         # Efficiently get the current answer to every question.
         #
@@ -392,6 +394,15 @@ class Task(models.Model):
                 value = None
             answertuples[q.key] = (q, is_answered, a, value)
         return ModuleAnswers(self.module, self, answertuples)
+
+    def get_last_modification(self):
+        ans = TaskAnswerHistory.objects\
+                .filter(taskanswer__task=self)\
+                .order_by('-id')\
+                .first()
+        return ans
+
+    # STATE
 
     def can_transfer_owner(self):
         return not self.project.is_account_project
