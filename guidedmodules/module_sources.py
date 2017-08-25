@@ -1,5 +1,6 @@
 from django.db import transaction
 
+from collections import OrderedDict
 import enum
 import json
 
@@ -517,10 +518,11 @@ class GitRepositoryAppStore(PyFsAppStore):
 
 
 def read_yaml_file(f):
-    # Use the safe YAML loader & catch errors.
-    import yaml, yaml.scanner, yaml.parser, yaml.constructor
+    # Use the safe YAML loader via rtyaml, which loads mappings with
+    # OrderedDicts so that order is not lost, and catch errors.
+    import rtyaml, yaml.scanner, yaml.parser, yaml.constructor
     try:
-        return yaml.safe_load(f)
+        return rtyaml.load(f)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
         raise ModuleDefinitionError("There was an error parsing the YAML file: " + str(e))
 
@@ -667,7 +669,7 @@ def create_module(app, spec, asset_pack):
 
 
 def remove_questions(spec):
-    spec = dict(spec) # clone
+    spec = OrderedDict(spec) # clone
     if "questions" in spec:
         del spec["questions"]
     return spec

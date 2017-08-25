@@ -15,7 +15,7 @@ ModulePythonCode = { }
 
 class ModuleSource(models.Model):
     namespace = models.CharField(max_length=200, unique=True, help_text="The namespace that modules loaded from this source are added into.")
-    spec = JSONField(help_text="A load_modules ModuleRepository spec.")
+    spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
 
     trust_javascript_assets = models.BooleanField(default=False, help_text="Are new Javascript static assets loaded from this source trusted to be served on our domain and run client side?")
     available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
@@ -48,7 +48,7 @@ class Module(models.Model):
     visible = models.BooleanField(default=True, db_index=True, help_text="Whether the Module is offered to users.")
     superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="When a Module is superseded by a new version, this points to the newer version.")
 
-    spec = JSONField(help_text="Module definition data.")
+    spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
     assets = models.ForeignKey('ModuleAssetPack', blank=True, null=True, help_text="A mapping from asset paths to ModuleAsset instances with the binary content of the asset.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -264,7 +264,7 @@ class ModuleQuestion(models.Model):
     key = models.SlugField(max_length=100, help_text="A slug-like identifier for the question.")
 
     definition_order = models.IntegerField(help_text="An integer giving the order in which this question is defined by the Module.")
-    spec = JSONField(help_text="Module definition data.")
+    spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
     answer_type_module = models.ForeignKey(Module, blank=True, null=True, related_name="is_type_of_answer_to", on_delete=models.PROTECT, help_text="For module and module-set typed questions, this is the Module that Tasks that answer this question must be for.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)

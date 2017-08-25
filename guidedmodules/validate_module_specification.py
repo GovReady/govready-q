@@ -2,6 +2,7 @@
 # and normalizes some fields like setting a missing 'min' on a multiple-choice
 # question to 0.
 
+from collections import OrderedDict
 import re
 
 from guidedmodules.module_logic import render_content
@@ -61,7 +62,7 @@ def validate_question(mspec, spec):
         raise ValidationError("question %s" % spec['id'], msg)
 
     # clone dict before updating
-    spec = dict(spec)
+    spec = OrderedDict(spec)
 
     # Since question IDs become Jinja2 identifiers, they must be valid
     # Jinaj2 identifiers. http://jinja.pocoo.org/docs/2.9/api/#notes-on-identifiers
