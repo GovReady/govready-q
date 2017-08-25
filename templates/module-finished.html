@@ -9,21 +9,7 @@
 {% endblock %}
 
 {% block body %}
-<style> {# repeated in ssp/project.yaml #}
-table.table {
-  border: 1px solid #0369a3;
-}
-.table>tbody>tr>td {
-  border-top: 1px solid #0369a3;
-}
-thead {
-  background-color: #dbe5f1;
-}
-</style>
 
-<div class="row">
-
-<div class="col-md-10">
   {% include "task-header.html" %}
 
   <div id="focus-area-wrapper">
@@ -48,6 +34,52 @@ thead {
 
 <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
   {# output documents #}
+
+  {% if had_any_questions %}
+    <div class="panel panel-default">
+      <div class="panel-heading" rol="tab" id="your-answers-title">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#your-answers-body" aria-expanded="true" aria-controls="your-answers-body">
+            Your Answers
+          </a>
+        </h4>
+      </div>
+      <div id="your-answers-body" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="your-answers-title">
+        <div class="panel-body output-document">
+          <table class="table">
+            <thead>
+              <tr>
+                <th width="40%">Question</th>
+                <th>Answer</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for q in context %}
+              <tr id="link-to-question-{{q.key}}">
+                <td>
+                  {{q.title}}
+                  {% if q.link %}
+                  <a href="{{q.link}}" style="margin-right: .5em; font-size: 65%;">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                  </a>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="float: right">
+                  {% if q.reviewed == 0 %}<span class="label label-danger">New</span>{% endif %}
+                  {% if q.reviewed == 1 %}<span class="label label-info">Reviewed</span>{% endif %}
+                  {% if q.reviewed == 2 %}<span class="label label-success">Approved</span>{% endif %}
+                  </div>
+                  {{q.value|safe}}
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 
   {% for document in output %}
     <div class="panel panel-default">
@@ -110,16 +142,6 @@ thead {
   {% endwith %}
 </div> <!-- / continue panel -->
 </div> <!-- focus-area-wrapper -->
-</div> <!-- /col -->
-
-<div class="col-md-2">
-  <div id="question-history-context">
-    <ul>
-      {% include "task-progress-question-list.html" with previous="task-finished" %}
-    </ul>
-  </div> <!-- /question-history-context -->
-</div>
-</div> <!-- /row -->
 
 {% endblock %}
 
