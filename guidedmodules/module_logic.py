@@ -222,40 +222,21 @@ def get_question_context(answers, question):
     # What is the context of questions around the given question so show
     # the user their progress through the questions?
 
-    # Start with questions in the order in which they were first answered,
-    # so that we have a stable representation of what's been seen and that
-    # no matter what question the user returns to, the questions listed
-    # before and after that point accurately reflect the questions the user
-    # actually answered before and after that point.
+    answers.as_dict() # force lazy-load
     context = []
-    for ans in answers.task.answers\
-        .filter(question__key__in=set(answers.as_dict())-answers.was_imputed)\
-        .order_by('created')\
-        .select_related('question'):
-        q = ans.question
+    for q, is_answered, answer_obj, answer_value in answers.answertuples.values():
+        # Skip imputed questions --- only show questions the user
+        # has answered or hasn't yet answered.
+        if is_answered and not answer_obj: continue
+
         context.append({
             "key": q.key,
             "title": q.spec['title'],
-            "can_link": True, # any non-imputed (checked above) question can be re-answered
-            "skipped": (answers.as_dict()[q.key] is None) and (q.spec["type"] != "interstitial"),
-            "answered": True,
+            "can_link": answer_obj is not None or q in answers.can_answer, # any question that has been answered or can be answered next can be linked to
+            "skipped": (answer_obj is not None and answer_value is None) and (q.spec["type"] != "interstitial"),
+            "answered": answer_obj is not None,
             "is_this_question": (question is not None) and (q.key == question.key),
         })
-
-    # Add questions that we will ask in the future. The
-    # unanswered list is in depth-first order by the
-    # dependency tree, which means it should be in the
-    # order that they will get asked of the user.
-    for q in answers.unanswered:
-        context.append({
-            "key": q.key,
-            "title": q.spec['title'],
-            "can_link": q in answers.can_answer, # any question that can be answered next can be linked to
-            "skipped": False,
-            "answered": False,
-            "is_this_question": (question is not None) and (q.key == question.key),
-        })
-
 
     return context
 
