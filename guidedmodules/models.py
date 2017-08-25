@@ -196,6 +196,26 @@ class Module(models.Model):
                 }
             })
 
+    def is_authoring_tool_enabled(self, user):
+        return (settings.DEBUG
+            and self.source.spec["type"] == "local" # so we can save to disk
+            and user.has_perm('guidedmodules.change_module'))
+    def serialize_to_disk(self):
+        # Write out the in-memory module specification to disk!
+        assert self.source.spec["type"] == "local" and self.source.spec["path"]
+        import os.path
+        import rtyaml
+        spec = OrderedDict(self.spec)
+        spec["questions"] = []
+        for i, q in enumerate(self.questions.order_by('definition_order')):
+            if i == 0 and q.key == "_introduction":
+                spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
+                continue
+            spec["questions"].append(q.spec)
+        fn = os.path.join(self.source.spec["path"], self.key[len(self.source.namespace)+1:]) + ".yaml"
+        with open(fn, "w") as f:
+            f.write(rtyaml.dump(spec))
+
 
 class ModuleAsset(models.Model):
     source = models.ForeignKey(ModuleSource, help_text="The source of the asset.")
@@ -279,6 +299,29 @@ class ModuleQuestion(models.Model):
     def __repr__(self):
         # For debugging.
         return "<ModuleQuestion [%d] %s.%s (%s)>" % (self.id, self.module.key, self.key, repr(self.module))
+
+    def choices_as_csv(self):
+        # Helper method for module authoring.
+        import csv, io
+        buf = io.StringIO()
+        wr = csv.writer(buf, delimiter="|")
+        for choice in self.spec.get("choices", []):
+            wr.writerow([ choice.get("key") or "", choice.get("text") or "", choice.get("help") or "" ])
+        return buf.getvalue()
+
+    @staticmethod
+    def choices_from_csv(choices):
+        # Helper method for module authoring.
+        import csv, io, collections
+        ret = []
+        buf = io.StringIO(choices)
+        for choice in csv.reader(buf, delimiter="|"):
+            ch = collections.OrderedDict()
+            ch["key"] = choice[0]
+            if len(choice) >= 2 and choice[1]: ch["text"] = choice[1]
+            if len(choice) >= 3 and choice[2]: ch["label"] = choice[1]
+            ret.append(ch)
+        return ret
 
 class Task(models.Model):
     project = models.ForeignKey(Project, related_name="tasks", on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")

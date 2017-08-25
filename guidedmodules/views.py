@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
@@ -515,6 +515,8 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
                 y
                 for y in reversed(range(timezone.now().year-100, timezone.now().year+101))],
         },
+
+        "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),
     })
     return render(request, "question.html", context)
 
@@ -606,6 +608,62 @@ def instrumentation_record_interaction(request):
     )
 
     return HttpResponse("ok")
+
+
+def authoring_edit_question(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    # Get the task and question and check permissions.
+
+    task = get_object_or_404(Task, id=request.POST["task"], project__organization=request.organization)
+    if not task.has_write_priv(request.user):
+        return HttpResponseForbidden()
+    if not task.module.is_authoring_tool_enabled(request.user):
+        return HttpResponseForbidden()
+
+    question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
+
+    # Update the question...
+
+    # Update the key.
+    question.key = request.POST['newid']
+
+    # Update the spec dict - starting with the new fields provided remotely.
+    try:
+        from collections import OrderedDict
+        spec = OrderedDict()
+        spec["id"] = request.POST['newid']
+        for field in (
+            "title", "prompt", "type", "placeholder", "default", "help",
+            "choices", "min", "max", "file-type"):
+            if request.POST.get(field, "").strip():
+                spec[field] = request.POST.get(field, "").strip()
+                if field in ("min", "max"):
+                    spec[field] = int(spec[field])
+                if field == "choices":
+                    spec[field] = ModuleQuestion.choices_from_csv(spec[field])
+        if request.POST.get("spec", "").strip():
+            import json
+            spec.update(json.loads(request.POST["spec"]))
+
+        # Validate.
+        from .validate_module_specification import validate_question
+        validate_question(question.module.spec, spec)
+    except ValueError as e:
+        return JsonResponse({ "status": "error", "message": str(e) })
+
+    # Save.
+    question.spec = spec
+    question.save()
+
+    # Write to disk.
+    question.module.serialize_to_disk()
+
+    # Return status. The browser will reload/redirect --- if the question key
+    # changed, this sends the new key.
+    return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
+
 
 @login_required
 def change_task_state(request):

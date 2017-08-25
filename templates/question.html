@@ -82,6 +82,14 @@ label:hover .onhover { display: inline; }
   
   <div id="focus-area-wrapper">
 
+    {% if authoring_tool_enabled %}
+    <div style="float: right">
+      <a href="#" onclick="show_question_authoring_tool(); return false;">
+        edit
+      </a>
+    </div>
+    {% endif %}
+
     {% if source_invitation %}
       <div style="margin-bottom: 2em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -713,7 +721,7 @@ $(function() {
       // Add the handler to the reset button, but it has to be
       // run after this event is finished to occur after the
       // form state is reset.
-      $('form input[type=reset]').click(function() { setTimeout(handler, 0); });
+      form.find('input[type=reset]').click(function() { setTimeout(handler, 0); });
     }
     function is_answer_unchanged() {
       var ctrl = $('#inputctrl')[0];
@@ -731,9 +739,6 @@ $(function() {
     {% endif %}
 
     form.on("submit", function() {
-        // Get the <form> element.
-        var form = $('#question form');
-
         // Run client-side validation.
         var method = form.find('input[name=method]').val();
         if (method == "save") {
@@ -762,7 +767,7 @@ $(function() {
         // data.append('value', $('#inputctrl')[0].files[0]);
         //
         // But there's a constructor that does this for us:
-        var data = new FormData($('form')[0]);
+        var data = new FormData(form[0]);
 
         {% if q.spec.type == "longtext" %}
         // Add the rich text.
@@ -862,4 +867,182 @@ function record_interaction() {
   sent_first_interaction = true;
 }
 </script>
+
+{% if authoring_tool_enabled %}
+<div id="question_authoring_tool" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="question_authoring_tool_title">
+          Edit Question
+        </h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" onsubmit="return false;">
+          <div class="form-group">
+            <label for="authoring_tool_qid" class="col-sm-2 control-label">Question ID</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_qid" pattern="[a-zA-Z_][a-zA-Z0-9_]*" name="newid">
+              <span id="helpBlock" class="help-block">The identifier for the question, which is used in templates and the API.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Title</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_qtitle" name="title">
+              <span id="helpBlock" class="help-block">A title for the question.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_qprompt" class="col-sm-2 control-label">Prompt</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" id="authoring_tool_qprompt" name="prompt"></textarea>
+              <span id="helpBlock" class="help-block">A template rendered as the prompt for the question. The first line will be shown in a larger font.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_type" class="col-sm-2 control-label">Answer Type</label>
+            <div class="col-sm-10">
+              <select class="form-control" id="authoring_tool_type" onchange="_val = $(this).val(); $('#authoring_tool_q_type_options>div, #authoring_tool_q_type_options .toggled').each(function() { $(this)[$(this).hasClass('authoring_q_type_' + _val) ? 'fadeIn' : 'hide']() });" name="type">
+                <optgroup label="Text Questions">
+                  <option value="text">Text (Single Line)</option>
+                  <option value="password">Password</option>
+                  <option value="email-address">Email Address</option>
+                  <option value="url">Web Address (URL)</option>
+                  <option value="longtext">Paragraph (Rich Text/Markdown)</option>
+                </optgroup>
+                <optgroup label="Choice Questions">
+                  <option value="date">Date</option>
+                  <option value="yesno">Yes/No</option>
+                  <option value="choice">Single Choice</option>
+                  <option value="multiple-choice">Multiple Choice</option>
+                </optgroup>
+                <optgroup label="Number Questions">
+                  <option value="integer">Integer</option>
+                  <option value="real">Any Number</option>
+                </optgroup>
+                <optgroup label="Media Questions">
+                  <option value="interstitial">Interstitial</option>
+                  <option value="file">File Upload</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <div id="authoring_tool_q_type_options">
+          <div class="form-group authoring_q_type_text authoring_q_type_email-address authoring_q_type_url authoring_q_type_integer authoring_q_type_real">
+            <label for="authoring_tool_placeholder" class="col-sm-2 control-label">Placeholder</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_placeholder" name="placeholder">
+              <span id="helpBlock" class="help-block">Template text displayed as the field&rsquo;s placeholder text when the field is empty. Do not set both a placeholder and a default.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_text authoring_q_type_email-address authoring_q_type_url authoring_q_type_longtext">
+            <label for="authoring_tool_default" class="col-sm-2 control-label">Default</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_default" name="default">
+              <span id="helpBlock" class="help-block">Template text provided as a default value. Do not set both a placeholder and a default.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_choice authoring_q_type_multiple-choice">
+            <label for="authoring_tool_qchoices" class="col-sm-2 control-label">Choices</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" id="authoring_tool_qchoices" name="choices"></textarea>
+              <span id="helpBlock" class="help-block">Put each choice on a separate line and provide as KEY|LABEL|HELP.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_multiple-choice authoring_q_type_integer authoring_q_type_real">
+            <label for="authoring_tool_qmin" class="col-sm-2 control-label">Minimum</label>
+            <div class="col-sm-10">
+              <input type="number" pattern="[0-9]*" min="0" class="form-control" id="authoring_tool_qmin" name="min">
+              <span id="helpBlock" class="help-block toggled authoring_q_type_multiple-choice">The minimum number of choices the user must select. Leave blank if there is no minimum.</span>
+              <span id="helpBlock" class="help-block toggled authoring_q_type_integer authoring_q_type_real">The minimum number allowed. Enter zero to prevent the user from entering negative numbers. Leave blank if there is no minimum.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_multiple-choice authoring_q_type_integer authoring_q_type_real">
+            <label for="authoring_tool_qmax" class="col-sm-2 control-label">Maximum</label>
+            <div class="col-sm-10">
+              <input type="number" pattern="[0-9]*" min="0" class="form-control" id="authoring_tool_qmax" name="max">
+              <span id="helpBlock" class="help-block toggled authoring_q_type_multiple-choice">The maximum number of choices the user may select. Leave blank if there is no maximum.</span>
+              <span id="helpBlock" class="help-block toggled authoring_q_type_integer authoring_q_type_real">The maximum number allowed. Leave blank if there is no maximum.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_file">
+            <label for="authoring_tool_filetype" class="col-sm-2 control-label">File Type</label>
+            <div class="col-sm-10">
+              <select class="form-control" id="authoring_tool_filetype" name="file-type">
+                <option value="">Any File Type</option>
+                <option value="image">Image</option>
+              </select>
+              <span id="helpBlock" class="help-block">Restrict file uploads to files of the given type.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_text authoring_q_type_password authoring_q_type_email-address authoring_q_type_url authoring_q_type_longtext authoring_q_type_date authoring_q_type_integer authoring_q_type_real authoring_q_type_file">
+            <label for="authoring_tool_qhelp" class="col-sm-2 control-label">Help Text</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_qhelp" name="help">
+              <span id="helpBlock" class="help-block">Template text shown as small-font help text below the question&rsquo;s input field.</span>
+            </div>
+          </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_qspec" class="col-sm-2 control-label">Other Data</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" id="authoring_tool_qspec" name="spec">{ }</textarea>
+              <span id="helpBlock" class="help-block">Other question field specification data not supported above, encoded as a JSON object.</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" data-dismiss="modal" onclick="authoring_tool_save_changes()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+$('#question_authoring_tool').on('shown.bs.modal', function() { autosize.update($(this).find('textarea')) });
+function show_question_authoring_tool() {
+  // Initialize form state.
+  var spec = {{q.spec|json}};
+  $('#authoring_tool_qid').val("{{q.key|escapejs}}"); delete spec.id;
+  $('#authoring_tool_qtitle').val(spec.title); delete spec.title;
+  $('#authoring_tool_qprompt').val(spec.prompt); delete spec.prompt;
+  $('#authoring_tool_type').val(spec.type)
+    .change(); // trigger event that hides/shows the appropriate fields
+    delete spec.type;
+  $('#authoring_tool_placeholder').val(spec.placeholder); delete spec.placeholder;
+  $('#authoring_tool_default').val(spec.default); delete spec.default;
+  $('#authoring_tool_qchoices').val("{{q.choices_as_csv|escapejs}}"); delete spec.choices;
+  $('#authoring_tool_qmin').val(spec.min); delete spec.min;
+  $('#authoring_tool_qmax').val(spec.max); delete spec.max;
+  $('#authoring_tool_filetype').val(spec["file-type"]); delete spec['file-type'];
+  $('#authoring_tool_qhelp').val(spec.help); delete spec.help;
+  if (Object.keys(spec).length == 0) spec = "";
+  else spec = JSON.stringify(spec);
+  $('#authoring_tool_qspec').val(spec);
+
+  // Show modal.
+  $('#question_authoring_tool').modal();
+}
+
+function authoring_tool_save_changes() {
+  var data = $('#question_authoring_tool form').serializeArray();
+  data.push( { name: "task", value: "{{task.id|escapejs}}" } );
+  data.push( { name: "question", value: "{{q.key|escapejs}}" } );
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/edit-question",
+      method: "POST",
+      data: data,
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        window.location = res.redirect;
+      }
+  })
+}
+</script>
+
 {% endblock %}
