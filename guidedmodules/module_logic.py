@@ -74,7 +74,7 @@ def walk_module_questions(module, callback):
             state.update(walk_question(qq, stack+[q.key]))
 
         # Run the callback and get its state.
-        state = callback(q, state, deps)
+        state = callback(q, state, dependencies[q])
 
         # Remember the state in case we encounter it later.
         processed_questions[q.key] = dict(state) # clone
@@ -124,10 +124,11 @@ def evaluate_module_state(current_answers, required, parent_context=None):
 
     # Visitor function.
     def walker(q, state, deps):
-        # If any of the dependencies don't have answers yet, then this
-        # question cannot be processed yet.
-        for qq in deps:
-            if qq.key not in state:
+        # If any of the dependencies don't have answers yet, or if it's been
+        # skipped but it's a non-skippable dependency, then this question
+        # cannot be processed yet.
+        for qq, skippable in deps.items():
+            if qq.key not in state or (not skippable and state[qq.key][3] is None):
                 unanswered.add(q)
                 answertuples[q.key] = (q, False, None, None)
                 return { }
@@ -611,14 +612,14 @@ def get_all_question_dependencies(module):
 
     # Compute all of the dependencies of all of the questions.
     dependencies = {
-        q: get_question_dependencies(q, get_from_question_id=all_questions)
+        q: get_question_dependencies_with_skippable_flag(q, get_from_question_id=all_questions)
         for q in all_questions.values()
     }
 
     # Find the questions that are at the root of the dependency tree.
     is_dependency_of_something = set()
     for deps in dependencies.values():
-        is_dependency_of_something |= deps
+        is_dependency_of_something |= set(deps.keys())
     root_questions = { q for q in dependencies if q not in is_dependency_of_something }
 
     ret = (dependencies, root_questions)
@@ -632,6 +633,14 @@ def get_all_question_dependencies(module):
 def get_question_dependencies(question, get_from_question_id=None):
     return set(edge[1] for edge in get_question_dependencies_with_type(question, get_from_question_id))
 
+def get_question_dependencies_with_skippable_flag(question, get_from_question_id=None):
+    edges = get_question_dependencies_with_type(question, get_from_question_id=get_from_question_id)
+    # skippable if the question is not used in an impute condition
+    return {
+        q: "impute-condition" not in set(edge_type for (edge_type, q1) in edges if q1 == q)
+        for q in set(q0 for (edge_type, q0) in edges)
+    }
+
 def get_question_dependencies_with_type(question, get_from_question_id=None):
     if get_from_question_id is None:
         # dict-like interface
@@ -642,7 +651,8 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
                 return question.module.questions.filter(key=qid).exists()
         get_from_question_id = GetFromQuestionId()
 
-    # Returns a set of ModuleQuestion instances that this question is dependent on.
+    # Returns a set of ModuleQuestion instances that this question is dependent on
+    # as a list of edges that are tuples of (edge_type, question obj).
     ret = []
     
     # All questions mentioned in prompt text become dependencies.
@@ -656,10 +666,7 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
             for qid in get_jinja2_template_vars(
                     r"{% if " + rule["condition"] + r" %}...{% endif %}"
                     ):
-                if rule.get("value") is None:
-                    ret.append(("skip-condition", qid))
-                else:
-                    ret.append(("impute-condition", qid))
+                ret.append(("impute-condition", qid))
 
         if rule.get("value-mode") == "expression":
             for qid in get_jinja2_template_vars(
