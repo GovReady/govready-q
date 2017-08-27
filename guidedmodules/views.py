@@ -616,20 +616,70 @@ def instrumentation_record_interaction(request):
 
     return HttpResponse("ok")
 
+def authoring_tool_auth(f):
+    def g(request):
+        if request.method != "POST":
+            return HttpResponseNotAllowed(["POST"])
 
-def authoring_edit_question(request):
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
+        # Get the task and question and check permissions.
 
-    # Get the task and question and check permissions.
+        task = get_object_or_404(Task, id=request.POST["task"], project__organization=request.organization)
+        if not task.has_write_priv(request.user):
+            return HttpResponseForbidden()
+        if not task.module.is_authoring_tool_enabled(request.user):
+            return HttpResponseForbidden()
 
-    task = get_object_or_404(Task, id=request.POST["task"], project__organization=request.organization)
-    if not task.has_write_priv(request.user):
-        return HttpResponseForbidden()
-    if not task.module.is_authoring_tool_enabled(request.user):
-        return HttpResponseForbidden()
+        # Run inner function.
+        return f(request, task)
 
+    return g
+
+@authoring_tool_auth
+def authoring_new_question(request, task):
+    # Find a new unused question identifier.
+    ids_in_use = set(task.module.questions.values_list("key", flat=True))
+    key = 0
+    while "q" + str(key) in ids_in_use: key += 1
+    key = "q" + str(key)
+
+    # Get the highest definition_order in use so far.
+    definition_order = max([0] + list(task.module.questions.values_list("definition_order", flat=True))) + 1
+
+    # Make a new question instance.
+    question = ModuleQuestion(
+        module=task.module,
+        key=key,
+        definition_order=definition_order,
+        spec={
+            "type": "text",
+            "title": "New Question Title",
+            "prompt": "Enter some text.",
+        }
+        )
+    question.save()
+
+    # Write to disk if possible.
+    try:
+        question.module.serialize_to_disk()
+    except:
+        pass
+
+    # Return status. The browser will reload/redirect --- if the question key
+    # changed, this sends the new key.
+    return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
+
+@authoring_tool_auth
+def authoring_edit_question(request, task):
     question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
+
+    # Delete the question?
+    if request.POST.get("delete") == "1":
+        try:
+            question.delete()
+            return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url() })
+        except Exception as e:
+            # The only reason it would fail is a protected foreign key.
+            return JsonResponse({ "status": "error", "message": "The question cannot be deleted because it has already been answered." })
 
     # Update the question...
 
@@ -693,8 +743,11 @@ def authoring_edit_question(request):
     question.spec = spec
     question.save()
 
-    # Write to disk.
-    question.module.serialize_to_disk()
+    # Write to disk if possible.
+    try:
+        question.module.serialize_to_disk()
+    except:
+        pass
 
     # Return status. The browser will reload/redirect --- if the question key
     # changed, this sends the new key.
