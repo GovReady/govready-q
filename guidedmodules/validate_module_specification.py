@@ -123,7 +123,7 @@ def validate_question(mspec, spec):
         invalid("Impute's value must be a list.")
     for i, rule in enumerate(imputes):
         def invalid_rule(msg):
-            raise ValidationError(mspec['id'], "question %s, impute condition %d" % (spec['id'], i+1), msg)
+            raise ValidationError(mspec['id'] + " question %s, impute condition %d" % (spec['id'], i+1), msg)
 
         # Check that the condition is a string, and that it's a valid Jinja2 expression.
         from jinja2.sandbox import SandboxedEnvironment
