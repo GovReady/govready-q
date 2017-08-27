@@ -323,6 +323,28 @@ class ModuleQuestion(models.Model):
             ret.append(ch)
         return ret
 
+    def value_explanation(self):
+        # Explain for the authoring tool what a valid value is for this question.
+        if self.spec["type"] == "interstitial":
+            return "Always null."
+        if self.spec["type"] in ("text", "password", "email-address", "url"):
+            return "A text string."
+        if self.spec["type"] == "date":
+            return "A text string in the format 'YYYY-MM-DD'."
+        if self.spec["type"] == "longtext":
+            return "A text string in CommonMark syntax."
+        if self.spec["type"] in ("integer", "real"):
+            return "A number."
+        if self.spec["type"] == "yesno":
+            return '"yes" or "no"'
+        if self.spec["type"] == "choice":
+            import json
+            return "One of " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
+        if self.spec["type"] == "multiple-choice":
+            import json
+            return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
+        return ""
+
 class Task(models.Model):
     project = models.ForeignKey(Project, related_name="tasks", on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
     editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.PROTECT, help_text="The user that has primary responsibility for completing this Task.")

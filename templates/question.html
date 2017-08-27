@@ -510,7 +510,7 @@ label:hover .onhover { display: inline; }
 
 {% if authoring_tool_enabled %}
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
-<div id="question_authoring_tool" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true">
+<div id="question_authoring_tool" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true" data-keyboard="false">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -1018,8 +1018,57 @@ function record_interaction() {
 
 {% if authoring_tool_enabled %}
 <script src="{% static "vendor/js-yaml.min.js" %}"></script>
+<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
 <script>
-$('#question_authoring_tool').on('shown.bs.modal', function() { autosize.update($(this).find('textarea')) });
+$(function() {
+  init_question_authoring_tool();
+})
+
+function init_question_authoring_tool() {
+  // Make the prompt textarea auto-resizing when the modal first is shown,
+  // so that it is autosized to any text already inside it, which must be
+  // done after it's visible.
+  $('#question_authoring_tool').on('shown.bs.modal', function() { autosize.update($(this).find('textarea')) });
+  init_question_authoring_tool_autocomplete($('#authoring_tool_qprompt'), "template");
+}
+
+function init_question_authoring_tool_autocomplete(elem, expr_type) {
+  // Add question IDs as autocompletes to the fields that use Jinja2
+  // expressions.
+  var question_keys = { {% for q in q.module.get_questions %}
+    "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}
+  };
+  
+  var trigger = "";
+  if (expr_type == "template") trigger = "|\{\{";
+  
+  elem.textcomplete([{
+    match: new RegExp("(^|\\s" + trigger + ")([a-zA-Z_][a-zA-Z0-9_]*)?$"),
+    search: function (term, callback, match) {
+      // Perform a fuzzy match.
+      var matches = [];
+      term = (match[2] || "").toLowerCase().replace(/_/, "");
+      Object.keys(question_keys).forEach(function(key) {
+        var search_key = key.toLowerCase().replace(/_/, "");
+        if (search_key.indexOf(term) >= 0)
+          matches.push(key);
+      });
+      callback(matches)
+    },
+    template: function(value) {
+      var node = $("<span><span class='term'/> <span class='info' style='font-style: italic; padding-left: 1.5em;'/></span>");
+      node.find(".term").text(value);
+      node.find(".info").text(question_keys[value]);
+      return node.html();
+    },
+    replace: function(value, event) { return "$1" + value.replace(/\$/g, "$$$$"); } // must escape any dollar signs in the replacement text, and since we're using replace to do it we need to escape the literal $ twice!
+  }], {
+    style: {
+      zIndex: 10000
+    }
+  });
+}
+
 function show_question_authoring_tool() {
   // Initialize form state.
   var spec = {{q.spec|json}};
@@ -1079,6 +1128,7 @@ function authoring_tool_add_impute_condition_fields() {
 
     + "</div>");
   $('#authoring_tool_impute_conditions').append(n);
+  init_question_authoring_tool_autocomplete($(n.find("input")[0], "expression"));
   return n;
 }
 
