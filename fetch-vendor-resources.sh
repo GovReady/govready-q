@@ -62,6 +62,10 @@ wget -O /tmp/quill.tar.gz \
 tar -zx -C $VENDOR -f /tmp/quill.tar.gz
 rm -f /tmp/quill.tar.gz
 
+# js-yaml, for the authoring tool (MIT License)
+wget -O $VENDOR/js-yaml.min.js \
+        https://raw.githubusercontent.com/nodeca/js-yaml/3.9.1/dist/js-yaml.min.js
+
 # google fonts
 #  Hind: SIL Open Font License 1.1
 # first download a helper (note: we're about to run a foriegn script locally)

@@ -58,20 +58,25 @@
               <tr id="link-to-question-{{q.key}}">
                 <td>
                   {{q.title}}
-                  {% if q.link %}
+                  {% if q.can_link or authoring_tool_enabled %}
                   <a href="{{q.link}}" style="margin-right: .5em; font-size: 65%;">
                     <span class="glyphicon glyphicon-pencil"></span>
                   </a>
                   {% endif %}
                 </td>
                 <td>
-                 {% if not q.skipped %}
                   <div style="float: right">
-                  {% if q.reviewed == 0 %}<span class="label label-danger">New</span>{% endif %}
-                  {% if q.reviewed == 1 %}<span class="label label-info">Reviewed</span>{% endif %}
-                  {% if q.reviewed == 2 %}<span class="label label-success">Approved</span>{% endif %}
+                    {% if not q.skipped and not q.imputed %}
+                      {% if q.reviewed == 0 %}<span class="label label-danger">New</span>{% endif %}
+                      {% if q.reviewed == 1 %}<span class="label label-info">Reviewed</span>{% endif %}
+                      {% if q.reviewed == 2 %}<span class="label label-success">Approved</span>{% endif %}
+                    {% endif %}
+
+                    {% if q.imputed %}
+                      <span class="label label-warning">Imputed</span>
+                    {% endif %}
                   </div>
-                  {% endif %}
+ 
                   {{q.value|safe}}
                 </td>
               </tr>

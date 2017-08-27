@@ -359,8 +359,11 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
     request.suppress_prompt_banner = True
 
     # If this question cannot currently be answered (i.e. dependencies are unmet),
-    # then redirect away from this page.
-    if q.key in answered.was_imputed or (q in answered.unanswered and q not in answered.can_answer):
+    # then redirect away from this page. If the user is allowed to use the authoring
+    # tool, then allow seeing this question so they can edit all questions.
+    authoring_tool_enabled = task.module.is_authoring_tool_enabled(request.user)
+    is_answerable = (((q not in answered.unanswered) or (q in answered.can_answer)) and (q.key not in answered.was_imputed))
+    if not is_answerable and not authoring_tool_enabled:
         return HttpResponseRedirect(task.get_absolute_url())
 
     # Is there a TaskAnswer for this yet?
@@ -368,9 +371,11 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
 
     # Display requested question.
 
-    # Is there an answer already?
+    # Is there an answer already? (If this question isn't answerable, i.e. if we're
+    # only here because the user is using the authoring tool, then there is no
+    # real answer to load.)
     answer = None
-    if taskq:
+    if taskq and is_answerable:
         answer = taskq.get_current_answer()
         if answer and answer.cleared:
             # If the answer is cleared, treat as if it had not been answered.
@@ -453,7 +458,7 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
 
     # Get any existing answer for this question.
     existing_answer = None
-    if answer and not answer.cleared:
+    if answer:
         existing_answer = answer.get_value(decryption_provider=EncryptionProvider())
 
         # For longtext questions, because the WYSIWYG editor is initialized with HTML,
@@ -516,7 +521,8 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
                 for y in reversed(range(timezone.now().year-100, timezone.now().year+101))],
         },
 
-        "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),
+        "is_answerable": is_answerable, # only false if authoring tool is enabled, otherwise this page is not renderable
+        "authoring_tool_enabled": authoring_tool_enabled,
     })
     return render(request, "question.html", context)
 
@@ -553,6 +559,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
         "output": task.render_output_documents(answered),
         "context": module_logic.get_question_context(answered, None),
+        "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),
     })
     return render(request, "module-finished.html", context)
 
@@ -629,8 +636,9 @@ def authoring_edit_question(request):
     # Update the key.
     question.key = request.POST['newid']
 
-    # Update the spec dict - starting with the new fields provided remotely.
     try:
+
+        # Create the spec dict, starting with the standard fields.
         from collections import OrderedDict
         spec = OrderedDict()
         spec["id"] = request.POST['newid']
@@ -643,13 +651,41 @@ def authoring_edit_question(request):
                     spec[field] = int(spec[field])
                 if field == "choices":
                     spec[field] = ModuleQuestion.choices_from_csv(spec[field])
+
+        # Add impute conditions, which are spread across an arbitrary number of
+        # triples of fields named like impute_condition_###_{condition,value,valuemode}.
+        impute_condition_field_numbers = set()
+        for key, value in request.POST.items():
+            m = re.match(r"^impute_condition_(\d+)_(condition|value|valuemode)$", key)
+            if m: impute_condition_field_numbers.add(int(m.group(1)))
+        for impute_number in sorted(impute_condition_field_numbers):
+            key = "impute_condition_" + str(impute_number) + "_"
+            impute = OrderedDict()
+            impute["condition"] = request.POST.get(key + "condition", "")
+            if impute["condition"].strip() == "": continue # skip if the expression is empty
+            impute["value"] = request.POST.get(key + "value", "")
+            impute["value-mode"] = request.POST.get(key + "valuemode", "")
+            if impute["value-mode"] in (None, "raw"):
+                # The default value mode is a raw value, which
+                # we must parse from the form string value.
+                del impute["value-mode"]
+                try:
+                    import rtyaml
+                    impute["value"] = rtyaml.load(impute["value"])
+                except ValueError as e:
+                    raise ValueError("Error in impute condition %s value: %s" %
+                        (impute_number, str(e)))
+            spec.setdefault("impute", []).append(impute)
+
+        # If additional JSON spec data is provided, add it.
         if request.POST.get("spec", "").strip():
-            import json
-            spec.update(json.loads(request.POST["spec"]))
+            import rtyaml
+            spec.update(rtyaml.load(request.POST["spec"]))
 
         # Validate.
         from .validate_module_specification import validate_question
         validate_question(question.module.spec, spec)
+
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
 

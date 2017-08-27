@@ -236,6 +236,8 @@ def get_question_context(answers, question):
         def __call__(self):
             if not self.is_answered:
                 return "<i>not answered</i>"
+            if self.q.spec["type"] == "interstitial":
+                return "<i>seen</i>"
             if self.answer_value is None:
                 return "<i>skipped</i>"
             if not hasattr(LazyRenderedAnswer, 'tc'):
@@ -245,12 +247,18 @@ def get_question_context(answers, question):
     answers.as_dict() # force lazy-load
     context = []
     for q, is_answered, answer_obj, answer_value in answers.answertuples.values():
-        # Skip imputed questions.
-        if is_answered and answer_obj is None: continue
+        # Sometimes we want to skip imputed questions, but for the sake
+        # of the authoring tool we need to keep imputed questions so
+        # the user can navigate to them.
         context.append({
             "key": q.key,
             "title": q.spec['title'],
-            "link": (answers.task.get_absolute_url() + "/question/" + q.key) if (answer_obj or q in answers.can_answer) else None, # any question that has been answered or can be answered next can be linked to
+            "link": answers.task.get_absolute_url_to_question(q),
+
+            # Any question that has been answered or can be answered next can be linked to,
+            "can_link": (answer_obj or q in answers.can_answer),
+
+            "imputed": is_answered and answer_obj is None,
             "skipped": (answer_obj is not None and answer_value is None) and (q.spec["type"] != "interstitial"),
             "answered": answer_obj is not None,
             "reviewed": answer_obj.reviewed if answer_obj is not None else None,
