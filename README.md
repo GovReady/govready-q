@@ -39,7 +39,7 @@ GovReady-Q Compliance Server requires the following:
 
 ## <a name="installing"></a>Installing
 
-Guides for installing and deploying GovReady-Q on different Operating Systems can be found the `deployments` directory.
+Guides for installing and deploying GovReady-Q on different Operating Systems can be found the `deployment` directory.
 
 * [Launching with Docker](deployment/docker/README.md) - super easy and has a nice `first_run.sh` script
 * [Installing on RHEL](deployment/rhel/README.md) - detailed instructions on installing, libraries, setting up Postgres and Apache
