@@ -26,27 +26,51 @@ GovReady-Q is open source and incorporates the emerging [OpenControl](http://ope
 
 # <a name="installation"></a>Installation / Deployment
 
+## <a name="requirements"></a>Requirements
+
+GovReady-Q Compliance Server requires the following:
+
+* Python3
+* Django
+* SQL Database (SQLITE3, Postgres, MariaDB, MySQL)
+* PIP for Python3
+* Various Python3 libraries
+* Web server (Apache or NGINX for production)
+
 ## <a name="installing"></a>Installing
 
-GovReady-Q can be installed by [cloning the GitHub repository](https://github.com/govready/govready-q) or launching the [dockerized version](https://hub.docker.com/r/govready/govready-q/).
+Guides for installing and deploying GovReady-Q on different Operating Systems can be found the `deployments` directory.
 
-GovReady-Q will create an SQLite3 database by default and can be configured to work with Postgres, MariaDB, or MySQL.
+* [Launching with Docker](deployment/docker/README.md) - super easy and has a nice `first_run.sh` script
+* [Installing on RHEL](deployment/rhel/README.md) - detailed instructions on installing, libraries, setting up Postgres and Apache
+* [Installing on Ubuntu](deployment/ubuntu/README.md) - super easy `update.sh`
 
-GovReady-Q currently installs with a small set of compliance apps primarily for demonstration purposes. Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principle benefit of compliance apps is their modularization and reusability.
+Once you have the libaries installed, you will need to clone the repository and run the Django commands to set up the database tables. GovReady-Q will create an SQLite3 database by default and can be configured to work with Postgres, MariaDB, or MySQL.
 
-To install/deploy on a fresh machine, create a Unix user named "site" and in its home directory run:
-
+	# clone repo
 	git clone https://github.com/GovReady/govready-q q
 	cd q
+	
+	# create local director
 	mkdir local
 
-Then run:
+	# install python packages
+	pip3 install -r dev_requirements.txt
+	
+	# install other assets
+	./fetch-vendor-resources.sh
+	
+	# create database tables
+	python3 manage.py migrate
+	
+	# misc
+	python3 manage.py collectstatic --noinput
 
-	sudo deployment/setup.sh
+	# set up admin user
+	python3 manage.py first_run
 
-(If you get a gateway error from nginx, you may need to `sudo service supervisor restart` to start the uWSGI process.)
-
-If this is truly on a new machine, it will create a new SQlite database. You'll also see some output instructing you to create a file named `local/environment.json`. Make it look like this:
+ 
+ When complete, a `local/environment.json` will have been generated. Make it look like this:
 
 	{
 	  "debug": true,
@@ -68,9 +92,20 @@ For production you might also want to make other changes to the `environment.jso
 
 	"admins": [["Name", "email@domain.com"], ...]
 
+Follow the guides for instructions on launching GovReady-Q.
+
+If you are developing locally, GovReady-Q can be run with Django's built-in web server with this command:
+
+	python3 manage.py runserver
+
+
 ## <a name="create-org"></a>Create an Organization
 
 You must set up the first organization (i.e. end-user/client) domain from the Django admin. Log into http://localhost:8000/admin with the superuser account that you created above. Add a Siteapp -> Organization (http://localhost:8000/admin/siteapp/organization/add/). Then visit the site at subdomains.localhost:8000 (using the subdomain for the organization you just created) and log in using the super user credentials again. (If you are using a domain other than `localhost`, then you must set it as the value of `"organization-parent-domain"` in the `local/environment/json` file.) When you log in for the first time it will ask you questions about the user and about the organization.
+
+
+GovReady-Q currently installs with a small set of compliance apps primarily for demonstration purposes. Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principle benefit of compliance apps is their modularization and reusability.
+
 
 ## <a name="updating"></a>Updating
 
