@@ -223,9 +223,11 @@
       {% endif %}
       {{project.title}}
     </h1>
-
+ 
     {% if project.root_task.module.spec.introduction %}
+      <center>
       {{project.root_task.render_introduction|safe}}
+      </center>
     {% endif %}
 
     {% if project.root_task.module.spec.is_app_stub %}
