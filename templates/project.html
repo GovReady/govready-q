@@ -547,9 +547,11 @@
                   onchange="$('#import-form').submit()" />
               </form>
       {% endif %}
-    </div>
-  </div>
-</div>
+      </div> {# modal-body #}
+    </div> {# modal-content #}
+  </div> {# /modal #}
+</div> {# /project-settings #}
+{% endif %}
 {% endif %}
 
 {% endblock %}
