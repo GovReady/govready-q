@@ -41,7 +41,7 @@ class ModuleSource(models.Model):
             return "github.com/%s" % self.spec.get("repo")
 
 class Module(models.Model):
-    source = models.ForeignKey(ModuleSource, help_text="The source of this module definition.")
+    source = models.ForeignKey(ModuleSource, related_name="modules", help_text="The source of this module definition.")
 
     key = models.SlugField(max_length=200, db_index=True, help_text="A slug-like identifier for the Module.")
 
@@ -200,6 +200,28 @@ class Module(models.Model):
         return (settings.DEBUG
             and self.source.spec["type"] == "local" # so we can save to disk
             and user.has_perm('guidedmodules.change_module'))
+    def get_referenceable_modules(self):
+        # Return the modules that can be referenced by this
+        # one in YAML as an answer type.
+        for m in self.source.modules.filter(superseded_by=None):
+            # Since we don't know what app this Module is contained in, we
+            # can't form absolute paths relative to the top of the module.
+            try:
+                self.getReferenceTo(m)
+                yield m # ok
+            except ValueError:
+                pass
+    def getReferenceTo(self, target):
+        # Get the string that you would put in a YAML file to reference the
+        # target module. target must be in get_referenceable_modules.
+        # This is the inverse of validate_module_specification.resolve_relative_module_id.
+        mypath = "/".join(self.key.split("/")[:-1]) + "/"
+        if target.key.startswith(mypath):
+            # If the target is in the same virtual directory or a subdirectory,
+            # use a virtual path.
+            return target.key[len(mypath):]
+        else:
+            raise ValueError("Cannot reference %s from %s." % (target, self))
     def serialize_to_disk(self):
         # Write out the in-memory module specification to disk!
         assert self.source.spec["type"] == "local" and self.source.spec["path"]

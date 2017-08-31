@@ -567,6 +567,10 @@ label:hover .onhover { display: inline; }
                   <option value="interstitial">Interstitial</option>
                   <option value="file">File Upload</option>
                 </optgroup>
+                <optgroup label="Sub-Task Questions">
+                  <option value="module">Task (Single Task)</option>
+                  <option value="module-set">Multiple Task</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -623,6 +627,25 @@ label:hover .onhover { display: inline; }
             <div class="col-sm-10">
               <input type="text" class="form-control" id="authoring_tool_qhelp" name="help">
               <span class="help-block">Template text shown as small-font help text below the question&rsquo;s input field.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_module authoring_q_type_module-set">
+            <label for="authoring_tool_qmoduletype" class="col-sm-2 control-label">Module</label>
+            <div class="col-sm-10">
+              <select class="form-control" id="authoring_tool_qmoduletype" name="module-id">
+              <option value="">(select or use protocol)</option>
+              {% for m in q.module.get_referenceable_modules %}
+                <option value="{{m.id}}">{{m.title}} ({{m.key}})</option>
+              {% endfor %}
+              </select>
+              <span class="help-block">The module that can be used to answer this question.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_module authoring_q_type_module-set">
+            <label for="authoring_tool_qmoduleprotocol" class="col-sm-2 control-label">Protocol ID</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_qmoduleprotocol" name="protocol">
+              <span class="help-block">Instead of a module, you can also enter a protocol ID to make available any compliance app that satisfies this protocol.</span>
             </div>
           </div>
           </div>
@@ -1086,6 +1109,8 @@ function show_question_authoring_tool() {
   $('#authoring_tool_qmax').val(spec.max); delete spec.max;
   $('#authoring_tool_filetype').val(spec["file-type"]); delete spec['file-type'];
   $('#authoring_tool_qhelp').val(spec.help); delete spec.help;
+  {% if q.answer_type_module %}$('#authoring_tool_qmoduletype').val({{q.answer_type_module.id}}); delete spec['module-id'];{% endif %}
+  $('#authoring_tool_qmoduleprotocol').val(spec.protocol); delete spec.protocol;
 
   $('#authoring_tool_impute_conditions').html('');
   (spec.impute || []).forEach(function(impute) {
