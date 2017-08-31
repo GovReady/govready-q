@@ -592,6 +592,7 @@ def project(request, project):
         "action_buttons": action_buttons,
 
         "layout_mode": layout_mode,
+        "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
     })
 
 @project_read_required

@@ -669,6 +669,7 @@ def authoring_new_question(request, task):
     return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
 
 @authoring_tool_auth
+@transaction.atomic
 def authoring_edit_question(request, task):
     question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
 
@@ -689,18 +690,34 @@ def authoring_edit_question(request, task):
     try:
 
         # Create the spec dict, starting with the standard fields.
+        # Most fields are strings and need no extra processing but
+        # some need to be parsed.
         from collections import OrderedDict
         spec = OrderedDict()
         spec["id"] = request.POST['newid']
         for field in (
             "title", "prompt", "type", "placeholder", "default", "help",
-            "choices", "min", "max", "file-type"):
-            if request.POST.get(field, "").strip():
-                spec[field] = request.POST.get(field, "").strip()
+            "choices", "min", "max", "file-type", "protocol"):
+            value = request.POST.get(field, "").strip()
+            if value:
                 if field in ("min", "max"):
-                    spec[field] = int(spec[field])
-                if field == "choices":
-                    spec[field] = ModuleQuestion.choices_from_csv(spec[field])
+                    spec[field] = int(value)
+                elif field == "choices":
+                    spec[field] = ModuleQuestion.choices_from_csv(value)
+                else:
+                    spec[field] = value
+
+        # For module-type questions the "module-id" form field gives a Module instance
+        # ID, which we need to set in the Question.answer_type_module field as well
+        # as in the Question.spec["module-id"] field for validation and serialization
+        # to YAML on disk.
+        question.answer_type_module = None
+        if request.POST.get("module-id") and spec["type"] in ("module", "module-set"):
+            m = Module.objects.get(id=request.POST["module-id"])
+            if m not in question.module.get_referenceable_modules():
+                raise ValueError("The selected module is not valid.")
+            question.answer_type_module = m
+            spec["module-id"] = question.module.getReferenceTo(m)
 
         # Add impute conditions, which are spread across an arbitrary number of
         # triples of fields named like impute_condition_###_{condition,value,valuemode}.
@@ -746,8 +763,8 @@ def authoring_edit_question(request, task):
     # Write to disk if possible.
     try:
         question.module.serialize_to_disk()
-    except:
-        pass
+    except Exception as e:
+        return JsonResponse({ "status": "error", "message": "Could not update local YAML file: " + str(e) })
 
     # Return status. The browser will reload/redirect --- if the question key
     # changed, this sends the new key.

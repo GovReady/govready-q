@@ -155,6 +155,7 @@ def validate_question(mspec, spec):
 def resolve_relative_module_id(within_module, module_id):
     # Module IDs specified in the YAML are relative to the directory in which
     # they are found. Unless they start with '/'.
+    # See modules.Module.getReferenceTo for the inverse function.
     if module_id.startswith("/"):
         return module_id[1:]
     return "/".join(within_module["id"].split("/")[:-1] + [module_id])

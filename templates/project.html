@@ -213,15 +213,21 @@
 
 <div class="col-md-pull-2 col-md-10">
   <div id="focus-area-wrapper">
+    {% if authoring_tool_enabled %}
+    <center style="font-size: 90%;"><p class="text-info">You are in author mode. Authoring tools (<span class="glyphicon glyphicon-pencil"></span>) have been enabled for this module.</span></p></center>
+    {% endif %}
+
     <h1 style="text-align: center;">
       {% if project.root_task.get_app_icon_url %}
       <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
       {% endif %}
       {{project.title}}
     </h1>
-
+ 
     {% if project.root_task.module.spec.introduction %}
+      <center>
       {{project.root_task.render_introduction|safe}}
+      </center>
     {% endif %}
 
     {% if project.root_task.module.spec.is_app_stub %}
@@ -286,9 +292,8 @@
                     {% if layout_mode == "grid" %}col-sm-3{% else %}col-xs-12{% endif %}
                     question
                     {% if rec.is_finished %}task_finished{% endif %}
-                    {% if rec.first_start %}first_start{% endif %}"
-                  onclick="$(this).find('form').submit();"
-                  style="cursor: pointer;">
+                    {% if rec.first_start %}first_start{% endif %}">
+                    <a href="#" onclick="$(this).find('form').submit(); return false;">
 
                   {# For module-type questions, the question is either unstarted, in which case the app icon and title are from the question, or started in which case the app icon and title are from the task (falling back to the question if no icon is set for the task). #}
 
@@ -333,6 +338,14 @@
                     {% endif %}
 
                     <div class="question-title">
+                      {% if authoring_tool_enabled %}
+                        <div class="float: right">
+                          <a href="#" onclick="show_question_authoring_tool('{{rec.question.key|escapejs}}'); return false;">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                          </a>
+                        </div>
+                      {% endif %}
+
                       <!--{% if can_begin_module and rec.question.spec.protocol %}Add {% endif %} -->
                         {{rec.question.spec.title}}
                     </div>
@@ -404,6 +417,14 @@
                       {% endif %}
 
                       <div class="question-title">
+                        {% if authoring_tool_enabled %}
+                          <div style="float: right">
+                            <a href="#" onclick="show_question_authoring_tool('{{rec.question.key|escapejs}}'); return false;">
+                              <span class="glyphicon glyphicon-pencil"></span>
+                            </a>
+                          </div>
+                        {% endif %}
+
                         {% if rec.question.spec.app_overrides_name_and_icon is None %}
                           {{t.title}}
                         {% else %}
@@ -448,6 +469,7 @@
                       </div>
                       {% endif %}
                   </div> <!-- /.question-body -->
+                </a>
                 </div> <!-- /#question-__.question -->
               {% endfor %}
               </div> <!-- /question-group -->
@@ -547,9 +569,16 @@
                   onchange="$('#import-form').submit()" />
               </form>
       {% endif %}
-    </div>
-  </div>
-</div>
+      </div> {# modal-body #}
+    </div> {# modal-content #}
+  </div> {# /modal #}
+</div> {# /project-settings #}
+{% endif %}
+
+
+{% if authoring_tool_enabled %}
+{# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
+{% include "authoring-tool-modal.html" %}
 {% endif %}
 
 {% endblock %}
@@ -697,4 +726,31 @@ function rename_folder(elem) {
 }
 {% endif %}
 </script>
+
+{% if authoring_tool_enabled %}
+<script src="{% static "vendor/js-yaml.min.js" %}"></script>
+<script src="{% static "js/authoring_tool.js" %}"></script>
+<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+<script>
+$(function() {
+  init_question_authoring_tool({
+    task: {{project.root_task.id}},
+    module: {{project.root_task.module.spec|json}},
+    questions: {
+      {% for q in project.root_task.module.questions.all %}
+      {{q.key}}: {
+        spec: {{q.spec|json}},
+        choices: "{{q.choices_as_csv|escapejs}}",
+        answer_type_module_id: {% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    },
+    answer_type_modules: [{% for m in project.root_task.module.get_referenceable_modules %}
+      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.key}})" }{% if not forloop.last %},{% endif %}
+      {% endfor %}],
+    autocomplete_questions: { }
+  });
+});
+</script>
+{% endif %}
 {% endblock %}

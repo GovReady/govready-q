@@ -287,6 +287,10 @@ class Comment(models.Model):
             description=self.text,
             comment_id=self.id)
 
+        # Let the owner object of the discussion know that a comment was left.
+        if hasattr(self.discussion.attached_to, 'on_discussion_comment'):
+            self.discussion.attached_to.on_discussion_comment(self)
+
 
     def push_history(self, field):
         if not isinstance(self.extra, dict):
