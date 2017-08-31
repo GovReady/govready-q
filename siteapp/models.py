@@ -156,6 +156,8 @@ class Organization(models.Model):
     name = models.CharField(max_length=256, help_text="The display name of the Organization.")
     subdomain = models.CharField(max_length=256, unique=True, help_text="The subdomain of the host site that this Organization's site is served at.", validators=[RegexValidator(regex=subdomain_regex)])
 
+    help_squad = models.ManyToManyField(User, blank=True, help_text="Users who are invited to all new discussions in this Organization.")
+
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(default={}, blank=True, help_text="Additional information stored with this object.")

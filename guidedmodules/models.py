@@ -1052,11 +1052,22 @@ class TaskAnswer(models.Model):
                 "notification_text": str(answer.answered_by) + " " + vp + "."
             })
 
+        # The invitation of the help squad.
+        if (self.extra or {}).get("invited-help-squad"):
+            history.append({
+                "type": "event",
+                "date": self.extra["invited-help-squad"],
+                "html": html.escape("Help squad invited to this discussion."),
+                "notification_text": "Help squad invited to this discussion.",
+            })
+
         # Sort.
         history.sort(key = lambda item : item["date"])
 
         # render events for easier client-side processing
+        from django.utils.dateparse import parse_datetime
         for item in history:
+            if isinstance(item["date"], str): item["date"] = parse_datetime(item["date"])
             item["date_relative"] = reldate(item["date"], timezone.now()) + " ago"
             item["date_posix"] = item["date"].timestamp()
             del item["date"] # not JSON serializable
@@ -1235,6 +1246,32 @@ class TaskAnswer(models.Model):
                 for term in organization.extra.get("vocabulary", [])
             ]
         }
+
+    # required to attach a Discussion to it
+    def on_discussion_comment(self, comment):
+        # A comment was left. If we haven't already, invite all organization
+        # help crew members to this discussion. See siteapp.views.send_invitation
+        # for how to construct Invitations.
+        from siteapp.models import Invitation
+        self.extra = self.extra or { } # ensure initialized
+        if not self.extra.get("invited-help-squad"):
+            anyone_invited = False
+            for user in self.task.project.organization.help_squad.all():
+                if user in self.get_notification_watchers(): continue # no need to invite
+                inv = Invitation.objects.create(
+                    organization=self.task.project.organization,
+                    from_user=comment.user,
+                    from_project=self.task.project,
+                    target=comment.discussion,
+                    target_info={ "what": "invite-guest" },
+                    to_user=user,
+                    text="The organization's help squad is being automatically invited to help with the following comment:\n\n" + comment.text,
+                )
+                inv.send()
+                anyone_invited = True
+            if anyone_invited:
+                self.extra["invited-help-squad"] = timezone.now()
+                self.save()
 
 
 class TaskAnswerHistory(models.Model):
