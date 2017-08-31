@@ -1,0 +1,161 @@
+<div id="question_authoring_tool" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true" data-keyboard="false">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="question_authoring_tool_title">
+          Edit Question
+        </h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" onsubmit="return false;">
+          <div class="form-group">
+            <label for="authoring_tool_qid" class="col-sm-2 control-label">Question ID</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_qid" pattern="[a-zA-Z_][a-zA-Z0-9_]*" name="newid">
+              <span class="help-block">The identifier for the question, which is used in templates and the API.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Title</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_qtitle" name="title">
+              <span class="help-block">A title for the question.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_qprompt" class="col-sm-2 control-label">Prompt</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" id="authoring_tool_qprompt" name="prompt"></textarea>
+              <span class="help-block">A template rendered as the prompt for the question. The first line will be shown in a larger font.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_type" class="col-sm-2 control-label">Answer Type</label>
+            <div class="col-sm-10">
+              <select class="form-control" id="authoring_tool_type" onchange="_val = $(this).val(); $('#authoring_tool_q_type_options>div, #authoring_tool_q_type_options .toggled').each(function() { $(this)[$(this).hasClass('authoring_q_type_' + _val) ? 'fadeIn' : 'hide']() });" name="type">
+                <optgroup label="Text Questions">
+                  <option value="text">Text (Single Line)</option>
+                  <option value="password">Password</option>
+                  <option value="email-address">Email Address</option>
+                  <option value="url">Web Address (URL)</option>
+                  <option value="longtext">Paragraph (Rich Text/Markdown)</option>
+                </optgroup>
+                <optgroup label="Choice Questions">
+                  <option value="date">Date</option>
+                  <option value="yesno">Yes/No</option>
+                  <option value="choice">Single Choice</option>
+                  <option value="multiple-choice">Multiple Choice</option>
+                </optgroup>
+                <optgroup label="Number Questions">
+                  <option value="integer">Integer</option>
+                  <option value="real">Any Number</option>
+                </optgroup>
+                <optgroup label="Media Questions">
+                  <option value="interstitial">Interstitial</option>
+                  <option value="file">File Upload</option>
+                </optgroup>
+                <optgroup label="Sub-Task Questions" class="available-for-projects">
+                  <option value="module">Task (Single Task)</option>
+                  <option value="module-set">Multiple Task</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <div id="authoring_tool_q_type_options">
+          <div class="form-group authoring_q_type_text authoring_q_type_email-address authoring_q_type_url authoring_q_type_integer authoring_q_type_real">
+            <label for="authoring_tool_placeholder" class="col-sm-2 control-label">Placeholder</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_placeholder" name="placeholder">
+              <span class="help-block">Template text displayed as the field&rsquo;s placeholder text when the field is empty. Do not set both a placeholder and a default.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_text authoring_q_type_email-address authoring_q_type_url authoring_q_type_longtext">
+            <label for="authoring_tool_default" class="col-sm-2 control-label">Default</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_default" name="default">
+              <span class="help-block">Template text provided as a default value. Do not set both a placeholder and a default.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_choice authoring_q_type_multiple-choice">
+            <label for="authoring_tool_qchoices" class="col-sm-2 control-label">Choices</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" id="authoring_tool_qchoices" name="choices"></textarea>
+              <span class="help-block">Put each choice on a separate line and provide as KEY|LABEL|HELP.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_multiple-choice authoring_q_type_integer authoring_q_type_real">
+            <label for="authoring_tool_qmin" class="col-sm-2 control-label">Minimum</label>
+            <div class="col-sm-10">
+              <input type="number" pattern="[0-9]*" min="0" class="form-control" id="authoring_tool_qmin" name="min">
+              <span class="help-block toggled authoring_q_type_multiple-choice">The minimum number of choices the user must select. Leave blank if there is no minimum.</span>
+              <span class="help-block toggled authoring_q_type_integer authoring_q_type_real">The minimum number allowed. Enter zero to prevent the user from entering negative numbers. Leave blank if there is no minimum.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_multiple-choice authoring_q_type_integer authoring_q_type_real">
+            <label for="authoring_tool_qmax" class="col-sm-2 control-label">Maximum</label>
+            <div class="col-sm-10">
+              <input type="number" pattern="[0-9]*" min="0" class="form-control" id="authoring_tool_qmax" name="max">
+              <span class="help-block toggled authoring_q_type_multiple-choice">The maximum number of choices the user may select. Leave blank if there is no maximum.</span>
+              <span class="help-block toggled authoring_q_type_integer authoring_q_type_real">The maximum number allowed. Leave blank if there is no maximum.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_file">
+            <label for="authoring_tool_filetype" class="col-sm-2 control-label">File Type</label>
+            <div class="col-sm-10">
+              <select class="form-control" id="authoring_tool_filetype" name="file-type">
+                <option value="">Any File Type</option>
+                <option value="image">Image</option>
+              </select>
+              <span class="help-block">Restrict file uploads to files of the given type.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_text authoring_q_type_password authoring_q_type_email-address authoring_q_type_url authoring_q_type_longtext authoring_q_type_date authoring_q_type_integer authoring_q_type_real authoring_q_type_file">
+            <label for="authoring_tool_qhelp" class="col-sm-2 control-label">Help Text</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_qhelp" name="help">
+              <span class="help-block">Template text shown as small-font help text below the question&rsquo;s input field.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_module authoring_q_type_module-set">
+            <label for="authoring_tool_qmoduletype" class="col-sm-2 control-label">Module</label>
+            <div class="col-sm-10">
+              <select class="form-control" id="authoring_tool_qmoduletype" name="module-id">
+              </select>
+              <span class="help-block">The module that can be used to answer this question.</span>
+            </div>
+          </div>
+          <div class="form-group authoring_q_type_module authoring_q_type_module-set">
+            <label for="authoring_tool_qmoduleprotocol" class="col-sm-2 control-label">Protocol ID</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="authoring_tool_qmoduleprotocol" name="protocol">
+              <span class="help-block">Instead of a module, you can also enter a protocol ID to make available any compliance app that satisfies this protocol.</span>
+            </div>
+          </div>
+          </div>
+          <div class="form-group impute-condtions-holder">
+          	<label class="col-sm-2 control-label">Impute Conditions</label>
+            <div class="col-sm-10">
+              <div id="authoring_tool_impute_conditions">
+              </div>
+              <button class="pull-right" title="Add Impute Condition" onclick="authoring_tool_add_impute_condition_fields()"><span class="glyphicon glyphicon-plus"></span></button>
+              <span class="help-block">Impute conditions are run in order. The first condition to match determines the answer for this question. Each condition is a Jinja2 expression. If the condition evaluates to true, the condition matches.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_qspec" class="col-sm-2 control-label">Other Data</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" id="authoring_tool_qspec" name="spec">{ }</textarea>
+              <span class="help-block">Other question field specification data not supported above (YAML).</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" onclick="authoring_tool_delete_question()">Delete Question</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="authoring_tool_save_changes()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
