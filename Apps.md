@@ -1,8 +1,10 @@
-# Creating Q Apps
+# Understanding Compliance Apps
 
-Content in Q is organized around "apps." Apps handle the relationship between parts of a IT system and a compliance framework.
+Content in the GovReady-Q Compliance Server is organized around "apps." Apps handle the relationship between parts of a IT system and a compliance framework.
 
-An "app" is a collection of "modules,"" one of which must be named "app." Modules are linear sequence of questions presented to users that produces zero or more output documents. Modules are stored in YAML files. Output documents of various types are supported such as markdown, HTML, and YAML. (See [Schema.md](Schema.md) for documentation on writing modules.)
+An "app" is a collection of "modules," one of which must be named "app." Modules are linear sequence of questions presented to users that produces zero or more output documents. Modules are stored in YAML files. Output documents of various types are supported such as markdown, HTML, and YAML. (See [Schema.md](Schema.md) for documentation on writing modules.)
+
+Apps that describe the required components of a compliant IT system are considered "Top Level" apps. Each question in a Top Level app specifies a type of compliance app (e.g., a compliance app "protocol") that is needed to represent that component.
 
 Aps are loaded into Q from an "app source," which can be a local directory, a Github repository, etc. App sources are linked to a Q deployment through the `ModuleSource` model in the Django admin.
 

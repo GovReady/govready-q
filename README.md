@@ -1,7 +1,17 @@
-# Q (by GovReady)
+# GovReady-Q Compliance Server
 
-GovReady-Q is an open source, self-service portal to help teams build and operate compliant IT systems.
+GovReady-Q Compliance Server is an open source tool to help teams build and operate compliant IT systems.
 
+1. [About GovReady-Q Compliance Server](#about-govready-q) 
+1. [Installation / Deployment](#installation)
+	1. [Installing](#installing)
+	1. [Create an Organization](#create-org)
+	1. [Updating](#updating)
+1. [Development](#development)
+1. [Understanding Compliance Apps](Apps.md)
+1. [Automation API](Automation.md)
+
+# <a name="about-govready-q"></a>About GovReady-Q Compliance Server
 GovReady-Q offers easy-to-use "compliance apps" that manage and generate documentation of your IT systems. Compliance apps represents system components, organization processes and team roles. When using GovReady-Q, your IT project teams select "apps" from a compliance store. The apps interactively teach security and ask simple questions about your software and system. As you pick apps and collaboratively answers questions with your team, GovReady-Q analyzes tracks your system's compliance and maintains human and machine-readable versions of your compliance documentation.
 
 GovReady-Q can be used on its own or as a compliment to an organization's existing GRC software providing step-by-step guideance and pre-written control implementation descriptions.
@@ -14,7 +24,9 @@ GovReady-Q is open source and incorporates the emerging [OpenControl](http://ope
 
 [Join our mailing list](http://eepurl.com/cN7oJL) and stay informed of developments.
 
-# Installation / Deployment
+# <a name="installation"></a>Installation / Deployment
+
+## <a name="installing"></a>Installing
 
 GovReady-Q can be installed by [cloning the GitHub repository](https://github.com/govready/govready-q) or launching the [dockerized version](https://hub.docker.com/r/govready/govready-q/).
 
@@ -56,7 +68,13 @@ For production you might also want to make other changes to the `environment.jso
 
 	"admins": [["Name", "email@domain.com"], ...]
 
+## <a name="create-org"></a>Create an Organization
+
 You must set up the first organization (i.e. end-user/client) domain from the Django admin. Log into http://localhost:8000/admin with the superuser account that you created above. Add a Siteapp -> Organization (http://localhost:8000/admin/siteapp/organization/add/). Then visit the site at subdomains.localhost:8000 (using the subdomain for the organization you just created) and log in using the super user credentials again. (If you are using a domain other than `localhost`, then you must set it as the value of `"organization-parent-domain"` in the `local/environment/json` file.) When you log in for the first time it will ask you questions about the user and about the organization.
+
+## <a name="updating"></a>Updating
+
+If you have installed GovReady-Q from a clone of this repository, you can update your copy by running the `deployment/update.sh` script. The `update.sh` script will use git to pull the latest version of GovReady-Q, run migrations, and install new any new Python modules.
 
 To update, run:
 
@@ -70,7 +88,7 @@ To update, run:
 	   (...to just restart the Python process (works as root & site user))
 
 
-# Development
+# <a name="development"></a>Development
 
 Q is developed in Python 3 on top of Django.
 
@@ -146,8 +164,9 @@ Like this:
 	./manage.py take_module_screenshots /tmp/ssp.json fisma_level
 
 
-# Credits / License
+# <a name="license"></a>License / Credits
+
+This repository is licensed under the [GNU GPL v3](LICENSE.md).
 
 Emoji icons by http://emojione.com/developers/.
 
-This repository is licensed under the [GNU GPL v3](LICENSE.md).
