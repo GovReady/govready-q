@@ -1,47 +1,63 @@
 # Deploying GovReady-Q to Ubuntu Linux
 
-To install/deploy on a fresh machine, create a Unix user named "site" and in its home directory run:
+This document provides some basic guidance on setting up GovReady-Q on an Ubuntu 16.04 server with Nginx. These commands should be run from the root directory of the GovReady-Q code repository.
 
-	git clone https://github.com/GovReady/govready-q q
-	cd q
-	mkdir local
+Update system packages and install packages helpful for GovReay-Q:
 
-Then run:
+	apt-get update && apt-get upgrade -y
 
-	sudo deployment/setup.sh
+	apt-get install -y \
+		unzip \
+		python3 python-virtualenv python3-pip \
+		python3-yaml \
+		nginx uwsgi-plugin-python3 supervisor \
+		memcached \
+		graphviz
 
-(If you get a gateway error from nginx, you may need to `sudo service supervisor restart` to start the uWSGI process.)
+Configure nginx to use nginx.conf in this directory:
 
-To install/deploy on a fresh machine, create a Unix user named "site" and in its home directory run:
+	# Turn off nginx's default website.
+	rm -f /etc/nginx/sites-enabled/default
 
-	git clone https://github.com/GovReady/govready-q q
-	cd q
-	mkdir local
+	# Put in our nginx site config.
+	ln -sf `pwd`/deployment/ubuntu/nginx.conf /etc/nginx/sites-enabled/yourdomain.com
 
-Then run:
+	service nginx restart
 
-	sudo deployment/setup.sh
+The nginx conf file assumes a certificate chain and private key are present at `/etc/ssl/local/ssl_certificate.crt/key`.
 
-(If you get a gateway error from nginx, you may need to `sudo service supervisor restart` to start the uWSGI process.)
+Install dependencies:
 
-If this is truly on a new machine, it will create a new SQlite database. You'll also see some output instructing you to create a file named `local/environment.json`. Make it look like this:
+	pip3 install -r requirements.txt
+	./fetch-vendor-resources.sh
+
+Configure GovReady-Q by creating a file in `local/environment.json` with the following content:
 
 	{
-	  "debug": true,
-	  "host": "q.govready.com",
-	  "organization-parent-domain": "govready.com",
+	  "debug": false,
+	  "admins": [["Name", "email@domain.com"], ...],
+	  "host": "q.<yourdomain>.com",
+	  "organization-parent-domain": "<yourdomain>.com",
 	  "organization-seen-anonymously": false,
 	  "https": true,
 	  "secret-key": "something random here",
-	  "static": "/root/public_html"
+	  "static": "/home/user/public_html"
 	}
 
-You can copy the `secret-key` from what you see --- it was generated to be unique.
+You can use [Django Secret Key Generator](https://www.miniwebtool.com/django-secret-key-generator/) to make a secret-key value.
 
-For production you might also want to make other changes to the `environment.json` file:
+Prepare the database:
 
-* Set `debug` to false.
-* Set `module-repos` to access module definitions not in this repository, see below.
-* Add the administrators for unhandled server error emails (a list of pairs of [name, address]):
+	python3 manage.py migrate
+	python3 manage.py createsuperuser
 
-	"admins": [["Name", "email@domain.com"], ...]
+Prepare static files:
+
+	mkdir -p /home/user/public_html/static
+	python3 manage.py collectstatic --noinput
+
+Set up supervisor to run the uwsgi daemon:
+
+	ln -sf `pwd`/deployment/ubuntu/supervisor.conf /etc/supervisor/conf.d/q.govready.com.conf
+	service supervisor restart
+
