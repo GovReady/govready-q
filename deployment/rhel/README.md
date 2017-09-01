@@ -128,6 +128,8 @@ Restart services:
     service supervisord restart
     service httpd restart
 
+GovReady-Q should now be running and accessible at your domain name. Follow the instructions in the [main README.md](../../README.md) for creating your first organization.
+
 ## Updating Deployment
 
 When there are changes to the GovReady Q software, pull new sources and restart processes with:
