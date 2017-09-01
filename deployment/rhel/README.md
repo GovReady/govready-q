@@ -6,13 +6,10 @@ Ensure `pip` and `psql` command line tools are installed:
 
     yum install python34-pip postgresql
 
-(Our update script in `deployment/rhel/update.sh` uses `killall` to kick the Django Python process, which is provided by the psmisc package.
-
 Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
 
     yum remove git
     yum install git2u
-
 
 ## Preparing Q Source Code
 
@@ -45,8 +42,7 @@ Deploy GovReady-Q source code:
     # Install other static dependencies.
     ./fetch-vendor-resources.sh
     
-    # Configure `local/environment.json` 
-    # Skipping for the moment to do default install with sqlite
+    # Skipping configuring local/environment.json for the moment to do default install with sqlite
     python3 manage.py migrate
     python3 manage.py load_modules
     python3 manage.py createsuperuser

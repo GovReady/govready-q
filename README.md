@@ -21,17 +21,21 @@ Our vision is to make Governance, Risk and Compliance easy and pratical for smal
 
 GovReady-Q is open source and incorporates the emerging [OpenControl](http://open-control.org) data standard for re-usable compliance content.
 
+The easiest way to get started with GovReady-Q is to launch Q through Docker. See our [Launching with Docker](deployment/docker/README.md) guide to get started.
+
 [Join our mailing list](http://eepurl.com/cN7oJL) and stay informed of developments.
 
 # <a name="development"></a>Instally Locally / Development
 
 Q is developed in Python 3 on top of Django.
 
-To develop locally, run the following commands:
+## Preparing your development environment
+
+To develop locally, run the following commands to set up your development environment:
 
 	# install python3 and pip appropriately for your environment
 	# below command demonstrates Ubuntu
-	sudo apt-get install python3-pip unzip # or appropriate for your system
+	sudo apt-get install python3-pip unzip libssl-dev # or appropriate for your system
 	
 	# clone repo
 	git clone https://github.com/GovReady/govready-q
@@ -40,23 +44,22 @@ To develop locally, run the following commands:
 	pip3 install -r requirements.txt
 	./fetch-vendor-resources.sh
 	
-	# set up database (GovReady uses SQLite3 by default)
+	# set up database (sqlite3 will be used until you configure another database)
 	python3 manage.py migrate
 	python3 manage.py load_modules
 
-	# load default compliance apps - deprecated
-	# python3 manage.py loaddata deployment/docker/modulesources.json
-	
-	# set up admin account
+    # A default ModuleSource for https://github.com/GovReady/govready-sample-apps.
+    python3 manage.py loaddata deployment/docker/modulesources.json
+
+Then create your admin account:
+
 	python3 manage.py createsuperuser
-	
-	# launch GovReady-Q
+
+And start the debug server:
+
 	python3 manage.py runserver
 
-
-(NOTE: The module dependency diagrams also require that you have `graphviz` installed, e.g. `apt-get install graphviz`.)
-
-If you don't want to get logged out on each restart of the runserver process, copy what it shows you into a new file at `local/environment.json` like this:
+On your first run, you'll be prompted to copy some JSON data into a file at `local/environment.json` like this:
 
     {
       "debug": true,
@@ -64,18 +67,38 @@ If you don't want to get logged out on each restart of the runserver process, co
       "https": false,
       "secret-key": "...something here..."
     }
-    
-(It will give you a fresh `secret-key` on each run that you can actually use.)
+
+This file is important for persisting login sessions, and you can provide other Q settings in this file.
 
 ## Create an organization
 
-You must set up the first organization (i.e. end-user/client) domain from the Django admin. Log into http://localhost:8000/admin with the superuser account that you created above. Add a Siteapp -> Organization (http://localhost:8000/admin/siteapp/organization/add/). Then visit the site at subdomains.localhost:8000 (using the subdomain for the organization you just created) and log in using the super user credentials again. (If you are using a domain other than `localhost`, then you must set it as the value of `"organization-parent-domain"` in the `local/environment/json` file.) When you log in for the first time it will ask you questions about the user and about the organization.
+Q is designed for the enterprise, so all end-user interactions with Q are on segregated subdomains called "organizations". You must set up the first organization.
+
+Visit [http://localhost:8000/](http://localhost:8000) and sign in with the superuser account that you created above. Then on the left side of the page, create your first organization:
+
+![New Organization](docs/assets/new_org.png)
+
+Follow the instructions to visit your site's subdomain, e.g. at [http://my-first-organization.localhost:8000](http://my-first-organization.localhost:8000). We recommend using Google Chrome at the point. Other browsers will not be able to resolve organization subdomains on `localhost` unless you add `127.0.0.1 my-first-organization.localhost` [to your hosts file](https://support.rackspace.com/how-to/modify-your-hosts-file/).
+
+When you log in for the first time it will ask you questions about the user and about the organization.
 
 ## Invitations on local systems
+
 You will probably want to try the invite feature at some point. The debug server is configured to dump all outbound emails to the console. So if you "invite" others to join you within the application, you'll need to go to the console to get the invitation acceptance link.
 
+## Updating the source code
+
+To update the source code from this repository you can `git pull`. You then may need to re-run some of the setup commands:
+
+	git pull
+	pip3 install -r requirements.txt
+	./fetch-vendor-resources.sh
+	python3 manage.py migrate
+	python3 manage.py load_modules
 
 # Apps and Module Content
+
+GovReady-Q currently installs with a small set of compliance apps primarily for demonstration purposes. Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principle benefit of compliance apps is their modularization and reusability.
 
 Content in Q is organized around apps and modules:
 
@@ -92,28 +115,16 @@ See [Schema.md](Schema.md) for documentation on writing modules, which contain q
 
 ## Testing
 
-To run the integration tests you'll also need to install `chromedriver` e.g., `brew install chromedriver`
+To run the integration tests, you'll also need to install chromedriver:
 
-The test suite is run with: `./manage.py test`
+	sudo apt-get install chromium-chromedriver   (on Ubuntu)
+	brew install chromedriver                    (on Mac)
 
-We have continuous integration set up with CircleCI at https://circleci.com/gh/GovReady/govready-q.
+Then run the test suite with:
 
-## Generating screenshots
+	./manage.py test
 
-It is possible to create a PDF containing screenshots of a module being completed automatically:
-
-* You must have the module loaded into your local database using `load_modules`.
-
-* Then create a fixture using the `create_fixture` management command containing a test user & test organization plus the modules you need to run the test.
-
-* Finally use the `take_module_screenshots` management command to start a Selenium browser session and take screenshots. Give it the fixture file and the ID of a question in the project specified in the `create_fixture` command.
-
-Like this:
-
-	./manage.py load_modules
-	./manage.py create_fixture local/ssp/project > /tmp/ssp.json
-	./manage.py take_module_screenshots /tmp/ssp.json fisma_level
-
+We also have continuous integration set up with CircleCI at https://circleci.com/gh/GovReady/govready-q.
 
 # <a name="license"></a>License / Credits
 
@@ -125,14 +136,12 @@ Emoji icons by http://emojione.com/developers/.
 
 ## <a name="requirements"></a>Requirements
 
-GovReady-Q Compliance Server requires the following:
+A production environment for GovReady-Q will require:
 
-* Python3
-* Django
-* SQL Database (SQLITE3, Postgres, MariaDB, MySQL)
-* PIP for Python3
-* Various Python3 libraries
-* Web server (Apache or NGINX for production)
+* A web server running Red Hat Enterprise Linux or Ubuntu 16.04
+* Apache or Nginx or other HTTP server
+* A database (Postgres, MySQL, Sqlite3 and others are supported)
+* Various Python 3 libraries, including Django
 
 ## <a name="installing"></a>Installing
 
@@ -142,38 +151,11 @@ Guides for installing and deploying GovReady-Q on different Operating Systems ca
 * [Installing on RHEL](deployment/rhel/README.md) - detailed instructions on installing, libraries, setting up Postgres and Apache
 * [Installing on Ubuntu](deployment/ubuntu/README.md) - super easy `update.sh`
 
-Once you have the libaries installed, you will need to clone the repository and run the Django commands to set up the database tables. GovReady-Q will create an SQLite3 database by default and can be configured to work with Postgres, MariaDB, or MySQL.
-
-	# create 'site' user
-	useradd site
-	cd /home/site
-
-	# clone repo
-	git clone https://github.com/GovReady/govready-q q
-	cd q
-	
-	# create local director
-	mkdir local
-
-	# install python packages
-	pip3 install -r dev_requirements.txt
-	
-	# install other assets
-	./fetch-vendor-resources.sh
-	
-	# create database tables
-	python3 manage.py migrate
-	
-	# misc
-	python3 manage.py collectstatic --noinput
-
-	# set up admin user
-	python3 manage.py first_run
- 
- When complete, a `local/environment.json` will have been generated. Make it look like this:
+A production system may need to set more options in `local/environment.json`. Here are recommended settings:
 
 	{
-	  "debug": true,
+	  "debug": false,
+	  "admins": [["Name", "email@domain.com"], ...],
 	  "host": "q.<yourdomain>.com",
 	  "organization-parent-domain": "<yourdomain>.com",
 	  "organization-seen-anonymously": false,
@@ -181,43 +163,4 @@ Once you have the libaries installed, you will need to clone the repository and 
 	  "secret-key": "something random here",
 	  "static": "/root/public_html"
 	}
-
-You can copy the `secret-key` from what you see --- it was generated to be unique.
-
-For production you might also want to make other changes to the `environment.json` file:
-
-* Set `debug` to false.
-* Set `module-repos` to access module definitions not in this repository, see below.
-* Add the administrators for unhandled server error emails (a list of pairs of [name, address]):
-
-	"admins": [["Name", "email@domain.com"], ...]
-
-Follow the guides for instructions on launching GovReady-Q.
-
-If you are developing locally, GovReady-Q can be run with Django's built-in web server with this command:
-
-	python3 manage.py runserver
-
-
-## <a name="create-org"></a>Create an Organization
-
-You must set up the first organization (i.e. end-user/client) domain from the Django admin. Log into http://localhost:8000/admin with the superuser account that you created above. Add a Siteapp -> Organization (http://localhost:8000/admin/siteapp/organization/add/). Then visit the site at subdomains.localhost:8000 (using the subdomain for the organization you just created) and log in using the super user credentials again. (If you are using a domain other than `localhost`, then you must set it as the value of `"organization-parent-domain"` in the `local/environment/json` file.) When you log in for the first time it will ask you questions about the user and about the organization.
-
-GovReady-Q currently installs with a small set of compliance apps primarily for demonstration purposes. Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principle benefit of compliance apps is their modularization and reusability.
-
-
-## <a name="updating"></a>Updating
-
-If you have installed GovReady-Q from a clone of this repository, you can update your copy by running the `deployment/update.sh` script. The `update.sh` script will use git to pull the latest version of GovReady-Q, run migrations, and install new any new Python modules.
-
-To update, run:
-
-	sudo -iu site /home/site/q/deployment/update.sh
-	   (as root, or...)
-
-	~/q/deployment/update.sh
-	   (...as the 'site' user, or...)
-
-	killall -HUP uwsgi_python3
-	   (...to just restart the Python process (works as root & site user))
 
