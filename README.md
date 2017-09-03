@@ -4,9 +4,9 @@ GovReady-Q Compliance Server is an open source tool to help teams build and oper
 
 1. [About GovReady-Q Compliance Server](#about-govready-q) 
 1. [Installing Locally / Development](#development)
-1. [Testing and Generating Screenshots](#testing)
 1. [About Compliance Apps](#about-apps)
 1. [Automation API](#automation)
+1. [Testing and Generating Screenshots](#testing)
 1. [Deployment Guides](#deployment)
 1. [License and Credits](#license)
 
