@@ -1,14 +1,12 @@
 # Understanding Compliance Apps
 
-Content in the GovReady-Q Compliance Server is organized around "apps." Apps handle the relationship between parts of a IT system and a compliance framework.
+Content in the GovReady-Q Compliance Server is organized around "apps." Apps handle the relationship between parts of a IT system and a compliance framework. Apps collect information about a system component and translate that information to compliance documentation.
 
-An "app" is a collection of "modules," one of which must be named "app." Modules are linear sequence of questions presented to users that produces zero or more output documents. Modules are stored in YAML files. Output documents of various types are supported such as markdown, HTML, and YAML. (See [Schema.md](Schema.md) for documentation on writing modules.)
-
-Apps that describe the required components of a compliant IT system are considered "Top Level" apps. Each question in a Top Level app specifies a type of compliance app (e.g., a compliance app "protocol") that is needed to represent that component.
-
-Aps are loaded into Q from an "app source," which can be a local directory, a Github repository, etc. App sources are linked to a Q deployment through the `ModuleSource` model in the Django admin.
+![Apps map components to security/compliance controls](docs/assets/app_diagram.png)
 
 ## App Directory Layout
+
+An "app" is a collection of "modules," one of which must be named "app." Modules are linear sequence of questions presented to users that produces zero or more output documents. Modules are stored in YAML files. Output documents of various types are supported such as markdown, HTML, and YAML. (See [Schema.md](Schema.md) for documentation on writing modules.)
 
 Each Q app is defined by a set of YAML files, an icon, and associated static assets, stored in a directory, e.g.:
 
@@ -27,10 +25,12 @@ The `assets` subdirectory can contain any static assets that will be served when
 
 ## App YAML
 
+![App structure](docs/assets/app_structure_sm.png)
+
 The `app.yaml` file that exists in every app serves two purposes:
 
-* It includes app catalog information, i.e. metadata, that will be shown in the app directory, such as the app's short and long description, version number, vendor, etc.
-* It also defines a module (see [Schema.md](Schema.md)) which defines the top-level layout of the app. The module may only contain questions whose type are `module` or `module-set`.
+1. It includes app catalog information, i.e. metadata, that will be shown in the app directory, such as the app's short and long description, version number, vendor, etc.
+1. It also defines a module (see [Schema.md](Schema.md)) which defines the top-level layout of the app. The module may only contain questions whose type are `module` or `module-set`.
 
 The file looks like this:
 
@@ -81,8 +81,13 @@ The file looks like this:
 
 The questions in the app YAML file can only be of type `module` and `module-set`. The questions can specify a `module-id` to refer to another module within the same app or a `protocol` to allow the user to choose any app that has a matching `protocol` value set at the top level of the YAML file.
 
+## Top Level Apps
+
+Apps that describe the required components of a compliant IT system are considered "Top Level" apps. Each question in a Top Level app specifies a type of compliance app (e.g., a compliance app "protocol") that is needed to represent that component.
 
 ## App Sources
+
+Apps are loaded into Q from an "app source," which can be a local directory, a Github repository, etc. App sources are linked to a Q deployment through the `ModuleSource` model in the Django admin.
 
 A Q deployment can pull module content from various sources --- including local directories and git repositories --- by creating Module Sources in the Django admin site at [/admin/guidedmodules/modulesource/](http://localhost:8000/admin/guidedmodules/modulesource/). Each Module Source specifies a virtual filesystem from which apps are located.
 
