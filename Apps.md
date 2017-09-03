@@ -1,8 +1,12 @@
 # Understanding Compliance Apps
 
-Content in the GovReady-Q Compliance Server is organized around "apps." Apps handle the relationship between parts of a IT system and a compliance framework. Apps collect information about a system component and translate that information to compliance documentation.
+Content in the GovReady-Q Compliance Server reads and displays "compliance apps." Compliance apps map IT System components to compliance controls.
+
+Apps collect information about one or more system components and translate that information to compliance documentation.
 
 ![Apps map components to security/compliance controls](docs/assets/app_diagram.png)
+
+Apps can collect information about a system component from questions asked to end users and from the [Automation API](Automation.md).
 
 ## App Directory Layout
 
