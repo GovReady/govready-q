@@ -5,9 +5,10 @@ GovReady-Q Compliance Server is an open source tool to help teams build and oper
 1. [About GovReady-Q Compliance Server](#about-govready-q) 
 1. [Installing Locally / Development](#development)
 1. [Testing and Generating Screenshots](#testing)
-1. [Understanding Compliance Apps](Apps.md)
-1. [Automation API](Automation.md)
+1. [About Compliance Apps](#about-apps)
+1. [Automation API](#automation)
 1. [Deployment Guides](#deployment)
+1. [License and Credits](#license)
 
 # <a name="about-govready-q"></a>About GovReady-Q Compliance Server
 
@@ -96,20 +97,40 @@ To update the source code from this repository you can `git pull`. You then may 
 	python3 manage.py migrate
 	python3 manage.py load_modules
 
-# Apps and Module Content
+# <a name="about-apps"></a> About Compliance Apps
 
-GovReady-Q currently installs with a small set of compliance apps primarily for demonstration purposes. Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principle benefit of compliance apps is their modularization and reusability.
+Cyber security compliance would be easier and less time consuming if the components of our IT systems automatically generated the paperwork auditors want.
 
-Content in Q is organized around apps and modules:
+That's the idea behind GovReady Compliance Apps: resuable data packages mapping your IT system components to compliance controls so sofware maintains the paperwork while your people to get back to improving security and managing risk.
+
+Compliance apps map IT System components to compliance controls. A "component" can be any part of a system that contributes to its operation including organizational processes. Compliance apps collect and assess information about one or more system components and translate that information to compliance documentation.
+
+![Apps map components to security/compliance controls](docs/assets/app_diagram2.png)
+
+Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principle benefit of compliance apps is their modularization and reusability.
+
+Content in GovReady-Q is organized around apps and modules:
 
 * A "module" is a linear sequence of questions that produces zero or more output documents.
 * An "app" is a collection of modules, one of which is named "app" that defines the layout of the app when it is started by a user.
 
 Modules are stored in YAML files. Built-in apps and modules are stored inside the `modules` directory in this repository. Other apps and modules are stored in other repositories that can be linked to a Q deployment through the `ModuleSource` model in the Django admin.
 
-See [Apps.md](Apps.md) for documentation on creating apps and having them appear in the Q app catalog.
+GovReady-Q currently installs with a small set of compliance apps primarily for demonstration purposes.
+
+See [Apps.md](Apps.md) for documentation on creating apps and having them appear in the GovReady-qQ app catalog.
 
 See [Schema.md](Schema.md) for documentation on writing modules, which contain questions.
+
+# <a name="automation"></a> Automation API
+
+The GovReady-Q Compliance Server provides and Automation API to enable your existing scanners, configuraiton management tools, and even system components to directly update the compliance apps.
+
+The Automation API saves tremendous time initially collecting information and ensures your compliance documentation is continuously synchronized with the actual state of your systems.
+
+![Screenshot of Automation API for MacOS Server](docs/assets/macosapp_api.png)
+
+See [Automation.md](Automation.md) for documentation on using the API to automatically gather information and update documentation.
 
 # <a name="testing"></a> Testing and Generating Screenshots
 
@@ -126,26 +147,9 @@ Then run the test suite with:
 
 We also have continuous integration set up with CircleCI at https://circleci.com/gh/GovReady/govready-q.
 
-# <a name="license"></a>License / Credits
-
-This repository is licensed under the [GNU GPL v3](LICENSE.md).
-
-Emoji icons by http://emojione.com/developers/.
-
 # <a name="deployment"></a>Deployment Guides
 
-## <a name="requirements"></a>Requirements
-
-A production environment for GovReady-Q will require:
-
-* A web server running Red Hat Enterprise Linux or Ubuntu 16.04
-* Apache or Nginx or other HTTP server
-* A database (Postgres, MySQL, Sqlite3 and others are supported)
-* Various Python 3 libraries, including Django
-
-## <a name="installing"></a>Installing
-
-Guides for installing and deploying GovReady-Q on different Operating Systems can be found the `deployment` directory.
+Deployment guides for installing and deploying GovReady-Q on different Operating Systems can be found the `deployment` directory.
 
 * [Launching with Docker](deployment/docker/README.md) - super easy and has a nice `first_run.sh` script
 * [Installing on RHEL](deployment/rhel/README.md) - detailed instructions on installing, libraries, setting up Postgres and Apache
@@ -163,4 +167,10 @@ A production system may need to set more options in `local/environment.json`. He
 	  "secret-key": "something random here",
 	  "static": "/root/public_html"
 	}
+
+# <a name="license"></a>License / Credits
+
+This repository is licensed under the [GNU GPL v3](LICENSE.md).
+
+Emoji icons by http://emojione.com/developers/.
 

@@ -1,24 +1,35 @@
-# Understanding Compliance Apps
+# More About Compliance Apps
 
-Content in the GovReady-Q Compliance Server reads and displays "compliance apps." Compliance apps map IT System components to compliance controls.
+As described in the primary [README](README.md), Compliance apps map IT System components to compliance controls. A "component" can be any part of a system that contributes to its operation including organizational processes.
 
-Apps collect information about one or more system components and translate that information to compliance documentation.
+Compliance apps collect and assess information about one or more system components and translate that information to compliance documentation.
 
 ![Apps map components to security/compliance controls](docs/assets/app_diagram2.png)
 
-Apps can collect information about a system component from questions asked to end users and from the [Automation API](Automation.md).
+Compliance apps can collect information about a system component from people (via web-based questionnaires) and from system components (via an [Automation API](Automation.md)).
 
-## App Directory Layout
+# Compliance Apps are Collections of Modules
+
+A Compliance app is a collection of "modules" for gathering information. A module is a collection of questions and output documents. A module can have just questions and output documents, just output documents and no questions, or both questions and output documents.
+
+## App Structure
 
 An "app" is a collection of "modules," one of which must be named "app." Modules are linear sequence of questions presented to users that produces zero or more output documents. Modules are stored in YAML files. Output documents of various types are supported such as markdown, HTML, and YAML. (See [Schema.md](Schema.md) for documentation on writing modules.)
 
-Each Q app is defined by a set of YAML files, an icon, and associated static assets, stored in a directory, e.g.:
+Each app is defined by a set of YAML files and asset files stored in the following directory structure:
 
-    app_name/app.yaml
-    app_name/module1.yaml
-    app_name/module2.yaml
-    app_name/assets/app.png
-    app_name/assets/my_image.jpeg
+    app_name
+	├── app.yaml
+	├── assets
+	│   ├── app.png
+	│   ├── image_one.yaml
+	│   ├── image_two.yaml
+	│   └── ...
+	├── module_one.yaml
+	├── module_two.yaml
+	└── ...
+
+By convention, each app is required to have `app.yaml` file which includes metadata for the displaying the app in the catalog and an `assets/app.png` graphic which displays as the app's icon.
 
 `app.yaml` is a required file in every app which includes app catalog metadata, such as the app's description, as well as module questions which define the layout of the app's main screen once it is started by the user.
 
@@ -36,7 +47,9 @@ The `app.yaml` file that exists in every app serves two purposes:
 1. It includes app catalog information, i.e. metadata, that will be shown in the app directory, such as the app's short and long description, version number, vendor, etc.
 1. It also defines a module (see [Schema.md](Schema.md)) which defines the top-level layout of the app. The module may only contain questions whose type are `module` or `module-set`.
 
-The file looks like this:
+A `module` YAML structure is identical to `app.yaml` structure but without the catalog details section.
+
+The `app.yaml` file looks like this:
 
 	id: app
 	title: My App
