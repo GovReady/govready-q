@@ -12,9 +12,18 @@ Compliance apps can collect information about a system component from people (vi
 
 A Compliance app is a collection of "modules" for gathering information. A module is a collection of questions and output documents. A module can have just questions and output documents, just output documents and no questions, or both questions and output documents.
 
-## App Structure
-
 An "app" is a collection of "modules," one of which must be named "app." Modules are linear sequence of questions presented to users that produces zero or more output documents. Modules are stored in YAML files. Output documents of various types are supported such as markdown, HTML, and YAML. (See [Schema.md](Schema.md) for documentation on writing modules.)
+
+The typical user experience will be to first pick a "top level" app from the compliance catalog representative of IT System, then pick the "component" apps that represent the specific components of the IT System, and then iteratively complete the questions within the component apps modules.
+
+Technically speaking, a top level app is a module containing questions whose answers are other apps.
+
+The below diagram depicts an exploded view of the relationships between a top level app to a component app to modules and questions.
+
+!["Top Level" compliance apps contain "component" compliance apps that contain modules and questions](docs/assets/app_exploded.png)
+
+
+## App Structure
 
 Each app is defined by a set of YAML files and asset files stored in the following directory structure:
 

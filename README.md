@@ -113,12 +113,19 @@ Content in GovReady-Q is organized around apps and modules:
 
 * A "module" is a linear sequence of questions that produces zero or more output documents.
 * An "app" is a collection of modules, one of which is named "app" that defines the layout of the app when it is started by a user.
+* A "top level" app is a special type of app that contains slots for various "component" apps that together define the architecture of a type of IT System.
+
+The typical user experience will be to first pick a "top level" app from the compliance catalog representative of IT System, then pick the component apps that represent the specific components of the IT System, and then iteratively complete the questions within the component apps modules.
+
+The below diagram depicts an exploded view of the relationships between a top level app to a component app to modules and questions.
+
+!["Top Level" compliance apps contain "component" compliance apps that contain modules and questions](docs/assets/app_exploded.png)
 
 Modules are stored in YAML files. Built-in apps and modules are stored inside the `modules` directory in this repository. Other apps and modules are stored in other repositories that can be linked to a Q deployment through the `ModuleSource` model in the Django admin.
 
 GovReady-Q currently installs with a small set of compliance apps primarily for demonstration purposes.
 
-See [Apps.md](Apps.md) for documentation on creating apps and having them appear in the GovReady-qQ app catalog.
+See [Apps.md](Apps.md) for documentation on creating apps and having them appear in the GovReady-Q app catalog.
 
 See [Schema.md](Schema.md) for documentation on writing modules, which contain questions.
 
