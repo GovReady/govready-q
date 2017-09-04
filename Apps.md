@@ -49,16 +49,15 @@ The `assets` subdirectory can contain any static assets that will be served when
 
 ## App YAML
 
-![App structure](docs/assets/app_structure_sm.png)
-
 The `app.yaml` file that exists in every app serves two purposes:
 
 1. It includes app catalog information, i.e. metadata, that will be shown in the app directory, such as the app's short and long description, version number, vendor, etc.
 1. It also defines a module (see [Schema.md](Schema.md)) which defines the top-level layout of the app. The module may only contain questions whose type are `module` or `module-set`.
 
-A `module` YAML structure is identical to `app.yaml` structure but without the catalog details section.
-
 The `app.yaml` file looks like this:
+
+![App structure](docs/assets/app_structure_sm.png)
+
 
 	id: app
 	title: My App
@@ -106,6 +105,8 @@ The `app.yaml` file looks like this:
 	      This (optional) content will appear at the top of the TabName tab.
 
 The questions in the app YAML file can only be of type `module` and `module-set`. The questions can specify a `module-id` to refer to another module within the same app or a `protocol` to allow the user to choose any app that has a matching `protocol` value set at the top level of the YAML file.
+
+A `module` YAML structure is identical to `app.yaml` structure but without the catalog details section.
 
 ## Top Level Apps
 
