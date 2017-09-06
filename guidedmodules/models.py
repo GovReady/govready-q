@@ -1548,16 +1548,24 @@ class TaskAnswerHistory(models.Model):
 
             else:
                 # In the short form, the inner tasks are serialized as dicts
-                # of answers. No UUIDs are stored to associate new tasks.
-                # It's too much trouble to try to update module-set questions
-                # or to create new Tasks for unanswered module questions, for
-                # now. We'll just update module questions in-place.
+                # of answers. No UUIDs are stored to data with existing tasks,
+                # so module-set questions would be difficult to update. For
+                # module questions, we can create the sub-Task if it hasn't
+                # been started or update the existing one. We can return None
+                # to signal that this question cannot be updated.
                 if q.spec["type"] != "module": return None
-                curans = taskanswer.get_current_answer()
-                if curans is None: return None
-                if not curans.answered_by_task.exists(): return None
-                t = curans.answered_by_task.first()
+                try:
+                    t = Task.get_or_create_subtask(taskanswer.task, deserializer.user, taskanswer.question.key, create=True)
+                except ValueError:
+                    # Can't create sub-Task because question specifies a
+                    # protocol and not a module.
+                    return None
+
+                # This is redundant. The answer has already been updated by
+                # get_or_create_subtask.
                 answered_by_tasks.add(t)
+
+                # Import data in the sub-Task.
                 subtasks_updated = t.import_json_update(value, deserializer)
 
             # Reset this variable so stored_value is set to None.
