@@ -154,7 +154,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
                 "type": "local",
                 "path": "fixtures/modules/other",
             },
-            trust_javascript_assets=True
+            trust_assets=True
         )
         load_modules().handle()
 

@@ -211,7 +211,7 @@ class RenderTests(TestCaseWithFixtureData):
 
         # test URL rewriting on links & images for module static content
         test("![](test_asset.png)", { },
-            """<p><img alt="" src="/user-mediaguidedmodules/module-assets/642396ce610f24a112d3feda9833dfddddd9fff7.png"></p>""")
+            """<p><img alt="" src="/tasks/500/the-title/media/test_asset.png"></p>""")
 
         # test variable substitutions mixed with CommonMark block elements
         test(
@@ -304,12 +304,13 @@ class RenderTests(TestCaseWithFixtureData):
 
     def render_content(self, module, template_format, template, answers, output_format):
         m = Module.objects.get(key="fixture/simple_project/" + module)
+        t = Task(id=500, title="the title", module=m, project=self.project, extra={})
         return render_content(
             {
                 "format": template_format,
                 "template": template,
             },
-            ModuleAnswers(m, None, { k: (m.questions.get(key=k), True, None, v) for k, v in answers.items() }),
+            ModuleAnswers(m, t, { k: (m.questions.get(key=k), True, None, v) for k, v in answers.items() }),
             output_format,
             str(self), # source
         ).strip()

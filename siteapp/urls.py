@@ -45,9 +45,6 @@ urlpatterns = [
     # next line overrides signup with our own view so we can monitor signup attempts, can comment out to go back to allauth's functionality
     url(r'^accounts/signup/', signup_wrapper, name="account_signup"),
     url(r'^accounts/', include('allauth.urls')),
-
-    # has to be repeated here for the reverse() to work
-    url(r'^user-media', include('dbstorage.urls')),
 ]
 
 import notifications.urls

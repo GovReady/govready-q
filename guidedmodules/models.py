@@ -17,7 +17,7 @@ class ModuleSource(models.Model):
     namespace = models.CharField(max_length=200, unique=True, help_text="The namespace that modules loaded from this source are added into.")
     spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
 
-    trust_javascript_assets = models.BooleanField(default=False, help_text="Are new Javascript static assets loaded from this source trusted to be served on our domain and run client side?")
+    trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
     available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
     available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this ModuleSource.")
 
@@ -98,19 +98,6 @@ class Module(models.Model):
                 ("created", self.created.isoformat()),
                 ("modified", self.updated.isoformat()),
         ]))
-
-    def get_static_asset_url(self, asset_path):
-        if not self.assets:
-            # No assets are defined for this Module, so just return the
-            # path as it's probably an absolute URL.
-            return asset_path
-
-        try:
-            return self.assets.get_url_for(asset_path)
-        except ValueError:
-            # This is not an asset so let it through as it might be an
-            # absolute URL.
-            return asset_path
 
     @staticmethod
     def BuildNetworkDiagram(start_nodes, config):
@@ -252,16 +239,14 @@ class ModuleAsset(models.Model):
     class Meta:
         unique_together = [('source', 'content_hash')]
 
-    def get_absolute_url(self):
-        return self.file.url
-
-
 class ModuleAssetPack(models.Model):
     source = models.ForeignKey(ModuleSource, help_text="The source of these assets.")
     assets = models.ManyToManyField(ModuleAsset, help_text="The assets linked to this pack.")
     basepath = models.SlugField(max_length=100, help_text="The base path of all assets in this pack.")
     paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
     total_hash = models.CharField(max_length=64, help_text="A SHA256 hash over the paths and the content_hashes of the assets.")
+
+    trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -276,7 +261,7 @@ class ModuleAssetPack(models.Model):
         m = hashlib.sha256()
         m.update(
             json.dumps({
-                    "trust_javascript_assets": self.source.trust_javascript_assets,
+                    "trust_assets": self.source.trust_assets,
                     "basepath": self.basepath,
                     "paths": self.paths,
                 },
@@ -284,21 +269,6 @@ class ModuleAssetPack(models.Model):
             ).encode("utf8")
         )
         self.total_hash = m.hexdigest()
-
-    def get_url_for(self, asset_path):
-        # Look up the content_hash of the asset from its path.
-        content_hash = self.paths.get(asset_path)
-        if not content_hash:
-            raise ValueError("Path is not an asset.")
-
-        # Look up the ModuleAsset based on the hash.
-        #asset = self.assets.get(content_hash=content_hash)
-        if not hasattr(self, '_asset_cache'):
-            self._asset_cache = { asset.content_hash: asset for asset in self.assets.all() }
-        asset = self._asset_cache[content_hash]
-
-        # Give the public URL of that asset.
-        return asset.get_absolute_url()
 
 
 class ModuleQuestion(models.Model):
@@ -435,6 +405,14 @@ class Task(models.Model):
         else:
             import urllib.parse
             return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
+
+    def get_static_asset_url(self, asset_path):
+        if not self.module.assets or asset_path not in self.module.assets.paths:
+            # No assets are defined for this Module, or this path is not
+            # an asset, so just return the path as it's probably an absolute URL.
+            return asset_path
+        return self.get_absolute_url() + "/media/" + asset_path
+
 
     # ANSWERS
 
@@ -671,7 +649,7 @@ class Task(models.Model):
     def get_app_icon_url(self):
         icon_img = self.module.spec.get("icon")
         if icon_img:
-            return self.module.get_static_asset_url(icon_img)
+            return self.get_static_asset_url(icon_img)
         return None
 
     def get_subtask(self, question_id):
@@ -1364,8 +1342,22 @@ class TaskAnswerHistory(models.Model):
             # an auto-detected mime type.
             from dbstorage.models import StoredFile
             sf = StoredFile.objects.only("mime_type").get(path=blob.name)
+
+            # Get the URL that can retreive the resource. It's behind
+            # auth so we don't use blob.url, which won't work because
+            # we haven't exposed that url route.
+            import urllib
+            url = self.taskanswer.task.get_absolute_url() \
+                + "/question/" + urllib.parse.quote(self.taskanswer.question.key) \
+                + "/history/" + str(self.id) \
+                + "/media"
+
+            # Make it an absolute URL so that when we expose it through
+            # the API it makes sense.
+            url = self.taskanswer.task.project.organization.get_url(url)
+
             return {
-                "url": settings.SITE_ROOT_URL + blob.url,
+                "url": url,
                 "size": blob.size,
                 "type": sf.mime_type,
             }

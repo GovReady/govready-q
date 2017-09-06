@@ -32,10 +32,57 @@ def new_task(request):
         url += "?" + urllib.parse.urlencode({ "previous": request.POST.get("previous") })
     return HttpResponseRedirect(url)
 
+@login_required
+def download_module_asset(request, taskid, taskslug, asset_path):
+    # Get the Task and check that the user has read permission.
+    task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
+    if not task.has_read_priv(request.user): raise Http404()
+
+    # Check that the Task's Module has assets and that this path is
+    # one of them.
+    if not task.module.assets or asset_path not in task.module.assets.paths:
+        raise Http404()
+
+    # Look up the ModuleAsset object.
+    content_hash = task.module.assets.paths[asset_path]
+    asset = task.module.assets.assets.get(content_hash=content_hash)
+
+    # Get the dbstorage.models.StoredFile instance which holds
+    # an auto-detected mime type.
+    from dbstorage.models import StoredFile
+    sf = StoredFile.objects.only("mime_type").get(path=asset.file.name)
+
+    # Construct the response. The file content is probably untrusted, in which
+    # case it must not be served as an inline resource from our domain unless it is
+    # an image, which browsers won't execute.
+    if (sf.mime_type and sf.mime_type.startswith("image/")) or task.module.assets.trust_assets:
+        mime_type = sf.mime_type
+        disposition = "inline"
+    else:
+        mime_type = "application/octet-stream"
+        disposition = "attachment"
+
+    import os.path
+    resp = HttpResponse(asset.file, content_type=mime_type)
+    resp['Content-Disposition'] = disposition + '; filename=' + os.path.basename(asset.file.name)
+
+    # Browsers may guess the MIME type if it thinks it is wrong. Prevent
+    # that so that if we are forcing application/octet-stream, it
+    # doesn't guess around it and make the content executable.
+    resp['X-Content-Type-Options'] = 'nosniff'
+
+    # Browsers may still allow HTML to be rendered in the browser. IE8
+    # apparently rendered HTML in the context of the domain even when a
+    # user clicks "Open" in an attachment-disposition response. This
+    # prevents that. Doesn't seem to affect anything else (like images).
+    resp['X-Download-Options'] = 'noopen'
+
+    return resp
+
 # decorator for pages that render tasks
 def task_view(view_func):
     @login_required
-    def inner_func(request, taskid, taskslug, pagepath, question_key):
+    def inner_func(request, taskid, taskslug, pagepath, question_key, *args):
         # Get the Task.
         task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
 
@@ -80,8 +127,10 @@ def task_view(view_func):
         # read privs so that we don't reveal the task's slug to unpriv'd users.
         # Only issue a redirect on GET requests. Since a POST might be saving
         # data, it's fine if the path isn't canonical and we want to allow the
-        # save to complete.
-        if request.method == "GET" and taskslug != task.get_slug():
+        # save to complete. Also skip if the extra positional args 'args' has
+        # any values, which means we're on some subpage that we don't know
+        # how to re-form the URL for at the moment.
+        if request.method == "GET" and taskslug != task.get_slug() and len(args) == 0:
             return HttpResponseRedirect(task.get_absolute_url() + pagepath + question_key)
 
         # Prepare for reading/writing ephemeral encryption.
@@ -140,7 +189,7 @@ def task_view(view_func):
            request.suppress_prompt_banner = True
 
         # Render the view.
-        return view_func(request, task, answered, context, question, EncryptionProvider, set_ephemeral_encryption_cookies)
+        return view_func(request, task, answered, context, question, EncryptionProvider, set_ephemeral_encryption_cookies, *args)
 
     return inner_func
 
@@ -562,6 +611,49 @@ def task_finished(request, task, answered, context, *unused_args):
         "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),
     })
     return render(request, "module-finished.html", context)
+
+
+@task_view
+def download_answer_file(request, task, answered, context, q, EncryptionProvider, set_ephemeral_encryption_cookies, history_id):
+    # Get the TaskAnswerHistory object referenced in the URL.
+    tah = get_object_or_404(TaskAnswerHistory, id=history_id, taskanswer__task=task, taskanswer__question=q)
+
+    # It should have a file question and a file answer.
+    if q.spec["type"] != "file": raise Http404()
+    if not tah.answered_by_file.name: raise Http404()
+
+    # Get the dbstorage.models.StoredFile instance which holds
+    # an auto-detected mime type.
+    from dbstorage.models import StoredFile
+    sf = StoredFile.objects.only("mime_type").get(path=tah.answered_by_file.name)
+
+    # Construct the response. The file content is untrusted, so it must
+    # not be served as an inline resource from our domain unless it is
+    # an image, which browsers won't execute.
+    if sf.mime_type and sf.mime_type.startswith("image/"):
+        mime_type = sf.mime_type
+        disposition = "inline"
+    else:
+        mime_type = "application/octet-stream"
+        disposition = "attachment"
+
+    import os.path
+    resp = HttpResponse(tah.answered_by_file, content_type=mime_type)
+    resp['Content-Disposition'] = disposition + '; filename=' + os.path.basename(tah.answered_by_file.name)
+
+
+    # Browsers may guess the MIME type if it thinks it is wrong. Prevent
+    # that so that if we are forcing application/octet-stream, it
+    # doesn't guess around it and make the content executable.
+    resp['X-Content-Type-Options'] = 'nosniff'
+
+    # Browsers may still allow HTML to be rendered in the browser. IE8
+    # apparently rendered HTML in the context of the domain even when a
+    # user clicks "Open" in an attachment-disposition response. This
+    # prevents that. Doesn't seem to affect anything else (like images).
+    resp['X-Download-Options'] = 'noopen'
+
+    return resp
 
 
 @login_required

@@ -495,8 +495,8 @@ def render_content(content, answers, output_format, source, additional_context={
         # by the caller, add additional context variables and functions, and
         # add rendered answers into it.
         context = dict(additional_context) # clone
-        if answers:
-            context['static_asset_path_for'] = answers.module.get_static_asset_url
+        if answers and answers.task:
+            context['static_asset_path_for'] = answers.task.get_static_asset_url
 
         # Render.
         try:
@@ -541,8 +541,8 @@ def render_content(content, answers, output_format, source, additional_context={
 
                 def rewrite_url(url):
                     # Rewrite for static assets.
-                    if answers is not None:
-                        url = answers.module.get_static_asset_url(url)
+                    if answers and answers.task:
+                        url = answers.task.get_static_asset_url(url)
 
                     # Check final URL.
                     import urllib.parse

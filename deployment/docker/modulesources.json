@@ -5,7 +5,7 @@
     "fields": {
       "namespace": "public",
       "spec": "{\"type\":\"git\",\"url\":\"https://github.com/GovReady/govready-sample-apps\"}",
-      "trust_javascript_assets": false,
+      "trust_assets": false,
       "available_to_all": true,
       "created": "2017-06-07T18:44:02.339Z",
       "updated": "2017-06-07T18:44:02.339Z",

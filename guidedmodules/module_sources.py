@@ -253,7 +253,7 @@ class PyFsApp(App):
                         module_spec = read_yaml_file(f)
 
                     # Load any associated Python code.
-                    if (fn_name + ".py") in path_entries and self.store.source.trust_javascript_assets:
+                    if (fn_name + ".py") in path_entries and self.store.source.trust_assets:
                         # Read the file.
                         with self.fs.open(fn_name + ".py") as f:
                             code = f.read()
@@ -859,6 +859,7 @@ def load_module_assets_into_database(app):
     pack = ModuleAssetPack()
     pack.source = source
     pack.basepath = "/"
+    pack.trust_assets = source.trust_assets
     pack.paths = {
         file_path: file_hash
         for file_path, file_hash, content_loader
@@ -869,7 +870,10 @@ def load_module_assets_into_database(app):
     # exists as a ModuleAssetPack in the database.
     pack.set_total_hash()
 
-    existing_pack = ModuleAssetPack.objects.filter(source=source, total_hash=pack.total_hash).first()
+    existing_pack = ModuleAssetPack.objects.filter(
+        source=source,
+        total_hash=pack.total_hash,
+        trust_assets = source.trust_assets).first()
     if existing_pack:
         # Nothing to update.
         return existing_pack
@@ -890,18 +894,6 @@ def load_module_assets_into_database(app):
             from django.core.files.base import ContentFile
             asset.file.save(file_path, ContentFile(content_loader()))
             asset.save()
-
-        # Mark the asset as trusted if the source is trusted so that we can
-        # serve Javascript from our domain and have it be executed by the browser.
-        # Since the source's trust_javascript_assets flag can change but the
-        # asset's binary content may already be loaded, update the flag on
-        # each update. Note that this could cause existing apps to break if
-        # binary assets are reused and the source's flag is changed from true
-        # to false.
-        from dbstorage.models import StoredFile
-        sf = StoredFile.objects.get(path=asset.file.name)
-        sf.trusted = source.trust_javascript_assets
-        sf.save()
 
         # Add to the pack.
         pack.assets.add(asset)
