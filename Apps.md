@@ -112,11 +112,21 @@ A `module` YAML structure is identical to `app.yaml` structure but without the c
 
 Apps that describe the required components of a compliant IT system are considered "Top Level" apps. Each question in a Top Level app specifies a type of compliance app (e.g., a compliance app "protocol") that is needed to represent that component.
 
-## App Sources
+## Adding Apps to GovReady-Q Deployments
 
-Apps are loaded into Q from an "app source," which can be a local directory, a Github repository, etc. App sources are linked to a Q deployment through the `ModuleSource` model in the Django admin.
+Separating compliance apps from the compliance server enables a much richer ecosystem and virtuous cycle of innovation than having everything embedded exclusively within the compliance server. A GovReady-Q deployment can pull app and module content from local directories and git repositories. An organization using GovReady-Q can freely mix compliance apps from third parties with private compliance apps located only on their network.
 
-A Q deployment can pull module content from various sources --- including local directories and git repositories --- by creating Module Sources in the Django admin site at [/admin/guidedmodules/modulesource/](http://localhost:8000/admin/guidedmodules/modulesource/). Each Module Source specifies a virtual filesystem from which apps are located.
+Compliance apps are very much like modular plugins that customize the compliance server to the unique system and components of the organization.
+
+This leaves the need to specify which compliance apps are available to a compliance server deployment. This specification of available apps is known as an "app source" and is done with a JSON "spec" file entered in the `ModuleSource` model via the Django admin interface. 
+
+The process is currently a bit clumsy with terminology that reflects the software's evolution toward the app concept. Nevertheless, the approach provides flexibility of sourcing apps from local file systems and  public and private git repositories. And each source specifies a virtual filesystem from which one or more top level apps and compliance apps can be found located.
+
+The below screenshot of the `ModuleSource` module in the Django admin interfaces shows the JSON "spec" file. 
+
+![Screenshot of ModuleSource from GovReady-Q Django admin interface](docs/assets/modulesources.png)
+
+The `ModuleSource` module also contains fields to indicate to which subdomains of the deployment the source's apps are avaiable.
 
 ### App Source virtual filesystem layout
 
@@ -145,13 +155,13 @@ All deployments must have a Module Source that binds the `system` namespace to t
 
 The `Spec` field of Module Sources can be of these types (explanation follows below):
 
-	Local file system source:
+	# Local file system source:
 	{
 		"type": "local",
 		"path": "modules/system"
 	}
 
-	Git repository source using a URL:
+	# Git repository source using a URL:
 	{
 		"type": "git",
 		"url": "git@github.com:GovReady/my-modules",
@@ -160,7 +170,7 @@ The `Spec` field of Module Sources can be of these types (explanation follows be
 		"ssh_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"
 	}
 
-	Github repository using the Github API:
+	# Github repository using the Github API:
 	{
 		"type": "github",
 		"repo": "GovReady/my-modules",
@@ -178,7 +188,22 @@ Use `"type": "github"`, which uses the Github API and user credentials such as a
 
 Both git methods have an optional `path` field which lets you choose a directory _within_ the git repository to scan for module YAML files.
 
+## Controlling access to apps
+
+Controlling which organizations in a Q deployment can access which apps is done via the ModuleSources table.
+
+The "Available to all" field of ModuleSource, which is on by default, gives all users of all organizations the ability to start an app provided by the ModuleSource. 
+
+If the "Available to all" field is unchecked, then only users within white-listed organizations can start apps provided by the ModuleSource. The white-list is a multi-select box on the ModuleSource page.
+
+Removing access to a ModuleSource does not affect any apps that have already been started by a user.
+
+
 ### Creating read-only SSH deployment keys
+
+When sourcing an app from a private GitHub repository, GovReady-Q will need to authenticate itself with GitHub using an SSH key pair. The public key will be added to deployment keys of the GitHub repository of the compliance app. The private key will be added to the JSON "spec" entered into `ModuleSource` model in the Django admin interface.
+
+The following instructions describe generate an SSH key pair in Linux and setting up the keys.
 
 1) Open a terminal.
 
@@ -196,7 +221,7 @@ ssh-keygen -t rsa -b 4096 -C "_your-repo-name_-deployment-key" -f ./id_rsa_deplo
 cat ./id_rsa_deploy_key.pub
 ```
 
-5) Copy the public key to your clipboard. Then navigate to your your GitHub repo > Settings > Deploy keys. Click the "Add deploy key" button. Paste the content of your public key into the `Key` field. Add a memborable name to the `Title` field like "GovReady Q Deployment Key". 
+5) Copy the public key to your clipboard. Then navigate to your your GitHub repo > Settings > Deploy keys. Click the "Add deploy key" button. Paste the content of your public key into the `Key` field. Add a memborable name to the `Title` field like "GovReady-Q Deployment Key". 
 
 6) Make the key read only by leaving "Allow write access" field unchecked and click `Add the key` to save the key.
 
@@ -217,7 +242,7 @@ Apps can contain executable content (some of which is disabled by default):
 
 * JavaScript executed by the client browser served as a static asset and referenced by a `<script>` tag.
 
-* Python scripts executed by the GovReady Q server for `external-function` questions.
+* Python scripts executed by the GovReady-Q server for `external-function` questions.
 
 Both sources of Javascript execute within the context of pages on the domain that the Q site itself runs on, which means the scripts have access to the page DOM, cookies, localStorage, etc. Server-side Python executes as the local Unix user within the Q Django process. These scripts must only be enabled if they are trusted for these environments.
 
@@ -231,13 +256,3 @@ To enable these scripts, the `Trust javascript assets` flag must be true on the 
 After making changes to modules or ModuleSources for system modules (like account settings), run `python3 manage.py load_modules` to pull the modules from the sources into the database. This only updates system modules.
 
 Other modules that have already been started as apps will not be updated. But for debugging (only), you can run `python3 manage.py refresh_modules` to update started apps in-place so that you don't have to start an app anew (on the site) each time you make a change to an app.
-
-## Controlling access to apps
-
-Controlling which organizations in a Q deployment can access which apps is done via the ModuleSources table.
-
-The "Available to all" field of ModuleSource, which is on by default, gives all users of all organizations the ability to start an app provided by the ModuleSource. 
-
-If the "Available to all" field is unchecked, then only users within white-listed organizations can start apps provided by the ModuleSource. The white-list is a multi-select box on the ModuleSource page.
-
-Removing access to a ModuleSource does not affect any apps that have already been started by a user.
