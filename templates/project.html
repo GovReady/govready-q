@@ -120,6 +120,11 @@
     margin-bottom: 15px;
   }
 }
+
+.authoring-tool-trigger {
+  float: right;
+  color: #31708f;
+}
 </style>
 {% endblock %}
 
@@ -293,6 +298,9 @@
                     question
                     {% if rec.is_finished %}task_finished{% endif %}
                     {% if rec.first_start %}first_start{% endif %}"
+                    {% if can_begin_module %}
+                    onclick="$(this).find('form').submit();" style="cursor: pointer"
+                    {% endif %}
                     >
 
                   {# For module-type questions, the question is either unstarted, in which case the app icon and title are from the question, or started in which case the app icon and title are from the task (falling back to the question if no icon is set for the task). #}
@@ -303,15 +311,15 @@
                     {% if can_begin_module %}
                       {% if not rec.question.spec.protocol %}
                         {# start a task directly using the module type in the specification #}
-                        <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+                        <form class="start-task" method="post" action="/tasks/start">
                           {% csrf_token %}
                           <input type="hidden" name="project" value="{{project.id}}"/>
                           <input type="hidden" name="question" value="{{rec.question.key}}"/>
                           <input type="hidden" name="previous" value="project"/>
-                          <a onclick="$(this).parent('form').submit(); return false;">
                       {% else %}
                         {# start an app that satisfies the interface of the specified module #}
-                        <a href="/store?q={{project.root_task.id}}/{{rec.question.key}}">
+                        <form method="get" action="/store">
+                          <input type="hidden" name="q" value="{{project.root_task.id}}/{{rec.question.key}}">
                       {% endif %}
                     {% endif %}
 
@@ -340,10 +348,8 @@
 
                     <div class="question-title">
                       {% if authoring_tool_enabled %}
-                        <div class="float: right">
-                          <a href="#" onclick="show_question_authoring_tool('{{rec.question.key|escapejs}}'); return false;">
-                            <span class="glyphicon glyphicon-pencil"></span>
-                          </a>
+                        <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
+                          <span class="glyphicon glyphicon-pencil"></span>
                         </div>
                       {% endif %}
 
@@ -357,10 +363,7 @@
                     {% endif %}
 
                     {% if can_begin_module %}
-                      </a>
-                      {% if not rec.question.spec.protocol %}
-                        </form>
-                      {% endif %}
+                      </form>
                     {% endif %}
 
                     {# For a module-set question, list the existing tasks #}
@@ -391,7 +394,7 @@
                     {# This is a module-type question that has been started. Icon, title, and link are for the started task. There is no list of answered modules. Unless rec.question.spec.app_overrides_name_and_icon is false. #}
 
                     {% for t in rec.tasks %} {# there's just one #}
-                    <a href="{{t.get_absolute_url}}">
+                    <div onclick="window.location='{{t.get_absolute_url}}';" style="cursor: pointer">
                       {% if layout_mode == "rows" %}
                         <div class="row">
                         <div class="col-sm-3">
@@ -418,10 +421,8 @@
 
                       <div class="question-title">
                         {% if authoring_tool_enabled %}
-                          <div style="float: right">
-                            <a href="#" onclick="show_question_authoring_tool('{{rec.question.key|escapejs}}'); return false;">
-                              <span class="glyphicon glyphicon-pencil"></span>
-                            </a>
+                          <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
+                            <span class="glyphicon glyphicon-pencil"></span>
                           </div>
                         {% endif %}
 
@@ -446,7 +447,7 @@
                         </div> <!-- /row -->
                       {% endif %}
 
-                    </a>
+                    </div>
                     {% endfor %}
                   {% endif %}
 
@@ -732,6 +733,10 @@ function rename_folder(elem) {
 <style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
 <script>
 $(function() {
+  $('.authoring-tool-trigger').click(function(e) {
+    e.stopPropagation();
+    show_question_authoring_tool($(this).data('key'));
+  })
   init_question_authoring_tool({
     task: {{project.root_task.id}},
     module: {{project.root_task.module.spec|json}},
