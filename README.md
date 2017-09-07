@@ -181,3 +181,5 @@ This repository is licensed under the [GNU GPL v3](LICENSE.md).
 
 Emoji icons by http://emojione.com/developers/.
 
+Generic server icon by [Stock Image Folio from Noun Project](https://thenounproject.com/search/?q=computer&i=870428)
+
