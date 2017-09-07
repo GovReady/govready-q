@@ -292,8 +292,8 @@
                     {% if layout_mode == "grid" %}col-sm-3{% else %}col-xs-12{% endif %}
                     question
                     {% if rec.is_finished %}task_finished{% endif %}
-                    {% if rec.first_start %}first_start{% endif %}">
-                    <a href="#" onclick="$(this).find('form').submit(); return false;">
+                    {% if rec.first_start %}first_start{% endif %}"
+                    >
 
                   {# For module-type questions, the question is either unstarted, in which case the app icon and title are from the question, or started in which case the app icon and title are from the task (falling back to the question if no icon is set for the task). #}
 
@@ -308,6 +308,7 @@
                           <input type="hidden" name="project" value="{{project.id}}"/>
                           <input type="hidden" name="question" value="{{rec.question.key}}"/>
                           <input type="hidden" name="previous" value="project"/>
+                          <a onclick="$(this).parent('form').submit(); return false;">
                       {% else %}
                         {# start an app that satisfies the interface of the specified module #}
                         <a href="/store?q={{project.root_task.id}}/{{rec.question.key}}">
@@ -356,10 +357,9 @@
                     {% endif %}
 
                     {% if can_begin_module %}
+                      </a>
                       {% if not rec.question.spec.protocol %}
                         </form>
-                      {% else %}
-                        </a>
                       {% endif %}
                     {% endif %}
 
@@ -469,7 +469,6 @@
                       </div>
                       {% endif %}
                   </div> <!-- /.question-body -->
-                </a>
                 </div> <!-- /#question-__.question -->
               {% endfor %}
               </div> <!-- /question-group -->
