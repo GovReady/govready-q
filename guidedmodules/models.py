@@ -311,7 +311,7 @@ class ModuleQuestion(models.Model):
             ch = collections.OrderedDict()
             ch["key"] = choice[0]
             if len(choice) >= 2 and choice[1]: ch["text"] = choice[1]
-            if len(choice) >= 3 and choice[2]: ch["label"] = choice[1]
+            if len(choice) >= 3 and choice[2]: ch["help"] = choice[2]
             ret.append(ch)
         return ret
 
