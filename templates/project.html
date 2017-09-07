@@ -71,7 +71,9 @@
     height: 96px;
     border: 1px solid #DDD;
     padding:12px;
-    margin-top:20px;
+    {% if layout_mode != "rows" %}
+    margin-top: 20px;
+    {% endif %}
     border-radius: 10px;
     background-color: #DDD;
   }
