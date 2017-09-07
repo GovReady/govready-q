@@ -1,10 +1,24 @@
 [
   {
     "model": "guidedmodules.modulesource",
-    "pk": 3,
+    "pk": 1,
     "fields": {
-      "namespace": "public",
+      "namespace": "samples",
       "spec": "{\"type\":\"git\",\"url\":\"https://github.com/GovReady/govready-sample-apps\"}",
+      "trust_assets": false,
+      "available_to_all": true,
+      "created": "2017-06-07T18:44:02.339Z",
+      "updated": "2017-06-07T18:44:02.339Z",
+      "extra": "null",
+      "available_to_orgs": []
+    }
+  },
+  {
+    "model": "guidedmodules.modulesource",
+    "pk": 2,
+    "fields": {
+      "namespace": "host",
+      "spec": "{\"type\":\"local\",\"path\":\"/mnt/apps\"}",
       "trust_assets": false,
       "available_to_all": true,
       "created": "2017-06-07T18:44:02.339Z",

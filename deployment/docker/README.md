@@ -25,6 +25,17 @@ To destroy the container and all user data entered into Q:
 
 	docker container rm -f $CONTAINER
 
+If you are using the Docker image to develop your own compliance apps, then
+you will need to bind-mount a directory on your (host) system as a directory
+within the container so that the container can see your app YAML files. To
+do so, start the container with this command instead:
+
+	CONTAINER=$(docker container run --detach -p 8000:8000 --mount type=bind,src=/absolute/path/to/apps,dst=/mnt/apps govready/govready-q)
+
+Substitute for `/absolute/path/to/apps` the absolute path to a directory containing
+GovReady-Q Compliane Apps. This directory should have subdirectories for each of
+your apps. For instance, you would have a file at `/absolute/path/to/apps/my_app/app.yaml`.
+
 Notes:
 
 * The Q database is only persisted within the container. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed.

@@ -38,7 +38,11 @@ COPY deployment/docker/environment.json ./local/
 RUN python manage.py migrate
 RUN python manage.py load_modules
 
-# Add a built-in ModuleSource that has public apps.
+# Add a built-in ModuleSource that has an entry for the GovReady
+# sample apps and an entry for loading apps from /mnt/apps which
+# the user starting the container may want to bind-mount to a
+# directory on the host for building their own apps.
+RUN mkdir -p /mnt/apps
 COPY deployment/docker/modulesources.json ./
 RUN python manage.py loaddata modulesources.json
 RUN rm modulesources.json
