@@ -225,7 +225,13 @@ class Module(models.Model):
             if i == 0 and q.key == "_introduction":
                 spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
                 continue
-            spec["questions"].append(q.spec)
+
+            # Rewrite some fields that get rewritten during module-loading.
+            qspec = OrderedDict(q.spec)
+            if q.answer_type_module:
+                qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
+
+            spec["questions"].append(qspec)
         fn = os.path.join(self.source.spec["path"], self.key[len(self.source.namespace)+1:]) + ".yaml"
         with open(fn, "w") as f:
             f.write(rtyaml.dump(spec))

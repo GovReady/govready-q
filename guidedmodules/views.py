@@ -880,7 +880,11 @@ def authoring_edit_question(request, task):
 
         # Validate.
         from .validate_module_specification import validate_question
-        validate_question(question.module.spec, spec)
+        spec = validate_question(question.module.spec, spec)
+
+        # As in app loading, rewrite this...
+        if question.answer_type_module:
+            spec["module-id"] = question.answer_type_module.id
 
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
