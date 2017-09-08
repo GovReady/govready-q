@@ -53,8 +53,6 @@ class App(object):
 
     @transaction.atomic # there can be an error mid-way through updating a Module
     def import_into_database(self, update_mode):
-        print("Importing", self.store, self.name, "...")
-
         # Get or create a ModuleAssetPack first, since there is a foriegn key
         # from Modules to ModuleAssetPacks.
         asset_pack = load_module_assets_into_database(self)
@@ -72,8 +70,6 @@ class App(object):
                 module_id,
                 available_modules, processed_modules,
                 [], asset_pack, update_mode)
-
-        print()
 
         return processed_modules
 
@@ -110,7 +106,7 @@ class MultiplexedAppStore(AppStore):
             try:
                 loader.__exit__(None, None, None)
             except Exception as e:
-                exceptions.append(e)
+                exceptions.append((loader, e))
         if exceptions:
             raise Exception(exceptions)
 
@@ -626,10 +622,6 @@ def load_module_into_database(app, module_id, available_modules, processed_modul
 
     if len(return_modules) == 0:
         # No Modules in the database match what we need. Create one.
-        if update_mode == AppImportUpdateMode.UpdateIfCompatibleOnly:
-            # Don't create any new Modules.
-            raise ValueError("There is no module to update.")
-
         new_module = create_module(app, spec, asset_pack)
     else:
         # Return any of the modules in the database that now match this app.
@@ -822,6 +814,8 @@ def is_question_changed(mq, definition_order, spec):
     # Constriction of valid number of choices to a multiple-choice
     # (min is increased or max is newly set or decreased).
     if mq.spec["type"] == "multiple-choice":
+        if "min" not in mq.spec or "max" not in mq.spec:
+            return True
         if spec['min'] > mq.spec['min']:
             return True
         if mq.spec["max"] is None and spec["max"] is not None:
@@ -890,7 +884,6 @@ def load_module_assets_into_database(app):
         )
         if is_new:
             # Set the new file content.
-            print("Storing", file_path, "with hash", file_hash)
             from django.core.files.base import ContentFile
             asset.file.save(file_path, ContentFile(content_loader()))
             asset.save()

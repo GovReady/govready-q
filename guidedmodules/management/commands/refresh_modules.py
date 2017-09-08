@@ -22,5 +22,5 @@ class Command(BaseCommand):
                 except Exception as e:
                     # If there's an error with this app, just print it and
                     # continue to try to refresh other apps.
-                    print(app, e)
+                    print("Unhandled error loading", app, e)
 
