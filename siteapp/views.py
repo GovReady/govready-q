@@ -315,7 +315,7 @@ def app_store_item(request, app_namespace, app_name):
                                 raise ValueError("Invalid access.")
 
                             # 4) Import. Use the module named "app".
-                            modules = app.import_into_database(AppImportUpdateMode.New)
+                            modules = app.import_into_database()
                             module = modules["app"]
 
                     else:

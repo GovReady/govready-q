@@ -727,6 +727,30 @@ def authoring_tool_auth(f):
     return g
 
 @authoring_tool_auth
+@transaction.atomic
+def authoring_edit_reload_app(request, task):
+    # Refresh the app that this Task is a part of by reloading all of the
+    # Modules associated with this instance of the app.
+    from .module_sources import AppStore, AppImportUpdateMode, ValidationError
+    with AppStore.create(task.module.source) as store:
+        for app in store.list_apps():
+            # Only update using the app that provided this Task's Module.
+            if not (task.module.key+"/").startswith(task.module.source.namespace + "/" + app.name + "/"):
+                continue
+
+            # Import.
+            try:
+                app.import_into_database(
+                    AppImportUpdateMode.ForceUpdateInPlace
+                     if request.POST.get("force") == "true"
+                     else AppImportUpdateMode.UpdateIfCompatibleOnly,
+                    task.module.app)
+            except ValidationError as e:
+                return JsonResponse({ "status": "error", "message": str(e) })
+
+    return JsonResponse({ "status": "ok" })
+
+@authoring_tool_auth
 def authoring_new_question(request, task):
     # Find a new unused question identifier.
     ids_in_use = set(task.module.questions.values_list("key", flat=True))
@@ -750,11 +774,12 @@ def authoring_new_question(request, task):
         )
     question.save()
 
-    # Write to disk if possible.
+    # Write to disk. Errors writing should not be suppressed because
+    # saving to disk is a part of the contract of how app editing works.
     try:
         question.module.serialize_to_disk()
-    except:
-        pass
+    except Exception as e:
+        return JsonResponse({ "status": "error", "message": "Could not update local YAML file: " + str(e) })
 
     # Return status. The browser will reload/redirect --- if the question key
     # changed, this sends the new key.
@@ -852,7 +877,8 @@ def authoring_edit_question(request, task):
     question.spec = spec
     question.save()
 
-    # Write to disk if possible.
+    # Write to disk. Errors writing should not be suppressed because
+    # saving to disk is a part of the contract of how app editing works.
     try:
         question.module.serialize_to_disk()
     except Exception as e:

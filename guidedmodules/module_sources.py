@@ -52,7 +52,7 @@ class App(object):
         raise Exception("Not implemented!")
 
     @transaction.atomic # there can be an error mid-way through updating a Module
-    def import_into_database(self, update_mode):
+    def import_into_database(self, update_mode=AppImportUpdateMode.New, update_appinst=None):
         # Get or create a ModuleAssetPack first, since there is a foriegn key
         # from Modules to ModuleAssetPacks.
         asset_pack = load_module_assets_into_database(self)
@@ -75,7 +75,7 @@ class App(object):
                 appinst,
                 module_id,
                 available_modules, processed_modules,
-                [], asset_pack, update_mode)
+                [], asset_pack, update_mode, update_appinst)
 
         return processed_modules
 
@@ -554,7 +554,7 @@ class DependencyError(Exception):
         super().__init__("Invalid module ID %s in %s." % (to_module, from_module))
 
 
-def load_module_into_database(app, appinst, module_id, available_modules, processed_modules, dependency_path, asset_pack, update_mode):
+def load_module_into_database(app, appinst, module_id, available_modules, processed_modules, dependency_path, asset_pack, update_mode, update_appinst):
     # Prevent cyclic dependencies between modules.
     if module_id in dependency_path:
         raise CyclicDependency(dependency_path)
@@ -592,7 +592,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
     # Recursively update any modules this module references.
     dependencies = { }
     for m1 in get_module_spec_dependencies(spec):
-        mdb = load_module_into_database(app, appinst, m1, available_modules, processed_modules, dependency_path + [spec["id"]], asset_pack, update_mode)
+        mdb = load_module_into_database(app, appinst, m1, available_modules, processed_modules, dependency_path + [spec["id"]], asset_pack, update_mode, update_appinst)
         dependencies[m1] = mdb
 
     # Now that dependent modules are loaded, replace module string IDs with database numeric IDs.
@@ -602,46 +602,54 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
         mdb = dependencies[q["module-id"]]
         q["module-id"] = mdb.id
 
-    # Get or create a Module instance for this specification.
+    # Look for an existing Module to update.
 
-    return_modules = set()
-    supersede_modules = set()
+    should_replace = False
 
-    for m in Module.objects.filter(source=app.store.source, key=app.store.source.namespace+"/"+app.name+"/"+spec['id'], superseded_by=None):
+    m = None
+    if update_appinst:
+        try:
+            m = Module.objects.get(app=update_appinst, key=app.store.source.namespace+"/"+app.name+"/"+spec['id'], superseded_by=None)
+        except Module.DoesNotExist:
+            pass
+    if m:
         # What is the difference between the app's module and the module in the database?
         change = is_module_changed(m, app.store.source, spec, asset_pack)
     
         if change is None:
             # There is no difference, so we can go on immediately.
-            return_modules.add(m)
+            pass
 
         elif (change is False and update_mode in (AppImportUpdateMode.UpdateIfCompatible, AppImportUpdateMode.UpdateIfCompatibleOnly)) \
             or update_mode == AppImportUpdateMode.ForceUpdateInPlace:
             # There are no incompatible changes and we're allowed to update modules,
             # or we're forcing an update, so we'll update this one in place.
             update_module(m, spec, asset_pack, True)
-            return_modules.add(m)
+
+        elif update_mode == AppImportUpdateMode.UpdateIfCompatibleOnly:
+            # Block an incompatible update --- don't create a new module.
+            raise ValidationError(module_id, "module", "Module cannot be updated because changes are incompatible with the existing data model.")
 
         else:
-            # This module is going out of date. Mark it as superseded.
-            supersede_modules.add(m)
+            # This module is going out of date.
+            should_replace = True
 
-    if len(return_modules) == 0:
-        # No Modules in the database match what we need. Create one.
+    if not m or should_replace:
+        # No Module in the database matched what we need, or an existing
+        # one cannot be updated. Create one.
         new_module = create_module(app, appinst, spec, asset_pack)
-    else:
-        # Return any of the modules in the database that now match this app.
-        new_module = list(return_modules)[0]
 
-    # Mark the previous Modules as superseded so that they are no longer used
-    # on new Tasks.
-    for m in supersede_modules:
-        m.visible = False
-        m.superseded_by = new_module
-        m.save()
+        # Mark the previous Module as superseded so that they are no longer used
+        # on new Tasks.
+        if m:
+            m.visible = False
+            m.superseded_by = new_module
+            m.save()
 
-    processed_modules[module_id] = new_module
-    return new_module
+        m = new_module
+
+    processed_modules[module_id] = m
+    return m
 
 
 def get_module_spec_dependencies(spec):

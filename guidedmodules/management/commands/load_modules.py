@@ -19,8 +19,4 @@ class Command(BaseCommand):
                     continue
 
                 # Import.
-                app.import_into_database(
-                    AppImportUpdateMode.ForceUpdateInPlace
-                     if options.get("force") == True
-                     else AppImportUpdateMode.UpdateIfCompatible)
-
+                app.import_into_database()

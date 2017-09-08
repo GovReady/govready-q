@@ -179,3 +179,20 @@ function authoring_tool_delete_question() {
       }
   })
 }
+
+function authoring_tool_reload_app(task_id) {
+  if (!confirm("Are you sure you want to reload this app from its source?"))
+    return;
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/reload-app",
+      method: "POST",
+      data: {
+        task: task_id,
+        force: "false"
+      },
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        window.location.reload();
+      }
+  })
+}

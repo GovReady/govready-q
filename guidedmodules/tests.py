@@ -23,7 +23,7 @@ class TestCaseWithFixtureData(TestCase):
         )
         with MultiplexedAppStore(ms for ms in AppSource.objects.all()) as store:
             for app in store.list_apps():
-                app.import_into_database(AppImportUpdateMode.ForceUpdateInPlace)
+                app.import_into_database()
 
 
         # Create a dummy organization, project, and user.

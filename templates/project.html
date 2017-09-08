@@ -486,7 +486,18 @@
         </div>
       {% endfor %}
 
-    </div>
+    </div> <!-- /tabs -->
+
+    {% if authoring_tool_enabled %}
+    <center style="font-size: 90%;"><p>
+      <a href="#" onclick="authoring_tool_reload_app({{project.root_task.id}}); return false;">
+      <span class="glyphicon glyphicon-pencil"></span>
+      <span class="glyphicon glyphicon-refresh"></span>
+      Reload App from {{project.root_task.module.app.source.get_description}}
+      </a>
+    </p></center>
+    {% endif %}
+
   </div>
 </div>
 
