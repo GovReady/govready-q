@@ -40,8 +40,13 @@ class AppSource(models.Model):
         if self.spec["type"] == "github":
             return "github.com/%s" % self.spec.get("repo")
 
+class AppInstance(models.Model):
+    source = models.ForeignKey(AppSource, related_name="appinstances", help_text="The source of this AppInstance.")
+    appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppStore.")
+
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", help_text="The source of this module definition.")
+    app = models.ForeignKey(AppInstance, null=True, related_name="modules", help_text="The AppInstance that this Module is a part of. Null for legacy Modules created before we had this field.")
 
     key = models.SlugField(max_length=200, db_index=True, help_text="A slug-like identifier for the Module.")
 

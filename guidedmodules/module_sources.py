@@ -7,7 +7,7 @@ import json
 import fs
 from fs.base import FS as fsFS
 
-from .models import AppSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task
+from .models import AppSource, AppInstance, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task
 from .validate_module_specification import validate_module, ValidationError as ModuleValidationError
 
 class AppImportUpdateMode(enum.Enum):
@@ -61,12 +61,18 @@ class App(object):
         # be processed recursively.
         available_modules = dict(self.get_modules())
 
+        appinst = AppInstance.objects.create(
+            source=self.store.source,
+            appname=self.name,
+        )
+
         # Load them all into the database. Each will trigger load_module_into_database
         # for any modules it depends on.
         processed_modules = { }
         for module_id in available_modules.keys():
             load_module_into_database(
                 self,
+                appinst,
                 module_id,
                 available_modules, processed_modules,
                 [], asset_pack, update_mode)
@@ -548,7 +554,7 @@ class DependencyError(Exception):
         super().__init__("Invalid module ID %s in %s." % (to_module, from_module))
 
 
-def load_module_into_database(app, module_id, available_modules, processed_modules, dependency_path, asset_pack, update_mode):
+def load_module_into_database(app, appinst, module_id, available_modules, processed_modules, dependency_path, asset_pack, update_mode):
     # Prevent cyclic dependencies between modules.
     if module_id in dependency_path:
         raise CyclicDependency(dependency_path)
@@ -586,7 +592,7 @@ def load_module_into_database(app, module_id, available_modules, processed_modul
     # Recursively update any modules this module references.
     dependencies = { }
     for m1 in get_module_spec_dependencies(spec):
-        mdb = load_module_into_database(app, m1, available_modules, processed_modules, dependency_path + [spec["id"]], asset_pack, update_mode)
+        mdb = load_module_into_database(app, appinst, m1, available_modules, processed_modules, dependency_path + [spec["id"]], asset_pack, update_mode)
         dependencies[m1] = mdb
 
     # Now that dependent modules are loaded, replace module string IDs with database numeric IDs.
@@ -622,7 +628,7 @@ def load_module_into_database(app, module_id, available_modules, processed_modul
 
     if len(return_modules) == 0:
         # No Modules in the database match what we need. Create one.
-        new_module = create_module(app, spec, asset_pack)
+        new_module = create_module(app, appinst, spec, asset_pack)
     else:
         # Return any of the modules in the database that now match this app.
         new_module = list(return_modules)[0]
@@ -650,10 +656,11 @@ def get_module_spec_dependencies(spec):
                 yield question["module-id"]
 
 
-def create_module(app, spec, asset_pack):
+def create_module(app, appinst, spec, asset_pack):
     # Create a new Module instance.
     m = Module()
     m.source = app.store.source
+    m.app = appinst
     m.key = app.store.source.namespace + "/" + app.name + "/" + spec['id']
     print("Creating", m.key)
     update_module(m, spec, asset_pack, False)
