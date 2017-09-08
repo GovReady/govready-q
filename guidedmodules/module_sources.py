@@ -628,7 +628,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
 
         elif update_mode == AppImportUpdateMode.UpdateIfCompatibleOnly:
             # Block an incompatible update --- don't create a new module.
-            raise ValidationError(module_id, "module", "Module cannot be updated because changes are incompatible with the existing data model.")
+            raise ValidationError(module_id, "module", "Module cannot be updated because changes are incompatible with the existing data model: " + change)
 
         else:
             # This module is going out of date.
@@ -755,23 +755,18 @@ def is_module_changed(m, source, spec, asset_pack):
             == json.dumps([q for q in spec.get("questions", [])], sort_keys=True):
         return None
 
-    # Define some symbols.
-
-    compatible_change = False
-    incompatible_change = True
-
     # Now we're just checking if the change is compatible or not with
     # the existing database record.
 
     if m.spec.get("version") != spec.get("version"):
         # The module writer can force a bump by changing the version
         # field.
-        return incompatible_change
+        return "The module version number changed, forcing a reload."
 
     # If there are no Tasks started for this Module, then the change is
     # compatible because there is no data consistency to worry about.
     if not Task.objects.filter(module=m).exists():
-        return compatible_change
+        return False
 
     # An incompatible change is the removal of a question, the change
     # of a question type, or the removal of choices from a choice
@@ -787,8 +782,9 @@ def is_module_changed(m, source, spec, asset_pack):
         # Is there an incompatible change in the question? (If there
         # is a change that is compatible, we will return that the
         # module is changed anyway at the end of this method.)
-        if is_question_changed(mq, definition_order, q) is True:
-            return incompatible_change
+        qchg = is_question_changed(mq, definition_order, q)
+        if isinstance(qchg, str):
+            return "In question %s: %s" % (q["id"], qchg)
 
         # Remember that we saw this question.
         qs.add(mq)
@@ -796,10 +792,10 @@ def is_module_changed(m, source, spec, asset_pack):
     # Were any questions removed?
     for q in m.questions.all():
         if q not in qs:
-            return incompatible_change
+            return "Question %s was removed." % q.key
 
     # The changes will not create any data inconsistency.
-    return compatible_change
+    return False
 
 def is_question_changed(mq, definition_order, spec):
     # Returns whether a question specification has changed since
@@ -808,7 +804,8 @@ def is_question_changed(mq, definition_order, spec):
     #   None => No change.
     #   False => Change, but is compatible with the database record
     #           and the database record can be updated in-place.
-    #   True => Incompatible change - a new database record is needed.
+    #   str => Incompatible change - a new database record is needed.
+    #          The string holds an explanation of what changed.
 
     # Check if the specifications are identical. We are passed a
     # trasnformed question spec already.
@@ -818,25 +815,28 @@ def is_question_changed(mq, definition_order, spec):
 
     # Change in question type -- that's incompatible.
     if mq.spec["type"] != spec["type"]:
-        return True
+        return "The question type changed from %s to %s." % (
+            repr(mq.spec["type"]), repr(spec["type"])
+            )
 
     # Removal of a choice.
     if mq.spec["type"] in ("choice", "multiple-choice"):
         def get_choice_keys(choices): return { c.get("key") for c in choices }
-        if get_choice_keys(mq.spec["choices"]) - get_choice_keys(spec["choices"]):
-            return True
+        rm_choices = get_choice_keys(mq.spec["choices"]) - get_choice_keys(spec["choices"])
+        if rm_choices:
+            return "One or more choices was removed: " + ", ".join(rm_choices) + "."
 
     # Constriction of valid number of choices to a multiple-choice
     # (min is increased or max is newly set or decreased).
     if mq.spec["type"] == "multiple-choice":
         if "min" not in mq.spec or "max" not in mq.spec:
-            return True
+            return "min/max was missing."
         if spec['min'] > mq.spec['min']:
-            return True
+            return "min went up."
         if mq.spec["max"] is None and spec["max"] is not None:
-            return True
+            return "max was added."
         if mq.spec["max"] is not None and spec["max"] is not None and spec["max"] < mq.spec["max"]:
-            return True
+            return "max went down."
 
     # Change in the module type if a module-type question, including
     # if the references module has been updated. spec has already
@@ -844,9 +844,11 @@ def is_question_changed(mq, definition_order, spec):
     # rather than the string module ID in the YAML files.
     if mq.spec["type"] in ("module", "module-set"):
         if mq.spec.get("module-id") != spec.get("module-id"):
-            return True
+            return "The answer type module changed from %s to %s." %(
+                repr(mq.spec.get("module-id")), repr(spec.get("module-id"))
+            )
         if mq.spec.get("protocol") != spec.get("protocol"):
-            return True
+            return "The answer type protocol changed."
 
     # The changes to this question do not create a data inconsistency.
     return False
