@@ -108,11 +108,11 @@ def get_app_store(request):
     return _app_store_cache[request.organization]
 
 def load_app_store(organization):
-    from guidedmodules.models import ModuleSource
+    from guidedmodules.models import AppSource
     from guidedmodules.module_sources import MultiplexedAppStore
     from guidedmodules.module_logic import render_content
 
-    with MultiplexedAppStore(ms for ms in ModuleSource.objects.all()) as store:
+    with MultiplexedAppStore(ms for ms in AppSource.objects.all()) as store:
         for app in store.list_apps():
             # System apps are not listed the app store.
             if app.store.source.namespace == "system":
@@ -126,7 +126,7 @@ def load_app_store(organization):
 
             catalog_info = dict(app.get_catalog_info())
 
-            catalog_info["modulesource_id"] = app.store.source.id
+            catalog_info["appsource_id"] = app.store.source.id
             catalog_info["key"] = "{source}/{name}".format(source=app.store.source.namespace, name=app.name)
 
             catalog_info.setdefault("description", {})
@@ -236,14 +236,14 @@ def app_store(request):
 def app_store_item(request, app_namespace, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
-    from guidedmodules.models import ModuleSource
+    from guidedmodules.models import AppSource
     for app_catalog_info in get_app_store(request):
         if app_catalog_info["key"] == app_namespace + "/" + app_name:
             # We found it.
             break
     else:
         raise Http404()
-    module_source = get_object_or_404(ModuleSource, id=app_catalog_info["modulesource_id"])
+    module_source = get_object_or_404(AppSource, id=app_catalog_info["appsource_id"])
 
     if request.method == "GET":
         # Show the "app" page.
@@ -304,7 +304,7 @@ def app_store_item(request, app_namespace, app_name):
                     # and then import it into the database as Module instance.
                     if app_catalog_info["authz"] == "none":
                         # We can instantiate the app immediately.
-                        # 1) Get the AppStore instance from the ModuleSource.
+                        # 1) Get the AppStore instance from the AppSource.
                         from guidedmodules.module_sources import AppStore, AppImportUpdateMode
                         with AppStore.create(module_source) as store:
                             # 2) Get the App.

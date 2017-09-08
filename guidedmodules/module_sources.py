@@ -7,7 +7,7 @@ import json
 import fs
 from fs.base import FS as fsFS
 
-from .models import ModuleSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task
+from .models import AppSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task
 from .validate_module_specification import validate_module, ValidationError as ModuleValidationError
 
 class AppImportUpdateMode(enum.Enum):

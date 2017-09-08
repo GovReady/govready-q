@@ -1,11 +1,11 @@
 from django.contrib import admin
 
 from .models import \
-	ModuleSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, \
+	AppSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, \
 	Task, TaskAnswer, TaskAnswerHistory, \
 	InstrumentationEvent
 
-class ModuleSourceAdmin(admin.ModelAdmin):
+class AppSourceAdmin(admin.ModelAdmin):
 	list_display = ('namespace', 'source')
 	def source(self, obj):
 		return obj.get_description()
@@ -62,7 +62,7 @@ class InstrumentationEventAdmin(admin.ModelAdmin):
 	raw_id_fields = ('user', 'module', 'question', 'task', 'answer')
 	readonly_fields = ('event_time', 'event_type', 'event_value', 'user', 'module', 'question', 'task', 'answer')
 
-admin.site.register(ModuleSource, ModuleSourceAdmin)
+admin.site.register(AppSource, AppSourceAdmin)
 admin.site.register(Module, ModuleAdmin)
 admin.site.register(ModuleQuestion, ModuleQuestionAdmin)
 admin.site.register(ModuleAssetPack, ModuleAssetPackAdmin)

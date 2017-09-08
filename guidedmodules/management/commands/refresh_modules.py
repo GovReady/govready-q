@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.conf import settings
 
-from guidedmodules.models import ModuleSource
+from guidedmodules.models import AppSource
 from guidedmodules.module_sources import MultiplexedAppStore, AppImportUpdateMode
 
 class Command(BaseCommand):
@@ -12,7 +12,7 @@ class Command(BaseCommand):
         parser.add_argument('force', nargs="?", type=bool)
 
     def handle(self, *args, **options):
-        with MultiplexedAppStore(ms for ms in ModuleSource.objects.all()) as store:
+        with MultiplexedAppStore(ms for ms in AppSource.objects.all()) as store:
             for app in store.list_apps():
                 try:
                     app.import_into_database(

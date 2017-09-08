@@ -118,15 +118,15 @@ Separating compliance apps from the compliance server enables a much richer ecos
 
 Compliance apps are very much like modular plugins that customize the compliance server to the unique system and components of the organization.
 
-This leaves the need to specify which compliance apps are available to a compliance server deployment. This specification of available apps is known as an "app source" and is done with a JSON "spec" file entered in the `ModuleSource` model via the Django admin interface. 
+This leaves the need to specify which compliance apps are available to a compliance server deployment. This specification of available apps is known as an "app source" and is done with a JSON "spec" file entered in the `AppSource` model via the Django admin interface. 
 
 The process is currently a bit clumsy with terminology that reflects the software's evolution toward the app concept. Nevertheless, the approach provides flexibility of sourcing apps from local file systems and  public and private git repositories. And each source specifies a virtual filesystem from which one or more top level apps and compliance apps can be found located.
 
-The below screenshot of the `ModuleSource` module in the Django admin interfaces shows the JSON "spec" file. 
+The below screenshot of the `AppSource` module in the Django admin interfaces shows the JSON "spec" file. 
 
-![Screenshot of ModuleSource from GovReady-Q Django admin interface](docs/assets/modulesources.png)
+![Screenshot of AppSource from GovReady-Q Django admin interface](docs/assets/appsources.png)
 
-The `ModuleSource` module also contains fields to indicate to which subdomains of the deployment the source's apps are avaiable.
+The `AppSource` module also contains fields to indicate to which subdomains of the deployment the source's apps are avaiable.
 
 ### App Source virtual filesystem layout
 
@@ -190,18 +190,18 @@ Both git methods have an optional `path` field which lets you choose a directory
 
 ## Controlling access to apps
 
-Controlling which organizations in a Q deployment can access which apps is done via the ModuleSources table.
+Controlling which organizations in a Q deployment can access which apps is done via the AppSources table.
 
-The "Available to all" field of ModuleSource, which is on by default, gives all users of all organizations the ability to start an app provided by the ModuleSource. 
+The "Available to all" field of AppSource, which is on by default, gives all users of all organizations the ability to start an app provided by the AppSource. 
 
-If the "Available to all" field is unchecked, then only users within white-listed organizations can start apps provided by the ModuleSource. The white-list is a multi-select box on the ModuleSource page.
+If the "Available to all" field is unchecked, then only users within white-listed organizations can start apps provided by the AppSource. The white-list is a multi-select box on the AppSource page.
 
-Removing access to a ModuleSource does not affect any apps that have already been started by a user.
+Removing access to a AppSource does not affect any apps that have already been started by a user.
 
 
 ### Creating read-only SSH deployment keys
 
-When sourcing an app from a private GitHub repository, GovReady-Q will need to authenticate itself with GitHub using an SSH key pair. The public key will be added to deployment keys of the GitHub repository of the compliance app. The private key will be added to the JSON "spec" entered into `ModuleSource` model in the Django admin interface.
+When sourcing an app from a private GitHub repository, GovReady-Q will need to authenticate itself with GitHub using an SSH key pair. The public key will be added to deployment keys of the GitHub repository of the compliance app. The private key will be added to the JSON "spec" entered into `AppSource` model in the Django admin interface.
 
 The following instructions describe generate an SSH key pair in Linux and setting up the keys.
 
@@ -232,7 +232,7 @@ cat ./id_rsa_deploy_key | perl -ne 's/\n/\\n/g; print'
 cat ./id_rsa_deploy_key | jq -Rs
 ```
 
-8) Add the contents of the private key file as the value to the `ssh_key` of your spec file for the Modulesources as specified above.
+8) Add the contents of the private key file as the value to the `ssh_key` of your spec file for the AppSources as specified above.
 
 ### App executable content
 
@@ -248,11 +248,11 @@ Both sources of Javascript execute within the context of pages on the domain tha
 
 Javascript static assets and Python scripts (**but not Javascript in module templates** - this is a TODO) are therefore disabled by default. (Javascript static assets are disabled by serving them with an incorrect MIME type. Python assets are not loaded if disabled.)
 
-To enable these scripts, the `Trust javascript assets` flag must be true on the ModuleSource that provides the app. This flag must only be true if any Apps provided by the ModuleSource, including Apps already loaded into Q, are trusted to have executable content that may have as much client or server-side access as the Q instance does itself.
+To enable these scripts, the `Trust javascript assets` flag must be true on the AppSource that provides the app. This flag must only be true if any Apps provided by the AppSource, including Apps already loaded into Q, are trusted to have executable content that may have as much client or server-side access as the Q instance does itself.
 
 
 ### Updating modules
 
-After making changes to modules or ModuleSources for system modules (like account settings), run `python3 manage.py load_modules` to pull the modules from the sources into the database. This only updates system modules.
+After making changes to modules or AppSources for system modules (like account settings), run `python3 manage.py load_modules` to pull the modules from the sources into the database. This only updates system modules.
 
 Other modules that have already been started as apps will not be updated. But for debugging (only), you can run `python3 manage.py refresh_modules` to update started apps in-place so that you don't have to start an app anew (on the site) each time you make a change to an app.

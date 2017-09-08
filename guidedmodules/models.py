@@ -13,13 +13,13 @@ from siteapp.models import User, Organization, Project, ProjectMembership
 
 ModulePythonCode = { }
 
-class ModuleSource(models.Model):
+class AppSource(models.Model):
     namespace = models.CharField(max_length=200, unique=True, help_text="The namespace that modules loaded from this source are added into.")
     spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
 
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
     available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
-    available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this ModuleSource.")
+    available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this AppSource.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -41,7 +41,7 @@ class ModuleSource(models.Model):
             return "github.com/%s" % self.spec.get("repo")
 
 class Module(models.Model):
-    source = models.ForeignKey(ModuleSource, related_name="modules", help_text="The source of this module definition.")
+    source = models.ForeignKey(AppSource, related_name="modules", help_text="The source of this module definition.")
 
     key = models.SlugField(max_length=200, db_index=True, help_text="A slug-like identifier for the Module.")
 
@@ -227,7 +227,7 @@ class Module(models.Model):
 
 
 class ModuleAsset(models.Model):
-    source = models.ForeignKey(ModuleSource, help_text="The source of the asset.")
+    source = models.ForeignKey(AppSource, help_text="The source of the asset.")
     content_hash = models.CharField(max_length=64, help_text="A hash of the asset binary content, as provided by the source.")
     file = models.FileField(upload_to='guidedmodules/module-assets', help_text="The attached file.")
 
@@ -240,7 +240,7 @@ class ModuleAsset(models.Model):
         unique_together = [('source', 'content_hash')]
 
 class ModuleAssetPack(models.Model):
-    source = models.ForeignKey(ModuleSource, help_text="The source of these assets.")
+    source = models.ForeignKey(AppSource, help_text="The source of these assets.")
     assets = models.ManyToManyField(ModuleAsset, help_text="The assets linked to this pack.")
     basepath = models.SlugField(max_length=100, help_text="The base path of all assets in this pack.")
     paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")

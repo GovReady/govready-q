@@ -49,8 +49,8 @@ To develop locally, run the following commands to set up your development enviro
 	python3 manage.py migrate
 	python3 manage.py load_modules
 
-    # A default ModuleSource for https://github.com/GovReady/govready-sample-apps.
-    python3 manage.py loaddata deployment/docker/modulesources.json
+    # A default AppSource for https://github.com/GovReady/govready-sample-apps.
+    python3 manage.py loaddata deployment/docker/appsources.json
 
 Then create your admin account:
 
@@ -121,7 +121,7 @@ The below diagram depicts an exploded view of the relationships between a top le
 
 !["Top Level" compliance apps contain "component" compliance apps that contain modules and questions](docs/assets/app_exploded.png)
 
-Modules are stored in YAML files. Built-in apps and modules are stored inside the `modules` directory in this repository. Other apps and modules are stored in other repositories that can be linked to a Q deployment through the `ModuleSource` model in the Django admin.
+Modules are stored in YAML files. Built-in apps and modules are stored inside the `modules` directory in this repository. Other apps and modules are stored in other repositories that can be linked to a Q deployment through the `AppSource` model in the Django admin.
 
 GovReady-Q currently installs with a small set of compliance apps primarily for demonstration purposes.
 

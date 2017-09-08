@@ -1,6 +1,6 @@
 [
   {
-    "model": "guidedmodules.modulesource",
+    "model": "guidedmodules.appsource",
     "pk": 1,
     "fields": {
       "namespace": "samples",
@@ -14,7 +14,7 @@
     }
   },
   {
-    "model": "guidedmodules.modulesource",
+    "model": "guidedmodules.appsource",
     "pk": 2,
     "fields": {
       "namespace": "host",

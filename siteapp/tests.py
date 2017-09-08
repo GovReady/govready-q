@@ -134,9 +134,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         super().setUp()
 
         # Load the Q modules from the fixtures directory.
-        from guidedmodules.models import ModuleSource
+        from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
-        ModuleSource.objects.get_or_create(
+        AppSource.objects.get_or_create(
               # this one exists on first db load because it's created by
               # migrations, but because the testing framework seems to
               # get rid of it after the first test in this class 
@@ -148,7 +148,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
                 }
             }
         )
-        ModuleSource.objects.create(
+        AppSource.objects.create(
             namespace="project",
             spec={ # contains a test project
                 "type": "local",

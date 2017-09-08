@@ -11,17 +11,17 @@ class TestCaseWithFixtureData(TestCase):
         super().setUpClass()
 
         # Load modules from the fixtures directory.
-        from guidedmodules.models import ModuleSource
+        from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
         from guidedmodules.module_sources import MultiplexedAppStore, AppImportUpdateMode
-        ModuleSource.objects.create(
+        AppSource.objects.create(
             namespace="fixture",
             spec={
                 "type": "local",
                 "path": "fixtures/modules/other",
             }
         )
-        with MultiplexedAppStore(ms for ms in ModuleSource.objects.all()) as store:
+        with MultiplexedAppStore(ms for ms in AppSource.objects.all()) as store:
             for app in store.list_apps():
                 app.import_into_database(AppImportUpdateMode.ForceUpdateInPlace)
 

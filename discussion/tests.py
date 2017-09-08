@@ -13,9 +13,9 @@ class DiscussionTests(SeleniumTest):
 
         # Load modules from the fixtures directory so that we have the required
         # modules as well as a test project.
-        from guidedmodules.models import ModuleSource
+        from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
-        ModuleSource.objects.create(
+        AppSource.objects.create(
             namespace="fixture",
             spec={
                 "type": "local",
