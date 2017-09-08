@@ -180,6 +180,22 @@ function authoring_tool_delete_question() {
   })
 }
 
+function authoring_tool_new_question(task_id, is_project_page) {
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/new-question",
+      method: "POST",
+      data: { task: task_id },
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        // Modal can stay up until the redirect finishes.
+        if (is_project_page)
+          window.location.reload();
+        else
+          window.location = res.redirect;
+      }
+  })
+}
+
 function authoring_tool_reload_app(task_id) {
   if (!confirm("Are you sure you want to reload this app from its source?"))
     return;

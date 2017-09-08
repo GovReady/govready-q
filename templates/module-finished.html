@@ -83,23 +83,9 @@
             {% endfor %}
 
             {% if authoring_tool_enabled %}
-            <script>
-            function authoring_tool_new_question() {
-              ajax_with_indicator({
-                  url: "/tasks/_authoring_tool/new-question",
-                  method: "POST",
-                  data: { task: {{task.id}} },
-                  keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
-                  success: function(res) {
-                    // Modal can stay up until the redirect finishes.
-                    window.location = res.redirect;
-                  }
-              })
-            }
-            </script>
             <tr>
               <td>
-                <button onclick="authoring_tool_new_question()"><span class="glyphicon glyphicon-plus"></span> Add Question</button>
+                <button onclick="authoring_tool_new_question({{task.id}})"><span class="glyphicon glyphicon-plus"></span> Add Question</button>
               </td>
             </tr>
             {% endif %}

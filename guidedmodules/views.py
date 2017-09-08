@@ -761,16 +761,28 @@ def authoring_new_question(request, task):
     # Get the highest definition_order in use so far.
     definition_order = max([0] + list(task.module.questions.values_list("definition_order", flat=True))) + 1
 
+    # Make a new spec.
+    if task.module.spec.get("type") != "project":
+        spec = {
+            "id": key,
+            "type": "text",
+            "title": "New Question Title",
+            "prompt": "Enter some text.",
+        }
+    else:
+        spec = {
+            "id": key,
+            "type": "module",
+            "title": "New Question Title",
+            "protocol": "choose-a-module-or-enter-a-protocol-id",
+        }
+
     # Make a new question instance.
     question = ModuleQuestion(
         module=task.module,
         key=key,
         definition_order=definition_order,
-        spec={
-            "type": "text",
-            "title": "New Question Title",
-            "prompt": "Enter some text.",
-        }
+        spec=spec
         )
     question.save()
 
