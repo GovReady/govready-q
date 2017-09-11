@@ -293,10 +293,14 @@ class Folder(models.Model):
             .filter(organization=organization)\
             .distinct()
 
+    def has_read_priv(self, user):
+        return (user in self.get_admins()) or len(self.get_readable_projects(user)) > 0
+
     def get_readable_projects(self, user):
-        # Get all of the Projects within this Folder that the user can see.
-        # TODO: This is not very efficient?
-        return set(self.projects.all()) & set(Project.get_projects_with_read_priv(user, self.organization))
+        # Get the projects that are in the folder that the user can see. This also handily
+        # sets user_is_admin on the projects.
+        return Project.get_projects_with_read_priv(user, self.organization,
+            { "contained_in_folders": self })
 
 class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
@@ -493,16 +497,16 @@ class Project(models.Model):
         parents.reverse()
         return parents
 
-    def get_up_url(self):
+    def get_parent_object(self):
         parents = self.get_parent_projects()
         if len(parents) > 0:
-            return parents[-1].get_absolute_url()
+            return parents[-1]
         
         folder = self.primary_folder()
         if folder:
-            return folder.get_absolute_url()
+            return folder
 
-        return "/"
+        return None
 
     def get_open_tasks(self, user):
         # Get all tasks that the user might want to continue working on

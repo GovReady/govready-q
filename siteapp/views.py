@@ -62,9 +62,8 @@ def folder_view(request, folder_id):
     is_admin = (request.user in folder.get_admins())
 
     # Get the projects that are in the folder that the user can see. This also handily
-    # sets user_is_admin.
-    projects = Project.get_projects_with_read_priv(request.user, request.organization,
-        { "contained_in_folders": folder })
+    # sets user_is_admin on the projects.
+    projects = folder.get_readable_projects(request.user)
 
     # Count up the open tasks in each project.
     for p in projects:
@@ -861,8 +860,14 @@ def delete_project(request, project):
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
     
-    redirect = project.get_up_url()
+    parent = project.get_parent_object()
     project.delete()
+
+    # After deleting a project, a folder can become unreadable.
+    if isinstance(parent, Folder) and not parent.has_read_priv(request.user):
+        parent = None
+
+    redirect = parent.get_absolute_url() if parent else "/"
 
     return JsonResponse({ "status": "ok", "redirect": redirect })
 
