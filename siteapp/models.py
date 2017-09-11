@@ -364,13 +364,13 @@ class Project(models.Model):
         return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True) if m.user.email and "@" in m.user.email))
 
     def has_read_priv(self, user):
-        # Who can see this project? Team members + anyone editing a task within
+        # Who can see this project? Team members + anyone with read privs to a task within
         # this project + anyone that's a guest in dicussion within this project.
         # See get_all_participants for the inverse of this function.
         from guidedmodules.models import Task
         if ProjectMembership.objects.filter(project=self, user=user).exists():
             return True
-        if Task.objects.filter(editor=user, project=self, deleted_at=None).exists():
+        if Task.get_all_tasks_readable_by(user, self.organization, recursive=True).filter(project=self).exists():
             return True
         for d in self.get_discussions_in_project_as_guest(user):
             return True

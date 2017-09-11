@@ -438,7 +438,7 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
     if answer_module:
         # The user can choose from any Task instances they have read permission on
         # and that are of the correct Module type.
-        answer_tasks = Task.get_all_tasks_readable_by(request.user, request.organization)\
+        answer_tasks = Task.get_all_tasks_readable_by(request.user, request.organization, recursive=True)\
             .filter(module=answer_module)
 
         # Annotate the instances with whether the user also has write permission.

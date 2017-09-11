@@ -476,11 +476,7 @@ def project(request, project):
 
                 task_discussions.extend([d for d in discussions if d.attached_to.task == task])
                 
-                if not task.has_read_priv(request.user):
-                    continue
-
                 tasks.append(task)
-                task.has_write_priv = task.has_write_priv(request.user)
                 if not task.is_finished():
                     # If any task is unfinished, the whole question
                     # is marked as unfinished.

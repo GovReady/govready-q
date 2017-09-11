@@ -505,15 +505,36 @@ class Task(models.Model):
     # AUTHZ
 
     @staticmethod
-    def get_all_tasks_readable_by(user, org):
-        # symmetric with get_access_level == "READ"
-        return Task.objects.filter(
+    def get_all_tasks_readable_by(user, org, recursive=False):
+        # Symmetric with get_access_level == "READ". See that for the basic logic.
+        tasks = Task.objects.filter(
             models.Q(editor=user) | models.Q(project__members__user=user),
             project__organization=org,
             deleted_at=None,
             ).distinct()
 
-    def get_access_level(self, user, allow_access_to_deleted=False):
+        if recursive:
+            # Add in all tasks that these tasks refer to via answers to questions.
+            # (Including tasks in the same project because those may reference
+            # other tasks in other projects with different access levels.)
+            seen_task_ids = set(t.id for t in tasks)
+            tasks1 = tasks
+            while len(tasks1) > 0:
+                # Collect all of the tasks referenced by the last batch as answers,
+                # except ones we've already seen.
+                tasks2 = set()
+                for t in tasks1:
+                    for q, a in t.get_current_answer_records():
+                        if a:
+                            tasks2 |= set(a.answered_by_task.all())
+                tasks2_ids = set(tt.id for tt in tasks2)
+                seen_task_ids |= tasks2_ids
+                tasks |= Task.objects.filter(id__in=tasks2_ids).distinct()
+                tasks1 = tasks2
+
+        return tasks
+
+    def get_access_level(self, user, allow_access_to_deleted=False, recursive=True):
         # symmetric with get_all_tasks_readable_by
         if self.deleted_at and not allow_access_to_deleted:
             return False
@@ -521,8 +542,33 @@ class Task(models.Model):
             # The editor.
             return "WRITE"
         if ProjectMembership.objects.filter(project=self.project, user=user).exists():
-            # All project members have read-write access to the tasks in that project.
+            # All project members have read-write access to the tasks in that projectget.
             return "WRITE"
+
+        if recursive:
+            # Access also comes from access to any Task that refers to this Task as a
+            # *current* answer to the question. First fetch all tasks that refer to this
+            # task, and then filter to see if the answer is current. Include Tasks in
+            # the same project because they may in turn be answers to tasks in other
+            # projects. Expand this out recursively.
+            parent_tasks = set()
+            search_tasks = [self]
+            while len(search_tasks) > 0:
+                ptasks = set(
+                    tah.taskanswer.task
+                    for tah in TaskAnswerHistory.objects
+                        .filter(answered_by_task__in=search_tasks)
+                        .exclude(taskanswer__task__id__in=[t.id for t in parent_tasks])
+                        .select_related("taskanswer__task"))
+                parent_tasks |= ptasks
+                search_tasks = ptasks
+
+            access_levels = set(t.get_access_level(user, recursive=False) for t in parent_tasks)
+            if "WRITE" in access_levels:
+                return "WRITE"
+            if "READ" in access_levels:
+                return "READ"
+
         return None
 
     def has_read_priv(self, user, allow_access_to_deleted=False):
@@ -747,7 +793,7 @@ class Task(models.Model):
 
     def export_json(self, serializer):
         # Exports this Task's current answers to a JSON-serializable Python data structure.
-        # The export is recurisve --- all answers to sub-modules are included, and so on.
+        # The export is recursive --- all answers to sub-modules are included, and so on.
         # Called via siteapp.Project::export_json. No authorization is performed within here
         # so the caller should have administrative access. Especially since the export may
         # include not just this Task's answers but also the answers of sub-tasks.

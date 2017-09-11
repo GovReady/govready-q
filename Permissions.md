@@ -87,7 +87,7 @@ Projects have zero or more Users who are *members* and zero or more Users who ar
 Any access to a Project requires *read* access, which is granted if any of the following are true:
 
 * They are a _member_ or _administrator_ of the Project.
-* They are the editor of a Task within the Project (i.e. guest-style *membership* if they are not otherwise authorized).
+* They have *read* access to any Task in the project.
 * They are a guest participant in a Discussion within the Project.
 
 (This is a subset of the requirements for membership in an Organization, therefore *read* access to a Project guarantees membership in the Organization it belongs to.)
