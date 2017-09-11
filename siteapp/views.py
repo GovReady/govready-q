@@ -536,8 +536,10 @@ def project(request, project):
             action_buttons.append(d)
 
         # What icon to show? (If there's an app, it'll use the app's icon instead.)
+        # Pre-load the icon as a data URL so that the browser doesn't have to make
+        # another request, and since assets are behind auth this'll avoid db logic.
         if "icon" in mq.spec:
-            d["icon"] = project.root_task.get_static_asset_url(mq.spec["icon"])
+            d["icon"] = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
 
     # Find any open invitations and if they are for particular modules,
     # display them with the module.

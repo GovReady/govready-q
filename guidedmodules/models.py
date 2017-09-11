@@ -281,6 +281,11 @@ class ModuleAssetPack(models.Model):
         )
         self.total_hash = m.hexdigest()
 
+    def get(self, asset_path):
+        if asset_path not in self.paths:
+            raise ValueError(asset_path + " is not an asset.")
+        return self.assets.get(content_hash=self.paths[asset_path]).file
+
 
 class ModuleQuestion(models.Model):
     module = models.ForeignKey(Module, related_name="questions", on_delete=models.PROTECT, help_text="The Module that this ModuleQuestion is a part of.")
@@ -423,6 +428,21 @@ class Task(models.Model):
             # an asset, so just return the path as it's probably an absolute URL.
             return asset_path
         return self.get_absolute_url() + "/media/" + asset_path
+
+    def get_static_asset_image_data_url(self, asset_path, max_image_size):
+        if not self.module.assets or asset_path not in self.module.assets.paths:
+            # No assets are defined for this Module, or this path is not
+            # an asset.
+            raise ValueError(asset_path + " is not an asset.")
+        with self.module.assets.get(asset_path) as f:
+            from PIL import Image
+            from io import BytesIO
+            import base64
+            im = Image.open(f)
+            im.thumbnail((max_image_size, max_image_size))
+            buf = BytesIO()
+            im.save(buf, "PNG")
+            return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
 
 
     # ANSWERS
@@ -706,7 +726,7 @@ class Task(models.Model):
     def get_app_icon_url(self):
         icon_img = self.module.spec.get("icon")
         if icon_img:
-            return self.get_static_asset_url(icon_img)
+            return self.get_static_asset_image_data_url(icon_img, 75)
         return None
 
     def get_subtask(self, question_id):
