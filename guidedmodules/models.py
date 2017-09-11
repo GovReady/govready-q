@@ -520,13 +520,9 @@ class Task(models.Model):
         if self.editor == user:
             # The editor.
             return "WRITE"
-        pm = ProjectMembership.objects.filter(project=self.project, user=user).values_list("is_admin", flat=True)
-        if True in pm:
-            # is_admin is True on any ProjectMembership
+        if ProjectMembership.objects.filter(project=self.project, user=user).exists():
+            # All project members have read-write access to the tasks in that project.
             return "WRITE"
-        if len(pm) > 0:
-            # A ProjectMembership exists.
-            return "READ"
         return None
 
     def has_read_priv(self, user, allow_access_to_deleted=False):

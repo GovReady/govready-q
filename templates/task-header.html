@@ -94,16 +94,6 @@
     You are participating in the discussion on this question as a guest.
 </div>
 
-{% else %}
-<div class="text-danger small" style="margin-top: 30px">
-    <i class="glyphicon glyphicon-alert" style="margin-top: 4px; margin-right: 2px"></i>
-    {{task.editor}} is editing this module.
-    {% if write_priv %}
-      But you are a project admin so you can edit it.
-    {% else %}
-      You cannot make changes to it.
-    {% endif %}
-</div>
 {% endif %}
 </div>
 

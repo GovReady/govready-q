@@ -377,7 +377,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
         self.click_element('#question-simple_module') # go to the task page
         self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
-        self.assertInNodeText("is editing this module. You cannot make changes to it.", "#auth-status .text-danger")
 
         reset_login()
 
@@ -390,7 +389,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         do_invitation("test+editor@q.govready.com")
         var_sleep(5)
         self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
-        self.assertNodeNotVisible("#auth-status .text-danger")
 
         reset_login()
 

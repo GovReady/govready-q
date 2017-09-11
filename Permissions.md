@@ -116,19 +116,14 @@ Tasks
 
 A Task is a set of questions and answers. Each Task belongs to exactly one Project. A Task has an editor, which is the User who has primary responsibility for completing the Task.
 
-A User has *read* access to a Task if any of the following are true:
+A User has both *read* and *write* access to a Task if any of the following are true:
 
 * They are the editor of the Task.
-* They are a _member_ of the Project that the Task belongs to.
+* They are a _member_ or _adminstrator_ of the Project that the Task belongs to.
 
 A User with *read* access can see the Task on the page for the Project that it belongs to and can see all of its questions, answers, and outputs and can start a Discussion on questions.
 
 A user can also see a particular question within a Task (and its answers and some Task metadata, but not other questions or Task outputs) if they are a guest in a Discussion on that question.
-
-A User has *write* access to a Task if any of the following are true:
-
-* They are the editor of the Task.
-* They are an administrator of the Project that the Task belongs to.
 
 A User with *write* access to a Task can answer questions within the Task (which sometimes involves starting new Tasks which they become the editor of), invite other users to become the Task's new editor, and delete/undelete the Task (although there is no UI for that currently).
 
