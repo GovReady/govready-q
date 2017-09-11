@@ -299,7 +299,7 @@ class validator:
         # Turn it into a Django ContentFile instance.
         from django.core.files.base import ContentFile
         value = ContentFile(content)
-        value.name = "image.png" # needs a name for the storage backend?
+        value.name = "unknown.dat" # needs a name for the storage backend?
         return value
 
     def validate_module(question, value):
