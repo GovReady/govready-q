@@ -65,7 +65,7 @@
                   {% endif %}
                 </td>
                 <td>
-                  <div style="float: right">
+                  <div style="float: right; margin: 0 0 .25em .25em;">
                     {% if not q.skipped and not q.imputed %}
                       {% if q.reviewed == 0 %}<span class="label label-danger">New</span>{% endif %}
                       {% if q.reviewed == 1 %}<span class="label label-info">Reviewed</span>{% endif %}

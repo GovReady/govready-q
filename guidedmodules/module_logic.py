@@ -592,8 +592,8 @@ class HtmlAnswerRenderer:
 
         elif question is not None and question.spec["type"] == "file" and question.spec.get("file-type") == "image" \
             and hasattr(value, "file_data"):
-            # Image files turn into image tags.
-            value = "<img src=\"" + html.escape(value.file_data['url']) + "\" style=\"display: block; margin: 1em\">"
+            # Image files turn into image tags. Give it bottom-margin like paragraphs.
+            value = "<img src=\"" + html.escape(value.file_data['url']) + "\" class=\"img-responsive\" style=\"max-height: 100vh; margin-bottom: 1em;\">"
             wrappertag = "div"
 
         else:
