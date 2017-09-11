@@ -268,8 +268,9 @@ class validator:
         if len(content) == 0:
             raise ValueError("File is empty.")
 
-        # If the file is expected to be an image, then load it to ensre it is
-        # a valid image, and sanitize it by round-tripping it through Pillow.
+        # If the "file-type" field is set and it's set to "image", then
+        # load the file using Pillow to ensre it actually is a valid image.
+        # Also sanitize it by round-tripping it through Pillow.
         # This purposefully is intended to lose image metadata, to protect
         # the user. (TODO: Test that it actually drops XMP metadata.)
         if question.spec.get("file-type") == "image":

@@ -363,7 +363,7 @@ This question type asks the user to upload a file.
 
 `help` text can also be specified, as in the text question types.
 
-The `file-type` field can be used to validate that the uploaded file is of a particular type. Supported types are:
+By default, any type of file is permitted to be uploaded. If the optional `file-type` field is set, the uploaded file is validated to be of a particular type. Supported values for the `file-type` field are:
 
 * `image`: Ensures the file is an image. The uploaded file is converted to PNG format internally.
 
