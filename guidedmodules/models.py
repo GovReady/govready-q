@@ -502,35 +502,39 @@ class Task(models.Model):
         else:
             return "Finished on " + self.updated.strftime("%x %X")
 
+    # AUTHZ
+
     @staticmethod
     def get_all_tasks_readable_by(user, org):
-        # symmetric with has_read_priv
+        # symmetric with get_access_level == "READ"
         return Task.objects.filter(
             models.Q(editor=user) | models.Q(project__members__user=user),
             project__organization=org,
             deleted_at=None,
             ).distinct()
 
-    def has_read_priv(self, user, allow_access_to_deleted=False):
-        # symmetric get_all_tasks_readable_by has_read_priv
-        if self.deleted_at and not allow_access_to_deleted:
-            return False
-        if self.has_write_priv(user, allow_access_to_deleted=allow_access_to_deleted):
-            return True
-        if ProjectMembership.objects.filter(project=self.project, user=user).exists():
-            return True
-        return False
-
-    def has_write_priv(self, user, allow_access_to_deleted=False):
+    def get_access_level(self, user, allow_access_to_deleted=False):
+        # symmetric with get_all_tasks_readable_by
         if self.deleted_at and not allow_access_to_deleted:
             return False
         if self.editor == user:
             # The editor.
-            return True
-        if ProjectMembership.objects.filter(project=self.project, user=user, is_admin=True).exists():
-            # An admin of the project.
-            return True
-        return False
+            return "WRITE"
+        pm = ProjectMembership.objects.filter(project=self.project, user=user).values_list("is_admin", flat=True)
+        if True in pm:
+            # is_admin is True on any ProjectMembership
+            return "WRITE"
+        if len(pm) > 0:
+            # A ProjectMembership exists.
+            return "READ"
+        return None
+
+    def has_read_priv(self, user, allow_access_to_deleted=False):
+        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in ("READ", "WRITE")
+
+    def has_write_priv(self, user, allow_access_to_deleted=False):
+        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE"
+
 
     # INVITATION TARGET FUNCTIONS
 
