@@ -596,6 +596,27 @@ class HtmlAnswerRenderer:
             value = "<img src=\"" + html.escape(value.file_data['url']) + "\" class=\"img-responsive\" style=\"max-height: 100vh; margin-bottom: 1em;\">"
             wrappertag = "div"
 
+        elif question is not None and question.spec["type"] == "file" \
+            and hasattr(value, "file_data"):
+            # Other files turn into link tags.
+            def convert_size(size_bytes):
+               import math
+               size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+               if size_bytes > 0:
+                   i = int(math.floor(math.log(size_bytes, 1024)))
+                   p = math.pow(1024, i)
+                   s = round(size_bytes / p, 2)
+                   if s == int(s): s = int(s)
+               else:
+                   s = 0
+                   i = 0
+               return "%s %s" % (s, size_name[i])
+            value = "<a href=\"%s\" class=\"user-media\">uploaded file (%s)</a>" % (
+                html.escape(value.file_data['url']),
+                convert_size(value.file_data['size'])
+            )
+            wrappertag = "div"
+
         else:
             # Regular text fields just get escaped.
             value = html.escape(str(value))
