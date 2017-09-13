@@ -6,8 +6,10 @@
 # Defaults.
 
 IMAGE="govready/govready-q" # the image on hub.docker.com
+HOSTNAME=localhost # as end users would access it
 PORT=8000 # the local port exposed for the web server
 LOCALSQLITEDB=
+DATABASEURL=
 APPSDEV_DIR=
 
 # Parse command-line arguments.
@@ -18,7 +20,7 @@ if [[ $? -ne 4 ]]; then
     exit 1
 fi
 OPTIONS=
-LONGOPTIONS=image:,port:,sqlitedb:,appsdevdir:
+LONGOPTIONS=image:,port:,sqlitedb:,dburl:,appsdevdir:
 PARSED_OPTIONS=$(getopt --options=$OPTIONS --longoptions=$LONGOPTIONS --name "$0" -- "$@")
 if [[ $? -ne 0 ]]; then exit 2; fi
 eval set -- "$PARSED_OPTIONS"
@@ -32,6 +34,9 @@ while true; do
             shift 2 ;;
         --sqlitedb)
 			LOCALSQLITEDB="$2"
+			shift 2 ;;
+		--dburl)
+			DATABASEURL="$2"
 			shift 2 ;;
         --appsdevdir)
 			APPSDEV_DIR="$2"
@@ -54,6 +59,9 @@ NAME="--name govready-q"
 # Port forwarding, mapping a host port to the port in the container that the
 # web server is running at (8000).
 PORTFWD="-p $PORT:8000"
+
+# Environment variables.
+ENVS="-e HOSTANDPORT=$HOSTNAME:$PORT -e HTTPS=false -e DATABASEURL=$DATABASEURL"
 
 # The mount argument for having the Sqlite database stored on the host.
 DBMNT=""
@@ -80,7 +88,7 @@ if [ ! -z "$APPSDEV_DIR" ]; then
 fi
 
 # Go!
-CMD="docker container run $ARGS $NAME $PORTFWD $DBMNT $APPSMNT $IMAGE"
+CMD="docker container run $ARGS $NAME $PORTFWD $ENVS $DBMNT $APPSMNT $IMAGE"
 echo $CMD
 CONTAINER_ID=$($CMD)
 if [[ $? -ne 0 ]]; then exit 2; fi

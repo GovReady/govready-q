@@ -64,7 +64,23 @@ You can use a Sqlite file stored on the host machine:
 
 #### Remote database
 
-TODO
+You can also connect to a database running on a remote system accessible to
+the Docker container.
+
+For instance, you might run a second Docker container holding a Postgres
+server.
+
+	docker container run --name govready-q-db -e POSTGRES_PASSWORD=$DBPASSWORD -d postgres
+	DBHOST=$(docker container inspect govready-q-db | jq -r .[0].NetworkSettings.IPAddress)
+	DBUSER=postgres
+	DBPASSWORD=mysecretpassword
+	DBDATABASE=postgres
+
+Start the GovReady-Q container with the argument:
+
+	--dburl postgres://$DBUSER:$DBPASSWORD@$DBHOST/$DBDATABASE
+
+where `$DBHOST` is the hostname of the database server, `$DBDATABASE` is the name of the database, and `$DBUSER` and `$DBPASSWORD` are the credentials for the database.
 
 ### Developing compliance apps
 

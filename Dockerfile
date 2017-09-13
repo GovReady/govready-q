@@ -8,8 +8,11 @@ EXPOSE 8000
 WORKDIR /usr/src/app
 
 # Copy in the Python module requirements and install them.
+# Manually install database drivers which aren't in our requirements
+# file because it's not used in development.
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir psycopg2
 
 # Copy in the vendor resources and fetch them.
 RUN apt-get update && apt-get install unzip && apt-get clean
@@ -32,7 +35,5 @@ COPY deployment/docker/first_run.sh .
 COPY deployment/docker/appsources.json .
 COPY deployment/docker/dockerfile_exec.sh .
 
-# Prepare the local environment with default settings.
-COPY deployment/docker/environment.json ./local/
-
+# Set the startup script.
 CMD [ "bash", "dockerfile_exec.sh" ]
