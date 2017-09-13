@@ -7,7 +7,7 @@ cd $(dirname $(dirname $(dirname $(readlink -m $0))))
 GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa_govready-q" git pull --rebase &&
 
 # Install any new Python packages.
-pip3 install --user -r requirements.txt &&
+pip3 install --user --upgrade -r requirements.txt &&
 
 # Run database migrations.
 python3 manage.py migrate &&

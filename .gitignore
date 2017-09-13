@@ -82,4 +82,3 @@ modules/oirmfo
 siteapp/staticfiles
 vendor
 .kitchen
-requirements.txt
