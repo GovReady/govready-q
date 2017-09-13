@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.conf import settings
 
-from guidedmodules.models import AppSource
+from guidedmodules.models import AppSource, AppInstance
 from guidedmodules.module_sources import MultiplexedAppStore, AppImportUpdateMode
 
 class Command(BaseCommand):
@@ -18,5 +18,8 @@ class Command(BaseCommand):
                 if app.store.source.namespace != "system":
                     continue
 
+                # Do we need to update an existing instance of the app?
+                appinst = AppInstance.objects.filter(source=app.store.source, appname=app.name).first()
+
                 # Import.
-                app.import_into_database()
+                app.import_into_database(update_appinst=appinst)
