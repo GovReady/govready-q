@@ -29,22 +29,10 @@ COPY siteapp ./siteapp
 COPY templates ./templates
 COPY manage.py .
 COPY deployment/docker/first_run.sh .
+COPY deployment/docker/appsources.json .
+COPY deployment/docker/dockerfile_exec.sh .
 
-# Prepare the local environment.
+# Prepare the local environment with default settings.
 COPY deployment/docker/environment.json ./local/
 
-# Create a default Sqlite database so that if the container is run
-# without any external state.
-RUN python manage.py migrate
-RUN python manage.py load_modules
-
-# Add a built-in AppSource that has an entry for the GovReady
-# sample apps and an entry for loading apps from /mnt/apps which
-# the user starting the container may want to bind-mount to a
-# directory on the host for building their own apps.
-RUN mkdir -p /mnt/apps
-COPY deployment/docker/appsources.json ./
-RUN python manage.py loaddata appsources.json
-RUN rm appsources.json
-
-CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000" ]
+CMD [ "bash", "dockerfile_exec.sh" ]

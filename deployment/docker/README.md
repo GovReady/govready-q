@@ -6,43 +6,80 @@ A demo of GovReady Q is available on the Docker Hub at [https://hub.docker.com/r
 
 Start the container in the background:
 
-	CONTAINER=$(docker container run --detach -p 8000:8000 govready/govready-q)
+	docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
 
-Create a Django database superuser and set up your first organization:
+For more complex setups, using our run script instead will be easier:
 
-	docker container exec -it $CONTAINER ./first_run.sh
+	deployment/docker/docker_container_run.sh
 
-Visit your organization in your web browser at:
+Visit your GovReady-Q site in your web browser at:
 
 	http://localhost:8000/
 
+It may not load at first as it initializes your database for the first time. Wait for the site to become available.
+
+With the container started and the database initialized, run our first-run script to create a Django database superuser and set up your first organization:
+
+	docker container exec -it govready-q ./first_run.sh
+
 To pause and restart the container without destroying its data:
 
-	docker container stop $CONTAINER
-	docker container start $CONTAINER
+	docker container stop govready-q
+	docker container start govready-q
 
 To destroy the container and all user data entered into Q:
 
-	docker container rm -f $CONTAINER
+	docker container rm -f govready-q
+
+Notes:
+
+* The Q database is only persisted within the container by default. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container.
+* The Q instance cannot send email until it is configured to use a transactional mail provider like Mailgun. (TODO: How?)
+* This image is not meant to be used for a public website because it uses Django's debug server to serve the site with `DEBUG = True`.
+
+## Advanced configuration
+
+Advanced container options can be set with command-line arguments to our container run script:
+
+	deployment/docker/docker_container_run.sh ...additional arguments here...
+
+### Changing the port
+
+The container will listen on 127.0.0.1:8000 by default. To change the port, e.g. to port 80, use:
+
+	--port 80
+
+### Persistent database
+
+In a production environment it is important to have GovReady-Q connect to a
+persistent database instead of the database stored inside the container,
+which will be destroyed when the container is destroyed. There are two methods
+for connecting to a persistent database.
+
+#### Sqlite file
+
+You can use a Sqlite file stored on the host machine:
+
+	--sqlitedb /path/to/govready-q-database.sqlite
+
+#### Remote database
+
+TODO
+
+### Developing compliance apps
 
 If you are using the Docker image to develop your own compliance apps, then
 you will need to bind-mount a directory on your (host) system as a directory
 within the container so that the container can see your app YAML files. To
-do so, start the container with this command instead:
+do so, start the container with the additional command-line argument:
 
-	CONTAINER=$(docker container run --detach -p 8000:8000 --mount type=bind,src=/absolute/path/to/apps,dst=/mnt/apps govready/govready-q)
+	--appsdevdir /path/to/apps
 
-Substitute for `/absolute/path/to/apps` the absolute path to a directory containing
-GovReady-Q Compliane Apps. This directory should have subdirectories for each of
-your apps. For instance, you would have a file at `/absolute/path/to/apps/my_app/app.yaml`.
+This directory should have subdirectories for each of your apps. For instance,
+you would have a YAML file at `/path/to/apps/my_app/app.yaml`.
 
-Notes:
 
-* The Q database is only persisted within the container. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed.
-* The Q instance cannot send email until it is configured to use a transactional mail provider like Mailgun. (TODO: How?)
-* This image is not meant to be used for a public website because it uses Django's debug server to serve the site with `DEBUG = True`.
-
-## Building and publishing the Docker image
+## Building and publishing the Docker image for GovReady-Q maintainers
 
 You may build the Docker image locally from the current source code rather than obtaining it from the Docker Hub. In the root directory of this repository, build the Docker image:
 
