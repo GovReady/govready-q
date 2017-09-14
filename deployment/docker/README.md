@@ -24,6 +24,10 @@ It may not load at first as it initializes your database for the first time. Wai
 Because of HTTP Host header checking, you must use `localhost` to access the site or another hostname if configured
 using the `--address` option documented below.
 
+If the site does not come up, check the container logs for an error message:
+	
+	docker container logs govready-q
+
 With the container started and the database initialized, run our first-run script to create a Django database superuser and set up your first organization:
 
 	docker container exec -it govready-q ./first_run.sh
@@ -47,7 +51,7 @@ Notes:
 
 Advanced container options can be set with command-line arguments to our container run script:
 
-	deployment/docker/docker_container_run.sh ...additional arguments here...
+	./docker_container_run.sh ...additional arguments here...
 
 ### Changing the hostname and port
 
@@ -94,6 +98,8 @@ server.
 	DBUSER=postgres
 	DBDATABASE=postgres
 
+(This example uses `jq`, a JSON parsing tool, to extract the IP address of the database container. You can install `jq` or just set `DBHOST` manually by looking for the IP address in `docker container inspect govready-q-db`.)
+
 Start the GovReady-Q container with the argument:
 
 	--dburl postgres://$DBUSER:$DBPASSWORD@$DBHOST/$DBDATABASE
@@ -119,6 +125,29 @@ do so, start the container with the additional command-line argument:
 
 This directory should have subdirectories for each of your apps. For instance,
 you would have a YAML file at `/path/to/apps/my_app/app.yaml`.
+
+
+## Updating to a new release of GovReady-Q
+
+Periodically there will be a new release of GovReady-Q as an new image on the Docker Hub. Updating is easy by re-running the same commands again.
+
+1) There may be an update to `docker_container_run.sh`. Since this script is not a part of the Docker image, you will need to get it again from this Github repository.
+
+2) You should be using a persistent database as described above. When using a persistent database, it is safe to detroy the `govready-q` Docker container and start a new one to deploy an update.
+
+3) Use the same arguments to `docker_container_run.sh` as when you started the container the last time, but add `--relaunch` to kill the previous container --- you cannot have two containers with the same name or two containers listening on the same port. (You can change the name and port, as described above, if you would like to keep the old container running.)
+
+4) When the new container starts, database migrations will be applied, if applicable.
+
+For example:
+
+	# Update docker_container_run.sh, replacing the old script (with -O).
+	wget -O docker_container_run.sh \
+	    https://raw.githubusercontent.com/GovReady/govready-q/master/deployment/docker/docker_container_run.sh
+	chmod +x docker_container_run.sh
+	
+	# Remove old container and launch updated container.
+	./docker_container_run.sh --relaunch [your same command-line arguments]
 
 
 ## Building and publishing the Docker image for GovReady-Q maintainers
