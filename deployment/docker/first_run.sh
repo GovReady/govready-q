@@ -4,7 +4,7 @@
 # sample apps and an entry for loading apps from /mnt/apps which
 # the user starting the container may want to bind-mount to a
 # directory on the host for building their own apps.
-mkdir -p /mnt/apps
+mkdir -p /mnt/apps # must also happen every time container starts after the AppSource has been added
 python manage.py loaddata appsources.json
 
 # Set up an initial admin user and an organization and add the

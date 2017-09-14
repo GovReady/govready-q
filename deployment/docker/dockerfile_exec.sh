@@ -10,8 +10,10 @@ cat > local/environment.json << EOF;
 }
 EOF
 
-echo "Environment file:"
-cat local/environment.json
+# See first_run.sh. This directory must be created
+# every time the container starts after the AppSource
+# fixture has been loaded.
+mkdir -p /mnt/apps
 
 # Initialize the database and start the server.
 python manage.py migrate
