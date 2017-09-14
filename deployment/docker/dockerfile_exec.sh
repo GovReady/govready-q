@@ -3,12 +3,15 @@ mkdir -p local
 cat > local/environment.json << EOF;
 {
   "debug": true,
-  "host": "${HOSTANDPORT-localhost:8000}",
+  "host": "${ADDRESS-localhost:8000}",
   "https": ${HTTPS-false},
-  "db": "$DATABASEURL",
+  "db": "$DBURL",
   "single-organization": "main"
 }
 EOF
+
+echo "Environment file:"
+cat local/environment.json
 
 # Initialize the database and start the server.
 python manage.py migrate

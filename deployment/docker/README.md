@@ -4,19 +4,25 @@ A demo of GovReady Q is available on the Docker Hub at [https://hub.docker.com/r
 
 ## Running
 
+Make sure you first [install Docker](https://docs.docker.com/engine/installation/) and, if appropriate, [grant non-root users access to run Docker containers](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
+
 Start the container in the background:
 
 	docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
 
 For more complex setups, using our run script instead will be easier:
 
-	deployment/docker/docker_container_run.sh
+	wget https://raw.githubusercontent.com/GovReady/govready-q/master/deployment/docker/docker_container_run.sh
+	chmod +x docker_container_run.sh
+	./docker_container_run.sh
 
 Visit your GovReady-Q site in your web browser at:
 
 	http://localhost:8000/
 
 It may not load at first as it initializes your database for the first time. Wait for the site to become available.
+Because of HTTP Host header checking, you must use `localhost` to access the site or another hostname if configured
+using the `--address` option documented below.
 
 With the container started and the database initialized, run our first-run script to create a Django database superuser and set up your first organization:
 
@@ -43,11 +49,23 @@ Advanced container options can be set with command-line arguments to our contain
 
 	deployment/docker/docker_container_run.sh ...additional arguments here...
 
-### Changing the port
+### Changing the hostname and port
 
-The container will listen on 127.0.0.1:8000 by default. To change the port, e.g. to port 80, use:
+The container will run at `localhost:8000` by default, and because of HTTP Host header checking
+you must visit GovReady-Q using the hostname it is configured to run at (so in this example,
+substituting an IP address such as `127.0.0.1` for `localhost` will result in an error).
 
-	--port 80
+You may change the hostname and port that the container is running at using:
+
+	--address q.mydomain.com:80
+
+If the Docker container is behind a proxy, then `--address` should specify the public address
+that end-users will use to access GovReady-Q and `--port` may be used if the Docker container
+should listen on a different port:
+
+	--port 8000
+
+Add `--https` if the proxy is terminating HTTPS connections.
 
 ### Persistent database
 
@@ -70,10 +88,10 @@ the Docker container.
 For instance, you might run a second Docker container holding a Postgres
 server.
 
+	DBPASSWORD=mysecretpassword
 	docker container run --name govready-q-db -e POSTGRES_PASSWORD=$DBPASSWORD -d postgres
 	DBHOST=$(docker container inspect govready-q-db | jq -r .[0].NetworkSettings.IPAddress)
 	DBUSER=postgres
-	DBPASSWORD=mysecretpassword
 	DBDATABASE=postgres
 
 Start the GovReady-Q container with the argument:
@@ -81,6 +99,14 @@ Start the GovReady-Q container with the argument:
 	--dburl postgres://$DBUSER:$DBPASSWORD@$DBHOST/$DBDATABASE
 
 where `$DBHOST` is the hostname of the database server, `$DBDATABASE` is the name of the database, and `$DBUSER` and `$DBPASSWORD` are the credentials for the database.
+
+#### Container management
+
+Use `--name NAME` to specify an alternate name for the container. The default is `govready-q`.
+
+Use `--relaunch` to remove an existing container of the same name before launching
+the new one, if an existing container of the same name exists. This simply runs
+`docker container rm -f NAME`.
 
 ### Developing compliance apps
 
