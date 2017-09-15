@@ -1,15 +1,15 @@
-{% extends "email/template" %}
+{% extends "email/template.txt" %}
 {% block content %}
 Hello,
 
 {{invitation.from_user}} is inviting you {{invitation.purpose}} {% if not invitation.is_target_the_project %}in {{invitation.from_project.title}}{% endif %} at GovReady Q.
 {% if invitation.text %}
-> {{invitation.text}}
+{{invitation.text}}
 {% endif %}
 
 To accept the invitation and help {{invitation.from_user}}, please follow the following link:
 
-[{{invitation.get_acceptance_url}}]({{invitation.get_acceptance_url}})
+  {{invitation.get_acceptance_url}}
 
 {{invitation.from_user}} will appreciate it!
 
