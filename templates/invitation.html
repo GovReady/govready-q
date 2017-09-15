@@ -18,10 +18,10 @@ h1 { margin-top: 0; }
 
 {% block body %}
 <div class="row">
-  {% with picture=inv.from_user.get_profile_picture %}
+  {% with picture=inv.from_user.get_profile_picture_absolute_url %}
     {% if picture %}
       <div class="col-md-2">
-        <img src="{{picture.url}}" alt="Profile Picture" class="img-responsive" style="border-radius: 10px">
+        <img src="{{picture}}" alt="Profile Picture" class="img-responsive" style="border-radius: 10px">
       </div>
       <div class="col-md-8">
     {% else %}

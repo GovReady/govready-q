@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django import forms
 from django.conf import settings
 
-from .models import Organization
+from .models import User, Organization
 
 def homepage(request):
     # Main landing page.
@@ -97,6 +97,43 @@ def org_welcome_page(request, org_slug):
         "domain": settings.ORGANIZATION_PARENT_DOMAIN,
         "org": org,
     })    
+
+def user_profile_photo(request, user_id, org_subdomain, hash):
+    # Get the User's profile photo for the specified organization.
+    # To prevent enumeration of User info, we expect a hash value
+    # in the URL that we compare against the User's current photo.
+    # Raises 404 on any request that doesn't work out to prevent
+    # enumeration of Organization subdomains too.
+    user = get_object_or_404(User, id=user_id)
+    org = get_object_or_404(Organization, subdomain=org_subdomain)
+    prj = user.get_account_project(org)
+    try:
+        account_settings = prj.root_task.get_or_create_subtask(user, "account_settings", create=False)
+        photo = account_settings.get_answers().get("picture")
+    except:
+        raise Http404()
+    if not photo: raise Http404()
+    if not photo.answered_by_file.name: raise Http404()
+
+    # Check that the hash in the URL matches. See User.get_profile_picture_absolute_url.
+    import hashlib
+    sha1 = hashlib.sha1()
+    sha1.update(photo.answered_by_file.name.encode("ascii"))
+    fnhash = sha1.hexdigest()
+    if hash != fnhash: raise Http404()
+
+    # Get the dbstorage.models.StoredFile instance which holds
+    # an auto-detected mime type.
+    from dbstorage.models import StoredFile
+    sf = StoredFile.objects.only("mime_type").get(path=photo.answered_by_file.name)
+    mime_type = sf.mime_type
+    if not mime_type.startswith("image/"): raise Http404() # not an image, not safe to serve
+
+    # Serve the image.
+    import os.path
+    resp = HttpResponse(photo.answered_by_file, content_type=mime_type)
+    resp['Content-Disposition'] = 'inline; filename=' + user.username + "_" + os.path.basename(photo.answered_by_file.name)
+    return resp
 
 from .notifications_helpers import notification_reply_email_hook
 

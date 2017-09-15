@@ -157,7 +157,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
 
         elif q.key in current_answers.as_dict():
             # The user has provided an answer to this question.
-            answerobj = current_answers.answertuples[q.key][2]
+            answerobj = current_answers.get(q.key)
             v = current_answers.as_dict()[q.key]
 
             # If q is a required question and the required argument is true,
@@ -820,6 +820,9 @@ class ModuleAnswers(object):
         # Return a new ModuleAnswers instance that has imputed values added
         # and information about the next question(s) and unanswered questions.
         return evaluate_module_state(self, required, parent_context=parent_context)
+
+    def get(self, question_key):
+        return self.answertuples[question_key][2]
 
     def get_questions(self):
         self.as_dict() # lazy load if necessary
