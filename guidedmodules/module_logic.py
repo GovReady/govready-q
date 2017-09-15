@@ -599,7 +599,15 @@ class HtmlAnswerRenderer:
         elif question is not None and question.spec["type"] == "file" \
             and hasattr(value, "file_data"):
             # Other files turn into link tags.
-            import mimetypes
+
+            if value.file_data["type"] == "text/plain":
+                file_type = "plain text"
+            elif value.file_type["type"].startswith("image/"):
+                file_type = "image"
+            else:
+                import mimetypes
+                file_type = mimetypes.guess_extension(value.file_data["type"], strict=False)[1:]
+
             def convert_size(size_bytes):
                import math
                size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -614,7 +622,7 @@ class HtmlAnswerRenderer:
                return "%s %s" % (s, size_name[i])
             value = "<a href=\"%s\" class=\"user-media\">uploaded %s file (%s)</a>" % (
                 html.escape(value.file_data['url']),
-                mimetypes.guess_extension(value.file_data["type"], strict=False)[1:],
+                file_type,
                 convert_size(value.file_data['size'])
             )
             wrappertag = "div"
