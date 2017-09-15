@@ -196,10 +196,18 @@ class Organization(models.Model):
 
     def get_url(self, path=''):
         # Construct the base URL of the root page of the site for this organization.
+        #
+        # If SINGLE_ORGANIZATION_KEY is empty, then this is a multi-org installation
+        # and the Organization's subdomain gets added to the ORGANIZATION_PARENT_DOMAIN.
         # settings.SITE_ROOT_URL tells us the scheme, host, and port of the main Q landing site.
         # In testing it's http://localhost:8000, and in production it's https://q.govready.com.
         # Combine the scheme and port with settings.ORGANIZATION_PARENT_DOMAIN to form the
         # base URL for this Organization.
+        #
+        # If SINGLE_ORGANIZATION_KEY is not empty, then we are running off of SITE_ROOT_URL
+        # directly.
+        if settings.SINGLE_ORGANIZATION_KEY:
+            return settings.SITE_ROOT_URL + path
         import urllib.parse
         s = urllib.parse.urlsplit(settings.SITE_ROOT_URL)
         scheme, host = (s[0], s[1])
