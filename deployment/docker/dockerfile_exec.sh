@@ -1,14 +1,23 @@
-# Generate an environment.json file.
+# Generate an environment.json file. Use the jq
+# tool to ensure that we produce valid JSON from
+# the environment variables.
 mkdir -p local
-cat > local/environment.json << EOF;
-{
-  "debug": true,
-  "host": "${ADDRESS-localhost:8000}",
-  "https": ${HTTPS-false},
-  "db": "$DBURL",
-  "single-organization": "main"
-}
-EOF
+echo "{ }" \
+	| jq ".debug = true" \
+	| jq ".host = $(echo ${ADDRESS-localhost:8000} | jq -R .)" \
+	| jq ".https = ${HTTPS-false}" \
+	| jq ".[\"single-organization\"] = \"main\"" \
+	| jq ".db = $(echo ${DBURL} | jq -R .)" \
+	> local/environment.json
+if [ ! -z "$EMAIL_HOST" ]; then
+	cat local/environment.json \
+	| jq ".email.host = $(echo ${EMAIL_HOST} | jq -R .)" \
+	| jq ".email.port = $(echo ${EMAIL_PORT} | jq -R .)" \
+	| jq ".email.user = $(echo ${EMAIL_USER} | jq -R .)" \
+	| jq ".email.pw = $(echo ${EMAIL_PW} | jq -R .)" \
+	| jq ".email.domain = $(echo ${EMAIL_DOMAIN} | jq -R .)" \
+	> local/environment.json
+fi
 
 # See first_run.sh. This directory must be created
 # every time the container starts after the AppSource

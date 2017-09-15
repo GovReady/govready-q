@@ -1,5 +1,6 @@
 # nothing here
 
+import re
 from .settings import *
 
 INSTALLED_APPS += [
@@ -34,11 +35,12 @@ SINGLE_ORGANIZATION_KEY = environment.get('single-organization')
 REVEAL_ORGS_TO_ANON_USERS = (SINGLE_ORGANIZATION_KEY is not None) or environment.get('organization-seen-anonymously', False)
 
 LOGIN_REDIRECT_URL = "/projects"
-SERVER_EMAIL = "GovReady Q <q@mg.govready.com>"
+EMAIL_DOMAIN = environment.get("email", {}).get("domain", environment["host"].split(":")[0])
+SERVER_EMAIL = ("GovReady Q <q@%s>" % EMAIL_DOMAIN)
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
-NOTIFICATION_FROM_EMAIL_PATTERN = "%s via GovReady Q <q@mg.govready.com>"
-NOTIFICATION_REPLY_TO_EMAIL_PATTERN = "%s <q+notification+%d+%s@mg.govready.com>"
-NOTIFICATION_REPLY_TO_EMAIL_REGEX = r"q\+notification\+(\d+)\+([a-f\d\-]+)@mg.govready.com"
+NOTIFICATION_FROM_EMAIL_PATTERN = "%s via GovReady Q <q@" + EMAIL_DOMAIN + ">"
+NOTIFICATION_REPLY_TO_EMAIL_PATTERN = "%s <q+notification+%d+%s@" + EMAIL_DOMAIN + ">"
+NOTIFICATION_REPLY_TO_EMAIL_REGEX = r"q\+notification\+(\d+)\+([a-f\d\-]+)@" + re.escape(EMAIL_DOMAIN) + ""
 DEFAULT_FILE_STORAGE = 'dbstorage.storage.DatabaseStorage'
 NOTIFICATIONS_USE_JSONFIELD = True # allows us to store extra data on Notification instances
 

@@ -8,7 +8,8 @@ EXPOSE 8000
 WORKDIR /usr/src/app
 
 # Install required system packages.
-RUN apt-get update && apt-get install -y graphviz && apt-get clean
+# jq: we use it to assemble the local/environment.json file
+RUN apt-get update && apt-get install -y graphviz jq && apt-get clean
 
 # Copy in the Python module requirements and install them.
 # Manually install database drivers which aren't in our requirements

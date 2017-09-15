@@ -50,6 +50,14 @@ DBURL=
 # Docker requires an absolute path and it must exist.
 APPSDEVDIR=
 
+# Allow the image to send email using a transactional email
+# provider or other SMTP server.
+EMAIL_HOST=
+EMAIL_PORT=
+EMAIL_USER=
+EMAIL_PW=
+EMAIL_DOMAIN=
+
 # If set, any existing container named $NAME will be killed
 # with "docker container rm -f" first.
 KILLEXISTING=
@@ -65,6 +73,7 @@ while [ $# -gt 0 ]; do
     --name)
       NAME="$2"
       shift 2 ;;
+
     --address)
       ADDRESS="$2"
       shift 2 ;;
@@ -74,15 +83,34 @@ while [ $# -gt 0 ]; do
     --port)
       PORT="$2"
       shift 2 ;;
+
     --sqlitedb)
       SQLITEDB="$2"
       shift 2 ;;
     --dburl)
       DBURL="$2"
       shift 2 ;;
+
     --appsdevdir)
       APPSDEVDIR="$2"
       shift 2 ;;
+
+    --email-host)
+      EMAIL_HOST="$2"
+      shift 2 ;;
+    --email-port)
+      EMAIL_PORT="$2"
+      shift 2 ;;
+    --email-user)
+      EMAIL_USER="$2"
+      shift 2 ;;
+    --email-pw)
+      EMAIL_PW="$2"
+      shift 2 ;;
+    --email-domain)
+      EMAIL_DOMAIN="$2"
+      shift 2 ;;
+
     --relaunch)
       KILLEXISTING=1
       shift 1;;
@@ -151,6 +179,7 @@ PORT="-p $PORT:8000"
 
 # Set environment variables for the Django process to use.
 ENVS="-e ADDRESS=$ADDRESS -e HTTPS=$HTTPS -e DBURL=$DBURL"
+ENVS="$ENVS -e EMAIL_HOST=$EMAIL_HOST -e EMAIL_PORT=$EMAIL_PORT -e EMAIL_USER=$EMAIL_USER -e EMAIL_PW=$EMAIL_PW -e EMAIL_DOMAIN=$EMAIL_DOMAIN"
 
 # Add a mount argument for having the Sqlite database stored on the host.
 # The path must be absolute (Docker mount requires absolute paths).

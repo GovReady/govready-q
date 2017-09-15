@@ -44,7 +44,7 @@ To destroy the container and all user data entered into Q:
 Notes:
 
 * The Q database is only persisted within the container by default. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container.
-* The Q instance cannot send email until it is configured to use a transactional mail provider like Mailgun. (TODO: How?)
+* The Q instance cannot send email or receive comment replies until it is configured to use a transactional mail provider like Mailgun -- see below.
 * This image is not meant to be used for a public website because it uses Django's debug server to serve the site with `DEBUG = True`.
 
 ## Advanced configuration
@@ -108,7 +108,20 @@ Start the GovReady-Q container with the argument:
 
 where `$DBHOST` is the hostname of the database server, `$DBDATABASE` is the name of the database, and `$DBUSER` and `$DBPASSWORD` are the credentials for the database.
 
-#### Container management
+### Configuring email
+
+GovReady-Q sends outbound emails for notifications about invitations and discussions.
+It also receives inbound emails --- replies to dicussion notifications can be used to
+post discussion comments by email.
+
+To configure outbound email, add:
+
+	--email-host smtp.company.org --email-port 587 --email-user ... --email-pw ... --email-domain q.company.org
+
+`--email-domain` sets the hostname used in the email address of outbound email. The other arguments set the SMTP server details.
+
+
+### Container management
 
 Use `--name NAME` to specify an alternate name for the container. The default is `govready-q`.
 
