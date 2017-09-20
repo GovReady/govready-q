@@ -12,7 +12,7 @@ class AppSourceAdmin(admin.ModelAdmin):
 
 class ModuleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'key', 'visible', 'superseded_by', 'created')
-	raw_id_fields = ('superseded_by', 'assets')
+	raw_id_fields = ('app', 'superseded_by', 'assets')
 
 class ModuleQuestionAdmin(admin.ModelAdmin):
 	raw_id_fields = ('module', 'answer_type_module')

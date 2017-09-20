@@ -44,6 +44,14 @@ class AppInstance(models.Model):
     source = models.ForeignKey(AppSource, related_name="appinstances", on_delete=models.CASCADE, help_text="The source of this AppInstance.")
     appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppStore.")
 
+    def __str__(self):
+        # For the admin.
+        return "%s [%d] (from %s)" % (self.appname, self.id, self.source)
+
+    def __repr__(self):
+        # For debugging.
+        return "<AppInstance [%d] %s from %s>" % (self.id, self.appname, self.source)
+
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
     app = models.ForeignKey(AppInstance, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppInstance that this Module is a part of. Null for legacy Modules created before we had this field.")
