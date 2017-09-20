@@ -7,6 +7,9 @@ EXPOSE 8000
 # Put the Python source code here.
 WORKDIR /usr/src/app
 
+# Install required system packages.
+RUN apt-get update && apt-get install -y graphviz && apt-get clean
+
 # Copy in the Python module requirements and install them.
 # Manually install database drivers which aren't in our requirements
 # file because it's not used in development.

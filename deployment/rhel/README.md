@@ -32,6 +32,9 @@ Deploy GovReady-Q source code:
 
     git clone git@github.com:GovReady/govready-q.git
     cd govready-q
+
+    # Install required software. (You probably need to jump out of being the govready-q user for this line, then come back.)
+    sudo yum install graphviz
     
     # Install prerequisites for cryptography package per https://cryptography.io/en/latest/installation/. (You probably need to jump out of being the govready-q user for this line, then come back.)
     sudo yum install gcc libffi-devel python34-devel openssl-devel
