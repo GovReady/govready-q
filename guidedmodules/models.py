@@ -41,12 +41,12 @@ class AppSource(models.Model):
             return "github.com/%s" % self.spec.get("repo")
 
 class AppInstance(models.Model):
-    source = models.ForeignKey(AppSource, related_name="appinstances", help_text="The source of this AppInstance.")
+    source = models.ForeignKey(AppSource, related_name="appinstances", on_delete=models.CASCADE, help_text="The source of this AppInstance.")
     appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppStore.")
 
 class Module(models.Model):
-    source = models.ForeignKey(AppSource, related_name="modules", help_text="The source of this module definition.")
-    app = models.ForeignKey(AppInstance, null=True, related_name="modules", help_text="The AppInstance that this Module is a part of. Null for legacy Modules created before we had this field.")
+    source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
+    app = models.ForeignKey(AppInstance, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppInstance that this Module is a part of. Null for legacy Modules created before we had this field.")
 
     key = models.SlugField(max_length=200, db_index=True, help_text="A slug-like identifier for the Module.")
 
@@ -54,7 +54,7 @@ class Module(models.Model):
     superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="When a Module is superseded by a new version, this points to the newer version.")
 
     spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
-    assets = models.ForeignKey('ModuleAssetPack', blank=True, null=True, help_text="A mapping from asset paths to ModuleAsset instances with the binary content of the asset.")
+    assets = models.ForeignKey('ModuleAssetPack', blank=True, null=True, on_delete=models.CASCADE, help_text="A mapping from asset paths to ModuleAsset instances with the binary content of the asset.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -238,7 +238,7 @@ class Module(models.Model):
 
 
 class ModuleAsset(models.Model):
-    source = models.ForeignKey(AppSource, help_text="The source of the asset.")
+    source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of the asset.")
     content_hash = models.CharField(max_length=64, help_text="A hash of the asset binary content, as provided by the source.")
     file = models.FileField(upload_to='guidedmodules/module-assets', help_text="The attached file.")
 
@@ -251,7 +251,7 @@ class ModuleAsset(models.Model):
         unique_together = [('source', 'content_hash')]
 
 class ModuleAssetPack(models.Model):
-    source = models.ForeignKey(AppSource, help_text="The source of these assets.")
+    source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of these assets.")
     assets = models.ManyToManyField(ModuleAsset, help_text="The assets linked to this pack.")
     basepath = models.SlugField(max_length=100, help_text="The base path of all assets in this pack.")
     paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
@@ -288,7 +288,7 @@ class ModuleAssetPack(models.Model):
 
 
 class ModuleQuestion(models.Model):
-    module = models.ForeignKey(Module, related_name="questions", on_delete=models.PROTECT, help_text="The Module that this ModuleQuestion is a part of.")
+    module = models.ForeignKey(Module, related_name="questions", on_delete=models.CASCADE, help_text="The Module that this ModuleQuestion is a part of.")
     key = models.SlugField(max_length=100, help_text="A slug-like identifier for the question.")
 
     definition_order = models.IntegerField(help_text="An integer giving the order in which this question is defined by the Module.")
