@@ -97,7 +97,13 @@ done
 
 # Check if an existing container with the name we want is running.
 if [ ! -z "$NAME" ]; then
-  existing=$(docker container ls -q -a -f name=$NAME)
+  # docker container -f let's us specify a filter to find the ID of
+  # of just the container named govready-q. The name filter by
+  # default matches if the string is contained in the container name,
+  # but we want an exact match. It supports ^ and $ from regex to make
+  # it match on the start and end of the name. For an unknown reason the
+  # container name starts with a "/" in filters (thanks StackOverflow).
+  existing=$(docker container ls -q -a -f name="^/$NAME$")
   if [ ! -z "$existing" ]; then
     if [ -z "$KILLEXISTING" ]; then
       echo "There is already a Docker container named $NAME running."
