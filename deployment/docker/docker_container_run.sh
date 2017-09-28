@@ -36,17 +36,18 @@ HTTPS=false
 # --port PORT. Defaults to the port in $ADDRESS.
 PORT=
 
-# A path to a Sqlite3 database file on the host machine
+# An absolute path to a Sqlite3 database file on the host machine
 # to use as the database. Set with --sqlitedb /path/to/db.sqlite.
-# Optional.
+# Optional. Docker requires an absolute path and it must exist.
 SQLITEDB=
 
 # A database URL e.g. postgres://user:password@host/database.
 # Set with --dburl URL. Optional.
 DBURL=
 
-# A path on the host to a directory containing apps being
+# An absolute path on the host to a directory containing apps being
 # developed. Set with --appsdevdir DIR. Optional.
+# Docker requires an absolute path and it must exist.
 APPSDEVDIR=
 
 # If set, any existing container named $NAME will be killed
@@ -152,27 +153,18 @@ PORT="-p $PORT:8000"
 ENVS="-e ADDRESS=$ADDRESS -e HTTPS=$HTTPS -e DBURL=$DBURL"
 
 # Add a mount argument for having the Sqlite database stored on the host.
+# The path must be absolute (Docker mount requires absolute paths).
 DBMNT=""
 if [ ! -z "$SQLITEDB" ]; then
-  touch $SQLITEDB # it may not exist but we don't want readlink to fail
-  SQLITEDBABS=$(readlink -e $SQLITEDB) # Docker requires an absolute path
-  if [ -z "$SQLITEDBABS" ]; then
-    echo "Invalid Path: $SQLITEDB"
-    exit 1
-  fi
-  DBMNT="--mount type=bind,src=$SQLITEDBABS,dst=/usr/src/app/local/db.sqlite3"
+  touch $SQLITEDB # ensure path exists
+  DBMNT="--mount type=bind,src=$SQLITEDB,dst=/usr/src/app/local/db.sqlite3"
 fi
 
 # Add a mount argument for accessing a local directory containing app YAML files.
-# See appsources.json.
+# See appsources.json. The path must be absolute and must exist.
 APPSMNT=""
 if [ ! -z "$APPSDEVDIR" ]; then
-  APPSDEVDIRABS=$(readlink -e $APPSDEVDIR) # Docker requires absolute path, it must exist
-  if [ -z "$APPSDEVDIRABS" ]; then
-    echo "Invalid Path: $APPSDEVDIR"
-    exit 1
-  fi
-  APPSMNT="--mount type=bind,src=$APPSDEVDIRABS,dst=/mnt/apps"
+  APPSMNT="--mount type=bind,src=$APPSDEVDIR,dst=/mnt/apps"
 fi
 
 # Form the "docker container run command".

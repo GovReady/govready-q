@@ -84,6 +84,8 @@ You can use a Sqlite file stored on the host machine:
 
 	--sqlitedb /path/to/govready-q-database.sqlite
 
+You must specify an absolute path.
+
 #### Remote database
 
 You can also connect to a database running on a remote system accessible to
@@ -126,6 +128,7 @@ do so, start the container with the additional command-line argument:
 This directory should have subdirectories for each of your apps. For instance,
 you would have a YAML file at `/path/to/apps/my_app/app.yaml`.
 
+You must specify an absolute path.
 
 ## Updating to a new release of GovReady-Q
 
