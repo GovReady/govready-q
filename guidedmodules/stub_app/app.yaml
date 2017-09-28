@@ -1,0 +1,33 @@
+id: app
+title: New Compliance App
+type: project
+version: 0.5
+icon: app.png
+catalog:
+  category: Technology
+  vendor: GovReady
+  vendor_url: http://www.govready.com
+  status: Operational
+  version: 0.2
+  source_url: https://github.com/GovReady/govready-sample-apps/generic_file_server
+  description:
+    short: |
+      Short description.
+    long: |
+      Long description.
+  recommended_for:
+  - key_short: Org
+    value: Small
+  - key_short: Tech
+    value: Sophisticated
+  - key_short: Role
+    value: PM
+introduction:
+  format: markdown
+  template: |
+    Use this app to achieve compliance.
+questions:
+  - id: example
+    title: Example Module
+    type: module
+    module-id: example
