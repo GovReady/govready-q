@@ -125,10 +125,19 @@ do so, start the container with the additional command-line argument:
 
 	--appsdevdir /path/to/apps
 
-This directory should have subdirectories for each of your apps. For instance,
+The directory may be empty but it must exist, and you must specify it as an
+absolute path (due to a Docker limitation). If the directory is not empty,
+it should have subdirectories for each of your apps. For instance,
 you would have a YAML file at `/path/to/apps/my_app/app.yaml`.
 
-You must specify an absolute path.
+To create your first app, you can run
+
+	docker container exec -it govready-q ./manage.py compliance_app host your_new_app_name
+
+Replace `your_new_app_name` with an app identifier, which may contain letters,
+numbers, dashes, and underscores. `host` is always just `host` --- don't change
+that.
+
 
 ## Updating to a new release of GovReady-Q
 
