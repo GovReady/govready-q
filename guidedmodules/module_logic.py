@@ -602,7 +602,7 @@ class HtmlAnswerRenderer:
 
             if value.file_data["type"] == "text/plain":
                 file_type = "plain text"
-            elif value.file_type["type"].startswith("image/"):
+            elif value.file_data["type"].startswith("image/"):
                 file_type = "image"
             else:
                 import mimetypes
