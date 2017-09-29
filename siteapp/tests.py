@@ -834,7 +834,8 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         self.assertRegex(self.browser.title, "^Test The Media Question Types - ")
-        self.assertInNodeText("Successfully ran an external function", ".output-document p")
+        self.assertInNodeText("Successfully ran an external function",
+        	".output-document span[data-question='external-function']")
 
     def test_questions_module(self):
         # Log in and create a new project.
