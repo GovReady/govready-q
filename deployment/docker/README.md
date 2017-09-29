@@ -118,8 +118,9 @@ To configure outbound email, add:
 
 	--email-host smtp.company.org --email-port 587 --email-user ... --email-pw ... --email-domain q.company.org
 
-`--email-domain` sets the hostname used in the email address of outbound email. The other arguments set the SMTP server details.
+`--email-domain` sets the hostname used in the email address of outbound email. The other arguments set the SMTP relay server details.
 
+Some of GovReady-Q's outbound emails can be replied to. When a user replies to a notification of a discussion comment, the reply's body is post as a new comment on the discussion. Currently we only support an incoming notification hook from Mailgun, and it is not yet configurable for the docker deployment. TODO
 
 ### Container management
 
