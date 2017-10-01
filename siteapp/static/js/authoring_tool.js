@@ -24,11 +24,22 @@ function init_authoring_tool(state) {
 
   // Create the drop-down options for module-type questions.
   $('#authoring_tool_qmoduletype').html('<option value="">(select)</option>'); // clear options
+  var optgroup_apps = $('<optgroup label="From the Compliance Store"></optgroup>');
+  $('#authoring_tool_qmoduletype').append(optgroup_apps);
+  var optgroup_modules = $('<optgroup label="Modules in This App"></optgroup>');
+  $('#authoring_tool_qmoduletype').append(optgroup_modules);
+  optgroup_apps.append('<option value="/app/">Based on Protocol ID (Enter Next)</option>');
   state.answer_type_modules.forEach(function(item) {
     var opt = $("<option/>");
     opt.attr('value', item.id);
     opt.text(item.title);
-    $('#authoring_tool_qmoduletype').append(opt);
+    optgroup_modules.append(opt);
+  });
+
+  // The protocol ID field is only visible if needed.
+  $('#authoring_tool_qmoduletype').change(function() {
+    $('#authoring_tool_qmoduleprotocol').parents('.form-group')
+      .toggle($(this).val() == "/app/");
   });
 
   // Make the prompt textarea auto-resizing when the modal first is shown,
@@ -95,8 +106,13 @@ function show_question_authoring_tool(question_key) {
   $('#authoring_tool_qmax').val(spec.max); delete spec.max;
   $('#authoring_tool_filetype').val(spec["file-type"]); delete spec['file-type'];
   $('#authoring_tool_qhelp').val(spec.help); delete spec.help;
-  $('#authoring_tool_qmoduletype').val(qinfo.answer_type_module_id); delete spec['module-id'];
-  $('#authoring_tool_qmoduleprotocol').val(spec.protocol); delete spec.protocol;
+  if (qinfo.answer_type_module_id)
+    $('#authoring_tool_qmoduletype').val(qinfo.answer_type_module_id);
+  else if (spec.protocol)
+    $('#authoring_tool_qmoduletype').val("/app/");
+  $('#authoring_tool_qmoduletype').change(); // run event handler to hide/show protocol field
+  $('#authoring_tool_qmoduleprotocol').val(spec.protocol);
+  delete spec['module-id']; delete spec.protocol;
 
   $('#authoring_tool_impute_conditions').html('');
   (spec.impute || []).forEach(function(impute) {

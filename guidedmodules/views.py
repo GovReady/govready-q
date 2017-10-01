@@ -829,7 +829,11 @@ def authoring_edit_question(request, task):
             "choices", "min", "max", "file-type", "protocol"):
             value = request.POST.get(field, "").strip()
             if value:
-                if field in ("min", "max"):
+                if field == "protocol" and request.POST.get("module-id") != "/app/":
+                    # The protocol value is only valid if "/app/" was chosen
+                    # in the UI as the module type.
+                    continue
+                elif field in ("min", "max"):
                     spec[field] = int(value)
                 elif field == "choices":
                     spec[field] = ModuleQuestion.choices_from_csv(value)
@@ -839,9 +843,11 @@ def authoring_edit_question(request, task):
         # For module-type questions the "module-id" form field gives a Module instance
         # ID, which we need to set in the Question.answer_type_module field as well
         # as in the Question.spec["module-id"] field for validation and serialization
-        # to YAML on disk.
+        # to YAML on disk. The value "/app/" is used when a protocol ID is specified
+        # instead (which is handled above).
         question.answer_type_module = None
-        if request.POST.get("module-id") and spec["type"] in ("module", "module-set"):
+        if spec["type"] in ("module", "module-set") \
+         and request.POST.get("module-id") not in (None, "", "/app/"):
             m = Module.objects.get(id=request.POST["module-id"])
             if m not in question.module.get_referenceable_modules():
                 raise ValueError("The selected module is not valid.")
