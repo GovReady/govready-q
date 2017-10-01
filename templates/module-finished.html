@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
 {{m.title}}
@@ -161,5 +162,9 @@
 {% endblock %}
 
 {% block scripts %}
-{% include "task-question-debug-links.html" %}
+  {% if authoring_tool_enabled %}
+  <script src="{% static "js/authoring_tool.js" %}"></script>
+  {% endif %}
+
+  {% include "task-question-debug-links.html" %}
 {% endblock %}
