@@ -206,24 +206,20 @@ class Module(models.Model):
             and user.has_perm('guidedmodules.change_module'))
     def get_referenceable_modules(self):
         # Return the modules that can be referenced by this
-        # one in YAML as an answer type.
-        for m in self.source.modules.filter(superseded_by=None):
-            # Since we don't know what app this Module is contained in, we
-            # can't form absolute paths relative to the top of the module.
-            try:
-                self.getReferenceTo(m)
-                yield m # ok
-            except ValueError:
-                pass
+        # one in YAML as an answer type. That's any Module
+        # defined in the same AppInstance that isn't "type: project".
+        for m in self.app.modules.all():
+            if m.spec.get("type") == "project": continue
+            yield m
     def getReferenceTo(self, target):
         # Get the string that you would put in a YAML file to reference the
         # target module. target must be in get_referenceable_modules.
         # This is the inverse of validate_module_specification.resolve_relative_module_id.
-        mypath = "/".join(self.key.split("/")[:-1]) + "/"
-        if target.key.startswith(mypath):
+        root_path = self.source.namespace + "/" + self.app.appname + "/"
+        if target.key.startswith(root_path):
             # If the target is in the same virtual directory or a subdirectory,
             # use a virtual path.
-            return target.key[len(mypath):]
+            return target.key[len(root_path):]
         else:
             raise ValueError("Cannot reference %s from %s." % (target, self))
     def serialize_to_disk(self):
