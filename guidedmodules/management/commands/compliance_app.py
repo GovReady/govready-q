@@ -5,6 +5,8 @@ from guidedmodules.models import AppSource
 
 import os, os.path, shutil
 
+import rtyaml
+
 # ./manage.py compliance_app   # lists available app sources
 # ./manage.py compliance_app mysource --path path/to/apps # creates a new local AppSource named mysource
 # ./manage.py compliance_app mysource myapp # creates a new app at path/to/apps/myapp
@@ -67,6 +69,19 @@ class Command(BaseCommand):
             # Copy stub files.
             guidedmodules_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
             shutil.copytree(os.path.join(guidedmodules_path, "stub_app"), path, copy_function=shutil.copy)
+
+            # Edit the app title.
+            with open(os.path.join(path, "app.yaml"), "r+") as f:
+                app = rtyaml.load(f.read())
+
+                # Update info
+                app['title'] = options["appname"]
+
+                # Write out.
+                f.seek(0)
+                f.truncate()
+                f.write(rtyaml.dump(app))
+
 
             # Which AppSource is used?
             print("Created new app in AppSource", appsrc, "at", path)
