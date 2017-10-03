@@ -221,7 +221,14 @@
 <div class="col-md-pull-2 col-md-10">
   <div id="focus-area-wrapper">
     {% if authoring_tool_enabled %}
-    <center style="font-size: 90%;"><p class="text-info">You are in author mode. Authoring tools (<span class="glyphicon glyphicon-pencil"></span>) have been enabled for this module.</span></p></center>
+      <center style="font-size: 90%;"><p class="text-info">
+        You are in author mode. Authoring tools have been enabled for this module.
+        <br>
+        <a href="#" onclick="show_authoring_tool_module_editor(); return false;">
+          <span class="glyphicon glyphicon-pencil"></span>
+          Edit App
+        </a>
+      </p></center>
     {% endif %}
 
     <h1 style="text-align: center;">
@@ -756,9 +763,10 @@ $(function() {
     e.stopPropagation();
     show_question_authoring_tool($(this).data('key'));
   })
-  init_question_authoring_tool({
+  init_authoring_tool({
     task: {{project.root_task.id}},
     module: {{project.root_task.module.spec|json}},
+    module_yaml: "{{project.root_task.module.spec_yaml|escapejs}}",
     questions: {
       {% for q in project.root_task.module.questions.all %}
       {{q.key}}: {

@@ -1,4 +1,4 @@
-function init_question_authoring_tool(state) {
+function init_authoring_tool(state) {
   // Save state. Should be:
   // {
   //  task: task_id,
@@ -35,12 +35,14 @@ function init_question_authoring_tool(state) {
   // so that it is autosized to any text already inside it, which must be
   // done after it's visible.
   $('#question_authoring_tool').on('shown.bs.modal', function() { autosize.update($(this).find('textarea')) });
+  $('#module_authoring_tool').on('shown.bs.modal', function() { autosize.update($(this).find('textarea')) });
 
   // Init autocompletes for inputs/textareas that are interpreted as templates.
-  init_question_authoring_tool_autocomplete($('#authoring_tool_qprompt'), "template");
+  init_authoring_tool_autocomplete($('#authoring_tool_qprompt'), "template");
+  init_authoring_tool_autocomplete($('#authoring_tool_mspec'), "template");
 }
 
-function init_question_authoring_tool_autocomplete(elem, expr_type) {
+function init_authoring_tool_autocomplete(elem, expr_type) {
   // Add question IDs as autocompletes to the fields that use Jinja2
   // expressions.
   var question_keys = window.q_authoring_tool_state.autocomplete_questions;
@@ -138,11 +140,11 @@ function authoring_tool_add_impute_condition_fields() {
 
     + "</div>");
   $('#authoring_tool_impute_conditions').append(n);
-  init_question_authoring_tool_autocomplete($(n.find("input")[0], "expression"));
+  init_authoring_tool_autocomplete($(n.find("input")[0], "expression"));
   return n;
 }
 
-function authoring_tool_save_changes() {
+function authoring_tool_save_question() {
   var data = $('#question_authoring_tool form').serializeArray();
   data.push( { name: "task", value: q_authoring_tool_state.task } );
   data.push( { name: "question", value: q_authoring_tool_state.current_question } );
@@ -209,6 +211,31 @@ function authoring_tool_reload_app(task_id) {
       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
       success: function(res) {
         window.location.reload();
+      }
+  })
+}
+
+function show_authoring_tool_module_editor() {
+  // Initialize form state.
+  $('#authoring_tool_mspec').val(window.q_authoring_tool_state.module_yaml);
+
+  // Show modal.
+  $('#module_authoring_tool').modal();
+}
+
+function authoring_tool_save_module() {
+  var data = $('#module_authoring_tool form').serializeArray();
+  data.push( { name: "task", value: q_authoring_tool_state.task } );
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/edit-module",
+      method: "POST",
+      data: data,
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        // Modal can stay up until the redirect finishes.
+        window.location = res.redirect;
+        if (window.location.hash.length > 1)
+          window.location.reload(); // if there is a # in the URL, the browser won't actually reload
       }
   })
 }

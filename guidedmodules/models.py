@@ -83,6 +83,10 @@ class Module(models.Model):
     def title(self):
         return self.spec["title"]
 
+    def spec_yaml(self):
+        import rtyaml
+        return rtyaml.dump(self.spec)
+
     def get_questions(self):
         # Return the ModuleQuestions in definition order.
         return list(self.questions.order_by('definition_order'))

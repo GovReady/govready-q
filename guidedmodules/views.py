@@ -904,6 +904,42 @@ def authoring_edit_question(request, task):
     # changed, this sends the new key.
     return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
 
+@authoring_tool_auth
+@transaction.atomic
+def authoring_edit_module(request, task):
+    try:
+        # Update the module.
+        import rtyaml
+        spec = rtyaml.load(request.POST["spec"])
+
+        # Validate.
+        from .validate_module_specification import validate_module
+        spec = validate_module(spec, is_authoring_tool=True)
+    except ValueError as e:
+        return JsonResponse({ "status": "error", "message": str(e) })
+
+    # Save.
+    task.module.spec = spec
+    task.module.save()
+
+    # Update task & project title to app title so the user can see it.
+    task.title = task.module.spec.get("title") or task.title
+    task.save()
+    project = task.root_of.first()
+    project.title = task.module.spec.get("title") or project.title
+    project.save()
+
+    # Write to disk. Errors writing should not be suppressed because
+    # saving to disk is a part of the contract of how app editing works.
+    try:
+        task.module.serialize_to_disk()
+    except Exception as e:
+        return JsonResponse({ "status": "error", "message": "Could not update local YAML file: " + str(e) })
+
+    # Return status. The browser will reload/redirect --- if the question key
+    # changed, this sends the new key.
+    return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url() })
+
 
 @login_required
 def change_task_state(request):

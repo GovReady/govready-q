@@ -14,7 +14,7 @@ class ValidationError(ValueError):
     def __str__(self):
         return self.context + ": " + self.message
 
-def validate_module(spec):
+def validate_module(spec, is_authoring_tool=False):
     # Validate that the introduction and output documents are renderable.
     if "introduction" in spec:
         if not isinstance(spec["introduction"], dict):
@@ -45,12 +45,13 @@ def validate_module(spec):
         }
         spec.setdefault("questions", []).insert(0, q)
 
-    # Validate the questions.
-    if not isinstance(spec.get("questions"), list):
-        raise ValidationError("module questions", "Invalid value for 'questions'.")
-    for i, q in enumerate(spec.get("questions", [])):
-    	spec["questions"][i] = validate_question(spec, spec["questions"][i])
-
+    if not is_authoring_tool:
+        # Validate the questions.
+        # The authoring tool does not provide questions data.
+        if not isinstance(spec.get("questions"), list):
+            raise ValidationError("module questions", "Invalid value for 'questions'.")
+        for i, q in enumerate(spec.get("questions", [])):
+        	spec["questions"][i] = validate_question(spec, spec["questions"][i])
 
     return spec
 

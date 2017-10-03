@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^analytics$', guidedmodules.views.analytics, name="guidedmodules_analytics"),
     url(r'^_authoring_tool/new-question$', guidedmodules.views.authoring_new_question),
     url(r'^_authoring_tool/edit-question$', guidedmodules.views.authoring_edit_question),
+    url(r'^_authoring_tool/edit-module$', guidedmodules.views.authoring_edit_module),
     url(r'^_authoring_tool/reload-app$', guidedmodules.views.authoring_edit_reload_app),
 ]
 
