@@ -152,6 +152,11 @@ Replace `your_new_app_name` with an app identifier, which may contain letters,
 numbers, dashes, and underscores. `host` is always just `host` --- don't change
 that.
 
+If your new app does not appear in the compliance apps catalog, you may need
+to force the app catalog cache to be cleared by restarting the container:
+
+	docker container restart govready-q
+
 
 ## Updating to a new release of GovReady-Q
 
