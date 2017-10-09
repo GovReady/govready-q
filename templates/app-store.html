@@ -24,7 +24,6 @@ h2 {
   padding: 12px;
   background-color: #FBFBFB;
   margin-bottom: 24px;
-  height: 236px;
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -55,7 +54,6 @@ h2 {
 }
 .body {
   font-size: 0.8em;
-  height: 100px;
 }
 
 .if-has-more-apps {
@@ -136,13 +134,11 @@ h2 {
         {{app.description.short|safe|truncatewords_html:18}}
         </div>
 
+        {% if app.authz != "none" %}
         <div class="app-metadata">
-          {% if app.authz == "none" %}
-            &nbsp;
-          {% else %}
-            <div>Admin approval required</div>
-          {% endif %}
+          Admin approval required</div>
         </div>
+        {% endif %}
 
         </td>
         </tr>
@@ -150,10 +146,10 @@ h2 {
       </div>
     </div>
 
-    {% if forloop.counter|divisibleby:4 and 0 %} {# breaks dont play well with client-side search #}
-      <div class="visible-sm clearfix"> </div>
-      <div class="visible-md clearfix"> </div>
-      <div class="visible-lg clearfix"> </div>
+    {% if forloop.counter|divisibleby:3 %} {# breaks dont play well with client-side search --- they are re-generated when search results are displayed #}
+      <div class="visible-sm clearfix rowbrk"> </div>
+      <div class="visible-md clearfix rowbrk"> </div>
+      <div class="visible-lg clearfix rowbrk"> </div>
     {% endif %}
 {% endfor %}
 </div> <!--/row-->
@@ -201,6 +197,9 @@ function do_app_search(query) {
     // reset state for whether the show more/fewer link should be shown
     app_category.removeClass("has-more-apps");
 
+    // reset row breaks
+    $(this).find(".rowbrk").remove();
+
     // update visibility of apps within the category
     var shown_counter = 0;
     app_category.find('.app').each(function() {
@@ -225,6 +224,14 @@ function do_app_search(query) {
 
         // Increment counter of number of how many apps are visible in this category so far.
         shown_counter += 1;
+
+        // Re-add row breaks.
+        if ((shown_counter % 3) == 0) {
+          $('<div class="visible-sm clearfix rowbrk"> </div>').insertAfter($(this).parent());
+          $('<div class="visible-md clearfix rowbrk"> </div>').insertAfter($(this).parent());
+          $('<div class="visible-lg clearfix rowbrk"> </div>').insertAfter($(this).parent());
+        }
+
       }
 
       // Show/hide the .col around the .app.
