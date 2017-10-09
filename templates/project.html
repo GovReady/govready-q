@@ -139,6 +139,13 @@
       Review
     </button>
 
+    {% if has_outputs %}
+      <button id="review-answers" class="btn btn-sm" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
+        <i class="glyphicon glyphicon-list"></i>
+        Related Controls
+      </button>
+    {% endif %}
+
     <a class="btn btn-sm" href="{{project.get_absolute_url}}/api">
       <i class="glyphicon glyphicon-sort"></i>
       API Docs

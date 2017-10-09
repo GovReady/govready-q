@@ -99,7 +99,10 @@ Instead of `tab` and `group`, `placement: action-buttons` can be used instead to
 
 #### Output Document Fields
 
-Output documents of a project module that have `id` fields are can be accessed from higher-level apps into which this app has been added. In a higher-level app, access the rendered HTML value of the output document as `{{question.output_documents.document_id}}`.
+Output documents of a project module that have an `id` field are used in the following ways:
+
+* They are displayed in the Related Controls page for the project. Add a `title` attribute to set the heading text above the document's content.
+* They can be accessed from higher-level apps into which this app has been added. In a higher-level app, access the rendered HTML value of the output document as `{{question.output_documents.document_id}}`.
 
 
 Documents
