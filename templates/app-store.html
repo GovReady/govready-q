@@ -20,9 +20,9 @@ h2 {
 .app {
   border: 1px solid #D0D0D0;
   /*border-top: 4px solid #88A;*/
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
+  box-shadow: 0 0 0 1px rgba(128, 128, 128, .1), 0 2px 3px rgba(128, 128, 128, .4);
   padding: 12px;
-  background-color: white;
+  background-color: #FBFBFB;
   margin-bottom: 24px;
   height: 236px;
   cursor: pointer;
@@ -31,13 +31,13 @@ h2 {
 }
   .app h3 {
     margin: 0;
-    font-size: 23px;
+    font-size: 21px;
     font-weight: bold;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
     @media screen and (max-width: 1200px) {
       .app h3 {
-        font-size: 19px;
+        font-size: 17px;
       }
     }
   .app .body {
@@ -47,13 +47,6 @@ h2 {
     .app .body p:last {
       margin: 0; /* not working */
     }
-
-  .app .img-responsive {
-    float: right;
-    margin: 0 0 5px 4px;
-    width:40%;
-    max-width:80px;
-  }
 
 .app-metadata {
   font-size: 0.7em;
@@ -113,27 +106,47 @@ h2 {
 
 <div class="row">
   {% for app in app_category.apps %}
-    <div class="col-sm-4 col-md-3">
+    <div class="col-sm-4">
       <div class="app"
         data-app="{{app.key}}"
         data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}"
         onclick="window.location='/store/{{app.key|urlencode}}{{forward_qsargs}}'"">
 
-        <h3><small>{{app.vendor}}</small><br/>{{app.title}}</h3>
+        <table>
+        <tr valign="top">
+
+          {% if app.app_icon_dataurl %}
+            <td style="max-width: 20vw; padding-top: 1px; padding-right: 12px;">
+              <div style="max-width: 64px">
+                <img src="{{app.app_icon_dataurl}}" class="img-responsive"">
+              </div>
+            </td>
+          {% endif %}
+
+        <td>
+
+        <h3>
+          {% if app.vendor %}
+          <small>{{app.vendor}}</small><br/>
+          {% endif %}
+          {{app.title}}
+        </h3>
 
         <div class="body">
-          {% if app.app_icon_dataurl %}
-          <img src="{{app.app_icon_dataurl}}" class="img-responsive">
-        {% endif %}
         {{app.description.short|safe|truncatewords_html:18}}
         </div>
-        <div class="app-metadata pull-left">
+
+        <div class="app-metadata">
           {% if app.authz == "none" %}
             &nbsp;
           {% else %}
             <div>Admin approval required</div>
           {% endif %}
         </div>
+
+        </td>
+        </tr>
+        </table>
       </div>
     </div>
 
@@ -146,9 +159,8 @@ h2 {
 </div> <!--/row-->
 
 <a class="if-has-more-apps" href="#" onclick="$(this).parent().toggleClass('show-more-apps'); do_app_search(last_app_search); return false;">
-  Show
-  <span class="show-more">More</span>
-  <span class="show-less">Fewer</span>
+  <span class="show-more">Show More &raquo;</span>
+  <span class="show-less">&laquo; Show Fewer</span>
 </a>
 
 </div> <!--/.app-category-->
@@ -199,7 +211,7 @@ function do_app_search(query) {
       // less to show, which will be applied *after* the client-side search filters
       // are applied, hence we wrap this in if (visible).
       if (visible) {
-        if (($(window).width() < 992 && index >= 3) || index >= 4) {
+        if (index >= 9) {
         	// This is an app in the second or later row.
           // If the "show more" link isn't active, hide.
         	if (!app_category.is('.show-more-apps'))
