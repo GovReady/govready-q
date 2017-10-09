@@ -252,7 +252,7 @@
 
     {# tabs #}
 
-    {% if tabs|add:additional_tabs|length > 1 %}
+    {% if tabs|length > 1 %}
     <ul id="project-tabs" class="nav nav-tabs">
       {# question tabs #}
       {% for tab in tabs %}
@@ -269,16 +269,6 @@
                 <span class="label label-primary">{{tab.unfinished_tasks}}</span>
               {% endif %}
             </a>
-        </li>
-      {% endfor %}
-
-      {# output document tabs #}
-      {% for document in additional_tabs %}
-        <li role="presentation">
-          <a href="#document-{{forloop.counter}}" aria-controls="document-{{forloop.counter}}" role="tab" data-toggle="tab">
-            {% if document.glyphicon %}<i class="glyphicon glyphicon-{{document.glyphicon}}" style="margin-right: .25em"> </i>{% endif %}
-            {{document.title}}
-          </a>
         </li>
       {% endfor %}
     </ul>
@@ -485,14 +475,6 @@
             {% endfor %}
         </div> <!-- /.tabpanel -->
       {% endfor %}
-
-      {# output document tabs #}
-      {% for document in additional_tabs %}
-        <div role="tabpanel" class="tab-pane" id="document-{{forloop.counter}}">
-            {{document.html|safe}}
-        </div>
-      {% endfor %}
-
     </div> <!-- /tabs -->
 
     {% if authoring_tool_enabled %}

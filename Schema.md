@@ -99,16 +99,7 @@ Instead of `tab` and `group`, `placement: action-buttons` can be used instead to
 
 #### Output Document Fields
 
-The output documents of a project are displayed in the same tabs as the questions and can be used to display additional content. The `title` is used as the tab label.
-
-Additionally, `glyphicon` can be set to an icon name (like `dashboard`) to add an icon to the tab.
-
-	output:
-	- title: Dashboard
-	  glyphicon: dashboard
-	  format: markdown
-	  template: |
-	      This is additional content displayed on the project page.
+Output documents of a project module that have `id` fields are can be accessed from higher-level apps into which this app has been added. In a higher-level app, access the rendered HTML value of the output document as `{{question.output_documents.document_id}}`.
 
 
 Documents

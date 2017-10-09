@@ -558,17 +558,6 @@ def project(request, project):
         # other list.                
         other_open_invitations.append(inv)
 
-    # Additional tabs of content.
-    additional_tabs = []
-    if project.root_task.module.spec.get("output"):
-        for doc in project.root_task.render_output_documents():
-            if doc.get("tab") in tabs:
-                # Assign this to one of the tabs.
-                tabs[doc["tab"]]["intro"] = doc
-            elif doc.get("title"):
-                # Add tab to end.
-                additional_tabs.append(doc)
-
     # Render.
     folder = project.primary_folder()
     return render(request, "project.html", {
@@ -582,7 +571,6 @@ def project(request, project):
 
         "title": project.title,
         "intro" : project.root_task.render_field('introduction') if project.root_task.module.spec.get("introduction") else "",
-        "additional_tabs": additional_tabs,
         "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
         "tabs": list(tabs.values()),
