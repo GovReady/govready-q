@@ -1,5 +1,4 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "project-base.html" %}
 {% load q %}
 
 {% block title %}
@@ -7,58 +6,14 @@
 {% endblock %}
 
 {% block head %}
+{{block.super}}
 <style>
-{% include "focus-area-styles.css" %}
 h1 { margin-bottom: .75em; }
 h2 { margin-top: 1.5em; }
 </style>
 {% endblock %}
 
-{% block contextbar %}
-  {# kill #}
-{% endblock %}
-
-{% block body %}
-
-<div id="folder-project-context" style="margin-bottom: 20px;">
-  <p style="font-size: 120%;">
-    <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-    <a id="folder-link" href="{{folder.get_absolute_url}}" data-folder-id="{{folder.id}}">{{folder.title}}</a>
-  </p>
-  {% for parent_project in project.get_parent_projects %}
-  <p style="font-size: 110%; margin-left: 15px;">
-    {% if parent_project.root_task.get_app_icon_url %}
-    <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1em">
-    {% else %}
-    <span class="glyphicon glyphicon-list-alt"></span>
-    {% endif %}
-    <a href="{{parent_project.get_absolute_url}}" style="margin-left: .25em">
-      {{parent_project.title}}
-    </a>
-  </p>
-  {% endfor %}
-  <p style="font-size: 110%; margin-left: 15px;">
-    {% if project.root_task.get_app_icon_url %}
-      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
-    {% else %}
-      <span class="glyphicon glyphicon-list-alt"></span>
-    {% endif %}
-    <a href="{{project.get_absolute_url}}">
-      {{project.title}}
-    </a>
-  </p>
-</div>
-
-<div class="row">
-<div class="col-md-10">
-  <div id="focus-area-wrapper">
-    <h1 style="text-align: center;">
-      {% if project.root_task.get_app_icon_url %}
-      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
-      {% endif %}
-      {{project.title}}
-    </h1>
-
+{% block body_content %}
     {% for section in answers %}
       {% if not forloop.first %}<hr>{% endif %}
 
@@ -136,14 +91,5 @@ h2 { margin-top: 1.5em; }
 
     {% endfor %}
 
-  </div> <!-- /focus-area-wrapper -->
-</div> <!-- /col -->
-</div> <!-- /row -->
-
 {% endblock %}
 
-{% block scripts %}
-<script>
-
-</script>
-{% endblock %}

@@ -1,65 +1,22 @@
-{% extends "base.html" %}
-{% load static %}
-{% load q %}
+{% extends "project-base.html" %}
 
 {% block title %}
 API: {{project.title}}
 {% endblock %}
 
 {% block head %}
+{{block.super}}
 <style>
-{% include "focus-area-styles.css" %}
 h1 { margin-bottom: .75em; }
 h2 { margin-top: 1.5em; }
 </style>
 {% endblock %}
 
-{% block contextbar %}
-  {# kill #}
+{% block title_suffix_text %}
+API
 {% endblock %}
 
-{% block body %}
-
-<div id="folder-project-context" style="margin-bottom: 20px;">
-  <p style="font-size: 120%;">
-    <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-    <a id="folder-link" href="{{folder.get_absolute_url}}" data-folder-id="{{folder.id}}">{{folder.title}}</a>
-  </p>
-  {% for parent_project in project.get_parent_projects %}
-  <p style="font-size: 110%; margin-left: 15px;">
-    {% if parent_project.root_task.get_app_icon_url %}
-    <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1em">
-    {% else %}
-    <span class="glyphicon glyphicon-list-alt"></span>
-    {% endif %}
-    <a href="{{parent_project.get_absolute_url}}" style="margin-left: .25em">
-      {{parent_project.title}}
-    </a>
-  </p>
-  {% endfor %}
-  <p style="font-size: 110%; margin-left: 15px;">
-    {% if project.root_task.get_app_icon_url %}
-      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
-    {% else %}
-      <span class="glyphicon glyphicon-list-alt"></span>
-    {% endif %}
-    <a href="{{project.get_absolute_url}}">
-      {{project.title}}
-    </a>
-  </p>
-</div>
-
-<div class="row">
-<div class="col-md-10">
-  <div id="focus-area-wrapper">
-    <h1 style="text-align: center;">
-      {% if project.root_task.get_app_icon_url %}
-      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
-      {% endif %}
-      {{project.title}}
-      API
-    </h1>
-
+{% block body_content %}
     <p>An API is provided for programmatically getting and updating information stored in this {{project.title}} app. The API can be used from command-line tools and programming languages that allow making GET and/or POST HTTP requests.</p>
 
 
@@ -243,14 +200,4 @@ h2 { margin-top: 1.5em; }
     </tbody>
     </table>
 
-  </div> <!-- /focus-area-wrapper -->
-</div> <!-- /col -->
-</div> <!-- /row -->
-
-{% endblock %}
-
-{% block scripts %}
-<script>
-
-</script>
 {% endblock %}

@@ -561,6 +561,7 @@ def project(request, project):
     # Render.
     folder = project.primary_folder()
     return render(request, "project.html", {
+        "is_project_page": True,
         "project": project,
 
         "is_admin": request.user in project.get_admins(),

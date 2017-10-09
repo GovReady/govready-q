@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "project-base.html" %}
 {% load static %}
 {% load q %}
 
@@ -7,9 +7,8 @@
 {% endblock %}
 
 {% block head %}
+{{block.super}}
 <style>
-{% include "focus-area-styles.css" %}
-
 .tab-pane {
 }
 
@@ -115,14 +114,6 @@
   font-size: 85%;
 }
 
-@media screen and (min-width: 992px) {
-  #action-buttons button, #action-buttons a {
-    display: block;
-    width: 100%;
-    margin-bottom: 15px;
-  }
-}
-
 .authoring-tool-trigger {
   float: right;
   color: #31708f;
@@ -130,44 +121,7 @@
 </style>
 {% endblock %}
 
-{% block contextbar %}
-  {# kill #}
-{% endblock %}
-
-{% block body %}
-
-{% comment %}
-<div style="margin: 2em 0">
-  {{intro|safe}}
-</div>
-{% endcomment %}
-
-<div id="folder-project-context" style="margin-bottom: 20px;">
-  <p style="font-size: 120%;">
-    <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-    <a id="folder-link" href="{{folder.get_absolute_url}}" data-folder-id="{{folder.id}}">{{folder.title}}</a>
-    {% if is_folder_admin %}
-      <span class="folder_action" onclick="rename_folder();"><span class="glyphicon glyphicon-pencil"></span></span>
-    {% endif %}
-  </p>
-  {% for parent_project in project.get_parent_projects %}
-  <p style="font-size: 110%; margin-left: 15px;">
-    {% if parent_project.root_task.get_app_icon_url %}
-    <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1em">
-    {% else %}
-    <span class="glyphicon glyphicon-list-alt"></span>
-    {% endif %}
-    <a href="{{parent_project.get_absolute_url}}" style="margin-left: .25em">
-      {{parent_project.title}}
-    </a>
-  </p>
-  {% endfor %}
-</div>
-
-<div class="row">
-  <div class="col-md-push-10 col-md-2">
-    <div id="action-buttons" style="margin-bottom: 1em">
-
+{% block action_buttons %}
     {% if not project.is_account_project or project.is_deletable %}
       <button id="show-project-settings" class="btn btn-sm" onclick="$('#project_settings').modal();">
         <i class="glyphicon glyphicon-cog"></i> Settings</a>
@@ -215,11 +169,9 @@
         {% endfor %}
       {% endfor %}
     {% endif %}
-    </div> <!-- /action-buttons -->
-</div>
+{% endblock %}
 
-<div class="col-md-pull-2 col-md-10">
-  <div id="focus-area-wrapper">
+{% block above_title %}
     {% if authoring_tool_enabled %}
       <center style="font-size: 90%;"><p class="text-info">
         You are in author mode. Authoring tools have been enabled for this module.
@@ -230,14 +182,9 @@
         </a>
       </p></center>
     {% endif %}
+{% endblock %}
 
-    <h1 style="text-align: center;">
-      {% if project.root_task.get_app_icon_url %}
-      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
-      {% endif %}
-      {{project.title}}
-    </h1>
- 
+{% block body_content %}
     {% if project.root_task.module.spec.introduction %}
       <center>
       {{project.root_task.render_introduction|safe}}
@@ -495,10 +442,9 @@
 
   </div>
 </div>
+{% endblock %}
 
-  </div> <!-- /focus-area-wrapper -->
-</div> <!-- /col -->
-</div> <!-- /row -->
+{% block modals %}
 
 {# SETTINGS MODAL #}
 {% if not project.is_account_project or project.is_deletable %}

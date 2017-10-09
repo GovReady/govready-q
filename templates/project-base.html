@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+{% include "focus-area-styles.css" %}
+@media screen and (min-width: 992px) {
+  #action-buttons button, #action-buttons a {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+}
+</style>
+{% endblock %}
+
+{% block contextbar %}
+  {# kill #}
+{% endblock %}
+
+{% block body %}
+<div id="folder-project-context" style="margin-bottom: 20px;">
+  <p style="font-size: 120%;">
+    <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
+    <a id="folder-link" href="{{folder.get_absolute_url}}" data-folder-id="{{folder.id}}">{{folder.title}}</a>
+    {% if is_folder_admin %}
+      <span class="folder_action" onclick="rename_folder();"><span class="glyphicon glyphicon-pencil"></span></span>
+    {% endif %}
+  </p>
+  {% for parent_project in project.get_parent_projects %}
+  <p style="font-size: 110%; margin-left: 15px;">
+    {% if parent_project.root_task.get_app_icon_url %}
+    <img src="{{parent_project.root_task.get_app_icon_url}}" style="height: 1em">
+    {% else %}
+    <span class="glyphicon glyphicon-list-alt"></span>
+    {% endif %}
+    <a href="{{parent_project.get_absolute_url}}" style="margin-left: .25em">
+      {{parent_project.title}}
+    </a>
+  </p>
+  {% endfor %}
+  {% if not is_project_page %}
+  <p style="font-size: 110%; margin-left: 15px;">
+    {% if project.root_task.get_app_icon_url %}
+      <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
+    {% else %}
+      <span class="glyphicon glyphicon-list-alt"></span>
+    {% endif %}
+    <a href="{{project.get_absolute_url}}">
+      {{project.title}}
+    </a>
+  </p>
+  {% endif %}
+</div>
+
+<div class="row">
+  {% if is_project_page %}
+  <div class="col-md-push-10 col-md-2">
+    <div id="action-buttons" style="margin-bottom: 1em">
+      {% block action_buttons %}
+      {% endblock %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="{% if is_project_page %}col-md-pull-2{% endif %} col-md-10">
+    <div id="focus-area-wrapper">
+      {% block above_title %}
+      {% endblock %}
+
+      <h1 style="text-align: center;">
+        {% if project.root_task.get_app_icon_url %}
+        <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
+        {% endif %}
+        {{project.title}}
+        {% block title_suffix_text %}
+        {% endblock %}
+      </h1>
+
+      {% block body_content %}
+      {% endblock %}
+    </div> <!-- /focus-area-wrapper -->
+  </div> <!-- /col -->
+</div> <!-- /row -->
+
+{% block modals %}
+{% endblock %}
+
+{% endblock %}
