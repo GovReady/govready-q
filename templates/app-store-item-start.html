@@ -23,11 +23,23 @@
 {% endblock %}
 
 {% block body %}
-<h1>{{app.title}}</h1>
+<div class="row">
+  {% if app.app_icon_dataurl %}
+  <div class="col-sm-3">
+    <div style="padding-right: 1em">
+      <img src="{{app.app_icon_dataurl}}" style="width: 100%;">
+    </div>
+  </div>
+  {% endif %}
 
+  <div class="col-sm-9">
+    <h1><small>{{app.vendor}}</small><br/>{{app.title}}</h1>
+    
 <div class="body">
   {{app.description.short|safe}}
 </div>
+
+<hr>
 
 <form role="form" method="post">
     {% csrf_token %}
@@ -36,4 +48,7 @@
       <button id="start-project" type="submit" class="btn btn-success">Begin &raquo;</button>
     {% endbuttons %}
 </form>
+
+  </div>
+</div>
 {% endblock %}

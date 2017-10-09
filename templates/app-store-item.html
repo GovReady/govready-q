@@ -6,15 +6,11 @@
 
 {% block head %}
 <style>
-#start-container {
-  margin-top: 20px;
+#app-metadata {
   padding: 1em;
   border: 0px solid #999;
   background-color: #FAFAFA;
-  /*border-radius: 15px;*/
-  text-align: center;
-}
-#app-metadata {
+  border-radius: 15px;
   font-size: 0.9em;
   text-align: left;
 }
@@ -41,30 +37,30 @@
 
 {% block body %}
 <div class="row">
-  <div class="col-sm-9">
-    {% if app.app_icon_dataurl %}
-      <img src="{{app.app_icon_dataurl}}" class="img-responsive" style="float: right; margin: 0 0 5px 4px;">
-    {% endif %}
-
+  <div class="col-sm-9 col-sm-push-3">
     <h1><small>{{app.vendor}}</small><br/>{{app.title}}</h1>
     <div class="body">
       {{app.description.long|safe}}
     </div>
   </div>
-  <div class="col-sm-3">
-    <div id="start-container">
-      <form method="post">
+  <div class="col-sm-3 col-sm-pull-9">
+    <div style="padding-right: 1em">
+      {% if app.app_icon_dataurl %}
+        <img src="{{app.app_icon_dataurl}}" style="width: 100%;">
+      {% endif %}
+
+      <form method="post" style="margin: 1em; text-align: center;">
         {% csrf_token %}
         <input type=hidden name=firstsubmit value=1>
         <button id="start-project" type="submit" class="btn btn-success">
           {% if not request.GET.q %}
-          Add to project folder
+          Add to project
           {% else %}
           Add app
           {% endif %}
+          ►
         </button>
       </form>
-      <br /><a href="/store">return to compliance apps</a>
 
       <div id="app-metadata">
         <div class="meta-heading"><strong>Information</strong></div>
@@ -83,10 +79,7 @@
         <div><span class="meta-key">{{item.key_short}}</span>: {{item.value}}</div>
         {% endfor %}
       </div>
-
     </div>
-
-
   </div>
 </div>
 {% endblock %}
