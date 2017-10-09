@@ -202,7 +202,8 @@ function do_app_search(query) {
     app_category.removeClass("has-more-apps");
 
     // update visibility of apps within the category
-    app_category.find('.app').each(function(index) {
+    var shown_counter = 0;
+    app_category.find('.app').each(function() {
     	// Does the app match the search query?
       var visible = pattern.test($(this).attr('data-search-haystack').toLowerCase());
 
@@ -211,7 +212,7 @@ function do_app_search(query) {
       // less to show, which will be applied *after* the client-side search filters
       // are applied, hence we wrap this in if (visible).
       if (visible) {
-        if (index >= 9) {
+        if (shown_counter >= 9) {
         	// This is an app in the second or later row.
           // If the "show more" link isn't active, hide.
         	if (!app_category.is('.show-more-apps'))
@@ -221,6 +222,9 @@ function do_app_search(query) {
           // by adding a class, which makes "show more/fewer" show up.
           app_category.addClass("has-more-apps");
         }
+
+        // Increment counter of number of how many apps are visible in this category so far.
+        shown_counter += 1;
       }
 
       // Show/hide the .col around the .app.
