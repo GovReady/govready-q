@@ -17,6 +17,21 @@ h2 {
   font-size: 25px;
 }
 
+.app-category-nav {
+  font-size: 85%;
+}
+  .app-category-nav > *[data-category] {
+    margin-left: 3px;
+    color: #66C;
+    white-space: nowrap;
+  }
+    .app-category-nav > *[data-category]:before {
+      content: " · ";
+    }
+    .app-category-nav > *[data-category].first:before {
+      display: none;
+    }
+
 .app {
   border: 1px solid #D0D0D0;
   /*border-top: 4px solid #88A;*/
@@ -94,10 +109,20 @@ h2 {
   </form>
 </div>
 
+{# since the category links disappear in response to search queries, this should come after the search box so the search box's position doesn't jump around if this element changes size or disappears #}
+<div class="pull-left app-category-nav" style="margin-bottom: 1em">
+  <span style="color: #666">Jump to...</span>
+  {% for app_category in apps %}
+    <span data-category="{{app_category.title}}" {% if forloop.first %}class="first"{% endif %}>
+      <a href="#" onclick="smooth_scroll_to($('.app-category').filter(function() { return this.getAttribute('data-category') == '{{app_category.title|escapejs}}' })); return false;">{{app_category.title}}</a>
+    </span>
+  {% endfor %}
+</div>
+
 <div class="clearfix"> </div>
 
 {% for app_category in apps %}
-<div class="app-category">
+<div class="app-category" data-category="{{app_category.title}}">
 {% if apps|length > 1 %} {# only display category titles if there is more than one category available #}
 <h2>{{app_category.title}}</h2>
 {% endif %}
@@ -238,10 +263,21 @@ function do_app_search(query) {
       $(this).parent()[visible ? "fadeIn" : "hide"](); // go from .app to the .col
     })
 
-    // Hide category titles if there are no apps visible in it.
+    // Hide category titles and jump-to link if there are no apps visible in it.
     var visible = app_category.find(".app:visible").length > 0;
     $(this).find('h2')[visible ? "fadeIn" : "hide"]();
+    $('.app-category-nav *').filter(function() { return this.getAttribute('data-category') == app_category[0].getAttribute('data-category') })[visible ? "fadeIn" : "hide"]();
   });
+
+  // Reset which jump-to link is first. Hide the whole thing if no categories are visible.
+  $('.app-category-nav *[data-category]').removeClass('first');
+  $('.app-category-nav').show(); // must be visible before :visible is checked
+  var jump_to_first = $('.app-category-nav *[data-category]:visible');
+  if (jump_to_first.length > 0) {
+    $(jump_to_first[0]).addClass('first');
+  } else {
+    $('.app-category-nav').hide();
+  }
 }
 do_app_search(""); // kick it off
 </script>
