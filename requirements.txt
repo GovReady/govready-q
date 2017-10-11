@@ -24,7 +24,8 @@ django-notifications-hq==1.2 # MIT License
 jsonfield==2.0.1 # MIT License
 dj_database_url==0.4.2 # BSD License
 
-# Python Packages Developed by Josh
+# Python Packages Developed by GovReady and/or Josh
+mondrianish==0.5.1 # CC0
 rtyaml==0.0.3 # CC0
 email-validator==1.0.2 # CC0
 exclusiveprocess==0.9.3 # CC0

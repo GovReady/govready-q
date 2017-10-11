@@ -82,6 +82,13 @@ class Command(BaseCommand):
                 f.truncate()
                 f.write(rtyaml.dump(app))
 
+            # Create a unique icon for the app and delete the existing app icon
+            # svg file that we know is in the stub.
+            from mondrianish import generate_image
+            colors = ("#FFF8F0", "#FCAA67", "#7DB7C0", "#932b25", "#498B57")
+            with open(os.path.join(path, "assets", "app.png"), "wb") as f:
+                generate_image("png", (128, 128), 3, colors, f)
+            os.unlink(os.path.join(path, "assets", "app.svg"))
 
             # Which AppSource is used?
             print("Created new app in AppSource", appsrc, "at", path)
