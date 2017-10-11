@@ -1138,6 +1138,11 @@ class RenderedAnswer:
                 # If the key doesn't match a document name we could throw an error but
                 # that's disruptive so we show an error in the document itself.
                 return make_error(item, "That is not the name of an output document.")
+            def __contains__(self, item):
+                for doc in answer.task.module.spec.get("output", []):
+                    if doc.get("id") == item:
+                        return True
+                return False
         return LazyRenderer()
 
     @property
