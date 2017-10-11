@@ -26,15 +26,17 @@ function init_authoring_tool(state) {
   $('#authoring_tool_qmoduletype').html('<option value="">(select)</option>'); // clear options
   var optgroup_apps = $('<optgroup label="From the Compliance Store"></optgroup>');
   $('#authoring_tool_qmoduletype').append(optgroup_apps);
-  var optgroup_modules = $('<optgroup label="Modules in This App"></optgroup>');
-  $('#authoring_tool_qmoduletype').append(optgroup_modules);
   optgroup_apps.append('<option value="/app/">Based on Protocol ID (Enter Next)</option>');
-  state.answer_type_modules.forEach(function(item) {
-    var opt = $("<option/>");
-    opt.attr('value', item.id);
-    opt.text(item.title);
-    optgroup_modules.append(opt);
-  });
+  if (state.answer_type_modules.length > 0) {
+    var optgroup_modules = $('<optgroup label="Modules in This App"></optgroup>');
+    $('#authoring_tool_qmoduletype').append(optgroup_modules);
+    state.answer_type_modules.forEach(function(item) {
+      var opt = $("<option/>");
+      opt.attr('value', item.id);
+      opt.text(item.title);
+      optgroup_modules.append(opt);
+    });
+  }
 
   // The protocol ID field is only visible if needed.
   $('#authoring_tool_qmoduletype').change(function() {
