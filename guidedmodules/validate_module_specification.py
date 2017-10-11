@@ -45,6 +45,21 @@ def validate_module(spec, is_authoring_tool=False):
         }
         spec.setdefault("questions", []).insert(0, q)
 
+    # Validate an app protocol.
+    if "protocol" in spec:
+        if spec.get("type") != "project":
+            raise ValidationError("module specification", "A protocol cannot be specified in this type of module.")
+        if isinstance(spec["protocol"], str):
+            # If a single protocol is given, turn it into a list of one.
+            spec["protocol"] = [spec["protocol"]]
+        elif isinstance(spec["protocol"], list):
+            # If it's a list, the values must be strings.
+            for x in spec["protocol"]:
+                if not isinstance(x, str):
+                    raise ValidationError("protocols", "Protocols must be strings (not %s)." % repr(x))
+        else:
+            raise ValidationError("module specification", "protocol must be a string or a list of strings (not %s)." % repr(spec["protocol"]))
+
     if not is_authoring_tool:
         # Validate the questions.
         # The authoring tool does not provide questions data.
@@ -90,10 +105,19 @@ def validate_question(mspec, spec):
             # to the root of this app. It's optional because a protocol
             # can be specified instead.
             spec["module-id"] = resolve_relative_module_id(mspec, spec.get("module-id"))
-        elif "protocol" in spec:
-            pass
-        else:
-            invalid("Question must have a module-id or protocol field.")
+        if "protocol" in spec:
+            if isinstance(spec["protocol"], str):
+                # If a single protocol is given, turn it into a list of one.
+                spec["protocol"] = [spec["protocol"]]
+            elif isinstance(spec["protocol"], list):
+                # If it's a list, the values must be strings.
+                for x in spec["protocol"]:
+                    if not isinstance(x, str):
+                        invalid("Protocol value must be a string (not %s)." % repr(x))
+            else:
+                invalid("Protocol must be either a string or a list of strings.")
+        if ("module-id" not in spec and "protocol" not in spec) or ("module-id" in spec and "protocol" in spec):
+            invalid("Question must have either a module-id or protocol field.")
 
     elif spec.get("type") == None:
         invalid("Question is missing a type.")

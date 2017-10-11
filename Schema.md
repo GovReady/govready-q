@@ -383,6 +383,8 @@ These question type prompt the user to select another completed module as the an
 
 The `module-id` field specifies a module ID as it occurs in the `id` field of another YAML file in the same application.
 
+##### Example
+
 Here's an example of the `module` question type:
 
 	  - id: evidence
@@ -395,7 +397,31 @@ Here's an example of the `module` question type:
 	      - condition: not(have_other_dmz == 'ad_hoc_dmz')
 	        value: ~
 
-Alternatively, instead of using `module-id`, the `protocol` field may be set instead. The `protocol` field specifies a globally unique string identifying a protocol. When a user attempts to answer the question, instead of starting a named module they instead can start any app from the app store that implements the protocol by having a `protocol: ` field at the top level of the app's YAML specification with the same value.
+##### App protocols
+
+Instead of using `module-id`, a `protocol` can be specified instead. A protocol is a globally unique identifier that apps in the Compliance Store use to indicate that their questions and output documents meet a certain criteria (i.e. implement the protocol). When a user attempts to answer a `module` or `module-set` question that uses `protocol` instead of `module-id`, instead of starting a particular named module, the user instead can start any app from the Compliance Store that implements the protocol.
+
+For example:
+
+	  - id: evidence
+	    title: Evidence
+	    type: module
+	    protocol: govready.com/apps/compliance/2017/nist-sp-800-171-r1-ssp
+	    prompt: |
+	      Provide evidence of your properly configured firewall, if possible.
+
+When a user answers this question, they will be redirected to the Compliance Store but will be offered only apps that implement the protocol `govready.com/apps/compliance/2017/nist-sp-800-171-r1-ssp`.
+
+An app implements a protocol by having a `protocol: ` field at the top level of the app's YAML specification file with the same value. For instance, the following app would be offered in the Compliance Store for this example question:
+
+	id: app
+	title: My App
+	type: project
+	protocol: govready.com/apps/compliance/2017/nist-sp-800-171-r1-ssp
+
+Both protocol fields can be either a single string or a list of strings. When the question `protocol` value is a list, then only apps which implement all of the listed protocols will be offered.
+
+##### Question type details
 
 Changing the `module-id` or `protocol` is considered an incompatible change (see Updating Modules), and if the referenced Module's specification is changed on disk in an incompatible way with existing user answers, the Module in which the question occurs is also considered to have an incompatible change. Thus an incompatible change in a module triggers an incompatible change in any other Module that refers to it (and so on recursively).
 

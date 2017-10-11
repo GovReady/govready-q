@@ -110,9 +110,12 @@ function show_question_authoring_tool(question_key) {
     $('#authoring_tool_qmoduletype').val(qinfo.answer_type_module_id);
   else if (spec.protocol)
     $('#authoring_tool_qmoduletype').val("/app/");
+  delete spec['module-id'];
   $('#authoring_tool_qmoduletype').change(); // run event handler to hide/show protocol field
-  $('#authoring_tool_qmoduleprotocol').val(spec.protocol);
-  delete spec['module-id']; delete spec.protocol;
+  if (spec.protocol) {
+    $('#authoring_tool_qmoduleprotocol').val(spec.protocol.join(" "));
+    delete spec.protocol;
+  }
 
   $('#authoring_tool_impute_conditions').html('');
   (spec.impute || []).forEach(function(impute) {

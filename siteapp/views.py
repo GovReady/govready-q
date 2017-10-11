@@ -185,8 +185,24 @@ def get_task_question(request):
 
 
 def app_satifies_interface(app, question):
-    if "protocol" not in question.spec: raise ValueError("Question does not expect a protocol.")
-    return app.get("protocol") == question.spec["protocol"]
+    # Does this question specify a protocol? It must specify a list of protocols.
+    if not isinstance(question.spec.get("protocol"), list):
+        raise ValueError("Question does not expect a protocol.")
+
+    # Get the protocols implemented by the app.
+    if isinstance(app.get("protocol"), str):
+        # Wrap a single protocol string in an array.
+        protocols = [app["protocol"]]
+    elif isinstance(app.get("protocol"), list):
+        # It's an array.
+        protocols = app["protocol"]
+    else:
+        # no protocol or invalid data type
+        protocols = set()
+
+    # Check that every protocol required by the question is implemented by the
+    # app.
+    return set(question.spec["protocol"]) <= set(protocols)
 
 
 def filter_app_catalog(catalog, request):

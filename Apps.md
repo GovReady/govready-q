@@ -63,7 +63,8 @@ The `app.yaml` file looks like this:
 	title: My App
 	type: project
 	icon: app.png # refers to file in app's assets directory
-	protocol: globally_unique_protocol_name # for inner apps only
+	protocol: # for inner apps only
+	- globally_unique_protocol_name
 
 	catalog:
 	  categories:
@@ -104,7 +105,7 @@ The `app.yaml` file looks like this:
 	    template: |
 	      This (optional) content will appear at the top of the TabName tab.
 
-The questions in the app YAML file can only be of type `module` and `module-set`. The questions can specify a `module-id` to refer to another module within the same app or a `protocol` to allow the user to choose any app that has a matching `protocol` value set at the top level of the YAML file.
+The questions in the app YAML file can only be of type `module` and `module-set`. The questions can specify a `module-id` to refer to another module within the same app or a `protocol` to allow the user to choose any app that has a matching `protocol` value set at the top level of the YAML file. See [Schema.md](Schema.md) for details on these question types.
 
 A `module` YAML structure is identical to `app.yaml` structure but without the catalog details section.
 

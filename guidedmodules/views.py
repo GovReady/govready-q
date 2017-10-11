@@ -829,14 +829,18 @@ def authoring_edit_question(request, task):
             "choices", "min", "max", "file-type", "protocol"):
             value = request.POST.get(field, "").strip()
             if value:
-                if field == "protocol" and request.POST.get("module-id") != "/app/":
-                    # The protocol value is only valid if "/app/" was chosen
-                    # in the UI as the module type.
-                    continue
-                elif field in ("min", "max"):
+                if field in ("min", "max"):
                     spec[field] = int(value)
                 elif field == "choices":
                     spec[field] = ModuleQuestion.choices_from_csv(value)
+                elif field == "protocol" and request.POST.get("module-id") != "/app/":
+                    # The protocol value is only valid if "/app/" was chosen
+                    # in the UI as the module type. It wasn't, so skip it.
+                    continue
+                elif field == "protocol":
+                    # The protocol value is given as a space-separated list of
+                    # of protocols.
+                    spec[field] = re.split(r"\s+", value)
                 else:
                     spec[field] = value
 

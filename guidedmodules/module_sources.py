@@ -847,8 +847,11 @@ def is_question_changed(mq, definition_order, spec):
             return "The answer type module changed from %s to %s." %(
                 repr(mq.spec.get("module-id")), repr(spec.get("module-id"))
             )
-        if mq.spec.get("protocol") != spec.get("protocol"):
-            return "The answer type protocol changed."
+        if set(mq.spec.get("protocol")) != set(spec.get("protocol")):
+            return "The answer type protocol changed (%s to %s)." % (
+                set(mq.spec.get("protocol")),
+                set(spec.get("protocol"))
+            )
 
     # The changes to this question do not create a data inconsistency.
     return False
