@@ -7,7 +7,7 @@ catalog:
   category: Technology
   vendor: GovReady
   vendor_url: http://www.govready.com
-  status: Operational
+  status: stub
   version: 0.2
   source_url: https://github.com/GovReady/govready-sample-apps/generic_file_server
   description:
