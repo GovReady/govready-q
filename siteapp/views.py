@@ -100,10 +100,7 @@ _app_store_cache = { }
 def get_app_store(request):
     global _app_store_cache
     if request.organization not in _app_store_cache:
-        _app_store_cache[request.organization] = \
-            sorted(
-                load_app_store(request.organization),
-                key=lambda app : app["title"])
+        _app_store_cache[request.organization] = list(load_app_store(request.organization))
     return _app_store_cache[request.organization]
 
 def load_app_store(organization):
@@ -236,9 +233,19 @@ def app_store(request):
         for category in app.get("categories", [app.get("category")]):
             catalog_by_category[category]["title"] = (category or "Uncategorized")
             catalog_by_category[category]["apps"].append(app)
+
+    # Sort categories by title and discard keys.
     catalog_by_category = sorted(catalog_by_category.values(), key = lambda category : (
         category["title"] != "Great starter apps", # this category goes first
-        category["title"],
+        category["title"].lower(), # sort case insensitively
+        category["title"], # except if two categories differ only in case, sort case-sensitively
+        ))
+
+    # Sort the apps within each category.
+    for category in catalog_by_category:
+        category["apps"].sort(key = lambda app : (
+            app["title"].lower(), # sort case-insensitively
+            app["title"], # except if two apps differ only in case, sort case-sensitively
         ))
 
     return render(request, "app-store.html", {
