@@ -813,6 +813,10 @@ def is_question_changed(mq, definition_order, spec):
         and json.dumps(mq.spec, sort_keys=True) == json.dumps(spec, sort_keys=True):
         return None
 
+    # If this question has never been answered, then anything is fine.
+    if mq.taskanswer_set.count() == 0:
+        return False
+
     # Change in question type -- that's incompatible.
     if mq.spec["type"] != spec["type"]:
         return "The question type changed from %s to %s." % (
