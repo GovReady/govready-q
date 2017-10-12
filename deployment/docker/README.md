@@ -189,6 +189,8 @@ You may build the Docker image locally from the current source code rather than 
 
 If you are a GovReady team member, you can then push the image to hub.docker.com:
 
+	docker login
+	# respond to prompts with credentials
 	docker image push govready/govready-q
 
 TODO:
