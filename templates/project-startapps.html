@@ -1,0 +1,137 @@
+{% extends "project-base.html" %}
+{% load q %}
+
+{% block title %}
+{{project.title}} - Start Apps
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<style>
+.app {
+  border: 1px solid #D0D0D0;
+  /*border-top: 4px solid #88A;*/
+  box-shadow: 0 0 0 1px rgba(128, 128, 128, .1), 0 2px 3px rgba(128, 128, 128, .4);
+  padding: 12px;
+  background-color: #FBFBFB;
+  margin-bottom: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+  .app.active {
+    background-color: #FAFCBB;
+  }
+  .app h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  .app .app-icon {
+    width: 30%;
+    max-width: 128px;
+  }
+    @media screen and (max-width: 768px) {
+      .app .app-icon {
+        width: 20%;
+      }
+    }
+  .app .body {
+    font-size: 13px;
+    line-height: 128%;
+  }
+    .app .body p {
+    }
+    .app .body p:last-child {
+      margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block body_content %}
+
+<h2>Start Apps</h2>
+
+<p>You can start {{questions|length}} app{{questions|pluralize}}.</p>
+
+{% for q in questions %}
+  <div class="question" data-question-key="{{q.key}}">
+    <h2>{{q.spec.title}}</h2>
+
+    <div class="row">
+      {% for app in q.startable_apps %}
+        <div class="col-sm-4">
+          <div class="app {% if forloop.first %}active{% endif %}" data-app-key="{{app.key}}">
+            <table>
+              <tr valign="top">
+                {% if app.app_icon_dataurl %}
+                  <td class="app-icon" style="padding-top: 1px; padding-right: 12px;">
+                    <img src="{{app.app_icon_dataurl}}" class="img-responsive"">
+                  </td>
+                {% endif %}
+                <td>
+                  <h3>
+                    {% if app.vendor %}
+                    <small>{{app.vendor}}</small><br/>
+                    {% endif %}
+                    {{app.title}}
+                  </h3>
+                  <div class="body">
+                  {{app.description.short|safe|truncatewords_html:18}}
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        {% if forloop.counter|divisibleby:3 %}
+          <div class="visible-sm clearfix rowbrk"> </div>
+          <div class="visible-md clearfix rowbrk"> </div>
+          <div class="visible-lg clearfix rowbrk"> </div>
+        {% endif %}
+      {% endfor %}
+    </div> <!--/row-->
+  </div> <!-- /question -->
+{% endfor %}
+
+<button class="btn btn-primary" onclick="start_apps();">Start Apps &raquo;</button>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function() {
+  // Add click handlers to all of the apps.
+  $('.app').click(function() {
+    // De-activate other apps for this question and activate this app.
+    var app = $(this);
+    var q = app.parents(".question");
+    q.find(".app").removeClass("active");
+    app.addClass("active");
+  });
+});
+
+function start_apps() {
+  // Collect which apps have been selected.
+  var apps = { };
+  $('.question[data-question-key]').each(function() {
+    var q = $(this).attr('data-question-key');
+    var app = $(this).find('.app.active').attr('data-app-key');
+    apps[q] = app;
+  })
+
+  // Submit via AJAX.
+  ajax_with_indicator({
+   url: '{{project.get_absolute_url|escapejs}}/startapps',
+   method: "POST",
+   data: apps,
+   keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the reload
+   success: function() {
+     window.location = '{{project.get_absolute_url|escapejs}}';
+   }
+  });
+}
+</script>
+{% endblock %}

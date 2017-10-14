@@ -203,15 +203,15 @@ def app_satifies_interface(app, question):
 
 
 def filter_app_catalog(catalog, request):
-    filer_description = None
+    filter_description = None
 
     if request.GET.get("q"):
         # Check if the app satisfies the interface.
         task, q = get_task_question(request)
         catalog = filter(lambda app : app_satifies_interface(app, q), catalog)
-        filer_description = q.spec["title"]
+        filter_description = q.spec["title"]
 
-    return catalog, filer_description
+    return catalog, filter_description
 
 
 @login_required
@@ -265,7 +265,6 @@ def app_store_item(request, app_namespace, app_name):
             break
     else:
         raise Http404()
-    module_source = get_object_or_404(AppSource, id=app_catalog_info["appsource_id"])
 
     if request.method == "GET":
         # Show the "app" page.
@@ -321,114 +320,127 @@ def app_store_item(request, app_namespace, app_name):
         else:
             form = NewProjectForm(request.POST)
             if not form.errors:
-                with transaction.atomic():
-                    # Turn the app catalog entry into an App instance,
-                    # and then import it into the database as Module instance.
-                    if app_catalog_info["authz"] == "none":
-                        # We can instantiate the app immediately.
-                        # 1) Get the AppStore instance from the AppSource.
-                        from guidedmodules.module_sources import AppStore, AppImportUpdateMode
-                        with AppStore.create(module_source) as store:
-                            # 2) Get the App.
-                            app = store.get_app(app_name)
-
-                            # 3) Re-validate that the catalog information is the same.
-                            if app.get_catalog_info()["authz"] != "none":
-                                raise ValueError("Invalid access.")
-
-                            # 4) Import. Use the module named "app".
-                            modules = app.import_into_database()
-                            module = modules["app"]
-
+                if not request.GET.get("q"):
+                    # Get or create the Folder the new Project is going into.
+                    # (The form field isn't shown if there are no existing folders
+                    # (get returns None), and if the user wants to create a new folder
+                    # the value is the empty string, otherwise it is a string containing
+                    # a primary key (positive integer).)
+                    if form.cleaned_data.get("add_to_folder"):
+                        folder = Folder.objects.get(id=form.cleaned_data["add_to_folder"])
                     else:
-                        # Create a stub Module -- we'll download the app later. This
-                        # is just a placeholder.
-                        module = Module()
-                        module.source = module_source
-                        module.key = app_namespace + "/" + app_name
-                        module.spec = dict(app_catalog_info)
-                        module.spec["type"] = "project"
-                        module.spec["is_app_stub"] = True
-                        module.save()
+                        folder = Folder.objects.create(
+                            organization=request.organization,
+                            title=app_catalog_info["title"] + " started on " + timezone.now().strftime("%x %X"))
 
-                    if not request.GET.get("q"):
-                        # Get or create the Folder the new Project is going into.
-                        # (The form field isn't shown if there are no existing folders
-                        # (get returns None), and if the user wants to create a new folder
-                        # the value is the empty string, otherwise it is a string containing
-                        # a primary key (positive integer).)
-                        if form.cleaned_data.get("add_to_folder"):
-                            folder = Folder.objects.get(id=form.cleaned_data["add_to_folder"])
-                        else:
-                            folder = Folder.objects.create(
-                                organization=request.organization,
-                                title=app_catalog_info["title"] + " started on " + timezone.now().strftime("%x %X"))
-                    else:
-                        # This app is going to answer a question.
-                        # Don't put it into a folder.
-                        folder = None #  task.project.contained_in_folders.first()
+                    # This app is going into a folder. It does not answer a task question.
+                    task, q = (None, None)
+                else:
+                    # This app is going to answer a question.
+                    # Don't put it into a folder.
+                    folder = None #  task.project.contained_in_folders.first()
 
-                    # Create project.
-                    project = form.save(commit=False)
-                    project.organization = request.organization
+                    # It will answer a task. Validate that we're starting an app that
+                    # can answer that question.
+                    task, q = get_task_question(request)
+                    if not app_satifies_interface(app_catalog_info, q):
+                        raise ValueError("Invalid protocol.")
 
-                    # Assign a good title.
-                    project.title = app_catalog_info["title"]
-                    if folder:
-                        projects_in_folder = folder.get_readable_projects(request.user)
-                        existing_project_titles = [p.title for p in projects_in_folder]
-                        ctr = 0
-                        while project.title in existing_project_titles:
-                            ctr += 1
-                            project.title = app_catalog_info["title"] + " " + str(ctr)
+                project = start_app(app_catalog_info, request.organization, request.user, folder, task, q)
 
-                    # Save and add to folder
-                    project.save()
-                    project.set_root_task(module, request.user)
-                    if folder:
-                        folder.projects.add(project)
+                if task and q:
+                    # Redirect to the task containing the question that was just answered.
+                    from urllib.parse import urlencode
+                    return HttpResponseRedirect(task.get_absolute_url() + "#" + urlencode({ "q": q.key }))
 
-                    # Add user as the first admin. admin.
-                    ProjectMembership.objects.create(
-                        project=project,
-                        user=request.user,
-                        is_admin=True)
+                # Redirect to the new project.
+                return HttpResponseRedirect(project.get_absolute_url())
 
-                    if request.GET.get("q"):
-                        # It will also answer a task.
-                        task, q = get_task_question(request)
-                        
-                        # Validate that we're starting an app that
-                        # can answer that question.
-                        if not app_satifies_interface(app_catalog_info, q):
-                            raise ValueError("Invalid protocol.")
-
-                        # Can't do this because we have to attach it to a project.
-                        #subtask = task.get_or_create_subtask(request.user, q.key, module=module)
-                        ans, is_new = task.answers.get_or_create(question=q)
-                        ansh = ans.get_current_answer()
-                        if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count():
-                            from django.contrib import messages
-                            messages.add_message(request, messages.ERROR, 'The question %s already has an app associated with it.'
-                                % q.spec["title"])
-                            return HttpResponseRedirect(task.get_absolute_url())
-                        ans.save_answer(
-                            None, # not used for module-type questions
-                            list([] if not ansh else ansh.answered_by_task.all()) + [project.root_task],
-                            None,
-                            request.user,
-                            "web")
-
-                        # Redirect to the task containing the question that was just answered.
-                        from urllib.parse import urlencode
-                        return HttpResponseRedirect(task.get_absolute_url() + "#" + urlencode({ "q": q.key }))
-
-                    return HttpResponseRedirect(project.get_absolute_url())
-
+        # Show form.
         return render(request, "app-store-item-start.html", {
             "app": app_catalog_info,
             "form": form,
         })
+
+
+def start_app(app_catalog_info, organization, user, folder, task, q):
+    from guidedmodules.models import AppSource
+    from guidedmodules.module_sources import AppStore, AppImportUpdateMode
+
+    with transaction.atomic():
+        module_source = get_object_or_404(AppSource, id=app_catalog_info["appsource_id"])
+
+        # Turn the app catalog entry into an App instance,
+        # and then import it into the database as Module instance.
+        if app_catalog_info["authz"] == "none":
+            # We can instantiate the app immediately.
+            # 1) Get the AppStore instance from the AppSource.
+            with AppStore.create(module_source) as store:
+                # 2) Get the App.
+                app_name = app_catalog_info["key"][len(module_source.namespace)+1:]
+                app = store.get_app(app_name)
+
+                # 3) Re-validate that the catalog information is the same.
+                if app.get_catalog_info()["authz"] != "none":
+                    raise ValueError("Invalid access.")
+
+                # 4) Import. Use the module named "app".
+                modules = app.import_into_database()
+                module = modules["app"]
+
+        else:
+            # Create a stub Module -- we'll download the app later. This
+            # is just a placeholder.
+            module = Module()
+            module.source = module_source
+            module.key = app_catalog_info["key"]
+            module.spec = dict(app_catalog_info)
+            module.spec["type"] = "project"
+            module.spec["is_app_stub"] = True
+            module.save()
+
+        # Create project.
+        project = Project()
+        project.organization = organization
+
+        # Assign a good title.
+        project.title = app_catalog_info["title"]
+        if folder:
+            projects_in_folder = folder.get_readable_projects(user)
+            existing_project_titles = [p.title for p in projects_in_folder]
+            ctr = 0
+            while project.title in existing_project_titles:
+                ctr += 1
+                project.title = app_catalog_info["title"] + " " + str(ctr)
+
+        # Save and add to folder
+        project.save()
+        project.set_root_task(module, user)
+        if folder:
+            folder.projects.add(project)
+
+        # Add user as the first admin.
+        ProjectMembership.objects.create(
+            project=project,
+            user=user,
+            is_admin=True)
+
+        if task and q:
+            # It will also answer a task's question.
+            ans, is_new = task.answers.get_or_create(question=q)
+            ansh = ans.get_current_answer()
+            if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count():
+                raise ValueError('The question %s already has an app associated with it.'
+                    % q.spec["title"])
+            ans.save_answer(
+                None, # not used for module-type questions
+                list([] if not ansh else ansh.answered_by_task.all()) + [project.root_task],
+                None,
+                user,
+                "web")
+
+        return project
+
 
 def project_read_required(f):
     @login_required
@@ -456,8 +468,7 @@ def project(request, project):
 
     # Pre-load the answers to project root task questions and impute answers so
     # that we know which questions are suppressed by imputed values.
-    root_task_answers = project.root_task.get_answers()
-    root_task_answers = root_task_answers.with_extended_info()
+    root_task_answers = project.root_task.get_answers().with_extended_info()
 
     can_begin_module = project.can_start_task(request.user)
 
@@ -467,6 +478,7 @@ def project(request, project):
     action_buttons = []
     question_dict = { }
     first_start = True
+    can_start_any_apps = False
     layout_mode = "rows"
     for mq in project.root_task.module.questions.all()\
         .select_related("answer_type_module")\
@@ -517,9 +529,14 @@ def project(request, project):
         d_first_start = first_start and (len(tasks) == 0)
         if d_first_start: first_start = False
 
-        # Is this a protocol question? Switch to grid layout.
+        # Is this a protocol question?
         if mq.spec.get("protocol"):
+            # Switch to grid layout.
             layout_mode = "grid"
+
+            # Set flag if an app can be started here.
+            if can_begin_module and (ans is None or mq.spec["type"] == "module-set"):
+                can_start_any_apps = True
 
         # Create template context dict.
         d = {
@@ -595,6 +612,7 @@ def project(request, project):
 
         "is_admin": request.user in project.get_admins(),
         "can_begin_module": can_begin_module,
+        "can_start_any_apps": can_start_any_apps,
 
         "folder": folder,
         "is_folder_admin": folder and (request.user in folder.get_admins()),
@@ -914,7 +932,7 @@ def delete_folder(request):
 
 def project_admin_login_post_required(f):
     # Wrap the function to do authorization and change arguments.
-    def g(request, project_id):
+    def g(request, project_id, *args):
         # Get project, check authorization.
         project = get_object_or_404(Project, id=project_id, organization=request.organization)
         if request.user not in project.get_admins():
@@ -987,6 +1005,52 @@ def import_project_data(request, project):
     # Show an unfriendly response containing log output.
     return JsonResponse(log_output, safe=False, json_dumps_params={"indent": 2})
 
+
+def project_start_apps(request, *args):
+    # Load the Compliance Store catalog of apps.
+    all_apps = get_app_store(request)
+
+    # What questions can be answered with an app?
+    def get_questions(project):
+        # A question can be answered with an app if it is a module or module-set
+        # question with a protocol value and the question has not already been
+        # answered (inclding imputed).
+        root_task_answers = project.root_task.get_answers().with_extended_info().as_dict()
+        for q in project.root_task.module.questions.order_by('definition_order'):
+            if    q.spec["type"] in ("module", "module-set") \
+             and  q.spec.get("protocol") \
+             and q.key not in root_task_answers:
+                # What apps can be used to start this question?
+                q.startable_apps = list(filter(lambda app : app_satifies_interface(app, q), all_apps))
+                if len(q.startable_apps) > 0:
+                    yield q
+
+    # Although both pages should require admin access, our admin decorator
+    # also checks that the request is a POST. So to simplify, use the GET/READ
+    # decorator for GET and the POST/ADMIN decorator for POST.
+    if request.method == "GET":
+        @project_read_required
+        def viewfunc(request, project):
+            return render(request, "project-startapps.html", {
+                "project": project,
+                "folder": project.primary_folder(),
+                "questions": list(get_questions(project)),
+            })
+    else:
+        @project_admin_login_post_required
+        def viewfunc(request, project):
+            # Start all of the indiciated apps. Validate that the
+            # chosen app satisfies the protocol.
+            for q in get_questions(project):
+                if q.key in request.POST:
+                    startable_apps = { app["key"]: app for app in q.startable_apps}
+                    if request.POST[q.key] in startable_apps:
+                        app = startable_apps[request.POST[q.key]]
+                        start_app(app, request.organization, request.user, None, project.root_task, q)
+
+            return JsonResponse({ "status": "ok" }, safe=False, json_dumps_params={"indent": 2})
+
+    return viewfunc(request, *args)
 
 # INVITATIONS
 

@@ -507,13 +507,18 @@
 
       {% if project.is_deletable and is_admin %}
         <h4>Project Details</h4>
-          <p><button class="btn btn-default" onclick="return rename_project();">Change Project Title</button></p>
-          <p><button class="btn btn-danger" onclick="return delete_project();">Delete Project</button></p>
+        <p>
+          {% if can_start_any_apps %}
+            <a class="btn btn-primary" href="{{project.get_absolute_url}}/startapps">Start Apps</a>
+          {% endif %}
+          <button class="btn btn-default" onclick="return rename_project();">Change Project Title</button>
+          <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button>
+        </p>
 
         <h4>Share Data</h4>
               {# export #}
-              <form method="post" action="{% url "export_project" project.id %}">{% csrf_token %}
-                <button class="btn btn-success" style="margin-bottom: 1em">
+              <form method="post" action="{% url "export_project" project.id %}" style="display: inline-block; margin: 0; padding: 0;">{% csrf_token %}
+                <button class="btn btn-success">
                   <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
                   Export Project Data
                 </button>
