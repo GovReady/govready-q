@@ -54,12 +54,21 @@ h2 {
         font-size: 17px;
       }
     }
+  .app .app-icon {
+    width: 30%;
+    max-width: 128px;
+  }
+    @media screen and (max-width: 768px) {
+      .app .app-icon {
+        width: 20%;
+      }
+    }
   .app .body {
   }
   	.app .body p {
   	}
-    .app .body p:last {
-      margin: 0; /* not working */
+    .app .body p:last-child {
+      margin: 0;
     }
 
 .app-metadata {
@@ -139,10 +148,8 @@ h2 {
         <tr valign="top">
 
           {% if app.app_icon_dataurl %}
-            <td style="max-width: 20vw; padding-top: 1px; padding-right: 12px;">
-              <div style="max-width: 64px">
-                <img src="{{app.app_icon_dataurl}}" class="img-responsive"">
-              </div>
+            <td class="app-icon" style="padding-top: 1px; padding-right: 12px;">
+              <img src="{{app.app_icon_dataurl}}" class="img-responsive"">
             </td>
           {% endif %}
 
