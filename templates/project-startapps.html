@@ -21,6 +21,7 @@
 }
   .app.active {
     background-color: #FAFCBB;
+    border: 3px solid green;
   }
   .app h3 {
     margin: 0;
@@ -53,7 +54,7 @@
 
 <h2>Start Apps</h2>
 
-<p>You can start {{questions|length}} app{{questions|pluralize}}.</p>
+<p>We matched {{questions|length}} of this app's requirement{{questions|pluralize}}. Adjust selections and click "Start Apps" to start these apps.</p>
 
 {% for q in questions %}
   <div class="question" data-question-key="{{q.key}}">
@@ -96,6 +97,7 @@
   </div> <!-- /question -->
 {% endfor %}
 
+<span><a href="{{parent_project.get_absolute_url}}">Cancel</a></span>&nbsp;
 <button class="btn btn-primary" onclick="start_apps();">Start Apps &raquo;</button>
 
 {% endblock %}
