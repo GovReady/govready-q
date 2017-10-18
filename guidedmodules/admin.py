@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import \
-	AppSource, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, \
+	AppSource, AppInstance, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, \
 	Task, TaskAnswer, TaskAnswerHistory, \
 	InstrumentationEvent
 
@@ -10,9 +10,16 @@ class AppSourceAdmin(admin.ModelAdmin):
 	def source(self, obj):
 		return obj.get_description()
 
+class AppInstanceAdmin(admin.ModelAdmin):
+	list_display = ('appname', 'source')
+	list_filter = ('source',)
+
 class ModuleAdmin(admin.ModelAdmin):
-	list_display = ('id', 'source', 'key', 'visible', 'superseded_by', 'created')
+	list_display = ('id', 'source', 'app_', 'module_', 'visible', 'superseded_by', 'created')
+	list_filter = ('source',)
 	raw_id_fields = ('app', 'superseded_by', 'assets')
+	def app_(self, obj): return "{} [{}]".format(obj.app.appname, obj.app.id) if obj.app else "(not in an app)"
+	def module_(self, obj): return obj.key[len(obj.source.namespace+"/"+obj.app.appname+"/"):] if obj.app else obj.key
 
 class ModuleQuestionAdmin(admin.ModelAdmin):
 	raw_id_fields = ('module', 'answer_type_module')
@@ -63,6 +70,7 @@ class InstrumentationEventAdmin(admin.ModelAdmin):
 	readonly_fields = ('event_time', 'event_type', 'event_value', 'user', 'module', 'question', 'task', 'answer')
 
 admin.site.register(AppSource, AppSourceAdmin)
+admin.site.register(AppInstance, AppInstanceAdmin)
 admin.site.register(Module, ModuleAdmin)
 admin.site.register(ModuleQuestion, ModuleQuestionAdmin)
 admin.site.register(ModuleAssetPack, ModuleAssetPackAdmin)
