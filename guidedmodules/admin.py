@@ -11,11 +11,11 @@ class AppSourceAdmin(admin.ModelAdmin):
 		return obj.get_description()
 
 class AppInstanceAdmin(admin.ModelAdmin):
-	list_display = ('appname', 'source')
-	list_filter = ('source',)
+	list_display = ('appname', 'source', 'system_app')
+	list_filter = ('source', 'system_app')
 
 class ModuleAdmin(admin.ModelAdmin):
-	list_display = ('id', 'source', 'app_', 'module_name', 'visible', 'superseded_by', 'created')
+	list_display = ('id', 'source', 'app_', 'module_name', 'created')
 	list_filter = ('source',)
 	raw_id_fields = ('app', 'superseded_by', 'assets')
 	def app_(self, obj): return "{} [{}]".format(obj.app.appname, obj.app.id) if obj.app else "(not in an app)"

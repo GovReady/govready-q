@@ -365,7 +365,7 @@ def app_store_item(request, app_namespace, app_name):
 
 def start_app(app_catalog_info, organization, user, folder, task, q):
     from guidedmodules.models import AppSource
-    from guidedmodules.module_sources import AppStore, AppImportUpdateMode
+    from guidedmodules.module_sources import AppStore
 
     with transaction.atomic():
         module_source = get_object_or_404(AppSource, id=app_catalog_info["appsource_id"])
@@ -385,8 +385,8 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
                     raise ValueError("Invalid access.")
 
                 # 4) Import. Use the module named "app".
-                modules = app.import_into_database()
-                module = modules["app"]
+                appinst = app.import_into_database()
+                module = appinst.modules.get(module_name="app")
 
         else:
             # Create a stub Module -- we'll download the app later. This

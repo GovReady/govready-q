@@ -3,7 +3,7 @@ from django.db import transaction
 from django.conf import settings
 
 from guidedmodules.models import AppSource, AppInstance
-from guidedmodules.module_sources import MultiplexedAppStore, AppImportUpdateMode
+from guidedmodules.module_sources import MultiplexedAppStore, AppImportUpdateMode, IncompatibleUpdate
 
 class Command(BaseCommand):
     help = 'Updates the system modules from the YAML specifications in AppSources.'
@@ -18,8 +18,27 @@ class Command(BaseCommand):
                 if app.store.source.namespace != "system":
                     continue
 
-                # Do we need to update an existing instance of the app?
-                appinst = AppInstance.objects.filter(source=app.store.source, appname=app.name).first()
+                # Update an existing instance of the app if the changes are compatible
+                # with the existing data model.
+                oldappinst = AppInstance.objects.filter(source=app.store.source, appname=app.name, system_app=True).first()
 
-                # Import.
-                app.import_into_database(update_appinst=appinst)
+                # Try to update the existing app. If it fails, blow away the
+                # transaction so there isn't a partial update.
+                try:
+                    with transaction.atomic():
+                        appinst = app.import_into_database(
+                            update_appinst=oldappinst,
+                            update_mode=AppImportUpdateMode.CompatibleUpdate if oldappinst else AppImportUpdateMode.CreateInstance)
+                except IncompatibleUpdate:
+                    # App was changed in an incompatible way, so fall back to creating
+                    # a new AppInstance and mark the old one as no longer the system_app.
+                    # Only one can be the system_app.
+                    appinst = app.import_into_database()
+                    oldappinst.system_app = None # the correct value here is None, not False, to avoid unique constraint violation
+                    oldappinst.save()
+
+                # Mark the new one as a system_app so that organization and account
+                # settings can find it.
+                if not appinst.system_app:
+                    appinst.system_app = True
+                    appinst.save()

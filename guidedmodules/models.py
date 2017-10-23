@@ -44,6 +44,15 @@ class AppInstance(models.Model):
     source = models.ForeignKey(AppSource, related_name="appinstances", on_delete=models.CASCADE, help_text="The source of this AppInstance.")
     appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppStore.")
 
+        # the field below is a NullBooleanField because the unique constraint doesn't kick in
+        # for NULLs but does for False/True, and we want the constraint to apply only for True.
+    system_app = models.NullBooleanField(default=None, help_text="Set to True for AppInstances that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
+
+    class Meta:
+        unique_together = [
+            ("source", "appname", "system_app")
+        ]
+
     def __str__(self):
         # For the admin.
         return "%s [%d] (from %s)" % (self.appname, self.id, self.source)
@@ -52,14 +61,14 @@ class AppInstance(models.Model):
         # For debugging.
         return "<AppInstance [%d] %s from %s>" % (self.id, self.appname, self.source)
 
+
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
     app = models.ForeignKey(AppInstance, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppInstance that this Module is a part of. Null for legacy Modules created before we had this field.")
 
     module_name = models.SlugField(max_length=200, help_text="A slug-like identifier for the Module that is unique within the AppInstance app.")
 
-    visible = models.BooleanField(default=True, db_index=True, help_text="Whether the Module is offered to users.")
-    superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="When a Module is superseded by a new version, this points to the newer version.")
+    superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="This field is no longer used. When a Module is superseded by a new version, this points to the newer version.")
 
     spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
     assets = models.ForeignKey('ModuleAssetPack', blank=True, null=True, on_delete=models.CASCADE, help_text="A mapping from asset paths to ModuleAsset instances with the binary content of the asset.")
@@ -78,7 +87,7 @@ class Module(models.Model):
 
     def __repr__(self):
         # For debugging.
-        return "<Module [%d] %s%s %s (%s)>" % (self.id, "" if not self.superseded_by else "(old) ", self.module_name, self.spec.get("title", "<No Title>")[0:30], self.app)
+        return "<Module [%d] %s %s (%s)>" % (self.id, self.module_name, self.spec.get("title", "<No Title>")[0:30], self.app)
 
     def save(self):
         if self.source != self.app.source: raise ValueError("Module source != app.source.")

@@ -570,8 +570,9 @@ class Project(models.Model):
     def set_system_task(self, app, editor):
         from guidedmodules.models import Module
         module = Module.objects.get(
-            source__namespace="system", app__appname=app, module_name="app",
-            visible=True)
+            app__source__namespace="system", app__appname=app,
+            app__system_app=True,
+            module_name="app")
         self.set_root_task(module, editor, expected_module_type="system-project")
 
 

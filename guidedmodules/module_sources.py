@@ -11,10 +11,9 @@ from .models import AppSource, AppInstance, Module, ModuleQuestion, ModuleAssetP
 from .validate_module_specification import validate_module, ValidationError as ModuleValidationError
 
 class AppImportUpdateMode(enum.Enum):
-    New = 1
-    UpdateIfCompatible = 2
-    ForceUpdateInPlace = 3
-    UpdateIfCompatibleOnly = 4
+    CreateInstance = 1
+    ForceUpdate = 2
+    CompatibleUpdate = 3
 
 class ModuleDefinitionError(Exception):
     pass
@@ -52,7 +51,7 @@ class App(object):
         raise Exception("Not implemented!")
 
     @transaction.atomic # there can be an error mid-way through updating a Module
-    def import_into_database(self, update_mode=AppImportUpdateMode.New, update_appinst=None):
+    def import_into_database(self, update_mode=AppImportUpdateMode.CreateInstance, update_appinst=None):
         # Get or create a ModuleAssetPack first, since there is a foriegn key
         # from Modules to ModuleAssetPacks.
         asset_pack = load_module_assets_into_database(self)
@@ -61,10 +60,15 @@ class App(object):
         # be processed recursively.
         available_modules = dict(self.get_modules())
 
-        appinst = AppInstance.objects.create(
-            source=self.store.source,
-            appname=self.name,
-        )
+        # Create an AppInstance to add new Modules into, unless update_appinst is given.
+        if update_appinst is None:
+            appinst = AppInstance.objects.create(
+                source=self.store.source,
+                appname=self.name,
+            )
+        else:
+            # Update Modules in this one.
+            appinst = update_appinst
 
         # Load them all into the database. Each will trigger load_module_into_database
         # for any modules it depends on.
@@ -75,9 +79,9 @@ class App(object):
                 appinst,
                 module_id,
                 available_modules, processed_modules,
-                [], asset_pack, update_mode, update_appinst)
+                [], asset_pack, update_mode)
 
-        return processed_modules
+        return appinst
 
 
 ### IMPLEMENTATIONS ###
@@ -553,8 +557,10 @@ class DependencyError(Exception):
     def __init__(self, from_module, to_module):
         super().__init__("Invalid module ID %s in %s." % (to_module, from_module))
 
+class IncompatibleUpdate(Exception):
+    pass
 
-def load_module_into_database(app, appinst, module_id, available_modules, processed_modules, dependency_path, asset_pack, update_mode, update_appinst):
+def load_module_into_database(app, appinst, module_id, available_modules, processed_modules, dependency_path, asset_pack, update_mode):
     # Prevent cyclic dependencies between modules.
     if module_id in dependency_path:
         raise CyclicDependency(dependency_path)
@@ -592,7 +598,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
     # Recursively update any modules this module references.
     dependencies = { }
     for m1 in get_module_spec_dependencies(spec):
-        mdb = load_module_into_database(app, appinst, m1, available_modules, processed_modules, dependency_path + [spec["id"]], asset_pack, update_mode, update_appinst)
+        mdb = load_module_into_database(app, appinst, m1, available_modules, processed_modules, dependency_path + [spec["id"]], asset_pack, update_mode)
         dependencies[m1] = mdb
 
     # Now that dependent modules are loaded, replace module string IDs with database numeric IDs.
@@ -604,13 +610,12 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
 
     # Look for an existing Module to update.
 
-    should_replace = False
-
     m = None
-    if update_appinst:
+    if update_mode != AppImportUpdateMode.CreateInstance:
         try:
-            m = Module.objects.get(app=update_appinst, module_name=spec['id'], superseded_by=None)
+            m = Module.objects.get(app=appinst, module_name=spec['id'])
         except Module.DoesNotExist:
+            # If it doesn't exist yet in the previous app, we'll just create it.
             pass
     if m:
         # What is the difference between the app's module and the module in the database?
@@ -620,33 +625,21 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
             # There is no difference, so we can go on immediately.
             pass
 
-        elif (change is False and update_mode in (AppImportUpdateMode.UpdateIfCompatible, AppImportUpdateMode.UpdateIfCompatibleOnly)) \
-            or update_mode == AppImportUpdateMode.ForceUpdateInPlace:
+        elif (change is False and update_mode == AppImportUpdateMode.CompatibleUpdate) \
+            or update_mode == AppImportUpdateMode.ForceUpdate:
             # There are no incompatible changes and we're allowed to update modules,
-            # or we're forcing an update, so we'll update this one in place.
+            # or we're forcing an update and it doesn't matter whether or not there
+            # are changes --- update this one in place.
             update_module(m, spec, asset_pack, True)
 
-        elif update_mode == AppImportUpdateMode.UpdateIfCompatibleOnly:
-            # Block an incompatible update --- don't create a new module.
-            raise ValidationError(module_id, "module", "Module cannot be updated because changes are incompatible with the existing data model: " + change)
-
         else:
-            # This module is going out of date.
-            should_replace = True
+            # Block an incompatible update --- don't create a new module.
+            raise IncompatibleUpdate("Module %s cannot be updated because changes are incompatible with the existing data model." % module_id)
 
-    if not m or should_replace:
+    if not m:
         # No Module in the database matched what we need, or an existing
         # one cannot be updated. Create one.
-        new_module = create_module(app, appinst, spec, asset_pack)
-
-        # Mark the previous Module as superseded so that they are no longer used
-        # on new Tasks.
-        if m:
-            m.visible = False
-            m.superseded_by = new_module
-            m.save()
-
-        m = new_module
+        m = create_module(app, appinst, spec, asset_pack)
 
     processed_modules[module_id] = m
     return m

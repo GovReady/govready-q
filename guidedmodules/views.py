@@ -741,9 +741,9 @@ def authoring_edit_reload_app(request, task):
             # Import.
             try:
                 app.import_into_database(
-                    AppImportUpdateMode.ForceUpdateInPlace
+                    AppImportUpdateMode.ForceUpdate
                      if request.POST.get("force") == "true"
-                     else AppImportUpdateMode.UpdateIfCompatibleOnly,
+                     else AppImportUpdateMode.CompatibleUpdate,
                     task.module.app)
             except ValidationError as e:
                 return JsonResponse({ "status": "error", "message": str(e) })

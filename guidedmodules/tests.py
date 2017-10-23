@@ -13,7 +13,7 @@ class TestCaseWithFixtureData(TestCase):
         # Load modules from the fixtures directory.
         from guidedmodules.models import AppSource, AppInstance
         from guidedmodules.management.commands.load_modules import Command as load_modules
-        from guidedmodules.module_sources import MultiplexedAppStore, AppImportUpdateMode
+        from guidedmodules.module_sources import MultiplexedAppStore
         src = AppSource.objects.create(
             namespace="fixture",
             spec={
