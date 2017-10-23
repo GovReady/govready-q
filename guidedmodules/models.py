@@ -75,6 +75,10 @@ class Module(models.Model):
         # For debugging.
         return "<Module [%d] %s%s %s>" % (self.id, "" if not self.superseded_by else "(old) ", self.key, self.spec.get("title", "<No Title>")[0:30])
 
+    def save(self):
+        if self.source != self.app.source: raise ValueError("Module source != app.source.")
+        super(Module, self).save()
+
     @property
     def parent_path(self):
         return "/".join(self.key.split("/")[:-1])
