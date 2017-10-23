@@ -32,7 +32,7 @@ questions:
       - key: ops_team
         text: Operations Team
         help: System Administrator, Engineer, Operations Manager, Delivery Specialist, ...
-        key: sec_team
+      - key: sec_team
         text: Security Team
         help: Security Specialist, Architect, Security Manager, ...
       - key: comp_team
