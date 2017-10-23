@@ -65,7 +65,9 @@ Project Folders
 <div style="float: right; margin: 1em 0;">
   <a id="new-folder" href="#" class="btn btn-default" onclick="new_folder(); return false;"><i class="glyphicon glyphicon-folder-open"></i> New Folder</a>
   <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add app </a>
+  {% if is_lonely_admin %}
   <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
+  {% endif %}
 </div>
 
 
