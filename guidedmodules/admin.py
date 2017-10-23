@@ -15,11 +15,10 @@ class AppInstanceAdmin(admin.ModelAdmin):
 	list_filter = ('source',)
 
 class ModuleAdmin(admin.ModelAdmin):
-	list_display = ('id', 'source', 'app_', 'module_', 'visible', 'superseded_by', 'created')
+	list_display = ('id', 'source', 'app_', 'module_name', 'visible', 'superseded_by', 'created')
 	list_filter = ('source',)
 	raw_id_fields = ('app', 'superseded_by', 'assets')
 	def app_(self, obj): return "{} [{}]".format(obj.app.appname, obj.app.id) if obj.app else "(not in an app)"
-	def module_(self, obj): return obj.key[len(obj.source.namespace+"/"+obj.app.appname+"/"):] if obj.app else obj.key
 
 class ModuleQuestionAdmin(admin.ModelAdmin):
 	raw_id_fields = ('module', 'answer_type_module')

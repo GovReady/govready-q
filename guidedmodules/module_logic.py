@@ -862,7 +862,7 @@ class ModuleAnswers(object):
                             doc_name = "at index " + str(self.index)
                             if "title" in self.document:
                                 doc_name = repr(self.document["title"]) + " (" + doc_name + ")"
-                        doc_name = "%s output document %s" % (self.module_answers.module.key, doc_name)
+                        doc_name = "%s output document %s" % (self.module_answers.module.module_name, doc_name)
 
                         # Try to render it.
                         try:

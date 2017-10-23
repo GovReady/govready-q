@@ -1,6 +1,6 @@
 id: app
 title: About the Organization
-type: project
+type: system-project
 hidden: true
 version: 1
 long_description: >

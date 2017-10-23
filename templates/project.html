@@ -717,7 +717,7 @@ $(function() {
       {% endfor %}
     },
     answer_type_modules: [{% for m in project.root_task.module.get_referenceable_modules %}
-      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.key}})" }{% if not forloop.last %},{% endif %}
+      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
       {% endfor %}],
     autocomplete_questions: { }
   });

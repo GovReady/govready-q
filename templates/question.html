@@ -893,7 +893,7 @@ $(function() {
       }
     },
     answer_type_modules: [{% for m in q.module.get_referenceable_modules %}
-      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.key}})" }{% if not forloop.last %},{% endif %}
+      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
       {% endfor %}],
     autocomplete_questions: { {% for q in q.module.get_questions %}
       "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}

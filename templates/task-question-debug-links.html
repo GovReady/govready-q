@@ -3,7 +3,7 @@
 <p class="pull-right">
   module:
     {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/module/{{m.id}}">{% endif %}
-    <span id="debug-module-key">{{m.key}}</span>{% if user.is_staff %}</a>{% endif %}
+    <span id="debug-module-key">{{m.source.namespace}}/{{m.app.appname}}/{{m.module_name}}</span>{% if user.is_staff %}</a>{% endif %}
     {% if not m.visible %}(obsolete){% endif %}
   {% if q %}
   <br />

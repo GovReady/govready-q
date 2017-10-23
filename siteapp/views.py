@@ -393,7 +393,8 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
             # is just a placeholder.
             module = Module()
             module.source = module_source
-            module.key = app_catalog_info["key"]
+            # TODO module.app = None
+            module.module_name = "app"
             module.spec = dict(app_catalog_info)
             module.spec["type"] = "project"
             module.spec["is_app_stub"] = True

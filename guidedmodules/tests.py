@@ -11,10 +11,10 @@ class TestCaseWithFixtureData(TestCase):
         super().setUpClass()
 
         # Load modules from the fixtures directory.
-        from guidedmodules.models import AppSource
+        from guidedmodules.models import AppSource, AppInstance
         from guidedmodules.management.commands.load_modules import Command as load_modules
         from guidedmodules.module_sources import MultiplexedAppStore, AppImportUpdateMode
-        AppSource.objects.create(
+        src = AppSource.objects.create(
             namespace="fixture",
             spec={
                 "type": "local",
@@ -24,12 +24,15 @@ class TestCaseWithFixtureData(TestCase):
         with MultiplexedAppStore(ms for ms in AppSource.objects.all()) as store:
             for app in store.list_apps():
                 app.import_into_database()
-
+        self.fixture_app = AppInstance.objects.get(source=src, appname="simple_project")
 
         # Create a dummy organization, project, and user.
         self.organization = Organization.objects.create(name="My Supreme Organization")
         self.project = Project.objects.create(title="The Singleton Project", organization=self.organization)
         self.user = User.objects.create(username="unit.test")
+
+    def getModule(self, module_name):
+        return self.fixture_app.modules.get(module_name=module_name)
 
 
 class ImputeConditionTests(TestCaseWithFixtureData):
@@ -38,7 +41,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
     # blocks in templates.
 
     def _test_condition_helper(self, module, context_key, context_value, condition, expected):
-        m = Module.objects.get(key="fixture/simple_project/" + module)
+        m = self.getModule(module)
         answers = ModuleAnswers(m, None, { context_key: (m.questions.get(key=context_key), True, None, context_value) })
 
         # Test that the impute condition works correctly.
@@ -132,7 +135,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test = lambda *args : self._test_condition_helper("question_types_module", *args)
 
         # Create a sub-task that answers a question.
-        m = Module.objects.get(key="fixture/simple_project/simple") # the module ID that can answer the q_module question
+        m = Module.objects.get(module_name="simple") # the module ID that can answer the q_module question
         value = ModuleAnswers(
             m,
             Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project),
@@ -303,7 +306,7 @@ class RenderTests(TestCaseWithFixtureData):
             '<p>this is bad: <!-- raw HTML omitted -->click me<!-- raw HTML omitted --></p>')
 
     def render_content(self, module, template_format, template, answers, output_format):
-        m = Module.objects.get(key="fixture/simple_project/" + module)
+        m = self.getModule(module)
         t = Task(id=500, title="the title", module=m, project=self.project, extra={})
         return render_content(
             {
@@ -438,7 +441,7 @@ class RenderTests(TestCaseWithFixtureData):
         from html import escape
 
         # Create a sub-task that answers a question.
-        m = Module.objects.get(key="fixture/simple_project/simple") # the module ID that can answer the q_module question
+        m = Module.objects.get(module_name="simple") # the module ID that can answer the q_module question
         value = ModuleAnswers(
             m,
             Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project),
@@ -469,7 +472,7 @@ class RenderTests(TestCaseWithFixtureData):
 
         # Create a Task instance to include in the render context so
         # that it is tied to a project and organization.
-        module = Module.objects.get(key="fixture/simple_project/simple")
+        module = Module.objects.get(module_name="simple")
         task = Task.objects.create(module=module, project=self.project, editor=self.user)
         answers = ModuleAnswers(module, task, {})
 
@@ -490,7 +493,7 @@ class RenderTests(TestCaseWithFixtureData):
 
         # create a ModuleAnswers instance that provides context for evaluating the template
         if answers is None:
-            m = Module.objects.get(key="fixture/simple_project/" + module)
+            m = self.getModule(module)
             key = expression.split(".")[0]
             answers = ModuleAnswers(m, None, {
                 key: (m.questions.get(key=key), True, None, value) # if expression looks like "id.text" just use "id" here to set the answer
@@ -552,7 +555,7 @@ class RenderTests(TestCaseWithFixtureData):
 class EncryptionTests(TestCaseWithFixtureData):
     def test_encryption(self):
         # Create an empty Task.
-        m = Module.objects.get(key="fixture/simple_project/question_types_encrypted")
+        m = Module.objects.get(module_name="question_types_encrypted")
         task = Task.objects.create(module=m, title="Test Task", editor=self.user, project=self.project)
         answer, _ = TaskAnswer.objects.get_or_create(
             task=task,
@@ -649,7 +652,7 @@ class ImportExportTests(TestCaseWithFixtureData):
 
     def _test_round_trip(self, module_name, question_name, include_metadata, question_type, answer_value):
         # Create an empty Task.
-        m = Module.objects.get(key="fixture/simple_project/" + module_name)
+        m = self.getModule(module_name)
         task = Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project)
 
         # Import some data to set answers.

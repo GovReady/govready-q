@@ -84,14 +84,7 @@ class User(AbstractUser):
             is_admin=True)
 
         # Construct the root task.
-        m = Module.objects.get(key="system/account/app", visible=True)
-        task = Task.objects.create(
-            project=p,
-            editor=self,
-            module=m,
-            title=m.title)
-        p.root_task = task
-        p.save()
+        p.set_system_task("account", self)
         return p
 
     @transaction.atomic
@@ -267,7 +260,7 @@ class Organization(models.Model):
         org = Organization.objects.create(**kargs)
 
         # And initialize the root Task of the Organization with this user as its editor.
-        org.get_organization_project().set_root_task("system/organization/app", admin_user)
+        org.get_organization_project().set_system_task("organization", admin_user)
 
         # And make that user an admin of the Organization.
         pm, isnew = ProjectMembership.objects.get_or_create(user=admin_user, project=org.get_organization_project())
@@ -554,41 +547,33 @@ class Project(models.Model):
             if not task.is_finished()
                and task != self.root_task ]
 
-    def set_root_task(self, module_id, editor):
-        from guidedmodules.models import Module, Task, ProjectMembership
-
+    def set_root_task(self, module, editor, expected_module_type="project"):
         # create task and set it as the project root task
         if not self.id:
             raise Exception("Project must be saved first")
-
-        # get the Module and validate that it is a project-type module
-        # module_id can be either an int for a database primary key or
-        # it can be a string key to specify a module ID from the YAML files
-        try:
-            M = Module.objects.filter(visible=True)
-            if isinstance(module_id, Module):
-                m = module_id
-            elif isinstance(module_id, int):
-                m = M.get(id=module_id)
-            elif isinstance(module_id, str):
-                m = M.get(key=module_id)
-            else:
-                raise ValueError("invalid argument")
-        except Module.DoesNotExist:
-            raise ValueError("invalid module id %s" % str(module_id))
-        if m.spec.get("type") != "project":
-            raise ValueError("invalid module")
+        if module.spec.get("type") != expected_module_type:
+            raise ValueError("invalid module, wrong type")
 
         # create the task
+        from guidedmodules.models import Task
         task = Task.objects.create(
             project=self,
             editor=editor,
-            module=m,
-            title=m.title)
+            module=module,
+            title=module.title)
 
         # update the project
         self.root_task = task
         self.save()
+
+
+    def set_system_task(self, app, editor):
+        from guidedmodules.models import Module
+        module = Module.objects.get(
+            source__namespace="system", app__appname=app, module_name="app",
+            visible=True)
+        self.set_root_task(module, editor, expected_module_type="system-project")
+
 
     def render_snippet(self):
         return self.root_task.render_snippet()

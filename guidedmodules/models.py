@@ -56,7 +56,7 @@ class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
     app = models.ForeignKey(AppInstance, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppInstance that this Module is a part of. Null for legacy Modules created before we had this field.")
 
-    key = models.SlugField(max_length=200, db_index=True, help_text="A slug-like identifier for the Module.")
+    module_name = models.SlugField(max_length=200, help_text="A slug-like identifier for the Module that is unique within the AppInstance app.")
 
     visible = models.BooleanField(default=True, db_index=True, help_text="Whether the Module is offered to users.")
     superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="When a Module is superseded by a new version, this points to the newer version.")
@@ -67,21 +67,22 @@ class Module(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
+    class Meta:
+        unique_together = [
+            ("app", "module_name"),
+        ]
+
     def __str__(self):
         # For the admin.
-        return "%s [%d]" % (self.key, self.id)
+        return "%s %s [%d]" % (self.app, self.module_name, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "<Module [%d] %s%s %s>" % (self.id, "" if not self.superseded_by else "(old) ", self.key, self.spec.get("title", "<No Title>")[0:30])
+        return "<Module [%d] %s%s %s (%s)>" % (self.id, "" if not self.superseded_by else "(old) ", self.module_name, self.spec.get("title", "<No Title>")[0:30], self.app)
 
     def save(self):
         if self.source != self.app.source: raise ValueError("Module source != app.source.")
         super(Module, self).save()
-
-    @property
-    def parent_path(self):
-        return "/".join(self.key.split("/")[:-1])
 
     @property
     def title(self):
@@ -113,9 +114,9 @@ class Module(models.Model):
         from collections import OrderedDict
         return serializer.serializeOnce(
             self,
-            "module:" + self.key, # a preferred key, doesn't need to be unique here
+            "module:" + self.app.source.namespace + "/" + self.app.appname + "/" + self.module_name, # a preferred key, doesn't need to be unique here
             lambda : OrderedDict([  # "lambda :" makes this able to be evaluated lazily
-                ("key", self.key),
+                ("key", self.module_name),
                 ("created", self.created.isoformat()),
                 ("modified", self.updated.isoformat()),
         ]))
@@ -219,13 +220,9 @@ class Module(models.Model):
         # Get the string that you would put in a YAML file to reference the
         # target module. target must be in get_referenceable_modules.
         # This is the inverse of validate_module_specification.resolve_relative_module_id.
-        root_path = self.source.namespace + "/" + self.app.appname + "/"
-        if target.key.startswith(root_path):
-            # If the target is in the same virtual directory or a subdirectory,
-            # use a virtual path.
-            return target.key[len(root_path):]
-        else:
+        if self.app != target.app:
             raise ValueError("Cannot reference %s from %s." % (target, self))
+        return target.module_name
     def serialize_to_disk(self):
         # Write out the in-memory module specification to disk!
         assert self.source.spec["type"] == "local" and self.source.spec["path"]
@@ -244,7 +241,7 @@ class Module(models.Model):
                 qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
 
             spec["questions"].append(qspec)
-        fn = os.path.join(self.source.spec["path"], self.key[len(self.source.namespace)+1:]) + ".yaml"
+        fn = os.path.join(self.source.spec["path"], self.app.appname, self.module_name + ".yaml")
         with open(fn, "w") as f:
             f.write(rtyaml.dump(spec))
 
@@ -314,11 +311,12 @@ class ModuleQuestion(models.Model):
         unique_together = [("module", "key")]
 
     def __str__(self):
-        return "%s[%d].%s" % (self.module.key, self.module.id, self.key)
+        # For the admin.
+        return "%s[%d].%s" % (self.module, self.module.id, self.key)
 
     def __repr__(self):
         # For debugging.
-        return "<ModuleQuestion [%d] %s.%s (%s)>" % (self.id, self.module.key, self.key, repr(self.module))
+        return "<ModuleQuestion [%d] %s.%s (%s)>" % (self.id, self.module.module_name, self.key, repr(self.module))
 
     def choices_as_csv(self):
         # Helper method for module authoring.

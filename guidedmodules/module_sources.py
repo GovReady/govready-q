@@ -609,7 +609,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
     m = None
     if update_appinst:
         try:
-            m = Module.objects.get(app=update_appinst, key=app.store.source.namespace+"/"+app.name+"/"+spec['id'], superseded_by=None)
+            m = Module.objects.get(app=update_appinst, module_name=spec['id'], superseded_by=None)
         except Module.DoesNotExist:
             pass
     if m:
@@ -669,8 +669,8 @@ def create_module(app, appinst, spec, asset_pack):
     m = Module()
     m.source = app.store.source
     m.app = appinst
-    m.key = app.store.source.namespace + "/" + app.name + "/" + spec['id']
-    print("Creating", m.key)
+    m.module_name = spec['id']
+    print("Creating", m.app, m.module_name)
     update_module(m, spec, asset_pack, False)
     return m
 
