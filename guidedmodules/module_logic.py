@@ -847,6 +847,11 @@ class ModuleAnswers(object):
                 self.document = document
                 self.index = index
                 self.rendered_content = None
+            def __iter__(self):
+                for key, value in self.document.items():
+                    if key != "html":
+                        yield key
+                    yield "html"
             def __getitem__(self, key):
                 if key == "html":
                     if self.rendered_content is None:
@@ -871,7 +876,7 @@ class ModuleAnswers(object):
                     return self.rendered_content
                 elif key in self.document:
                     return self.document[key]
-                raise KeyError
+                raise KeyError(key)
             def get(self, key, default=None):
                 if key == "html" or key in self.document:
                     return self[key]
