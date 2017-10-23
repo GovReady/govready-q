@@ -81,7 +81,11 @@ class SeleniumTest(StaticLiveServerTestCase):
         self.fill_field(css_selector, text)
 
     def click_element(self, css_selector):
-        self.browser.find_element_by_css_selector(css_selector).click()
+        # ensure element is on screen or else it can't be clicked
+        # see https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+        elem = self.browser.find_element_by_css_selector(css_selector)
+        self.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
+        elem.click()
 
     def select_option(self, css_selector, value):
         from selenium.webdriver.support.select import Select
