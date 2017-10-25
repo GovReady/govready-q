@@ -40,6 +40,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         os.environ['PATH'] += ":/usr/lib/chromium-browser" # 'chromedriver' executable needs to be in PATH
         options = selenium.webdriver.ChromeOptions()
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
+        options.add_argument("start-maximized") # too small screens make clicking some things difficult
         options.add_argument("--incognito")
         cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
