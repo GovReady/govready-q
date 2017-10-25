@@ -735,7 +735,7 @@ def authoring_edit_reload_app(request, task):
     with AppStore.create(task.module.source) as store:
         for app in store.list_apps():
             # Only update using the app that provided this Task's Module.
-            if app.appname != task.module.app.appname:
+            if app.name != task.module.app.appname:
                 continue
 
             # Import.
