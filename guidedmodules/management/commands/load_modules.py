@@ -26,10 +26,11 @@ class Command(BaseCommand):
                     appinst = app.import_into_database(
                         update_appinst=oldappinst,
                         update_mode=AppImportUpdateMode.CompatibleUpdate if oldappinst else AppImportUpdateMode.CreateInstance)
-                except IncompatibleUpdate:
+                except IncompatibleUpdate as e:
                     # App was changed in an incompatible way, so fall back to creating
                     # a new AppInstance and mark the old one as no longer the system_app.
                     # Only one can be the system_app.
+                    print(app, e)
                     appinst = app.import_into_database()
                     oldappinst.system_app = None # the correct value here is None, not False, to avoid unique constraint violation
                     oldappinst.save()

@@ -634,7 +634,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
 
         else:
             # Block an incompatible update --- don't create a new module.
-            raise IncompatibleUpdate("Module %s cannot be updated because changes are incompatible with the existing data model." % module_id)
+            raise IncompatibleUpdate("Module {} cannot be updated because changes are incompatible with the existing data model: {}".format(module_id, change))
 
     if not m:
         # No Module in the database matched what we need, or an existing
@@ -738,7 +738,7 @@ def is_module_changed(m, source, spec, asset_pack):
     #   None => No change.
     #   False => Change, but is compatible with the database record
     #           and the database record can be updated in-place.
-    #   True => Incompatible change - a new database record is needed.
+    #   any string => Incompatible change - a new database record is needed.
 
     # If all other metadata is the same, then there are no changes.
     if \
