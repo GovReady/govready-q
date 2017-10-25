@@ -190,9 +190,11 @@ if [ ! -z "$SQLITEDB" ]; then
 fi
 
 # Add a mount argument for accessing a local directory containing app YAML files.
-# See appsources.json. The path must be absolute and must exist.
+# See appsources.json. The path must be absolute. For Docker it must exist, so
+# we'll create it if needed.
 APPSMNT=""
 if [ ! -z "$APPSDEVDIR" ]; then
+  mkdir -p $APPSDEVDIR
   APPSMNT="--mount type=bind,src=$APPSDEVDIR,dst=/mnt/apps"
 fi
 
