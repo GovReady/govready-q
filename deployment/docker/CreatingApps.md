@@ -8,7 +8,7 @@ In this guide you will learn how to:
 * Create a compliance app
 * Edit a compliance app's YAML files
 * Edit a compliance app using GovReady-Q's authoring tools
-* Deploy the app to a production instance of GovReady-Q
+* Deploy the app to a production instance of GovReady-Q and storing apps in a source code version control repository
 
 ## Step 1: Prepare your local environment
 
@@ -257,6 +257,8 @@ You have now seen how to create and edit an app!
 
 ## Step 6: Deploy the app to a production instance of GovReady-Q
 
+### Adding apps to a git repository
+
 Your workstation's instance of GovReady-Q has been configured to load apps from the local filesystem. Your organization's production instance of GovReady-Q can be configured similarly, but more likely it will be configured to load apps from a remote git repository.
 
 Create a new git repository in your source code control system and push your `apps` directory to the repository. The repository's root directory should contain a directory named `myfirstapp`:
@@ -267,6 +269,10 @@ Create a new git repository in your source code control system and push your `ap
 	      ├── assets
 	      │   └── app.png
 	      └── example.yaml
+
+If you have an existing source code control system containing apps in this layout, consider checking out the repository locally so that it is in the same path provided to the `--appsdevdir` argument to `docker_container_run.sh`. If your repository is in a different layout or if you are using multiple repositories to store compliance apps, see below.
+
+### Configuring a production system to load apps from the git repository
 
 On the production GovReady-Q instance, log into the Django admin at `https://production-q/admin`. Add a new `AppSource`.
 
@@ -288,3 +294,54 @@ With this method you can give access to a private Github repository. Set the `ss
 As with local development, the production system's compliance app catalog may be cached. To see new apps, restart the production instance of GovReady-Q.
 
 See [Apps.md](../../Apps.md) for more information about how to configure your production instance of GovReady-Q to load apps from local filesystem directories, git repositories (including on-prem git repositories), or Github.
+
+### Advanced setups for development with a repository of apps
+
+In this guide we have used the `--appsdevdir` command to specify a location in which app YAML files and assets are stored. In a typical setup, all apps are stored in a subdirectory of the location given to `--appsdevdir`. If you are developing apps that aren't stored in a single folder, such as if they are divided between folders in a single git repository or across multiple git repositories, then a more advanced configuration of GovReady-Q is necessary.
+
+Imagine the following directory structure where two Github repositories are cloned into two separate local directories within `apps`, and each has a `compliance_apps` directory holding its apps:
+
+	.
+	├── apps (`--appsdevdir` directory)
+	│   ├── repo1
+	│   │   └── compliance_apps
+	│   │       ├── myfirstapp
+	│   │       └── mysecondapp
+	│   └── repo2
+	│       └── compliance_apps
+	│           ├── mythirdapp
+	│           └── myfourthapp
+	├── database.sqlite
+	└── docker_container_run.sh
+
+This directory structure will not work with a vanilla configuration of GovReady-Q, which will only show apps in the compliance app catalog if it is located in an immediate subdirectory of path that it is configured to load apps from. We can instead configure GovReady-Q to load apps from *multiple* locations. In this case we will configure GovReady-Q to load apps from two locations:
+
+	apps/repo1/compliance_apps
+	apps/repo2/compliance_apps
+
+Recall that the path given to `--appsdevdir` is mapped to a path within the Docker container so that the container can see the YAML files on the (host) local filesystem. The container sees these directories as
+
+	/mnt/apps/repo1/compliance_apps
+	/mnt/apps/repo2/compliance_apps
+
+Log into the Django admin at `http://localhost:8000/admin`. Add two new `AppSource` entries:
+
+For the first, set the `Namespace` to `repo1` (or any other label that will help you distinguish the two repositories) and the `Spec` to
+
+	{
+	  "type":"local"
+	  "path":"/mnt/apps/repo1/compliance_apps",
+	}
+
+For the second, set the `Namespace` to `repo2` and the `Spec` to
+
+	{
+	  "type":"local"
+	  "path":"/mnt/apps/repo2/compliance_apps",
+	}
+
+Then restart the container:
+
+	docker container restart govready-q
+
+and the apps defined in all of the repositories should be visible in the compliance app catalog.
