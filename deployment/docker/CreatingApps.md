@@ -158,6 +158,8 @@ Reload the container to clear the app catalog cache:
 
 And then reload the catalog page in your browser to see your description beneath `myfirstapp`. You can also edit the app's title and other catalog metadata, including the app's icon in `apps/myfirstapp/assets/app.png`.
 
+![Compliance apps catalog after metadata change](docs/appcatalogafterchange.png)
+
 ## Step 4: Edit the compliance app's YAML files
 
 ### Start the app
