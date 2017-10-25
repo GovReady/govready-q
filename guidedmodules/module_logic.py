@@ -960,6 +960,17 @@ class TemplateContext(Mapping):
             if item in ("is_started", "is_finished"):
                 return (lambda : False) # the attribute normally returns a bound function
 
+        # The 'questions' key returns (question, answer) pairs.
+        if item == "questions":
+            self.module_answers.as_dict() # trigger lazy-loading
+            ret = []
+            for question, is_answered, answerobj, answervalue in self.module_answers.answertuples.values():
+                ret.append((
+                    question.spec,
+                    RenderedAnswer(self.module_answers.task, question, answerobj, answervalue, self)
+                ))
+            return ret
+
         # The item is not something found in the context.
         raise AttributeError(item)
 
@@ -985,7 +996,7 @@ class TemplateContext(Mapping):
             for attribute in ("task_link", "project", "organization"):
                 if attribute not in seen_keys:
                     yield attribute
-        for attribute in ("is_started", "is_finished"):
+        for attribute in ("is_started", "is_finished", "questions"):
             if attribute not in seen_keys:
                 yield attribute
 
