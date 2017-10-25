@@ -297,7 +297,7 @@ See [Apps.md](../../Apps.md) for more information about how to configure your pr
 
 ### Advanced setups for development with a repository of apps
 
-In this guide we have used the `--appsdevdir` command to specify a location in which app YAML files and assets are stored. In a typical setup, all apps are stored in a subdirectory of the location given to `--appsdevdir`. If you are developing apps that aren't stored in a single folder, such as if they are divided between folders in a single git repository or across multiple git repositories, then a more advanced configuration of GovReady-Q is necessary.
+In this guide we have used the `--appsdevdir` command to specify a location in which app YAML files and assets are stored. In a small setup, all apps could be stored in a subdirectory of the location given to `--appsdevdir`. But you may want to separate apps into different folders, such as if they are divided between folders in a single git repository or across multiple git repositories, then a more advanced configuration of GovReady-Q is necessary.
 
 Imagine the following directory structure where two Github repositories are cloned into two separate local directories within `apps`, and each has a `compliance_apps` directory holding its apps:
 
@@ -314,7 +314,7 @@ Imagine the following directory structure where two Github repositories are clon
 	├── database.sqlite
 	└── docker_container_run.sh
 
-This directory structure will not work with a vanilla configuration of GovReady-Q, which will only show apps in the compliance app catalog if it is located in an immediate subdirectory of path that it is configured to load apps from. We can instead configure GovReady-Q to load apps from *multiple* locations. In this case we will configure GovReady-Q to load apps from two locations:
+The default setup from GovReady-Q docker installation only show apps in the compliance app catalog if the app files are located in the immediate subdirectory of path configured to load apps. But we can also tell GovReady-Q to load apps from *multiple* locations. In this case we will configure GovReady-Q to load apps from two locations:
 
 	apps/repo1/compliance_apps
 	apps/repo2/compliance_apps
