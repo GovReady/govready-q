@@ -141,6 +141,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Load the Q modules from the fixtures directory.
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
+        AppSource.objects.all().delete()
         AppSource.objects.get_or_create(
               # this one exists on first db load because it's created by
               # migrations, but because the testing framework seems to
