@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
 from django.conf import settings
 
 from guidedmodules.models import AppSource, AppInstance
@@ -22,13 +21,11 @@ class Command(BaseCommand):
                 # with the existing data model.
                 oldappinst = AppInstance.objects.filter(source=app.store.source, appname=app.name, system_app=True).first()
 
-                # Try to update the existing app. If it fails, blow away the
-                # transaction so there isn't a partial update.
+                # Try to update the existing app.
                 try:
-                    with transaction.atomic():
-                        appinst = app.import_into_database(
-                            update_appinst=oldappinst,
-                            update_mode=AppImportUpdateMode.CompatibleUpdate if oldappinst else AppImportUpdateMode.CreateInstance)
+                    appinst = app.import_into_database(
+                        update_appinst=oldappinst,
+                        update_mode=AppImportUpdateMode.CompatibleUpdate if oldappinst else AppImportUpdateMode.CreateInstance)
                 except IncompatibleUpdate:
                     # App was changed in an incompatible way, so fall back to creating
                     # a new AppInstance and mark the old one as no longer the system_app.
