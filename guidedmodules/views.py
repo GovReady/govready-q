@@ -731,7 +731,7 @@ def authoring_tool_auth(f):
 def authoring_edit_reload_app(request, task):
     # Refresh the app that this Task is a part of by reloading all of the
     # Modules associated with this instance of the app.
-    from .module_sources import AppStore, AppImportUpdateMode, ValidationError
+    from .module_sources import AppStore, AppImportUpdateMode, ValidationError, IncompatibleUpdate
     with AppStore.create(task.module.source) as store:
         for app in store.list_apps():
             # Only update using the app that provided this Task's Module.
@@ -745,7 +745,7 @@ def authoring_edit_reload_app(request, task):
                      if request.POST.get("force") == "true"
                      else AppImportUpdateMode.CompatibleUpdate,
                     task.module.app)
-            except ValidationError as e:
+            except (ValidationError, IncompatibleUpdate) as e:
                 return JsonResponse({ "status": "error", "message": str(e) })
 
     return JsonResponse({ "status": "ok" })
