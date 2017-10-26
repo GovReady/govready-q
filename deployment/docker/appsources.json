@@ -1,7 +1,7 @@
 [
   {
     "model": "guidedmodules.appsource",
-    "pk": 1,
+    "pk": null,
     "fields": {
       "namespace": "samples",
       "spec": "{\"type\":\"git\",\"url\":\"https://github.com/GovReady/govready-sample-apps\"}",
@@ -15,7 +15,7 @@
   },
   {
     "model": "guidedmodules.appsource",
-    "pk": 2,
+    "pk": null,
     "fields": {
       "namespace": "host",
       "spec": "{\"type\":\"local\",\"path\":\"/mnt/apps\"}",
