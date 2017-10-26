@@ -1,4 +1,4 @@
-# Creating GovReady-Q Compliance Apps using Docker
+# Creating GovReady-Q Compliance Apps using the Docker version
 
 This is a step-by-step guide to creating compliance apps using the Docker version of the GovReady-Q Commpliance Server.
 
