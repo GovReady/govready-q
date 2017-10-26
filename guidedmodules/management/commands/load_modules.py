@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 from guidedmodules.models import AppSource, AppInstance
-from guidedmodules.module_sources import MultiplexedAppStore, AppImportUpdateMode, IncompatibleUpdate
+from guidedmodules.module_sources import AppStore, AppImportUpdateMode, IncompatibleUpdate
 
 class Command(BaseCommand):
     help = 'Updates the system modules from the YAML specifications in AppSources.'
@@ -11,12 +11,8 @@ class Command(BaseCommand):
         parser.add_argument('force', nargs="?", type=bool)
 
     def handle(self, *args, **options):
-        with MultiplexedAppStore(ms for ms in AppSource.objects.all()) as store:
+        with AppStore.create(AppSource.objects.get(namespace="system")) as store:
             for app in store.list_apps():
-                # Only load system modules.
-                if app.store.source.namespace != "system":
-                    continue
-
                 # Update an existing instance of the app if the changes are compatible
                 # with the existing data model.
                 oldappinst = AppInstance.objects.filter(source=app.store.source, appname=app.name, system_app=True).first()
