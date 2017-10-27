@@ -12,6 +12,7 @@ class AppSourceSpecWidget(forms.Widget):
 		("type",
 		 "Source Type",
 		 forms.Select(choices=[
+		 	("null", "Null Source"),
 		 	("local", "Local Directory"),
 		 	("git", "Git Repository over SSH"),
 		 	("github", "Github Repository using Github API")]),
@@ -111,6 +112,7 @@ class AppSourceSpecWidget(forms.Widget):
 
     	# Add other values.
     	for key, label, widget, help_text, show_for_types in self.fields:
+    		if key == "_remaining_": continue # already got this
     		val = data.get(name + "_" + key)
     		if val:
     			value[key] = val
