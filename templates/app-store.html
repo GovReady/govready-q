@@ -194,7 +194,13 @@ h2 {
 </div> <!--/.app-category-->
 
 {% empty %}
-  <p>There are currently no apps available that can be used to complete that question, sorry!</p>
+  {% if error %}
+    <p class="text-danger">{{error}}</p>
+  {% elif request.GET.q %}
+    <p>There are currently no apps available that can be used to complete that question, sorry!</p>
+  {% else %}
+    <p>There are no AppSources configured by this site&rsquo;s administrator that provide any apps, sorry!</p>
+  {% endif %}
 {% endfor %}
 
 {% endblock %}

@@ -19,6 +19,9 @@ class AppImportUpdateMode(enum.Enum):
 class ModuleDefinitionError(Exception):
     pass
 
+class AppSourceConnectionError(Exception):
+    pass
+
 class AppStore(object):
     """An AppStore is a catalog of Apps."""
 
@@ -104,7 +107,12 @@ class MultiplexedAppStore(AppStore):
        at given mount-points in the module naming space."""
 
     def __init__(self, sources):
-        self.loaders = [AppStore.create(ms) for ms in sources]
+        self.loaders = []
+        for ms in sources:
+            try:
+                self.loaders.append(AppStore.create(ms))
+            except ValueError as e:
+                raise ValueError('There was an error creating the AppSource named "{}": {}'.format(ms.namespace, e))
 
     # Override "with ...:" semantics
     def __enter__(self):
@@ -134,22 +142,25 @@ class PyFsAppStore(AppStore):
     """Creates an app store from a Pyfilesystem2 filesystem, like
     a local directory containing directories for apps."""
 
-    def __init__(self, source, fstype, fsargs):
+    def __init__(self, source, fsfunc):
         # Don't initialize the filesystem yet - just store the
         # class and __init__ arguments.
         self.source = source
-        self.fstype = fstype
-        self.fsargs = fsargs
+        self.fsfunc = fsfunc
 
     def __enter__(self):
         # Initialize at the start of the "with" block that this
         # object is used in.
         import fs.errors
         try:
-            self.root = self.fstype(*self.fsargs)
+            self.root = self.fsfunc()
         except fs.errors.CreateFailed as e:
-            self.root = None
-            self.root_create_error = str(e)
+            raise AppSourceConnectionError(
+                'There was an error accessing the AppSource named "{}" which connects to {}. The error was: {}'.format(
+                    self.source.namespace,
+                    self.source.get_description(),
+                    str(e)
+                ))
         return self
     def __exit__(self, *args):
         # Clean up the filesystem object at the end of the "with"
@@ -158,19 +169,11 @@ class PyFsAppStore(AppStore):
             self.root.close()
 
     def __repr__(self):
-        if getattr(self, 'root', False):
-            return "<AppStore {fs}>".format(fs=self.root)
-        else:
-            return "<AppStore {fstype} {fsargs}>".format(fstype=self.fstype, fsargs=self.fsargs)
-
-    def _raise_if_error(self):
-        if not self.root:
-            raise ValueError("There was an error opening %s: %s" % (repr(self), self.root_create_error))
+        return "<AppStore {src}>".format(src=self.source.get_description())
 
     def list_apps(self):
         # Every directory is an app containing app.yaml
         # which is the app's root module YAML.
-        self._raise_if_error()
         for entry in self.root.scandir(""):
             if entry.is_dir:
                 # Check for presence of app.yaml.
@@ -181,7 +184,6 @@ class PyFsAppStore(AppStore):
                         self.root.opendir(entry.name))
 
     def get_app(self, name):
-        self._raise_if_error()
         if len(list(self.root.scandir(name))) == 0:
             raise ValueError("App not found.")
         return PyFsApp(self,
@@ -323,7 +325,7 @@ class LocalDirectoryAppStore(PyFsAppStore):
     """An App Store provided by a local directory."""
     def __init__(self, source):
         from fs.osfs import OSFS
-        super().__init__(source, OSFS, [source.spec["path"]])
+        super().__init__(source, lambda : OSFS(source.spec["path"]))
 
 
 class SimplifiedReadonlyFilesystem(fsFS):
@@ -348,10 +350,18 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
     """
 
     def __init__(self, repo, path, user, pw):
+        # Create client.
         from github import Github
         g = Github(user, pw)
         self.repo = g.get_repo(repo)
         self.path = (path or "") + "/"
+
+        # Run a quick call to check access.
+        from github.GithubException import GithubException
+        try:
+            self.repo.get_dir_contents(self.path)
+        except GithubException as e:
+            raise fs.errors.CreateFailed(msg=e.data.get("message"))
 
     def scandir(self, path, namespaces=None, page=None):
         from fs.info import Info
@@ -379,9 +389,14 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
 class GithubApiAppStore(PyFsAppStore):
     """An App Store provided by a local directory."""
     def __init__(self, source):
-        super().__init__(source, GithubApiFilesystem, [
+        # the spec is incomplete
+        if not isinstance(source.spec.get("repo"), str): raise ValueError("The AppSource is misconfigured: missing or invalid 'url'.")
+        if not isinstance(source.spec.get("path"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'ur'.")
+        if not (isinstance(source.spec.get("auth"), dict) and isinstance(source.spec["auth"].get("user"), str)): raise ValueError("The AppSource is misconfigured: missing or invalid 'auth.user'.")
+        if not (isinstance(source.spec.get("auth"), dict) and isinstance(source.spec["auth"].get("pw"), str)): raise ValueError("The AppSource is misconfigured: missing or invalid 'auth.pw'.")
+        super().__init__(source, lambda : GithubApiFilesystem(
             source.spec["repo"], source.spec.get("path"),
-            source.spec["auth"]["user"], source.spec["auth"]["pw"]])
+            source.spec["auth"]["user"], source.spec["auth"]["pw"]))
 
 
 class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
@@ -405,6 +420,9 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         self.tempdir = self.tempdir_obj.__enter__()
 
         self.description = self.url + "/" + self.path.strip("/") + "@" + self.branch
+
+        # Validate access.
+        self.getdir("")
 
     def __repr__(self):
         return "<gitfs '%s'>" % self.description
@@ -519,9 +537,13 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
 class GitRepositoryAppStore(PyFsAppStore):
     """An App Store provided by a local directory."""
     def __init__(self, source):
-        super().__init__(source, GitRepositoryFilesystem, [
+        # validate spec
+        if not isinstance(source.spec.get("url"), str): raise ValueError("The AppSource is misconfigured: missing or invalid 'url'.")
+        if not isinstance(source.spec.get("branch"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'url'.")
+        if not isinstance(source.spec.get("path"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'path'.")
+        super().__init__(source, lambda : GitRepositoryFilesystem(
             source.spec["url"], source.spec.get("branch"), source.spec.get("path"),
-            source.spec.get("ssh_key")])
+            source.spec.get("ssh_key")))
 
 
 def read_yaml_file(f):

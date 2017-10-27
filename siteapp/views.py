@@ -224,7 +224,14 @@ def app_store(request):
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
-    catalog, filter_description = filter_app_catalog(get_app_store(request), request)
+    from guidedmodules.module_sources import AppSourceConnectionError
+    try:
+        catalog, filter_description = filter_app_catalog(get_app_store(request), request)
+    except (ValueError, AppSourceConnectionError) as e:
+        return render(request, "app-store.html", {
+            "error": e,
+            "apps": [],
+        })        
 
     # Group by category from catalog metadata.
     from collections import defaultdict

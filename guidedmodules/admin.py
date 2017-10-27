@@ -51,9 +51,11 @@ class AppSourceSpecWidget(forms.Widget):
 	]
 
     def render(self, name, value, attrs=None):
-    	# For some reason we get the JSON value as a string.
-    	import json, collections
-    	value = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(value or "{}")
+    	# For some reason we get the JSON value as a string. Unless we override Form.clean(),
+    	# and then strangely we get a dict.
+    	if isinstance(value, (str, type(None))):
+    		import json, collections
+    		value = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(value or "{}")
 
     	def make_widget(key, label, widget, help_text, show_for_types):
     	    if key != "_remaining_":
@@ -125,6 +127,19 @@ class AppSourceAdminForm(forms.ModelForm):
 		self.fields['spec'].widget = AppSourceSpecWidget()
 		self.fields['spec'].label = "How is this AppSource accessed?"
 		self.fields['spec'].help_text = None
+	def clean(self):
+		# Do form field valudation.
+		super(AppSourceAdminForm, self).clean()
+
+		if not self.errors:
+			# Validate that the AppSource can actually connect to the source.
+			from .module_sources import AppStore
+			try:
+				with AppStore.create(AppSource(namespace=self.cleaned_data["namespace"], spec=self.cleaned_data["spec"])) as store:
+					pass
+			except Exception as e:
+				raise forms.ValidationError(str(e))
+
 
 class AppSourceAdmin(admin.ModelAdmin):
 	form = AppSourceAdminForm # customize spec widget
