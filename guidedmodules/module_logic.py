@@ -973,7 +973,7 @@ class TemplateContext(Mapping):
             return ret
 
         # The item is not something found in the context.
-        raise AttributeError(item)
+        raise AttributeError(item + " is not a question or property of " + (self.module_answers.task.title if self.module_answers.task else self.module_answers.module.spec["title"]) + ".")
 
     def __iter__(self):
         self._execute_lazy_module_answers()
