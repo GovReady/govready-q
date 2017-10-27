@@ -503,7 +503,7 @@ def render_content(content, answers, output_format, source, additional_context={
             # context.update will immediately load all top-level values, which
             # unfortuntately might throw an error if something goes wrong
             if answers:
-                context.update(TemplateContext(answers, escapefunc, root=True))
+                context.update(TemplateContext(answers, escapefunc, root=True, show_answer_metadata=show_answer_metadata))
 
             # Now really render.
             output = template.render(context)
@@ -889,10 +889,11 @@ class TemplateContext(Mapping):
        template and expression functionality like the '.' accessor to get to
        the answers of a sub-task."""
 
-    def __init__(self, module_answers, escapefunc, parent_context=None, root=False):
+    def __init__(self, module_answers, escapefunc, parent_context=None, root=False, show_answer_metadata=None):
         self.module_answers = module_answers
         self.escapefunc = escapefunc
         self.root = root
+        self.show_answer_metadata = parent_context.show_answer_metadata if parent_context else (show_answer_metadata or False)
         self._cache = { }
         self.parent_context = parent_context
 
@@ -1138,6 +1139,7 @@ class RenderedAnswer:
 
         # Return a class that lazy-renders output documents on request.
         answer = self.answer
+        show_answer_metadata = self.parent_context.show_answer_metadata
         class LazyRenderer:
             def __getattr__(self, item):
                 if answer is None:
@@ -1147,7 +1149,7 @@ class RenderedAnswer:
                     # Find the requested output document in the module.
                     for doc in answer.task.module.spec.get("output", []):
                         if doc.get("id") == item:
-                            return render_content(doc, answer, "html", "%s output document %s" % (repr(answer.module), item), {})
+                            return render_content(doc, answer, "html", "%s output document %s" % (repr(answer.module), item), {}, show_answer_metadata=show_answer_metadata)
                 except AttributeError as e:
                     return make_error(item, e)
 
