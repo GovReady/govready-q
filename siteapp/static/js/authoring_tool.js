@@ -219,6 +219,7 @@ function authoring_tool_new_question(task_id, is_project_page) {
   })
 }
 
+var authoring_tool_reload_app_force = false;
 function authoring_tool_reload_app(task_id) {
   if (!confirm("Are you sure you want to reload this app from its source?"))
     return;
@@ -227,7 +228,7 @@ function authoring_tool_reload_app(task_id) {
       method: "POST",
       data: {
         task: task_id,
-        force: "false"
+        force: authoring_tool_reload_app_force ? "true" : "false"
       },
       keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
       success: function(res) {

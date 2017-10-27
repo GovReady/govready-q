@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models.deletion import ProtectedError
 
 from collections import OrderedDict
 import enum
@@ -543,19 +544,17 @@ AppStoreTypes = {
 ## LOAD MODULES ##
 
 
-class ValidationError(Exception):
+class ValidationError(ModuleDefinitionError):
     def __init__(self, file_name, scope, message):
         super().__init__("There was an error in %s (%s): %s" % (file_name, scope, message))
 
-
-class CyclicDependency(Exception):
+class CyclicDependency(ModuleDefinitionError):
     def __init__(self, path):
         super().__init__("Cyclic dependency between modules: " + " -> ".join(path + [path[0]]))
 
-
-class DependencyError(Exception):
+class DependencyError(ModuleDefinitionError):
     def __init__(self, from_module, to_module):
-        super().__init__("Invalid module ID %s in %s." % (to_module, from_module))
+        super().__init__("Invalid module ID '%s' in module '%s'." % (to_module, from_module))
 
 class IncompatibleUpdate(Exception):
     pass
@@ -698,7 +697,10 @@ def update_module(m, spec, asset_pack, log_status):
     for q in m.questions.all():
         if q not in qs:
             print("Deleting", repr(q))
-            q.delete()
+            try:
+                q.delete()
+            except ProtectedError:
+                raise IncompatibleUpdate("Module {} cannot be updated because question {}, which has been removed, has already been answered.".format(m.module_name, q.key))
 
 
 def update_question(m, definition_order, spec, log_status):
