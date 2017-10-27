@@ -36,7 +36,6 @@ COPY siteapp ./siteapp
 COPY templates ./templates
 COPY manage.py .
 COPY deployment/docker/first_run.sh .
-COPY deployment/docker/appsources.json .
 COPY deployment/docker/dockerfile_exec.sh .
 
 # Set the startup script.

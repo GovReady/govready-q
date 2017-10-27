@@ -20,7 +20,7 @@ if [ ! -z "$EMAIL_HOST" ]; then
 fi
 
 # See first_run.sh. This directory must be created
-# every time the container starts after the AppSource
+# every time the container starts if the AppSource
 # fixture has been loaded.
 mkdir -p /mnt/apps
 

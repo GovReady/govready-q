@@ -6,7 +6,7 @@ from django.db import transaction, models
 from django.db.utils import OperationalError
 from django.conf import settings
 
-from guidedmodules.models import Module
+from guidedmodules.models import AppSource, Module
 from siteapp.models import User, Organization
 from django.contrib.auth.management.commands import createsuperuser
 
@@ -28,6 +28,20 @@ class Command(BaseCommand):
             # deployment/docker/first_run.sh expects a non-zero exit code here
             # and no output.
             sys.exit(1)
+
+        # Create AppSources that we want.
+        AppSource.objects.get_or_create(
+            namespace="host",
+            defaults={
+                "spec": { "type": "local", "path": "/mnt/apps" }
+            }
+        )
+        AppSource.objects.get_or_create(
+            namespace="samples",
+            defaults={
+                "spec": { "type": "git", "url": "https://github.com/GovReady/govready-sample-apps" }
+            }
+        )
 
         # Create the first user.
         if not User.objects.filter(is_superuser=True).exists():
