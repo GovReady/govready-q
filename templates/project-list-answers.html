@@ -57,7 +57,7 @@ h2 { margin-top: 1.5em; }
           </tr>
         </thead>
         <tbody>
-        {% for question, answer, value, value_html in section.answers %}
+        {% for question, answer, value_html in section.answers %}
           <tr>
             <td>
               <a href="{{answer.taskanswer.get_absolute_url}}">
@@ -71,7 +71,9 @@ h2 { margin-top: 1.5em; }
               {% if answer.reviewed == 2 %}<span class="label label-success">Approved</span>{% endif %}
               </div>
 
-              {{value_html|safe}}
+              <div>
+                {{value_html|safe}}
+              </div>
 
               {% if question.spec.type == "module" %}
                 [<a href="#task-{{section.task.id}}">see below</a>]

@@ -662,8 +662,24 @@ def project_list_all_answers(request, project):
                 value_display = "<i>skipped</i>"
                 a.reviewed = None # reset
             else:
-                value_display = RenderedAnswer(task, q, a, value, tc).__html__()
-            section["answers"].append((q, a, value, value_display))
+                # Use the template rendering system to produce a human-readable
+                # HTML rendering of the value.
+                value_display = RenderedAnswer(task, q, a, value, tc)
+                
+                # Show a nice display form if possible using the .text attribute,
+                # if possible. It probably returns a SafeString which needs __html__()
+                # to be called on it.
+                try:
+                    value_display = value_display.text
+                except AttributeError:
+                    pass
+
+                # Whether or not we called .text, call __html__() to get
+                # a rendered form.
+                if hasattr(value_display, "__html__"):
+                    value_display = value_display.__html__()
+
+            section["answers"].append((q, a, value_display))
 
         if len(path) == 0:
             path = path + [task.render_title()]
