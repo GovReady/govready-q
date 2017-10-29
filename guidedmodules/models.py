@@ -616,6 +616,9 @@ class Task(models.Model):
     def has_write_priv(self, user, allow_access_to_deleted=False):
         return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE"
 
+    def has_review_priv(self, user):
+        return user in self.project.organization.reviewers.all()
+
 
     # INVITATION TARGET FUNCTIONS
 

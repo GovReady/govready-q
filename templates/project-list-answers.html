@@ -67,13 +67,17 @@ h2 { margin-top: 1.5em; }
             <td>
               <div style="float: right; margin: 0 0 .25em .25em;">
                 <span
-                  style="cursor: pointer;"
                   class="label"
-                  onclick="change_review_state(this);"
                   data-task="{{section.task.get_absolute_url}}"
                   data-question="{{question.id}}"
                   data-answer="{{answer.id}}"
                   data-reviewed="{{answer.reviewed}}" {# css triggers bg color #}
+                  {% if section.can_review %}
+                  style="cursor: pointer;"
+                  onclick="change_review_state(this);"
+                  {% else %}
+                  style="cursor: default;"
+                  {% endif %}
                   >
                   {% for key, label in review_choices %}
                     {% if answer.reviewed == key %}

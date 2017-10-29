@@ -649,6 +649,7 @@ def project_list_all_answers(request, project):
         section = {
             "task": task,
             "path": path,
+            "can_review": task.has_review_priv(request.user),
             "answers": [],
         }
         sections.append(section)

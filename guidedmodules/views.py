@@ -282,6 +282,8 @@ def save_answer(request, task, answered, context, __, EncryptionProvider, set_ep
 
     elif request.POST.get("method") == "review":
         # Update the reviewed flag on the answer.
+        if not task.has_review_priv(request.user):
+            return JsonResponse({ "status": "error", "message": "You are not an organization reviewer." })
         ta = TaskAnswer.objects.filter(task=task, question=q).first()
         if ta:
             ans = ta.get_current_answer()
@@ -545,6 +547,7 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
         "answer_obj": answer,
         "answer": existing_answer,
         "default_answer": default_answer,
+        "can_review": task.has_review_priv(request.user),
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
         "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
         "show_discussion_members_count": True,
