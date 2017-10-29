@@ -836,6 +836,40 @@ class ModuleAnswers(object):
         self.as_dict() # lazy load if necessary
         return [v[0] for v in self.answertuples.values()]
 
+    def render_answers(self, show_unanswered=True, show_imputed=True, show_metadata=False):
+        # Return a generator that provides tuples of
+        # (question, answerobj, answerhtml) where
+        #   * question is a ModuleQuestion instance
+        #   * answerobj is a TaskAnswerHistory instance (e.g. holding user and review state), or None if the answer was skipped or imputed
+        #   * answerhtml is a str of rendered HTML
+        tc = TemplateContext(self, HtmlAnswerRenderer(show_metadata=show_metadata))
+        for q, is_answered, a, value in self.answertuples.values():
+            if not is_answered and not show_unanswered: continue # skip questions that have no answers
+            if not a and not show_imputed: continue # skip imputed answers
+            if q.spec["type"] == "interstitial": continue # skip question types that display awkwardly
+            if value is None:
+                # Question is skipped.
+                value_display = "<i>skipped</i>"
+            else:
+                # Use the template rendering system to produce a human-readable
+                # HTML rendering of the value.
+                value_display = RenderedAnswer(self.task, q, a, value, tc)
+                
+                # Show a nice display form if possible using the .text attribute,
+                # if possible. It probably returns a SafeString which needs __html__()
+                # to be called on it.
+                try:
+                    value_display = value_display.text
+                except AttributeError:
+                    pass
+
+                # Whether or not we called .text, call __html__() to get
+                # a rendered form.
+                if hasattr(value_display, "__html__"):
+                    value_display = value_display.__html__()
+
+            yield (q, a, value_display)
+
     def render_output(self, additional_context):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents. The

@@ -639,14 +639,12 @@ def project(request, project):
 
 @project_read_required
 def project_list_all_answers(request, project):
-    from guidedmodules.module_logic import TemplateContext, RenderedAnswer, HtmlAnswerRenderer
-
     sections = []
 
     def recursively_find_answers(path, task):
+        # Get the answers + imputed answers for the task.
         answers = task.get_answers().with_extended_info()
-        tc = TemplateContext(answers, HtmlAnswerRenderer(show_metadata=False))
-        
+
         # Create row in the output table for the answers.
         section = {
             "task": task,
@@ -654,31 +652,9 @@ def project_list_all_answers(request, project):
             "answers": [],
         }
         sections.append(section)
-        for q, is_answered, a, value in answers.answertuples.values():
-            if not is_answered: continue # skip questions that have no answers
-            if not a: continue # skip imputed answers
-            if q.spec["type"] == "interstitial": continue # skip question types that display awkwardly
-            if value is None:
-                value_display = "<i>skipped</i>"
-                a.reviewed = None # reset
-            else:
-                # Use the template rendering system to produce a human-readable
-                # HTML rendering of the value.
-                value_display = RenderedAnswer(task, q, a, value, tc)
-                
-                # Show a nice display form if possible using the .text attribute,
-                # if possible. It probably returns a SafeString which needs __html__()
-                # to be called on it.
-                try:
-                    value_display = value_display.text
-                except AttributeError:
-                    pass
 
-                # Whether or not we called .text, call __html__() to get
-                # a rendered form.
-                if hasattr(value_display, "__html__"):
-                    value_display = value_display.__html__()
-
+        # Append all of the questions and answers.
+        for q, a, value_display in answers.render_answers(show_unanswered=False, show_imputed=False):
             section["answers"].append((q, a, value_display))
 
         if len(path) == 0:

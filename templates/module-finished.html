@@ -55,30 +55,29 @@
               </tr>
             </thead>
             <tbody>
-            {% for q in context %}
+            {% for q, a, value_html in all_answers %}
               <tr id="link-to-question-{{q.key}}">
                 <td>
-                  {{q.title}}
-                  {% if q.can_link or authoring_tool_enabled %}
-                  <a href="{{q.link}}" style="margin-right: .5em; font-size: 65%;">
-                    <span class="glyphicon glyphicon-pencil"></span>
-                  </a>
+                  {% if a.taskanswer %}
+                    <a href="{{a.taskanswer.get_absolute_url}}">
+                      {{q.spec.title}}
+                    </a>
+                  {% elif authoring_tool_enabled %}
+                    <a href="{{task.get_absolute_url}}/questions/{{q.key}}">
+                      {{q.spec.title}}
+                    </a>
+                  {% else %}
+                    {{q.spec.title}}
                   {% endif %}
                 </td>
                 <td>
                   <div style="float: right; margin: 0 0 .25em .25em;">
-                    {% if not q.skipped and not q.imputed %}
-                      {% if q.reviewed == 0 %}<span class="label label-danger">New</span>{% endif %}
-                      {% if q.reviewed == 1 %}<span class="label label-info">Reviewed</span>{% endif %}
-                      {% if q.reviewed == 2 %}<span class="label label-success">Approved</span>{% endif %}
-                    {% endif %}
-
-                    {% if q.imputed %}
+                    {% if not a %}
                       <span class="label label-warning">Imputed</span>
                     {% endif %}
                   </div>
  
-                  {{q.value|safe}}
+                  {{value_html|safe}}
                 </td>
               </tr>
             {% endfor %}
