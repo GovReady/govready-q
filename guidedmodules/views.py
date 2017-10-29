@@ -87,7 +87,8 @@ def task_view(view_func):
         task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
 
         # If this task is actually a project root, redirect away from here.
-        if task.root_of.first() is not None:
+        # Only do this for GET requests since POST requests can be API-like things.
+        if request.method == "GET" and task.root_of.first() is not None:
             return HttpResponseRedirect(task.root_of.first().get_absolute_url())
 
         # Is this page about a particular question?
@@ -544,7 +545,7 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
         "answer_obj": answer,
         "answer": existing_answer,
         "default_answer": default_answer,
-        "review_choices": [(0, 'Not Reviewed'), (1, 'Reviewed'), (2, 'Approved')],
+        "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
         "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
         "show_discussion_members_count": True,
 

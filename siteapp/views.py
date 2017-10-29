@@ -670,10 +670,12 @@ def project_list_all_answers(request, project):
     # Start at the root task and compute a table of all answers, recursively.
     recursively_find_answers([], project.root_task)
 
+    from guidedmodules.models import TaskAnswerHistory
     return render(request, "project-list-answers.html", {
         "project": project,
         "folder": project.primary_folder(),
         "answers": sections,
+        "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
     })
 
 

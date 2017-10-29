@@ -65,12 +65,21 @@
               padding: 1px .33em;
             }
             .question-answer[data-reviewed="1"] {
-              border: 1px solid #DD7;
+              border: 1px solid #5bc0de;
               padding: 1px 3px;
             }
             .question-answer[data-reviewed="2"] {
-              border: 1px solid #DD7;
+              border: 1px solid #5cb85c;
               padding: 1px 3px;
+            }
+            .label[data-reviewed="0"] {
+              background-color: #d9534f;
+            }
+            .label[data-reviewed="1"] {
+              background-color: #5bc0de;
+            }
+            .label[data-reviewed="2"] {
+              background-color: #5cb85c;
             }
         </style>
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">

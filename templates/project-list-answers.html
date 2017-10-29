@@ -66,9 +66,21 @@ h2 { margin-top: 1.5em; }
             </td>
             <td>
               <div style="float: right; margin: 0 0 .25em .25em;">
-              {% if answer.reviewed == 0 %}<span class="label label-danger">New</span>{% endif %}
-              {% if answer.reviewed == 1 %}<span class="label label-info">Reviewed</span>{% endif %}
-              {% if answer.reviewed == 2 %}<span class="label label-success">Approved</span>{% endif %}
+                <span
+                  style="cursor: pointer;"
+                  class="label"
+                  onclick="change_review_state(this);"
+                  data-task="{{section.task.get_absolute_url}}"
+                  data-question="{{question.id}}"
+                  data-answer="{{answer.id}}"
+                  data-reviewed="{{answer.reviewed}}" {# css triggers bg color #}
+                  >
+                  {% for key, label in review_choices %}
+                    {% if answer.reviewed == key %}
+                      {{label}}
+                    {% endif %}
+                  {% endfor %}
+                </span>
               </div>
 
               <div>
@@ -95,3 +107,56 @@ h2 { margin-top: 1.5em; }
 
 {% endblock %}
 
+{% block scripts %}
+<script>
+function change_review_state(elem) {
+  // Build the select element.
+  var elem = $(elem);
+  var dom = $("<div><p>Change the review state to:</p> <select class='form-control'></select></div>");
+  var review_choices = {{review_choices|json}};
+  review_choices.forEach(function(item) {
+    var opt = $("<option/>");
+    opt.attr("value", item[0]);
+    opt.text(item[1]);
+    if (item[0] == elem.attr('data-reviewed')) opt.prop("selected", true);
+    dom.find("select").append(opt);
+  })
+
+  // Attach event listener.
+  var value = elem.attr('data-reviewed');
+  dom.find("select").change(function() {
+    value = $(this).val();
+  })
+
+  // Show the <select> in a modal.
+  show_modal_confirm(
+    "Change Review State",
+    dom,
+    "Save", function() {
+      // return if change
+      if (elem.attr('data-reviewed') == value) return;
+
+      // submit the change to the server
+      ajax_with_indicator({
+          url: elem.attr('data-task') + "/_save",
+          method: "POST",
+          data: {
+            question: elem.attr('data-question'), {# database id #}
+            answer: elem.attr('data-answer'), {# TaskAnswerHistory id #}
+            method: "review",
+            reviewed: value
+          },
+          success: function() {
+            // Update DOM.
+            review_choices.forEach(function(item) {
+              if (item[0] == value) {
+                elem.attr("data-reviewed", item[0]);
+                elem.text(item[1])
+              }
+            });
+          }
+      });
+    })
+}
+</script>
+{% endblock %}

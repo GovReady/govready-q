@@ -1363,7 +1363,9 @@ class TaskAnswerHistory(models.Model):
     cleared = models.BooleanField(default=False, help_text="Set to True to indicate that the user wants to clear their answer. This is different from a null-valued answer, which means not applicable/don't know/skip.")
 
     notes = models.TextField(blank=True, help_text="Notes entered by the user completing this TaskAnswerHistory.")
-    reviewed = models.IntegerField(default=0, help_text="Whether this answer has been reviewed and/or approved. All new answers begin with zero. Positive values represent review steps in the organization's workflow.")
+
+    REVIEW_CHOICES = [(0, 'Not Reviewed'), (1, 'Reviewed'), (2, 'Approved')]
+    reviewed = models.IntegerField(default=0, choices=REVIEW_CHOICES, help_text="Whether this answer has been reviewed and/or approved. All new answers begin with zero. Positive values represent review steps in the organization's workflow.")
 
     thumbnail = models.FileField(upload_to='q/thumbnails', blank=True, null=True)
 
