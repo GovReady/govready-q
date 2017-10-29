@@ -144,7 +144,7 @@ if [ ! -z "$NAME" ]; then
       exit 1
     else
       echo "Removing existing $NAME container..."
-      PREV=$(docker container rm -f govready-q)
+      PREV=$(docker container rm -f $NAME)
     fi
   fi
 fi
