@@ -4,7 +4,7 @@
 
 Ensure `pip` and `psql` command line tools are installed:
 
-    yum install python34-pip postgresql
+    yum install python34-pip postgresql pandoc wkhtmltopdf
 
 Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
 

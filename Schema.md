@@ -108,7 +108,15 @@ Output documents of a project module that have an `id` field are used in the fol
 Documents
 ---------
 
-Documents occur as `introduction` and `output` documents of Modules as well as Question prompts.
+Documents occur as `introduction` and `output` documents of Modules as well as Question prompts. A document appears as:
+
+	id: mydoc
+	title: Document 1
+	format: markdown
+	template: |
+      Hello!
+
+The `id` and `title` fields are generally optional. An `id` is required to make the document downloadable. The fields also have special uses in projects (see above).
 
 ### Document Format
 

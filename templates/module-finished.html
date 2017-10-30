@@ -100,6 +100,14 @@
     <div class="panel panel-default">
       <div class="panel-heading" role="tab" id="document-{{forloop.counter}}-title">
         <h4 class="panel-title">
+          {% if document.id %}
+          <div class="pull-right">
+            <span class="glyphicon glyphicon-download-alt"
+              style="cursor: pointer"
+              onclick="download_document('{{document.id|escapejs}}')"> </span>
+          </div>
+          {% endif %}
+
           <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{forloop.counter}}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{forloop.counter}}-body">
             {{document.title}}
           </a>
@@ -166,4 +174,25 @@
   {% endif %}
 
   {% include "task-question-debug-links.html" %}
+
+  <script>
+  function download_document(document_id) {
+    var dom = $("<div><p>Select download format:</p>"
+      + "<select class=form-control>"
+      + "<option value=plain>Plain Text</option>"
+      + "<option value=docx>Word Document</option>"
+      + "<option value=odt>OpenOffice Document</option>"
+      + "<option value=markdown>Markdown</option>"
+      + "<option value=html>HTML Page</option>"
+      + "</select>"
+      + "</div>");
+    // not available in our docker version because the OS
+    // provides an older version of pandoc
+    //  + "<option value=pdf>PDF</option>"
+    show_modal_confirm("Download Document", dom, "Download", function() {
+      var format = dom.find("select").val();
+      window.location = "{{task.get_absolute_url|escapejs}}/download/document/" + encodeURIComponent(document_id) + "/" + format;
+    });
+  }
+  </script>
 {% endblock %}

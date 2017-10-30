@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^(\d+)/([\w_-]+)(/question/)([\w_-]+)/history/(\d+)/media$', guidedmodules.views.download_answer_file),
     url(r'^(\d+)/([\w_-]+)(/finished)()$', guidedmodules.views.task_finished),
     url(r'^(\d+)/([\w_-]+)/media/(.*)$', guidedmodules.views.download_module_asset),
+    url(r'^(\d+)/([\w_-]+)/(download/document)()/(.*)/(.*)$', guidedmodules.views.download_module_output),
     url(r'^(\d+)/([\w_-]+)()()$', guidedmodules.views.next_question),
     url(r'^start$', guidedmodules.views.new_task),
     url(r'^_change_state$', guidedmodules.views.change_task_state, name="task_change_state"),

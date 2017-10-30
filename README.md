@@ -36,7 +36,7 @@ To develop locally, run the following commands to set up your development enviro
 
 	# install python3 and pip appropriately for your environment
 	# below command demonstrates Ubuntu
-	sudo apt-get install python3-pip unzip libssl-dev # or appropriate for your system
+	sudo apt-get install python3-pip unzip libssl-dev pandoc wkhtmltopdf # or appropriate for your system
 	
 	# clone repo
 	git clone https://github.com/GovReady/govready-q
