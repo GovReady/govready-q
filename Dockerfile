@@ -9,7 +9,7 @@ WORKDIR /usr/src/app
 
 # Install required system packages.
 # jq: we use it to assemble the local/environment.json file
-RUN apt-get update && apt-get install -y graphviz pandoc wkhtmltopdf jq && apt-get clean
+RUN apt-get update && apt-get install -y graphviz unzip pandoc wkhtmltopdf jq && apt-get clean
 
 # Copy in the Python module requirements and install them.
 # Manually install database drivers which aren't in our requirements
@@ -19,7 +19,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir psycopg2
 
 # Copy in the vendor resources and fetch them.
-RUN apt-get update && apt-get install unzip && apt-get clean
 COPY fetch-vendor-resources.sh ./
 RUN ./fetch-vendor-resources.sh
 
