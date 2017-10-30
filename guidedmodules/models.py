@@ -216,12 +216,14 @@ class Module(models.Model):
 
     def is_authoring_tool_enabled(self, user):
         return (settings.DEBUG
+        	and self.app is not None # legacy Module not associated with an AppInstance
             and self.source.spec["type"] == "local" # so we can save to disk
             and user.has_perm('guidedmodules.change_module'))
     def get_referenceable_modules(self):
         # Return the modules that can be referenced by this
         # one in YAML as an answer type. That's any Module
         # defined in the same AppInstance that isn't "type: project".
+        if self.app is None: return # legacy Module not associated with an AppInstance
         for m in self.app.modules.all():
             if m.spec.get("type") == "project": continue
             yield m
