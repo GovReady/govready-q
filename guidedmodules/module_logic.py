@@ -352,9 +352,13 @@ def render_content(content, answers, output_format, source, additional_context={
                 return "\uE000%d\uE001" % index # use Unicode private use area code points
             template_body = re.sub("{%.*?%}|{{.*?}}", replace, template_body)
 
-            # Render with a custom renderer to control output.
-            import CommonMark
-            class q_renderer(CommonMark.HtmlRenderer):
+            # Use our CommonMarkTables parser & renderer.
+            from CommonMarkTables import \
+                ParserWithTables as CommonMarkParser, \
+                RendererWithTables as CommonMarkHtmlRenderer
+
+            # Subclass the renderer to control the output a bit.
+            class q_renderer(CommonMarkHtmlRenderer):
                 def __init__(self):
                     # Our module templates are currently trusted, so we can keep
                     # safe mode off, and we're making use of that. Safe mode is
@@ -378,8 +382,11 @@ def render_content(content, answers, output_format, source, additional_context={
                     node.info = None
                     super().code_block(node, entering)
 
+                def make_table_node(self, node):
+                    return "<table class='table'>"
+
             template_format = "html"
-            template_body = q_renderer().render(CommonMark.Parser().parse(template_body))
+            template_body = q_renderer().render(CommonMarkParser().parse(template_body))
 
             # Put the Jinja2 template tags back that we removed prior to running
             # the CommonMark renderer.
@@ -585,9 +592,13 @@ class HtmlAnswerRenderer:
             # <'s appear tag-like in certain cases like
             # when we say <not answerd>.
             if value.startswith("<"): value = "\\" + value
-            import CommonMark
-            parsed = CommonMark.Parser().parse(value)
-            value = CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
+
+            from CommonMarkTables import \
+                ParserWithTables as CommonMarkParser, \
+                RendererWithTables as CommonMarkHtmlRenderer
+            parsed = CommonMarkParser().parse(value)
+            value = CommonMarkHtmlRenderer({ "safe": True }).render(parsed)
+
             wrappertag = "div"
 
         elif question is not None and question.spec["type"] == "file" and question.spec.get("file-type") == "image" \
