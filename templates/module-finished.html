@@ -179,11 +179,11 @@
   function download_document(document_id) {
     var dom = $("<div><p>Select download format:</p>"
       + "<select class=form-control>"
-      + "<option value=plain>Plain Text</option>"
       + "<option value=docx>Word Document</option>"
       + "<option value=odt>OpenOffice Document</option>"
-      + "<option value=markdown>Markdown</option>"
       + "<option value=html>HTML Page</option>"
+      + "<option value=markdown>Markdown</option>"
+      + "<option value=plain>Plain Text</option>"
       + "</select>"
       + "</div>");
     // not available in our docker version because the OS
