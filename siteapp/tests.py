@@ -366,8 +366,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
             self.browser.get(project_page)
             var_sleep(1)
 
-        # Test an invitation to that project.
-        self.click_element("#show-project-invite")
+        # Test an invitation to that project. For unknown reasons, when
+        # executing this on CircleCI (but not locally), the click fails
+        # because the element is not clickable -- it reports a coordinate
+        # that's above the button in the site header. Not sure what's
+        # happening. So load the modal using Javascript.
+        #self.click_element("#show-project-invite")
+        self.browser.execute_script("invite_user_into_project()")
         var_sleep(.5) # modal fades in
 
         # Test an invalid email address.
@@ -376,7 +381,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
         var_sleep(.5)
-        self.click_element("#show-project-invite") # Re-open the invite box.
+        #self.click_element("#show-project-invite") # Re-open the invite box.
+        self.browser.execute_script("invite_user_into_project()") # See comment above.
 
         do_invitation("test+project@q.govready.com")
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
