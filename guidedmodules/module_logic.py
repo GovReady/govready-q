@@ -855,13 +855,15 @@ class ModuleAnswers(object):
                 # HTML rendering of the value.
                 value_display = RenderedAnswer(self.task, q, a, value, tc)
                 
-                # Show a nice display form if possible using the .text attribute,
+                # For question types whose primary value is machine-readable,
+                # show a nice display form if possible using the .text attribute,
                 # if possible. It probably returns a SafeString which needs __html__()
-                # to be called on it.
-                try:
-                    value_display = value_display.text
-                except AttributeError:
-                    pass
+                # to be called on it. "file" questions render nicer without .text.
+                if q.spec["type"] not in ("file",):
+                    try:
+                        value_display = value_display.text
+                    except AttributeError:
+                        pass
 
                 # Whether or not we called .text, call __html__() to get
                 # a rendered form.
