@@ -367,9 +367,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
             var_sleep(1)
 
         # Test an invitation to that project.
-        self.click_element("#show-project-settings")
+        self.click_element("#show-project-invite")
         var_sleep(.5) # modal fades in
-        self.click_element("#invite-user-to-project")
 
         # Test an invalid email address.
         start_invitation("example")
@@ -377,7 +376,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
         var_sleep(.5)
-        self.click_element("#invite-user-to-project") # Re-open the invite box.
+        self.click_element("#show-project-invite") # Re-open the invite box.
 
         do_invitation("test+project@q.govready.com")
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
