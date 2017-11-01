@@ -471,7 +471,7 @@ def render_content(content, answers, output_format, source, additional_context={
         # For other values we perform standard HTML escaping.
 
         if template_format == "text":
-            def escapefunc(question, answerobj, value):
+            def escapefunc(question, task, has_answer, answerobj, value):
                 # Don't perform any escaping.
                 return str(value)
     
@@ -581,7 +581,7 @@ def render_content(content, answers, output_format, source, additional_context={
 class HtmlAnswerRenderer:
     def __init__(self, show_metadata):
         self.show_metadata = show_metadata
-    def __call__(self, question, answerobj, value):
+    def __call__(self, question, task, has_answer, answerobj, value):
         import html
 
         if question is not None and question.spec["type"] == "longtext":
@@ -643,13 +643,32 @@ class HtmlAnswerRenderer:
             value = html.escape(str(value))
             wrappertag = "span"
 
-        if not self.show_metadata or question is None or answerobj is None:
+        if (not self.show_metadata) or (question is None):
             return value
 
         # Wrap the output in a tag that holds metadata.
+
+        # If the question is unanswered or imputed...
+        if not answerobj:
+            return """<{tag} class='question-answer'
+              data-module='{module}'
+              data-question='{question}'
+              data-answer-type='{answer_type}'
+              {edit_link}
+              >{value}</{tag}>""".format(
+                tag=wrappertag,
+                module=html.escape(question.module.spec['title']),
+                question=html.escape(question.spec["title"]),
+                answer_type="skipped" if not has_answer else "imputed",
+                edit_link=("data-edit-link='" + task.get_absolute_url_to_question(question) + "'") if task else "",
+                value=value,
+            )
+
+        # If the question is answered (by a user).
         return """<{tag} class='question-answer'
           data-module='{module}'
           data-question='{question}'
+          data-answer-type='user-answer'
           data-edit-link='{edit_link}'
           data-answered-by='{answered_by}'
           data-answered-on='{answered_on}'
@@ -659,9 +678,9 @@ class HtmlAnswerRenderer:
             module=html.escape(question.module.spec['title']),
             question=html.escape(question.spec["title"]),
             edit_link=answerobj.taskanswer.get_absolute_url(),
-            answered_by=html.escape(str(answerobj.answered_by)) if answerobj else "(value was imputed)",
-            answered_on=html.escape(answerobj.created.strftime("%c")) if answerobj else "(n/a)",
-            reviewed=str(answerobj.reviewed) if answerobj else "",
+            answered_by=html.escape(str(answerobj.answered_by)),
+            answered_on=html.escape(answerobj.created.strftime("%c")),
+            reviewed=str(answerobj.reviewed),
             value=value,
         )
 
@@ -1062,7 +1081,7 @@ class RenderedProject(TemplateContext):
     def as_raw_value(self):
         return self.project.title
     def __html__(self):
-        return self.escapefunc(None, None, self.as_raw_value())
+        return self.escapefunc(None, None, None, None, self.as_raw_value())
 
 class RenderedOrganization(TemplateContext):
     def __init__(self, organization, parent_context=None):
@@ -1076,7 +1095,7 @@ class RenderedOrganization(TemplateContext):
     def as_raw_value(self):
         return self.organization.name
     def __html__(self):
-        return self.escapefunc(None, None, self.as_raw_value())
+        return self.escapefunc(None, None, None, None, self.as_raw_value())
 
 class RenderedAnswer:
     def __init__(self, task, question, answerobj, answer, parent_context):
@@ -1113,7 +1132,7 @@ class RenderedAnswer:
             value = str(self.answer)
 
         # And in all cases, escape the result.
-        return self.escapefunc(self.question, self.answerobj, value)
+        return self.escapefunc(self.question, self.task, self.answer is not None, self.answerobj, value)
 
     @property
     def text(self):
@@ -1166,7 +1185,7 @@ class RenderedAnswer:
                 self.value = value
                 self.ra = ra
             def __html__(self):
-                return self.ra.escapefunc(self.ra.question, self.ra.answerobj, self.value)
+                return self.ra.escapefunc(self.ra.question, self.ra.task, self.ra.answer is not None, self.ra.answerobj, self.value)
         return SafeString(value, self)
 
     @property

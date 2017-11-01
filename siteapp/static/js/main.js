@@ -13,12 +13,14 @@ $(function() {
   fakewaffle.responsiveTabs(['xs', 'sm'])
 
   // Make question answers show popovers with additional information.
-  $('.question-answer').popover({
+  $('.question-answer[data-answer-type=user-answer], .question-answer[data-edit-link]').popover({
     html: true,
     content: function() {
       var template = $(
-          "<div><p>Answered by <span class='answered-by'></span> on <span class='answered-on'></span>.</p>"
-        + "<p>Edit answer to <a><span class='question'></span></a> in <span class='module'></span>.</p></div>");
+          "<div><p class='author-info'>Answered by <span class='answered-by'></span> on <span class='answered-on'></span>.</p>"
+        + "<p class='edit-link'>Edit answer to <a><span class='question'></span></a> in <span class='module'></span>.</p></div>");
+      template.find('.author-info').toggle(this.getAttribute("data-answer-type") == "user-answer");
+      template.find('.edit-link').toggle(this.hasAttribute("data-edit-link"));
       template.find('.answered-by').text(this.getAttribute("data-answered-by"));
       template.find('.answered-on').text(this.getAttribute("data-answered-on"));
       template.find('.question').text(this.getAttribute("data-question"));
