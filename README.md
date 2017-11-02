@@ -116,7 +116,7 @@ Content in GovReady-Q is organized around apps and modules:
 * An "app" is a collection of modules, one of which is named "app" that defines the layout of the app when it is started by a user.
 * A "top level" app is a special type of app that contains slots for various "component" apps that together define the architecture of a type of IT System.
 
-The typical user experience will be to first pick a "top level" app from the compliance catalog that is representative of their IT System, then pick the "component" apps that represent the specific components of the IT System, and then iteratively complete the questions within the component apps' modules.
+The typical user experience will be to first pick a "top level" app from the compliance catalog that is representative of your IT System, then pick the "component" apps that represent the specific components of the IT System, and then iteratively complete the questions within the component apps' modules.
 
 The diagram below depicts an exploded view of the relationships between a top level app to a component app and to modules and questions.
 
