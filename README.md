@@ -5,6 +5,7 @@ GovReady-Q Compliance Server is an open source tool to help teams build and oper
 1. [About GovReady-Q Compliance Server](#about-govready-q) 
 1. [Installing Locally / Development](#development)
 1. [About Compliance Apps](#about-apps)
+1. [Creating GovReady-Q Compliance Apps using the Docker version](#creating-apps)
 1. [Automation API](#automation)
 1. [Testing and Generating Screenshots](#testing)
 1. [Deployment Guides](#deployment)
@@ -128,6 +129,20 @@ GovReady-Q currently installs with a small set of compliance apps primarily for 
 See [Apps.md](Apps.md) for documentation on creating apps and having them appear in the GovReady-Q app catalog.
 
 See [Schema.md](Schema.md) for documentation on writing modules, which contain questions.
+
+# <a name="creating-apps"></a> Creating GovReady-Q Compliance Apps using the Docker version
+
+To create your own compliance apps, visit the [step-by-step guide to creating compliance apps using the Docker version of the GovReady-Q Commpliance Server](deployment/docker/CreatingApps.md).
+
+This guide shows you how to:
+
+* Start and configure the Docker version of GovReady-Q
+* Create a compliance app
+* Edit a compliance app's YAML files
+* Edit a compliance app using GovReady-Q's authoring tools
+* Deploy the app to a production instance of GovReady-Q and storing apps in a source code version control repository
+
+![My first compliance app!](https://github.com/GovReady/govready-q/blob/master/deployment/docker/docs/startedapp.png?raw=true)
 
 # <a name="automation"></a> Automation API
 
