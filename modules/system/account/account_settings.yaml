@@ -8,7 +8,7 @@ introduction:
 
     GovReady Q works much better when you have a user profile.
 
-    Answer a few  quick questions and will have your profile.
+    Answer a few quick questions and you will have your profile.
 questions:
   - id: name
     title: Your Name
@@ -17,7 +17,7 @@ questions:
 
   - id: role
     title: Your Role
-    prompt: Which team is your position at **{{organization}}** most closely aligned?
+    prompt: Which team is your position at **{{organization}}** most closely aligned with?
     type: choice
     choices:
       - key: ceo_team
