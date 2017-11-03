@@ -13,15 +13,15 @@ GovReady-Q Compliance Server is an open source tool to help teams build and oper
 
 # <a name="about-govready-q"></a>About GovReady-Q Compliance Server
 
-GovReady-Q offers easy-to-use "compliance apps" that manage and generate documentation of your IT systems. Compliance apps represents system components, organization processes and team roles. When using GovReady-Q, your IT project teams select "apps" from a compliance store. The apps interactively teach security and ask simple questions about your software and system. As you pick apps and collaboratively answers questions with your team, GovReady-Q analyzes tracks your system's compliance and maintains human and machine-readable versions of your compliance documentation.
+GovReady-Q offers easy-to-use "compliance apps" that manage and generate documentation of your IT systems. Compliance apps represent system components, organization processes and team roles. When using GovReady-Q, your IT project teams select "apps" from a compliance store. The apps interactively teach security and ask simple questions about your software and system. As you pick apps and collaboratively answer questions with your team, GovReady-Q analyzes and tracks your system's compliance and maintains human- and machine-readable versions of your compliance documentation.
 
-GovReady-Q can be used on its own or as a compliment to an organization's existing GRC software providing step-by-step guideance and pre-written control implementation descriptions.
+GovReady-Q can be used on its own or as a complement to an organization's existing GRC software providing step-by-step guidance and pre-written control implementation descriptions.
 
 GovReady-Q is in public beta and recommended for innovators and early adopters interested in furthering the platform's development.
 
-Our vision is to make Governance, Risk and Compliance easy and pratical for small businesses, developers, managers, and others who are not security or compliance experts.
+Our vision is to make Governance, Risk and Compliance (GRC) easy and practical for small businesses, developers, managers, and others who are not security or compliance experts.
 
-GovReady-Q is open source and incorporates the emerging [OpenControl](http://open-control.org) data standard for re-usable compliance content.
+GovReady-Q is open source and incorporates the emerging [OpenControl](http://open-control.org) data standard for reusable compliance content.
 
 The easiest way to get started with GovReady-Q is to launch Q through Docker. See our [Launching with Docker](deployment/docker/README.md) guide to get started.
 
@@ -80,7 +80,7 @@ Visit [http://localhost:8000/](http://localhost:8000) and sign in with the super
 
 ![New Organization](docs/assets/new_org.png)
 
-Follow the instructions to visit your site's subdomain, e.g. at [http://my-first-organization.localhost:8000](http://my-first-organization.localhost:8000). We recommend using Google Chrome at the point. Other browsers will not be able to resolve organization subdomains on `localhost` unless you add `127.0.0.1 my-first-organization.localhost` [to your hosts file](https://support.rackspace.com/how-to/modify-your-hosts-file/).
+Follow the instructions to visit your site's subdomain, e.g. at [http://my-first-organization.localhost:8000](http://my-first-organization.localhost:8000). We recommend using Google Chrome at this point. Other browsers will not be able to resolve organization subdomains on `localhost` unless you add `127.0.0.1 my-first-organization.localhost` [to your hosts file](https://support.rackspace.com/how-to/modify-your-hosts-file/).
 
 When you log in for the first time it will ask you questions about the user and about the organization.
 
@@ -102,13 +102,13 @@ To update the source code from this repository you can `git pull`. You then may 
 
 Cyber security compliance would be easier and less time consuming if the components of our IT systems automatically generated the paperwork auditors want.
 
-That's the idea behind GovReady Compliance Apps: resuable data packages mapping your IT system components to compliance controls so sofware maintains the paperwork while your people to get back to improving security and managing risk.
+That's the idea behind GovReady Compliance Apps: reusable data packages mapping your IT system components to compliance controls so software maintains the paperwork, allowing your people to get back to improving security and managing risk.
 
-Compliance apps map IT System components to compliance controls. A "component" can be any part of a system that contributes to its operation including organizational processes. Compliance apps collect and assess information about one or more system components and translate that information to compliance documentation.
+Compliance apps map IT System components to compliance controls. A "component" can be any part of a system that contributes to its operation -- including organizational processes. Compliance apps collect and assess information about one or more system components and translate that information to compliance documentation.
 
 ![Apps map components to security/compliance controls](docs/assets/app_diagram2.png)
 
-Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principle benefit of compliance apps is their modularization and reusability.
+Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principal benefit of compliance apps is their modularization and reusability.
 
 Content in GovReady-Q is organized around apps and modules:
 
@@ -116,9 +116,9 @@ Content in GovReady-Q is organized around apps and modules:
 * An "app" is a collection of modules, one of which is named "app" that defines the layout of the app when it is started by a user.
 * A "top level" app is a special type of app that contains slots for various "component" apps that together define the architecture of a type of IT System.
 
-The typical user experience will be to first pick a "top level" app from the compliance catalog representative of IT System, then pick the "component" apps that represent the specific components of the IT System, and then iteratively complete the questions within the component apps modules.
+The typical user experience will be to first pick a "top level" app from the compliance catalog that is representative of your IT System, then pick the "component" apps that represent the specific components of the IT System, and then iteratively complete the questions within the component apps' modules.
 
-The below diagram depicts an exploded view of the relationships between a top level app to a component app to modules and questions.
+The diagram below depicts an exploded view of the relationships between a top level app to a component app and to modules and questions.
 
 !["Top Level" compliance apps contain "component" compliance apps that contain modules and questions](docs/assets/app_exploded.png)
 
@@ -140,7 +140,7 @@ This guide shows you how to:
 * Create a compliance app
 * Edit a compliance app's YAML files
 * Edit a compliance app using GovReady-Q's authoring tools
-* Deploy the app to a production instance of GovReady-Q and storing apps in a source code version control repository
+* Deploying the app to a production instance of GovReady-Q and storing apps in a source code version control repository
 
 ![My first compliance app!](https://github.com/GovReady/govready-q/blob/master/deployment/docker/docs/startedapp.png?raw=true)
 
