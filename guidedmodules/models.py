@@ -1561,7 +1561,7 @@ class TaskAnswerHistory(models.Model):
         if value is not None:
             if q.spec["type"] == "longtext":
                 # Longtext is Markdown. Turn into HTML.
-                from CommonMarkTables import \
+                from CommonMarkExtensions.tables import \
                     ParserWithTables as CommonMarkParser, \
                     RendererWithTables as CommonMarkHtmlRenderer
                 human_readable_text_key = "html"
