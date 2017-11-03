@@ -352,8 +352,8 @@ def render_content(content, answers, output_format, source, additional_context={
                 return "\uE000%d\uE001" % index # use Unicode private use area code points
             template_body = re.sub("{%.*?%}|{{.*?}}", replace, template_body)
 
-            # Use our CommonMarkTables parser & renderer.
-            from CommonMarkTables import \
+            # Use our CommonMark Tables parser & renderer.
+            from CommonMarkExtensions.tables import \
                 ParserWithTables as CommonMarkParser, \
                 RendererWithTables as CommonMarkHtmlRenderer
 
@@ -593,7 +593,7 @@ class HtmlAnswerRenderer:
             # when we say <not answerd>.
             if value.startswith("<"): value = "\\" + value
 
-            from CommonMarkTables import \
+            from CommonMarkExtensions.tables import \
                 ParserWithTables as CommonMarkParser, \
                 RendererWithTables as CommonMarkHtmlRenderer
             parsed = CommonMarkParser().parse(value)
