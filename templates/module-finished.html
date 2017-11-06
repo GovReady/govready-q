@@ -113,7 +113,7 @@
           </a>
         </h4>
       </div>
-      <div id="document-{{forloop.counter}}-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %}" role="tabpanel" aria-labelledby="document-{{forloop.counter}}-title">
+      <div id="document-{{forloop.counter}}-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-{{forloop.counter}}-title">
         <div class="panel-body output-document">
           {{document.html|safe}}
         </div>
@@ -176,6 +176,12 @@
   {% include "task-question-debug-links.html" %}
 
   <script>
+  // Allow templates to create Bootstrap 3 popovers.
+  $('.output-document *[data-toggle=popover]')
+    .popover()
+    .css({ cursor: 'pointer' });
+
+  // The download button shows a modal to ask what file format to download in.
   function download_document(document_id) {
     var dom = $("<div><p>Select download format:</p>"
       + "<select class=form-control>"
