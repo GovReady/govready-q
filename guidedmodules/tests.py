@@ -215,6 +215,23 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test("{% if 0 %}HELLO{% endif %}", '')
         test("{{q_text}}", 'HELLO THERE')
 
+    def test_impute_conditions_in_module(self):
+        # Test that impute conditions are actually working in a real module.
+
+        # Take a Module and start it with no answers.
+        m = self.getModule("impute_conditions")
+        answers = ModuleAnswers(m, None, { })
+
+        # Run impute conditions.
+        answers = answers.with_extended_info()
+        self.assertEqual(len(answers.was_imputed), 3)
+
+        # Check imputed values.
+        answers = answers.as_dict()
+        self.assertEqual(answers.get("im_expr_1"), 2)
+        self.assertEqual(answers.get("im_templ_1"), '1')
+        self.assertEqual(answers.get("im_templ_2"), '2')
+
 
 class RenderTests(TestCaseWithFixtureData):
     ## GENERAL RENDER TESTS ##
