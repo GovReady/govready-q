@@ -58,6 +58,7 @@
   padding-bottom: .75em;
   {% if layout_mode == "grid" %}
     text-align: center;
+    margin-top: 10px;
   {% endif %}
   border-radius: 15px; /* good for highlighting */
 }
@@ -70,9 +71,6 @@
     height: 96px;
     border: 1px solid #DDD;
     padding:12px;
-    {% if layout_mode != "rows" %}
-    margin-top: 20px;
-    {% endif %}
     border-radius: 10px;
     background-color: #DDD;
   }
@@ -114,8 +112,12 @@
   font-size: 85%;
 }
 
-.authoring-tool-trigger {
-  float: right;
+.authoring-tool-hidden {
+  display: none; /* hidden by default */
+}
+.authoring-tool-edit-question {
+  position: absolute;
+  right: 0;
   color: #31708f;
 }
 </style>
@@ -151,6 +153,13 @@
       API Docs
     </a>
 
+    {% if authoring_tool_enabled %}
+      <a class="btn btn-sm" href="#" onclick="$('.authoring-tool-hidden').fadeIn(); $(this).remove(); return false;">
+        <i class="glyphicon glyphicon-pencil"></i>
+        Authoring Tool
+      </a>
+    {% endif %}
+
     {# action buttons #}
     {% if action_buttons %}
       {% for rec in action_buttons %}
@@ -180,7 +189,7 @@
 
 {% block above_title %}
     {% if authoring_tool_enabled %}
-      <center style="font-size: 90%;"><p class="text-info">
+      <center style="font-size: 90%;" class="authoring-tool-hidden"><p class="text-info">
         You are in author mode. Authoring tools have been enabled for this module.
         <br>
         <a href="#" onclick="show_authoring_tool_module_editor(); return false;">
@@ -281,6 +290,12 @@
                       <div class="col-sm-3">
                     {% endif %}
 
+                    {% if authoring_tool_enabled %}
+                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{rec.question.key}}">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                      </div>
+                    {% endif %}
+
                     <div class="question-icon">
                       <img
                         {% if rec.icon %}
@@ -300,12 +315,6 @@
                     {% endif %}
 
                     <div class="question-title">
-                      {% if authoring_tool_enabled %}
-                        <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
-                          <span class="glyphicon glyphicon-pencil"></span>
-                        </div>
-                      {% endif %}
-
                       <!--{% if can_begin_module and rec.question.spec.protocol %}Add {% endif %} -->
                         {{rec.question.spec.title}}
                     </div>
@@ -347,13 +356,23 @@
                     {# This is a module-type question that has been started. Icon, title, and link are for the started task. There is no list of answered modules. Unless rec.question.spec.app_overrides_name_and_icon is false. #}
 
                     {% for t in rec.tasks %} {# there's just one #}
-                    <div onclick="window.location='{{t.get_absolute_url}}';" style="cursor: pointer">
+                    {% if authoring_tool_enabled %}
+                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{rec.question.key}}">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                      </div>
+                    {% endif %}
+                    <a href="{{t.get_absolute_url}}" style="display: block;">
                       {% if layout_mode == "rows" %}
                         <div class="row">
                         <div class="col-sm-3">
                       {% endif %}
 
-                      <div class="question-icon">
+                      <div class="question-icon" style="position: relative;">
+                        <div style="position: absolute; left: -1px; top: -1px;">
+                          {% if t.is_finished %}
+                            <span class="glyphicon glyphicon-ok" style="color: #96B"></span>
+                          {% endif %}
+                        </div>
                         <img
                           {% if t.get_app_icon_url and rec.question.spec.app_overrides_name_and_icon is None %}
                           src="{{t.get_app_icon_url}}"
@@ -373,12 +392,6 @@
                       {% endif %}
 
                       <div class="question-title">
-                        {% if authoring_tool_enabled %}
-                          <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
-                            <span class="glyphicon glyphicon-pencil"></span>
-                          </div>
-                        {% endif %}
-
                         {% if rec.question.spec.app_overrides_name_and_icon is None %}
                           {{t.title}}
                         {% else %}
@@ -392,15 +405,13 @@
                             <span class="label label-primary">in progress</span>
                           {% endif %}
                         {% endif %}
-
                       </div>
 
                       {% if layout_mode == "rows" %}
                         </div> <!-- /col -->
                         </div> <!-- /row -->
                       {% endif %}
-
-                    </div>
+                    </a>
                     {% endfor %}
                   {% endif %}
 
@@ -432,7 +443,7 @@
     </div> <!-- /tabs -->
 
     {% if authoring_tool_enabled %}
-    <center style="font-size: 90%;"><p>
+    <center style="font-size: 90%;" class="authoring-tool-hidden"><p>
       <span class="glyphicon glyphicon-pencil"></span>
 
       <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
@@ -699,7 +710,7 @@ function rename_folder(elem) {
 <style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
 <script>
 $(function() {
-  $('.authoring-tool-trigger').click(function(e) {
+  $('.authoring-tool-edit-question').click(function(e) {
     e.stopPropagation();
     show_question_authoring_tool($(this).data('key'));
   })

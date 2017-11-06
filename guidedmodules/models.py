@@ -529,12 +529,44 @@ class Task(models.Model):
 
     def is_finished(self):
         # Check that all questions that need an answer have
-        # an answer, and that no required questions have been
-        # skipped.
+        # an answer and that all module-type questions are
+        # finished.
         if self.cached_is_finished is None:
-            self.cached_is_finished = len(self.get_answers().with_extended_info(required=True).can_answer) == 0
+            self.cached_is_finished = self.is_finished_uncached()
             self.save(update_fields=["cached_is_finished"])
         return self.cached_is_finished
+
+    def is_finished_uncached(self):
+        # Check that all questions that need an answer have
+        # an answer and that all module-type questions are
+        # finished.
+        answers = self.get_answers().with_extended_info(required=True)
+        if len(answers.can_answer) != 0:
+            return False
+        for a in answers.as_dict().values():
+            # module-type questions
+            if isinstance(a, ModuleAnswers) and a.task:
+                if not a.task.is_finished():
+                    return False
+            # module-set-type questions
+            if isinstance(a, list):
+                for item in a:
+                    if isinstance(item, ModuleAnswers) and item.task:
+                        if not item.task.is_finished():
+                            return False
+        return True
+
+    # Clear the Task'scache_is_finished field, and if it answers any questions, then
+    # do so recursively.
+    def clear_is_finished_cache(self, seen_tasks=None):
+        if seen_tasks is None: seen_tasks = set()
+        if self in seen_tasks: return
+        seen_tasks.add(self)
+        self.cached_is_finished = None
+        self.save(update_fields=["cached_is_finished"])
+        for ans in self.is_answer_to.select_related('taskanswer__task').all():
+            if ans.is_latest():
+                ans.taskanswer.task.clear_is_finished_cache(seen_tasks)
 
     def get_status_display(self):
         # Is this task done?
@@ -1168,9 +1200,11 @@ class TaskAnswer(models.Model):
             answered_by_file=None,
             cleared=True)
 
-        # kick the Task and TaskAnswer's updated field
+        # kick the Task and TaskAnswer's updated fields and clear the Task's cache
+        # for whether it's finished
         self.task.save(update_fields=[])
         self.save(update_fields=[])
+        self.task.clear_is_finished_cache()
         return True
 
     def save_answer(self, value, answered_by_tasks, answered_by_file, user, method, encryption_provider=None):
@@ -1245,11 +1279,10 @@ class TaskAnswer(models.Model):
         for t in answered_by_tasks:
             answer.answered_by_task.add(t)
 
-        # kick the Task and TaskAnswer's updated field, and clear the Task's
-        # cache_is_finished field.
-        self.task.cached_is_finished = None
-        self.task.save(update_fields=["cached_is_finished"])
+        # kick the Task and TaskAnswer's updated field
         self.save(update_fields=[])
+        self.task.save(update_fields=[])
+        self.task.clear_is_finished_cache()
 
         # Return True to indicate we saved something.
         return True

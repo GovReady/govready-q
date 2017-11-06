@@ -119,7 +119,7 @@ def evaluate_module_state(current_answers, required, parent_context=None):
     # cleared from the context's cache for each question because each question sees
     # a different set of dependencies.
     impute_context_parent = TemplateContext(
-        ModuleAnswers(current_answers.module, current_answers.task, {}), lambda q, a, v : str(v),
+        ModuleAnswers(current_answers.module, current_answers.task, {}), lambda _0, _1, _2, _3, value : str(value), # escapefunc
         parent_context=parent_context)
 
     # Visitor function.
@@ -1227,6 +1227,10 @@ class RenderedAnswer:
                     if doc.get("id") == item:
                         return True
                 return False
+            def __iter__(self):
+                for doc in answer.task.module.spec.get("output", []):
+                    if doc.get("id"):
+                        yield doc["id"]
         return LazyRenderer()
 
     @property
