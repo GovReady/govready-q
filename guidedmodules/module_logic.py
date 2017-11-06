@@ -1227,6 +1227,10 @@ class RenderedAnswer:
                     if doc.get("id") == item:
                         return True
                 return False
+            def __iter__(self):
+                for doc in answer.task.module.spec.get("output", []):
+                    if doc.get("id"):
+                        yield doc["id"]
         return LazyRenderer()
 
     @property
