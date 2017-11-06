@@ -154,7 +154,7 @@ class PyFsAppStore(AppStore):
         import fs.errors
         try:
             self.root = self.fsfunc()
-        except fs.errors.CreateFailed as e:
+        except AppSourceConnectionError as e:
             raise AppSourceConnectionError(
                 'There was an error accessing the AppSource named "{}" which connects to {}. The error was: {}'.format(
                     self.source.namespace,
@@ -361,7 +361,7 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
         try:
             self.repo.get_dir_contents(self.path)
         except GithubException as e:
-            raise fs.errors.CreateFailed(msg=e.data.get("message"))
+            raise AppSourceConnectionError(msg=e.data.get("message"))
 
     def scandir(self, path, namespaces=None, page=None):
         from fs.info import Info
@@ -476,7 +476,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
                 ], kill_after_timeout=20)
         except git.exc.GitCommandError as e:
             # This is where errors occur, which is hopefully about auth.
-            raise Exception("The repository URL is either not valid, not public, or ssh_key was not specified or not valid (%s)." % e.stderr)
+            raise AppSourceConnectionError("The repository URL is either not valid, not public, or ssh_key was not specified or not valid (%s)." % e.stderr)
 
         # Get the tree for the remote branch's HEAD.
         tree = self.repo.tree("FETCH_HEAD")
