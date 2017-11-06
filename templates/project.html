@@ -58,6 +58,7 @@
   padding-bottom: .75em;
   {% if layout_mode == "grid" %}
     text-align: center;
+    margin-top: 10px;
   {% endif %}
   border-radius: 15px; /* good for highlighting */
 }
@@ -70,9 +71,6 @@
     height: 96px;
     border: 1px solid #DDD;
     padding:12px;
-    {% if layout_mode != "rows" %}
-    margin-top: 20px;
-    {% endif %}
     border-radius: 10px;
     background-color: #DDD;
   }
@@ -115,7 +113,8 @@
 }
 
 .authoring-tool-trigger {
-  float: right;
+  position: absolute;
+  right: 0;
   color: #31708f;
 }
 </style>
@@ -281,6 +280,12 @@
                       <div class="col-sm-3">
                     {% endif %}
 
+                    {% if authoring_tool_enabled %}
+                      <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                      </div>
+                    {% endif %}
+
                     <div class="question-icon">
                       <img
                         {% if rec.icon %}
@@ -300,12 +305,6 @@
                     {% endif %}
 
                     <div class="question-title">
-                      {% if authoring_tool_enabled %}
-                        <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
-                          <span class="glyphicon glyphicon-pencil"></span>
-                        </div>
-                      {% endif %}
-
                       <!--{% if can_begin_module and rec.question.spec.protocol %}Add {% endif %} -->
                         {{rec.question.spec.title}}
                     </div>
@@ -347,7 +346,12 @@
                     {# This is a module-type question that has been started. Icon, title, and link are for the started task. There is no list of answered modules. Unless rec.question.spec.app_overrides_name_and_icon is false. #}
 
                     {% for t in rec.tasks %} {# there's just one #}
-                    <div onclick="window.location='{{t.get_absolute_url}}';" style="cursor: pointer">
+                    {% if authoring_tool_enabled %}
+                      <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                      </div>
+                    {% endif %}
+                    <a href="{{t.get_absolute_url}}" style="display: block;">
                       {% if layout_mode == "rows" %}
                         <div class="row">
                         <div class="col-sm-3">
@@ -373,12 +377,6 @@
                       {% endif %}
 
                       <div class="question-title">
-                        {% if authoring_tool_enabled %}
-                          <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
-                            <span class="glyphicon glyphicon-pencil"></span>
-                          </div>
-                        {% endif %}
-
                         {% if rec.question.spec.app_overrides_name_and_icon is None %}
                           {{t.title}}
                         {% else %}
@@ -392,15 +390,13 @@
                             <span class="label label-primary">in progress</span>
                           {% endif %}
                         {% endif %}
-
                       </div>
 
                       {% if layout_mode == "rows" %}
                         </div> <!-- /col -->
                         </div> <!-- /row -->
                       {% endif %}
-
-                    </div>
+                    </a>
                     {% endfor %}
                   {% endif %}
 
