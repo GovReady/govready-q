@@ -112,7 +112,10 @@
   font-size: 85%;
 }
 
-.authoring-tool-trigger {
+.authoring-tool-hidden {
+  display: none; /* hidden by default */
+}
+.authoring-tool-edit-question {
   position: absolute;
   right: 0;
   color: #31708f;
@@ -150,6 +153,13 @@
       API Docs
     </a>
 
+    {% if authoring_tool_enabled %}
+      <a class="btn btn-sm" href="#" onclick="$('.authoring-tool-hidden').fadeIn(); $(this).remove(); return false;">
+        <i class="glyphicon glyphicon-pencil"></i>
+        Authoring Tool
+      </a>
+    {% endif %}
+
     {# action buttons #}
     {% if action_buttons %}
       {% for rec in action_buttons %}
@@ -179,7 +189,7 @@
 
 {% block above_title %}
     {% if authoring_tool_enabled %}
-      <center style="font-size: 90%;"><p class="text-info">
+      <center style="font-size: 90%;" class="authoring-tool-hidden"><p class="text-info">
         You are in author mode. Authoring tools have been enabled for this module.
         <br>
         <a href="#" onclick="show_authoring_tool_module_editor(); return false;">
@@ -281,7 +291,7 @@
                     {% endif %}
 
                     {% if authoring_tool_enabled %}
-                      <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
+                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{rec.question.key}}">
                         <span class="glyphicon glyphicon-pencil"></span>
                       </div>
                     {% endif %}
@@ -347,7 +357,7 @@
 
                     {% for t in rec.tasks %} {# there's just one #}
                     {% if authoring_tool_enabled %}
-                      <div class="authoring-tool-trigger" data-key="{{rec.question.key}}">
+                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{rec.question.key}}">
                         <span class="glyphicon glyphicon-pencil"></span>
                       </div>
                     {% endif %}
@@ -433,7 +443,7 @@
     </div> <!-- /tabs -->
 
     {% if authoring_tool_enabled %}
-    <center style="font-size: 90%;"><p>
+    <center style="font-size: 90%;" class="authoring-tool-hidden"><p>
       <span class="glyphicon glyphicon-pencil"></span>
 
       <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
@@ -700,7 +710,7 @@ function rename_folder(elem) {
 <style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
 <script>
 $(function() {
-  $('.authoring-tool-trigger').click(function(e) {
+  $('.authoring-tool-edit-question').click(function(e) {
     e.stopPropagation();
     show_question_authoring_tool($(this).data('key'));
   })
