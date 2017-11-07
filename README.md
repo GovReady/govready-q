@@ -156,7 +156,7 @@ See [Automation.md](Automation.md) for documentation on using the API to automat
 
 # <a name="testing"></a> Testing and Generating Screenshots
 
-## Testing
+## Development and Testing
 
 To run the integration tests, you'll also need to install chromedriver:
 
@@ -168,6 +168,8 @@ Then run the test suite with:
 	./manage.py test
 
 We also have continuous integration set up with CircleCI at https://circleci.com/gh/GovReady/govready-q.
+
+Our `requirements.txt` file is designed to work with `pip install --require-hashes`, which ensures that every installed dependency matches a hash stored in this repository. The option requires that every dependency (including dependencies of dependencies) be listed, pinned to a version number, and paired with a hash. We therefore don't manually edit `requirements.txt`. Instead, we place our immediate dependencies in `requirements.in` and run `requirements_txt_updater.sh` (which calls pip-tools's pip-compile command) to update the `requirements.txt` file for production. Continuous integration runs `requirements_txt_checker.sh` which ensures `requirements.txt` is in sync with `requirements.in`, that there are no known vulnerabilities in the dependencies (using [pyup.io](https://pyup.io/)), and that all packages are up to date with upstream sources.
 
 # <a name="deployment"></a>Deployment Guides
 
