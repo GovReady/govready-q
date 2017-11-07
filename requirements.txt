@@ -34,4 +34,3 @@ django-database-storage-backend==0.0.2 # CC0
 commonmarkextensions==0.0.1 # BSD 3
 
 # Development & testing only
-fpdf==1.7.2 # LGPL
