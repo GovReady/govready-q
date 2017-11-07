@@ -20,6 +20,7 @@ test:
   # console output after 10 minutes. So we split the tests up into
   # multiple commands.
   override:
+    - safety check
     - ./manage.py test guidedmodules
     - ./manage.py test siteapp.tests.LandingSiteFunctionalTests
     - ./manage.py test siteapp.tests.GeneralTests

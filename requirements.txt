@@ -36,3 +36,4 @@ rfc5424-logging-handler==1.0.0 # BSD License
 
 # Development & testing only
 selenium==3.3.3 # Apache License 2.0
+safety==1.6.1 # MIT License
