@@ -68,7 +68,7 @@ curl -L -o $VENDOR/js-yaml.min.js \
 
 # google fonts
 #  Hind: SIL Open Font License 1.1
-# first download a helper (note: we're about to run a foriegn script locally)
+# first download a helper (note: we're about to run a foreign script locally)
 # TODO: Requires bash v4 not available on macOS.
 curl -L -o /tmp/google-font-download \
         https://raw.githubusercontent.com/neverpanic/google-font-download/master/google-font-download
