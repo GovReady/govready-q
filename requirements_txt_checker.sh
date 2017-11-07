@@ -37,6 +37,7 @@ echo
 # Script exits on error.
 safety check --bare -r requirements.txt
 echo "No known vulnerabilities in Python dependencies."
+echo
 
 # Check installed packages for anything outdated. Unfortunately
 # this scans *installed* packages, so it assumes you are working
@@ -45,6 +46,20 @@ echo "No known vulnerabilities in Python dependencies."
 # on those too.
 FN=$(tempfile)
 pip3 list --outdated --format=columns > $FN
+
+if [ -f requirements_txt_checker_ignoreupdates.txt ]; then
+	# Some updates we ignore. Those are listed in requirements_txt_checker_ignoreupdates.txt
+	# in a format similar to a requirements.txt, each line like:
+	# pagename==version
+	# For each line, remove that line from the `pip list --outdated` output.
+	for PKG_EQ_VER in $(cat requirements_txt_checker_ignoreupdates.txt); do
+		PKG_VER=(${PKG_EQ_VER//==/ }) # split on ==, make a bash array
+		echo "Ignoring new ${PKG_VER[0]} version ${PKG_VER[1]}."
+		grep "^${PKG_VER[0]}  *[^ ][^ ]*  *${PKG_VER[1]} " $FN
+		sed -i "/^${PKG_VER[0]}  *[^ ][^ ]*  *${PKG_VER[1]} /d" $FN
+	done
+fi
+
 if [ $(cat $FN | wc -l) -gt 2 ]; then
 	echo
 	echo "Some packages are out of date:"
@@ -52,5 +67,8 @@ if [ $(cat $FN | wc -l) -gt 2 ]; then
 	cat $FN
 	rm $FN
 	exit 1
+else
+	echo
+	echo "All packages are up to date with latest upstream versions."
 fi
 rm $FN

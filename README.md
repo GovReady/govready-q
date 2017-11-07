@@ -169,7 +169,9 @@ Then run the test suite with:
 
 We also have continuous integration set up with CircleCI at https://circleci.com/gh/GovReady/govready-q.
 
-Our `requirements.txt` file is designed to work with `pip install --require-hashes`, which ensures that every installed dependency matches a hash stored in this repository. The option requires that every dependency (including dependencies of dependencies) be listed, pinned to a version number, and paired with a hash. We therefore don't manually edit `requirements.txt`. Instead, we place our immediate dependencies in `requirements.in` and run `requirements_txt_updater.sh` (which calls pip-tools's pip-compile command) to update the `requirements.txt` file for production. Continuous integration runs `requirements_txt_checker.sh` which ensures `requirements.txt` is in sync with `requirements.in`, that there are no known vulnerabilities in the dependencies (using [pyup.io](https://pyup.io/)), and that all packages are up to date with upstream sources.
+Our `requirements.txt` file is designed to work with `pip install --require-hashes`, which ensures that every installed dependency matches a hash stored in this repository. The option requires that every dependency (including dependencies of dependencies) be listed, pinned to a version number, and paired with a hash. We therefore don't manually edit `requirements.txt`. Instead, we place our immediate dependencies in `requirements.in` and run `requirements_txt_updater.sh` (which calls pip-tools's pip-compile command) to update the `requirements.txt` file for production.
+
+Continuous integration performs sanity and security checks on our dependencies. (1) It runs `requirements_txt_checker.sh` which ensures `requirements.txt` is in sync with `requirements.in`. (2) It checks that there are no known vulnerabilities in the dependencies using [pyup.io](https://pyup.io/). (3) It checks that all packages are up to date with upstream sources (unless the package and its latest upstream version are listed in `requirements_txt_checker_ignoreupdates.txt`).
 
 # <a name="deployment"></a>Deployment Guides
 
