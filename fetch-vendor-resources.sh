@@ -73,3 +73,4 @@ curl -L -o $VENDOR/js-yaml.min.js \
 curl -L -o /tmp/google-font-download \
         https://raw.githubusercontent.com/neverpanic/google-font-download/master/google-font-download
 (cd $VENDOR; bash /tmp/google-font-download -f woff,woff2 -o google-fonts.css Hind:400 Hind:700 Lato:900)
+rm -f /tmp/google-font-download
