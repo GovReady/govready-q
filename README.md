@@ -93,7 +93,7 @@ You will probably want to try the invite feature at some point. The debug server
 To update the source code from this repository you can `git pull`. You then may need to re-run some of the setup commands:
 
 	git pull
-	pip3 install --upgrade -r requirements.txt
+	pip3 install -r requirements.txt
 	./fetch-vendor-resources.sh
 	python3 manage.py migrate
 	python3 manage.py load_modules
