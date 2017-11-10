@@ -13,10 +13,12 @@ RUN apt-get update && apt-get install -y graphviz unzip pandoc wkhtmltopdf jq &&
 
 # Copy in the Python module requirements and install them.
 # Manually install database drivers which aren't in our requirements
-# file because it's not used in development.
+# file because they're not commonly used in development.
+# Run pyup.io's python package vulnerability check.
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir psycopg2
+RUN safety check
 
 # Copy in the vendor resources and fetch them.
 COPY fetch-vendor-resources.sh ./
