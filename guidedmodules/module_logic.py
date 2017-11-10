@@ -1087,13 +1087,18 @@ class TemplateContext(Mapping):
                 # Find the requested output document in the module.
                 for doc in self.context.module_answers.module.spec.get("output", []):
                     if doc.get("id") == item:
-                        return render_content(doc, self.context.module_answers, "html",
+                        # Render it.
+                        content = render_content(doc, self.context.module_answers, "html",
                             "%s output document %s" % (repr(self.context.module_answers.module), item),
                             {}, show_answer_metadata=self.context.show_answer_metadata)
+
+                        # Mark it as safe.
+                        from jinja2 import Markup
+                        return Markup(content)
                 else:
                     raise ValueError("%s is not the id of an output document in %s." % (item, self.context.module_answers.module))
             except Exception as e:
-                return self.make_error(e)
+                return str(e)
         def __contains__(self, item):
             for doc in self.context.module_answers.module.spec.get("output", []):
                 if doc.get("id") == item:
@@ -1103,9 +1108,6 @@ class TemplateContext(Mapping):
             for doc in self.context.module_answers.module.spec.get("output", []):
                 if doc.get("id"):
                     yield doc["id"]
-        def make_error(self, msg):
-            import html
-            return "<p class='text-danger'>Template Error: %s</p>" % html.escape(msg)
 
 
 class RenderedProject(TemplateContext):
