@@ -1275,16 +1275,25 @@ class RenderedAnswer:
             return (None for _ in [])
 
         if self.question_type == "multiple-choice":
-            # Iterate by creating a RenderedAnswer for each choice key
-            # with a made-up Question instance.
+            # Iterate by creating a RenderedAnswer for each selected choice,
+            # with a made-up temporary Question instance that has the same
+            # properties as the actual multiple-choice choice but whose
+            # type is a single "choice".
             from .models import ModuleQuestion
             return (
-                RenderedAnswer(None, ModuleQuestion(spec={
-                    "type": "choice",
-                    "choices": self.question.spec["choices"],
-                    }),
-                self.answerobj,
-                ans, self.parent_context)
+                RenderedAnswer(
+                    self.task,
+                    ModuleQuestion(
+                        module=self.question.module,
+                        key=self.question.key,
+                        spec={
+                            "type": "choice",
+                            "title": self.question.spec['title'],
+                            "prompt": self.question.spec['prompt'],
+                            "choices": self.question.spec["choices"],
+                        }),
+                    self.answerobj,
+                    ans, self.parent_context)
                 for ans in self.answer)
         
         elif self.question_type == "module-set":
