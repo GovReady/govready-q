@@ -8,7 +8,8 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'python --version'
+        sh 'pip install requirements.txt'
+        sh 'fetch-vendor-resources.sh'
       }
     }
   }
