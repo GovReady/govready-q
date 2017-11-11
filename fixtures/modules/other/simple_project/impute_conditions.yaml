@@ -1,0 +1,28 @@
+id: impute_conditions
+title: Test The Impute Conditions
+introduction:
+  format: markdown
+  template: |
+    This module tests the functionality of impute conditions.
+questions:
+- id: im_expr_1
+  title: im_expr_1
+  prompt: im_expr_1
+  type: text
+  impute:
+  - value: "1+1"
+    value-mode: expression
+- id: im_templ_1
+  title: im_templ_1
+  prompt: im_templ_1
+  type: text
+  impute:
+  - value: "{% if 1 %}1{% endif %}{% if 0 %}0{% endif %}"
+    value-mode: template
+- id: im_templ_2
+  title: im_templ_2
+  prompt: im_templ_2
+  type: text
+  impute:
+  - value: "{{im_expr_1}}"
+    value-mode: template
