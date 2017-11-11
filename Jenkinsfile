@@ -1,7 +1,8 @@
 pipeline {
   agent {
-    dockerfile {
-      filename 'Dockerfile'
+    docker {
+      image 'python:3'
+      args '-p 8000:8000'
     }
     
   }
@@ -9,7 +10,7 @@ pipeline {
     stage('Build') {
       steps {
         sh 'pip install -r requirements.txt'
-        sh 'fetch-vendor-resources.sh'
+        sh './fetch-vendor-resources.sh'
       }
     }
   }
