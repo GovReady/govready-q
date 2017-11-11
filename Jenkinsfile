@@ -13,5 +13,10 @@ pipeline {
         sh './fetch-vendor-resources.sh'
       }
     }
+    stage('Test') {
+      steps {
+        sh 'manage.py test'
+      }
+    }
   }
 }
