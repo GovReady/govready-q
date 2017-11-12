@@ -1038,6 +1038,11 @@ class TemplateContext(Mapping):
                 ))
             return ret
 
+        # The output_documents key returns the output documents as a dict-like mapping
+        # from IDs to rendered content.
+        if item == "output_documents":
+            return TemplateContext.LazyOutputDocuments(self)
+
         # The item is not something found in the context.
         raise AttributeError(item + " is not a question or property of " + (self.module_answers.task.title if self.module_answers.task else self.module_answers.module.spec["title"]) + ".")
 
@@ -1063,12 +1068,47 @@ class TemplateContext(Mapping):
             for attribute in ("task_link", "project", "organization"):
                 if attribute not in seen_keys:
                     yield attribute
-        for attribute in ("is_started", "is_finished", "questions"):
+
+        # Attributes that are available even when peering into unanswered module-type questions.
+        for attribute in ("is_started", "is_finished", "questions", "output_documents"):
             if attribute not in seen_keys:
                 yield attribute
 
     def __len__(self):
         return len([x for x in self])
+
+
+    # Class that lazy-renders output documents on request.
+    class LazyOutputDocuments:
+        def __init__(self, context):
+            self.context = context
+        def __getattr__(self, item):
+            try:
+                # Find the requested output document in the module.
+                for doc in self.context.module_answers.module.spec.get("output", []):
+                    if doc.get("id") == item:
+                        # Render it.
+                        content = render_content(doc, self.context.module_answers, "html",
+                            "%s output document %s" % (repr(self.context.module_answers.module), item),
+                            {}, show_answer_metadata=self.context.show_answer_metadata)
+
+                        # Mark it as safe.
+                        from jinja2 import Markup
+                        return Markup(content)
+                else:
+                    raise ValueError("%s is not the id of an output document in %s." % (item, self.context.module_answers.module))
+            except Exception as e:
+                return str(e)
+        def __contains__(self, item):
+            for doc in self.context.module_answers.module.spec.get("output", []):
+                if doc.get("id") == item:
+                    return True
+            return False
+        def __iter__(self):
+            for doc in self.context.module_answers.module.spec.get("output", []):
+                if doc.get("id"):
+                    yield doc["id"]
+
 
 class RenderedProject(TemplateContext):
     def __init__(self, project, parent_context=None):
@@ -1194,46 +1234,6 @@ class RenderedAnswer:
         return self.task.get_absolute_url_to_question(self.question)
 
     @property
-    def output_documents(self):
-        def make_error(item, msg):
-            import html
-            return "<p class='text-danger'>Template Error: output document %s in %s could not be rendered: %s</p>" % (
-                item,
-                html.escape(self.question.spec["id"]
-                    + ("" if self.answer is None else "=>" + str(self.answer.task.module))),
-                html.escape(str(msg)))
-
-        # Return a class that lazy-renders output documents on request.
-        answer = self.answer
-        show_answer_metadata = self.parent_context.show_answer_metadata
-        class LazyRenderer:
-            def __getattr__(self, item):
-                if answer is None:
-                    return make_error(item, "The question is not answered.")
-
-                try:
-                    # Find the requested output document in the module.
-                    for doc in answer.task.module.spec.get("output", []):
-                        if doc.get("id") == item:
-                            return render_content(doc, answer, "html", "%s output document %s" % (repr(answer.module), item), {}, show_answer_metadata=show_answer_metadata)
-                except AttributeError as e:
-                    return make_error(item, e)
-
-                # If the key doesn't match a document name we could throw an error but
-                # that's disruptive so we show an error in the document itself.
-                return make_error(item, "That is not the name of an output document.")
-            def __contains__(self, item):
-                for doc in answer.task.module.spec.get("output", []):
-                    if doc.get("id") == item:
-                        return True
-                return False
-            def __iter__(self):
-                for doc in answer.task.module.spec.get("output", []):
-                    if doc.get("id"):
-                        yield doc["id"]
-        return LazyRenderer()
-
-    @property
     def choices_selected(self):
         # Return the dicts for each choice that is a part of the answer.
         if self.question_type == "multiple-choice":
@@ -1275,16 +1275,25 @@ class RenderedAnswer:
             return (None for _ in [])
 
         if self.question_type == "multiple-choice":
-            # Iterate by creating a RenderedAnswer for each choice key
-            # with a made-up Question instance.
+            # Iterate by creating a RenderedAnswer for each selected choice,
+            # with a made-up temporary Question instance that has the same
+            # properties as the actual multiple-choice choice but whose
+            # type is a single "choice".
             from .models import ModuleQuestion
             return (
-                RenderedAnswer(None, ModuleQuestion(spec={
-                    "type": "choice",
-                    "choices": self.question.spec["choices"],
-                    }),
-                self.answerobj,
-                ans, self.parent_context)
+                RenderedAnswer(
+                    self.task,
+                    ModuleQuestion(
+                        module=self.question.module,
+                        key=self.question.key,
+                        spec={
+                            "type": "choice",
+                            "title": self.question.spec['title'],
+                            "prompt": self.question.spec['prompt'],
+                            "choices": self.question.spec["choices"],
+                        }),
+                    self.answerobj,
+                    ans, self.parent_context)
                 for ans in self.answer)
         
         elif self.question_type == "module-set":

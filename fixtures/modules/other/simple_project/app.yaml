@@ -38,3 +38,7 @@ questions:
     title: Test Encrypted Questions
     type: module
     module-id: question_types_encrypted
+  - id: impute_conditions
+    title: Test Impute Conditions
+    type: module
+    module-id: impute_conditions

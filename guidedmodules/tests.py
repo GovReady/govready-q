@@ -40,30 +40,53 @@ class ImputeConditionTests(TestCaseWithFixtureData):
     # and that they have the *same* truthy-ness when used in {% if ... %}
     # blocks in templates.
 
-    def _test_condition_helper(self, module, context_key, context_value, condition, expected):
+    def _test_impute_condition(self, module, question_key, question_value, condition, value, value_mode, expected_to_match, expected_value):
+        # Create a context to evaluate the impute condition in, using
+        # the provided module and with a single question answered.
         m = self.getModule(module)
-        answers = ModuleAnswers(m, None, { context_key: (m.questions.get(key=context_key), True, None, context_value) })
+        answers = ModuleAnswers(m, None, { question_key: (m.questions.get(key=question_key), True, None, question_value) })
+        context = TemplateContext(answers, lambda question, task, is_answered, answerobj, value : str(value)) # escapefunc
 
-        # Test that the impute condition works correctly.
-        # Run the impute condition and test whether or not
-        # it matched. Don't look at it's value -- the value
-        # is always (True,) (a tuple containing True).
-        context = TemplateContext(answers, lambda v, mode : str(v)) # parallels evaluate_module_state
-        actual = run_impute_conditions([{ "condition": condition, "value": True }], context)
-        self.assertEqual(actual is not None, expected, msg="impute condition: %s" % condition)
+        # Build the impute condition.
+        impute_condition = { }
+        if condition is not None: impute_condition["condition"] = condition
+        impute_condition["value"] = value
+        if value_mode is not None: impute_condition["value-mode"] = value_mode
 
-        # Test that an {% if ... %} block has the same truth value when
-        # used in a template.
-        if_block = render_content(
-            {
-                "format": "text",
-                "template": r"{% if " + condition + r" %}TRUE{% else %}FALSE{% endif %}",
-            },
-            answers,
-            "text",
-            str(self), # source
-        ) == "TRUE"
-        self.assertEqual(if_block, expected, msg="{%% if %s %%}" % condition)
+        # Run the impute condition.
+        result = run_impute_conditions([impute_condition], context)
+
+        # Test if the impute condition properly matched or didn't match.
+        self.assertEqual(result is not None, expected_to_match, msg="impute condition '{}' condition test".format(condition))
+
+        # Test if the impute condition had the right value. The result, if not None,
+        # comes back wrapped in a tuple.
+        if result is not None:
+            result = result[0]
+            self.assertEqual(result, expected_value, msg="impute condition '{}' value".format(condition))
+
+        if condition is not None:
+            # Test that an {% if ... %} block around the condition has the same truth value when used in a template.
+            if_block = render_content(
+                {
+                    "format": "text",
+                    "template": r"{% if " + condition + r" %}TRUE{% else %}FALSE{% endif %}",
+                },
+                answers,
+                "text",
+                str(self), # source
+            )
+            self.assertEqual(if_block == "TRUE", expected_to_match, msg="{%% if %s %%}" % condition)
+
+
+    def _test_condition_helper(self, module, question_key, question_value, condition, expected):
+        # Test the condition part of an impute condition. The value is hard-coded as True.
+        self._test_impute_condition(
+            module,
+            question_key, question_value,
+            condition, True, None,
+            expected, True)
+
 
     def test_impute_using_text_questions(self):
         test = lambda *args : self._test_condition_helper("question_types_text", *args)
@@ -150,6 +173,64 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test("q_module", None, "q_module.q1", False) # skipped is falsey for all sub-answers
 
         # TODO: Test module-set questions.
+
+    def test_impute_value_mode_expression(self):
+        # Test the `value-mode: expression` impute conditions.
+
+        # In normal impute conditions the value is interpreted as a Python data structure,
+        # as parsed by YAML. This method evaluates a Jinja2 expression. In these tests the
+        # condition is passed as None, which omits the condition, which means it always
+        # matches --- we're only testing the value here.
+
+        def test(expression, expected_value):
+            self._test_impute_condition(
+                "question_types_text",
+                "q_text", "HELLO THERE",
+                None, expression, "expression",
+                True, expected_value)
+
+        # various Jinja2 expressions
+        test("1", 1)
+        test("'1'", '1')
+        test("q_text", 'HELLO THERE')
+
+
+    def test_impute_value_mode_template(self):
+        # Test the `value-mode: template` impute conditions.
+
+        # In normal impute conditions the value is interpreted as a Python data structure,
+        # as parsed by YAML. This method evaluates a Jinja2 template. In these tests the
+        # condition is passed as None, which omits the condition, which means it always
+        # matches --- we're only testing the value here.
+
+        def test(expression, expected_value):
+            self._test_impute_condition(
+                "question_types_text",
+                "q_text", "HELLO THERE",
+                None, expression, "template",
+                True, expected_value)
+
+        # various Jinja2 templates
+        test("1", "1")
+        test("{% if 0 %}HELLO{% endif %}", '')
+        test("{{q_text}}", 'HELLO THERE')
+
+    def test_impute_conditions_in_module(self):
+        # Test that impute conditions are actually working in a real module.
+
+        # Take a Module and start it with no answers.
+        m = self.getModule("impute_conditions")
+        answers = ModuleAnswers(m, None, { })
+
+        # Run impute conditions.
+        answers = answers.with_extended_info()
+        self.assertEqual(len(answers.was_imputed), 3)
+
+        # Check imputed values.
+        answers = answers.as_dict()
+        self.assertEqual(answers.get("im_expr_1"), 2)
+        self.assertEqual(answers.get("im_templ_1"), '1')
+        self.assertEqual(answers.get("im_templ_2"), '2')
 
 
 class RenderTests(TestCaseWithFixtureData):
@@ -363,8 +444,8 @@ class RenderTests(TestCaseWithFixtureData):
 
 
     def test_render_choice_questions(self):
-        def test(*args):
-            self._test_render_single_question_md("question_types_choice", *args)
+        def test(*args, **kwargs):
+            self._test_render_single_question_md("question_types_choice", *args, **kwargs)
 
         from html import escape
 
@@ -386,6 +467,10 @@ class RenderTests(TestCaseWithFixtureData):
         test("q_multiple_choice.text", ["choice1", "choice3"], "Choice 1, Choice 3")
         test("q_multiple_choice", None, escape("<multiple-choice>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
         test("q_multiple_choice.text", None, escape("<not answered>"))
+        test("q_multiple_choice", ["choice1", "choice3"], "[choice1][choice3]",
+            template="{% for choice in q_multiple_choice %}[{{choice}}]{% endfor %}")
+        test("q_multiple_choice", None, "", # not answered appears as nothing selected
+            template="{% for choice in q_multiple_choice %}[{{choice}}]{% endfor %}")
 
     def test_render_numeric_questions(self):
         def test(*args):
@@ -488,7 +573,7 @@ class RenderTests(TestCaseWithFixtureData):
         test("organization", "My Supreme Organization")
         test("project", "The Singleton Project")
 
-    def _test_render_single_question_md(self, module, expression, value, expected, expected_impute_value="__NOT__PROVIDED__", answers=None):
+    def _test_render_single_question_md(self, module, expression, value, expected, expected_impute_value="__NOT__PROVIDED__", answers=None, template=None):
         # Render the "{{question}}" or "{{question.text}}" using the given module.
 
         # create a ModuleAnswers instance that provides context for evaluating the template
@@ -499,11 +584,11 @@ class RenderTests(TestCaseWithFixtureData):
                 key: (m.questions.get(key=key), True, None, value) # if expression looks like "id.text" just use "id" here to set the answer
             })
 
-        # render the template. Wrap `expression` in "{{...}}"
+        # render the template. Wrap `expression` in "{{...}}" if template isn't provided.
         actual = render_content(
             {
                 "format": "markdown",
-                "template": "{{%s}}" % expression,
+                "template": template or ("{{%s}}" % expression),
             },
             answers,
             "html",
@@ -525,7 +610,7 @@ class RenderTests(TestCaseWithFixtureData):
         render_content(
             {
                 "format": "markdown",
-                "template": "{{%s}}" % expression,
+                "template": template or ("{{%s}}" % expression),
             },
             answers,
             "html",
@@ -533,14 +618,18 @@ class RenderTests(TestCaseWithFixtureData):
             show_answer_metadata=True,
         )
 
-        # test that we get the same thing if we use an impute condition with value-mode: expression,
-        # but since the test is only given its string output convert the impute condition value
-        # to a string
+        # Test that we get the same thing if we use an impute condition with `value-mode: expression`
+        # or, if template is provided, `value-mode: template`. For `value-mode: expression`, convert
+        # the imputed value to a string since the test is only given its string form.
         def escapefunc(question, task, is_answered, answerobj, value):
             # ignores longtext rendering
             return value
         context = TemplateContext(answers, escapefunc) # parallels evaluate_module_state
-        actual = run_impute_conditions([{ "condition": "1", "value": expression, "value-mode": "expression" }], context)
+        if not template:
+            impute_condition = { "value": expression, "value-mode": "expression" }
+        else:
+            impute_condition = { "value": template, "value-mode": "template" }
+        actual = run_impute_conditions([impute_condition], context)
         self.assertIsNotNone(actual, msg="'1' impute condition failed")
         actual = actual[0] # unwrap
         if expected_impute_value == "__NOT__PROVIDED__":
