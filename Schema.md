@@ -505,7 +505,7 @@ In both conditions and `expression`-type values, as well as in documents, the va
 
 We also have a funtion to retreive the URL of a module's static assets, e.g.:
 
-	<srcipt src="{{static_asset_path_for('myscript.js')}}"></script>
+	<script src="{{static_asset_path_for('myscript.js')}}"></script>
 
 
 ### Encrypting answers
