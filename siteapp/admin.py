@@ -23,6 +23,7 @@ class UserAdmin(contribauthadmin.UserAdmin):
 
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('subdomain', 'name')
+    filter_horizontal = ('help_squad', 'reviewers')
 
     def save_model(self, request, obj, form, change):
         was_new = not obj.id
