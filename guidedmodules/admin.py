@@ -122,6 +122,11 @@ class AppSourceSpecWidget(forms.Widget):
     	return value
 
 class AppSourceAdminForm(forms.ModelForm):
+	class Meta:
+		labels = {
+			"available_to_all": "Apps from this source are available to all organizations"
+		}
+
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.fields['spec'].widget = AppSourceSpecWidget()

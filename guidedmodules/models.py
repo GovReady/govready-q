@@ -1411,6 +1411,9 @@ class TaskAnswerHistory(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
+    class Meta:
+        verbose_name_plural = "TaskAnswerHistories"
+
     class CantDecrypt(Exception):
         pass
 
