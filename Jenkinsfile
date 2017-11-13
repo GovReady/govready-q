@@ -17,7 +17,7 @@ pipeline {
     }
     stage('Test') {
       steps {
-        sh 'PATH=$PATH:/usr/lib/chromium ./manage.py test'
+        sh './manage.py test'
       }
     }
   }

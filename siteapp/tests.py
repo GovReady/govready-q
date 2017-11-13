@@ -37,7 +37,8 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Start a headless browser.
         import selenium.webdriver
         from selenium.webdriver.chrome.options import Options as ChromeOptions
-        os.environ['PATH'] += ":/usr/lib/chromium-browser" # 'chromedriver' executable needs to be in PATH
+        os.environ['PATH'] += ":/usr/lib/chromium-browser" # 'chromedriver' executable needs to be in PATH (for newer Ubuntu)
+        os.environ['PATH'] += ":/usr/lib/chromium" # 'chromedriver' executable needs to be in PATH (for Debian 8)
         options = selenium.webdriver.ChromeOptions()
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         options.add_argument("start-maximized") # too small screens make clicking some things difficult
