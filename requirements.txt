@@ -138,9 +138,9 @@ exclusiveprocess==0.9.4 \
 filemagic==1.6 \
     --hash=sha256:e684359ef40820fe406f0ebc5bf8a78f89717bdb7fed688af68082d991d6dbf3 \
     # via django-database-storage-backend
-fs==2.0.15 \
-    --hash=sha256:05f54c785c707d0dac1c5250d399fd8bd008a46a519b946fa3e99c0126d4b4dd \
-    --hash=sha256:64eb88788db11c1ac45fcd24fe7f4d76c6fade86b4c161cadfa4ec27e4fd12e9
+fs==2.0.16 \
+    --hash=sha256:005a496854ebc28648a3197ec04426c50608c5a1413a9ce8ce2197b6d4c23c99 \
+    --hash=sha256:0360e137772c28750dbc42608d93f3f0d16949b24795ec33c9aeb39a216d71ba
 future==0.16.0 \
     --hash=sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb \
     # via commonmark
