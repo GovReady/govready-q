@@ -78,9 +78,9 @@ class question_input_parser:
     def parse_real(question, value):
         try:
             # Use a locale to parse human input since it may have
-            # e.g. thousands-commas.
+            # e.g. thousands-commas. The locale is set on app
+            # startup using locale.setlocale in settings.py.
             import locale
-            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8') 
             return locale.atof(value)
         except ValueError:
             # make a nicer error message
