@@ -4,6 +4,13 @@ set -euo pipefail
 
 VENDOR=siteapp/static/vendor
 
+SHACMD="sha256sum --strict"
+if ! which sha256sum > /dev/null; then
+  # On macOS, sha256sum is not available. Use `shasum -a 256` instead.
+  # But shasum doesn't support --strict and uses --warn instead.
+  SHACMD="shasum -a 256 --warn"
+fi
+
 function download {
   # Downloads a file from the web and checks that it matches
   # a provided hash. If the comparison fails, exit immediately.
@@ -18,11 +25,11 @@ function download {
   curl -# -L -o $DEST $URL
   echo
 
-  if ! echo "$CHECKSUM" | sha256sum --check --strict > /dev/null; then
+  if ! echo "$CHECKSUM" | $SHACMD --check > /dev/null; then
     echo "------------------------------------------------------------"
     echo "Download of $URL did not match expected checksum."
     echo "Found:"
-    sha256sum $DEST
+    $SHACMD $DEST
     echo
     echo "Expected:"
     echo "$CHECKSUM"
@@ -128,8 +135,8 @@ download \
   'a59054f45e738118f7a164527c4fa71ed42050aaeff2c21b75ab5b5512257a2a'
 (cd $VENDOR; bash /tmp/google-font-download -f woff,woff2 -o google-fonts.css Hind:400 Hind:700 Lato:900)
 rm -f /tmp/google-font-download
-# generated with: sha256sum $VENDOR/{google-fonts.css,Hind*,Lato*}
-sha256sum --check --strict --quiet << EOF
+# generated with: $SHACMD $VENDOR/{google-fonts.css,Hind*,Lato*}
+$SHACMD --check << EOF
 d9ae96839e4668eb006885ec9f1d51dde2553d2cf53437ff9b8963c0e583ec69  siteapp/static/vendor/google-fonts.css
 f0609555ad20470e30de0ba32d026f0b27098ea74c84edd811e21998943510f6  siteapp/static/vendor/Hind_400.woff
 af6e56a25aae4ec8eaa3aac31a8a73c0d1aaa4c4dd6afbee4f1c996474fcd789  siteapp/static/vendor/Hind_400.woff2
