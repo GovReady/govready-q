@@ -7,6 +7,10 @@ EXPOSE 8000
 # Put the Python source code here.
 WORKDIR /usr/src/app
 
+# Install the U.S. locale, which we reference explicitly in Q for
+# formatting and parsing numbers.
+RUN apt-get update && apt-get install locales && apt-get clean && sed -i "s/^[# ]*en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen && /usr/sbin/locale-gen
+
 # Install required system packages.
 # jq: we use it to assemble the local/environment.json file
 RUN apt-get update && apt-get install -y graphviz unzip pandoc wkhtmltopdf jq && apt-get clean

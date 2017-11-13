@@ -258,6 +258,12 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = False
 USE_L10N = True
 
+# This might be redundant, but if we're using locale directly we
+# need to set this on startup.
+
+import locale
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
 # Dump outbound emails to the console by default for debugging.
 # If the "email" environment setting is present, it is a dictionary
 # providing an SMTP server to send outbound emails to. TLS is
