@@ -15,7 +15,7 @@ pipeline {
     }
     stage('Test') {
       steps {
-        sh 'manage.py test'
+        sh './manage.py test'
       }
     }
   }
