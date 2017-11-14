@@ -97,11 +97,11 @@ def folder_view(request, folder_id):
 # Cache the contents of the app store by the organization, since we
 # may show different apps on different organization sites.
 _app_store_cache = { }
-def get_app_store(request):
+def get_app_store(organization):
     global _app_store_cache
-    if request.organization not in _app_store_cache:
-        _app_store_cache[request.organization] = list(load_app_store(request.organization))
-    return _app_store_cache[request.organization]
+    if organization not in _app_store_cache:
+        _app_store_cache[organization] = list(load_app_store(organization))
+    return _app_store_cache[organization]
 
 def load_app_store(organization):
     from guidedmodules.models import AppSource
@@ -226,7 +226,7 @@ def app_store(request):
     # just the apps that can answer that question.
     from guidedmodules.module_sources import AppSourceConnectionError
     try:
-        catalog, filter_description = filter_app_catalog(get_app_store(request), request)
+        catalog, filter_description = filter_app_catalog(get_app_store(request.organization), request)
     except (ValueError, AppSourceConnectionError) as e:
         return render(request, "app-store.html", {
             "error": e,
@@ -266,7 +266,7 @@ def app_store_item(request, app_namespace, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
     from guidedmodules.models import AppSource
-    for app_catalog_info in get_app_store(request):
+    for app_catalog_info in get_app_store(request.organization):
         if app_catalog_info["key"] == app_namespace + "/" + app_name:
             # We found it.
             break
@@ -374,6 +374,18 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
     from guidedmodules.models import AppSource
     from guidedmodules.module_sources import AppStore
 
+    # If the first argument is a string, it's an app id of the
+    # form "namespace/appname". Get the catalog info.
+    if isinstance(app_catalog_info, str):
+        for app in get_app_store(organization):
+            if app["key"] == app_catalog_info:
+                # We found it.
+                app_catalog_info = app
+                break
+        else:
+            raise ValueError("{} is not an app in the catalog.".format(app_catalog_info))
+
+    # Begin a transaction to create the Module and Task instances for the app.
     with transaction.atomic():
         module_source = get_object_or_404(AppSource, id=app_catalog_info["appsource_id"])
 
@@ -1008,7 +1020,7 @@ def import_project_data(request, project):
 
 def project_start_apps(request, *args):
     # Load the Compliance Store catalog of apps.
-    all_apps = get_app_store(request)
+    all_apps = get_app_store(request.organization)
 
     # What questions can be answered with an app?
     def get_questions(project):
