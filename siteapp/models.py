@@ -158,6 +158,18 @@ class User(AbstractUser):
        self.api_key_wo = crypto.get_random_string(32)
        self.save()
 
+    def get_api_keys(self):
+        # Initialize on first use.
+        if self.api_key_ro is None:
+            self.reset_api_keys()
+
+        return {
+            "ro": self.api_key_ro,
+            "rw": self.api_key_rw,
+            "wo": self.api_key_wo,
+        }
+
+
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):
     # Register in settings.py!

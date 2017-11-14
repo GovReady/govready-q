@@ -854,10 +854,6 @@ def project_api(request, project):
 
 @login_required
 def show_api_keys(request):
-    # Initialize on first use.
-    if request.user.api_key_ro is None:
-        request.user.reset_api_keys()
-
     # Reset.
     if request.method == "POST" and request.POST.get("method") == "resetkeys":
         request.user.reset_api_keys()
@@ -867,10 +863,11 @@ def show_api_keys(request):
 
         return HttpResponseRedirect(request.path)
 
+    api_keys = request.user.get_api_keys()
     return render(request, "api-keys.html", {
-        "api_key_ro": request.user.api_key_ro,
-        "api_key_rw": request.user.api_key_rw,
-        "api_key_wo": request.user.api_key_wo,
+        "api_key_ro": api_keys['ro'],
+        "api_key_rw": api_keys['rw'],
+        "api_key_wo": api_keys['wo'],
     })
 
 @login_required
