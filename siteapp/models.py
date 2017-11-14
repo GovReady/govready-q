@@ -799,6 +799,15 @@ class Project(models.Model):
 
         return True
 
+    def get_api_url(self):
+        # Get the URL to the data API for this Project.
+        return \
+        settings.SITE_ROOT_URL \
+          + "/api/v1/organizations/{org}/projects/{id}/answers".format(
+            org=self.organization.subdomain,
+            id=self.id,
+        )
+
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", help_text="The Project this is defining membership for.")

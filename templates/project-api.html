@@ -24,7 +24,7 @@ API
 
     <p>Project data can be read from the API using an HTTP GET request to the following URL:</p>
 
-    <pre>{{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+    <pre>{{project.get_api_url}}</pre>
 
     <p>An API key must be passed in the HTTP <code>Authorization</code> header. You can get your API key from the <a href="/api-keys">API keys page</a>.</p>
 
