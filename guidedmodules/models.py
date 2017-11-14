@@ -798,7 +798,10 @@ class Task(models.Model):
         # it to the set of Tasks that answer the question.
 
         # Get the ModuleQuestion from the question_id.
-        q = self.module.questions.get(key=question_id)
+        if not isinstance(question_id, ModuleQuestion):
+            q = self.module.questions.get(key=question_id)
+        else:
+            q = question_id
 
         # Get or create a TaskAnswer for that question.
         if create:

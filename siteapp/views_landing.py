@@ -215,24 +215,14 @@ def project_api(request, org_slug, project_id):
                         # which is another Task.
                         if question is not None:
                             if question.spec["type"] != "module": raise ValueError("Invalid question ID: " + key)
-
-                            # Get the TaskAnswer instance which holds the history of answers
-                            # to this question. (If it's never been answered, we get None.)
-                            ta = task.answers.filter(question=question).first()
-
-                            # Get the TaskAnswerHistory instance for the most recent answer
-                            # to the question, which can also be None if the question has not
-                            # been answered.
-                            ans = ta.get_current_answer() if (ta is not None) else None
-
-                            # If it was answered and the answer was not cleared, then look
-                            # at the answer to get the next Task.
-                            if ans and not ans.cleared:
-                                task = ans.answered_by_task.first()
-
-                            # It hasn't been answered yet.
-                            else:
-                                raise ValueError("Invalid question ID '{}': {} has not been answered yet.".format(
+                            try:
+                                task = task.get_or_create_subtask(user, question)
+                            except ValueError:
+                                # Raised if the question is not answered and the question uses
+                                # a protocol for selecting compliance apps rather than specifying
+                                # a concrete Module to use for answers. In this case, we can't
+                                # start a Task implicitly.
+                                raise ValueError("Invalid question ID '{}': {} has not been answered yet by a compliance app so its data fields cannot be set.".format(
                                     key,
                                     ".".join(key.split(".")[:i+1])
                                 ))
