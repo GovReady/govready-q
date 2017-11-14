@@ -4,6 +4,7 @@ from django.db.models.deletion import ProtectedError
 from collections import OrderedDict
 import enum
 import json
+import sys
 
 import fs
 from fs.base import FS as fsFS
@@ -461,7 +462,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
 
         # For debugging, log a command that we could try on the command line.
         print("SSH_COMMAND=\"{ssh_options}\" git fetch --depth 1 {url} {branch}".format(
-            ssh_options=ssh_options, url=self.url, branch=self.branch))
+            ssh_options=ssh_options, url=self.url, branch=self.branch), file=sys.stderr)
 
         # Fetch.
         import git.exc
@@ -684,7 +685,7 @@ def create_module(app, appinst, spec, asset_pack):
     m.source = app.store.source
     m.app = appinst
     m.module_name = spec['id']
-    print("Creating", m.app, m.module_name)
+    print("Creating", m.app, m.module_name, file=sys.stderr)
     update_module(m, spec, asset_pack, False)
     return m
 
@@ -700,7 +701,7 @@ def update_module(m, spec, asset_pack, log_status):
     # Update a module instance according to the specification data.
     # See is_module_changed.
     if log_status:
-        print("Updating", repr(m))
+        print("Updating", repr(m), file=sys.stderr)
 
     # Remove the questions from the module spec because they'll be
     # stored with the ModuleQuestion instances.
@@ -718,7 +719,7 @@ def update_module(m, spec, asset_pack, log_status):
     # not yet in use).
     for q in m.questions.all():
         if q not in qs:
-            print("Deleting", repr(q))
+            print("Deleting", repr(q), file=sys.stderr)
             try:
                 q.delete()
             except ProtectedError:
@@ -747,7 +748,7 @@ def update_question(m, definition_order, spec, log_status):
         # bumping the .updated date) if the question's specification
         # is identifical to what's already stored.
         if is_question_changed(q, definition_order, spec) is not None:
-            if log_status: print("Updated", repr(q))
+            if log_status: print("Updated", repr(q), file=sys.stderr)
             for k, v in field_values.items():
                 setattr(q, k, v)
             q.save(update_fields=field_values.keys())
