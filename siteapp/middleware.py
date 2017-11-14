@@ -57,11 +57,12 @@ class OrganizationSubdomainMiddleware:
             return None # continue with normal request processing
 
         elif request.path.startswith("/api/") and settings.SINGLE_ORGANIZATION_KEY:
-            # This is a request for an API. In multi-org configurations, the API
-            # is served from the landing domain (and would be handled above). In
-            # single-org configurations the URLconfs are merged but we then do
+            # This is an API interaction. In multi-org configurations, the API
+            # is served from the landing domain (and would be handled by this blocks
+            # first if conditional). In single-org configurations the URLconfs are 
+            # merged, that is OK becasue we then check the user 
             # auth on even the landing pages. We have to skip that because API
-            # auth is handled differently.
+            # auth is handled by the view.
             return None # continue with normal request processing
 
         # Is this a request for an organization subdomain?
