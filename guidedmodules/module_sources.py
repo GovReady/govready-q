@@ -390,8 +390,8 @@ class GithubApiAppStore(PyFsAppStore):
     """An App Store provided by a local directory."""
     def __init__(self, source):
         # the spec is incomplete
-        if not isinstance(source.spec.get("repo"), str): raise ValueError("The AppSource is misconfigured: missing or invalid 'url'.")
-        if not isinstance(source.spec.get("path"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'ur'.")
+        if not isinstance(source.spec.get("repo"), str): raise ValueError("The AppSource is misconfigured: missing or invalid 'repo'.")
+        if not isinstance(source.spec.get("path"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'path'.")
         if not (isinstance(source.spec.get("auth"), dict) and isinstance(source.spec["auth"].get("user"), str)): raise ValueError("The AppSource is misconfigured: missing or invalid 'auth.user'.")
         if not (isinstance(source.spec.get("auth"), dict) and isinstance(source.spec["auth"].get("pw"), str)): raise ValueError("The AppSource is misconfigured: missing or invalid 'auth.pw'.")
         super().__init__(source, lambda : GithubApiFilesystem(
