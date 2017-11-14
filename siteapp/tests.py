@@ -8,12 +8,12 @@ import os
 import random
 import re
 
-def var_sleep(float):
+def var_sleep(duration):
     '''
     Tweak sleep globally by multple, a fraction, or depend on env
     '''
     from time import sleep
-    sleep(float)
+    sleep(duration*2)
 
 class SeleniumTest(StaticLiveServerTestCase):
     @classmethod

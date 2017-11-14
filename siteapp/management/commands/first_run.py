@@ -25,8 +25,7 @@ class Command(BaseCommand):
                 app__system_app=True, module_name="app").exists():
                 raise OperationalError() # to trigger below
         except OperationalError:
-            # deployment/docker/first_run.sh expects a non-zero exit code here
-            # and no output.
+            print("The database is not initialized yet.")
             sys.exit(1)
 
         # Create AppSources that we want.

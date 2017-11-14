@@ -27,4 +27,10 @@ mkdir -p /mnt/apps
 # Initialize the database and start the server.
 python manage.py migrate
 python manage.py load_modules
+
+# Write a file that indicates to the host that Q
+# is now fully configured.
+echo "done" > ready
+
+# Start the server.
 python manage.py runserver 0.0.0.0:8000

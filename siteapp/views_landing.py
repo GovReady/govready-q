@@ -196,24 +196,36 @@ def project_api(request, org_slug, project_id):
             from guidedmodules.answer_validation import question_input_parser, validator
             import django.core.files.uploadedfile
 
+            # For each item...
             log = []
             ok = True
             for key, v in list(request.POST.lists()) + list(request.FILES.items()):
                 try:
-                    # Find the Task and ModuleQuestion that corresponds to
-                    # this key-value pair.
+                    # The item is a dotted path of project + question IDs to the
+                    # question to update. Follow the path to find the Task and ModuleQuestion
+                    # to update. Start with the project root task, then for each item in the path...
                     task = project.root_task
                     question = None
                     if not key.startswith("project."): raise ValueError("Invalid question ID: " + key)
-                    for pathitem in key.split(".")[1:]:
-                        # Advance to the task pointed to by the last question.
+                    for i, pathitem in enumerate(key.split(".")[1:]):
+                        # If this is not the first item, then in the last iteration we
+                        # were left with a Task and a ModuleQuestion in that task. Since
+                        # we've continued with another dot and path part, the last ModuleQuestion
+                        # must have been a module-type question. Move to its *answer*,
+                        # which is another Task.
                         if question is not None:
                             if question.spec["type"] != "module": raise ValueError("Invalid question ID: " + key)
-                            ta = task.answers.filter(question=question).first()
-                            if ta is None: raise ValueError("Invalid question ID (question on path is not answered yet): " + key)
-                            a = ta.get_current_answer()
-                            if not a or a.cleared: raise ValueError("Invalid question ID (question on path is not answered yet): " + key)
-                            task = a.answered_by_task.first()
+                            try:
+                                task = task.get_or_create_subtask(user, question)
+                            except ValueError:
+                                # Raised if the question is not answered and the question uses
+                                # a protocol for selecting compliance apps rather than specifying
+                                # a concrete Module to use for answers. In this case, we can't
+                                # start a Task implicitly.
+                                raise ValueError("Invalid question ID '{}': {} has not been answered yet by a compliance app so its data fields cannot be set.".format(
+                                    key,
+                                    ".".join(key.split(".")[:i+1])
+                                ))
 
                         # Get the question this corresponds to within the task
                         question = task.module.questions.filter(key=pathitem).first()
