@@ -56,6 +56,14 @@ class OrganizationSubdomainMiddleware:
             request.urlconf = 'siteapp.urls_landing'
             return None # continue with normal request processing
 
+        elif request.path.startswith("/api/") and settings.SINGLE_ORGANIZATION_KEY:
+            # This is a request for an API. In multi-org configurations, the API
+            # is served from the landing domain (and would be handled above). In
+            # single-org configurations the URLconfs are merged but we then do
+            # auth on even the landing pages. We have to skip that because API
+            # auth is handled differently.
+            return None # continue with normal request processing
+
         # Is this a request for an organization subdomain?
         elif request_host.endswith('.' + settings.ORGANIZATION_PARENT_DOMAIN) or settings.SINGLE_ORGANIZATION_KEY:
             if not settings.SINGLE_ORGANIZATION_KEY:
