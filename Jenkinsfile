@@ -22,6 +22,11 @@ pipeline {
     stage('Test App') {
       steps {
         // Leaving out siteapp tests for now, because selenium/chromium isn't working.  See govready-q/issues/334
+
+        withCredentials([string(credentialsId: 'govready_q_api_url', variable: 'Q_API_URL'), string(credentialsId: 'govready_q_api_key', variable: 'Q_API_KEY')]) {
+            sh 'curl -F project.file_server.hostname=$(hostname) --header "Authorization:$Q_API_KEY" $Q_API_URL'
+        }
+
         sh './manage.py test guidedmodules'
       }
     }
