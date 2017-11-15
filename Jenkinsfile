@@ -23,11 +23,25 @@ pipeline {
       steps {
         // Leaving out siteapp tests for now, because selenium/chromium isn't working.  See govready-q/issues/334
 
-        withCredentials([string(credentialsId: 'govready_q_api_url', variable: 'Q_API_URL'), string(credentialsId: 'govready_q_api_key', variable: 'Q_API_KEY')]) {
-            sh 'curl -F project.file_server.hostname=$(hostname) --header "Authorization:$Q_API_KEY" $Q_API_URL'
-        }
+        // Run tests, saving results to a temporary file that will be uploaded
+        // to the GovReady-Q Compliance Server. Python unittest output goes
+        // primarily to standard error, so redirect it to standard output before
+        // using tee to get it into a file.
+        sh './manage.py test guidedmodules 2>&1 | tee /tmp/pytestresults.txt'
 
-        sh './manage.py test guidedmodules'
+        // Since we're uploading the test into a longtext field, which is expected
+        // to be markdown, add hard line breaks.
+        sh 'sed -i s/$/\\\\\\\\/ /tmp/pytestresults.txt'
+        sh 'echo >> /tmp/pytestresults.txt' // add blank line because trailing \ is not valid as a hard break
+        sh 'echo >> /tmp/pytestresults.txt' // add blank line because trailing \ is not valid as a hard break
+
+        withCredentials([string(credentialsId: 'govready_q_api_url', variable: 'Q_API_URL'), string(credentialsId: 'govready_q_api_key', variable: 'Q_API_KEY')]) {
+            // Send hostname.
+            sh 'curl -F project.file_server.hostname=$(hostname) --header "Authorization:$Q_API_KEY" $Q_API_URL'
+
+            // Send test results.
+            sh 'curl -F "project.file_server.login_message=</tmp/pytestresults.txt" --header "Authorization:$Q_API_KEY" $Q_API_URL'
+        }
       }
     }
   }
