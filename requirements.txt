@@ -109,9 +109,9 @@ django-bootstrap3==9.1.0 \
     --hash=sha256:9f56fa30a2c32142a2785148816cc4e14e7efc8699c5f87a8cb5be162a81658d
 django-database-storage-backend==0.0.2 \
     --hash=sha256:55e13debd4c1808893aa3d27d453c05a85689392e55dbfda1ff3ee1634545a44
-django-debug-toolbar==1.9 \
-    --hash=sha256:39a846374c95e70baf9c92f97db20f15e78ff75a007b67650b79cf8f5e14e27c \
-    --hash=sha256:acd466a9fcb1d0ca99889df0726dbbbd81bb4fe57bb5f5943e66de7fe3b38270
+django-debug-toolbar==1.9.1 \
+    --hash=sha256:4af2a4e1e932dadbda197b18585962d4fc20172b4e5a479490bc659fe998864d \
+    --hash=sha256:d9ea75659f76d8f1e3eb8f390b47fc5bad0908d949c34a8a3c4c87978eb40a0f
 django-html-emailer==0.0.4 \
     --hash=sha256:d7db3f96a69b3004ed80631d94ef87f5c59fc9b65a2aab4f6a4272718256c35b
 django-model-utils==3.0.0 \
