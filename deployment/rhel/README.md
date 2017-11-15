@@ -40,6 +40,7 @@ Deploy GovReady-Q source code:
     sudo yum install gcc libffi-devel python34-devel openssl-devel
     
     # Install pip packages
+    sudo pip3 install --upgrade pip # need >=9.1 to properly process flattened dependencies with hashes
     pip3 install --user -r requirements.txt
     
     # Install other static dependencies.
