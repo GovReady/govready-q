@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'python:3'
-      args '-p 8000:8000'
+      args '-p 8001:8001 --network continuousato'
     }
   }
   stages {
