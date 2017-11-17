@@ -109,9 +109,9 @@ django-bootstrap3==9.1.0 \
     --hash=sha256:9f56fa30a2c32142a2785148816cc4e14e7efc8699c5f87a8cb5be162a81658d
 django-database-storage-backend==0.0.2 \
     --hash=sha256:55e13debd4c1808893aa3d27d453c05a85689392e55dbfda1ff3ee1634545a44
-django-debug-toolbar==1.9 \
-    --hash=sha256:39a846374c95e70baf9c92f97db20f15e78ff75a007b67650b79cf8f5e14e27c \
-    --hash=sha256:acd466a9fcb1d0ca99889df0726dbbbd81bb4fe57bb5f5943e66de7fe3b38270
+django-debug-toolbar==1.9.1 \
+    --hash=sha256:4af2a4e1e932dadbda197b18585962d4fc20172b4e5a479490bc659fe998864d \
+    --hash=sha256:d9ea75659f76d8f1e3eb8f390b47fc5bad0908d949c34a8a3c4c87978eb40a0f
 django-html-emailer==0.0.4 \
     --hash=sha256:d7db3f96a69b3004ed80631d94ef87f5c59fc9b65a2aab4f6a4272718256c35b
 django-model-utils==3.0.0 \
@@ -170,8 +170,8 @@ jsonfield==2.0.2 \
 markupsafe==1.0 \
     --hash=sha256:a6be69091dac236ea9c6bc7d012beab42010fa914c459791d627dad4910eb665 \
     # via jinja2
-mondrianish==0.5.1 \
-    --hash=sha256:d71c4ff6e5e9018f2005a63e683a29425f8a6a63cd0bb7776aafd6bffb7218c7
+mondrianish==0.5.2 \
+    --hash=sha256:3226bf9d005368b502c3beb6d25033a3fe3c84ade00d83cbd9064cc6edf5ebf4
 oauthlib==2.0.6 \
     --hash=sha256:ce57b501e906ff4f614e71c36a3ab9eacbb96d35c24d1970d2539bbc3ec70ce1 \
     # via requests-oauthlib
