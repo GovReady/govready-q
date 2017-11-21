@@ -110,6 +110,7 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="/" style="color: #EEE; font-weight: bold;">
+              <img alt="GovReady Q logo" src="{% static "img/brand/navbar-logo.png" %}" width="110px;" style="float: left; margin: -2px 20px;">
               {% if request.organization  %}
                 {% with logo=request.organization.get_logo %}
                   {% if logo %}
