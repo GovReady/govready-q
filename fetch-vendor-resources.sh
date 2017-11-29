@@ -5,7 +5,7 @@ set -euo pipefail
 VENDOR=siteapp/static/vendor
 
 SHACMD="sha256sum --strict"
-if ! which sha256sum > /dev/null; then
+if ! command -v sha256sum > /dev/null 2>&1 ; then
   # On macOS, sha256sum is not available. Use `shasum -a 256` instead.
   # But shasum doesn't support --strict and uses --warn instead.
   SHACMD="shasum -a 256 --warn"
