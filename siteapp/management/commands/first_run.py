@@ -47,6 +47,9 @@ class Command(BaseCommand):
             print("Let's create your first Q user. This user will have superuser privileges in the Q administrative interface.")
             call_command('createsuperuser')
 
+        # Get the admin user - it was just created and should be the only admin user.
+        user = User.objects.filter(is_superuser=True).first()
+
         # Create the first organization.
         if not Organization.objects.exists():
             print("Let's create your Q organization.")
@@ -55,4 +58,8 @@ class Command(BaseCommand):
             
             name = get_input(name, "Organization Name: ", "Test Organization")
             
-            org = Organization.create(name=name, subdomain="main", admin_user=User.objects.filter(is_superuser=True).first())
+            org = Organization.create(name=name, subdomain="main", admin_user=user)
+
+        # Add the user to the org's help squad and reviewers lists.
+        if user not in org.help_squad.all(): org.help_squad.add(user)
+        if user not in org.reviewers.all(): org.reviewers.add(user)
