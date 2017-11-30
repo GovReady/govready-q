@@ -52,4 +52,4 @@ COPY deployment/docker/first_run.sh .
 COPY deployment/docker/dockerfile_exec.sh .
 
 # Set the startup script.
-CMD source venv/bin/activate && ./dockerfile_exec.sh
+CMD source venv/bin/activate && source ./dockerfile_exec.sh
