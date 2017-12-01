@@ -1,10 +1,11 @@
-# Deploying Q to Red Hat Enterprise Linux
+# Deploying Q to Red Hat Enterprise Linux 7 / CentOS 7
 
 ## Preparing System Packages
 
-Ensure `pip` and `psql` command line tools are installed:
+Install Python 3.4 and the `pip` command line tool, and then upgrade `pip` because the RHEL package version is out of date (need >=9.1 to properly process hashes in requirements.txt):
 
-    yum install python34-pip postgresql pandoc wkhtmltopdf
+    yum install python34-pip
+    pip3 install --upgrade pip
 
 Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
 
@@ -34,28 +35,56 @@ Deploy GovReady-Q source code:
     cd govready-q
 
     # Install required software. (You probably need to jump out of being the govready-q user for this line, then come back.)
-    sudo yum install graphviz
+    sudo yum install graphviz postgresql pandoc wkhtmltopdf
     
     # Install prerequisites for cryptography package per https://cryptography.io/en/latest/installation/. (You probably need to jump out of being the govready-q user for this line, then come back.)
     sudo yum install gcc libffi-devel python34-devel openssl-devel
     
     # Install pip packages
-    sudo pip3 install --upgrade pip # need >=9.1 to properly process flattened dependencies with hashes
     pip3 install --user -r requirements.txt
     
     # Install other static dependencies.
     ./fetch-vendor-resources.sh
     
-    # Skipping configuring local/environment.json for the moment to do default install with sqlite
+### Test Q with a Local Database
+
+Run the final setup commands to initialize a local Sqlite3 database in `local/db.sqlite` to make sure everything is OK so far:
+
     python3 manage.py migrate
     python3 manage.py load_modules
     python3 manage.py createsuperuser
 
-## Setting Up the Database Server
+And test that the site starts in debug mode at localhost:8000:
+
+	python3 manage.py runserver
+
+### Set basic configuration variables
+
+Create a file named `local/environment.json` (ensure it is not world-readable) that contains site configuration in JSON:
+
+	{
+	  "debug": false,
+	  "host": "webserver.hostname.com",
+	  "organization-parent-domain": "webserver.hostname.com",
+	  "https": true,
+	  "secret-key": "generate random string using e.g. https://www.miniwebtool.com/django-secret-key-generator/",
+	  "static": "/home/govready-q/public_html/static"
+	}
+
+Because of host header checking, to test the site again using `python3 manage.py runserver` you will need to visit it using `webserver.hostname.com` and not `localhost`. (Be sure to replace `webserver.hostname.com` with your hostname.)
+
+## Setting Up the Postgres Database Server
+
+This deployment script uses PostgreSQL but other database servers may be used.
 
 ### On the database server
 
-On the database server, set up TLS connections. In `/var/lib/pgsql/data/postgresql.conf`, enable TLS by changing the ssl option to
+On the database server, install Postgres:
+	
+	yum install postgresql-server postgresql-contrib -y
+	postgresql-setup initdb
+
+In `/var/lib/pgsql/data/postgresql.conf`, enable TLS connections by changing the `ssl` option to
 
     ssl = on 
       
@@ -63,20 +92,22 @@ and enable remote connections by binding to all interfaces:
 
     listen_addresses = '*'
       
+Enable remote connections to the database *only* from the web server and *only* encrypted with TLS by editing `/var/lib/pgsql/data/pg_hba.conf` and adding the line:
+
+    hostssl all all webserver.hostname.com md5
+    
 Generate a self-signed certificate:
 
-    openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /var/lib/pgsql/data/server.key -out /var/lib/pgsql/data/server.crt -subj '/C=US/CN=dbserver.hostname.com'
+    openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /var/lib/pgsql/data/server.key -out /var/lib/pgsql/data/server.crt -subj '/CN=dbserver.hostname.com'
     chmod 600 /var/lib/pgsql/data/server.{key,crt}
     chown postgres.postgres /var/lib/pgsql/data/server.{key,crt}
-    
+
+(Be sure to replace `webserver.hostname.com` and `dbserver.hostname.com` with your web and database servers's hostnames.)
+
 Copy the certificate to the web server so that the web server can make trusted connections to the database server:
 
     cat /var/lib/pgsql/data/server.crt
     # place on web server at /home/govready-q/pgsql.crt
-    
-Enable remote connections to the database *only* from the web server and *only* encrypted with TLS by editing `/var/lib/pgsql/data/pg_hba.conf` and adding the line:
-
-    hostssl all all webserver.hostname.com md5
     
 Then restart the database:
 
@@ -88,6 +119,13 @@ Then set up the user and database (both named `govready_q`):
     # paste a long random password
     
     sudo -iu postgres createdb govready_q
+
+Postgres's default permissions automatically grant users access to a database of the same name.
+
+And if necessary, open the Postgres port:
+
+	firewall-cmd --zone=public --add-port=5432/tcp --permanent
+	firewall-cmd --reload
 
 ### On the web server
     
@@ -101,26 +139,45 @@ Then in our GovReady Q `local/environment.json` file, configure the database (re
 
         "db": "postgresql://govready_q:THEPASSWORDHERE@dbserver.hostname.com/govready_q?sslmode=verify-full&sslrootcert=/home/govready-q/pgsql.crt",
 
-(Make sure the environment.json file is not world-readable.)
-
 Then initialize the database content:
 
     pip3 install --user psycopg2
     python3 manage.py migrate
     python3 manage.py load_modules
-    python3 manage.py createsuperuser
+
+And generate static files:
+
+	python3 manage.py collectstatic
 
 ## Setting Up Apache & uWSGI
 
-Symlink the Apache config into place:
+Install Apache 2.x with SSL:
 
-    ln -s /home/govready-q/govready-q/deployment/rhel/apache.conf /etc/httpd/conf.d/govready-q.conf
+	# as root
+	yum instal -y mod_ssl
 
-The locations of a TLS key and certificate are specified in the Apache config file. Put a TLS key and certificate there!
+Copy the Apache config into place:
+
+    cp /home/govready-q/govready-q/deployment/rhel/apache.conf /etc/httpd/conf.d/govready-q.conf
+
+And then edit the file replacing `q.govready.com` and `*.govready.com` with your hostnames.
+
+If you don't have a TLS certificate ready to use, create a self-signed certificate:
+
+    openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /home/govready-q/ssl_certificate.key -out /home/govready-q/ssl_certificate.crt -subj '/CN=webserver.hostname.com'
+    chmod 600 /home/govready-q/ssl_certificate.{key,crt}
+    chown apache.apache /home/govready-q/ssl_certificate.{key,crt}
+
+If SELinux is enabled (`sestatus` shows `SELinux status: enabled`), grant the Apache process access to these files as well as the site's static files:
+
+	chcon -v -R --type=httpd_sys_content_t /home/govready-q/govready-q/deployment/rhel/apache.conf /home/govready-q/ssl_certificate.{key,crt} /home/govready-q/public_html
+
+and grant Apache permission to make network connections so that it can connect to the Python/uwsgi backend running GovReady-Q:
+
+	setsebool httpd_can_network_connect true
 
 Install `supervisor` which will keep the Python/Django process running and symlink our supervisor config into place:
 
-    # as root
     yum install supervisor
     ln -s /home/govready-q/govready-q/deployment/rhel/supervisor.ini /etc/supervisord.d/govready-q.ini
 
@@ -132,7 +189,58 @@ Restart services:
     service supervisord restart
     service httpd restart
 
+And if necessary open the web ports:
+
+	firewall-cmd --zone=public --add-port=80/tcp --permanent
+	firewall-cmd --zone=public --add-port=443/tcp --permanent
+	firewall-cmd --reload
+
 GovReady-Q should now be running and accessible at your domain name. Follow the instructions in the [main README.md](../../README.md) for creating your first organization.
+
+## Creating the First User
+
+If you are setting up a multi-tenant instance of Q where different organizations will use the site on different subdomains, create the administrative user using:
+
+    python3 manage.py createsuperuser
+
+and then log into the admin to create initial organizations.
+
+Otherwise, for a single-tenant setup, add to `local/environment.json`:
+
+  "single-organization": "main",
+
+which will serve just the Organization instance whose subdomain field is "main", and then create the initial user and the "main" organization using:
+
+	python3 manage.py first_run
+
+You should now be able to log into GovReady-Q using the user created in this section.
+
+## Setting up an SSL Certificate
+
+The instructions above created a self-signed certificate to get the website up and running. To use Let's Encrypt to automatically provision a real certificate, install and run `certbot`:
+
+	yum install -y python-certbot-apache
+	certbot --apache -d webserver.hostname.com
+	# and follow the prompts
+
+Then set it to automatically renew certificates as needed:
+
+	# edit root's crontab
+	crontab -e
+
+	# insert at end:
+	30 2 * * * /usr/bin/certbot renew >> /var/log/le-renew.log
+
+## Other Configuration Settings
+
+Set up email by adding to `local/environment.json`:
+
+	  "admins": [["Your Name", "you@company.com"]],
+	  "email": {
+	    "host": "smtp.server.com", "port": "587", "user": "...", "pw": "....",
+	    "domain": "webserver.hostname.com"
+	  },
+	  "mailgun_api_key": "...",
 
 ## Updating Deployment
 
