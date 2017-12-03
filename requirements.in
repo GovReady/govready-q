@@ -30,9 +30,9 @@ mondrianish # CC0
 rtyaml # CC0
 email-validator # CC0
 exclusiveprocess # CC0
-django-html-emailer==0.0.4 # MIT License
+django-html-emailer # MIT License
 django-database-storage-backend==0.0.2 # CC0
-commonmarkextensions==0.0.1 # BSD 3
+commonmarkextensions # BSD 3
 
 # Only needed in production
 rfc5424-logging-handler # BSD License

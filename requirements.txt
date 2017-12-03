@@ -66,8 +66,8 @@ colour==0.1.5 \
 commonmark==0.7.4 \
     --hash=sha256:24678b72094398df96312fb927e274ccaf5148f25e47aca9f7fc062693ae7577 \
     --hash=sha256:4d3e6853c17c5f92a5bec77343d816254f135e34b8935d0d61f0afc1226c51b7
-commonmarkextensions==0.0.1 \
-    --hash=sha256:ce01ca77596f0db46bd1dc5332dffeb2eeaf00bc7fea3dc8b0926b0f3aa5f7d0
+commonmarkextensions==0.0.2 \
+    --hash=sha256:5f7775e2fd53d2649fa88b53f17806bbedd7aecd1d75025ab394d586a22f95f8
 cryptography==2.1.3 \
     --hash=sha256:05cb4130ebe2d591141501ed06b85072cb3be5e5a0e943a5c487bd6858adcf64 \
     --hash=sha256:06c5a28e12539485c0c9e2e561335b835f5f0fdf2d5700b49835bad8607952ba \
@@ -112,8 +112,8 @@ django-database-storage-backend==0.0.2 \
 django-debug-toolbar==1.9.1 \
     --hash=sha256:4af2a4e1e932dadbda197b18585962d4fc20172b4e5a479490bc659fe998864d \
     --hash=sha256:d9ea75659f76d8f1e3eb8f390b47fc5bad0908d949c34a8a3c4c87978eb40a0f
-django-html-emailer==0.0.4 \
-    --hash=sha256:d7db3f96a69b3004ed80631d94ef87f5c59fc9b65a2aab4f6a4272718256c35b
+django-html-emailer==0.0.5 \
+    --hash=sha256:5dc187fed5060b3d21e5c04061dc9becb121ee1898c635880b0bdc199d0f1054
 django-model-utils==3.0.0 \
     --hash=sha256:60ead1ba50e1353f38bde12ab8b4a80b6a0f825a8e53c348fe259548cbd1a312 \
     # via django-notifications-hq
