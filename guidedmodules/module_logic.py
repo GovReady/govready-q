@@ -866,7 +866,7 @@ class ModuleAnswers(object):
         self.as_dict() # lazy load if necessary
         return [v[0] for v in self.answertuples.values()]
 
-    def render_answers(self, show_unanswered=True, show_imputed=True, show_metadata=False):
+    def render_answers(self, show_unanswered=True, show_imputed=True, show_imputed_nulls=True, show_metadata=False):
         # Return a generator that provides tuples of
         # (question, answerobj, answerhtml) where
         #   * question is a ModuleQuestion instance
@@ -876,6 +876,7 @@ class ModuleAnswers(object):
         for q, is_answered, a, value in self.answertuples.values():
             if not is_answered and not show_unanswered: continue # skip questions that have no answers
             if not a and not show_imputed: continue # skip imputed answers
+            if not a and value is None and not show_imputed_nulls: continue # skip questions whose imputed value is null
             if q.spec["type"] == "interstitial": continue # skip question types that display awkwardly
             if value is None:
                 # Question is skipped.
