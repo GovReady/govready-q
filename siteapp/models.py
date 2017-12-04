@@ -158,6 +158,18 @@ class User(AbstractUser):
        self.api_key_wo = crypto.get_random_string(32)
        self.save()
 
+    def get_api_keys(self):
+        # Initialize on first use.
+        if self.api_key_ro is None:
+            self.reset_api_keys()
+
+        return {
+            "ro": self.api_key_ro,
+            "rw": self.api_key_rw,
+            "wo": self.api_key_wo,
+        }
+
+
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):
     # Register in settings.py!
@@ -786,6 +798,15 @@ class Project(models.Model):
         self.root_task.import_json_update(data, deserializer)
 
         return True
+
+    def get_api_url(self):
+        # Get the URL to the data API for this Project.
+        return \
+        settings.SITE_ROOT_URL \
+          + "/api/v1/organizations/{org}/projects/{id}/answers".format(
+            org=self.organization.subdomain,
+            id=self.id,
+        )
 
 
 class ProjectMembership(models.Model):

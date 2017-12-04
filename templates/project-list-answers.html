@@ -72,12 +72,8 @@ h2 { margin-top: 1.5em; }
                   data-question="{{question.id}}"
                   data-answer="{{answer.id}}"
                   data-reviewed="{{answer.reviewed}}" {# css triggers bg color #}
-                  {% if section.can_review %}
                   style="cursor: pointer;"
-                  onclick="change_review_state(this);"
-                  {% else %}
-                  style="cursor: default;"
-                  {% endif %}
+                  onclick="change_review_state(this, {% if section.can_review %}true{% else %}false{% endif %});"
                   >
                   {% for key, label in review_choices %}
                     {% if answer.reviewed == key %}
@@ -113,7 +109,13 @@ h2 { margin-top: 1.5em; }
 
 {% block scripts %}
 <script>
-function change_review_state(elem) {
+function change_review_state(elem, can_review) {
+  // Check permission flag. (It's of course checked server-side too.)
+  if (!can_review) {
+    alert("Only organization reviewers have permission to change the review state of answers.");
+    return;
+  }
+
   // Build the select element.
   var elem = $(elem);
   var dom = $("<div><p>Change the review state to:</p> <select class='form-control'></select></div>");

@@ -1201,8 +1201,8 @@ class RenderedAnswer:
                 value = ", ".join(get_question_choice(self.question, c)["text"] for c in self.answer)
         elif self.question_type in ("integer", "real"):
             # Use a locale to generate nice human-readable numbers.
+            # The locale is set on app startup using locale.setlocale in settings.py.
             import locale
-            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
             value = locale.format(
                 "%d" if self.question_type == "integer" else "%g",
                 self.answer,

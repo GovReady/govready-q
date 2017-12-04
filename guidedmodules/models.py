@@ -798,7 +798,10 @@ class Task(models.Model):
         # it to the set of Tasks that answer the question.
 
         # Get the ModuleQuestion from the question_id.
-        q = self.module.questions.get(key=question_id)
+        if not isinstance(question_id, ModuleQuestion):
+            q = self.module.questions.get(key=question_id)
+        else:
+            q = question_id
 
         # Get or create a TaskAnswer for that question.
         if create:
@@ -1410,6 +1413,9 @@ class TaskAnswerHistory(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
+
+    class Meta:
+        verbose_name_plural = "TaskAnswerHistories"
 
     class CantDecrypt(Exception):
         pass

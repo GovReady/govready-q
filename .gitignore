@@ -82,3 +82,7 @@ modules/oirmfo
 siteapp/staticfiles
 vendor
 .kitchen
+
+# Emacs
+*~
+\#*\#

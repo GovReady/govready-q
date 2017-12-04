@@ -122,6 +122,11 @@ class AppSourceSpecWidget(forms.Widget):
     	return value
 
 class AppSourceAdminForm(forms.ModelForm):
+	class Meta:
+		labels = {
+			"available_to_all": "Apps from this source are available to all organizations"
+		}
+
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.fields['spec'].widget = AppSourceSpecWidget()
@@ -144,17 +149,19 @@ class AppSourceAdminForm(forms.ModelForm):
 class AppSourceAdmin(admin.ModelAdmin):
 	form = AppSourceAdminForm # customize spec widget
 	list_display = ('namespace', 'source')
+	filter_horizontal = ('available_to_orgs',)
 	def source(self, obj):
 		return obj.get_description()
 
 class AppInstanceAdmin(admin.ModelAdmin):
 	list_display = ('appname', 'source', 'system_app')
 	list_filter = ('source', 'system_app')
+	raw_id_fields = ('source',)
 
 class ModuleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'app_', 'module_name', 'created')
 	list_filter = ('source',)
-	raw_id_fields = ('app', 'superseded_by', 'assets')
+	raw_id_fields = ('source', 'app', 'superseded_by', 'assets')
 	def app_(self, obj): return "{} [{}]".format(obj.app.appname, obj.app.id) if obj.app else "(not in an app)"
 
 class ModuleQuestionAdmin(admin.ModelAdmin):
@@ -202,7 +209,7 @@ class TaskAnswerHistoryAdmin(admin.ModelAdmin):
 
 class InstrumentationEventAdmin(admin.ModelAdmin):
 	list_display = ('event_time', 'event_type', 'user', 'event_value', 'task')
-	raw_id_fields = ('user', 'module', 'question', 'task', 'answer')
+	raw_id_fields = ('project', 'user', 'module', 'question', 'task', 'answer')
 	readonly_fields = ('event_time', 'event_type', 'event_value', 'user', 'module', 'question', 'task', 'answer')
 
 admin.site.register(AppSource, AppSourceAdmin)
