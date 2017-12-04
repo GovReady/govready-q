@@ -40,7 +40,7 @@ COPY modules ./modules
 COPY siteapp ./siteapp
 COPY templates ./templates
 COPY manage.py .
-COPY deployment/docker/first_run.sh .
+COPY deployment/docker/manage.sh /usr/local/bin/manage
 COPY deployment/docker/dockerfile_exec.sh .
 
 # Set the startup script.

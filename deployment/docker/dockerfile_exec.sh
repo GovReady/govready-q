@@ -19,9 +19,9 @@ if [ ! -z "$EMAIL_HOST" ]; then
 	> local/environment.json
 fi
 
-# See first_run.sh. This directory must be created
-# every time the container starts if the AppSource
-# fixture has been loaded.
+# This directory must be created every time the container
+# starts if the AppSource fixture has been loaded by the
+# first_run management command.
 mkdir -p /mnt/apps
 
 # Initialize the database and start the server.
