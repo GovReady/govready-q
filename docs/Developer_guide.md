@@ -25,23 +25,23 @@ The GovReady-Q Compliance Server is a Django Project consisting of three interac
 1. `guidedmodules` - handles Compliance Apps, Modules and Questions, (Tasks,) Answers, Instrumentation
 1. `discussion` - handles Discussions, Comments, Invitations
 
-Both `siteapp` and `discussion` are fairly intuitive in what they do and how they work. The `guidedmodules` app is the most sophisticated and least intuitive of the three and provides the core functionality the GovReady Compliance Server.
+Both `siteapp` and `discussion` are fairly intuitive in what they do and how they work. The `guidedmodules` app is the most sophisticated and least intuitive of the three and provides the core functionality of the GovReady Compliance Server.
 
 ## Siteapp
 
-The diagram below provides summary representation of GovReady-Q's Django siteapp data model that handles users, organizations, project and folders and invitations.
+The diagram below provides a summary representation of GovReady-Q's Django siteapp data model that handles users, organizations, projects and folders, and invitations.
 
 ![Siteapp data model (not all tables represented)](assets/govready-q-siteapp-erd.png)
 
 ## Guidedmodules
 
-The diagram below provides summary representation of GovReady-Q's Django guidedmodules data model that handles Compliance Apps, modules and 1uestions, (tasks,) answers, and instrumentation. 
+The diagram below provides a summary representation of GovReady-Q's Django guidedmodules data model that handles Compliance Apps, modules and questions, (tasks,) answers, and instrumentation. 
 
 ![Guildedmodules data model (not all tables represented)](assets/govready-q-guidedmodules-erd.png)
 
 ## Discussion
 
-The diagram below provides summary representation of GovReady-Q's Django discussion data model that handles discussions, comments, and invitations.
+The diagram below provides a summary representation of GovReady-Q's Django discussion data model that handles discussions, comments, and invitations.
 
 ![Discussion data model (not all tables represented)](assets/govready-q-discussion-erd.png)
 
