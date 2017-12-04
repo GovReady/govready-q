@@ -12,8 +12,9 @@ WORKDIR /usr/src/app
 RUN apt-get update && apt-get install locales && apt-get clean && sed -i "s/^[# ]*en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen && /usr/sbin/locale-gen
 
 # Install required system packages.
+# git2u: See the RHEL readme.
 # jq: we use it to assemble the local/environment.json file
-RUN apt-get update && apt-get install -y graphviz unzip pandoc wkhtmltopdf jq && apt-get clean
+RUN apt-get update && apt-get install -y git2u graphviz unzip pandoc wkhtmltopdf jq && apt-get clean
 
 # Copy in the Python module requirements and install them.
 # Manually install database drivers which aren't in our requirements
