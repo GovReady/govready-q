@@ -192,7 +192,3 @@ If you are a GovReady team member, you can then push the image to hub.docker.com
 	docker login
 	# respond to prompts with credentials
 	docker image push govready/govready-q
-
-TODO:
-
-* Remove `"debug": true` from environment.json when we figure out how to serve static assets with `manage.py runserver`.

@@ -1,12 +1,17 @@
-# Generate an environment.json file. Use the jq
+# This is the main entry point, i.e. process zero, of the
+# Docker container.
+
+# Generate a local/environment.json file. Use the jq
 # tool to ensure that we produce valid JSON from
 # the environment variables.
 mkdir -p local
-echo "{ }" \
-	| jq ".debug = true" \
+echo '{ 
+	"debug": false,
+	"single-organization": "main",
+	"static": "/tmp/static_root"
+}' \
 	| jq ".host = $(echo ${ADDRESS-localhost:8000} | jq -R .)" \
 	| jq ".https = ${HTTPS-false}" \
-	| jq ".[\"single-organization\"] = \"main\"" \
 	| jq ".db = $(echo ${DBURL} | jq -R .)" \
 	> local/environment.json
 if [ ! -z "$EMAIL_HOST" ]; then
@@ -23,6 +28,9 @@ fi
 # every time the container starts if the AppSource
 # fixture has been loaded.
 mkdir -p /mnt/apps
+
+# Flatten static files.
+python manage.py collectstatic --noinput
 
 # Initialize the database and start the server.
 python manage.py migrate
