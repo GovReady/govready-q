@@ -9,7 +9,7 @@ Jinja2 # BSD License
 # Less Common Python Packages
 html5lib==0.999999999 # MIT License
 CommonMark==0.7.4 # BSD License
-cryptography==2.1.3 # BSD License
+cryptography==2.1.4 # BSD License
 graphviz # MIT License
 fs # BSD License
 PyGithub # LGPL License
