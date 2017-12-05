@@ -215,8 +215,8 @@ class Module(models.Model):
             })
 
     def is_authoring_tool_enabled(self, user):
-        return (settings.DEBUG
-        	and self.app is not None # legacy Module not associated with an AppInstance
+        return (
+                self.app is not None # legacy Module not associated with an AppInstance
             and self.source.spec["type"] == "local" # so we can save to disk
             and user.has_perm('guidedmodules.change_module'))
     def get_referenceable_modules(self):

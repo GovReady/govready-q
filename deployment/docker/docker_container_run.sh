@@ -202,18 +202,32 @@ fi
 CMD="docker container run $ARGS $NAMEARG $PORT $ENVS $DBMNT $APPSMNT $IMAGE"
 
 # Echo it for debugging.
-echo $CMD
+# Don't echo out of debugging because it may leak secrets.
+#echo $CMD
 
 # Execute and capture the output, which is a container ID.
 CONTAINER_ID=$($CMD)
 if [[ $? -ne 0 ]]; then exit 2; fi
 
-# Say what happened.
-echo "GovReady-Q has been started!"
+# The container has been started but it'll be a moment before the
+# http server is listening.
+echo "GovReady-Q is starting..."
 if [ ! -z "$NAME" ]; then
   echo "Container Name: $NAME"
 fi
 echo "Container ID: $CONTAINER_ID"
+
+# Check that the database is ready. The docker exec command
+# writes out a 'ready' file once migrations are finished,
+# and then it's probably another second before the Django
+# server is listening.
+while ! docker container exec $NAME test -f ready; do
+  echo "Waiting for GovReady-Q to come online..."
+  sleep 3
+done
+sleep 1
+
+echo "GovReady-Q has been started!"
 echo -n "URL: http"
 if [ "$HTTPS" == true ]; then echo -n s; fi
 echo "://$ADDRESS"
