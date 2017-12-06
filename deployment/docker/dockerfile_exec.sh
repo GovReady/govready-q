@@ -5,15 +5,21 @@
 # tool to ensure that we produce valid JSON from
 # the environment variables.
 mkdir -p local
-echo '{ 
+
+# Create a local/environment.json file. Use jq on some of
+# the inputs to guarantee valid JSON encoding of strings.
+cat > local/environment.json << EOF;
+{ 
 	"debug": false,
+	"host": $(echo ${ADDRESS-localhost:8000} | jq -R .),
+	"https": ${HTTPS-false},
 	"single-organization": "main",
-	"static": "/tmp/static_root"
-}' \
-	| jq ".host = $(echo ${ADDRESS-localhost:8000} | jq -R .)" \
-	| jq ".https = ${HTTPS-false}" \
-	| jq ".db = $(echo ${DBURL} | jq -R .)" \
-	> local/environment.json
+	"static": "/tmp/static_root",
+	"db": $(echo ${DBURL} | jq -R .)
+}
+EOF
+
+# Add email parameters.
 if [ ! -z "$EMAIL_HOST" ]; then
 	cat local/environment.json \
 	| jq ".email.host = $(echo ${EMAIL_HOST} | jq -R .)" \
