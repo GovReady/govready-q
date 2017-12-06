@@ -45,9 +45,16 @@ mkdir -p /mnt/apps
 # Flatten static files.
 python manage.py collectstatic --noinput
 
-# Initialize the database and start the server.
+# Initialize the database.
 python manage.py migrate
 python manage.py load_modules
+
+# Create an initial administrative user and organization
+# non-interactively and write the administrator's initial
+# password to standard output.
+if [ ! -z "$FIRST_RUN" ]; then
+	python manage.py first_run --non-interactive
+fi
 
 # Write a file that indicates to the host that Q
 # is now fully configured.
