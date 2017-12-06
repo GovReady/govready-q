@@ -38,6 +38,9 @@ HTTPS=false
 # Defaults to 127.0.0.1 and the port in $ADDRESS.
 BIND=
 
+# Turn on Django DEBUG mode?
+DEBUG=false
+
 # An absolute path to a Sqlite3 database file on the host machine
 # to use as the database. Set with --sqlitedb /path/to/db.sqlite.
 # Optional. Docker requires an absolute path and it must exist.
@@ -89,6 +92,9 @@ while [ $# -gt 0 ]; do
       BIND="$2"
       shift 2 ;;
 
+    --debug)
+      DEBUG=true
+      shift 1 ;;
     --sqlitedb)
       SQLITEDB="$2"
       shift 2 ;;
@@ -178,7 +184,7 @@ fi
 DASHP="-p $BIND:8000"
 
 # Set environment variables for the Django process to use.
-ENVS="-e HOST=$HOST -e PORT=$PORT -e HTTPS=$HTTPS -e DBURL=$DBURL"
+ENVS="-e HOST=$HOST -e PORT=$PORT -e HTTPS=$HTTPS -e DBURL=$DBURL -e DEBUG=$DEBUG"
 ENVS="$ENVS -e EMAIL_HOST=$EMAIL_HOST -e EMAIL_PORT=$EMAIL_PORT -e EMAIL_USER=$EMAIL_USER -e EMAIL_PW=$EMAIL_PW -e EMAIL_DOMAIN=$EMAIL_DOMAIN"
 
 # Add a mount argument for having the Sqlite database stored on the host.

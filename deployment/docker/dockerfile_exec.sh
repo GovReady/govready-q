@@ -17,7 +17,7 @@ ADDRESS=$(echo $ADDRESS | sed s/:80$//; )
 # the inputs to guarantee valid JSON encoding of strings.
 cat > local/environment.json << EOF;
 { 
-	"debug": false,
+	"debug": ${DEBUG-false},
 	"host": $(echo ${ADDRESS} | jq -R .),
 	"https": ${HTTPS-false},
 	"single-organization": "main",

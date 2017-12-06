@@ -131,13 +131,15 @@ To configure outbound email, add:
 
 Some of GovReady-Q's outbound emails can be replied to. When a user replies to a notification of a discussion comment, the reply's body is post as a new comment on the discussion. Currently we only support an incoming notification hook from Mailgun, and it is not yet configurable for the docker deployment. TODO
 
-### Container management
+### Container management and other options
 
 Use `--name NAME` to specify an alternate name for the container. The default is `govready-q`.
 
 Use `--relaunch` to remove an existing container of the same name before launching
 the new one, if an existing container of the same name exists. This simply runs
 `docker container rm -f NAME`.
+
+Add `--debug` to start GovReady-Q in DEBUG mode, which enables nicer error messages. Do not use in production.
 
 ### Developing compliance apps
 
