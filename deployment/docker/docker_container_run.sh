@@ -25,7 +25,8 @@ NAME=govready-q
 # The site's public address as would be entered in a
 # web browser. Set with --address HOST:PORT. The port
 # is optional if 80. The default is:
-ADDRESS=localhost:8000
+HOST=localhost
+PORT=8000
 
 # Set to 'true' if the site is running behind a proxy that
 # is terminating HTTPS connections. Using "--https" sets
@@ -76,7 +77,10 @@ while [ $# -gt 0 ]; do
       shift 2 ;;
 
     --address)
-      ADDRESS="$2"
+      # Split --address on a colon and store in HOST and PORT..
+      IFS=':' read -r -a ADDRESS <<< "$2"
+      HOST=${ADDRESS[0]-localhost}
+      PORT=${ADDRESS[1]-80}
       shift 2 ;;
     --https)
       HTTPS=true
@@ -166,15 +170,7 @@ fi
 
 # If --bind is not specified, use 127.0.0.1 and the port from --address.
 if [ -z "$BIND" ]; then
-  # Split --address on a colon and look at the part after the colon:
-  IFS=':' read -r -a ADDRESSCOMPONENTS <<< "$ADDRESS"
-  if [ ! -z "${ADDRESSCOMPONENTS[1]}" ]; then
-    BIND=${ADDRESSCOMPONENTS[1]}
-  else
-    # --address's value may not have a colon, and then it means port 80.
-    BIND=80
-  fi
-  BIND="127.0.0.1:$BIND"
+  BIND="127.0.0.1:$PORT"
 fi
 
 # Form the -p option, which maps host:port (an interface and host port)
@@ -182,7 +178,7 @@ fi
 DASHP="-p $BIND:8000"
 
 # Set environment variables for the Django process to use.
-ENVS="-e ADDRESS=$ADDRESS -e HTTPS=$HTTPS -e DBURL=$DBURL"
+ENVS="-e HOST=$HOST -e PORT=$PORT -e HTTPS=$HTTPS -e DBURL=$DBURL"
 ENVS="$ENVS -e EMAIL_HOST=$EMAIL_HOST -e EMAIL_PORT=$EMAIL_PORT -e EMAIL_USER=$EMAIL_USER -e EMAIL_PW=$EMAIL_PW -e EMAIL_DOMAIN=$EMAIL_DOMAIN"
 
 # Add a mount argument for having the Sqlite database stored on the host.
