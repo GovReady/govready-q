@@ -11,9 +11,6 @@ beautifulsoup4==4.6.0 \
     --hash=sha256:7015e76bf32f1f574636c4288399a6de66ce08fb7b2457f628a8d70c0fbabb11 \
     --hash=sha256:808b6ac932dccb0a4126558f7dfdcf41710dd44a4ef497a0bb59a77f9f078e89 \
     # via pynliner
-cairocffi==0.8.0 \
-    --hash=sha256:65f21e6786e2b255ab1d3fda53a365a3565bb1808cabbbe59d99a797c61d3545 \
-    # via mondrianish
 certifi==2017.11.5 \
     --hash=sha256:244be0d93b71e93fc0a0a479862051414d0e00e16435707e5bf5000f92e04694 \
     --hash=sha256:5ec74291ca1136b40f0379e1128ff80e866597e4e2c1e755739a913bbc3613c0 \
@@ -50,7 +47,7 @@ cffi==1.11.2 \
     --hash=sha256:e72d8b5056f967ecb57e166537408bc913f2f97dc568027fb6342fcfa9f81d64 \
     --hash=sha256:e7f5ad6b12f21b77d3a37d5c67260e464f4e9068eb0c0622f61d0e30390b31b6 \
     --hash=sha256:f6799913eb510b682de971ddef062bbb4a200f190e55cae81c413bc1fd4733c1 \
-    # via cairocffi, cryptography
+    # via cryptography
 chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
     --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691 \
@@ -170,8 +167,8 @@ jsonfield==2.0.2 \
 markupsafe==1.0 \
     --hash=sha256:a6be69091dac236ea9c6bc7d012beab42010fa914c459791d627dad4910eb665 \
     # via jinja2
-mondrianish==0.5.2 \
-    --hash=sha256:3226bf9d005368b502c3beb6d25033a3fe3c84ade00d83cbd9064cc6edf5ebf4
+mondrianish==0.5.3 \
+    --hash=sha256:e62891bd74671822ced9a76e15dbfad3d53cfaa1f5ed99cf11a7d68934be95b8
 oauthlib==2.0.6 \
     --hash=sha256:ce57b501e906ff4f614e71c36a3ab9eacbb96d35c24d1970d2539bbc3ec70ce1 \
     # via requests-oauthlib
