@@ -32,9 +32,10 @@ ADDRESS=localhost:8000
 # this to true.
 HTTPS=false
 
-# The port the Docker container will listen on. Set with
-# --port PORT. Defaults to the port in $ADDRESS.
-PORT=
+# The host interface and port the Docker container will bind to
+# and listen on for incoming connections. Set with --bind HOST:PORT.
+# Defaults to 127.0.0.1 and the port in $ADDRESS.
+BIND=
 
 # An absolute path to a Sqlite3 database file on the host machine
 # to use as the database. Set with --sqlitedb /path/to/db.sqlite.
@@ -80,8 +81,8 @@ while [ $# -gt 0 ]; do
     --https)
       HTTPS=true
       shift 1 ;;
-    --port)
-      PORT="$2"
+    --bind)
+      BIND="$2"
       shift 2 ;;
 
     --sqlitedb)
@@ -163,19 +164,22 @@ if [ ! -z "$NAME" ]; then
   NAMEARG="--name $NAME"
 fi
 
-# Map a host port to port 8000 in the container, which is the port
-# the Django process is listening on. Take from --address if --port
-# is not specified.
-if [ -z "$PORT" ]; then
+# If --bind is not specified, use 127.0.0.1 and the port from --address.
+if [ -z "$BIND" ]; then
   # Split --address on a colon and look at the part after the colon:
   IFS=':' read -r -a ADDRESSCOMPONENTS <<< "$ADDRESS"
   if [ ! -z "${ADDRESSCOMPONENTS[1]}" ]; then
-    PORT=${ADDRESSCOMPONENTS[1]}
+    BIND=${ADDRESSCOMPONENTS[1]}
   else
-    PORT=80
+    # --address's value may not have a colon, and then it means port 80.
+    BIND=80
   fi
+  BIND="127.0.0.1:$BIND"
 fi
-PORT="-p $PORT:8000"
+
+# Form the -p option, which maps host:port (an interface and host port)
+# to a container port, which is always 8000. See dockerfile_exec.sh.
+DASHP="-p $BIND:8000"
 
 # Set environment variables for the Django process to use.
 ENVS="-e ADDRESS=$ADDRESS -e HTTPS=$HTTPS -e DBURL=$DBURL"
@@ -199,7 +203,7 @@ if [ ! -z "$APPSDEVDIR" ]; then
 fi
 
 # Form the "docker container run command".
-CMD="docker container run $ARGS $NAMEARG $PORT $ENVS $DBMNT $APPSMNT $IMAGE"
+CMD="docker container run $ARGS $NAMEARG $DASHP $ENVS $DBMNT $APPSMNT $IMAGE"
 
 # Echo it for debugging.
 # Don't echo out of debugging because it may leak secrets.
@@ -216,6 +220,7 @@ if [ ! -z "$NAME" ]; then
   echo "Container Name: $NAME"
 fi
 echo "Container ID: $CONTAINER_ID"
+echo "Listening on: $BIND"
 
 # Check that the database is ready. The docker exec command
 # writes out a 'ready' file once migrations are finished,

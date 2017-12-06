@@ -55,21 +55,30 @@ Advanced container options can be set with command-line arguments to our contain
 
 ### Changing the hostname and port
 
-The container will run at `localhost:8000` by default, and because of HTTP Host header checking
-you must visit GovReady-Q using the hostname it is configured to run at (so in this example,
-substituting an IP address such as `127.0.0.1` for `localhost` will result in an error).
+#### The public address (as users see it)
 
-You may change the hostname and port that the container is running at using:
+The container will run at `localhost:8000` by default, it will only be accessible from the
+host machine, and because of HTTP Host header checking you must visit GovReady-Q using the
+same hostname it is configured to run at (so, with default settings, visiting `127.0.0.1`
+instead of `localhost` will result in an error).
+
+You may change the hostname and port of the GovReady-Q server using:
 
 	--address q.mydomain.com:80
 
-If the Docker container is behind a proxy, then `--address` should specify the public address
-that end-users will use to access GovReady-Q and `--port` may be used if the Docker container
-should listen on a different port:
+If the Docker container is behind a proxy, then `--address` specifies the public address
+that end-users will use to access GovReady-Q. This may differ from the address and port that the container is accessed at on your organization's network, which is set using `--bind`.
 
-	--port 8000
+Add `--https` if end users will access GovReady-Q with https: URLs.
 
-Add `--https` if the proxy is terminating HTTPS connections.
+#### The address that the container is bound to
+
+Use `--bind IP:PORT` to control how the listening socket is created on the host machine.
+The default value of `--bind` is `127.0.0.1` and the port from `--address`, or `127.0.0.1:8000` if
+`--address` isn't given. If the host machine is behind a proxy, use `--bind` to control the
+network interface and port that Docker will forward to the GovReady-Q container.
+
+	--bind 10.0.0.5:6543
 
 ### Persistent database
 
