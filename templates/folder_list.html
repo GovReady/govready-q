@@ -52,15 +52,12 @@ Project Folders
   <p id="please-complete-account-settings">Start by completing <a href="{{request.user.user_settings_task.get_absolute_url}}">your account settings</a>.</p>
 {% endif %}
 
+{% comment %}
 {% if request.user.can_see_org_settings and not request.organization.get_organization_project.root_task.is_finished %}
   <h2>Complete your organization profile</h2>
   <p>Fill out your <a href="{{request.organization.get_organization_project.get_absolute_url}}">your organization&rsquo;s profile</a>.</p>
 {% endif %}
-
-{% if is_lonely_admin %}
-  <h2>Invite collaborators to work with you</h2>
-  <p>You&rsquo;re the only one working on compliance for {{request.organization.name}}. You can <a href="#" onclick="show_invite_to_org(); return false;">invite others</a> to begin working on compliance apps.</p>
-{% endif %}
+{% endcomment %}
 
 <div style="float: right; margin: 1em 0;">
   <a id="new-folder" href="#" class="btn btn-default" onclick="new_folder(); return false;"><i class="glyphicon glyphicon-folder-open"></i> New Folder</a>

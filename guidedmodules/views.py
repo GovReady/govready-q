@@ -185,10 +185,6 @@ def task_view(view_func):
             "ephemeral_encryption_lifetime": ephemeral_encryption_lifetime_nice,
         }
 
-        # Is this the user's settings page? Hide the blurb to do it.
-        if task == request.user.user_settings_task:
-           request.suppress_prompt_banner = True
-
         # Render the view.
         return view_func(request, task, answered, context, question, EncryptionProvider, set_ephemeral_encryption_cookies, *args)
 
@@ -406,10 +402,6 @@ def save_answer(request, task, answered, context, __, EncryptionProvider, set_ep
 
 @task_view
 def show_question(request, task, answered, context, q, EncryptionProvider, set_ephemeral_encryption_cookies):
-    # Always hide the fill-out-your-profile blurb on all question pages - it's
-    # distracting from answering the question at hand. See task_view.
-    request.suppress_prompt_banner = True
-
     # If this question cannot currently be answered (i.e. dependencies are unmet),
     # then redirect away from this page. If the user is allowed to use the authoring
     # tool, then allow seeing this question so they can edit all questions.
