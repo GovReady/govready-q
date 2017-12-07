@@ -239,6 +239,6 @@ sleep 1
 echo "GovReady-Q has been started!"
 echo -n "URL: http"
 if [ "$HTTPS" == true ]; then echo -n s; fi
-echo -n "://$ADDRESS"
+echo -n "://$HOST"
 if [ "$PORT" != 80 ]; then echo -n ":$PORT"; fi
 echo
