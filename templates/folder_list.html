@@ -45,13 +45,6 @@ Project Folders
 {% block body %}
 <h1>Your Compliance Dashboard</h1>
 
-{% if request.user.user_settings_task and not request.user.user_settings_task.is_finished  %}
-  <p style="margin: 30px 0;">Welcome to GovReady-Q. There are a few things you&rsquo;ll need to do before getting started.</p>
-
-  <h2>Complete your account settings</h2>
-  <p id="please-complete-account-settings">Start by completing <a href="{{request.user.user_settings_task.get_absolute_url}}">your account settings</a>.</p>
-{% endif %}
-
 {% comment %}
 {% if request.user.can_see_org_settings and not request.organization.get_organization_project.root_task.is_finished %}
   <h2>Complete your organization profile</h2>
