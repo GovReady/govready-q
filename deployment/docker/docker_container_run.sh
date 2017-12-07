@@ -234,7 +234,11 @@ while ! docker container exec $NAME test -f ready; do
 done
 sleep 1
 
+# Form and show the public address that Q is expected to be
+# accessed at.
 echo "GovReady-Q has been started!"
 echo -n "URL: http"
 if [ "$HTTPS" == true ]; then echo -n s; fi
-echo "://$ADDRESS"
+echo -n "://$ADDRESS"
+if [ "$PORT" != 80 ]; then echo -n ":$PORT"; fi
+echo
