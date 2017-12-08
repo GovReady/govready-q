@@ -64,14 +64,11 @@ unzip -d /tmp /tmp/bootstrap.zip
 mv /tmp/bootstrap-3.3.7-dist $VENDOR/bootstrap
 rm -f /tmp/bootstrap.zip
 
-# Font Awesome (for the spinner on ajax calls; MIT License)
+# Font Awesome (for the spinner on ajax calls, various icons; MIT License)
 download \
-  http://fontawesome.io/assets/font-awesome-4.7.0.zip \
-  /tmp/fontawesome.zip \
-  'a7b6edb9e874e6d36a90160553afeb412f85df4d91c723ef2a29a2b5bf8e5802'
-unzip -d /tmp /tmp/fontawesome.zip
-mv /tmp/font-awesome-4.7.0 $VENDOR/fontawesome
-rm -f /tmp/fontawesome.zip
+  https://use.fontawesome.com/releases/v5.0.0/js/all.js \
+  $VENDOR/fontawesome.js \
+  '350f72771ceaf9b8392c1646cf2b9f495599c1d5ab31f63a0e709ade6cc336de'
 
 # Josh's Bootstrap Helpers (MIT License)
 download \
