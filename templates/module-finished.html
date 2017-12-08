@@ -185,6 +185,7 @@
   function download_document(document_id) {
     var dom = $("<div><p>Select download format:</p>"
       + "<select class=form-control>"
+      + "<option value=pdf>PDF</option>"
       + "<option value=docx>Word Document</option>"
       + "<option value=odt>OpenOffice Document</option>"
       + "<option value=html>HTML Page</option>"
@@ -192,9 +193,6 @@
       + "<option value=plain>Plain Text</option>"
       + "</select>"
       + "</div>");
-    // not available in our docker version because the OS
-    // provides an older version of pandoc
-    //  + "<option value=pdf>PDF</option>"
     show_modal_confirm("Download Document", dom, "Download", function() {
       var format = dom.find("select").val();
       window.location = "{{task.get_absolute_url|escapejs}}/download/document/" + encodeURIComponent(document_id) + "/" + format;
