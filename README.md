@@ -177,7 +177,7 @@ Continuous integration performs sanity and security checks on our dependencies. 
 
 Deployment guides for installing and deploying GovReady-Q on different Operating Systems can be found the `deployment` directory.
 
-* [Launching with Docker](deployment/docker/README.md) - super easy and has a nice `first_run.sh` script
+* [Launching with Docker](deployment/docker/README.md) - super easy and has a nice `first_run` script
 * [Installing on RHEL](deployment/rhel/README.md) - detailed instructions on installing, libraries, setting up Postgres and Apache
 * [Installing on Ubuntu](deployment/ubuntu/README.md) - super easy `update.sh`
 

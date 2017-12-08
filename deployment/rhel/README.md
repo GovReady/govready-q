@@ -213,6 +213,8 @@ which will serve just the Organization instance whose subdomain field is "main",
 
 	python3 manage.py first_run
 
+TODO: This also creates some AppSources that may need to be deleted.
+
 You should now be able to log into GovReady-Q using the user created in this section.
 
 ## Setting up an SSL Certificate

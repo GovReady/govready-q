@@ -30,7 +30,7 @@ If the site does not come up, check the container logs for an error message:
 
 With the container started and the database initialized, run our first-run script to create a Django database superuser and set up your first organization:
 
-	docker container exec -it govready-q ./first_run.sh
+	docker container exec -it govready-q manage first_run
 
 To pause and restart the container without destroying its data:
 
@@ -157,7 +157,7 @@ you would have a YAML file at `/path/to/apps/my_app/app.yaml`.
 
 To create your first app, you can run
 
-	docker container exec -it govready-q ./manage.py compliance_app host your_new_app_name
+	docker container exec -it govready-q manage compliance_app host your_new_app_name
 
 Replace `your_new_app_name` with an app identifier, which may contain letters,
 numbers, dashes, and underscores. `host` is always just `host` --- don't change

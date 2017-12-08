@@ -1,5 +1,5 @@
-# Build on Docker's official Python 3(.6) image.
-FROM python:3
+# Build on Docker's official CentOS 7 image.
+FROM centos:7
 
 # Expose the port that `manage.py runserver` uses by default.
 EXPOSE 8000
@@ -7,22 +7,30 @@ EXPOSE 8000
 # Put the Python source code here.
 WORKDIR /usr/src/app
 
-# Install the U.S. locale, which we reference explicitly in Q for
-# formatting and parsing numbers.
-RUN apt-get update && apt-get install locales && apt-get clean && sed -i "s/^[# ]*en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen && /usr/sbin/locale-gen
+# Set up the locale - needed for Click, see http://click.pocoo.org/5/python3/
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+ENV LANGUAGE en_US:en
+
+# Install Python 3.6 and set up a virtualenv for it.
+RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+RUN yum -y install python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 
+RUN python3.6 -m venv venv
 
 # Install required system packages.
 # jq: we use it to assemble the local/environment.json file
-RUN apt-get update && apt-get install -y graphviz unzip pandoc wkhtmltopdf jq && apt-get clean
+RUN yum install -y graphviz unzip pandoc wkhtmltopdf jq libffi-devel
 
 # Copy in the Python module requirements and install them.
 # Manually install database drivers which aren't in our requirements
 # file because they're not commonly used in development.
 # Run pyup.io's python package vulnerability check.
+# Do it all in the Python 3.6 virtualenv.
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir psycopg2
-RUN safety check
+RUN source venv/bin/activate && \
+  pip install --no-cache-dir -r requirements.txt && \
+  pip install --no-cache-dir psycopg2 && \
+  safety check
 
 # Copy in the vendor resources and fetch them.
 COPY fetch-vendor-resources.sh ./
@@ -40,8 +48,8 @@ COPY modules ./modules
 COPY siteapp ./siteapp
 COPY templates ./templates
 COPY manage.py .
-COPY deployment/docker/first_run.sh .
+COPY deployment/docker/manage.sh /usr/local/bin/manage
 COPY deployment/docker/dockerfile_exec.sh .
 
 # Set the startup script.
-CMD [ "bash", "dockerfile_exec.sh" ]
+CMD source venv/bin/activate && source ./dockerfile_exec.sh
