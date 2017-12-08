@@ -89,7 +89,7 @@
             }
         </style>
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
-        <link rel="stylesheet" href="{% static "vendor/fontawesome/css/font-awesome.min.css" %}">
+        <script defer src="{% static "vendor/fontawesome.js" %}"></script>
 
         {% block head %}{% endblock %}
 
@@ -157,7 +157,7 @@
             </li>
 
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="user-menu-dropdown">
                 {% with url=request.user.get_profile_picture_absolute_url %}
                   {% if url %}
                     <img src="{{url}}" height="30" alt="Profile Picture"
@@ -169,7 +169,7 @@
               </a>
               <ul class="dropdown-menu">
                 {% if user.user_settings_task %}
-                  <li><a href="{{user.user_settings_task.get_absolute_url}}">Account Settings</a></li>
+                  <li><a href="{{user.user_settings_task.get_absolute_url}}" id="user-menu-account-settings">Account Settings</a></li>
                 {% endif %}
                 <li><a href="/api-keys">Your API Keys</a></li>
                 <li role="separator" class="divider"></li>

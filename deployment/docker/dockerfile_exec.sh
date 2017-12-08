@@ -59,6 +59,7 @@ fi
 # Write a file that indicates to the host that Q
 # is now fully configured.
 echo "done" > ready
+echo "GovReady-Q is fully up and running."
 
 # Start the server. The port is fixed --- see docker_container_run.sh.
 python manage.py runserver 0.0.0.0:8000
