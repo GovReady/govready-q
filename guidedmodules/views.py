@@ -708,7 +708,8 @@ def download_module_output(request, task, answered, context, question, Encryptio
             # convert from HTML to something else, writing to a temporary file
             outfn = os.path.join(tempdir, document_id + "." + file_extension)
             with subprocess.Popen(
-                ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+                # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
+                ["xvfb-run", "--", "pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
                 stdin=subprocess.PIPE
                 ) as proc:
                 proc.communicate(

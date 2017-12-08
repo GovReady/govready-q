@@ -1518,21 +1518,23 @@ class TaskAnswerHistory(models.Model):
                     import subprocess
                     try:
                         # Pipe to subprocess.
-                        with subprocess.Popen(
-                            ["wkhtmltoimage",
+                        # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
+                        cmd = ["xvfb-run", "--", "wkhtmltoimage",
+                                "-q", # else errors go to stdout
                                 "--disable-javascript",
                                 "-f", "png",
-                                "--disable-smart-width",
+                                # "--disable-smart-width", - generates a warning on stdout that qt is unpatched, which happens in headless mode
                                 "--zoom", ".75",
                                 "--width", "800",
                                 "--height", str(int(800*9/16)),
-                                "-", "-"],
+                                "-", "-"]
+                        with subprocess.Popen(cmd,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                             ) as proc:
                             stdout, stderr = proc.communicate(
                                 self.answered_by_file.read(),
                                 timeout=10)
-                            if proc.returncode != 0: raise subprocess.CalledProcessError(0, '')
+                            if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
 
                         # Store PNG.
                         from django.core.files.base import ContentFile
@@ -1540,8 +1542,8 @@ class TaskAnswerHistory(models.Model):
                         value.name = "thumbnail.png" # needs a name for the storage backend?
                         self.thumbnail = value
                         self.save(update_fields=["thumbnail"])
-                    except subprocess.CalledProcessError:
-                        pass
+                    except subprocess.CalledProcessError as e:
+                        print(e)
 
             if self.thumbnail:
                 # If we have a thumbnail, indicate so by returning a URL to it.

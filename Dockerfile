@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install locales && apt-get clean && sed -i "s/^[# 
 
 # Install required system packages.
 # jq: we use it to assemble the local/environment.json file
-RUN apt-get update && apt-get install -y graphviz unzip pandoc wkhtmltopdf jq && apt-get clean
+RUN apt-get update && apt-get install -y graphviz unzip pandoc xvfb wkhtmltopdf jq && apt-get clean
 
 # Copy in the Python module requirements and install them.
 # Manually install database drivers which aren't in our requirements
