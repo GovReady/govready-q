@@ -283,8 +283,11 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         self._login()
 
-        self.click_element('#please-complete-account-settings a')
-        var_sleep(.5) # wait for page to load
+        self.click_element('#user-menu-dropdown')
+        var_sleep(.25) # wait for menu to open
+
+        self.click_element('#user-menu-account-settings')
+        var_sleep(.5) # wait for page to open
         self.assertIn("Introduction | GovReady Account Settings", self.browser.title)
 
         # - The user is looking at the Introduction page.
