@@ -500,8 +500,9 @@ class RenderTests(TestCaseWithFixtureData):
             "url": "some-url-here",
             "size": 1024,
             "type": "text/plain",
+            "type_display": "plain text",
         }
-        test("q_file", file_metadata, '<a class="user-media" href="some-url-here">uploaded plain text file (1 KB)</a>', file_metadata)
+        test("q_file", file_metadata, '<a href="some-url-here">attached plain text file (1 KB)</a>', file_metadata)
         test("q_file.url", file_metadata, "some-url-here")
         test("q_file.text", file_metadata, escape("<uploaded file: %s>" % file_metadata["url"]))
         test("q_file", None, escape("<file>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition

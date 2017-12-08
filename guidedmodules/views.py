@@ -511,6 +511,16 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
             import CommonMark
             existing_answer = CommonMark.HtmlRenderer().render(CommonMark.Parser().parse(existing_answer))
 
+    # For file-type questions that have been answered, render the existing
+    # answer so that we don't need redundant logic for showing a thumbnail
+    # and providing a download link.
+    answer_rendered = None
+    if taskq and taskq.question.spec["type"] == "file" and answer:
+        from .module_logic import TemplateContext, RenderedAnswer, HtmlAnswerRenderer
+        tc = TemplateContext(answered, HtmlAnswerRenderer(show_metadata=False))
+        ra = RenderedAnswer(task, taskq.question, answer, existing_answer, tc)
+        answer_rendered = ra.__html__()
+
     # What's the title/h1 of the page and the rest of the prompt? Render the
     # prompt field. If it starts with a paragraph, turn that paragraph into
     # the title.
@@ -538,6 +548,7 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
         "history": taskq.get_history() if taskq else None,
         "answer_obj": answer,
         "answer": existing_answer,
+        "answer_rendered": answer_rendered,
         "default_answer": default_answer,
         "can_review": task.has_review_priv(request.user),
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
@@ -618,10 +629,18 @@ def download_answer_file(request, task, answered, context, q, EncryptionProvider
     if q.spec["type"] != "file": raise Http404()
     if not tah.answered_by_file.name: raise Http404()
 
+    # Get the Django File instance. If ?thumbnail=1 is passed, retreive the thumbnail
+    # if it exists.
+    blob = tah.answered_by_file
+    if request.GET.get("thumbnail"):
+        tah.get_value() # populate lazy-created thumbnail
+        if not tah.thumbnail.name: raise Http404()
+        blob = tah.thumbnail
+
     # Get the dbstorage.models.StoredFile instance which holds
     # an auto-detected mime type.
     from dbstorage.models import StoredFile
-    sf = StoredFile.objects.only("mime_type").get(path=tah.answered_by_file.name)
+    sf = StoredFile.objects.only("mime_type").get(path=blob.name)
 
     # Construct the response. The file content is untrusted, so it must
     # not be served as an inline resource from our domain unless it is
@@ -634,8 +653,8 @@ def download_answer_file(request, task, answered, context, q, EncryptionProvider
         disposition = "attachment"
 
     import os.path
-    resp = HttpResponse(tah.answered_by_file, content_type=mime_type)
-    resp['Content-Disposition'] = disposition + '; filename=' + os.path.basename(tah.answered_by_file.name)
+    resp = HttpResponse(blob, content_type=mime_type)
+    resp['Content-Disposition'] = disposition + '; filename=' + os.path.basename(blob.name)
 
 
     # Browsers may guess the MIME type if it thinks it is wrong. Prevent
@@ -695,7 +714,7 @@ def download_module_output(request, task, answered, context, question, Encryptio
                 proc.communicate(
                     doc["html"].encode("utf8"),
                     timeout=10)
-                if proc.returncode != 0: raise subprocess.CalledProcessError()
+                if proc.returncode != 0: raise subprocess.CalledProcessError(0, '')
 
             # send the temporary file to the response
             with open(outfn, "rb") as f:

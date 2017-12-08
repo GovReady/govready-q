@@ -1509,11 +1509,50 @@ class TaskAnswerHistory(models.Model):
             # the API it makes sense.
             url = self.taskanswer.task.project.organization.get_url(url)
 
+            # Construct a thumbnail and a URL to it.
+            thumbnail_url = None
+            if not self.thumbnail:
+                # Try to construct a thumbnail.
+                if sf.mime_type == "text/html":
+                    # Use wkhtmltoimage.
+                    import subprocess
+                    try:
+                        # Pipe to subprocess.
+                        with subprocess.Popen(
+                            ["wkhtmltoimage",
+                                "--disable-javascript",
+                                "-f", "png",
+                                "--disable-smart-width",
+                                "--zoom", ".75",
+                                "--width", "800",
+                                "--height", str(int(800*9/16)),
+                                "-", "-"],
+                            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                            ) as proc:
+                            stdout, stderr = proc.communicate(
+                                self.answered_by_file.read(),
+                                timeout=10)
+                            if proc.returncode != 0: raise subprocess.CalledProcessError(0, '')
+
+                        # Store PNG.
+                        from django.core.files.base import ContentFile
+                        value = ContentFile(stdout)
+                        value.name = "thumbnail.png" # needs a name for the storage backend?
+                        self.thumbnail = value
+                        self.save(update_fields=["thumbnail"])
+                    except subprocess.CalledProcessError:
+                        pass
+
+            if self.thumbnail:
+                # If we have a thumbnail, indicate so by returning a URL to it.
+                thumbnail_url = url + "?thumbnail=1"
+
             return {
                 "url": url,
                 "size": blob.size,
                 "type": sf.mime_type,
                 "type_display": file_type,
+                "thumbnail_url": thumbnail_url,
             }
         
         # For all other question types, the value is stored in the stored_value

@@ -601,15 +601,16 @@ class HtmlAnswerRenderer:
 
             wrappertag = "div"
 
-        elif question is not None and question.spec["type"] == "file" and question.spec.get("file-type") == "image" \
-            and hasattr(value, "file_data"):
-            # Image files turn into image tags. Give it bottom-margin like paragraphs.
-            value = "<img src=\"" + html.escape(value.file_data['url']) + "\" class=\"img-responsive\" style=\"max-height: 100vh; margin-bottom: 1em;\">"
-            wrappertag = "div"
-
         elif question is not None and question.spec["type"] == "file" \
             and hasattr(value, "file_data"):
-            # Other files turn into link tags.
+            # Files turn into link tags, possibly containing a thumbnail
+            # or the uploaded image itself.
+
+            img_url = None
+            if value.file_data.get("thumbnail_url"):
+                img_url = value.file_data["thumbnail_url"]
+            elif question.spec.get("file-type") == "image":
+                img_url = value.file_data['url']
 
             def convert_size(size_bytes):
                import math
@@ -623,11 +624,29 @@ class HtmlAnswerRenderer:
                    s = 0
                    i = 0
                return "%s %s" % (s, size_name[i])
-            value = "<a href=\"%s\" class=\"user-media\">attached %s file (%s)</a>" % (
-                html.escape(value.file_data['url']),
-                value.file_data["type_display"],
-                convert_size(value.file_data['size'])
-            )
+
+            if not img_url:
+                # no thumbnail
+                value = """<p><a href="%s">attached %s file (%s)</a></p>""" % (
+                    html.escape(value.file_data['url']),
+                    value.file_data["type_display"],
+                    convert_size(value.file_data['size'])
+                )
+            else:
+                # has a thumbnail
+                value = """
+                <p>
+                  <a href="%s" class="user-media">
+                    <img src="%s" class="img-responsive" style="max-height: 100vh; border: 1px solid #333; margin-bottom: .25em;">
+                    <div style='font-size: 90%%;'>attached %s file (%s)</a></div>
+                  </a>
+                </p>""" % (
+                    html.escape(value.file_data['url']),
+                    html.escape(img_url or ""),
+                    value.file_data["type_display"],
+                    convert_size(value.file_data['size'])
+                )
+
             wrappertag = "div"
 
         else:
