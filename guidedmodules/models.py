@@ -1485,6 +1485,17 @@ class TaskAnswerHistory(models.Model):
             from dbstorage.models import StoredFile
             sf = StoredFile.objects.only("mime_type").get(path=blob.name)
 
+            # Create a display string explaining the file type.
+            if sf.mime_type == "text/plain":
+                file_type = "plain text"
+            elif sf.mime_type.startswith("image/"):
+                file_type = "image"
+            elif sf.mime_type == "text/html":
+                file_type = "HTML"
+            else:
+                import mimetypes
+                file_type = mimetypes.guess_extension(sf.mime_type, strict=False)[1:]
+
             # Get the URL that can retreive the resource. It's behind
             # auth so we don't use blob.url, which won't work because
             # we haven't exposed that url route.
@@ -1502,6 +1513,7 @@ class TaskAnswerHistory(models.Model):
                 "url": url,
                 "size": blob.size,
                 "type": sf.mime_type,
+                "type_display": file_type,
             }
         
         # For all other question types, the value is stored in the stored_value
