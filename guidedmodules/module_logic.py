@@ -270,7 +270,7 @@ def get_question_context(answers, question):
 
 
 def render_content(content, answers, output_format, source, additional_context={},
-    demote_headings=True, show_answer_metadata=False):
+    demote_headings=True, show_answer_metadata=False, use_data_urls=False):
 
     # Renders content (which is a dict with keys "format" and "template")
     # into the requested output format, using the ModuleAnswers in answers
@@ -476,7 +476,7 @@ def render_content(content, answers, output_format, source, additional_context={
                 return str(value)
     
         elif template_format == "html":
-            escapefunc = HtmlAnswerRenderer(show_metadata=show_answer_metadata)
+            escapefunc = HtmlAnswerRenderer(show_metadata=show_answer_metadata, use_data_urls=use_data_urls)
 
         # Execute the template.
 
@@ -546,14 +546,19 @@ def render_content(content, answers, output_format, source, additional_context={
                 # This also fixes the nested <p>'s within <p>'s when a longtext
                 # field is rendered.
 
-                def rewrite_url(url):
+                def rewrite_url(url, allow_dataurl=False):
                     # Rewrite for static assets.
                     if answers and answers.task:
-                        url = answers.task.get_static_asset_url(url)
+                        url = answers.task.get_static_asset_url(url, use_data_urls=use_data_urls)
 
                     # Check final URL.
                     import urllib.parse
                     u = urllib.parse.urlparse(url)
+                    
+                    # Allow data URLs in some cases.
+                    if use_data_urls and allow_dataurl and u.scheme == "data":
+                        return url
+
                     if u.scheme not in ("", "http", "https", "mailto"):
                         return "javascript:alert('Invalid link.');"
                     return url
@@ -564,7 +569,7 @@ def render_content(content, answers, output_format, source, additional_context={
                     if node.get("href"):
                         node.set("href", rewrite_url(node.get("href")))
                     if node.get("src"):
-                        node.set("src", rewrite_url(node.get("src")))
+                        node.set("src", rewrite_url(node.get("src"), allow_dataurl=(node.tag == "{http://www.w3.org/1999/xhtml}img")))
                 output = html5lib.serialize(dom, quote_attr_values="always", omit_optional_tags=False, alphabetical_attributes=True)
 
                 # But the p's within p's fix gives us a lot of empty p's.
@@ -579,8 +584,9 @@ def render_content(content, answers, output_format, source, additional_context={
 
 
 class HtmlAnswerRenderer:
-    def __init__(self, show_metadata):
+    def __init__(self, show_metadata, use_data_urls=False):
         self.show_metadata = show_metadata
+        self.use_data_urls = use_data_urls
     def __call__(self, question, task, has_answer, answerobj, value):
         import html
 
@@ -607,7 +613,13 @@ class HtmlAnswerRenderer:
             # or the uploaded image itself.
 
             img_url = None
-            if value.file_data.get("thumbnail_url"):
+            if self.use_data_urls and value.file_data.get("thumbnail_dataurl"):
+                img_url = value.file_data["thumbnail_dataurl"]
+            elif self.use_data_urls and value.file_data.get("content_dataurl"):
+                img_url = value.file_data["content_dataurl"]
+            elif self.use_data_urls:
+                img_url = "data:"
+            elif value.file_data.get("thumbnail_url"):
                 img_url = value.file_data["thumbnail_url"]
             elif question.spec.get("file-type") == "image":
                 img_url = value.file_data['url']
@@ -634,10 +646,11 @@ class HtmlAnswerRenderer:
                 )
             else:
                 # has a thumbnail
+                # used to have max-height: 100vh; here but wkhtmltopdf understands it as 0px
                 value = """
                 <p>
                   <a href="%s" class="user-media">
-                    <img src="%s" class="img-responsive" style="max-height: 100vh; border: 1px solid #333; margin-bottom: .25em;">
+                    <img src="%s" class="img-responsive" style=" border: 1px solid #333; margin-bottom: .25em;">
                     <div style='font-size: 90%%;'>attached %s file (%s)</a></div>
                   </a>
                 </p>""" % (
@@ -914,17 +927,18 @@ class ModuleAnswers(object):
 
             yield (q, a, value_display)
 
-    def render_output(self, additional_context):
+    def render_output(self, additional_context, use_data_urls=False):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents. The
         # documents are lazy-rendered because not all of them may
         # be used by the caller.
         class LazyRenderedDocument:
-            def __init__(self, module_answers, document, index):
+            def __init__(self, module_answers, document, index, use_data_urls):
                 self.module_answers = module_answers
                 self.document = document
                 self.index = index
                 self.rendered_content = None
+                self.use_data_urls = use_data_urls
             def __iter__(self):
                 for key, value in self.document.items():
                     if key != "html":
@@ -944,7 +958,7 @@ class ModuleAnswers(object):
 
                         # Try to render it.
                         try:
-                            self.rendered_content = render_content(self.document, self.module_answers, "html", doc_name, additional_context, show_answer_metadata=True)
+                            self.rendered_content = render_content(self.document, self.module_answers, "html", doc_name, additional_context, show_answer_metadata=True, use_data_urls=use_data_urls)
                         except Exception as e:
                             # Put errors into the output. Errors should not occur if the
                             # template is designed correctly.
@@ -958,7 +972,7 @@ class ModuleAnswers(object):
             def get(self, key, default=None):
                 if key == "html" or key in self.document:
                     return self[key]
-        return [ LazyRenderedDocument(self, d, i) for i, d in enumerate(self.module.spec.get("output", [])) ]
+        return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
 from collections.abc import Mapping
 class TemplateContext(Mapping):

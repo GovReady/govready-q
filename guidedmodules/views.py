@@ -676,7 +676,7 @@ def download_module_output(request, task, answered, context, question, Encryptio
         raise Http404()
 
     # Find the document with the named id.
-    for doc in task.render_output_documents(answered):
+    for doc in task.render_output_documents(answered, use_data_urls=True):
         if doc.get("id") == document_id:
             break
     else:
@@ -696,26 +696,21 @@ def download_module_output(request, task, answered, context, question, Encryptio
     elif download_format == "pdf":
         # Convert the HTML to a PDF using wkhtmltopdf.
         
-        # Remove images before calling because wkhtmlpdf will die if there are
-        # resources it can't access - maybe for good reason because of security.
-        import subprocess, re
-        html = doc["html"]
-        html = re.sub(r'\ssrc=".*?"', "", html)
-
         # Mark the encoding explicitly, to match the html.encode() argument below.
+        html = doc["html"]
         html = '<meta charset="UTF-8" />' + html
+
+        import subprocess
         cmd = ["xvfb-run", "--", "wkhtmltopdf",
                "-q", # else errors go to stdout
                "--disable-javascript",
                "--encoding", "UTF-8",
                "-s", "Letter", # page size
                "-", "-"]
-
-        with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+        with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
             stdout, stderr = proc.communicate(
                   html.encode("utf8"),
                   timeout=10)
-            if stderr: print(stderr)
             if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
 
         resp = HttpResponse(stdout, "application/pdf")
