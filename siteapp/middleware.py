@@ -26,6 +26,9 @@ class OrganizationSubdomainMiddleware:
         # Otherwise, the user is permitted to view a page on this subdomain.
         return self.next_middleware(request)
 
+    def process_exception(self, request, exception):
+        print("Error processing", request, ":", exception)
+
     def check_subdomain(self, request):
         global allowed_paths
         global account_login_url

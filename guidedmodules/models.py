@@ -1485,6 +1485,17 @@ class TaskAnswerHistory(models.Model):
             from dbstorage.models import StoredFile
             sf = StoredFile.objects.only("mime_type").get(path=blob.name)
 
+            # Create a display string explaining the file type.
+            if sf.mime_type == "text/plain":
+                file_type = "plain text"
+            elif sf.mime_type.startswith("image/"):
+                file_type = "image"
+            elif sf.mime_type == "text/html":
+                file_type = "HTML"
+            else:
+                import mimetypes
+                file_type = mimetypes.guess_extension(sf.mime_type, strict=False)[1:]
+
             # Get the URL that can retreive the resource. It's behind
             # auth so we don't use blob.url, which won't work because
             # we haven't exposed that url route.
@@ -1498,10 +1509,52 @@ class TaskAnswerHistory(models.Model):
             # the API it makes sense.
             url = self.taskanswer.task.project.organization.get_url(url)
 
+            # Construct a thumbnail and a URL to it.
+            thumbnail_url = None
+            if not self.thumbnail:
+                # Try to construct a thumbnail.
+                if sf.mime_type == "text/html":
+                    # Use wkhtmltoimage.
+                    import subprocess
+                    try:
+                        # Pipe to subprocess.
+                        # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
+                        cmd = ["xvfb-run", "--", "wkhtmltoimage",
+                                "-q", # else errors go to stdout
+                                "--disable-javascript",
+                                "-f", "png",
+                                # "--disable-smart-width", - generates a warning on stdout that qt is unpatched, which happens in headless mode
+                                "--zoom", ".7",
+                                "--width", "700",
+                                "--height", str(int(700*9/16)),
+                                "-", "-"]
+                        with subprocess.Popen(cmd,
+                            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                            ) as proc:
+                            stdout, stderr = proc.communicate(
+                                self.answered_by_file.read(),
+                                timeout=10)
+                            if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
+
+                        # Store PNG.
+                        from django.core.files.base import ContentFile
+                        value = ContentFile(stdout)
+                        value.name = "thumbnail.png" # needs a name for the storage backend?
+                        self.thumbnail = value
+                        self.save(update_fields=["thumbnail"])
+                    except subprocess.CalledProcessError as e:
+                        print(e)
+
+            if self.thumbnail:
+                # If we have a thumbnail, indicate so by returning a URL to it.
+                thumbnail_url = url + "?thumbnail=1"
+
             return {
                 "url": url,
                 "size": blob.size,
                 "type": sf.mime_type,
+                "type_display": file_type,
+                "thumbnail_url": thumbnail_url,
             }
         
         # For all other question types, the value is stored in the stored_value
