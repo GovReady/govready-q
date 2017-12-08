@@ -1524,9 +1524,9 @@ class TaskAnswerHistory(models.Model):
                                 "--disable-javascript",
                                 "-f", "png",
                                 # "--disable-smart-width", - generates a warning on stdout that qt is unpatched, which happens in headless mode
-                                "--zoom", ".75",
-                                "--width", "800",
-                                "--height", str(int(800*9/16)),
+                                "--zoom", ".7",
+                                "--width", "700",
+                                "--height", str(int(700*9/16)),
                                 "-", "-"]
                         with subprocess.Popen(cmd,
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
