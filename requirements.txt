@@ -151,9 +151,9 @@ gitpython==2.1.7 \
 graphviz==0.8.1 \
     --hash=sha256:2b91add3c2f770e2c20a867bb9e1bd2d7e3b95bc4a70ea0b062b4b0a902a2b97 \
     --hash=sha256:6bffbec8b7a0619fe745515039d0d6bb41b6632f3dee02bcd2601581abc63f03
-html5lib==0.999999999 \
-    --hash=sha256:b8934484cf22f1db684c0fae27569a0db404d0208d20163fbf51cc537245d008 \
-    --hash=sha256:ee747c0ffd3028d2722061936b5c65ee4fe13c8e4613519b4447123fc4546298
+html5lib==1.0.1 \
+    --hash=sha256:20b159aa3badc9d5ee8f5c647e5efd02ed2a66ab8d354930bd9ff139fc1dc0a3 \
+    --hash=sha256:66cb0dcfdbbc4f9c3ba1a63fdb511ffdbd4f513b2b6d81b80cd26ce6b3fb3736
 idna==2.6 \
     --hash=sha256:2c6a5de3089009e3da7c5dde64a141dbc8551d5b7f6cf4ed7c2568d0cc520a8f \
     --hash=sha256:8c7309c718f94b3a625cb648ace320157ad16ff131ae0af362c9f21b80ef6ec4 \
@@ -256,9 +256,9 @@ requests==2.18.4 \
     --hash=sha256:6a1b267aa90cac58ac3a765d067950e7dbbf75b1da07e895d1f594193a40a38b \
     --hash=sha256:9c443e7324ba5b85070c4a818ade28bfabedf16ea10206da1132edaa6dda237e \
     # via django-allauth, requests-oauthlib, safety
-rfc5424-logging-handler==1.1.0 \
-    --hash=sha256:34800268ac4a09580b89a3352afc6f3221302b95f5e74a300b14f3d355b28844 \
-    --hash=sha256:f9ac979772e7f417b89dae560d9de8741eb97dc31e71068dafa297ea38ea09f2
+rfc5424-logging-handler==1.1.1 \
+    --hash=sha256:6c3cba720b903f90df8a09cc5a81aa7d2bef8686eab4e291a0a0cec423c2e383 \
+    --hash=sha256:871d36ce15b379445e72d55b72d01895f13726bb8022300389811d46caea109d
 rtyaml==0.0.4 \
     --hash=sha256:a49c65d65944560a6ae9c746e53d6ce68206d390bf5fa53d0a2510f34cd0d2f1
 safety==1.6.1 \
