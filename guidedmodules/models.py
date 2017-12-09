@@ -443,12 +443,15 @@ class Task(models.Model):
             import urllib.parse
             return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
 
-    def get_static_asset_url(self, asset_path):
+    def get_static_asset_url(self, asset_path, use_data_urls=False):
         if not self.module.assets or asset_path not in self.module.assets.paths:
             # No assets are defined for this Module, or this path is not
             # an asset, so just return the path as it's probably an absolute URL.
             return asset_path
-        return self.get_absolute_url() + "/media/" + asset_path
+        if not use_data_urls:
+            return self.get_absolute_url() + "/media/" + asset_path
+        else:
+            return self.get_static_asset_image_data_url(asset_path, 640)
 
     def get_static_asset_image_data_url(self, asset_path, max_image_size):
         if not self.module.assets or asset_path not in self.module.assets.paths:
@@ -456,14 +459,7 @@ class Task(models.Model):
             # an asset.
             raise ValueError(asset_path + " is not an asset.")
         with self.module.assets.get(asset_path) as f:
-            from PIL import Image
-            from io import BytesIO
-            import base64
-            im = Image.open(f)
-            im.thumbnail((max_image_size, max_image_size))
-            buf = BytesIO()
-            im.save(buf, "PNG")
-            return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+            return image_to_dataurl(f, max_image_size)
 
 
     # ANSWERS
@@ -763,10 +759,10 @@ class Task(models.Model):
             additional_context=additional_context
         )
 
-    def render_output_documents(self, answers=None):
+    def render_output_documents(self, answers=None, use_data_urls=False):
         if answers is None:
             answers = self.get_answers()
-        return answers.render_output({})
+        return answers.render_output({}, use_data_urls=use_data_urls)
 
     def render_snippet(self):
         snippet = self.module.spec.get("snippet")
@@ -1509,8 +1505,14 @@ class TaskAnswerHistory(models.Model):
             # the API it makes sense.
             url = self.taskanswer.task.project.organization.get_url(url)
 
+            # Convert it to a data URL so that it can be rendered in exported documents.
+            content_dataurl = None
+            if q.spec.get("file-type") == "image":
+                content_dataurl = image_to_dataurl(self.answered_by_file, 640)
+
             # Construct a thumbnail and a URL to it.
             thumbnail_url = None
+            thumbnail_dataurl = None
             if not self.thumbnail:
                 # Try to construct a thumbnail.
                 if sf.mime_type == "text/html":
@@ -1548,13 +1550,16 @@ class TaskAnswerHistory(models.Model):
             if self.thumbnail:
                 # If we have a thumbnail, indicate so by returning a URL to it.
                 thumbnail_url = url + "?thumbnail=1"
+                thumbnail_dataurl = image_to_dataurl(self.thumbnail, 640)
 
             return {
                 "url": url,
+                "content_dataurl": content_dataurl,
                 "size": blob.size,
                 "type": sf.mime_type,
                 "type_display": file_type,
                 "thumbnail_url": thumbnail_url,
+                "thumbnail_dataurl": thumbnail_dataurl,
             }
         
         # For all other question types, the value is stored in the stored_value
@@ -1789,3 +1794,13 @@ class InstrumentationEvent(models.Model):
             ('project', 'event_type', 'event_time'),
             ('module', 'event_type', 'event_time'),
         ]
+
+def image_to_dataurl(f, max_image_size):
+    from PIL import Image
+    from io import BytesIO
+    import base64
+    im = Image.open(f)
+    im.thumbnail((max_image_size, max_image_size))
+    buf = BytesIO()
+    im.save(buf, "PNG")
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
