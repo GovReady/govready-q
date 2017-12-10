@@ -91,7 +91,7 @@ See [Testing documentation](docs/Test.md).
 
 # <a name="deployment"></a>Deployment
 
-See [Deployment documentation](deployments/README.md).
+See [Deployment documentation](deployment/README.md).
 
 # <a name="license"></a>License / Credits
 
