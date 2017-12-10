@@ -29,7 +29,7 @@ GovReady-Q is open source and incorporates the emerging [OpenControl](http://ope
 
 # <a name="install"></a> Installation
 
-See [Install documentation](docs/Install.md).
+See [installation on workstations for development](deployment/local/README.md) and other [deployment guides](deployment/README.md) for other environments.
 
 # <a name="about-apps"></a> About Compliance Apps
 

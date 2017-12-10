@@ -1,5 +1,5 @@
-Installing GovReady-Q Compliance Server
-=======================================
+Installing GovReady-Q Compliance Server on Workstations for Development
+=======================================================================
 
 1. [Installing with Docker](#docker)
 1. [Installing source code on workstations to contribute](#development)
@@ -10,7 +10,7 @@ Installing GovReady-Q Compliance Server
 
 The easiest way to get started with GovReady-Q is to launch Q through Docker.
 
-See [Launching with Docker](../deployment/docker/README.md).
+See [Launching with Docker](../docker/README.md).
 
 
 ## <a name="development"></a> Installing source code on workstations to contribute
@@ -81,24 +81,3 @@ To update the source code from this repository you can `git pull`. You then may 
 	./fetch-vendor-resources.sh
 	python3 manage.py migrate
 	python3 manage.py load_modules
-
-## <a name="deployment"></a>Deployment guides
-
-Deployment guides for installing and deploying GovReady-Q on different Operating Systems can be found the `deployment` directory.
-
-* [Launching with Docker](../deployment/docker/README.md) - super easy and has a nice `first_run.sh` script
-* [Installing on RHEL](../deployment/rhel/README.md) - detailed instructions on installing, libraries, setting up Postgres and Apache
-* [Installing on Ubuntu](../deployment/ubuntu/README.md) - super easy `update.sh`
-
-A production system may need to set more options in `local/environment.json`. Here are recommended settings:
-
-	{
-	  "debug": false,
-	  "admins": [["Name", "email@domain.com"], ...],
-	  "host": "q.<yourdomain>.com",
-	  "organization-parent-domain": "<yourdomain>.com",
-	  "organization-seen-anonymously": false,
-	  "https": true,
-	  "secret-key": "something random here",
-	  "static": "/root/public_html"
-	}
