@@ -1,4 +1,4 @@
-# Dockerized Q - Version 1
+# Launching with Docker
 
 A demo of GovReady Q is available on the Docker Hub at [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/).
 
