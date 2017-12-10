@@ -44,9 +44,9 @@ The diagram below provides a summary representation of GovReady-Q's Django guide
 
 ![Guildedmodules data model (not all tables represented)](assets/govready-q-guidedmodules-erd.png)
 
-The best way to understand the guidedmodules data model is to think of a questionnaire containing multiple questions. Questions can be grouped into modules. Questions come different types. Questions have answers.
+The best way to understand the guidedmodules data model is to think of a questionnaire containing multiple questions. Questions can be grouped into modules. Questions come in different types. Questions have answers.
 
-This description suggests a simple "questionnaire-module-question-answer" database model, yet the diagram does not seem to have tables for "Questionnaire" or "Question" or "Answer".
+This description suggests a simple "questionnaire-module-question-answer" database model, yet the diagram does not have tables for "Questionnaire" or "Question" or "Answer".
 
 That's because we have a few special demands for our questionnaire that will require creative abstractions. Some of these additional demands are:
 
@@ -55,9 +55,9 @@ That's because we have a few special demands for our questionnaire that will req
 * one questionnaire's answers can be accessed and used by another questionnaire if the questionnaires are part of the same project;
 * arbitrary questionnaires can be associated with the same project; so we won't know up front which answers can be shared;
 * support a question type whose answer is another questionnaire;
-* allow blank questionnaires to be versioned, answered questionnaires to be updated, and preserve answered questionnaires multiple years,
-* allow the answers to be change while preserving previous answers,
-* support assigning questions to different users to answer.
+* allow blank questionnaires to be versioned, answered questionnaires to be updated in non-destructive ways, and to preserve answered questionnaires over the course of years,
+* allow the answer to questions to change while preserving a complete history of answers,
+* support assigning questionnaires and questions to different users to answer.
 
 The first abstraction is to think of the "questionnaire" as more of a mini-application, or "app", that can could be extended to do more things than just ask questions and track answers. Apps are clearly reusable and easily loaded into different installs of the database and anyone can author them. When we install an app we have an instance of that app. Hence the `AppInstance` table. To enable our install of GovReady-Q to load both public and private apps, we track multiple sources of apps in the `AppSource` table.
 
@@ -77,11 +77,6 @@ The diagram below provides a summary representation of GovReady-Q's Django discu
 ![Discussion data model (not all tables represented)](assets/govready-q-discussion-erd.png)
 
 A single discussion can be instantiated and associated to any task (task ~= "question"). A discussion can have multiple comments. Comments can have multiple attachments.
-
-
-# Information System Profile
-
-
 
 
 # Developer Tools
