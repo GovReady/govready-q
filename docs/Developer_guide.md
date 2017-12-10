@@ -55,19 +55,17 @@ That's because we have a few special demands for our questionnaire that will req
 * one questionnaire's answers can be accessed and used by another questionnaire if the questionnaires are part of the same project;
 * arbitrary questionnaires can be associated with the same project; so we won't know up front which answers can be shared;
 * support a question type whose answer is another questionnaire;
-* allow blank questionnaires to be versioned, answered questionnaires to be updated in non-destructive ways, and preserve answered questionnaires last multiple years,
+* allow blank questionnaires to be versioned, answered questionnaires to be updated in non-destructive ways, and to preserve answered questionnaires over the course of years,
 * allow the answer to questions to change while preserving a complete history of answers,
-* support assigning modules and questions to different users to answer.
+* support assigning questionnaires and questions to different users to answer.
 
 The first bit of creative thinking is to collapse the concepts of "questionnaire" and "module." A questionnaire is a module that contains a list of questions or a list of modules. We represent both "questionnaires" and "modules" as "modules."
 
-The second bit of creative thinking is viewing a "question" also as a kind of "task" whose undertaking results in a value to be stored. When we assign a question (or a module) to a user, we are tasking that user to produce a value that is the answer to the question.
+The second bit of creative thinking is viewing a "questionnaire" also as a kind of "task" whose undertaking results in a set of values to be stored. When we assign a questionnaire (or a module) to a user, we are tasking that user to produce values that are the answers to the questions.
 
-The simple "questionnaire-question-answer" model now transforms into a more abstract "module-task-taskanswer" model. 
+The simple "questionnaire-question-answer" model now transforms into a more abstract "module-task-taskquestion-taskanswer" model. 
 
-To this "module-task-taskanswer" model we introduce an abstraction to deal with tasks whose taskanswer are other modules and another abstraction of taskanswerhistory to retain a complete history of taskanswers.
-
-In the new "module-task-taskanswer" model with complete history, it makes sense that the field `stored_value` in the table `TaskAnswerHistory` would have the actual value of the completed task (e.g., the question's answer).
+To this "module-task-taskquestion-taskanswer" model we introduce an abstraction to deal with tasks whose answers are other modules and another abstraction of a taskanswerhistory to retain a complete history of answers. The field `stored_value` in the table `TaskAnswerHistory` has the actual value of the completed task (e.g., the question's answer).
 
 We next add another abstraction of an "App" as a kind of wrapper around one or more modules to make it easier to create a reusable package that stores our "blank questionnaires" for sharing outside of a given instance of the database. When the resuable "App" package is consumed by GovReady-Q Compliance Server, an "AppInstance" is created in the database cloning the published "App" into the database. Instantiating the "App" in the database enables any updates and fixes to the "App" to be granually ignored or applied to the stored instance. The concept of an "App Source" is introduced to support exchanging "Apps" peer-to-peer.
 
