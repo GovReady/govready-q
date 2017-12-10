@@ -75,7 +75,6 @@ class User(AbstractUser):
         from guidedmodules.models import Module, Task
         p = Project.objects.create(
             organization=org,
-            title="Account Settings",
             is_account_project=True,
         )
         ProjectMembership.objects.create(
@@ -255,8 +254,7 @@ class Organization(models.Model):
             ).order_by("name", "created").distinct()
 
     def get_organization_project(self):
-        prj, isnew = Project.objects.get_or_create(organization=self, is_organization_project=True,
-            defaults = { "title": "Organization" })
+        prj, isnew = Project.objects.get_or_create(organization=self, is_organization_project=True)
         return prj
 
     def get_logo(self):
@@ -347,8 +345,6 @@ class Project(models.Model):
     organization = models.ForeignKey(Organization, related_name="projects", help_text="The Organization that this project belongs to.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
-    title = models.CharField(max_length=256, help_text="The title of this Project.")
-
     is_account_project = models.BooleanField(default=False, help_text="Each User has one Project per Organization for account Tasks.")
 
         # the root_task has to be nullable because the Task itself has a non-null
@@ -374,6 +370,10 @@ class Project(models.Model):
     def get_absolute_url(self):
         from django.utils.text import slugify
         return "/projects/%d/%s" % (self.id, slugify(self.title))
+
+    @property
+    def title(self):
+        return self.root_task.title
 
     def organization_and_title(self):
         parts = [str(self.organization)]
@@ -572,8 +572,7 @@ class Project(models.Model):
         task = Task.objects.create(
             project=self,
             editor=editor,
-            module=module,
-            title=module.title)
+            module=module)
 
         # update the project
         self.root_task = task
@@ -712,7 +711,6 @@ class Project(models.Model):
         ])
         if serializer.include_metadata:
             ret["project"].update(OrderedDict([
-                ("title", self.title),
                 ("created", self.created.isoformat()), # ignored in import
                 ("modified", self.updated.isoformat()), # ignored in import
             ]))
@@ -720,7 +718,7 @@ class Project(models.Model):
         # Add metadata from the root task but don't overwrite existing fields
         # that have project metadata.
         for key, value in self.root_task.export_json(serializer).items():
-            if key in ("id", "title", "created", "modified"): continue
+            if key in ("id", "created", "modified"): continue
             ret["project"][key] = value
 
         return ret
@@ -791,8 +789,7 @@ class Project(models.Model):
         if deserializer.included_metadata:
             # Overwrite project metadata if the fields are present, i.e. allow for
             # missing or empty fields, which will preserve the existing metadata we have.
-            self.title = data.get("title") or self.title
-            self.save(update_fields=["title"])
+            pass
 
         # Update root task.
         self.root_task.import_json_update(data, deserializer)

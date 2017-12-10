@@ -27,9 +27,11 @@ class TestCaseWithFixtureData(TestCase):
         self.fixture_app = AppInstance.objects.get(source=src, appname="simple_project")
 
         # Create a dummy organization, project, and user.
-        self.organization = Organization.objects.create(name="My Supreme Organization")
-        self.project = Project.objects.create(title="The Singleton Project", organization=self.organization)
         self.user = User.objects.create(username="unit.test")
+        self.organization = Organization.objects.create(name="My Supreme Organization")
+        self.project = Project.objects.create(organization=self.organization)
+        self.project.root_task = Task.objects.create(module=Module.objects.get(app=self.fixture_app, module_name="app"), project=self.project, editor=self.user)
+        self.project.save()
 
     def getModule(self, module_name):
         return self.fixture_app.modules.get(module_name=module_name)
@@ -161,7 +163,7 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         m = Module.objects.get(module_name="simple") # the module ID that can answer the q_module question
         value = ModuleAnswers(
             m,
-            Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project),
+            Task.objects.create(module=m, editor=self.user, project=self.project),
             {
                 "_introduction": (m.questions.get(key="_introduction"), True, None, None), # must be answered for q1 to have a value
                 "q1": (m.questions.get(key="q1"), True, None, "My Answer"),
@@ -295,7 +297,7 @@ class RenderTests(TestCaseWithFixtureData):
 
         # test URL rewriting on links & images for module static content
         test("![](test_asset.png)", { },
-            """<p><img alt="" src="/tasks/500/the-title/media/test_asset.png"></p>""")
+            """<p><img alt="" src="/tasks/500/test-the-text-input-question-types/media/test_asset.png"></p>""")
 
         # test variable substitutions mixed with CommonMark block elements
         test(
@@ -388,7 +390,7 @@ class RenderTests(TestCaseWithFixtureData):
 
     def render_content(self, module, template_format, template, answers, output_format):
         m = self.getModule(module)
-        t = Task(id=500, title="the title", module=m, project=self.project, extra={})
+        t = Task(id=500, module=m, project=self.project, extra={})
         return render_content(
             {
                 "format": template_format,
@@ -530,7 +532,7 @@ class RenderTests(TestCaseWithFixtureData):
         m = Module.objects.get(module_name="simple") # the module ID that can answer the q_module question
         value = ModuleAnswers(
             m,
-            Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project),
+            Task.objects.create(module=m, editor=self.user, project=self.project),
             {
                 "_introduction": (m.questions.get(key="_introduction"), True, None, None), # must be answered for q1 to have a value
                 "q1": (m.questions.get(key="q1"), True, None, "My Answer"),
@@ -572,6 +574,12 @@ class RenderTests(TestCaseWithFixtureData):
                 )
 
         test("organization", "My Supreme Organization")
+        test("project", "I want to answer some questions on Q.")
+
+        # Test that setting an overridden root_task title causes the
+        # project variable to render with that value.
+        self.project.root_task.title_override = "The Singleton Project"
+        self.project.root_task.save()
         test("project", "The Singleton Project")
 
     def _test_render_single_question_md(self, module, expression, value, expected, expected_impute_value="__NOT__PROVIDED__", answers=None, template=None):
@@ -646,7 +654,7 @@ class EncryptionTests(TestCaseWithFixtureData):
     def test_encryption(self):
         # Create an empty Task.
         m = Module.objects.get(module_name="question_types_encrypted")
-        task = Task.objects.create(module=m, title="Test Task", editor=self.user, project=self.project)
+        task = Task.objects.create(module=m, editor=self.user, project=self.project)
         answer, _ = TaskAnswer.objects.get_or_create(
             task=task,
             question=m.questions.get(key="q_text"),
@@ -743,7 +751,7 @@ class ImportExportTests(TestCaseWithFixtureData):
     def _test_round_trip(self, module_name, question_name, include_metadata, question_type, answer_value):
         # Create an empty Task.
         m = self.getModule(module_name)
-        task = Task.objects.create(module=m, title="My Task", editor=self.user, project=self.project)
+        task = Task.objects.create(module=m, editor=self.user, project=self.project)
 
         # Import some data to set answers.
         if include_metadata:

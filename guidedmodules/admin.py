@@ -181,7 +181,7 @@ class TaskAdmin(admin.ModelAdmin):
 	list_display = ('title', 'organization_and_project', 'editor', 'module', 'is_finished', 'submodule_of', 'created')
 	raw_id_fields = ('project', 'editor', 'module')
 	readonly_fields = ('module', 'invitation_history')
-	search_fields = ('title', 'project__title', 'project__organization__name', 'editor__username', 'editor__email', 'module__key')
+	search_fields = ('project__organization__name', 'editor__username', 'editor__email', 'module__key')
 	def submodule_of(self, obj):
 		return obj.is_answer_to_unique()
 	def organization_and_project(self, obj):
@@ -191,7 +191,7 @@ class TaskAnswerAdmin(admin.ModelAdmin):
 	list_display = ('question', 'task', '_project', 'created')
 	raw_id_fields = ('task',)
 	readonly_fields = ('task', 'question')
-	search_fields = ('task__title', 'task__project__title', 'task__project__organization__name', 'task__module__key')
+	search_fields = ('task__project__organization__name', 'task__module__key')
 	fieldsets = [(None, { "fields": ('task', 'question') }),
 	             (None, { "fields": ('notes',) }),
 	             (None, { "fields": ('extra',) }), ]
@@ -201,7 +201,7 @@ class TaskAnswerHistoryAdmin(admin.ModelAdmin):
 	list_display = ('created', 'taskanswer', 'answered_by', 'is_latest')
 	raw_id_fields = ('taskanswer', 'answered_by', 'answered_by_task')
 	readonly_fields = ('taskanswer', 'answered_by', 'created')
-	search_fields = ('taskanswer__task__title', 'taskanswer__task__project__title', 'taskanswer__task__project__organization__name', 'taskanswer__task__module__key', 'answered_by__username', 'answered_by__email')
+	search_fields = ('taskanswer__task__project__organization__name', 'taskanswer__task__module__key', 'answered_by__username', 'answered_by__email')
 	fieldsets = [(None, { "fields": ('created', 'taskanswer', 'answered_by') }),
 	             (None, { "fields": ('stored_value', 'stored_encoding', 'cleared') }),
 	             (None, { "fields": ('extra',) }) ]

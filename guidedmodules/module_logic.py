@@ -270,7 +270,7 @@ def get_question_context(answers, question):
 
 
 def render_content(content, answers, output_format, source, additional_context={},
-    demote_headings=True, show_answer_metadata=False, use_data_urls=False):
+    demote_headings=True, show_answer_metadata=False, use_data_urls=False, is_computing_title=False):
 
     # Renders content (which is a dict with keys "format" and "template")
     # into the requested output format, using the ModuleAnswers in answers
@@ -510,7 +510,8 @@ def render_content(content, answers, output_format, source, additional_context={
             # context.update will immediately load all top-level values, which
             # unfortuntately might throw an error if something goes wrong
             if answers:
-                context.update(TemplateContext(answers, escapefunc, root=True, show_answer_metadata=show_answer_metadata))
+                tc = TemplateContext(answers, escapefunc, root=True, show_answer_metadata=show_answer_metadata, is_computing_title=is_computing_title)
+                context.update(tc)
 
             # Now really render.
             output = template.render(context)
@@ -981,11 +982,12 @@ class TemplateContext(Mapping):
        template and expression functionality like the '.' accessor to get to
        the answers of a sub-task."""
 
-    def __init__(self, module_answers, escapefunc, parent_context=None, root=False, show_answer_metadata=None):
+    def __init__(self, module_answers, escapefunc, parent_context=None, root=False, show_answer_metadata=None, is_computing_title=False):
         self.module_answers = module_answers
         self.escapefunc = escapefunc
         self.root = root
         self.show_answer_metadata = parent_context.show_answer_metadata if parent_context else (show_answer_metadata or False)
+        self.is_computing_title = parent_context.is_computing_title if parent_context else is_computing_title
         self._cache = { }
         self.parent_context = parent_context
 
@@ -1145,6 +1147,10 @@ class RenderedProject(TemplateContext):
         super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
 
     def as_raw_value(self):
+        if self.is_computing_title:
+            # When we're computing the title for "instance-name", prevent
+            # infinite recursion.
+            return self.project.root_task.module.spec['title']
         return self.project.title
     def __html__(self):
         return self.escapefunc(None, None, None, None, self.as_raw_value())
@@ -1192,7 +1198,12 @@ class RenderedAnswer:
                     return "<uploaded file: " + self.file_data['url'] + ">"
             value = FileValueWrapper(self.answer)
         elif self.question_type == "module":
-            value = self.answer.task.render_title()
+            if self.parent_context.is_computing_title:
+                # When we're computing the title for "instance-name", prevent
+                # infinite recursion.
+                value = self.answer.task.module.spec['title']
+            else:
+                value = self.answer.task.title
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)

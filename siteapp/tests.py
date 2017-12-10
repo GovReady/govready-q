@@ -391,7 +391,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         do_invitation("test+project@q.govready.com")
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
         self.click_element('#question-simple_module') # go to the task page
-        self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
+        self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
 
         reset_login()
 
@@ -403,7 +403,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element('#transfer-editorship a')
         do_invitation("test+editor@q.govready.com")
         var_sleep(5)
-        self.assertRegex(self.browser.title, "A Simple Module") # user is on the task page
+        self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
 
         reset_login()
 

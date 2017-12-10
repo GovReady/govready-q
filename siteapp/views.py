@@ -419,16 +419,6 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
         project = Project()
         project.organization = organization
 
-        # Assign a good title.
-        project.title = app_catalog_info["title"]
-        if folder:
-            projects_in_folder = folder.get_readable_projects(user)
-            existing_project_titles = [p.title for p in projects_in_folder]
-            ctr = 0
-            while project.title in existing_project_titles:
-                ctr += 1
-                project.title = app_catalog_info["title"] + " " + str(ctr)
-
         # Save and add to folder
         project.save()
         project.set_root_task(module, user)
@@ -667,7 +657,7 @@ def project_list_all_answers(request, project):
             section["answers"].append((q, a, value_display))
 
         if len(path) == 0:
-            path = path + [task.render_title()]
+            path = path + [task.title]
 
         for q, is_answered, a, value in answers.answertuples.values():
             # Recursively go into submodules.
@@ -959,11 +949,12 @@ def project_admin_login_post_required(f):
 
 @project_admin_login_post_required
 def rename_project(request, project):
-    title = request.POST.get("title", "").strip()
-    if not title:
-        return JsonResponse({ "status": "error", "message": "The title cannot be empty." })
-    project.title = title
-    project.save()
+    # Update the project's title, which is actually updating its root_task's title_override.
+    # If the title isn't changing, don't store it. If the title is set to empty, clear the
+    # override.
+    title = request.POST.get("title", "").strip() or None
+    project.root_task.title_override = title
+    project.root_task.save()
     return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required

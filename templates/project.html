@@ -336,7 +336,7 @@
                       {% for t in rec.tasks %}
                         <div class="started-task">
                             <a href="{{t.get_absolute_url}}?previous=project">
-                              {{t.render_title}}
+                              {{t.title}}
                             </a>
                             {% if t.is_finished %}
                               <span class="label label-primary" style="background-color: #96B">finished</span>

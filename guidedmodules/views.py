@@ -307,8 +307,7 @@ def save_answer(request, task, answered, context, __, EncryptionProvider, set_ep
                 parent_task_answer=question, # for instrumentation only, doesn't go into Task instance
                 editor=request.user,
                 project=task.project,
-                module=q.answer_type_module,
-                title=q.answer_type_module.title)
+                module=q.answer_type_module)
 
             answered_by_tasks = [t]
             redirect_to = t.get_absolute_url() + "?previous=parent"
@@ -1020,13 +1019,6 @@ def authoring_edit_module(request, task):
     # Save.
     task.module.spec = spec
     task.module.save()
-
-    # Update task & project title to app title so the user can see it.
-    task.title = task.module.spec.get("title") or task.title
-    task.save()
-    project = task.root_of.first()
-    project.title = task.module.spec.get("title") or project.title
-    project.save()
 
     # Write to disk. Errors writing should not be suppressed because
     # saving to disk is a part of the contract of how app editing works.
