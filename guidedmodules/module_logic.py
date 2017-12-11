@@ -637,12 +637,17 @@ class HtmlAnswerRenderer:
                    i = 0
                return "%s %s" % (s, size_name[i])
 
+            label = "attached {format} file ({size}; {date})".format(
+                format=value.file_data["type_display"],
+                size=convert_size(value.file_data['size']),
+                date=answerobj.created.strftime("%x") if answerobj else "",
+            )
+
             if not img_url:
                 # no thumbnail
-                value = """<p><a href="%s">attached %s file (%s)</a></p>""" % (
+                value = """<p><a href="%s">%s</a></p>""" % (
                     html.escape(value.file_data['url']),
-                    value.file_data["type_display"],
-                    convert_size(value.file_data['size'])
+                    label,
                 )
             else:
                 # has a thumbnail
@@ -651,13 +656,12 @@ class HtmlAnswerRenderer:
                 <p>
                   <a href="%s" class="user-media">
                     <img src="%s" class="img-responsive" style=" border: 1px solid #333; margin-bottom: .25em;">
-                    <div style='font-size: 90%%;'>attached %s file (%s)</a></div>
+                    <div style='font-size: 90%%;'>%s</a></div>
                   </a>
                 </p>""" % (
                     html.escape(value.file_data['url']),
                     html.escape(img_url or ""),
-                    value.file_data["type_display"],
-                    convert_size(value.file_data['size'])
+                    label,
                 )
 
             wrappertag = "div"
