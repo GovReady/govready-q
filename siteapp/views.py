@@ -1040,14 +1040,34 @@ def project_start_apps(request, *args):
         def viewfunc(request, project):
             # Start all of the indiciated apps. Validate that the
             # chosen app satisfies the protocol.
+            errored_questions = []
             for q in get_questions(project):
                 if q.key in request.POST:
                     startable_apps = { app["key"]: app for app in q.startable_apps}
                     if request.POST[q.key] in startable_apps:
                         app = startable_apps[request.POST[q.key]]
-                        start_app(app, request.organization, request.user, None, project.root_task, q)
+                        try:
+                            start_app(app, request.organization, request.user, None, project.root_task, q)
+                        except Exception as e:
+                            import traceback
+                            traceback.print_exc()
+                            errored_questions.append((q, app, e))
 
-            return JsonResponse({ "status": "ok" }, safe=False, json_dumps_params={"indent": 2})
+            if len(errored_questions) == 0:
+                return JsonResponse({ "status": "ok" })
+            else:
+                message = "There was an error starting the following apps: "
+                message += ", ".join(
+                    "{app} ({appname}) for {title} ({key}) ({error})".format(
+                        app=app["title"],
+                        appname=app["name"],
+                        title=q.spec["title"],
+                        key=q.key,
+                        error=error,
+                    )
+                    for q, app, error in errored_questions
+                )
+                return JsonResponse({ "status": "error", "message": message })
 
     return viewfunc(request, *args)
 
