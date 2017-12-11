@@ -71,7 +71,7 @@
                   {% endif %}
                 </td>
                 <td>
-                  <div style="float: right; margin: 0 0 .25em .25em;">
+                  <div style="float: right; margin: 0 0 .5em .25em;">
                     {% if not a %}
                       <span class="label label-warning">Imputed</span>
                     {% endif %}
@@ -87,6 +87,7 @@
               <td>
                 <button onclick="authoring_tool_new_question({{task.id}})"><span class="glyphicon glyphicon-plus"></span> Add Question</button>
               </td>
+              <td></td>
             </tr>
             {% endif %}
             </tbody>
