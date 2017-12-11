@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load q %}
 
 {% block title %}
 {{m.title}}
@@ -199,5 +200,41 @@
       window.location = "{{task.get_absolute_url|escapejs}}/download/document/" + encodeURIComponent(document_id) + "/" + format;
     });
   }
+
+  $(function() {
+    // Poll for changes to the answers in the project, which would mean
+    // this document may be out of date.
+    var initial_timestamp = {{task.project.root_task.updated.timestamp|json}};
+    var interval = setInterval(check_for_update, 2500);
+    var is_checking_for_update = false;
+    function check_for_update() {
+      if (is_checking_for_update) return;
+      is_checking_for_update = true;
+      $.ajax({
+        method: 'POST',
+        url: '/tasks/_get_task_timetamp',
+        data: {
+          id: {{task.project.root_task.id}},
+          get_changes_since: initial_timestamp
+        },
+        success: function(res) {
+          // Do nothing if the timestamp matches the timestamp
+          // when the page was generated.
+          if (res.timestamp == initial_timestamp)
+            return;
+
+          // Don't poll for any further changes.
+          clearInterval(interval);
+
+          // Show message, then reload.
+          alert("Project information changed. " + res.changes + " This page will now be reloaded.");
+          window.location.reload();
+        },
+        complete: function() {
+          is_checking_for_update = false;
+        }
+      })
+    }
+  });
   </script>
 {% endblock %}

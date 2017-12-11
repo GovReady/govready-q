@@ -554,17 +554,22 @@ class Task(models.Model):
                             return False
         return True
 
-    # Clear the Task'scache_is_finished field, and if it answers any questions, then
-    # do so recursively.
-    def clear_is_finished_cache(self, seen_tasks=None):
+    # This method is called any time an answer to any of this Task's questions
+    # is changed, or for questions that are answered by sub-tasks, and if any
+    # of their answers changed too, recursively.
+    #
+    # * Clear the Task's cache_is_finished field.
+    # * Recursively call on_answer_changed on any Tasks that this task is
+    #   a current answer of a question to.
+    def on_answer_changed(self, seen_tasks=None):
         if seen_tasks is None: seen_tasks = set()
         if self in seen_tasks: return
         seen_tasks.add(self)
         self.cached_is_finished = None
-        self.save(update_fields=["cached_is_finished"])
+        self.save(update_fields=["cached_is_finished", "updated"])
         for ans in self.is_answer_to.select_related('taskanswer__task').all():
             if ans.is_latest():
-                ans.taskanswer.task.clear_is_finished_cache(seen_tasks)
+                ans.taskanswer.task.on_answer_changed(seen_tasks)
 
     def get_status_display(self):
         # Is this task done?
@@ -875,9 +880,8 @@ class Task(models.Model):
             # Add the new task.
             ansh.answered_by_task.add(task)
 
-            # Clear the cached data.
-            self.cached_is_finished = None
-            self.save(update_fields=["cached_is_finished"])
+            # Mark that the Task has had an answer changed.
+            self.on_answer_changed()
 
             return task
 
@@ -1226,11 +1230,10 @@ class TaskAnswer(models.Model):
             answered_by_file=None,
             cleared=True)
 
-        # kick the Task and TaskAnswer's updated fields and clear the Task's cache
-        # for whether it's finished
-        self.task.save(update_fields=[])
+        # Kick the TaskAnswer's updated fields and the Task to mark that the
+        # answer has changed.
         self.save(update_fields=[])
-        self.task.clear_is_finished_cache()
+        self.task.on_answer_changed()
         return True
 
     def save_answer(self, value, answered_by_tasks, answered_by_file, user, method, encryption_provider=None):
@@ -1305,10 +1308,10 @@ class TaskAnswer(models.Model):
         for t in answered_by_tasks:
             answer.answered_by_task.add(t)
 
-        # kick the Task and TaskAnswer's updated field
+        # Kick the Task and TaskAnswer's updated field and let the Task know that
+        # its answers have changed.
         self.save(update_fields=[])
-        self.task.save(update_fields=[])
-        self.task.clear_is_finished_cache()
+        self.task.on_answer_changed()
 
         # Return True to indicate we saved something.
         return True
