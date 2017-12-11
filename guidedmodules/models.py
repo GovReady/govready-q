@@ -379,7 +379,7 @@ class Task(models.Model):
     editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.PROTECT, help_text="The user that has primary responsibility for completing this Task.")
     module = models.ForeignKey(Module, on_delete=models.PROTECT, help_text="The Module that this Task is answering.")
 
-    title = models.CharField(max_length=256, help_text="The title of this Task. If the user is performing multiple tasks for the same module, this title would distiguish the tasks.")
+    title_override = models.CharField(max_length=256, blank=True, null=True, help_text="The title of this Task if overriding the computed instance-name or Module.title default.")
     notes = models.TextField(blank=True, help_text="Notes set by the user about why they are completing this task.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -427,8 +427,10 @@ class Task(models.Model):
         return task
 
     def get_slug(self):
+        # don't use title because it's expensive and might cause recursion
+        # issues since the URL to this task might be generated when rendering the title.
         from django.utils.text import slugify
-        return slugify(self.title)
+        return slugify(self.module.spec['title'])
 
     def get_absolute_url(self):
         from django.utils.text import slugify
@@ -720,12 +722,35 @@ class Task(models.Model):
     def get_notification_watchers(self):
         return self.project.get_members()
 
-    def render_title(self):
-        # Project root tasks derive their rendered title from the
-        # project title and don't use the instance-name.
-        if self == self.project.root_task:
-            return self.project.title
-        return self.render_simple_string("instance-name", self.module.title)
+    # COMPUTED PROPERTIES
+
+    IS_COMPUTING_TITLE = False
+
+    @property
+    def title(self):
+        # If the title_override is set, return that.
+        # Otherwise, if the Module has an instance-name field, render that template.
+        # Last, fall back to the Module title.
+        if self.title_override:
+            return self.title_override
+        if "instance-name" in self.module.spec:
+            if hasattr(self, "_cached_title"):
+                return self._cached_title
+
+            if Task.IS_COMPUTING_TITLE:
+                # Hopefully this never occurs, but rendering the instance-name
+                # template could end up causing the task's title to be computed.
+                raise RuntimeError("Infinite recursion!")
+            Task.IS_COMPUTING_TITLE = True
+            try:
+                title = self.render_simple_string(
+                    "instance-name", self.module.spec["title"],
+                    is_computing_title=True).strip()
+                self._cached_title = title
+                return title
+            finally:
+                Task.IS_COMPUTING_TITLE = False
+        return self.module.spec["title"]
 
     def render_introduction(self):
         # Project tasks have an introduction field.
@@ -736,7 +761,7 @@ class Task(models.Model):
             'Can you take over answering %s for %s and let me know when it is done?'
                 % (self.title, self.project.title))
 
-    def render_simple_string(self, field, default):
+    def render_simple_string(self, field, default, **kwargs):
         try:
             return render_content(
                 {
@@ -745,7 +770,8 @@ class Task(models.Model):
                 },
                 self.get_answers().with_extended_info(), # get answers + imputed answers
                 "text",
-                "%s %s" % (repr(self.module), field)
+                "%s %s" % (repr(self.module), field),
+                **kwargs
             )
         except (KeyError, ValueError):
             return default
@@ -830,8 +856,7 @@ class Task(models.Model):
                 parent_task_answer=ans, # for instrumentation only, doesn't go into Task instance
                 project=self.project,
                 editor=user,
-                module=module,
-                title=module.title)
+                module=module)
 
             # Create a new TaskAnswerHistory instance. We never modify
             # existing instances!
@@ -953,7 +978,6 @@ class Task(models.Model):
                     editor=deserializer.user,
                     project=for_question.task.project,
                     module=for_question.question.answer_type_module,
-                    title=for_question.question.answer_type_module.title,
                     uuid=data['id'], # preserve the UUID from the incoming data
                     )
 
@@ -980,8 +1004,11 @@ class Task(models.Model):
         if deserializer.included_metadata:
             # Overwrite metadata if the fields are present, i.e. allow for
             # missing or empty fields, which will preserve the existing metadata we have.
-            self.title = data.get("title") or self.title
-            self.save(update_fields=["title"])
+            # Only update the title if what's stored in the serialized data doesn't
+            # match the automatically computed title.
+            if data.get("title") and data["title"] != self.title:
+                self.title_override = data["title"]
+                self.save(update_fields=["title_override"])
 
         # We don't chek that the module listed in the data matches the module
         # this Task actually uses in the database. We don't have a way to test

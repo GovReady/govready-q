@@ -298,7 +298,7 @@ label:hover .onhover { display: inline; }
                 <div class="radio">
                   <label>
                     <input name="value" value="{{m.id}}" type="radio" {% if m == current_answer %}checked{% endif %}>
-                      {% with m.render_title as title %}
+                      {% with m.title as title %}
                       {{title}}
                       <div class="small" style="color: #666">
                         {% if m == current_answer %}

@@ -3,6 +3,13 @@
 {% block head %}
 <style>
 {% include "focus-area-styles.css" %}
+h1, div.subtitle {
+   text-align: center;
+}
+  div.subtitle {
+    margin: .5em 0 .75em 0;
+    font-weight: bold;
+  }
 @media screen and (min-width: 992px) {
   #action-buttons button, #action-buttons a {
     display: block;
@@ -59,14 +66,21 @@
       {% block above_title %}
       {% endblock %}
 
-      <h1 style="text-align: center;">
+      {% with project.title as title %}
+      <h1>
         {% if project.root_task.get_app_icon_url %}
         <img src="{{project.root_task.get_app_icon_url}}" style="height: 1em">
         {% endif %}
-        {{project.title}}
+        {{title}}
         {% block title_suffix_text %}
         {% endblock %}
       </h1>
+      {% if title != project.root_task.module.spec.title %}
+      <div class="subtitle">
+        {{project.root_task.module.spec.title}}
+      </div>
+      {% endif %}
+      {% endwith %}
 
       {% block body_content %}
       {% endblock %}
