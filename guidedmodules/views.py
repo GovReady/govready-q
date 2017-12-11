@@ -1053,6 +1053,85 @@ def change_task_state(request):
     return HttpResponse("ok")
 
 @login_required
+def get_task_timetamp(request):
+    # Get the 'updated' timestamp on the task and if 'get_changes_since'
+    # is passed, scan for new answers within this project and return a
+    # summary of the changes.
+
+    # Check access.
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    task = get_object_or_404(Task, id=request.POST["id"], project__organization=request.organization)
+    if not task.has_read_priv(request.user):
+        return HttpResponseForbidden()
+
+    # Form response.
+    ret = {
+        "timestamp": task.updated.timestamp()
+    }
+
+    # If get_changes_since is provided and it doesn't match the current
+    # timestamp of the task, scan the project recursively for new answers
+    # since the given time.
+    try:
+        get_changes_since = float(request.POST.get("get_changes_since"))
+    except:
+        get_changes_since = None
+    if get_changes_since and get_changes_since != ret["timestamp"]:
+
+        def summarize_task_changes(task, path, seen_tasks):
+            if task in seen_tasks:
+                # Prevent infinite recursion. If we've done
+                # this task already, pretend is has no changes
+                # on later visits.
+                return []
+            seen_tasks.add(task)
+
+            # What are the new answers?
+            ret = []
+            all_authors = set()
+            for q, a in task.get_current_answer_records():
+                # This question is not yet answered.
+                if a is None:
+                    continue
+
+                # This question has a new answer.
+                if a.created.timestamp() > get_changes_since:
+                    # Construct string for the author.
+                    author = "{} (using {})".format(
+                        str(a.answered_by),
+                        a.get_answered_by_method_display()
+                    )
+                    all_authors.add(author)
+
+                    # Construct string for this question being changed.
+                    ret.append("'{}' was answered by {}.".format(
+                        " → ".join(path + [q.spec['title']]),
+                        author,
+                    ))
+                    continue
+
+                # Scan sub-tasks for new answers.
+                for subtask in a.answered_by_task.all():
+                    ret.extend(summarize_task_changes(subtask, path+[subtask.title], seen_tasks))
+
+            # If there are a lot of changes, summarize.
+            if len(ret) >= 5 and all_authors:
+                return ["{} questions in {} were answered by {}.".format(
+                    len(ret),
+                    " → ".join(path) or "this task",
+                    ", ".join(all_authors),
+                )]
+
+            return ret
+
+
+        ret["changes"] = " ".join(summarize_task_changes(task, [], set()))
+
+    return JsonResponse(ret)
+
+
+@login_required
 def start_a_discussion(request):
     # This view function creates a discussion, or returns an existing one.
 

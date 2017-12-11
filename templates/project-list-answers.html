@@ -65,14 +65,14 @@ h2 { margin-top: 1.5em; }
               </a>
             </td>
             <td>
-              <div style="float: right; margin: 0 0 .25em .25em;">
+              <div style="float: right; margin: 0 0 .25em .25em; padding-bottom: 2px;">
                 <span
                   class="label"
                   data-task="{{section.task.get_absolute_url}}"
                   data-question="{{question.id}}"
                   data-answer="{{answer.id}}"
                   data-reviewed="{{answer.reviewed}}" {# css triggers bg color #}
-                  style="cursor: pointer;"
+                  style="cursor: pointer; display: inline-block;"
                   onclick="change_review_state(this, {% if section.can_review %}true{% else %}false{% endif %});"
                   >
                   {% for key, label in review_choices %}

@@ -2,11 +2,11 @@
 {% load q %}
 
 {% block title %}
-Project Folders
+Your Compliance Projects
 {% endblock %}
 
 {% block breadcrumbs %}
-<li class="active">Project Folders</li>
+<li class="active">Your Compliance Projects</li>
 {% endblock %}
 
 {% block head %}
@@ -43,7 +43,7 @@ Project Folders
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-<h1>Your Compliance Dashboard</h1>
+<h1>Your Compliance Projects</h1>
 
 {% comment %}
 {% if request.user.can_see_org_settings and not request.organization.get_organization_project.root_task.is_finished %}
