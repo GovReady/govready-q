@@ -859,6 +859,9 @@ class ModuleAnswers(object):
         self.answertuples = answertuples
         self.answers_dict = None
 
+    def __str__(self):
+        return "<ModuleAnswers for %s - %s>" % (self.module, self.task)
+
     def as_dict(self):
         if self.answertuples is None:
             # Lazy-load by calling the task's get_answers function
@@ -982,6 +985,9 @@ class TemplateContext(Mapping):
         self.is_computing_title = parent_context.is_computing_title if parent_context else is_computing_title
         self._cache = { }
         self.parent_context = parent_context
+
+    def __str__(self):
+        return "<TemplateContext for %s>" % (self.module_answers)
 
     def __getitem__(self, item):
         # Cache every context variable's value, since some items are expensive.
@@ -1137,6 +1143,8 @@ class RenderedProject(TemplateContext):
             if self.project.root_task:
                 return self.project.root_task.get_answers()
         super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
+    def __str__(self):
+        return "<TemplateContext for %s - %s>" % (self.project, self.module_answers)
 
     def as_raw_value(self):
         if self.is_computing_title:
@@ -1155,6 +1163,8 @@ class RenderedOrganization(TemplateContext):
             if project.root_task:
                 return project.root_task.get_answers()
         super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
+    def __str__(self):
+        return "<TemplateContext for %s - %s>" % (self.organization, self.module_answers)
 
     def as_raw_value(self):
         return self.organization.name
