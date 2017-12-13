@@ -1201,13 +1201,18 @@ class RenderedAnswer:
                 def __str__(self):
                     return "<uploaded file: " + self.file_data['url'] + ">"
             value = FileValueWrapper(self.answer)
-        elif self.question_type == "module":
-            if self.parent_context.is_computing_title:
-                # When we're computing the title for "instance-name", prevent
-                # infinite recursion.
-                value = self.answer.task.module.spec['title']
-            else:
-                value = self.answer.task.title
+        elif self.question_type in ("module", "module-set"):
+            ans = self.answer # ModuleAnswers or list of ModuleAnswers
+            if self.question_type == "module": ans = [ans] # make it a lsit
+            def get_title(task):
+                if self.parent_context.is_computing_title:
+                    # When we're computing the title for "instance-name", prevent
+                    # infinite recursion.
+                    return task.module.spec['title']
+                else:
+                    # Get the computed title.
+                    return task.title
+            value = ", ".join(get_title(a.task) for a in ans)
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)
@@ -1250,7 +1255,7 @@ class RenderedAnswer:
                 grouping=True)
         elif self.question_type == "file":
             value = "<uploaded file: " + self.answer['url'] + ">"
-        elif self.question_type == "module":
+        elif self.question_type in ("module", "module-set"):
             # This field is not present for module-type questions because
             # the keys are attributes exposed by the answer.
             raise AttributeError()
