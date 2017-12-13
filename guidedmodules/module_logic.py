@@ -625,22 +625,10 @@ class HtmlAnswerRenderer:
             elif question.spec.get("file-type") == "image":
                 img_url = value.file_data['url']
 
-            def convert_size(size_bytes):
-               import math
-               size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-               if size_bytes > 0:
-                   i = int(math.floor(math.log(size_bytes, 1024)))
-                   p = math.pow(1024, i)
-                   s = round(size_bytes / p, 2)
-                   if s == int(s): s = int(s)
-               else:
-                   s = 0
-                   i = 0
-               return "%s %s" % (s, size_name[i])
-
-            label = "attached {format} file ({size}; {date})".format(
+            from jinja2.filters import do_filesizeformat
+            label = "Download attachment ({format}; {size}; {date})".format(
                 format=value.file_data["type_display"],
-                size=convert_size(value.file_data['size']),
+                size=do_filesizeformat(value.file_data['size']),
                 date=answerobj.created.strftime("%x") if answerobj else "",
             )
 
