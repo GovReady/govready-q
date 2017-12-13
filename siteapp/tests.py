@@ -303,7 +303,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertNodeNotVisible('#return-to-project')
         self.click_element("#return-to-projects")
         var_sleep(1.5)
-        self.assertRegex(self.browser.title, "Project Folders")
+        self.assertRegex(self.browser.title, "Your Compliance Projects")
         self.assertNodeNotVisible('#please-complete-account-settings')
 
     def test_simple_module(self):

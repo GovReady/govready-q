@@ -145,9 +145,9 @@ gitdb2==2.0.3 \
     --hash=sha256:b60e29d4533e5e25bb50b7678bbc187c8f6bcff1344b4f293b2ba55c85795f09 \
     --hash=sha256:cf9a4b68e8c4da8d42e48728c944ff7af2d8c9db303ac1ab32eac37aa4194b0e \
     # via gitpython
-gitpython==2.1.7 \
-    --hash=sha256:13c7cd99c2bf277fc99accfc25148752fa90e7cc6c6d08a3f01d229dacb461d9 \
-    --hash=sha256:e0b84d37fc7a3594e14818534ef3836d8182925399931a26eab2eb8ef5243a58
+gitpython==2.1.8 \
+    --hash=sha256:ad61bc25deadb535b047684d06f3654c001d9415e1971e51c9c20f5b510076e9 \
+    --hash=sha256:b8367c432de995dc330b5b146c5bfdc0926b8496e100fda6692134e00c0dcdc5
 graphviz==0.8.1 \
     --hash=sha256:2b91add3c2f770e2c20a867bb9e1bd2d7e3b95bc4a70ea0b062b4b0a902a2b97 \
     --hash=sha256:6bffbec8b7a0619fe745515039d0d6bb41b6632f3dee02bcd2601581abc63f03
