@@ -725,6 +725,10 @@ def update_module(m, spec, asset_pack, log_status):
             except ProtectedError:
                 raise IncompatibleUpdate("Module {} cannot be updated because question {}, which has been removed, has already been answered.".format(m.module_name, q.key))
 
+    # If we're updating a Module in-place, clear out any cached state on its Tasks.
+    for t in Task.objects.filter(module=m):
+        t.on_answer_changed()
+
 
 def update_question(m, definition_order, spec, log_status):
     # Adds or updates a ModuleQuestion within Module m given its
