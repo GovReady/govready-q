@@ -175,6 +175,8 @@
   <script src="{% static "js/authoring_tool.js" %}"></script>
   {% endif %}
 
+  <script src="{% static "vendor/push.js" %}"> </script>
+
   {% include "task-question-debug-links.html" %}
 
   <script>
@@ -226,8 +228,13 @@
           // Don't poll for any further changes.
           clearInterval(interval);
 
+          // Show a desktop notification.
+          Push.create("Project Information Changed", {
+            body: res.changes,
+            timeout: 5000
+          });
+
           // Reload the page.
-          //alert("Project information changed. " + res.changes + " This page will now be reloaded.");
           window.location.reload();
         },
         complete: function() {
