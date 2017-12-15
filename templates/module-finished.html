@@ -226,8 +226,8 @@
           // Don't poll for any further changes.
           clearInterval(interval);
 
-          // Show message, then reload.
-          alert("Project information changed. " + res.changes + " This page will now be reloaded.");
+          // Reload the page.
+          //alert("Project information changed. " + res.changes + " This page will now be reloaded.");
           window.location.reload();
         },
         complete: function() {
