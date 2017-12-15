@@ -71,6 +71,9 @@ download \
   '350f72771ceaf9b8392c1646cf2b9f495599c1d5ab31f63a0e709ade6cc336de'
 
 # Josh's Bootstrap Helpers (MIT License)
+# When this (client side JS) is updated, you must also
+# update templates/bootstrap-helpers.html, which is the
+# corresponding HTML.
 download \
   https://raw.githubusercontent.com/JoshData/html5-stub/6776a1b94b8898bab283c0a98fd082e0e0b6f4e0/static/js/bootstrap-helpers.js \
   $VENDOR/bootstrap-helpers.js \
