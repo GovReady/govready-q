@@ -625,22 +625,10 @@ class HtmlAnswerRenderer:
             elif question.spec.get("file-type") == "image":
                 img_url = value.file_data['url']
 
-            def convert_size(size_bytes):
-               import math
-               size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-               if size_bytes > 0:
-                   i = int(math.floor(math.log(size_bytes, 1024)))
-                   p = math.pow(1024, i)
-                   s = round(size_bytes / p, 2)
-                   if s == int(s): s = int(s)
-               else:
-                   s = 0
-                   i = 0
-               return "%s %s" % (s, size_name[i])
-
-            label = "attached {format} file ({size}; {date})".format(
+            from jinja2.filters import do_filesizeformat
+            label = "Download attachment ({format}; {size}; {date})".format(
                 format=value.file_data["type_display"],
-                size=convert_size(value.file_data['size']),
+                size=do_filesizeformat(value.file_data['size']),
                 date=answerobj.created.strftime("%x") if answerobj else "",
             )
 
@@ -871,6 +859,9 @@ class ModuleAnswers(object):
         self.answertuples = answertuples
         self.answers_dict = None
 
+    def __str__(self):
+        return "<ModuleAnswers for %s - %s>" % (self.module, self.task)
+
     def as_dict(self):
         if self.answertuples is None:
             # Lazy-load by calling the task's get_answers function
@@ -994,6 +985,9 @@ class TemplateContext(Mapping):
         self.is_computing_title = parent_context.is_computing_title if parent_context else is_computing_title
         self._cache = { }
         self.parent_context = parent_context
+
+    def __str__(self):
+        return "<TemplateContext for %s>" % (self.module_answers)
 
     def __getitem__(self, item):
         # Cache every context variable's value, since some items are expensive.
@@ -1149,6 +1143,8 @@ class RenderedProject(TemplateContext):
             if self.project.root_task:
                 return self.project.root_task.get_answers()
         super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
+    def __str__(self):
+        return "<TemplateContext for %s - %s>" % (self.project, self.module_answers)
 
     def as_raw_value(self):
         if self.is_computing_title:
@@ -1167,6 +1163,8 @@ class RenderedOrganization(TemplateContext):
             if project.root_task:
                 return project.root_task.get_answers()
         super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
+    def __str__(self):
+        return "<TemplateContext for %s - %s>" % (self.organization, self.module_answers)
 
     def as_raw_value(self):
         return self.organization.name
@@ -1201,13 +1199,18 @@ class RenderedAnswer:
                 def __str__(self):
                     return "<uploaded file: " + self.file_data['url'] + ">"
             value = FileValueWrapper(self.answer)
-        elif self.question_type == "module":
-            if self.parent_context.is_computing_title:
-                # When we're computing the title for "instance-name", prevent
-                # infinite recursion.
-                value = self.answer.task.module.spec['title']
-            else:
-                value = self.answer.task.title
+        elif self.question_type in ("module", "module-set"):
+            ans = self.answer # ModuleAnswers or list of ModuleAnswers
+            if self.question_type == "module": ans = [ans] # make it a lsit
+            def get_title(task):
+                if self.parent_context.is_computing_title:
+                    # When we're computing the title for "instance-name", prevent
+                    # infinite recursion.
+                    return task.module.spec['title']
+                else:
+                    # Get the computed title.
+                    return task.title
+            value = ", ".join(get_title(a.task) for a in ans)
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)
@@ -1250,7 +1253,7 @@ class RenderedAnswer:
                 grouping=True)
         elif self.question_type == "file":
             value = "<uploaded file: " + self.answer['url'] + ">"
-        elif self.question_type == "module":
+        elif self.question_type in ("module", "module-set"):
             # This field is not present for module-type questions because
             # the keys are attributes exposed by the answer.
             raise AttributeError()

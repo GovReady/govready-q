@@ -72,9 +72,9 @@ download \
 
 # Josh's Bootstrap Helpers (MIT License)
 download \
-  https://raw.githubusercontent.com/JoshData/html5-stub/3b9b623a0969a030ca9a5657b4be9fabb9fca43d/static/js/bootstrap-helpers.js \
+  https://raw.githubusercontent.com/JoshData/html5-stub/6776a1b94b8898bab283c0a98fd082e0e0b6f4e0/static/js/bootstrap-helpers.js \
   $VENDOR/bootstrap-helpers.js \
-  '65214acdd7f4fa41c78634999b1f3385c918787f59beb66bba2770e709877a41'
+  '46fd3af77b6b5978711b3b4fbc3282ab334e3b292707c7e8c860ad6900e78d45'
 
 # push.js (MIT License)
 download \

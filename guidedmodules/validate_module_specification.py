@@ -18,14 +18,14 @@ def validate_module(spec, is_authoring_tool=False):
     # Validate that the introduction and output documents are renderable.
     if "introduction" in spec:
         if not isinstance(spec["introduction"], dict):
-            raise ValidationError("module introduction", "Must be a dictionary, not a %s." % str(type(spec["introduction"])))
+            raise ValidationError("module introduction", "Must be a dictionary, not a %s." % type(spec["introduction"]).__name__)
         try:
             render_content(spec["introduction"], None, "PARSE_ONLY", "(introduction)")
         except ValueError as e:
             raise ValidationError("module introduction", "Invalid Jinja2 template: " + str(e))
 
     if not isinstance(spec.get("output", []), list):
-        raise ValidationError("module output", "Must be a list, not a %s." % str(type(spec.get("output"))))
+        raise ValidationError("module output", "Must be a list, not a %s." % type(spec.get("output")).__name__)
     for i, doc in enumerate(spec.get("output", [])):
         try:
             render_content(doc, None, "PARSE_ONLY", "(output document)")
@@ -132,7 +132,7 @@ def validate_question(mspec, spec):
     for field in ("prompt", "placeholder", "default"):
         if field not in spec: continue
         if not isinstance(spec.get(field), str):
-            invalid("Question %s must be a string, not a %s." % (field, str(type(spec.get(field)))))
+            invalid("Question %s must be a string, not a %s." % (field, type(spec.get(field)).__name__))
         try:
             render_content({
                     "format": "markdown",
@@ -155,7 +155,7 @@ def validate_question(mspec, spec):
         env = SandboxedEnvironment()
         if "condition" in rule:
             if not isinstance(rule.get("condition"), str):
-                invalid_rule("Impute condition must be a string, not a %s." % str(type(rule["condition"])))
+                invalid_rule("Impute condition must be a string, not a %s." % type(rule["condition"]).__name__)
             try:
                 env.compile_expression(rule["condition"])
             except Exception as e:
