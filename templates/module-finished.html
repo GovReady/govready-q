@@ -234,7 +234,8 @@
             timeout: 5000
           });
 
-          // Reload the page.
+          // Dim the page and reload.
+          $('#ajax_loading_indicator').fadeIn();
           window.location.reload();
         },
         complete: function() {
