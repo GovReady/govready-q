@@ -2,9 +2,9 @@ appdirs==1.4.3 \
     --hash=sha256:9e5896d1372858f8dd3344faf4e5014d21849c756c8d5701f78f8a103b372d92 \
     --hash=sha256:d8b24664561d0d34ddfaec54636d502d7cea6e29c3eaf68f3df6180863e2166e \
     # via fs
-asn1crypto==0.23.0 \
-    --hash=sha256:0874981329cfebb366d6584c3d16e913f2a0eb026c9463efcc4aaf42a9d94d70 \
-    --hash=sha256:654b7db3b120e23474e9a1e5e38d268c77e58a9e17d2cb595456c37309846494 \
+asn1crypto==0.24.0 \
+    --hash=sha256:2f1adbb7546ed199e3c90ef23ec95c5cf3585bac7d11fb7eb562a3fe89c64e87 \
+    --hash=sha256:9d5c20441baf0cb60a4ac34cc447c6c189024b6b4c6cd7877034f4965c464e49 \
     # via cryptography
 beautifulsoup4==4.6.0 \
     --hash=sha256:11a9a27b7d3bddc6d86f59fb76afb70e921a25ac2d6cc55b40d072bd68435a76 \
