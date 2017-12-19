@@ -169,3 +169,9 @@ class OrganizationSubdomainMiddleware:
         if request.path not in (account_login_url, settings.LOGIN_REDIRECT_URL):
             qs = "?" + urlencode({ "next": request.path })
         return HttpResponseRedirect(account_login_url + qs)
+
+def QTemplateContextProcessor(request):
+    return {
+        "APP_VERSION_STRING": settings.APP_VERSION_STRING,
+        "APP_VERSION_COMMIT": settings.APP_VERSION_COMMIT,
+    }
