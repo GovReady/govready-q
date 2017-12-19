@@ -196,7 +196,7 @@ For example:
 
 You may build the Docker image locally from the current source code rather than obtaining it from the Docker Hub. In the root directory of this repository, build the Docker image:
 
-	docker image build --tag govready/govready-q .
+	deployment/docker/docker_image_build.sh
 
 If you are a GovReady team member, you can then push the image to hub.docker.com:
 
