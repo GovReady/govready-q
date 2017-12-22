@@ -21,6 +21,10 @@ MIDDLEWARE += [
     'guidedmodules.middleware.InstrumentQuestionPageLoadTimes',
 ]
 
+TEMPLATES[0]['OPTIONS']['context_processors'] += [
+    'siteapp.middleware.QTemplateContextProcessor',
+]
+
 AUTHENTICATION_BACKENDS += ['siteapp.models.DirectLoginBackend']
 
 INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
@@ -46,3 +50,19 @@ NOTIFICATIONS_USE_JSONFIELD = True # allows us to store extra data on Notificati
 
 GOVREADY_CMS_API_AUTH = environment.get('govready_cms_api_auth')
 MAILGUN_API_KEY = environment.get('mailgun_api_key', '') # for the incoming mail route
+
+# Get the version of this software.
+import os.path
+if os.path.exists("VERSION"):
+    # Get the version from the VERSION file which has two lines.
+    # The first line is a version string for display. The second
+    # line is the git commit hash that the build was based on.
+    with open("VERSION") as f:
+        APP_VERSION_STRING = f.readline().strip()
+        APP_VERSION_COMMIT = f.readline().strip()
+else:
+    # If there is no VERSION file, query the git working directory.
+    import subprocess
+    APP_VERSION_STRING = subprocess.check_output("git describe --tags --always", shell=True).strip().decode("ascii")
+    APP_VERSION_COMMIT = subprocess.check_output("git rev-parse HEAD", shell=True).strip().decode("ascii")
+

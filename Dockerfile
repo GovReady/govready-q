@@ -34,6 +34,7 @@ RUN ./fetch-vendor-resources.sh
 #
 # NOTE: Do *not* include the "local" directory in this step, since
 # that often has local development files.
+COPY VERSION ./VERSION
 COPY discussion ./discussion
 COPY guidedmodules ./guidedmodules
 COPY modules ./modules

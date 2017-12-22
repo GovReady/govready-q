@@ -222,13 +222,18 @@ if [ ! -z "$NAME" ]; then
   echo "Container Name: $NAME"
 fi
 echo "Container ID: $CONTAINER_ID"
-echo "Listening on: $BIND"
+
+# Show the version.
+echo -n "Version: "
+docker container exec ${CONTAINER_ID} cat VERSION | tr '\n' ' ';
+
+echo
 
 # Check that the database is ready. The docker exec command
 # writes out a 'ready' file once migrations are finished,
 # and then it's probably another second before the Django
 # server is listening.
-while ! docker container exec $NAME test -f ready; do
+while ! docker container exec ${CONTAINER_ID} test -f ready; do
   echo "Waiting for GovReady-Q to come online..."
   sleep 3
 done
@@ -237,8 +242,9 @@ sleep 1
 # Form and show the public address that Q is expected to be
 # accessed at.
 echo "GovReady-Q has been started!"
+echo "Listening on: $BIND"
 echo -n "URL: http"
 if [ "$HTTPS" == true ]; then echo -n s; fi
-echo -n "://$ADDRESS"
+echo -n "://$HOST"
 if [ "$PORT" != 80 ]; then echo -n ":$PORT"; fi
 echo
