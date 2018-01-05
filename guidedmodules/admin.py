@@ -138,9 +138,8 @@ class AppSourceAdminForm(forms.ModelForm):
 
 		if not self.errors:
 			# Validate that the AppSource can actually connect to the source.
-			from .module_sources import AppStore
 			try:
-				with AppStore.create(AppSource(namespace=self.cleaned_data["namespace"], spec=self.cleaned_data["spec"])) as store:
+				with AppSource(namespace=self.cleaned_data["namespace"], spec=self.cleaned_data["spec"]).open() as store:
 					pass
 			except Exception as e:
 				raise forms.ValidationError(str(e))

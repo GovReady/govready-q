@@ -23,14 +23,14 @@ class ModuleDefinitionError(Exception):
 class AppSourceConnectionError(Exception):
     pass
 
-class AppStore(object):
-    """An AppStore is a catalog of Apps."""
+class AppSourceConnection(object):
+    """An AppSourceConnection provides methods to access apps in an AppSource."""
 
     @staticmethod
     def create(source):
-        if source.spec.get("type") in AppStoreTypes:
-            return AppStoreTypes[source.spec["type"]](source)
-        raise ValueError("Invalid AppStore type: %s" % repr(source.spec.get("type")))
+        if source.spec.get("type") in AppSourceConnectionTypes:
+            return AppSourceConnectionTypes[source.spec["type"]](source)
+        raise ValueError("Invalid AppSourceConnection type: %s" % repr(source.spec.get("type")))
 
     def list_apps(self):
         raise Exception("Not implemented!")
@@ -91,19 +91,19 @@ class App(object):
 
 ### IMPLEMENTATIONS ###
 
-class NullAppStore(AppStore):
-    """The NullAppStore contains no apps."""
+class NullAppSourceConnection(AppSourceConnection):
+    """The NullAppSourceConnection contains no apps."""
     def __init__(self, source):
         pass
     def __enter__(self): return self
     def __exit__(self, *args): return
-    def __repr__(self): return "<NullAppStore>"
+    def __repr__(self): return "<NullAppSourceConnection>"
     def list_apps(self):
         return
         yield # make a generator
 
 
-class MultiplexedAppStore(AppStore):
+class MultiplexedAppSourceConnection(AppSourceConnection):
     """A subclass of ModuleLoader that wraps other ModuleLoader classes
        at given mount-points in the module naming space."""
 
@@ -111,7 +111,7 @@ class MultiplexedAppStore(AppStore):
         self.loaders = []
         for ms in sources:
             try:
-                self.loaders.append(AppStore.create(ms))
+                self.loaders.append(AppSourceConnection.create(ms))
             except ValueError as e:
                 raise ValueError('There was an error creating the AppSource named "{}": {}'.format(ms.namespace, e))
 
@@ -131,7 +131,7 @@ class MultiplexedAppStore(AppStore):
             raise Exception(exceptions)
 
     def __repr__(self):
-        return "<MultiplexedAppStore %s>" % repr(self.loaders)
+        return "<MultiplexedAppSourceConnection %s>" % repr(self.loaders)
 
     def list_apps(self):
         # List all of the apps in all of the stores.
@@ -139,7 +139,7 @@ class MultiplexedAppStore(AppStore):
             for app in ms.list_apps():
                 yield app
 
-class PyFsAppStore(AppStore):
+class PyFsAppSourceConnection(AppSourceConnection):
     """Creates an app store from a Pyfilesystem2 filesystem, like
     a local directory containing directories for apps."""
 
@@ -170,7 +170,7 @@ class PyFsAppStore(AppStore):
             self.root.close()
 
     def __repr__(self):
-        return "<AppStore {src}>".format(src=self.source.get_description())
+        return "<AppSourceConnection {src}>".format(src=self.source.get_description())
 
     def list_apps(self):
         # Every directory is an app containing app.yaml
@@ -322,7 +322,7 @@ class PyFsApp(App):
                 yield (fn, content_hash, make_content_loader(fn))
 
 
-class LocalDirectoryAppStore(PyFsAppStore):
+class LocalDirectoryAppSourceConnection(PyFsAppSourceConnection):
     """An App Store provided by a local directory."""
     def __init__(self, source):
         from fs.osfs import OSFS
@@ -387,7 +387,7 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
         return io.BytesIO(content)
 
 
-class GithubApiAppStore(PyFsAppStore):
+class GithubApiAppSourceConnection(PyFsAppSourceConnection):
     """An App Store provided by a local directory."""
     def __init__(self, source):
         # the spec is incomplete
@@ -535,7 +535,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         return io.BytesIO(tree.data_stream.read())
 
 
-class GitRepositoryAppStore(PyFsAppStore):
+class GitRepositoryAppSourceConnection(PyFsAppSourceConnection):
     """An App Store provided by a local directory."""
     def __init__(self, source):
         # validate spec
@@ -556,11 +556,11 @@ def read_yaml_file(f):
     except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
         raise ModuleDefinitionError("There was an error parsing the YAML file: " + str(e))
 
-AppStoreTypes = {
-    "null": NullAppStore,
-    "local": LocalDirectoryAppStore,
-    "github": GithubApiAppStore,
-    "git": GitRepositoryAppStore,
+AppSourceConnectionTypes = {
+    "null": NullAppSourceConnection,
+    "local": LocalDirectoryAppSourceConnection,
+    "github": GithubApiAppSourceConnection,
+    "git": GitRepositoryAppSourceConnection,
 }
 
 

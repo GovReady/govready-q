@@ -47,9 +47,14 @@ class AppSource(models.Model):
         h.update(self.updated.isoformat().encode("ascii"))
         return h.hexdigest()
 
+    def open(self):
+        # Return an AppSourceConnection instance for this source.
+        from .module_sources import AppSourceConnection
+        return AppSourceConnection.create(self)
+
 class AppInstance(models.Model):
     source = models.ForeignKey(AppSource, related_name="appinstances", on_delete=models.CASCADE, help_text="The source of this AppInstance.")
-    appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppStore.")
+    appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppSource.")
 
         # the field below is a NullBooleanField because the unique constraint doesn't kick in
         # for NULLs but does for False/True, and we want the constraint to apply only for True.

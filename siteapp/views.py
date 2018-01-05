@@ -97,7 +97,6 @@ def get_compliance_apps_catalog(organization):
     from django.core.cache import cache
 
     from guidedmodules.models import AppSource
-    from guidedmodules.module_sources import AppStore
 
     apps = []
 
@@ -113,9 +112,8 @@ def get_compliance_apps_catalog(organization):
         cache_stale_key = appsrc.make_cache_stale_key()
         cached_apps = cache.get(cache_key, (None, None))
         if cached_apps[0] != cache_stale_key:
-            # Initialize an AppStore instance that provides functionality
-            # for loading the AppSource's catalog...
-            with AppStore.create(appsrc) as appsrc_connection:
+            # Connect to the remote app data...
+            with appsrc.open() as appsrc_connection:
                 # Iterate through all of the apps provided by this source.
                 cached_apps = []
                 for app in appsrc_connection.list_apps():
@@ -238,7 +236,7 @@ def filter_app_catalog(catalog, request):
 
 
 @login_required
-def app_store(request):
+def apps_catalog(request):
     # We use the querystring to remember which question the user is selecting
     # an app to answer, when starting an app from within a project.
     from urllib.parse import urlencode
@@ -285,7 +283,7 @@ def app_store(request):
     })
 
 @login_required
-def app_store_item(request, app_namespace, app_name):
+def apps_catalog_item(request, app_namespace, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
     from guidedmodules.models import AppSource
@@ -395,7 +393,6 @@ def app_store_item(request, app_namespace, app_name):
 
 def start_app(app_catalog_info, organization, user, folder, task, q):
     from guidedmodules.models import AppSource
-    from guidedmodules.module_sources import AppStore
 
     # If the first argument is a string, it's an app id of the
     # form "namespace/appname". Get the catalog info.
@@ -416,8 +413,8 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
         # and then import it into the database as Module instance.
         if app_catalog_info["authz"] == "none":
             # We can instantiate the app immediately.
-            # 1) Get the AppStore instance from the AppSource.
-            with AppStore.create(module_source) as store:
+            # 1) Get the connection to the AppSource.
+            with module_source.open() as store:
                 # 2) Get the App.
                 app_name = app_catalog_info["key"][len(module_source.namespace)+1:]
                 app = store.get_app(app_name)

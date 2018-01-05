@@ -818,9 +818,9 @@ def authoring_tool_auth(f):
 def authoring_edit_reload_app(request, task):
     # Refresh the app that this Task is a part of by reloading all of the
     # Modules associated with this instance of the app.
-    from .module_sources import AppStore, AppImportUpdateMode, ValidationError, IncompatibleUpdate
+    from .module_sources import AppImportUpdateMode, ValidationError, IncompatibleUpdate
     from .module_sources import ModuleDefinitionError
-    with AppStore.create(task.module.source) as store:
+    with task.module.source.open() as store:
         for app in store.list_apps():
             # Only update using the app that provided this Task's Module.
             if app.name != task.module.app.appname:
