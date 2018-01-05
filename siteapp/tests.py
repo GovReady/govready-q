@@ -250,8 +250,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(.5) # wait for page to load
         self.fill_field("#id_username", "test+%d@q.govready.com" % random.randint(10000, 99999))
         self.fill_field("#id_email", email)
-        self.fill_field("#id_password1", "1234")
-        self.fill_field("#id_password2", "1234")
+        self.fill_field("#id_password1", "1234ABCDE")
+        self.fill_field("#id_password2", "1234ABCDE")
         self.click_element("form.signup button") # This isn't a very good targetting of the "sign up" link.
         var_sleep(.5) # wait for next page to load
 
