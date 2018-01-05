@@ -118,7 +118,7 @@ def user_profile_photo(request, user_id, org_subdomain, hash):
     # Check that the hash in the URL matches. See User.get_profile_picture_absolute_url.
     import hashlib
     sha1 = hashlib.sha1()
-    sha1.update(photo.answered_by_file.name.encode("ascii"))
+    sha1.update(photo.get_value().get("content_dataurl").encode("ascii"))
     fnhash = sha1.hexdigest()
     if hash != fnhash: raise Http404()
 
