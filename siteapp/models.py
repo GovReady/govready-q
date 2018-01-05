@@ -258,10 +258,17 @@ class Organization(models.Model):
         return prj
 
     def get_logo(self):
-        prj_task = self.get_organization_project().root_task
-        profile_task = prj_task.get_subtask("organization_profile")
-        profile = profile_task.get_answers().as_dict()
-        return profile.get("logo")
+        # Cache the logo for a bit since it's loaded on every page load.
+        from django.core.cache import cache
+        cache_key = "org_logo_{}".format(self.id)
+        logo = cache.get(cache_key)
+        if not logo:
+            prj_task = self.get_organization_project().root_task
+            profile_task = prj_task.get_subtask("organization_profile")
+            profile = profile_task.get_answers().as_dict()
+            logo = profile.get("logo")
+            cache.set(cache_key, logo, 60*10) # 10 minutes
+        return logo
 
     @staticmethod
     def create(admin_user=None, **kargs): # admin_user is a required kwarg
