@@ -40,6 +40,13 @@ class AppSource(models.Model):
         if self.spec["type"] == "github":
             return "github.com/%s" % self.spec.get("repo")
 
+    def make_cache_stale_key(self):
+        import hashlib, json
+        h = hashlib.sha1()
+        h.update(json.dumps(self.spec).encode("utf8"))
+        h.update(self.updated.isoformat().encode("ascii"))
+        return h.hexdigest()
+
 class AppInstance(models.Model):
     source = models.ForeignKey(AppSource, related_name="appinstances", on_delete=models.CASCADE, help_text="The source of this AppInstance.")
     appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppStore.")
