@@ -89,33 +89,58 @@ def folder_view(request, folder_id):
         "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
     })
 
+def get_compliance_apps_catalog(organization):
+    # Load the compliance apps available to the given organization.
+    # Since accessing remote AppSources is an expensive operation,
+    # cache the catalog information.
 
-# Cache the contents of the app store by the organization, since we
-# may show different apps on different organization sites.
-_app_store_cache = { }
-def get_app_store(organization):
-    global _app_store_cache
-    if organization not in _app_store_cache:
-        _app_store_cache[organization] = list(load_app_store(organization))
-    return _app_store_cache[organization]
+    from django.core.cache import cache
 
-def load_app_store(organization):
     from guidedmodules.models import AppSource
-    from guidedmodules.module_sources import MultiplexedAppStore
-    from guidedmodules.module_logic import render_content
 
-    with MultiplexedAppStore(ms for ms in AppSource.objects.all()) as store:
-        for app in store.list_apps():
-            # System apps are not listed the app store.
-            if app.store.source.namespace == "system":
-                continue
+    apps = []
 
-            # Apps from private sources are only listed if the organization
-            # is white-listed.
-            if not app.store.source.available_to_all \
-              and organization not in app.store.source.available_to_orgs.all():
-                continue
+    # For each AppSource....
+    for appsrc in AppSource.objects.all():
+        # System apps are not listed the compliance apps catalog.
+        if appsrc.namespace == "system":
+            continue
 
+        # If we don't have cached catalog info for this source...
+        # (keyed off of the current state of the AppSource instance)
+        cache_key = "compliance_catalog_source_{}".format(appsrc.id)
+        cache_stale_key = appsrc.make_cache_stale_key()
+        cached_apps = cache.get(cache_key, (None, None))
+        if cached_apps[0] != cache_stale_key:
+            # Connect to the remote app data...
+            with appsrc.open() as appsrc_connection:
+                # Iterate through all of the apps provided by this source.
+                cached_apps = []
+                for app in appsrc_connection.list_apps():
+                    # Render the catalog info for display.
+                    app = render_app_catalog_entry(app)
+                    cached_apps.append(app)
+
+                # Cache the results.
+                cached_apps = (cache_stale_key, cached_apps)
+                cache.set(cache_key, cached_apps)
+
+        # Add the apps in this source to the returned list. But apps
+        # from private sources are only listed if the organization
+        # is white-listed.
+        if not appsrc.available_to_all \
+          and organization not in appsrc.available_to_orgs.all():
+            continue
+
+        # Add the apps from the cached data structure.
+        apps.extend(cached_apps[1])
+
+    return apps
+
+def render_app_catalog_entry(app):
+            from guidedmodules.module_logic import render_content
+
+            # Clone, I guess?
             catalog_info = dict(app.get_catalog_info())
 
             catalog_info["appsource_id"] = app.store.source.id
@@ -163,7 +188,7 @@ def load_app_store(organization):
                 im.save(buf, 'png')
                 catalog_info["app_icon_dataurl"] = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
 
-            yield catalog_info
+            return catalog_info
 
 def get_task_question(request):
     # Filter catalog by apps that satisfy the right protocol.
@@ -211,7 +236,7 @@ def filter_app_catalog(catalog, request):
 
 
 @login_required
-def app_store(request):
+def apps_catalog(request):
     # We use the querystring to remember which question the user is selecting
     # an app to answer, when starting an app from within a project.
     from urllib.parse import urlencode
@@ -222,7 +247,7 @@ def app_store(request):
     # just the apps that can answer that question.
     from guidedmodules.module_sources import AppSourceConnectionError
     try:
-        catalog, filter_description = filter_app_catalog(get_app_store(request.organization), request)
+        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog(request.organization), request)
     except (ValueError, AppSourceConnectionError) as e:
         return render(request, "app-store.html", {
             "error": e,
@@ -258,11 +283,11 @@ def app_store(request):
     })
 
 @login_required
-def app_store_item(request, app_namespace, app_name):
+def apps_catalog_item(request, app_namespace, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
     from guidedmodules.models import AppSource
-    for app_catalog_info in get_app_store(request.organization):
+    for app_catalog_info in get_compliance_apps_catalog(request.organization):
         if app_catalog_info["key"] == app_namespace + "/" + app_name:
             # We found it.
             break
@@ -368,12 +393,11 @@ def app_store_item(request, app_namespace, app_name):
 
 def start_app(app_catalog_info, organization, user, folder, task, q):
     from guidedmodules.models import AppSource
-    from guidedmodules.module_sources import AppStore
 
     # If the first argument is a string, it's an app id of the
     # form "namespace/appname". Get the catalog info.
     if isinstance(app_catalog_info, str):
-        for app in get_app_store(organization):
+        for app in get_compliance_apps_catalog(organization):
             if app["key"] == app_catalog_info:
                 # We found it.
                 app_catalog_info = app
@@ -389,8 +413,8 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
         # and then import it into the database as Module instance.
         if app_catalog_info["authz"] == "none":
             # We can instantiate the app immediately.
-            # 1) Get the AppStore instance from the AppSource.
-            with AppStore.create(module_source) as store:
+            # 1) Get the connection to the AppSource.
+            with module_source.open() as store:
                 # 2) Get the App.
                 app_name = app_catalog_info["key"][len(module_source.namespace)+1:]
                 app = store.get_app(app_name)
@@ -1007,7 +1031,7 @@ def import_project_data(request, project):
 
 def project_start_apps(request, *args):
     # Load the Compliance Store catalog of apps.
-    all_apps = get_app_store(request.organization)
+    all_apps = get_compliance_apps_catalog(request.organization)
 
     # What questions can be answered with an app?
     def get_questions(project):

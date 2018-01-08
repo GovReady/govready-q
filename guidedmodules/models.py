@@ -40,9 +40,21 @@ class AppSource(models.Model):
         if self.spec["type"] == "github":
             return "github.com/%s" % self.spec.get("repo")
 
+    def make_cache_stale_key(self):
+        import hashlib, json
+        h = hashlib.sha1()
+        h.update(json.dumps(self.spec).encode("utf8"))
+        h.update(self.updated.isoformat().encode("ascii"))
+        return h.hexdigest()
+
+    def open(self):
+        # Return an AppSourceConnection instance for this source.
+        from .module_sources import AppSourceConnection
+        return AppSourceConnection.create(self)
+
 class AppInstance(models.Model):
     source = models.ForeignKey(AppSource, related_name="appinstances", on_delete=models.CASCADE, help_text="The source of this AppInstance.")
-    appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppStore.")
+    appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppSource.")
 
         # the field below is a NullBooleanField because the unique constraint doesn't kick in
         # for NULLs but does for False/True, and we want the constraint to apply only for True.
@@ -386,7 +398,7 @@ class Task(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     deleted_at = models.DateTimeField(blank=True, null=True, db_index=True, help_text="If 'deleted' by a user, the date & time the Task was deleted.")
 
-    cached_is_finished = models.NullBooleanField(help_text="Cached value storing whether the Task is finished.")
+    cached_state = JSONField(blank=True, default=None, help_text="Cached value storing whether the Task is finished, its computed title, and other state that depends on question answers.")
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Task, used to synchronize Task content between systems.")
 
@@ -529,10 +541,12 @@ class Task(models.Model):
         # Check that all questions that need an answer have
         # an answer and that all module-type questions are
         # finished.
-        if self.cached_is_finished is None:
-            self.cached_is_finished = self.is_finished_uncached()
-            self.save(update_fields=["cached_is_finished"])
-        return self.cached_is_finished
+        if self.cached_state is None:
+            self.cached_state = { }
+        if "is_finished" not in self.cached_state:
+            self.cached_state["is_finished"] = self.is_finished_uncached()
+            self.save(update_fields=["cached_state"])
+        return self.cached_state["is_finished"]
 
     def is_finished_uncached(self):
         # Check that all questions that need an answer have
@@ -565,8 +579,8 @@ class Task(models.Model):
         if seen_tasks is None: seen_tasks = set()
         if self in seen_tasks: return
         seen_tasks.add(self)
-        self.cached_is_finished = None
-        self.save(update_fields=["cached_is_finished", "updated"])
+        self.cached_state = None
+        self.save(update_fields=["cached_state", "updated"])
         for ans in self.is_answer_to.select_related('taskanswer__task').all():
             if ans.is_latest():
                 ans.taskanswer.task.on_answer_changed(seen_tasks)
@@ -738,24 +752,33 @@ class Task(models.Model):
         # Last, fall back to the Module title.
         if self.title_override:
             return self.title_override
-        if "instance-name" in self.module.spec:
-            if hasattr(self, "_cached_title"):
-                return self._cached_title
+
+        if "instance-name" not in self.module.spec:
+            return self.module.spec["title"]
+
+        # Render the instance-name template if its rendered value is not cached.
+        if self.cached_state is None:
+            self.cached_state = { }
+        if "title" not in self.cached_state:
 
             if Task.IS_COMPUTING_TITLE:
                 # Hopefully this never occurs, but rendering the instance-name
                 # template could end up causing the task's title to be computed.
                 raise RuntimeError("Infinite recursion!")
+
             Task.IS_COMPUTING_TITLE = True
             try:
                 title = self.render_simple_string(
                     "instance-name", self.module.spec["title"],
                     is_computing_title=True).strip()
-                self._cached_title = title
-                return title
             finally:
                 Task.IS_COMPUTING_TITLE = False
-        return self.module.spec["title"]
+
+            self.cached_state["title"] = title
+            self.save(update_fields=["cached_state"])
+
+        return self.cached_state["title"]
+
 
     def render_introduction(self):
         # Project tasks have an introduction field.

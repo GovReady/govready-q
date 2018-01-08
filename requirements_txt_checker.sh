@@ -37,7 +37,7 @@ echo
 python3 <<EOF;
 acceptable_licenses = {
 	"CC0 (copyright waived)", "CC0 1.0 Universal",
-	"BSD", "Simplified BSD", "BSD 3-Clause", "BSD 3", "BSD-3-Clause",
+	"BSD", "Simplified BSD", "BSD 3-Clause", "BSD 3", "BSD-3-Clause", "BSD-like",
 	"MIT",
 	"Apache 2.0", "Apache License 2.0", "Apache Software",
 	"MPL-2.0",

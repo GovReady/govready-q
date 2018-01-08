@@ -132,9 +132,9 @@ download \
 # first download a helper (note: we're about to run a foreign script locally)
 # TODO: Requires bash v4 not available on macOS.
 download \
-  https://raw.githubusercontent.com/neverpanic/google-font-download/master/google-font-download \
+  https://raw.githubusercontent.com/neverpanic/google-font-download/ba0f7fd6de0933c8e5217fd62d3c1c08578b6ea7/google-font-download \
   /tmp/google-font-download \
-  'a59054f45e738118f7a164527c4fa71ed42050aaeff2c21b75ab5b5512257a2a'
+  '1f9b2cefcda45d4ee5aac3ff1255770ba193c2aa0775df62a57aa90c27d47db5'
 (cd $VENDOR; bash /tmp/google-font-download -f woff,woff2 -o google-fonts.css Hind:400 Hind:700 Lato:900)
 rm -f /tmp/google-font-download
 # generated with: $SHACMD $VENDOR/{google-fonts.css,Hind*,Lato*}

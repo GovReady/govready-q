@@ -15,8 +15,8 @@ urlpatterns = [
     url(r"^discussion/", include("discussion.urls")),
 
     # app store
-    url(r'^store$', views.app_store),
-    url(r'^store/(?P<app_namespace>.*)/(?P<app_name>.*)$', views.app_store_item),
+    url(r'^store$', views.apps_catalog),
+    url(r'^store/(?P<app_namespace>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 
     # projects
     url(r"^projects$", views.folder_list),

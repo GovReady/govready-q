@@ -92,25 +92,25 @@ class User(AbstractUser):
         return p.root_task.get_or_create_subtask(self, "account_settings")
 
     def get_profile_picture_absolute_url(self):
-        # For invitations, profile photos are not protected by
+        # Because of invitations, profile photos are not protected by
         # authorization. But to prevent user enumeration and to bust
         # caches when photos change, we include in the URL some
         # information about the internal data of the profile photo
         # Also since profile photos are per-Organization we have to
         # include which org this User instance is localized to.
 
-        # Get the current profile photo. We want to check that one
-        # exists before generating a URL. Also get the photo's internal
-        # filename which has its hash, and then hash that to get
-        # something we can put in the URL.
+        # Get the current profile photo.
         try:
-            fn = self._get_settings_task().get_answers().get("picture").answered_by_file.name
+            pic = self._get_setting("picture")
+            if pic is None:
+                return
         except:
             return None
 
+        # We've got the content.
         import hashlib
         sha1 = hashlib.sha1()
-        sha1.update(fn.encode("ascii"))
+        sha1.update(pic['content_dataurl'].encode("ascii"))
         fnhash = sha1.hexdigest()
 
         return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s/%s" % (
@@ -258,10 +258,17 @@ class Organization(models.Model):
         return prj
 
     def get_logo(self):
-        prj_task = self.get_organization_project().root_task
-        profile_task = prj_task.get_subtask("organization_profile")
-        profile = profile_task.get_answers().as_dict()
-        return profile.get("logo")
+        # Cache the logo for a bit since it's loaded on every page load.
+        from django.core.cache import cache
+        cache_key = "org_logo_{}".format(self.id)
+        logo = cache.get(cache_key)
+        if not logo:
+            prj_task = self.get_organization_project().root_task
+            profile_task = prj_task.get_subtask("organization_profile")
+            profile = profile_task.get_answers().as_dict()
+            logo = profile.get("logo")
+            cache.set(cache_key, logo, 60*10) # 10 minutes
+        return logo
 
     @staticmethod
     def create(admin_user=None, **kargs): # admin_user is a required kwarg
