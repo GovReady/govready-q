@@ -194,11 +194,17 @@ For example:
 
 ## Building and publishing the Docker image for GovReady-Q maintainers
 
-You may build the Docker image locally from the current source code rather than obtaining it from the Docker Hub. In the root directory of this repository, build the Docker image:
+You may build the Docker image locally from the current source code rather than obtaining it from the Docker Hub. Prior to building the image:
+
+* Ensure that you have no uncommitted source code changes.
+* Tag your HEAD commit in the format `v1.2.3-rc0`.
+* If you are a GovReady-Q maintainer, push the tag to Github.
+
+In the root directory of this repository, build the Docker image:
 
 	deployment/docker/docker_image_build.sh
 
-If you are a GovReady team member, you can then push the image to hub.docker.com:
+If you are a GovReady-Q maintainer, you can then push the image to hub.docker.com:
 
 	docker login
 	# respond to prompts with credentials
