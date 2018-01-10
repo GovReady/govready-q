@@ -1,4 +1,5 @@
 import sys
+import os.path
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
@@ -29,12 +30,14 @@ class Command(BaseCommand):
             sys.exit(1)
 
         # Create AppSources that we want.
-        AppSource.objects.get_or_create(
-            namespace="host",
-            defaults={
-                "spec": { "type": "local", "path": "/mnt/apps" }
-            }
-        )
+        if os.path.exists("/mnt/apps"):
+            # For our docker image.
+            AppSource.objects.get_or_create(
+                namespace="host",
+                defaults={
+                    "spec": { "type": "local", "path": "/mnt/apps" }
+                }
+            )
         AppSource.objects.get_or_create(
             namespace="samples",
             defaults={
