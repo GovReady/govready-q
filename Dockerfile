@@ -33,13 +33,15 @@ RUN ./fetch-vendor-resources.sh
 # infrequently changed steps above.)
 #
 # NOTE: Do *not* include the "local" directory in this step, since
-# that often has local development files.
+# that often has local development files. But *do* include fixtures
+# so that tests can be run.
 COPY VERSION ./VERSION
 COPY discussion ./discussion
 COPY guidedmodules ./guidedmodules
 COPY modules ./modules
 COPY siteapp ./siteapp
 COPY templates ./templates
+COPY fixtures ./fixtures
 COPY manage.py .
 COPY deployment/docker/first_run.sh .
 COPY deployment/docker/dockerfile_exec.sh .
