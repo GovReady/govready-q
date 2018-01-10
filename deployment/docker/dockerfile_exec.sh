@@ -43,17 +43,17 @@ fi
 mkdir -p /mnt/apps
 
 # Flatten static files.
-python manage.py collectstatic --noinput
+python3.6 manage.py collectstatic --noinput
 
 # Initialize the database.
-python manage.py migrate
-python manage.py load_modules
+python3.6 manage.py migrate
+python3.6 manage.py load_modules
 
 # Create an initial administrative user and organization
 # non-interactively and write the administrator's initial
 # password to standard output.
 if [ ! -z "$FIRST_RUN" ]; then
-	python manage.py first_run --non-interactive
+	python3.6 manage.py first_run --non-interactive
 fi
 
 # Write a file that indicates to the host that Q
@@ -62,4 +62,4 @@ echo "done" > ready
 echo "GovReady-Q is fully up and running."
 
 # Start the server. The port is fixed --- see docker_container_run.sh.
-python manage.py runserver 0.0.0.0:8000
+python3.6 manage.py runserver 0.0.0.0:8000

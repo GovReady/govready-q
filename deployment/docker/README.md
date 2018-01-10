@@ -215,11 +215,11 @@ If you are a GovReady-Q maintainer, you can then push the image to hub.docker.co
 GovReady-Q's unit tests can be run within the Docker container. Once the Docker container is started, use `exec` to begin a shell within the container, and then launch the unit tests:
 
 	docker container exec -it govready-q bash
-	python manage.py test guidedmodules
+	python3.6 manage.py test guidedmodules
 
 The functional tests run a headless Chromium web browser session and we have not yet figured out how to get this to work in our Docker container. Chromium's process isolation capabilities seem to require special system privileges (i.e. `docker run --privileged --cap-add SYS_ADMIN`) or Chromium command-line flags (`--no-sandbox --disable-gpu`).
 
 	yum install -y chromium chromedriver
-	python manage.py test
+	python3.6 manage.py test
 	...
 	selenium.common.exceptions.WebDriverException: Message: unknown error: Chrome failed to start: exited abnormally
