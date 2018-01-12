@@ -22,19 +22,36 @@ if ! git branch -r --contains | grep "^\s*origin/master$" > /dev/null; then
 	WARNINGS=1
 fi
 
-# Construct version information.
+# Determine the version from any tag of the HEAD commit
+# that starts with "v".
 VERSION_TAG_PATTERN="v*"
-if ! VERSION=$(git describe --tags --exact-match --match $VERSION_TAG_PATTERN 2> /dev/null); then
-	echo "WARNING: The HEAD commit is not tagged."
-	echo
-	WARNINGS=1
+if VERSION=$(git describe --tags --exact-match --match $VERSION_TAG_PATTERN 2> /dev/null); then
+	# Validate that the tag is a PEP440 "public version number",
+	# which is in the form N(.N)*[{a|b|rc}N][.postN][.devN].
+	python3 - "$VERSION" <<EOF;
+import sys
+from pkg_resources import parse_version, SetuptoolsVersion
+v = parse_version(sys.argv[1])
+if not isinstance(v, SetuptoolsVersion) or v.local:
+	print("ERROR: The version number {} is not a PEP440-compliant public version number.".format(repr(sys.argv[1])))
+	sys.exit(1)
+EOF
 
-	# Fall back to a recent tag or, if there are no tags (which should
-	# never occur after right now) the current commit number.
+else
+	# During development, we may be testing a build that
+	# is not yet tagged. In that case, pull the version
+	# number from `git describe` which gives a string
+	# composed of a recent tag, the number of commits
+	# that have occurred since that tag, and then a short
+	# hash of the current commit. It won't be PEP440-compliant.
 	if ! VERSION=$(git describe --long --tags --match $VERSION_TAG_PATTERN --always); then
-		echo "WARNING: Could not get a version string."
+		echo "WARNING: Could not get a version string. There is no recent tag in the pattern '$VERSION_TAG_PATTERN'."
 		exit 1
 	fi
+
+	echo "WARNING: The HEAD commit is not tagged. Using \`git describe\` instead."
+	echo
+	WARNINGS=1
 fi
 
 # Append the current commit hash as the second line of the VERSION file.
