@@ -14,15 +14,21 @@ class AppSourceSpecWidget(forms.Widget):
 		 forms.Select(choices=[
 		 	("null", "Null Source"),
 		 	("local", "Local Directory"),
-		 	("git", "Git Repository over SSH"),
+		 	("git-web", "Git Repository over HTTPS (Public Repository)"),
+		 	("git-ssh", "Git Repository over SSH (Private Repository)"),
 		 	("github", "Github Repository using Github API")]),
 		 "What kind of app source is it?",
 		 None),
-		("url",
+		("url-web",
 		 "URL",
 		 forms.TextInput(),
-		 "The URL to the git repository, usually in the format of git@github.com:orgname/reponame.",
-		 { "git" }),
+		 "The https: URL to a public git repository, e.g. https://github.com/GovReady/govready-q.",
+		 { "git-web" }),
+		("url-ssh",
+		 "SSH URL",
+		 forms.TextInput(),
+		 "The SSH URL to a private git repository, e.g. git@github.com:GovReady/govready-q.git.",
+		 { "git-ssh" }),
 		("repo",
 		 "Repository",
 		 forms.TextInput(),
@@ -41,8 +47,8 @@ class AppSourceSpecWidget(forms.Widget):
 		("ssh_key",
 		 "SSH Key",
 		 forms.Textarea(attrs={"rows": 3 }),
-		 "If the repository requires an SSH key for access, paste a private key here and send the public key to the repository owner (e.g. as a deploy key on Github and GitLab).",
-		 { "git" }),
+		 "Paste an SSH private key here and send the public key to the repository owner. For GitHub and Gitlab repositories, add the public key as a deploy key in the repository's settings.",
+		 { "git-ssh" }),
 		("_remaining_",
 		 "Other Parameters",
 		 forms.Textarea(attrs={"rows": 2 }),
@@ -56,6 +62,26 @@ class AppSourceSpecWidget(forms.Widget):
     	if isinstance(value, (str, type(None))):
     		import json, collections
     		value = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(value or "{}")
+
+    	# The 'url' key is represented by two different widgets
+    	# depending on if the URL is an HTTP or SSH URL.
+    	if value.get("type") == "git" and isinstance(value.get("url"), str):
+	    	import re
+	    	if value["url"].startswith("https:") or value["url"].startswith("http:"):
+	    		value["type"] = "git-web"
+	    		value["url-web"] = value["url"]
+	    		del value["url"]
+	    	elif re.match(r"(?P<user>[a-z_][a-z0-9_-]{0,29})@(?P<host>\S+):(?P<path>\S+)", value["url"]):
+	    		# This is a really cursory regex for one form of SSH URL
+	    		# that git recognizes, as user@host:path. There are
+	    		# remarkably no real requirements for a SSH username
+	    		# --- the regex here is tighter than is really required.
+	    		# But it's usually just "git" anyway.
+	    		value["type"] = "git-ssh"
+	    		value["url-ssh"] = value["url"]
+	    		del value["url"]
+	    	else:
+	    		raise ValueError(value)
 
     	def make_widget(key, label, widget, help_text, show_for_types):
     	    if key != "_remaining_":
@@ -118,6 +144,16 @@ class AppSourceSpecWidget(forms.Widget):
     		val = data.get(name + "_" + key)
     		if val:
     			value[key] = val
+
+    	# Map some data.
+    	if value.get("type") == "git-web":
+    		value["type"] = "git"
+    		value["url"] = str(value.get("url-web"))
+    		del value["url-web"]
+    	elif value.get("type") == "git-ssh":
+    		value["type"] = "git"
+    		value["url"] = str(value.get("url-ssh"))
+    		del value["url-ssh"]
 
     	return value
 
