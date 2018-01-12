@@ -17,7 +17,7 @@ fi
 
 # Check that the HEAD commit is pushed.
 if ! git branch -r --contains | grep "^\s*origin/master$" > /dev/null; then
-	echo "WARNING: Your branch is ahead of origin/master. Push first?"
+	echo "WARNING: Your branch is ahead of origin/master. Push first."
 	echo
 	WARNINGS=1
 fi
@@ -36,6 +36,16 @@ if not isinstance(v, SetuptoolsVersion) or v.local:
 	print("ERROR: The version number {} is not a PEP440-compliant public version number.".format(repr(sys.argv[1])))
 	sys.exit(1)
 EOF
+
+	# Validate that the tag is pushed (check that it exists on
+	# origin and refers to the same commit and, if applicable,
+	# has same annotated tag content).
+	LOCAL_TAG=$(git rev-parse $VERSION)
+	REMOTE_TAG=$(git ls-remote --tags origin $VERSION)
+	if [ "$REMOTE_TAG" != "$LOCAL_TAG	refs/tags/$VERSION" ]; then
+		echo "ERROR: The tag $VERSION is not present on origin or is different from the local tag. Run \`git push origin $VERSION\` first."
+		exit 1
+	fi
 
 else
 	# During development, we may be testing a build that
