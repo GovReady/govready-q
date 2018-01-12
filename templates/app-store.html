@@ -203,6 +203,13 @@ h2 {
   {% endif %}
 {% endfor %}
 
+{% if can_clear_catalog_cache %}
+<form style="margin: 30px 0;" method="post">
+  {% csrf_token %}
+  <button class="btn btn-warning pull-right">Clear App Catalog Cache</button>
+</form>
+{% endif %}
+
 {% endblock %}
 
 {% block scripts %}

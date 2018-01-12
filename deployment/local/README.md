@@ -19,27 +19,34 @@ You can also install this repository on your workstation to contribute to improv
 
 First, run the following commands to set up your local development environment:
 
-	# install python3 and pip appropriately for your environment
-	# below command demonstrates Ubuntu
-	sudo apt-get install python3-pip unzip libssl-dev pandoc xvfb wkhtmltopdf # or appropriate for your system
+	# Install Python 3, pip, and other system packages appropriately for your
+	# environment. The commands below demonstrate how to do this on Ubuntu 16.04:
+	sudo apt-get install python3-pip unzip libssl-dev pandoc xvfb wkhtmltopdf
 	
-	# clone repo
+	# Clone this repository.
 	git clone https://github.com/GovReady/govready-q
+	cd govready-q
 	
-	# install dependencies
+	# Install dependencies.
 	pip3 install -r requirements.txt
 	./fetch-vendor-resources.sh
 	
-	# set up database (sqlite3 will be used until you configure another database)
+	# Set up the database (sqlite3 will be used until you configure another database).
 	python3 manage.py migrate
 	python3 manage.py load_modules
 
-    # A default AppSource for https://github.com/GovReady/govready-sample-apps.
-    python3 manage.py loaddata deployment/docker/appsources.json
+Then create your admin account and an initial organization:
 
-Then create your admin account:
+	python3 manage.py first_run
 
-	python3 manage.py createsuperuser
+	Let's create your first Q user. This user will have superuser privileges in the Q administrative interface.
+	Username: admin
+	Email address: you@example.com
+	Password: *********
+	Password (again): *********
+	Superuser created successfully.
+	Let's create your Q organization.
+	Organization Name: The Secure Company
 
 And start the debug server:
 
@@ -60,13 +67,11 @@ This file is important for persisting login sessions, and you can provide other 
 
 Q is designed for the enterprise, so all end-user interactions with Q are on segregated subdomains called "organizations". You must set up the first organization.
 
-Visit [http://localhost:8000/](http://localhost:8000) and sign in with the superuser account that you created above. Then on the left side of the page, create your first organization:
+Visit [http://localhost:8000/admin](http://localhost:8000/admin) and sign in with the administrative account that you created above. Then on the left side of the page, click Organizations. An organization named `main` will be shown (it was created by the `first_run` script above).
 
-![New Organization](assets/new_org.png)
+Each organization is accessed on its own subdomain. The `main` organization will be at `http://main.localhost:8000`. We recommend using Google Chrome at this point. Other browsers will not be able to resolve organization subdomains on `localhost` unless you add a hostname record [to your hosts file](https://support.rackspace.com/how-to/modify-your-hosts-file/), e.g. `127.0.0.1 main.localhost`. If you want to change the subdomain, do so now. Then click Save and Continue Editing at the bottom of the page.
 
-Follow the instructions to visit your site's subdomain, e.g. at [http://my-first-organization.localhost:8000](http://my-first-organization.localhost:8000). We recommend using Google Chrome at this point. Other browsers will not be able to resolve organization subdomains on `localhost` unless you add `127.0.0.1 my-first-organization.localhost` [to your hosts file](https://support.rackspace.com/how-to/modify-your-hosts-file/).
-
-When you log in for the first time it will ask you questions about the user and about the organization.
+Click View On Site at the top of the page to go to the organization's landing page at http://main.localhost:8000. Then log in with your credentials again.
 
 ## Invitations on local systems
 

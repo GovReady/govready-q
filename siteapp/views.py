@@ -89,7 +89,7 @@ def folder_view(request, folder_id):
         "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
     })
 
-def get_compliance_apps_catalog(organization):
+def get_compliance_apps_catalog(organization, reset_cache=False):
     # Load the compliance apps available to the given organization.
     # Since accessing remote AppSources is an expensive operation,
     # cache the catalog information.
@@ -111,7 +111,7 @@ def get_compliance_apps_catalog(organization):
         cache_key = "compliance_catalog_source_{}".format(appsrc.id)
         cache_stale_key = appsrc.make_cache_stale_key()
         cached_apps = cache.get(cache_key, (None, None))
-        if cached_apps[0] != cache_stale_key:
+        if cached_apps[0] != cache_stale_key or reset_cache:
             # Connect to the remote app data...
             with appsrc.open() as appsrc_connection:
                 # Iterate through all of the apps provided by this source.
@@ -237,6 +237,13 @@ def filter_app_catalog(catalog, request):
 
 @login_required
 def apps_catalog(request):
+    # A POST from a Django user with permission on AppSources
+    # clears the catalog cache.
+    can_clear_catalog_cache = request.user.has_perm('guidedmodules.appsource_change')
+    if request.method == "POST" and can_clear_catalog_cache:
+        get_compliance_apps_catalog(request.organization, reset_cache=True)
+        return HttpResponseRedirect(request.path)
+
     # We use the querystring to remember which question the user is selecting
     # an app to answer, when starting an app from within a project.
     from urllib.parse import urlencode
@@ -280,6 +287,7 @@ def apps_catalog(request):
         "apps": catalog_by_category,
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
+        "can_clear_catalog_cache": can_clear_catalog_cache,
     })
 
 @login_required
