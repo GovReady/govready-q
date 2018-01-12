@@ -19,5 +19,5 @@ done
 # the user starting the container may want to bind-mount to a
 # directory on the host for building their own apps. That directory
 # must exist and is created in dockerfile_exec.sh.
-python manage.py first_run
+python3.6 manage.py first_run
 

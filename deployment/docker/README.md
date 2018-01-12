@@ -194,12 +194,32 @@ For example:
 
 ## Building and publishing the Docker image for GovReady-Q maintainers
 
-You may build the Docker image locally from the current source code rather than obtaining it from the Docker Hub. In the root directory of this repository, build the Docker image:
+You may build the Docker image locally from the current source code rather than obtaining it from the Docker Hub. Prior to building the image:
+
+* Ensure that you have no uncommitted source code changes.
+* Tag your HEAD commit in the format `v1.2.3-rc0`.
+* If you are a GovReady-Q maintainer, push the tag to Github.
+
+In the root directory of this repository, build the Docker image:
 
 	deployment/docker/docker_image_build.sh
 
-If you are a GovReady team member, you can then push the image to hub.docker.com:
+If you are a GovReady-Q maintainer, you can then push the image to hub.docker.com:
 
 	docker login
 	# respond to prompts with credentials
 	docker image push govready/govready-q
+
+## Running tests
+
+GovReady-Q's unit tests can be run within the Docker container. Once the Docker container is started, use `exec` to begin a shell within the container, and then launch the unit tests:
+
+	docker container exec -it govready-q bash
+	python3.6 manage.py test guidedmodules
+
+The functional tests run a headless Chromium web browser session and we have not yet figured out how to get this to work in our Docker container. Chromium's process isolation capabilities seem to require special system privileges (i.e. `docker run --privileged --cap-add SYS_ADMIN`) or Chromium command-line flags (`--no-sandbox --disable-gpu`).
+
+	yum install -y chromium chromedriver
+	python3.6 manage.py test
+	...
+	selenium.common.exceptions.WebDriverException: Message: unknown error: Chrome failed to start: exited abnormally
