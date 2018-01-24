@@ -60,13 +60,11 @@ def validate_module(spec, is_authoring_tool=False):
         else:
             raise ValidationError("module specification", "protocol must be a string or a list of strings (not %s)." % repr(spec["protocol"]))
 
-    if not is_authoring_tool:
-        # Validate the questions.
-        # The authoring tool does not provide questions data.
-        if not isinstance(spec.get("questions"), list):
-            raise ValidationError("module questions", "Invalid value for 'questions'.")
-        for i, q in enumerate(spec.get("questions", [])):
-        	spec["questions"][i] = validate_question(spec, spec["questions"][i])
+    # Validate the questions.
+    if not isinstance(spec.get("questions"), (type(None), list)):
+        raise ValidationError("module questions", "Invalid data type of value for 'questions'.")
+    for i, q in enumerate(spec.get("questions", [])):
+        spec["questions"][i] = validate_question(spec, spec["questions"][i])
 
     return spec
 
