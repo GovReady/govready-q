@@ -185,6 +185,7 @@ class AppSourceAdmin(admin.ModelAdmin):
 	form = AppSourceAdminForm # customize spec widget
 	list_display = ('slug', 'source', 'flags')
 	filter_horizontal = ('available_to_orgs',)
+	readonly_fields = ('is_system_source',)
 	def source(self, obj):
 		return obj.get_description()
 	def flags(self, obj):
