@@ -147,7 +147,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
               # this one exists on first db load because it's created by
               # migrations, but because the testing framework seems to
               # get rid of it after the first test in this class 
-            namespace="system",
+            slug="system",
             is_system_source=True,
             defaults={
                 "spec": { # required system projects
@@ -157,7 +157,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             }
         )
         AppSource.objects.create(
-            namespace="project",
+            slug="project",
             spec={ # contains a test project
                 "type": "local",
                 "path": "fixtures/modules/other",

@@ -33,13 +33,13 @@ class Command(BaseCommand):
         if os.path.exists("/mnt/apps"):
             # For our docker image.
             AppSource.objects.get_or_create(
-                namespace="host",
+                slug="host",
                 defaults={
                     "spec": { "type": "local", "path": "/mnt/apps" }
                 }
             )
         AppSource.objects.get_or_create(
-            namespace="samples",
+            slug="samples",
             defaults={
                 "spec": { "type": "git", "url": "https://github.com/GovReady/govready-sample-apps" }
             }

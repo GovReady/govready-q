@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with MultiplexedAppSourceConnection(ms for ms in AppSource.objects.all()) as store:
             for app in store.list_apps():
-                print(app.store.source.namespace, app.name)
+                print(app.store.source.slug, app.name)
 
 
 

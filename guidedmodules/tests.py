@@ -15,7 +15,7 @@ class TestCaseWithFixtureData(TestCase):
         from guidedmodules.management.commands.load_modules import Command as load_modules
         from guidedmodules.module_sources import MultiplexedAppSourceConnection
         src = AppSource.objects.create(
-            namespace="fixture",
+            slug="fixture",
             spec={
                 "type": "local",
                 "path": "fixtures/modules/other",

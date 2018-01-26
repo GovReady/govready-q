@@ -15,7 +15,7 @@ ModulePythonCode = { }
 
 class AppSource(models.Model):
     is_system_source = models.BooleanField(default=False, help_text="This field is set to True for a single AppSource that holds the system modules such as user profiles.")
-    namespace = models.CharField(max_length=200, unique=True, help_text="The namespace that modules loaded from this source are added into.")
+    slug = models.CharField(max_length=200, unique=True, help_text="A unique URL-safe string that names this AppSource.")
     spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
 
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
@@ -29,7 +29,7 @@ class AppSource(models.Model):
 
     def __str__(self):
         # for the admin
-        return self.namespace
+        return self.slug
 
     def get_description(self):
         if self.spec["type"] == "null":
@@ -136,7 +136,7 @@ class Module(models.Model):
         from collections import OrderedDict
         return serializer.serializeOnce(
             self,
-            "module:" + self.app.source.namespace + "/" + self.app.appname + "/" + self.module_name, # a preferred key, doesn't need to be unique here
+            "module:" + self.app.source.slug + "/" + self.app.appname + "/" + self.module_name, # a preferred key, doesn't need to be unique here
             lambda : OrderedDict([  # "lambda :" makes this able to be evaluated lazily
                 ("key", self.module_name),
                 ("created", self.created.isoformat()),

@@ -175,7 +175,7 @@ class AppSourceAdminForm(forms.ModelForm):
 		if not self.errors:
 			# Validate that the AppSource can actually connect to the source.
 			try:
-				with AppSource(namespace=self.cleaned_data["namespace"], spec=self.cleaned_data["spec"]).open() as store:
+				with AppSource(slug=self.cleaned_data["slug"], spec=self.cleaned_data["spec"]).open() as store:
 					pass
 			except Exception as e:
 				raise forms.ValidationError(str(e))
@@ -183,7 +183,7 @@ class AppSourceAdminForm(forms.ModelForm):
 
 class AppSourceAdmin(admin.ModelAdmin):
 	form = AppSourceAdminForm # customize spec widget
-	list_display = ('namespace', 'source', 'flags')
+	list_display = ('slug', 'source', 'flags')
 	filter_horizontal = ('available_to_orgs',)
 	def source(self, obj):
 		return obj.get_description()

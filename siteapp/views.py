@@ -144,7 +144,7 @@ def render_app_catalog_entry(app):
             catalog_info = dict(app.get_catalog_info())
 
             catalog_info["appsource_id"] = app.store.source.id
-            catalog_info["key"] = "{source}/{name}".format(source=app.store.source.namespace, name=app.name)
+            catalog_info["key"] = "{source}/{name}".format(source=app.store.source.slug, name=app.name)
 
             catalog_info.setdefault("description", {})
 
@@ -403,7 +403,7 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
     from guidedmodules.models import AppSource
 
     # If the first argument is a string, it's an app id of the
-    # form "namespace/appname". Get the catalog info.
+    # form "source/appname". Get the catalog info.
     if isinstance(app_catalog_info, str):
         for app in get_compliance_apps_catalog(organization):
             if app["key"] == app_catalog_info:
@@ -424,7 +424,7 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
             # 1) Get the connection to the AppSource.
             with module_source.open() as store:
                 # 2) Get the App.
-                app_name = app_catalog_info["key"][len(module_source.namespace)+1:]
+                app_name = app_catalog_info["key"][len(module_source.slug)+1:]
                 app = store.get_app(app_name)
 
                 # 3) Re-validate that the catalog information is the same.

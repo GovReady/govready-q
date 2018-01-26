@@ -16,7 +16,7 @@ class DiscussionTests(SeleniumTest):
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
         AppSource.objects.create(
-            namespace="fixture",
+            slug="fixture",
             spec={
                 "type": "local",
                 "path": "fixtures/modules/other",
