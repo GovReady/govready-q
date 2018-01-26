@@ -152,7 +152,7 @@ This Spec string says to find module YAML files on the local file system at the 
 
 In addition to the Spec string, each Module Source has a namespace. Each source binds a namespace in your local deployment to a source of modules.
 
-All deployments must have a Module Source that binds the `system` namespace to the modules at the local path `modules/system`, as in the Spec string above. This Module Source is created during the first run of `manage.py migrate` for you.
+All deployments must have an AppSource for the system modules at the local path `modules/system`, as in the Spec string above. This AppSource is created during the first run of `manage.py migrate` for you.
 
 The `Spec` field of Module Sources can be of these types (explanation follows below):
 

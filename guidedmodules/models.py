@@ -14,6 +14,7 @@ from siteapp.models import User, Organization, Project, ProjectMembership
 ModulePythonCode = { }
 
 class AppSource(models.Model):
+    is_system_source = models.BooleanField(default=False, help_text="This field is set to True for a single AppSource that holds the system modules such as user profiles.")
     namespace = models.CharField(max_length=200, unique=True, help_text="The namespace that modules loaded from this source are added into.")
     spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
 

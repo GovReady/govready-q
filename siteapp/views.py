@@ -103,7 +103,7 @@ def get_compliance_apps_catalog(organization, reset_cache=False):
     # For each AppSource....
     for appsrc in AppSource.objects.all():
         # System apps are not listed the compliance apps catalog.
-        if appsrc.namespace == "system":
+        if appsrc.is_system_source:
             continue
 
         # If we don't have cached catalog info for this source...

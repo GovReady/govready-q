@@ -183,10 +183,14 @@ class AppSourceAdminForm(forms.ModelForm):
 
 class AppSourceAdmin(admin.ModelAdmin):
 	form = AppSourceAdminForm # customize spec widget
-	list_display = ('namespace', 'source')
+	list_display = ('namespace', 'source', 'flags')
 	filter_horizontal = ('available_to_orgs',)
 	def source(self, obj):
 		return obj.get_description()
+	def flags(self, obj):
+		flags = []
+		if obj.is_system_source: flags.append("SYSTEM")
+		return ", ".join(flags)
 
 class AppInstanceAdmin(admin.ModelAdmin):
 	list_display = ('appname', 'source', 'system_app')

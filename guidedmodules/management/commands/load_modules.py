@@ -11,7 +11,7 @@ class Command(BaseCommand):
         parser.add_argument('force', nargs="?", type=bool)
 
     def handle(self, *args, **options):
-        with AppSource.objects.get(namespace="system").open() as store:
+        with AppSource.objects.get(is_system_source=True).open() as store:
             for app in store.list_apps():
                 # Update an existing instance of the app if the changes are compatible
                 # with the existing data model.

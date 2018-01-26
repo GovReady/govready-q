@@ -148,6 +148,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
               # migrations, but because the testing framework seems to
               # get rid of it after the first test in this class 
             namespace="system",
+            is_system_source=True,
             defaults={
                 "spec": { # required system projects
                     "type": "local",

@@ -22,7 +22,7 @@ class Command(BaseCommand):
         # modules exist (since we need them before creating an Organization).
         try:
             if not Module.objects.filter(
-                app__source__namespace="system", app__appname="organization",
+                app__source__is_system_source=True, app__appname="organization",
                 app__system_app=True, module_name="app").exists():
                 raise OperationalError() # to trigger below
         except OperationalError:
