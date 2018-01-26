@@ -461,8 +461,8 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         self.repo.git.environment()["GIT_SSH_COMMAND"] = ssh_options
 
         # For debugging, log a command that we could try on the command line.
-        print("SSH_COMMAND=\"{ssh_options}\" git fetch --depth 1 {url} {branch}".format(
-            ssh_options=ssh_options, url=self.url, branch=self.branch), file=sys.stderr)
+        #print("SSH_COMMAND=\"{ssh_options}\" git fetch --depth 1 {url} {branch}".format(
+        #    ssh_options=ssh_options, url=self.url, branch=self.branch), file=sys.stderr)
 
         # Fetch.
         import git.exc
