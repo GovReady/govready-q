@@ -113,7 +113,7 @@ class MultiplexedAppSourceConnection(AppSourceConnection):
             try:
                 self.loaders.append(AppSourceConnection.create(ms))
             except ValueError as e:
-                raise ValueError('There was an error creating the AppSource named "{}": {}'.format(ms.namespace, e))
+                raise ValueError('There was an error creating the AppSource "{}": {}'.format(ms.slug, e))
 
     # Override "with ...:" semantics
     def __enter__(self):
@@ -157,8 +157,8 @@ class PyFsAppSourceConnection(AppSourceConnection):
             self.root = self.fsfunc()
         except AppSourceConnectionError as e:
             raise AppSourceConnectionError(
-                'There was an error accessing the AppSource named "{}" which connects to {}. The error was: {}'.format(
-                    self.source.namespace,
+                'There was an error accessing the AppSource "{}" which connects to {}. The error was: {}'.format(
+                    self.source.slug,
                     self.source.get_description(),
                     str(e)
                 ))
@@ -606,7 +606,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
         raise ValidationError(module_id, "module", "Module 'id' field (%s) doesn't match source file path (\"%s\")." % (repr(spec.get("id")), module_id))
 
     # Replace spec["id"] (just the last part of the path) with the full module_id
-    # (a full path, minus .yaml) **not** including its namespace. The id is used
+    # (a full path, minus .yaml) relative to the root of the app. The id is used
     # in validate_module to resolve references to other modules.
     spec["id"] = module_id
 

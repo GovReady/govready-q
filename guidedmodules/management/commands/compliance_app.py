@@ -25,7 +25,7 @@ class Command(BaseCommand):
             print("Specify one of the following app sources:")
             for appsrc in AppSource.objects.all():
                 if appsrc.spec["type"] == "local" and appsrc.spec.get("path"):
-                    print(appsrc.namespace, "(path: " + appsrc.spec["path"] + ")")
+                    print(appsrc.slug, "(path: " + appsrc.spec["path"] + ")")
             return
 
         elif options["path"]:
@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
             # Create a new AppSource.
             appsrc = AppSource.objects.create(
-                namespace=options["appsource"],
+                slug=options["appsource"],
                 spec={ "type": "local", "path": options["path"] }
             )
 
@@ -51,7 +51,7 @@ class Command(BaseCommand):
         else:
             # Ok do the real work.
 
-            appsrc = AppSource.objects.get(namespace=options["appsource"])
+            appsrc = AppSource.objects.get(slug=options["appsource"])
 
             # Do we have a path?
             if not appsrc.spec.get("path"):

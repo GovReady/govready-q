@@ -2,10 +2,13 @@ from django.conf import settings
 from jinja2.sandbox import SandboxedEnvironment
 
 def get_jinja2_template_vars(template):
-    from jinja2 import meta
-    from jinja2.sandbox import SandboxedEnvironment
+    from jinja2 import meta, TemplateSyntaxError
     env = SandboxedEnvironment()
-    return set(meta.find_undeclared_variables(env.parse(template)))
+    try:
+        expr = env.parse(template)
+    except TemplateSyntaxError as e:
+        raise Exception("expression {} is invalid: {}".format(template, e))
+    return set(meta.find_undeclared_variables(expr))
 
 
 class Jinja2Environment(SandboxedEnvironment):
@@ -769,13 +772,13 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
     for rule in question.spec.get("impute", []):
         if "condition" in rule:
             for qid in get_jinja2_template_vars(
-                    r"{% if " + rule["condition"] + r" %}...{% endif %}"
+                    r"{% if (" + rule["condition"] + r") %}...{% endif %}"
                     ):
                 ret.append(("impute-condition", qid))
 
         if rule.get("value-mode") == "expression":
             for qid in get_jinja2_template_vars(
-                    r"{% if " + rule["value"] + r" %}...{% endif %}"
+                    r"{% if (" + rule["value"] + r") %}...{% endif %}"
                     ):
                 ret.append(("impute-value", qid))
 
