@@ -260,10 +260,13 @@
 
 
             {% for group in tab.groups.values %}
-            <div class="row question-group">
+            <div class="question-group">
+
               {% if tab.groups.values|length > 1 %}
               <div class="question-group-title">{{group.title}}</div>
               {% endif %}
+
+              <div class="row">
 
               {% for rec in group.modules %}
                 <div id="question-{{rec.question.key}}"
@@ -447,6 +450,7 @@
                   </div> <!-- /.question-body -->
                 </div> <!-- /#question-__.question -->
               {% endfor %}
+              </div> <!-- /row -->
               </div> <!-- /question-group -->
             {% endfor %}
         </div> <!-- /.tabpanel -->
