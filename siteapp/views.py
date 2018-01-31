@@ -754,6 +754,7 @@ def project(request, project):
     folder = project.primary_folder()
     return render(request, "project.html", {
         "is_project_page": True,
+        "page_title": "Components",
         "project": project,
 
         "is_admin": request.user in project.get_admins(),
@@ -811,6 +812,7 @@ def project_list_all_answers(request, project):
 
     from guidedmodules.models import TaskAnswerHistory
     return render(request, "project-list-answers.html", {
+        "page_title": "Review Answers",
         "project": project,
         "folder": project.primary_folder(),
         "answers": sections,
@@ -880,6 +882,7 @@ def project_outputs(request, project):
         combined_output += "<div>" + content + "</div>\n\n"
 
     return render(request, "project-outputs.html", {
+        "page_title": "Related Controls",
         "project": project,
         "folder": project.primary_folder(),
         "toc": toc,
@@ -986,6 +989,7 @@ def project_api(request, project):
     make_schema(["project"], project.root_task, project.root_task.module)
 
     return render(request, "project-api.html", {
+        "page_title": "API Documentation",
         "project": project,
         "folder": project.primary_folder(),
         "SITE_ROOT_URL": settings.SITE_ROOT_URL,

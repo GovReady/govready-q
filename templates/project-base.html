@@ -8,7 +8,6 @@
   float: left;
   margin: 0 1em 1em 0;
   width: 75px;
-  border: 1px solid #999;
 }
 
 h1 {
@@ -30,37 +29,33 @@ div.subtitle {
 </style>
 {% endblock %}
 
-{% block contextbar %}
-  {# kill #}
-{% endblock %}
-
-{% block body %}
-<div id="folder-project-context" style="margin-bottom: 20px;">
-  <p style="font-size: 120%;">
-    <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-    <a id="folder-link" href="{{folder.get_absolute_url}}" data-folder-id="{{folder.id}}">{{folder.title}}</a>
-    {% if is_folder_admin %}
-      <span class="folder_action" onclick="rename_folder();"><span class="glyphicon glyphicon-pencil"></span></span>
-    {% endif %}
-  </p>
-  <p style="font-size: 90%;margin-top:20px;">
+{% block breadcrumbs %}
+  {% if folder %}
+  <li>
+    <a id="folder-link" href="{{folder.get_absolute_url}}" data-folder-id="{{folder.id}}" title="{{folder.title}}">
+      <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
+    </a>
+  </li>
+  {% endif %}
   {% for parent_project in project.get_parent_projects %}
     {% if not forloop.counter == 1 %} &gt; {% endif %}
+    <li>
     <a href="{{parent_project.get_absolute_url}}" style="margin-left: .25em">
       {{parent_project.title}}
     </a>
+    </li>
   {% endfor %}
-  {% if not is_project_page %}
+    <li>
     <a href="{{project.get_absolute_url}}">
       {{project.title}}
     </a>
-  {% endif %}
-  {% if project.get_parent_projects|length > 0 %}
-  &gt;
-  {% endif %}
-  {{project.title}}
-</div>
+    </li>
+  <li class="active">
+    {{page_title}}
+  </li>
+{% endblock %}
 
+{% block body %}
 <div class="row">
   {% if is_project_page %}
   <div class="col-md-push-10 col-md-2">
