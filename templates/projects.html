@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+Your Compliance Projects
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">Your Compliance Projects</li>
+{% endblock %}
+
+{% block head %}
+<style>
+h1 {
+  margin: 15px 0 30px 0;
+}
+
+.btn .glyphicon { margin-right: 6px; }
+.btn.btn-success .glyphicon { color: #FFF; }
+
+.lifecycle {
+  margin-bottom: 30px;
+}
+.lifecycle h2 {
+  margin: 0 0 1em 0;
+}
+.lifecycle .stage {
+  min-height: 33vh;
+  margin: 0 -15px;
+  background-color: #FBFBFD;
+  border: 1px solid #DBDBDC;
+}
+  .lifecycle .stage h3 {
+    margin: 0;
+    font-weight: bold;
+    padding: 10px 15px 0 15px;
+  }
+  .lifecycle .stage .stage-subhead {
+    padding: 5px 15px;
+    border-bottom: 1px solid #999;
+  }
+
+  .project {
+    margin: 1em 7px;
+    padding: 10px 7px;
+    border: 1px solid #D5D5D5;
+    background-color: white;
+  }
+    .project-image {
+      display: inline-block;
+      width: 2em;
+      height: 2em;
+      vertical-align: top;
+      margin-right: 7px;
+    }
+    .project-text {
+      display: inline-block;
+    }
+    .project h4 {
+      margin: 0;
+      font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+{% comment %}
+{% if request.user.can_see_org_settings and not request.organization.get_organization_project.root_task.is_finished %}
+  <h2>Complete your organization profile</h2>
+  <p>Fill out your <a href="{{request.organization.get_organization_project.get_absolute_url}}">your organization&rsquo;s profile</a>.</p>
+{% endif %}
+{% endcomment %}
+
+<div style="float: right; margin: 0 0 1em 5em;">
+  <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add app </a>
+  {% if is_lonely_admin %}
+  <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
+  {% endif %}
+</div>
+
+<h1>Your Compliance Projects</h1>
+
+{% for lifecycle in lifecycles %}
+  <div class="clearfix"></div>
+  <div class="lifecycle">
+    <h2>{{lifecycle.label}}</h2>
+    <div class="row">
+      {% for stage in lifecycle.stages %}
+        <div class="{% for w in lifecycle.stage_col_width %}col-{{w}} {% endfor %}">
+          <div class="stage">
+            {% if stage.label %}
+              <h3>{{stage.label}}</h3>
+            {% endif %}
+            {% if stage.subhead %}
+              <div class="stage-subhead">{{stage.subhead}}</div>
+            {% endif %}
+
+            {% for project in stage.projects %}
+              <div class="project" data-project-id="{{project.id}}">
+                {% if project.root_task.get_app_icon_url %}
+                  <a href="{{project.get_absolute_url}}" class="project-image">
+                    <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive">
+                  </a>
+                {% endif %}
+
+                <div class="project-text">
+                  <h4>
+                    <a href="{{project.get_absolute_url}}">
+                      {{project.title}}
+                    </a>
+
+                    {# how many open tasks for the user? #}
+                    {% with project.open_tasks|length as count %}
+                      {% if count > 0 %}
+                        <span class="label label-primary">{{count}}</span>
+                      {% endif %}
+                    {% endwith %}
+                  </h4>
+
+                  {# what kind of project is this #}
+                  {% if project.root_task.module.title != project.title %}
+                    <p class="small" style="margin-top: .5em">
+                      {{project.root_task.module.title}}
+                    </p>
+                  {% endif %}
+
+                  {% with snippet=project.render_snippet %}
+                    {% if snippet %}
+                      <div class="small" style="margin-top: .5em">
+                        {{project.render_snippet|safe}}
+                      </div>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+
+                <div class="clearfix"></div>
+              </div> <!-- /project -->
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+{% if is_lonely_admin %}
+function show_invite_to_org() {
+  show_invite_modal(
+    'Invite To {{request.organization.name|escapejs}}',
+    'Invite a colleague to join your organization on GovReady-Q.',
+    {{send_invitation|json}},
+    'Please join me on GovReady-Q to work on compliance for {{request.organization.name|escapejs}}.',
+    {
+      project: {{request.organization.get_organization_project.id}},
+      add_to_team: "1"
+    },
+    function() { }
+  );
+}
+{% endif %}
+</script>
+{% endblock %}
