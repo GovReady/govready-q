@@ -939,13 +939,18 @@ class ModuleAnswers(object):
                 self.rendered_content = None
                 self.use_data_urls = use_data_urls
             def __iter__(self):
+                # Yield all of the keys that are in the output document
+                # specification, plus all of the output formats which are
+                # keys in our returned dict that lazily render the document.
                 for key, value in self.document.items():
                     if key != "html":
                         yield key
-                    yield "html"
+                yield "html"
             def __getitem__(self, key):
                 if key == "html":
                     if self.rendered_content is None:
+                        # Cache miss.
+
                         # For errors, what is the name of this document?
                         if "id" in self.document:
                             doc_name = self.document["id"]
@@ -965,9 +970,14 @@ class ModuleAnswers(object):
                             self.rendered_content = "<p class=text-danger>" + html.escape(str(e)) + "</p>"
 
                     return self.rendered_content
+
                 elif key in self.document:
+                    # key is a key in the specification for the document.
+                    # Return it unchanged.
                     return self.document[key]
+
                 raise KeyError(key)
+                
             def get(self, key, default=None):
                 if key == "html" or key in self.document:
                     return self[key]
