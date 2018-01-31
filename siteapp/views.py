@@ -780,9 +780,14 @@ def project_outputs(request, project):
              + "\n\n"
              + "# " + html.escape(title)
              + "\n\n" ),
+        "text": lambda anchor, title : (
+               "\n\n"
+             + title
+             + "\n\n" ),
     }
     joiner = {
         "markdown": "\n\n",
+        "text": "\n\n",
     }
     toc = []
     combined_output = ""
