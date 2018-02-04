@@ -1858,8 +1858,15 @@ def image_to_dataurl(f, size):
     from PIL import Image
     from io import BytesIO
     import base64
-    if isinstance(f, bytes): f = BytesIO(f)
-    im = Image.open(f)
+    if isinstance(f, Image.Image):
+        # If a PIL.Image is passed in, then use it.
+        im = f.copy()
+    else:
+        # Either a bytes stream (e.g. BytesIO) or a bytes string are passed in.
+        # If a string, convert to a stream. Then load using PIL.Image.open.
+        if isinstance(f, bytes):
+            f = BytesIO(f)
+        im = Image.open(f)
     im.thumbnail((size, size))
     buf = BytesIO()
     im.save(buf, "png")
