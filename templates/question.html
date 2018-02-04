@@ -42,9 +42,6 @@ h1 {
 {% endif %}
 
 {% if q.spec.type == "interstitial" %}
-#question-prompt {
-  margin-bottom: 20px;
-}
   #question img {
     display: block; /* so that horizontal auto margin centers */
     margin: 30px auto;
@@ -65,6 +62,10 @@ h1 {
 
 label .onhover { display: none; }
 label:hover .onhover { display: inline; }
+
+#action-buttons {
+  margin: 25px 0;
+}
 
 #reference-text-wrapper *:first-child { margin-top: 0; }
 
@@ -350,12 +351,12 @@ label:hover .onhover { display: inline; }
               <p class="help-block">Your answer will be encrypted and will only be available to you when accessed from this web browser within the next {{ephemeral_encryption_lifetime}}.</p>
             {% endif %}
 
-            <div style="margin: 0px 0px 20px 0px;" >&nbsp;</div>
-
             {% if not is_answerable %}
             	<p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
 
             {% elif write_priv %}
+            <div id="action-buttons">
+
             <button id="save-button"
               type="submit" class="btn btn-success"
               onclick="$('#question > form input[name=method]').val('save')">
@@ -417,13 +418,8 @@ label:hover .onhover { display: inline; }
         </span>
         {% endif %}
 
-
-            {% if not is_discussion_guest %}
-            {% if not task.project.is_account_project or task.can_transfer_owner %}
-            {% endif %}
-            {% endif %}
-
             {% endif %} {# not interstitial #}
+        </div> <!-- /action-buttons -->
 
             {% if answer_obj and can_review %}
               <select style="display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this)">
