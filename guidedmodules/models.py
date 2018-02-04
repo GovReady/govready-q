@@ -1854,12 +1854,13 @@ class InstrumentationEvent(models.Model):
             ('module', 'event_type', 'event_time'),
         ]
 
-def image_to_dataurl(f, max_image_size):
+def image_to_dataurl(f, size):
     from PIL import Image
     from io import BytesIO
     import base64
+    if isinstance(f, bytes): f = BytesIO(f)
     im = Image.open(f)
-    im.thumbnail((max_image_size, max_image_size))
+    im.thumbnail((size, size))
     buf = BytesIO()
-    im.save(buf, "PNG")
+    im.save(buf, "png")
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")

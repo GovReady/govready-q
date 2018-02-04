@@ -178,17 +178,13 @@ def render_app_catalog_entry(app):
                 catalog_info["description"]["long"],
             ])
 
-            # Convert the app icon to a data URL.
+            # Convert the app icon raw bytes data to a data URL.
             if "app-icon" in catalog_info:
-                import io, base64
-                from PIL import Image
-                im = Image.open(io.BytesIO(catalog_info["app-icon"]))
-                im.thumbnail((128,128))
-                buf = io.BytesIO()
-                im.save(buf, 'png')
-                catalog_info["app_icon_dataurl"] = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+                from guidedmodules.models import image_to_dataurl
+                catalog_info["app_icon_dataurl"] = image_to_dataurl(catalog_info["app-icon"], 128)
 
             return catalog_info
+
 
 def get_task_question(request):
     # Filter catalog by apps that satisfy the right protocol.
