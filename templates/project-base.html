@@ -6,12 +6,20 @@
 
 #project-icon {
   float: left;
-  margin: 0 1em 1em 0;
-  width: 75px;
+  margin: 0 1.5em 1em 0;
+  {% if title == project.root_task.module.spec.title %}
+   /* if there's no subhead, match icon size to font size */
+    width: 50px;
+    height: 50px;
+  {% else %}
+    width: 80px;
+    height: 80px;
+  {% endif %}
 }
 
 h1 {
   margin: 0;
+  font-size: 50px;
 }
 
 #project-status-bar {
@@ -31,7 +39,7 @@ h1 {
     }
 
 div.subtitle {
-  margin: .25em 0 .75em 0;
+  margin: .2em 0 .75em 0;
   font-weight: bold;
 }
 
