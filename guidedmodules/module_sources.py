@@ -793,7 +793,9 @@ def is_module_changed(m, source, spec, asset_pack):
     # An incompatible change is the removal of a question, the change
     # of a question type, or the removal of choices from a choice
     # question --- anything that would cause a TaskQuestion/TaskAnswer
-    # to have invalid data.
+    # to have invalid data. If a question has never been answered, then
+    # this does not apply because there is no data that would become
+    # corrupted.
     qs = set()
     for definition_order, q in enumerate(spec.get("questions", [])):
         mq = ModuleQuestion.objects.filter(module=m, key=q["id"]).first()
@@ -812,9 +814,16 @@ def is_module_changed(m, source, spec, asset_pack):
         qs.add(mq)
 
     # Were any questions removed?
-    for q in m.questions.all():
-        if q not in qs:
-            return "Question %s was removed." % q.key
+    for mq in m.questions.all():
+        if mq in qs:
+            continue
+
+        # If this question has never been answered, then anything is fine.
+        if mq.taskanswer_set.count() == 0:
+            return False
+
+        # The removal of this question is an incompatible change.
+        return "Question %s was removed." % mq.key
 
     # The changes will not create any data inconsistency.
     return False
