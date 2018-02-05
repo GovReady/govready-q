@@ -35,6 +35,18 @@ h1 {
     color: #777;
   }
 
+#question-prompt blockquote {
+  font-size: inherit;
+}
+
+/* since prompts will likely use Markdown ##'s to delimit sections,
+    which we render as h3 because we demote all levels, re-adjust
+    styles */
+#question-prompt h3 {
+  font-size: 110%;
+  font-weight: bold;
+}
+
 {% if q.spec.type == "module" %}
 #question .radio label {
   margin: .25em 0;
