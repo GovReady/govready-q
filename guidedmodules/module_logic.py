@@ -1255,7 +1255,9 @@ class RenderedAnswer:
             if len(self.answer) == 0:
                 value = "<nothing chosen>"
             else:
-                value = ", ".join(get_question_choice(self.question, c)["text"] for c in self.answer)
+                choices = [get_question_choice(self.question, c)["text"] for c in self.answer] # get choice text
+                delim = "," if ("," not in "".join(choices)) else ";" # separate choices by commas unless there are commas in the choices, then use semicolons
+                value = (delim+" ").join(choices)
         elif self.question_type in ("integer", "real"):
             # Use a locale to generate nice human-readable numbers.
             # The locale is set on app startup using locale.setlocale in settings.py.
