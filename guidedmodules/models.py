@@ -553,7 +553,12 @@ class Task(models.Model):
         # Check that all questions that need an answer have
         # an answer and that all module-type questions are
         # finished.
-        answers = self.get_answers().with_extended_info(required=True)
+        try:
+            answers = self.get_answers().with_extended_info(required=True)
+        except Exception:
+            # If there is an error evaluating imputed conditions,
+            # just say the task is unfinished.
+            return False
         if len(answers.can_answer) != 0:
             return False
         for a in answers.as_dict().values():
