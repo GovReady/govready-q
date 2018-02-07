@@ -489,15 +489,22 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
             return None
         if not isinstance(template, str):
             raise ValueError("%s question %s %s is not a string" % (repr(q.module), q.key, field))
-        return module_logic.render_content({
-                "template": template,
-                "format": "markdown",
-            },
-            answered,
-            output_format,
-            "%s question %s %s" % (repr(q.module), q.key, field),
-            **kwargs
-        )
+        try:
+            return module_logic.render_content({
+                    "template": template,
+                    "format": "markdown",
+                },
+                answered,
+                output_format,
+                "%s question %s %s" % (repr(q.module), q.key, field),
+                **kwargs
+            )
+        except Exception as e:
+            error = "There was a problem rendering the {} for this question: {}.".format(field, str(e))
+            if output_format == "html":
+                import html
+                error = "<p class='text-danger'>" + html.escape(error) + "</p>\n"
+            return error
 
     # Get any existing answer for this question.
     existing_answer = None

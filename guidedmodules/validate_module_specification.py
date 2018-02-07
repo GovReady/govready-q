@@ -121,6 +121,10 @@ def validate_question(mspec, spec):
         invalid("Question is missing a type.")
 
     # Check that required fields are present.
+
+    if not isinstance(spec.get("title"), str):
+        invalid("Question title is missing or has an invalid data type (must be a string).")
+    
     if spec.get("prompt") is None:
         # Prompts are optional in project and system modules but required elsewhere.
         if mspec.get("type") not in ("project", "system-project"):
