@@ -1132,6 +1132,7 @@ def rename_project(request, project):
     title = request.POST.get("title", "").strip() or None
     project.root_task.title_override = title
     project.root_task.save()
+    project.root_task.on_answer_changed()
     return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required
