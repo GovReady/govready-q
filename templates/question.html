@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "task-base.html" %}
 {% load static %}
 {% load q %}
 
@@ -6,15 +6,13 @@
 Next Question: {{q.spec.title}} | {{task.title}}
 {% endblock %}
 
-{% block contextbar %}
-  {# turn off #}
-{% endblock %}
-
-{% block body %}
+{% block head %}
 
 {% if q.spec.type == "longtext" %}
   <link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
 {% endif %}
+
+{{block.super}}
 
 <style>
 h1 {
@@ -87,12 +85,15 @@ label:hover .onhover { display: inline; }
   padding-top: 1em;
 }
 </style>
+{% endblock %}
+
+{% block body %}
+
+{{block.super}}
 
 <div class="row">
 
 <div class="col-md-9">
-  {% include "task-header.html" %}
-  
   <div id="focus-area-wrapper">
 
     {% if authoring_tool_enabled %}
