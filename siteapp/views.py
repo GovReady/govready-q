@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.db import transaction
 
 from .models import User, Folder, Project, Invitation
-from guidedmodules.models import Module, Task, ProjectMembership
+from guidedmodules.models import Module, ModuleQuestion, Task, ProjectMembership
 from discussion.models import Discussion
 
 from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch is loaded
@@ -260,35 +260,51 @@ def get_task_question(request):
     return (task, q)
 
 
-def app_satifies_interface(app, question):
-    # Does this question specify a protocol? It must specify a list of protocols.
-    if not isinstance(question.spec.get("protocol"), list):
-        raise ValueError("Question does not expect a protocol.")
+def app_satifies_interface(app, filter_protocols):
+    if isinstance(filter_protocols, ModuleQuestion):
+        # Does this question specify a protocol? It must specify a list of protocols.
+        question = filter_protocols
+        if not isinstance(question.spec.get("protocol"), list):
+            raise ValueError("Question does not expect a protocol.")
+        filter_protocols = set(question.spec["protocol"])
+    elif isinstance(filter_protocols, (list, set)):
+        # A list or set of protocol IDs is passed. Turn it into a set if it isn't already.
+        filter_protocols = set(filter_protocols)
+    else:
+        raise ValueError(filter_protocols)
 
     # Get the protocols implemented by the app.
     if isinstance(app.get("protocol"), str):
-        # Wrap a single protocol string in an array.
-        protocols = [app["protocol"]]
+        # Just one - wrap in a set().
+        app_protocols = { app["protocol"] }
     elif isinstance(app.get("protocol"), list):
-        # It's an array.
-        protocols = app["protocol"]
+        # It's an array. Unique-ify with a set.
+        app_protocols = set(app["protocol"])
     else:
         # no protocol or invalid data type
-        protocols = set()
+        app_protocols = set()
 
     # Check that every protocol required by the question is implemented by the
     # app.
-    return set(question.spec["protocol"]) <= set(protocols)
+    return filter_protocols <= set(app_protocols)
 
 
 def filter_app_catalog(catalog, request):
     filter_description = None
 
     if request.GET.get("q"):
-        # Check if the app satisfies the interface.
+        # Check if the app satisfies the interface required by a paricular question.
+        # The "q" query string argument is a Task ID plus a ModuleQuestion key.
+        # It must be a module-type question with a protocol filter. Only apps that
+        # satisfy that protocol are shown.
         task, q = get_task_question(request)
         catalog = filter(lambda app : app_satifies_interface(app, q), catalog)
         filter_description = q.spec["title"]
+
+    if request.GET.get("protocol"):
+        # Check if the app satisfies the app protocol interface given.
+        catalog = filter(lambda app : app_satifies_interface(app, request.GET["protocol"].split(",")), catalog)
+        filter_description = None
 
     return catalog, filter_description
 
