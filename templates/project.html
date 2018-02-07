@@ -280,17 +280,19 @@
                     {% if rec.first_start %}first_start{% endif %}"
                     >
 
-                  {# Does clicking this question trigger the creation of a new Task? For module-type questions, if the question is not yet answered, then yes. For module-set questions, always yes. #}
-
-                  {% if rec.can_start_new_task %}
-
                     {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
 
                     {% if can_start_task %}
 
-                      {# We need one of two forms here. If this question is answered by a particular module, then clicking the icon submits a form that creates a new Task and redirects to it. If this question instead has a "protocol" field, then the user is simply redirected to the Apps Catalog and is presented with apps that satisfy the protocol. #}
+                      {# We need one of three forms here. If this is a module-type question and it's been answered already (it has a Task answer), then we simply link to that Task. Otherwise if it's not answered or if it's a module-set type quesion that can be answered multiple times, we show a form. If the question is answered by a particular module, clicking the icon submits a form that creates a new Task and redirects to it. If this question instead has a "protocol" field, then the user is simply redirected to the Apps Catalog and is presented with apps that satisfy the protocol. #}
 
-                      {% if not rec.question.spec.protocol %}
+                      {% if not rec.can_start_new_task %}
+                        {# This is a module-type question that has been started. Clicking the question doesn't start a new task --- instead, it's just a link to the started Task. #}
+
+                        {# Link to the Task. #}
+                        <a href="{{rec.tasks.0.get_absolute_url}}" style="display: block;">
+
+                      {% elif not rec.question.spec.protocol %}
                         {# Start a task directly using the module type in the specification. #}
                         <form class="start-task" method="post" action="/tasks/start"
                           onclick="$(this).submit();" style="cursor: pointer">
@@ -320,23 +322,33 @@
                       </div>
                     {% endif %}
 
-                    {# Select and show the icon. If the view function selected an icon (possibly from the question specification), then use that. Otherwise, fall back to a shopping cart if this question redirects to the Apps Catalog or else a default icon if this form creates a new Task. #}
-                    <div class="question-icon">
-                      <img
-                        {% if rec.icon %}
+                    <div class="question-icon" style="position: relative;">
+                        {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
+                        <div style="position: absolute; left: -1px; top: -1px;">
+                          {% if not rec.can_start_new_task and rec.tasks.0.is_finished %}
+                            <span class="glyphicon glyphicon-ok" style="color: #96B"></span>
+                          {% endif %}
+                        </div>
+
+                        {# Select and show an icon. #}
+                        <img
+                          {# If the question has been answered, can only be answered once (i.e. is a module-type question), its Task comes with its own icon, and the question specification allows the use of that icon ('app_overrides_name_and_icon' is not set), then use it. #}
+                          {% if not rec.can_start_new_task and rec.tasks.0.get_app_icon_url and rec.question.spec.app_overrides_name_and_icon is None %}
+                          src="{{rec.tasks.0.get_app_icon_url}}"
+
+                          {# If the view computed an icon to show, show it. It's probably the icon from the question's specification. #}
+                          {% elif rec.icon %}
                           src="{{rec.icon}}"
-                        {% elif not rec.question.spec.protocol %}
+
+                          {# Fall back to a shopping cart (if this question redirects/redirected to the Apps Catalog) or a default icon if this is just a Module. #}
+                          {% elif not rec.question.spec.protocol %}
                           src="{% static "img/default_app_icon.png" %}"
-                        {% else %}
+                          {% else %}
                           src="{% static "img/default_cart_icon_sm.png" %}"
-                        {% endif %}
-                        class="img-responsive"
-                        {% if not rec.question.spec.protocol %}
-                          title="Start {{rec.module.title}}"
-                        {% else %}
-                          title="Start a new app."
-                        {% endif %}
-                        >
+                          {% endif %}
+
+                          title="{{rec.question.spec.title}}"
+                          class="img-responsive">
                     </div>
 
                     {# Once again, different HTML depending on the layout mode being used. For row mode, move to the second column for the question's title. #}
@@ -347,8 +359,24 @@
 
                     {# The label for the icon is the title of the question in the question's specification. #}
                     <div class="question-title">
-                        {{rec.question.spec.title}}
-                    </div>
+                        {# If the question has been answered, can only be answered once (i.e. is a module-type question), and the question specification allows the use of Task's title as the label ('app_overrides_name_and_icon' is not set), then use it. #}
+                        {% if not rec.can_start_new_task and rec.question.spec.app_overrides_name_and_icon is None %}
+                          {{rec.tasks.0.title}}
+
+                        {# Otherwise use the question's title as the label. #}
+                        {% else %}
+                          {{rec.question.spec.title}}
+                        {% endif %}
+
+                        {# In the rows layout mode, indicate if the question's answer is finished here (only if this question can only be answered once and is answered). #}
+                        {% if layout_mode == "rows" and not rec.can_start_new_task %}
+                          {% if rec.tasks.0.is_finished %}
+                            <span class="label label-primary" style="background-color: #96B">finished</span>
+                          {% else %}
+                            <span class="label label-primary">in progress</span>
+                          {% endif %}
+                        {% endif %}
+                      </div>
 
                     {# Once again, different HTML depending on the layout mode being used. For row mode, end the column and the row. #}
                     {% if layout_mode == "rows" %}
@@ -356,11 +384,16 @@
                       </div> <!-- /row -->
                     {% endif %}
 
-                    {# If the user had permission to start a task and we started a form element, end it. #}
+                    {# If the user had permission to start a task and we started an 'a' or 'form' element, end it. #}
                     {% if can_start_task %}
-                      </form>
+                      {% if not rec.can_start_new_task %}
+                        </a>
+                      {% else %}
+                        </form>
+                      {% endif %}
                     {% endif %}
 
+                    {% if rec.can_start_new_task %}
                     {# For a module-set question, list the existing answers (Tasks) to this question. In row mode, start a new row and offset to be aligned with the second column above. #}
                     {% if layout_mode == "rows" %}
                       <div class="row">
@@ -385,93 +418,8 @@
                       </div> <!-- /col -->
                       </div> <!-- /row -->
                     {% endif %}
-                    
-                  {% else %} {# rec.can_start_new_task is False #}
-
-                    {# This is a module-type question that has been started. Clicking the question doesn't start a new task --- instead, it's just a link to the started Task. #}
-
-                    {# Get the Task that is the answer to the question. #}
-                    {% with t=rec.tasks.0 %}
-
-                    {# Pencil icon to edit the question. #}
-                    {% if authoring_tool_enabled %}
-                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{rec.question.key}}">
-                        <span class="glyphicon glyphicon-pencil"></span>
-                      </div>
                     {% endif %}
-
-                    {# Link to the Task. #}
-                    <a href="{{t.get_absolute_url}}" style="display: block;">
-  
-                      {# Once again, different HTML depending on the layout mode being used. For rows, start a new Bootstrap row and put the icon in the first column div. #}
-                      {% if layout_mode == "rows" %}
-                        <div class="row">
-                        <div class="col-sm-3">
-                      {% endif %}
-
-                      <div class="question-icon" style="position: relative;">
-                        {# Show a checkmark if the question's Task has been completed. #}
-                        <div style="position: absolute; left: -1px; top: -1px;">
-                          {% if t.is_finished %}
-                            <span class="glyphicon glyphicon-ok" style="color: #96B"></span>
-                          {% endif %}
-                        </div>
-
-                        {# Select and show an icon. #}
-                        <img
-                          {# If the Task comes with its own icon show it, unless 'app_overrides_name_and_icon' is set on the question. #}
-                          {% if t.get_app_icon_url and rec.question.spec.app_overrides_name_and_icon is None %}
-                          src="{{t.get_app_icon_url}}"
-
-                          {# If the view computed an icon to show, show it. It's probably the icon from the question's specification. #}
-                          {% elif rec.icon %}
-                          src="{{rec.icon}}"
-
-                          {# Fall back to a shopping cart (if this was an app started from the Apps Catalog) or a default icon if this is just a Module. #}
-                          {% elif not rec.question.spec.protocol %}
-                          src="{% static "img/default_app_icon.png" %}"
-                          {% else %}
-                          src="{% static "img/default_cart_icon_sm.png" %}"
-                          {% endif %}
-                          title="{{rec.question.spec.title}}"
-                          class="img-responsive">
-                      </div>
-
-                      {# Once again, different HTML depending on the layout mode being used. For rows, go to the next column. #}
-                      {% if layout_mode == "rows" %}
-                        </div> <!-- /col -->
-                        <div class="col-sm-9">
-                      {% endif %}
-
-                      <div class="question-title">
-                        {# The label for the icon is the answer (Task)'s title. Unless the question's specification has app_overrides_name_and_icon, in which case show the question's title and ignore the answer's title. #}
-                        {% if rec.question.spec.app_overrides_name_and_icon is None %}
-                          {{t.title}}
-                        {% else %}
-                          {{rec.question.spec.title}}
-                        {% endif %}
-
-                        {# In the rows layout mode, indicate if the Task is finished here. #}
-                        {% if layout_mode == "rows" %}
-                          {% if t.is_finished %}
-                            <span class="label label-primary" style="background-color: #96B">finished</span>
-                          {% else %}
-                            <span class="label label-primary">in progress</span>
-                          {% endif %}
-                        {% endif %}
-                      </div>
-
-                      {# Once again, different HTML depending on the layout mode being used. For rows, end the column and the row. #}
-                      {% if layout_mode == "rows" %}
-                        </div> <!-- /col -->
-                        </div> <!-- /row -->
-                      {% endif %}
-
-                    {# That's all for this question. #}
-                    </a>
-                    {% endwith %} {# task #}
-                  {% endif %}
-
+                    
                   {# Show invitations and discussions for this question below the icon and label. #}
 
                   <div class="question-body">
@@ -495,7 +443,7 @@
                   </div> <!-- /.question-body -->
                 </div> <!-- /#question-__.question -->
               {% endfor %}
-              
+
               </div> <!-- /row -->
               </div> <!-- /question-group -->
             {% endfor %}
