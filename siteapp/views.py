@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.http import require_http_methods
@@ -178,17 +180,13 @@ def render_app_catalog_entry(app):
                 catalog_info["description"]["long"],
             ])
 
-            # Convert the app icon to a data URL.
+            # Convert the app icon raw bytes data to a data URL.
             if "app-icon" in catalog_info:
-                import io, base64
-                from PIL import Image
-                im = Image.open(io.BytesIO(catalog_info["app-icon"]))
-                im.thumbnail((128,128))
-                buf = io.BytesIO()
-                im.save(buf, 'png')
-                catalog_info["app_icon_dataurl"] = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+                from guidedmodules.models import image_to_dataurl
+                catalog_info["app_icon_dataurl"] = image_to_dataurl(catalog_info["app-icon"], 128)
 
             return catalog_info
+
 
 def get_task_question(request):
     # Filter catalog by apps that satisfy the right protocol.
@@ -510,6 +508,59 @@ def project(request, project):
 
     can_begin_module = project.can_start_task(request.user)
 
+    def load_unanswered_question_icon(d, mq):
+        # Set d["icon"] to a data: URL for an icon to show if the question
+        # is not answered or if the question is a "module-set" question.
+        # (If it is an answered module-type question, then the template
+        # will show the answer task's module's icon,)
+
+        # If the question specification specifies an icon asset, load the asset.
+        # This saves the browser a request to fetch it, which is somewhat
+        # expensive because assets are behind authorization logic.
+        if "icon" in mq.spec:
+            d["icon"] = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+            return
+
+        if mq.spec["type"] in ("module", "module-set") and "protocol" in mq.spec:
+            # If the question is a module or module-set type question and it has
+            # a "protocol" set, then query the app catalog for compliance apps that
+            # satisfy the protocol and generate a "montage" icon previewing them.
+            # Each app's icon is already pre-loaded (and cached) with a data: URL
+            # icon that we can use.
+            catalog = get_compliance_apps_catalog(request.organization) # whole catalog
+            catalog = filter(lambda app : app_satifies_interface(app, mq), catalog) # apps that can answer this question
+            catalog = filter(lambda app : 'app-icon' in app, catalog) # and that have an icon
+            catalog = list(catalog)
+            if len(catalog) == 1:
+                # There's only one app. Return its icon.
+                d["icon"] = catalog[0]["app_icon_dataurl"]
+
+            elif len(catalog) > 0:
+                # Choose four random apps to use the icons of.
+                catalog = random.sample(catalog, min(4, len(catalog)))
+
+                # If there were fewer than four, just repeat the icons till
+                # we get four.
+                while len(catalog) < 4:
+                    catalog.append(random.choice(catalog))
+
+                # Construct a canvas and paste the images in in the
+                # four quadrants of the image.
+                from PIL import Image
+                from io import BytesIO
+                im = Image.new("RGBA", (128, 128))
+                locs = (0, 68) # => (0,0) (0, 68) (68, 0) (68, 68)
+                for i, app in enumerate(catalog):
+                    im2 = Image.open(BytesIO(app["app-icon"]))
+                    im2.thumbnail((60,60))
+                    im.paste(im2, box=(locs[i % 2], locs[i//2]))
+
+                from guidedmodules.models import image_to_dataurl
+                d["icon"] = image_to_dataurl(im, 128)
+
+        # Can't auto-make an icon.
+        return
+
     # Create all of the module entries in a tabs & groups data structure.
     from collections import OrderedDict
     tabs = OrderedDict()
@@ -613,11 +664,8 @@ def project(request, project):
         elif mq.spec.get("placement") == "action-buttons":
             action_buttons.append(d)
 
-        # What icon to show? (If there's an app, it'll use the app's icon instead.)
-        # Pre-load the icon as a data URL so that the browser doesn't have to make
-        # another request, and since assets are behind auth this'll avoid db logic.
-        if "icon" in mq.spec:
-            d["icon"] = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+        # Pre-load the icon to show for this question.
+        load_unanswered_question_icon(d, mq)
 
     # Are there any output documents that we can render?
     has_outputs = False
