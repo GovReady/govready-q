@@ -1015,6 +1015,12 @@ class TemplateContext(Mapping):
         return self._cache[item]
 
     def _execute_lazy_module_answers(self):
+        if self.module_answers is None:
+            # This is a TemplateContext for an unanswered question with an unknown
+            # module type. We treat this as if it were a Task that had no questions but
+            # also is not finished.
+            self._module_questions = { }
+            return
         if callable(self.module_answers):
             self.module_answers = self.module_answers()
         self._module_questions = { q.key: q for q in self.module_answers.get_questions() }
@@ -1025,7 +1031,7 @@ class TemplateContext(Mapping):
         # If 'item' matches an external function name (in the root template context only), return it.
         # Un-wrap RenderedAnswer instances so the external function gets the value and not the
         # RenderedAnswer instance.
-        if self.root and item in self.module_answers.module.python_functions():
+        if self.root and self.module_answers and item in self.module_answers.module.python_functions():
             func = self.module_answers.module.python_functions()[item]
             def arg_filter(arg):
                 if isinstance(arg, RenderedAnswer):
@@ -1048,7 +1054,7 @@ class TemplateContext(Mapping):
 
         # The context also provides the project and organization that the Task belongs to,
         # and other task attributes, assuming the keys are not overridden by question IDs.
-        if self.module_answers.task:
+        if self.module_answers and self.module_answers.task:
             if item == "task_link":
                 return self.module_answers.task.get_absolute_url()
             if item == "project":
@@ -1074,6 +1080,8 @@ class TemplateContext(Mapping):
 
         # The 'questions' key returns (question, answer) pairs.
         if item == "questions":
+            if self.module_answers is None:
+                return []
             self.module_answers.as_dict() # trigger lazy-loading
             ret = []
             for question, is_answered, answerobj, answervalue in self.module_answers.answertuples.values():
@@ -1089,7 +1097,7 @@ class TemplateContext(Mapping):
             return TemplateContext.LazyOutputDocuments(self)
 
         # The item is not something found in the context.
-        raise AttributeError(item + " is not a question or property of " + (self.module_answers.task.title if self.module_answers.task else self.module_answers.module.spec["title"]) + ".")
+        raise AttributeError(item + " is not a question or property of " + (self.module_answers.task.title if self.module_answers and self.module_answers.task else self.module_answers.module.spec["title"]) + ".")
 
     def __iter__(self):
         self._execute_lazy_module_answers()
@@ -1097,7 +1105,7 @@ class TemplateContext(Mapping):
         seen_keys = set()
 
         # external functions, in the root template context only
-        if self.root and self.module_answers.module:
+        if self.root and self.module_answers and self.module_answers.module:
             for fname in self.module_answers.module.python_functions():
                 seen_keys.add(fname)
                 yield fname
@@ -1108,7 +1116,7 @@ class TemplateContext(Mapping):
             yield q.key
 
         # special values
-        if self.module_answers.task:
+        if self.module_answers and self.module_answers.task:
             # Attributes that are only available if there is a task.
             for attribute in ("task_link", "project", "organization"):
                 if attribute not in seen_keys:
@@ -1403,23 +1411,9 @@ class RenderedAnswer:
                 # represents an unanswered instance of the Module.
                 if self.question.answer_type_module is not None:
                     ans = ModuleAnswers(self.question.answer_type_module, None, None)
-                    tc = TemplateContext(ans, self.escapefunc, parent_context=self.parent_context)
                 else:
-                    # It is None when the question specifies a "protocol", in
-                    # which case we don't know what questions the inner Module
-                    # would have. Return a value that acts like a dict but always
-                    # yields empty values.
-                    class DD:
-                        def __init__(self, path):
-                            self.path = path
-                        def __str__(self):
-                            return "<not answered>"
-                        def __html__(self):
-                            import html
-                            return html.escape(str(self))
-                        def __getattr__(self, key):
-                            return DD(self.path+[key])
-                    return DD([self.question.spec['id']])
+                    ans = None
+                tc = TemplateContext(ans, self.escapefunc, parent_context=self.parent_context)
             return tc[item]
 
         # For external-function and "raw" question types, the answer value is any
