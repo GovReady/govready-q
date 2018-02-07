@@ -289,11 +289,13 @@ function do_app_search(query) {
     $('.app-category-nav *').filter(function() { return this.getAttribute('data-category') == app_category[0].getAttribute('data-category') })[visible ? "fadeIn" : "hide"]();
   });
 
-  // Reset which jump-to link is first. Hide the whole thing if no categories are visible.
+  // Reset which jump-to link is first, which hides the separator bullet before it.
+  // Hide the whole jump to list if there aren't any categories, or there's only
+  // one category (in which case we don't show category headings).
   $('.app-category-nav *[data-category]').removeClass('first');
   $('.app-category-nav').show(); // must be visible before :visible is checked
   var jump_to_first = $('.app-category-nav *[data-category]:visible');
-  if (jump_to_first.length > 0) {
+  if (jump_to_first.length > 1 {% if apps|length == 1 %}&& 0{% endif %}) {
     $(jump_to_first[0]).addClass('first');
   } else {
     $('.app-category-nav').hide();
