@@ -401,7 +401,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(.5) # wait for page to load
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         var_sleep(.5) # wait for page to load
-        self.click_element('#transfer-editorship a')
+        self.click_element('#transfer-editorship')
         do_invitation("test+editor@q.govready.com")
         var_sleep(5)
         self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
