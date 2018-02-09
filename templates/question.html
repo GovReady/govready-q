@@ -419,13 +419,9 @@ label:hover .onhover { display: inline; }
                 <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-comment"></span> Discuss</a>
             </button>
           {% endif %}
-          {% if task.can_transfer_owner %}
+          {% if task.can_transfer_owner and write_priv %}
             <button id="transfer-editorship" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" onclick="javascript:invite_to_transfer_editor();return false;">
-              {% if write_priv %}
-                <a href="javascript:invite_to_transfer_editor()"><span class="glyphicon glyphicon-user"></span> Assign</a>
-              {% else %}
-                The editor of this module can ask a colleague to finish this module
-              {% endif %}
+                <span class="glyphicon glyphicon-user"></span> Assign
             </button>
           {% endif %}
         </span>

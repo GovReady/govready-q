@@ -594,7 +594,7 @@ def project(request, project):
     # that we know which questions are suppressed by imputed values.
     root_task_answers = project.root_task.get_answers().with_extended_info()
 
-    can_begin_module = project.can_start_task(request.user)
+    can_start_task = project.can_start_task(request.user)
 
     def load_unanswered_question_icon(d, mq):
         # Set d["icon"] to a data: URL for an icon to show if the question
@@ -699,7 +699,7 @@ def project(request, project):
 
         # Do not display if the user can't start a task and there are no
         # tasks visible to the user.
-        if not can_begin_module and len(tasks) == 0 and len(task_discussions) == 0:
+        if not can_start_task and len(tasks) == 0 and len(task_discussions) == 0:
             continue
 
         # Is this the first Start?
@@ -712,7 +712,7 @@ def project(request, project):
             layout_mode = "grid"
 
             # Set flag if an app can be started here.
-            if can_begin_module and (ans is None or mq.spec["type"] == "module-set"):
+            if can_start_task and (ans is None or mq.spec["type"] == "module-set"):
                 can_start_any_apps = True
 
         # Create template context dict.
@@ -739,9 +739,9 @@ def project(request, project):
             groupname = mq.spec.get("group", "Modules")
             group = tab["groups"].setdefault(groupname, {
                 "title": groupname,
-                "modules": [],
+                "questions": [],
             })
-            group["modules"].append(d)
+            group["questions"].append(d)
 
             # Add a flag to the tab if any tasks contained
             # within it are unfinished.
@@ -786,7 +786,7 @@ def project(request, project):
         "project": project,
 
         "is_admin": request.user in project.get_admins(),
-        "can_begin_module": can_begin_module,
+        "can_start_task": can_start_task,
         "can_start_any_apps": can_start_any_apps,
 
         "folder": folder,
@@ -1132,6 +1132,7 @@ def rename_project(request, project):
     title = request.POST.get("title", "").strip() or None
     project.root_task.title_override = title
     project.root_task.save()
+    project.root_task.on_answer_changed()
     return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required
