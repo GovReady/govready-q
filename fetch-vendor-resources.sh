@@ -139,7 +139,7 @@ download \
 rm -f /tmp/google-font-download
 # generated with: $SHACMD $VENDOR/{google-fonts.css,Hind*,Lato*}
 $SHACMD_CHECK << EOF
-d9ae96839e4668eb006885ec9f1d51dde2553d2cf53437ff9b8963c0e583ec69  siteapp/static/vendor/google-fonts.css
+96cc2e2d6040d182998e530ceb1a01ecffbc2aab6f0125d205f82cc742818dd0  siteapp/static/vendor/google-fonts.css
 f0609555ad20470e30de0ba32d026f0b27098ea74c84edd811e21998943510f6  siteapp/static/vendor/Hind_400.woff
 af6e56a25aae4ec8eaa3aac31a8a73c0d1aaa4c4dd6afbee4f1c996474fcd789  siteapp/static/vendor/Hind_400.woff2
 53beffe7dff224394b4f0e1f681ba3a64591c63e882720071863b4f5b8572bdf  siteapp/static/vendor/Hind_700.woff
