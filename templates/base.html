@@ -114,7 +114,7 @@
     <!--[if gt IE 7]><!-->
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
+      <div class="container-fluid">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-target" aria-expanded="false">
             <span class="sr-only">Toggle navigation</span>
@@ -153,7 +153,7 @@
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
-                <li><a href="/projects">Project Folders</a></li>
+                <li><a href="/projects">Projects</a></li>
                 <li><a href="/store">Compliance Apps</a></li>
                 {% if user.can_see_org_settings or user.is_staff %}
                   <li role="separator" class="divider"></li>
@@ -233,7 +233,7 @@
 
     {% block contextbar %}
     <div id="context-bar">
-    <div class="container">
+    <div class="container-fluid">
     <ol class="breadcrumb">
       {% block breadcrumbs %}
       {% endblock %}
@@ -243,7 +243,7 @@
     {% endblock %}
 
     {% if messages %}
-    <div class="container" style="margin-top: 1em;">
+    <div class="container-fluid" style="margin-top: 1em;">
       {% for message in messages %}
         {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
         <div class="alert fade in alert-{% if message.level_tag == "error" %}danger{% elif message.level_tag == "debug" %}info{% else %}{{message.level_tag}}{% endif %}">
@@ -255,19 +255,18 @@
     {% endif %}
 
     {% block body-wide %}
-    <div class="container-fluid">
-      <div class="container" style="min-height: 400px; margin-top: 2em;">
+    <div class="container-fluid" style="min-height: 400px; margin-top: 2em;">
       {% block body %}
       {% endblock %}
 
       {% block content %}
         {# allauth uses this block #}
       {% endblock %}
-      </div>
+    </div>
 
       <!-- <hr> -->
       <footer>
-        <div class="container">
+        <div class="container-fluid">
           <div class="row">
             <div class="col-sm-12">
               <hr>
@@ -279,7 +278,6 @@
           </div>
         </div>
       </footer>
-    </div> <!-- /container -->
     {% endblock %}
 
 {% include "bootstrap-helpers.html" %}

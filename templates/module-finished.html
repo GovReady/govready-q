@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "task-base.html" %}
 {% load static %}
 {% load q %}
 
@@ -6,13 +6,8 @@
 {{m.title}}
 {% endblock %}
 
-{% block contextbar %}
-  {# turn off #}
-{% endblock %}
-
 {% block body %}
-
-  {% include "task-header.html" %}
+  {{ body.super }}
 
   <div id="focus-area-wrapper">
 

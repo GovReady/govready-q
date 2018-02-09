@@ -1,4 +1,8 @@
+{% extends "base.html" %}
+
 {% load q %}
+
+{% block head %}
 <style>
 {% include "focus-area-styles.css" %}
 #question-history-context {
@@ -35,34 +39,41 @@
   font-size: .85em;
 }
 </style>
+{% endblock %}
 
-<div id="folder-project-task-context" style="margin-bottom: 20px;">
+
+{% block breadcrumbs %}
   {% if not task.project.is_account_project %}
   {% with folder=task.project.primary_folder %} {# TODO #}
   {% if folder %} {# system projects aren't in a folder #}
-  <p style="font-size: 120%;">
-    <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-    <a href="{{folder.get_absolute_url}}">{{folder.title}}</a>
-  </p>
+  <li>
+    <a href="{{folder.get_absolute_url}}">
+      <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
+      {# {{folder.title}} #}
+    </a>
+  </li>
   {% endif %}
   {% endwith %}
-  <p style="font-size: 90%;margin-top:20px;">
   {% for parent_project in task.project.get_parent_projects %}
-    <a href="{{parent_project.get_absolute_url}}">
-      {{parent_project.title}}
-    </a>
-  &gt;
+    <li>
+      <a href="{{parent_project.get_absolute_url}}">
+        {{parent_project.title}}
+      </a>
+    </li>
   {% endfor %}
+  <li>
     <a href="{{task.project.get_absolute_url}}">
       {{task.project.title}}
     </a>
-  &gt;
+  </li>
   {% endif %}
       <!-- <span class="glyphicon glyphicon-th-list" style="margin-right: .25em"></span> -->
+  <li class="active">
     {{task.title}}
+  </li>
+{% endblock %}
 
-</div>
-
+{% block body %}
 <div id="auth-status">
 {% if task.editor == request.user %}
 
@@ -100,3 +111,4 @@ function invite_to_transfer_editor() {
   return false;
 }
 </script>
+{% endblock %}

@@ -931,6 +931,7 @@ class ModuleAnswers(object):
         # module's output. The output is a set of documents. The
         # documents are lazy-rendered because not all of them may
         # be used by the caller.
+        output_formats = ("html", "text")
         class LazyRenderedDocument:
             def __init__(self, module_answers, document, index, use_data_urls):
                 self.module_answers = module_answers
@@ -943,11 +944,14 @@ class ModuleAnswers(object):
                 # specification, plus all of the output formats which are
                 # keys in our returned dict that lazily render the document.
                 for key, value in self.document.items():
-                    if key != "html":
+                    if key not in output_formats:
                         yield key
-                yield "html"
+                for key in output_formats:
+                    yield key
             def __getitem__(self, key):
-                if key == "html":
+                if key in output_formats:
+                    # key is an output format -> lazy render.
+
                     if self.rendered_content is None:
                         # Cache miss.
 
@@ -962,12 +966,14 @@ class ModuleAnswers(object):
 
                         # Try to render it.
                         try:
-                            self.rendered_content = render_content(self.document, self.module_answers, "html", doc_name, additional_context, show_answer_metadata=True, use_data_urls=use_data_urls)
+                            self.rendered_content = render_content(self.document, self.module_answers, key, doc_name, additional_context, show_answer_metadata=True, use_data_urls=use_data_urls)
                         except Exception as e:
                             # Put errors into the output. Errors should not occur if the
                             # template is designed correctly.
-                            import html
-                            self.rendered_content = "<p class=text-danger>" + html.escape(str(e)) + "</p>"
+                            self.rendered_content = str(e)
+                            if key == "html":
+                                import html
+                                self.rendered_content = "<p class=text-danger>" + html.escape(self.rendered_content) + "</p>"
 
                     return self.rendered_content
 

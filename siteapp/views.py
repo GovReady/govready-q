@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.db import transaction
 
 from .models import User, Folder, Project, Invitation
-from guidedmodules.models import Module, Task, ProjectMembership
+from guidedmodules.models import Module, ModuleQuestion, Task, ProjectMembership
 from discussion.models import Discussion
 
 from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch is loaded
@@ -25,30 +25,90 @@ def homepage(request):
         "login_form": LoginForm,
     })
 
-def folder_list(request):
-    # Get the folders the user can see. Folders are accessible to a user
-    # just when they can see a Project within it or if they
-    # are an admin of the folder, so we go backwards from Projects
+
+def assign_project_lifecycle_stage(projects):
+    # Define lifecycle stages.
+    # Because we alter this data structure in project_list,
+    # we need a new instance of it on every page load.
+    lifecycle_stages = [
+        {
+            "id": "none",
+            "label": "General Assessments",
+            "stage_col_width": { "xs-12" }, # "col_" + this => Bootstrap 3 column class
+            "stages": [
+                { "id": "none", "label": "", "subhead": "" },
+            ]
+        },
+        {
+            "id": "us_nist_rmf",
+            "label": "NIST Risk Management Framework",
+            "stage_col_width": { "md-2" }, # "col_" + this => Bootstrap 3 column class
+            "stages": [
+                { "id": "1_categorize", "label": "1. Categorize", "subhead": "Information System" },
+                { "id": "2_select", "label": "2. Select", "subhead": "Security Controls" },
+                { "id": "3_implement", "label": "3. Implement", "subhead": "Security Controls" },
+                { "id": "4_assess", "label": "4. Assess", "subhead": "Security Controls" },
+                { "id": "5_authorize", "label": "5. Authorize", "subhead": "Information System" },
+                { "id": "6_monitor", "label": "6. Monitor", "subhead": "Security Controls" },
+            ]
+        }
+    ]
+
+    # Create a mapping from concatenated lifecycle+stage IDs
+    # to tuples of (lifecycle object, stage object).
+    lifecycle_stage_code_mapping = { }
+    for lifecycle in lifecycle_stages:
+        for stage in lifecycle["stages"]:
+            lifecycle_stage_code_mapping[lifecycle["id"] + "_" + stage["id"]] = (
+                lifecycle,
+                stage
+            )
+
+    # Load each project's lifecycle stage, which is computed by each project's
+    # root task's app's output document named govready_lifecycle_stage_code.
+    # That output document yields a string identifying a lifecycle stage.
+    for project in projects:
+        outputs = project.root_task.render_output_documents()
+        for doc in outputs:
+            if doc.get("id") == "govready_lifecycle_stage_code":
+                value = doc["text"].strip()
+                if value in lifecycle_stage_code_mapping:
+                    project.lifecycle_stage = lifecycle_stage_code_mapping[value]
+                    break
+        else:
+            # No matching output document with a non-empty value.
+            project.lifecycle_stage = lifecycle_stage_code_mapping["none_none"]
+
+
+def project_list(request):
+    # Get all of the projects that the user can see *and* that are in a folder,
+    # which indicates it is top-level.
     projects = Project.get_projects_with_read_priv(request.user, request.organization)
-    folders = (Folder.objects.filter(projects__in=projects)
-            | Folder.objects.filter(organization=request.organization, admin_users=request.user))\
-          .distinct()
+    projects = [p for p in projects if p.contained_in_folders.all().count() > 0]
 
-    # Count up the total number of projects in each folder. For admins, so they
-    # can know why they can't delete a folder.
-    from django.db.models import Count
-    folders = folders.annotate(project_count=Count('projects'))
+    # Sort the projects by their creation date. The projects
+    # won't always appear in that order, but it will determine
+    # the overall order of the page in a stable way.
+    projects = sorted(projects, key = lambda project : project.created)
 
-    # Mark whether the user is an admin of any folders.
-    folders = list(folders)
-    for folder in folders:
-        folder.is_admin = (request.user in folder.get_admins())
+    # Load each project's lifecycle stage, which is computed by each project's
+    # root task's app's output document named govready_lifecycle_stage_code.
+    # That output document yields a string identifying a lifecycle stage.
+    assign_project_lifecycle_stage(projects)
 
-    # Sort the folders by name.
-    folders.sort(key = lambda folder : folder.title)
+    # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
+    # types are arranged in the order they first appear across the projects.
+    lifecycles = []
+    for project in projects:
+        # On the first occurrence of this lifecycle type, add it to the output.
+        if project.lifecycle_stage[0] not in lifecycles:
+            lifecycles.append(project.lifecycle_stage[0])
 
-    return render(request, "folder_list.html", {
-        "folders": folders,
+        # Put the project into the lifecycle's appropriate stage.
+        project.lifecycle_stage[1].setdefault("projects", []).append(project)
+
+    return render(request, "projects.html", {
+        "lifecycles": lifecycles,
         "is_lonely_admin": request.user.can_see_org_settings and not request.organization.get_who_can_read().exclude(id=request.user.id).exists(),
         "send_invitation": Invitation.form_context_dict(request.user, request.organization.get_organization_project(), [request.user]),
     })
@@ -200,35 +260,51 @@ def get_task_question(request):
     return (task, q)
 
 
-def app_satifies_interface(app, question):
-    # Does this question specify a protocol? It must specify a list of protocols.
-    if not isinstance(question.spec.get("protocol"), list):
-        raise ValueError("Question does not expect a protocol.")
+def app_satifies_interface(app, filter_protocols):
+    if isinstance(filter_protocols, ModuleQuestion):
+        # Does this question specify a protocol? It must specify a list of protocols.
+        question = filter_protocols
+        if not isinstance(question.spec.get("protocol"), list):
+            raise ValueError("Question does not expect a protocol.")
+        filter_protocols = set(question.spec["protocol"])
+    elif isinstance(filter_protocols, (list, set)):
+        # A list or set of protocol IDs is passed. Turn it into a set if it isn't already.
+        filter_protocols = set(filter_protocols)
+    else:
+        raise ValueError(filter_protocols)
 
     # Get the protocols implemented by the app.
     if isinstance(app.get("protocol"), str):
-        # Wrap a single protocol string in an array.
-        protocols = [app["protocol"]]
+        # Just one - wrap in a set().
+        app_protocols = { app["protocol"] }
     elif isinstance(app.get("protocol"), list):
-        # It's an array.
-        protocols = app["protocol"]
+        # It's an array. Unique-ify with a set.
+        app_protocols = set(app["protocol"])
     else:
         # no protocol or invalid data type
-        protocols = set()
+        app_protocols = set()
 
     # Check that every protocol required by the question is implemented by the
     # app.
-    return set(question.spec["protocol"]) <= set(protocols)
+    return filter_protocols <= set(app_protocols)
 
 
 def filter_app_catalog(catalog, request):
     filter_description = None
 
     if request.GET.get("q"):
-        # Check if the app satisfies the interface.
+        # Check if the app satisfies the interface required by a paricular question.
+        # The "q" query string argument is a Task ID plus a ModuleQuestion key.
+        # It must be a module-type question with a protocol filter. Only apps that
+        # satisfy that protocol are shown.
         task, q = get_task_question(request)
         catalog = filter(lambda app : app_satifies_interface(app, q), catalog)
         filter_description = q.spec["title"]
+
+    if request.GET.get("protocol"):
+        # Check if the app satisfies the app protocol interface given.
+        catalog = filter(lambda app : app_satifies_interface(app, request.GET["protocol"].split(",")), catalog)
+        filter_description = None
 
     return catalog, filter_description
 
@@ -497,6 +573,18 @@ def project_read_required(f):
 
 @project_read_required
 def project(request, project):
+    # Get this project's lifecycle stage.
+    assign_project_lifecycle_stage([project])
+    if project.lifecycle_stage[0]["id"] == "none":
+        # Kill it if it's the default lifecycle.
+        project.lifecycle_stage = None
+    else:
+        # Mark the stages up to the active one as completed.
+        for stage in project.lifecycle_stage[0]["stages"]:
+            stage["complete"] = True
+            if stage == project.lifecycle_stage[1]:
+                break
+
     # Get all of the discussions I'm participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
     # certain questions within those tasks.
@@ -694,6 +782,7 @@ def project(request, project):
     folder = project.primary_folder()
     return render(request, "project.html", {
         "is_project_page": True,
+        "page_title": "Components",
         "project": project,
 
         "is_admin": request.user in project.get_admins(),
@@ -751,6 +840,7 @@ def project_list_all_answers(request, project):
 
     from guidedmodules.models import TaskAnswerHistory
     return render(request, "project-list-answers.html", {
+        "page_title": "Review Answers",
         "project": project,
         "folder": project.primary_folder(),
         "answers": sections,
@@ -780,9 +870,14 @@ def project_outputs(request, project):
              + "\n\n"
              + "# " + html.escape(title)
              + "\n\n" ),
+        "text": lambda anchor, title : (
+               "\n\n"
+             + title
+             + "\n\n" ),
     }
     joiner = {
         "markdown": "\n\n",
+        "text": "\n\n",
     }
     toc = []
     combined_output = ""
@@ -815,6 +910,7 @@ def project_outputs(request, project):
         combined_output += "<div>" + content + "</div>\n\n"
 
     return render(request, "project-outputs.html", {
+        "page_title": "Related Controls",
         "project": project,
         "folder": project.primary_folder(),
         "toc": toc,
@@ -921,6 +1017,7 @@ def project_api(request, project):
     make_schema(["project"], project.root_task, project.root_task.module)
 
     return render(request, "project-api.html", {
+        "page_title": "API Documentation",
         "project": project,
         "folder": project.primary_folder(),
         "SITE_ROOT_URL": settings.SITE_ROOT_URL,

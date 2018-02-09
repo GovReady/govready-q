@@ -271,7 +271,7 @@
               {% for rec in group.modules %}
                 <div id="question-{{rec.question.key}}"
                   class="
-                    {% if layout_mode == "grid" %}col-sm-3{% else %}col-xs-12{% endif %}
+                    {% if layout_mode == "grid" %}col-sm-3 col-lg-2{% else %}col-xs-12{% endif %}
                     question
                     {% if rec.is_finished %}task_finished{% endif %}
                     {% if rec.first_start %}first_start{% endif %}"

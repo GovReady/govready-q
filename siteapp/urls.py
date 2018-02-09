@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^store/(?P<app_namespace>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 
     # projects
-    url(r"^projects$", views.folder_list),
+    url(r"^projects$", views.project_list),
     url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__export$', views.export_project, name="export_project"),
