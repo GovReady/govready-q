@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.shortcuts import render
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from urllib.parse import urlsplit, urlencode
 
@@ -80,7 +80,7 @@ class OrganizationSubdomainMiddleware:
             # Does this subdomain correspond with a known organization?
             org = Organization.objects.filter(subdomain=subdomain).first()
             if org:
-                if request.user.is_authenticated() and org.can_read(request.user):
+                if request.user.is_authenticated and org.can_read(request.user):
                     # This request is from an authenticated user who is
                     # authorized to participate in the organization.
 
@@ -121,7 +121,7 @@ class OrganizationSubdomainMiddleware:
 
         # Log the user out. Otherwise the login page redirects to the home page, and then we
         # get back here and redirect to the login page, infinitely.
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             import logging
             logger = logging.getLogger(__name__)
             logger.error("invalidorg subdomain={subdomain} ip={ip} username={username}".format(

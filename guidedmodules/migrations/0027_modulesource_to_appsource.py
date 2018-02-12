@@ -6,6 +6,7 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         ('guidedmodules', '0026_auto_20170906_1930'),

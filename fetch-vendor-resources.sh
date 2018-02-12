@@ -99,9 +99,13 @@ download \
 
 # text input autocomplete (MIT License)
 download \
-  https://raw.githubusercontent.com/yuku-t/jquery-textcomplete/master/dist/jquery.textcomplete.min.js \
-  $VENDOR/jquery.textcomplete.min.js \
-  '8936cb4a0e36ec66e03c21883f0d0f18b404cd4cdf51c82167d926a084b0db51'
+  https://github.com/yuku-t/textcomplete/releases/download/v0.16.0/textcomplete-0.16.0.tgz \
+  /tmp/textcomplete.tgz \
+  '1be2f6cf71a51d13879b0e497805d7a81d0968b4da139b5a69fdf4a063144b0d'
+mkdir -p /tmp/textcomplete
+tar -zx -C /tmp/textcomplete -f /tmp/textcomplete.tgz
+mv /tmp/textcomplete/package/dist/*.min* $VENDOR/
+rm -rf /tmp/textcomplete.tgz /tmp/textcomplete
 
 # emojione (Creative Commons Attribution 4.0 International & MIT License)
 download \

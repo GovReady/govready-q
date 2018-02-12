@@ -360,10 +360,6 @@ label:hover .onhover { display: inline; }
 
             {% endif %}
 
-            {% if q.spec.encrypt == "emphemeral-user-key" %}
-              <p class="help-block">Your answer will be encrypted and will only be available to you when accessed from this web browser within the next {{ephemeral_encryption_lifetime}}.</p>
-            {% endif %}
-
             {% if not is_answerable %}
             	<p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
 

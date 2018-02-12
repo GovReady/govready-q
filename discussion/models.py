@@ -12,7 +12,7 @@ from jsonfield import JSONField
 from siteapp.models import User
 
 class Discussion(models.Model):
-    organization = models.ForeignKey('siteapp.Organization', related_name="discussions", help_text="The Organization that this Discussion belongs to.")
+    organization = models.ForeignKey('siteapp.Organization', related_name="discussions", on_delete=models.CASCADE, help_text="The Organization that this Discussion belongs to.")
 
     attached_to_content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
     attached_to_object_id = models.PositiveIntegerField()
@@ -203,9 +203,9 @@ class Discussion(models.Model):
         return self.attached_to.get_discussion_autocompletes(self.organization)
 
 class Comment(models.Model):
-    discussion = models.ForeignKey(Discussion, related_name="comments", help_text="The Discussion that this comment is attached to.")
-    replies_to = models.ForeignKey('self', blank=True, null=True, related_name="replies", help_text="If this is a reply to a Comment, the Comment that this is in reply to.")
-    user = models.ForeignKey(User, help_text="The user making a comment.")
+    discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE, help_text="The Discussion that this comment is attached to.")
+    replies_to = models.ForeignKey('self', blank=True, null=True, related_name="replies", on_delete=models.CASCADE, help_text="If this is a reply to a Comment, the Comment that this is in reply to.")
+    user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user making a comment.")
 
     emojis = models.CharField(max_length=256, blank=True, null=True, help_text="A comma-separated list of emoji names that the user is reacting with.")
     text = models.TextField(blank=True, help_text="The text of the user's comment.")
@@ -346,8 +346,8 @@ class Comment(models.Model):
 
 
 class Attachment(models.Model):
-    user = models.ForeignKey(User, help_text="The user uploading this attachment.")
-    comment = models.ForeignKey(Comment, blank=True, null=True, related_name="attachments", help_text="The Comment that this Attachment is attached to. Null when the file has been uploaded before the Comment has been saved.")
+    user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user uploading this attachment.")
+    comment = models.ForeignKey(Comment, blank=True, null=True, related_name="attachments", on_delete=models.CASCADE, help_text="The Comment that this Attachment is attached to. Null when the file has been uploaded before the Comment has been saved.")
     file = models.FileField(upload_to='discussion/attachments', help_text="The attached file.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)

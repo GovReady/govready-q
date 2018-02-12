@@ -21,7 +21,7 @@ First, run the following commands to set up your local development environment:
 
 	# Install Python 3, pip, and other system packages appropriately for your
 	# environment. The commands below demonstrate how to do this on Ubuntu 16.04:
-	sudo apt-get install python3-pip unzip libssl-dev pandoc xvfb wkhtmltopdf
+	sudo apt-get install python3-pip unzip pandoc xvfb wkhtmltopdf
 	
 	# Clone this repository.
 	git clone https://github.com/GovReady/govready-q
