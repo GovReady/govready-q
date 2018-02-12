@@ -134,39 +134,9 @@ def task_view(view_func):
         if request.method == "GET" and taskslug != task.get_slug() and len(args) == 0:
             return HttpResponseRedirect(task.get_absolute_url() + pagepath + question_key)
 
-        # Prepare for reading/writing ephemeral encryption.
-        from datetime import timedelta
-        ephemeral_encryption_lifetime = timedelta(hours=3).total_seconds()
-        ephemeral_encryption_lifetime_nice = "3 hours"
-        ephemeral_encryption_cookies = []
-        class EncryptionProvider():
-            key_id_pattern = "encr_eph_%d"
-            def set_new_ephemeral_user_key(self, key):
-                # Find a new ID for this key.
-                key_id_pattern = EncryptionProvider.key_id_pattern
-                key_id = 1
-                while (key_id_pattern % key_id) in request.COOKIES: key_id += 1
-                # We can't set a cookie here because we don't have an HttpResponse
-                # object yet. So just record the cookie for now and set it later.
-                ephemeral_encryption_cookies.append((
-                    key_id_pattern % key_id,
-                    key))
-                # Return the key's ID and its lifetime.
-                return key_id, ephemeral_encryption_lifetime
-            def get_ephemeral_user_key(self, key_id):
-                return request.COOKIES.get(EncryptionProvider.key_id_pattern % key_id)
-        def set_ephemeral_encryption_cookies(response):
-            # No need to sign the cookies since if it's tampered
-            # with, the user simply won't be able to decrypt things.
-            for key, value in ephemeral_encryption_cookies:
-                response.set_cookie(key, value=value,
-                    max_age=ephemeral_encryption_lifetime,
-                    httponly=True)
-
         # Load the answers the user has saved so far, and fetch imputed
         # answers and next-question info.
-        answered = task.get_answers(decryption_provider=EncryptionProvider())\
-            .with_extended_info()
+        answered = task.get_answers().with_extended_info()
 
         # Common context variables.
         context = {
@@ -181,12 +151,10 @@ def task_view(view_func):
             "open_invitations": task.get_open_invitations(request.user, request.organization),
             "source_invitation": task.get_source_invitation(request.user, request.organization),
             "previous_page_type": request.GET.get("previous"),
-
-            "ephemeral_encryption_lifetime": ephemeral_encryption_lifetime_nice,
         }
 
         # Render the view.
-        return view_func(request, task, answered, context, question, EncryptionProvider, set_ephemeral_encryption_cookies, *args)
+        return view_func(request, task, answered, context, question, *args)
 
     return inner_func
 
@@ -208,7 +176,7 @@ def next_question(request, task, answered, *unused_args):
 
 
 @task_view
-def save_answer(request, task, answered, context, __, EncryptionProvider, set_ephemeral_encryption_cookies):
+def save_answer(request, task, answered, context, __):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
@@ -351,7 +319,7 @@ def save_answer(request, task, answered, context, __, EncryptionProvider, set_ep
     else:
         # Save the answer.
         had_answer = question.has_answer()
-        if question.save_answer(value, answered_by_tasks, answered_by_file, request.user, "web", encryption_provider=EncryptionProvider()):
+        if question.save_answer(value, answered_by_tasks, answered_by_file, request.user, "web"):
             # The answer was changed (not just saved as a new answer).
             if request.POST.get("method") == "skip":
                 instrumentation_event_type = "skip"
@@ -391,16 +359,12 @@ def save_answer(request, task, answered, context, __, EncryptionProvider, set_ep
     # URL to redirect to, to load the next question.
     response = JsonResponse({ "status": "ok", "redirect": redirect_to })
 
-    # Apply any new ephemeral encryption cookies now that we have
-    # an HttpResponse object.
-    set_ephemeral_encryption_cookies(response)
-
     # Return the response.
     return response
 
 
 @task_view
-def show_question(request, task, answered, context, q, EncryptionProvider, set_ephemeral_encryption_cookies):
+def show_question(request, task, answered, context, q):
     # If this question cannot currently be answered (i.e. dependencies are unmet),
     # then redirect away from this page. If the user is allowed to use the authoring
     # tool, then allow seeing this question so they can edit all questions.
@@ -509,7 +473,7 @@ def show_question(request, task, answered, context, q, EncryptionProvider, set_e
     # Get any existing answer for this question.
     existing_answer = None
     if answer:
-        existing_answer = answer.get_value(decryption_provider=EncryptionProvider())
+        existing_answer = answer.get_value()
 
         # For longtext questions, because the WYSIWYG editor is initialized with HTML,
         # render the value as HTML.
@@ -627,7 +591,7 @@ def task_finished(request, task, answered, context, *unused_args):
 
 
 @task_view
-def download_answer_file(request, task, answered, context, q, EncryptionProvider, set_ephemeral_encryption_cookies, history_id):
+def download_answer_file(request, task, answered, context, q, history_id):
     # Get the TaskAnswerHistory object referenced in the URL.
     tah = get_object_or_404(TaskAnswerHistory, id=history_id, taskanswer__task=task, taskanswer__question=q)
 
@@ -677,7 +641,7 @@ def download_answer_file(request, task, answered, context, q, EncryptionProvider
     return resp
 
 @task_view
-def download_module_output(request, task, answered, context, question, EncryptionProvider, set_ephemeral_encryption_cookies, document_id, download_format):
+def download_module_output(request, task, answered, context, question, document_id, download_format):
     if document_id in (None, ""):
         raise Http404()
 

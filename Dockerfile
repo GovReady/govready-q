@@ -17,7 +17,7 @@ ENV LANGUAGE en_US:en
 # jq: we use it to assemble the local/environment.json file
 RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 RUN yum -y install \
-	python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 libffi-devel \
+	python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 \
 	unzip git2u jq \
 	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
 	&& yum clean all && rm -rf /var/cache/yum

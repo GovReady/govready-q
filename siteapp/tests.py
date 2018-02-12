@@ -914,30 +914,3 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 
-    def test_questions_encrypted(self):
-        # Log in and create a new project.
-        self._login()
-        self._new_project()
-        self.click_element('#question-question_types_encrypted')
-
-        # Introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
-        self.click_element("#save-button")
-        var_sleep(.5)
-
-        # text
-        self.assertRegex(self.browser.title, "Next Question: text with encryption")
-        self.fill_field("#inputctrl", "This is some text that will be encrypted in our database.")
-        self.click_element("#save-button")
-        var_sleep(.5)
-
-        # We're now in the output page and we can see if we can still see
-        # the answer.
-        self.assertInNodeText('some text that will be encrypted', '#document-1-body')
-
-        # Clear the cookie that holds the encrpytion key, reload the page,
-        # and see that the value disappears.
-        self.browser.delete_cookie("encr_eph_1");
-        self.browser.get(self.browser.current_url)
-        var_sleep(.5)
-        self.assertNotInNodeText('some text that will be encrypted', '#document-1-body')
