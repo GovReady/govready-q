@@ -911,7 +911,7 @@ class Invitation(models.Model):
     def get_acceptance_url(self):
         # The invitation must be sent using the subdomain of the organization it is
         # a part of.
-        from django.core.urlresolvers import reverse
+        from django.urls import reverse
         return self.organization.get_url(reverse('accept_invitation', kwargs={'code': self.email_invitation_code}))
 
     def send(self):

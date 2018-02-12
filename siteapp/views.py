@@ -3,7 +3,7 @@ import random
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.http import require_http_methods
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
@@ -1400,7 +1400,7 @@ def accept_invitation_do_accept(request, inv):
     matched_user = None # inv.to_user \
        # or User.objects.filter(email=inv.to_email).exclude(id=inv.from_user.id).first()
     
-    if request.user.is_authenticated() and request.GET.get("accept-auth") == "1":
+    if request.user.is_authenticated and request.GET.get("accept-auth") == "1":
         # The user is logged in and the "auth" flag is set, so let the user
         # continue under this account. This code path occurs when the user
         # first reaches this view but is not authenticated as the user that
@@ -1430,7 +1430,7 @@ def accept_invitation_do_accept(request, inv):
         if not matched_user.is_active:
             messages.add_message(request, messages.ERROR, 'Your account has been deactivated.')
             return HttpResponseRedirect("/")
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             # The user was logged into a different account before. Log them out
             # of that account and then log them into the account in the invitation.
             logout(request) # setting a message after logout but before login should keep the message in the session

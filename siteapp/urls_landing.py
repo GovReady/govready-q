@@ -20,7 +20,7 @@ urlpatterns = [
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
 
     # admin site
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 ]
 
 if settings.DEBUG: # also in non-landing urls.py
