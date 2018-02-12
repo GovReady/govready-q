@@ -128,6 +128,3 @@ A user can also see a particular question within a Task (and its answers and som
 
 A User with *write* access to a Task can answer questions within the Task (which sometimes involves starting new Tasks which they become the editor of), invite other users to become the Task's new editor, and delete/undelete the Task (although there is no UI for that currently).
 
-### Encrypted Answers
-
-We currenly only have one form of encrypted answer, which we call ephemeral encryption. This method of encryption stores a decryption key in a User's browser cookie. Therefore only the User has access to the answer, from the same browser where the question was answered, so long as the cookie is unexpired.

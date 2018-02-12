@@ -212,7 +212,11 @@ If you are a GovReady-Q maintainer, you can then push the image to hub.docker.co
 
 ## Running tests
 
-GovReady-Q's unit tests can be run within the Docker container. Once the Docker container is started, use `exec` to begin a shell within the container, and then launch the unit tests:
+GovReady-Q's unit tests can be run within the Docker container. After building the image:
+
+	docker container run --rm -it govready/govready-q:latest python3.6 manage.py test
+
+Or once a Docker container running GovReady-Q is started (and named `govready-q`), use `exec` to begin a shell within the container, and then launch the unit tests:
 
 	docker container exec -it govready-q bash
 	python3.6 manage.py test guidedmodules

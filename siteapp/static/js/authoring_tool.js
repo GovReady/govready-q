@@ -63,7 +63,8 @@ function init_authoring_tool_autocomplete(elem, expr_type) {
   var trigger = "";
   if (expr_type == "template") trigger = "|\{\{";
   
-  elem.textcomplete([{
+  var textcomplete = new Textcomplete(new Textcomplete.editors.Textarea(elem[0]));
+  textcomplete.register([{
     match: new RegExp("(^|\\s" + trigger + ")([a-zA-Z_][a-zA-Z0-9_]*)?$"),
     search: function (term, callback, match) {
       // Perform a fuzzy match.

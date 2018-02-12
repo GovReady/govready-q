@@ -37,9 +37,6 @@ Deploy GovReady-Q source code:
     # Install required software. (You probably need to jump out of being the govready-q user for this line, then come back.)
     sudo yum install graphviz postgresql pandoc xorg-x11-server-Xvfb wkhtmltopdf
     
-    # Install prerequisites for cryptography package per https://cryptography.io/en/latest/installation/. (You probably need to jump out of being the govready-q user for this line, then come back.)
-    sudo yum install gcc libffi-devel python34-devel openssl-devel
-    
     # Install pip packages
     pip3 install --user -r requirements.txt
     

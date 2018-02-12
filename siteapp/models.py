@@ -290,7 +290,7 @@ class Organization(models.Model):
 class Folder(models.Model):
     """A folder is a collection of Projects."""
 
-    organization = models.ForeignKey(Organization, related_name="folders", help_text="The Organization that this project belongs to.")
+    organization = models.ForeignKey(Organization, related_name="folders", on_delete=models.CASCADE, help_text="The Organization that this project belongs to.")
 
     title = models.CharField(max_length=256, help_text="The title of this Folder.")
     description = models.CharField(max_length=512, blank=True, help_text="A description of this Folder.")
@@ -349,7 +349,7 @@ class Folder(models.Model):
 class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
 
-    organization = models.ForeignKey(Organization, related_name="projects", help_text="The Organization that this project belongs to.")
+    organization = models.ForeignKey(Organization, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this project belongs to.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
     is_account_project = models.BooleanField(default=False, help_text="Each User has one Project per Organization for account Tasks.")
@@ -357,7 +357,7 @@ class Project(models.Model):
         # the root_task has to be nullable because the Task itself has a non-null
         # field that refers back to this Project, and one must be NULL until the
         # other instance is created
-    root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of", help_text="The root Task of this Project, which defines the structure of the Project.")
+    root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of", on_delete=models.CASCADE, help_text="The root Task of this Project, which defines the structure of the Project.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -814,8 +814,8 @@ class Project(models.Model):
 
 
 class ProjectMembership(models.Model):
-    project = models.ForeignKey(Project, related_name="members", help_text="The Project this is defining membership for.")
-    user = models.ForeignKey(User, help_text="The user that is a member of the Project.")
+    project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE, help_text="The Project this is defining membership for.")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="The user that is a member of the Project.")
     is_admin = models.BooleanField(default=False, help_text="Is the user an administrator of the Project?")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -824,11 +824,11 @@ class ProjectMembership(models.Model):
         unique_together = [('project', 'user')]
 
 class Invitation(models.Model):
-    organization = models.ForeignKey(Organization, related_name="invitations", help_text="The Organization that this Invitation belongs to.")
+    organization = models.ForeignKey(Organization, related_name="invitations", on_delete=models.CASCADE, help_text="The Organization that this Invitation belongs to.")
 
     # who is sending the invitation
-    from_user = models.ForeignKey(User, related_name="invitations_sent", help_text="The User who sent the invitation.")
-    from_project = models.ForeignKey(Project, related_name="invitations_sent", help_text="The Project within which the invitation exists.")
+    from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The User who sent the invitation.")
+    from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The Project within which the invitation exists.")
     
     # what is the recipient being invited to?
     into_project = models.BooleanField(default=False, help_text="Whether the user being invited is being invited to join from_project.")
@@ -838,7 +838,7 @@ class Invitation(models.Model):
     target_info = JSONField(blank=True, help_text="Additional information about the target of the invitation.")
 
     # who is the recipient of the invitation?
-    to_user = models.ForeignKey(User, related_name="invitations_received", blank=True, null=True, help_text="The user who the invitation was sent to, if to an existing user.")
+    to_user = models.ForeignKey(User, related_name="invitations_received", blank=True, null=True, on_delete=models.CASCADE, help_text="The user who the invitation was sent to, if to an existing user.")
     to_email = models.CharField(max_length=256, blank=True, null=True, help_text="The email address the invitation was sent to, if to a non-existing user.")
 
     # personalization
@@ -850,7 +850,7 @@ class Invitation(models.Model):
     revoked_at = models.DateTimeField(blank=True, null=True, help_text="If the invitation has been revoked, when it was revoked.")
 
     # what resulted from this invitation?
-    accepted_user = models.ForeignKey(User, related_name="invitations_accepted", blank=True, null=True, help_text="The user that accepted the invitation (i.e. if the invitation was by email address and an account was created).")
+    accepted_user = models.ForeignKey(User, related_name="invitations_accepted", blank=True, null=True, on_delete=models.CASCADE, help_text="The user that accepted the invitation (i.e. if the invitation was by email address and an account was created).")
 
     # random string to generate unique code for recipient
     email_invitation_code = models.CharField(max_length=64, blank=True, help_text="For emails, a unique verification code.")
@@ -911,7 +911,7 @@ class Invitation(models.Model):
     def get_acceptance_url(self):
         # The invitation must be sent using the subdomain of the organization it is
         # a part of.
-        from django.core.urlresolvers import reverse
+        from django.urls import reverse
         return self.organization.get_url(reverse('accept_invitation', kwargs={'code': self.email_invitation_code}))
 
     def send(self):

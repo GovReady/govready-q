@@ -34,10 +34,6 @@ questions:
     title: Test The Module Question Types
     type: module
     module-id: question_types_module
-  - id: question_types_encrypted
-    title: Test Encrypted Questions
-    type: module
-    module-id: question_types_encrypted
   - id: impute_conditions
     title: Test Impute Conditions
     type: module

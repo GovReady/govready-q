@@ -650,48 +650,6 @@ class RenderTests(TestCaseWithFixtureData):
         self.assertEqual(actual, expected_impute_value, msg="impute value expression %s" % expression)
 
 
-class EncryptionTests(TestCaseWithFixtureData):
-    def test_encryption(self):
-        # Create an empty Task.
-        m = Module.objects.get(module_name="question_types_encrypted")
-        task = Task.objects.create(module=m, editor=self.user, project=self.project)
-        answer, _ = TaskAnswer.objects.get_or_create(
-            task=task,
-            question=m.questions.get(key="q_text"),
-        )
-
-        # What value should we put in the database?
-        value = "This is a value!!!"
-
-        # Create an EncryptionProvider to manage keys.
-        class EncryptionProvider:
-            def __init__(self):
-                self.keys = { }
-            def set_new_ephemeral_user_key(self, key):
-                key_id = len(self.keys)
-                self.keys[key_id] = key
-                return (key_id, 60) # 60 is the lifetime in seconds, not used for anything currently
-            def get_ephemeral_user_key(self, key_id):
-                return self.keys.get(key_id)
-        encryptionProvider = EncryptionProvider()
-
-        # Save answer to database.
-        self.assertTrue(answer.save_answer(value, [], None,
-            self.user, "web", encryption_provider=encryptionProvider))
-
-        # Check that we got a key of 44 characters.
-        self.assertEqual(len(encryptionProvider.keys), 1)
-        self.assertEqual(len(encryptionProvider.keys[0]), 44)
-
-        # Check that the answer is actually encrypted.
-        answer = answer.get_current_answer()
-        self.assertIsNone(answer.get_value()) # without EncryptionProvider, it comes back None
-        self.assertEqual( # with EncryptionProvider we can see the value
-            answer.get_value(decryption_provider=encryptionProvider),
-            value)
-        self.assertIsNone(answer.get_value(decryption_provider=EncryptionProvider())) # fresh provider without the key, is None again
-
-
 class ImportExportTests(TestCaseWithFixtureData):
     ## IMPORT/EXPORT TASK DATA TESTS ##
 

@@ -508,7 +508,7 @@ class Task(models.Model):
             if a and a.cleared: a = None
             yield (q, a)
 
-    def get_answers(self, decryption_provider=None):
+    def get_answers(self):
         # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
         # The dict of answers is ordered to preserve the question definition order.
         answertuples = OrderedDict()
@@ -516,7 +516,7 @@ class Task(models.Model):
             # Get the value of that answer.
             if a is not None:
                 is_answered = True
-                value = a.get_value(decryption_provider=decryption_provider)
+                value = a.get_value()
             else:
                 is_answered = False
                 value = None
@@ -1265,37 +1265,7 @@ class TaskAnswer(models.Model):
         self.task.on_answer_changed()
         return True
 
-    def save_answer(self, value, answered_by_tasks, answered_by_file, user, method, encryption_provider=None):
-        # Apply any encoding/encryption.
-
-        value_encoding = None
-
-        if self.question.spec.get("encrypt") == "emphemeral-user-key" and value is not None:
-            # Encrypt the value before it goes into the database (except
-            # the null value --- don't encrypt whether or not the question
-            # was skipped).
-
-            if encryption_provider is None:
-                raise ValueError("Cannot save an answer to this question because encryption is required but is not available in this context.")
-
-            # Use an encryption key that is held by the user (not by Q)
-            # and expires on its own short timeframe. Each ephemerally
-            # encrypted value gets a different encryption key so that
-            # each value can expire on its own timeframe.
-            import json
-            from cryptography.fernet import Fernet
-            key = Fernet.generate_key()
-            key_id, lifetime = encryption_provider.set_new_ephemeral_user_key(key)
-            value_encoding = {
-                "method": "encrypted-emphemeral-user-key",
-                "version": 0,
-                "key_id": key_id,
-                "lifetime": lifetime, # in seconds
-            }
-            value = Fernet(key)\
-                .encrypt(json.dumps(value).encode("utf8"))\
-                .decode("ascii")
-
+    def save_answer(self, value, answered_by_tasks, answered_by_file, user, method):
         # Save the answer and return True if the answer was changed (vs was not
         # updated because the value matched the value of the existing answer).
         current_answer = self.get_current_answer()
@@ -1319,6 +1289,7 @@ class TaskAnswer(models.Model):
             # Both have content -- check if the content matches.
             return read_file(answered_by_file) == current_answer.answered_by_file.read()
 
+        value_encoding = None
         if current_answer and not current_answer.cleared \
             and value == current_answer.stored_value \
             and value_encoding == current_answer.stored_encoding \
@@ -1472,9 +1443,6 @@ class TaskAnswerHistory(models.Model):
     class Meta:
         verbose_name_plural = "TaskAnswerHistories"
 
-    class CantDecrypt(Exception):
-        pass
-
     def __repr__(self):
         # For debugging.
         return "<TaskAnswerHistory %s>" % (repr(self.taskanswer),)
@@ -1488,14 +1456,9 @@ class TaskAnswerHistory(models.Model):
         # except for interstitial questions where a None
         # indicates they've seen the question.
         if self.taskanswer.question.spec['type'] == "interstitial": return False
-        try:
-            if self.get_value(raise_if_cant_decrypt=True) is None:
-                return True
-        except TaskAnswerHistory.CantDecrypt:
-            # If we have an answer but we can't decrypt it, it's not skipped.
-            return False
+        return (self.get_value() is None)
 
-    def get_value(self, decryption_provider=None, raise_if_cant_decrypt=False):
+    def get_value(self):
         if self.cleared:
             raise RuntimeError("get_value cannot be called on a cleared answer")
 
@@ -1631,28 +1594,10 @@ class TaskAnswerHistory(models.Model):
             elif isinstance(self.stored_encoding, dict):
 
                 if self.stored_encoding.get('method') == "encrypted-emphemeral-user-key":
-                    if decryption_provider is not None:
-                        # Get the encryption key and decrypt the value.
-                        # See save_answer.
-                        import json
-                        from cryptography.fernet import Fernet
-                        try:
-                            key = decryption_provider.get_ephemeral_user_key(self.stored_encoding.get('key_id'))
-                            fernet = Fernet(key)
-                            return json.loads(
-                                fernet.decrypt(self.stored_value.encode("ascii"))
-                                .decode("ascii")
-                                )
-                        except (TypeError, ValueError):
-                            # Encryption key was not valid.
-                            pass
-
-                    # We could not decrypt.
-                    if raise_if_cant_decrypt:
-                        raise TaskAnswerHistory.CantDecrypt()
-                    else:
-                        # Treat this answer as if it were skipped.
-                        return None
+                    # This was an old ephemeral encrpytion method that is no longer
+                    # supported. Keys are certainly gone by now anyway. Treat this
+                    # question as if it were skipped.
+                    return None
 
                 else:
                     raise Exception("Invalid method in stored_encoding field.")
@@ -1666,10 +1611,7 @@ class TaskAnswerHistory(models.Model):
         if self.taskanswer.question.spec["type"] in ("module", "module-set"):
             return repr(self.answered_by_task.all())
         else:
-            try:
-                return repr(self.get_value(raise_if_cant_decrypt=True))
-            except TaskAnswerHistory.CantDecrypt:
-                return "[encrypted]"
+            return repr(self.get_value())
 
     def export_json(self, parent_dict, serializer):
         # Exports this TaskAnswerHistory's value to a JSON-serializable Python data structure.
