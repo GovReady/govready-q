@@ -4,6 +4,8 @@
 # requirements.in and that there are no known vulnerabilities,
 # and that there are no updated packages.
 
+set -euf -o pipefail # abort script on error
+
 # Install the latest pip-tools and pyup.io's safety tool.
 pip3 install -U pip-tools liccheck safety > /dev/null
 
@@ -86,7 +88,7 @@ if [ -f requirements_txt_checker_ignoreupdates.txt ]; then
 	for PKG_EQ_VER in $(cat requirements_txt_checker_ignoreupdates.txt); do
 		PKG_VER=(${PKG_EQ_VER//==/ }) # split on ==, make a bash array
 		echo "Ignoring new ${PKG_VER[0]} version ${PKG_VER[1]}."
-		grep "^${PKG_VER[0]}  *[^ ][^ ]*  *${PKG_VER[1]} " $FN
+		grep "^${PKG_VER[0]}  *[^ ][^ ]*  *${PKG_VER[1]} " $FN || /bin/true
 		sed -i "/^${PKG_VER[0]}  *[^ ][^ ]*  *${PKG_VER[1]} /d" $FN
 	done
 fi
@@ -103,3 +105,4 @@ else
 	echo "All packages are up to date with latest upstream versions."
 fi
 rm $FN
+
