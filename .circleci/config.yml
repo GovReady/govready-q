@@ -1,0 +1,38 @@
+# A CircleCI configuration file because we do continuous integration testing!
+
+version: 2
+
+jobs:
+  build:
+    docker:
+    - image: circleci/python:3.5-jessie-browsers # matches Python version in Ubuntu 16.04 in deployment, python:3.5-slim works but not with selenium
+
+    steps:
+    # Get source code.
+    - checkout
+
+    # Install dependencies.
+    - run: sudo apt update && sudo apt install -y git curl unzip locales libmagic1 graphviz pandoc xvfb wkhtmltopdf
+    - run: sudo sed -i "s/^[# ]*en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen && sudo /usr/sbin/locale-gen # Install the U.S. locale (see `apt install locales` above), which we reference explicitly in Q for formatting and parsing numbers. Usually only needed on slim builds of Debian images.
+    - run: pip install --user -r requirements.txt
+    - run: ./fetch-vendor-resources.sh
+
+    # This is adapted from https://github.com/circleci/circleci-images/blob/master/shared/images/Dockerfile-browsers.template
+    # but it still says chromium crashes when launched from selenium tests. Maybe because chromium
+    # doesn't like to run as root --- need to try running it as non-root.
+    ## Install selenium dependencies --- not needed if using circleci/python:3.5-jessie-browsers image.
+    #- run: apt install chromedriver
+    #- run: export DISPLAY=:99
+    #- run: export CHROMIUM_FLAGS="--disable-setuid-sandbox --no-sandbox"
+    #- run:
+    #    name: Running X virtual framebuffer
+    #    command: Xvfb :99 -screen 0 1280x1024x24
+    #    background: true
+    - run: sudo pip3 install -U pip-tools liccheck safety
+
+    # Run tests.
+    - run: ./requirements_txt_checker.sh
+    - run: ./manage.py test guidedmodules
+    - run: ./manage.py test siteapp.tests.LandingSiteFunctionalTests
+    - run: ./manage.py test siteapp.tests.GeneralTests
+    - run: ./manage.py test siteapp.tests.QuestionsTests
