@@ -20,7 +20,7 @@ Django==1.10.8 # BSD License
 django-debug-toolbar # BSD License
 django-allauth==0.34.0 # MIT License
 django-bootstrap3 # Apache License 2.0
-django-notifications-hq==1.3 # MIT License
+django-notifications-hq==1.3 # MIT License -- see requirements_txt_updater.sh that has a patch to use a Github release
 jsonfield # MIT License
 dj_database_url==0.4.2 # BSD License
 whitenoise # MIT License
