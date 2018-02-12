@@ -16,9 +16,9 @@ GitPython # BSD License
 Pygments==2.2.0 # BSD License
 
 # Common Django Packages
-Django==1.10.8 # BSD License
+Django<2.1 # BSD License
 django-debug-toolbar # BSD License
-django-allauth==0.34.0 # MIT License
+django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
 django-notifications-hq==1.3 # MIT License -- see requirements_txt_updater.sh that has a patch to use a Github release
 jsonfield # MIT License
@@ -31,7 +31,7 @@ rtyaml # CC0
 email-validator # CC0
 exclusiveprocess # CC0
 django-html-emailer # MIT License
-django-database-storage-backend==0.0.2 # CC0
+django-database-storage-backend==0.0.3 # CC0
 commonmarkextensions # BSD 3
 
 # Only needed in production

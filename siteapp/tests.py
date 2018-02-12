@@ -116,12 +116,10 @@ class SeleniumTest(StaticLiveServerTestCase):
 
     def has_more_email(self):
         import django.core.mail
-        try:
-            # The outbox attribute doesn't exist until the first
-            # message is sent.
-            return len(django.core.mail.outbox) > 0
-        except AttributeError:
-            return False
+        # The outbox attribute doesn't exist until the backend
+        # instance is initialized when the first message is sent.
+        outbox = getattr(django.core.mail, 'outbox', [])
+        return len(outbox) > 0
 
 #####################################################################
 
@@ -169,7 +167,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Create a default user that is a member of the organization.
         # Log the user into the test client.
         from siteapp.models import User, ProjectMembership
-        self.user = User.objects.create(username="me")
+        self.user = User.objects.create(
+            username="me",
+            email="test+user@q.govready.com")
         self.user.set_password("1234")
         self.user.save()
         self.user.reset_api_keys()
