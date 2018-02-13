@@ -39,7 +39,7 @@ h2 {
   padding: 12px;
   background-color: #FBFBFB;
   margin-bottom: 24px;
-  cursor: pointer;
+  cursor: default;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -142,7 +142,7 @@ h2 {
       <div class="app"
         data-app="{{app.key}}"
         data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}"
-        onclick="window.location='/store/{{app.key|urlencode}}{{forward_qsargs}}'"">
+        >
 
         <table>
         <tr valign="top">
@@ -172,6 +172,20 @@ h2 {
         </div>
         {% endif %}
 
+        <div style="margin-top: .5em">
+        <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="get" style="display: inline-block;">
+          <button type="submit" class="btn btn-info btn-sm view-app">
+            <span class="glyphicon glyphicon-info-sign"> </span>
+            Info
+          </button>
+        </form>
+        <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success btn-sm start-app">
+            Add ►
+          </button>
+        </form>
+        </div>
         </td>
         </tr>
         </table>

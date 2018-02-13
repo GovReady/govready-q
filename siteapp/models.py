@@ -517,22 +517,6 @@ class Project(models.Model):
 
         return projects
 
-    def primary_folder(self):
-        # Weirdly, we allow in the db a Project to be in multiple Folders.
-        # Return the first.
-        folder = self.contained_in_folders.first()
-        if folder:
-            return folder
-
-        # If the Project is not in a folder, but its root task is an answer
-        # to a question, then return the primary folder of the project
-        # containing that question.
-        if not folder and self.root_task.is_answer_to.count():
-            ans = self.root_task.is_answer_to.first()
-            return ans.taskanswer.task.project.primary_folder()
-
-        return None
-
     def get_parent_projects(self):
         parents = []
         project = self
@@ -542,17 +526,6 @@ class Project(models.Model):
             parents.append(project)
         parents.reverse()
         return parents
-
-    def get_parent_object(self):
-        parents = self.get_parent_projects()
-        if len(parents) > 0:
-            return parents[-1]
-        
-        folder = self.primary_folder()
-        if folder:
-            return folder
-
-        return None
 
     def get_open_tasks(self, user):
         # Get all tasks that the user might want to continue working on

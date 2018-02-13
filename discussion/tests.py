@@ -51,8 +51,7 @@ class DiscussionTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
-        self.click_element(".app[data-app='fixture/simple_project']")
-        self.click_element("#start-project")
+        self.click_element(".app[data-app='fixture/simple_project'] .view-app")
         self.click_element("#start-project")
         var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")

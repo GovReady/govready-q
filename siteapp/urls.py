@@ -29,11 +29,6 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/list)$', views.project_list_all_answers), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
-    url(r'^projects/folders/(\d+)/(?:[\w\-]+)$', views.folder_view),
-    url(r'^__rename_folder$', views.rename_folder, name="rename_folder"),
-    url(r'^__set_folder_description$', views.set_folder_description, name="set_folder_description"),
-    url(r'^__new_folder$', views.new_folder, name="new_folder"),
-    url(r'^__delete_folder$', views.delete_folder, name="delete_folder"),
 
     # api
     url(r'^api-keys$', views.show_api_keys, name="show_api_keys"),
