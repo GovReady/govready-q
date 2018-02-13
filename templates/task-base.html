@@ -44,16 +44,11 @@
 
 {% block breadcrumbs %}
   {% if not task.project.is_account_project %}
-  {% with folder=task.project.primary_folder %} {# TODO #}
-  {% if folder %} {# system projects aren't in a folder #}
   <li>
-    <a href="{{folder.get_absolute_url}}">
-      <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
-      {# {{folder.title}} #}
+    <a href="/">
+      <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
     </a>
   </li>
-  {% endif %}
-  {% endwith %}
   {% for parent_project in task.project.get_parent_projects %}
     <li>
       <a href="{{parent_project.get_absolute_url}}">

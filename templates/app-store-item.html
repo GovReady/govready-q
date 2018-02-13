@@ -51,7 +51,6 @@
 
       <form method="post" style="margin: 1em; text-align: center;">
         {% csrf_token %}
-        <input type=hidden name=firstsubmit value=1>
         <button id="start-project" type="submit" class="btn btn-success">
           {% if not request.GET.q %}
           Add to project

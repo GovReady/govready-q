@@ -677,25 +677,6 @@ function delete_project() {
     }
   )
 }
-
-{% if is_folder_admin %}
-function rename_folder(elem) {
-  var folder_elem = $("#folder-link");
-  var new_title = prompt("Rename this folder?", folder_elem.text());
-  if (!new_title || new_title == folder_elem.text()) return;
-  ajax_with_indicator({
-   url: '{% url "rename_folder" %}',
-   method: "POST",
-   data: {
-    folder: folder_elem.data("folder-id"),
-    title: new_title
-   },
-   success: function() {
-     folder_elem.text(new_title);
-   }
-  });
-}
-{% endif %}
 </script>
 
 {% if authoring_tool_enabled %}

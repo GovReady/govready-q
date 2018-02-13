@@ -54,13 +54,11 @@ div.subtitle {
 {% endblock %}
 
 {% block breadcrumbs %}
-  {% if folder %}
   <li>
-    <a id="folder-link" href="{{folder.get_absolute_url}}" data-folder-id="{{folder.id}}" title="{{folder.title}}">
-      <span class="glyphicon glyphicon-folder-open" style="margin-right: .25em"></span>
+    <a href="/">
+      <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
     </a>
   </li>
-  {% endif %}
   {% for parent_project in project.get_parent_projects %}
     {% if not forloop.counter == 1 %} &gt; {% endif %}
     <li>

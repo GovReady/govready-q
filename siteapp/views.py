@@ -114,43 +114,6 @@ def project_list(request):
     })
 
 
-def folder_view(request, folder_id):
-    # Get the folder.
-    folder = get_object_or_404(Folder, id=folder_id, organization=request.organization)
-    is_admin = (request.user in folder.get_admins())
-
-    # Get the projects that are in the folder that the user can see. This also handily
-    # sets user_is_admin on the projects.
-    projects = folder.get_readable_projects(request.user)
-
-    # Count up the open tasks in each project.
-    for p in projects:
-        p.open_tasks = p.get_open_tasks(request.user) # for the template
-
-    # Check authorization. Users can see folders just when they are an admin or they
-    # can see any project within it.
-    if not is_admin and len(projects) == 0:
-        return HttpResponseForbidden()
-
-    # Redirect if slug is not canonical. We do this after checking for
-    # read privs so that we don't reveal the folder's title to unpriv'd users.
-    if request.path != folder.get_absolute_url():
-        return HttpResponseRedirect(folder.get_absolute_url())
-
-    # Count the number of projects in the folder the user can't see in case,
-    # as a folder admin, there are projects the user can't see that block
-    # deleting the folder.
-    total_projcts = folder.projects.count()
-    num_hidden_projects = folder.projects.count() - len(projects)
-
-    return render(request, "folder_view.html", {
-        "folder": folder,
-        "is_admin": is_admin,
-        "projects": projects,
-        "num_hidden_projects": num_hidden_projects,
-        "any_have_members_besides_me": ProjectMembership.objects.filter(project__in=projects).exclude(user=request.user),
-    })
-
 def get_compliance_apps_catalog(organization, reset_cache=False):
     # Load the compliance apps available to the given organization.
     # Since accessing remote AppSources is an expensive operation,
@@ -385,92 +348,45 @@ def apps_catalog_item(request, app_namespace, app_name):
         })
     
     else:
-        # Show the form to start the app.
+        # Start the app.
 
-        from django.forms import ModelForm, ChoiceField, RadioSelect, MultipleChoiceField, \
-            CheckboxSelectMultiple, CharField, Textarea
-        from django.core.exceptions import ValidationError
+        if not request.GET.get("q"):
+            # Since we no longer ask what folder to put the new Project into,
+            # create a default Folder instance for all started apps that aren't
+            # answers to questions. All top-level apps must be in a folder. That's
+            # how we know to display it in the project_list view.
+            default_folder_name = "Started Apps"
+            folder = Folder.objects.filter(
+                organization=request.organization,
+                admin_users=request.user,
+                title=default_folder_name,
+            ).first()
+            if not folder:
+                folder = Folder.objects.create(organization=request.organization, title=default_folder_name)
+                folder.admin_users.add(request.user)
 
-        # What Folders can the new Project be added to?
-        folders = list(Folder.get_all_folders_admin_of(request.user, request.organization))
-
-        def validate_list_of_email_addresses(value):
-            # This is a form validator as well as a function to return the split and
-            # normalized addresses.
-            def validate_email(email):
-                import email_validator
-                try:
-                    return email_validator.validate_email(email)["email"]
-                except ValueError as e:
-                    raise ValidationError(email + ": " + str(e))
-            import re
-            return set(
-                validate_email(email)
-                for email in re.split(r"[\s,]+", value)
-                if email != "") # if value is the empty string, we will get one empty value after split
-
-        # The form.
-        class NewProjectForm(ModelForm):
-            class Meta:
-                model = Project
-                fields = []
-
-            if len(folders) > 0 and ("q" not in request.GET):
-                add_to_folder = ChoiceField(
-                    choices=[(f.id, f) for f in folders] + [("", "Create a new folder")],
-                    required=False,
-                    label="Add this app to which project folder?",
-                    widget=RadioSelect)
-
-        if "firstsubmit" in request.POST and "q" not in request.GET:
-            # When coming to this page for the first time, don't do validation since
-            # nothing has been submitted yet. Unless the 'q' are is specified, in
-            # which case there are no form items and we can submit immediately.
-            form = NewProjectForm()
+            # This app is going into a folder. It does not answer a task question.
+            task, q = (None, None)
         else:
-            form = NewProjectForm(request.POST)
-            if not form.errors:
-                if not request.GET.get("q"):
-                    # Get or create the Folder the new Project is going into.
-                    # (The form field isn't shown if there are no existing folders
-                    # (get returns None), and if the user wants to create a new folder
-                    # the value is the empty string, otherwise it is a string containing
-                    # a primary key (positive integer).)
-                    if form.cleaned_data.get("add_to_folder"):
-                        folder = Folder.objects.get(id=form.cleaned_data["add_to_folder"])
-                    else:
-                        folder = Folder.objects.create(
-                            organization=request.organization,
-                            title=app_catalog_info["title"] + " started on " + timezone.now().strftime("%x %X"))
+            # This app is going to answer a question.
+            # Don't put it into a folder.
+            folder = None
 
-                    # This app is going into a folder. It does not answer a task question.
-                    task, q = (None, None)
-                else:
-                    # This app is going to answer a question.
-                    # Don't put it into a folder.
-                    folder = None #  task.project.contained_in_folders.first()
+            # It will answer a task. Validate that we're starting an app that
+            # can answer that question.
+            task, q = get_task_question(request)
+            if not app_satifies_interface(app_catalog_info, q):
+                raise ValueError("Invalid protocol.")
 
-                    # It will answer a task. Validate that we're starting an app that
-                    # can answer that question.
-                    task, q = get_task_question(request)
-                    if not app_satifies_interface(app_catalog_info, q):
-                        raise ValueError("Invalid protocol.")
+        project = start_app(app_catalog_info, request.organization, request.user, folder, task, q)
 
-                project = start_app(app_catalog_info, request.organization, request.user, folder, task, q)
+        if task and q:
+            # Redirect to the task containing the question that was just answered.
+            from urllib.parse import urlencode
+            return HttpResponseRedirect(task.get_absolute_url() + "#" + urlencode({ "q": q.key }))
 
-                if task and q:
-                    # Redirect to the task containing the question that was just answered.
-                    from urllib.parse import urlencode
-                    return HttpResponseRedirect(task.get_absolute_url() + "#" + urlencode({ "q": q.key }))
-
-                # Redirect to the new project.
-                return HttpResponseRedirect(project.get_absolute_url())
-
-        # Show form.
-        return render(request, "app-store-item-start.html", {
-            "app": app_catalog_info,
-            "form": form,
-        })
+        # Redirect to the new project.
+        return HttpResponseRedirect(project.get_absolute_url())
 
 
 def start_app(app_catalog_info, organization, user, folder, task, q):
@@ -779,7 +695,6 @@ def project(request, project):
         other_open_invitations.append(inv)
 
     # Render.
-    folder = project.primary_folder()
     return render(request, "project.html", {
         "is_project_page": True,
         "page_title": "Components",
@@ -788,9 +703,6 @@ def project(request, project):
         "is_admin": request.user in project.get_admins(),
         "can_start_task": can_start_task,
         "can_start_any_apps": can_start_any_apps,
-
-        "folder": folder,
-        "is_folder_admin": folder and (request.user in folder.get_admins()),
 
         "title": project.title,
         "intro" : project.root_task.render_field('introduction') if project.root_task.module.spec.get("introduction") else "",
@@ -842,7 +754,6 @@ def project_list_all_answers(request, project):
     return render(request, "project-list-answers.html", {
         "page_title": "Review Answers",
         "project": project,
-        "folder": project.primary_folder(),
         "answers": sections,
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
     })
@@ -912,7 +823,6 @@ def project_outputs(request, project):
     return render(request, "project-outputs.html", {
         "page_title": "Related Controls",
         "project": project,
-        "folder": project.primary_folder(),
         "toc": toc,
         "combined_output": combined_output,
     })
@@ -1019,7 +929,6 @@ def project_api(request, project):
     return render(request, "project-api.html", {
         "page_title": "API Documentation",
         "project": project,
-        "folder": project.primary_folder(),
         "SITE_ROOT_URL": settings.SITE_ROOT_URL,
         "sample": format_sample(sample),
         "sample_post_keyvalue": sample_post_keyvalue,
@@ -1055,55 +964,6 @@ def new_folder(request):
     f.admin_users.add(request.user)
     return JsonResponse({ "status": "ok", "id": f.id, "title": f.title })
 
-@login_required
-def rename_folder(request):
-    if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
-
-    # Get the folder.
-    folder = get_object_or_404(Folder, id=request.POST.get("folder"))
-
-    # Validate that the user can rename it.
-    if request.user not in folder.get_admins():
-        return JsonResponse({ "status": "error", "message": "Not authorized." })
-
-    # Update.
-    folder.title = request.POST.get("title")
-    folder.save()
-    return JsonResponse({ "status": "ok" })
-
-
-@login_required
-def set_folder_description(request):
-    if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
-
-    # Get the folder.
-    folder = get_object_or_404(Folder, id=request.POST.get("folder"))
-
-    # Validate that the user can edit it.
-    if request.user not in folder.get_admins():
-        return JsonResponse({ "status": "error", "message": "Not authorized." })
-
-    # Update.
-    folder.description = request.POST.get("value")
-    folder.save()
-    return JsonResponse({ "status": "ok" })
-
-@login_required
-def delete_folder(request):
-    if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
-
-    # Get the folder.
-    folder = get_object_or_404(Folder, id=request.POST.get("folder"))
-
-    # Validate that the user can rename it.
-    if request.user not in folder.get_admins():
-        return JsonResponse({ "status": "error", "message": "Not authorized." })
-    if folder.projects.count() > 0:
-        return JsonResponse({ "status": "error", "message": "The folder is not empty." })
-
-    # Delete.
-    folder.delete()
-    return JsonResponse({ "status": "ok" })
 
 def project_admin_login_post_required(f):
     # Wrap the function to do authorization and change arguments.
@@ -1140,14 +1000,16 @@ def delete_project(request, project):
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
     
-    parent = project.get_parent_object()
+    # Get the project's parents for redirect.
+    parents = project.get_parent_projects()
     project.delete()
 
-    # After deleting a project, a folder can become unreadable.
-    if isinstance(parent, Folder) and not parent.has_read_priv(request.user):
-        parent = None
-
-    redirect = parent.get_absolute_url() if parent else "/"
+    # Only choose parents the user can see.
+    parents = [parent for parent in parents if parent.has_read_priv(request.user)]
+    if len(parents) > 0:
+        redirect = parents[0].get_absolute_url()
+    else:
+        redirect = "/"
 
     return JsonResponse({ "status": "ok", "redirect": redirect })
 
@@ -1210,7 +1072,6 @@ def project_start_apps(request, *args):
         def viewfunc(request, project):
             return render(request, "project-startapps.html", {
                 "project": project,
-                "folder": project.primary_folder(),
                 "questions": list(get_questions(project)),
             })
     else:

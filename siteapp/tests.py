@@ -211,9 +211,10 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def _new_project(self, module_key="project/simple_project"):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
-        self.click_element(".app[data-app='%s']" % module_key)
+        self.click_element(".app[data-app='%s'] .view-app" % module_key)
         self.click_element("#start-project")
-        self.click_element("#start-project")
+        # last two lines could also be replaced with:
+        #self.click_element(".app[data-app='%s'] .start-app" % module_key)
         var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
