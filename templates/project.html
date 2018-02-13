@@ -371,9 +371,20 @@
                         {# In the rows layout mode, indicate if the question's answer is finished here (only if this question can only be answered once and is answered). #}
                         {% if layout_mode == "rows" and not rec.can_start_new_task %}
                           {% if rec.tasks.0.is_finished %}
-                            <span class="label label-primary" style="background-color: #96B">finished</span>
-                          {% else %}
-                            <span class="label label-primary">in progress</span>
+                            <div class="progress" style="width:80%;height:10px;margin-top:8px;">
+                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: 100%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>   
+                            </div>
+                            <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37); ">Finished</div>
+                          {% elif rec.tasks.0.is_started %}
+                            <div class="progress" style="width:80%;height:10px;margin-top:8px;">
+                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <span class="btn btn-sm btn-default">In progress</span>
+                            {% else %}
+                            <div class="progress" style="width:80%;height:10px;margin-top:8px;">
+                              <div class="progress-bar bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="btn btn-sm btn-default">Start section</div>
                           {% endif %}
                         {% endif %}
                       </div>
