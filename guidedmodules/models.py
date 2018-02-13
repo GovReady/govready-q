@@ -574,6 +574,44 @@ class Task(models.Model):
                             return False
         return True
 
+    def get_progress_percent(self):
+        if self.cached_state is None:
+            self.cached_state = { }
+        if "progress_percent" not in self.cached_state:
+            answered, total = self.compute_progress_percent()
+            self.cached_state["progress_percent"] = (answered/total*100) if (total > 0) else 100
+            self.save(update_fields=["cached_state"])
+        return self.cached_state["progress_percent"]
+
+    def compute_progress_percent(self):
+        # Return a tuple of the number of questions that have an answer
+        # and the total number of questions. For module-type questions
+        # that are answered, recursively add the questions of the inner module.
+        try:
+            answers = self.get_answers().with_extended_info()
+        except Exception:
+            # If there is an error evaluating imputed conditions,
+            # just say the task is empty.
+            return (0, 0)
+
+        num_answered = 0
+        num_questions = 0
+        for (q, is_answered, a, value) in answers.answertuples.values():
+            # module-type questions with a real answer
+            if isinstance(a, ModuleAnswers) and a.task:
+                inner_answered, inner_total = a.task.compute_progress_percent()
+                num_answered += inner_answered
+                num_questions += inner_total
+
+            # all other questions
+            else:
+                if is_answered:
+                    num_answered += 1
+                num_questions += 1
+
+        return (num_answered, num_questions)
+
+
     # This method is called any time an answer to any of this Task's questions
     # is changed, or for questions that are answered by sub-tasks, and if any
     # of their answers changed too, recursively.

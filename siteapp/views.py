@@ -672,6 +672,7 @@ def project(request, project):
         # Is this question answered yet? Are there any discussions the user
         # is a guest of in any of the tasks that answer this question?
         is_finished = None
+        progress_percent = 0
         tasks = []
         task_discussions = []
         ans = root_task_answers.as_dict().get(mq.key)
@@ -697,6 +698,9 @@ def project(request, project):
                     # is marked as finished.
                     is_finished = True
 
+                if len(ans) == 1:
+                    progress_percent = task.get_progress_percent()
+
         # Do not display if the user can't start a task and there are no
         # tasks visible to the user.
         if not can_start_task and len(tasks) == 0 and len(task_discussions) == 0:
@@ -720,6 +724,7 @@ def project(request, project):
             "question": mq,
             "module": mq.answer_type_module,
             "is_finished": is_finished,
+            "progress_percent": progress_percent,
             "tasks": tasks,
             "can_start_new_task": mq.spec["type"] == "module-set" or len(tasks) == 0,
             "first_start": d_first_start,
