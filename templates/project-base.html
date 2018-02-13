@@ -117,10 +117,10 @@ div.subtitle {
       <div class="clearfix"></div>
 
       {% if project.lifecycle_stage %}
-      <div id="project-status-bar" class="row">
+      <div class="progress">
         {% for stage in project.lifecycle_stage.0.stages %}
-          <div class="{% for w in project.lifecycle_stage.0.stage_col_width %}col-{{w}} {% endfor %} {% if stage.complete %}active{% endif %}">
-            <div>{{stage.label}}</div>
+          <div class="progress-bar progress-bar-success" style="width: {% if stage.complete %}{{lifecycle_progress_unit}}%;{% else %}0px{% endif %};">
+            {{stage.label}}
           </div>
         {% endfor %}
       </div>

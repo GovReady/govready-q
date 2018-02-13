@@ -585,6 +585,9 @@ def project(request, project):
             if stage == project.lifecycle_stage[1]:
                 break
 
+    # Get the percent of the whole that one stage consumes
+    lifecycle_progress_unit = 100 / len(project.lifecycle_stage[0]["stages"])
+
     # Get all of the discussions I'm participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
     # certain questions within those tasks.
@@ -784,6 +787,8 @@ def project(request, project):
         "is_project_page": True,
         "page_title": "Components",
         "project": project,
+
+        "lifecycle_progress_unit": lifecycle_progress_unit,
 
         "is_admin": request.user in project.get_admins(),
         "can_start_task": can_start_task,
