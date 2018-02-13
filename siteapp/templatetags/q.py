@@ -20,3 +20,9 @@ def json(value):
     value = value.replace("&", r'\u0026') # not necessary but for good measure
     return mark_safe(value)
 
+@register.filter(is_safe=True)
+def div(value1, value2):
+    # Divide a value by another value, like django's built-in "|mult:value"
+    # filter.
+    return float(value1)/float(value2)
+

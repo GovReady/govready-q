@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load q %}
+
 {% block head %}
 <style>
 {% include "focus-area-styles.css" %}
@@ -21,22 +23,6 @@ h1 {
   margin: 0;
   font-size: 50px;
 }
-
-#project-status-bar {
-  margin: 15px 0 30px 0;
-}
-  #project-status-bar > div {
-    background-color: #F5F5F9;
-    border: 1px solid #DBDBDC;
-    color: #666;
-  }
-  #project-status-bar > div.active {
-    background-color: #EEFFEE;
-  }
-    #project-status-bar > div div {
-      white-space: pre;
-      padding: 3px;
-    }
 
 div.subtitle {
   margin: .2em 0 .75em 0;
@@ -117,13 +103,15 @@ div.subtitle {
       <div class="clearfix"></div>
 
       {% if project.lifecycle_stage %}
-      <div class="progress">
+      {% with nstages=project.lifecycle_stage.0.stages|length %}
+      <div class="progress" style="cursor: default;">
         {% for stage in project.lifecycle_stage.0.stages %}
-          <div class="progress-bar progress-bar-success" style="width: {% if stage.complete %}{{lifecycle_progress_unit}}%;{% else %}0px{% endif %};">
+          <div class="progress-bar progress-bar-success" style="{% if stage.complete %}width: {{100|div:nstages|floatformat:0|add:-1}}%;{% else %}display: none;{% endif %}">
             {{stage.label}}
           </div>
         {% endfor %}
       </div>
+      {% endwith %}
       {% endif %}
       
       <div style="margin-top: 1em">
