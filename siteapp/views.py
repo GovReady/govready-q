@@ -565,24 +565,18 @@ def project(request, project):
         # Can't auto-make an icon.
         return
 
-    # Create all of the module entries in groups.
-    from collections import OrderedDict
-    groups = OrderedDict()
-    action_buttons = []
-    question_dict = { }
+    # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
+    questions = { }
     first_start = True
     can_start_any_apps = False
-    layout_mode = "rows"
-    for mq in project.root_task.module.questions.all()\
-        .select_related("answer_type_module")\
-        .order_by('definition_order'):
+    for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
         if mq.spec.get("type") not in ("module", "module-set"):
             continue
 
         # Skip questions that are imputed.
-        if mq.key in root_task_answers.was_imputed:
+        if is_answered and not answer_obj:
             continue
 
         # Is this question answered yet? Are there any discussions the user
@@ -591,15 +585,14 @@ def project(request, project):
         progress_percent = 0
         tasks = []
         task_discussions = []
-        ans = root_task_answers.as_dict().get(mq.key)
-        if ans is not None:
+        if answer_value is not None:
             if mq.spec["type"] == "module":
                 # Convert a ModuleAnswers instance to an array containing just itself.
-                ans = [ans]
+                answer_value = [answer_value]
             elif mq.spec["type"] == "module-set":
                 # ans is already a list of ModuleAnswers instances.
                 pass
-            for module_answers in ans:
+            for module_answers in answer_value:
                 task = module_answers.task
 
                 task_discussions.extend([d for d in discussions if d.attached_to.task == task])
@@ -614,7 +607,7 @@ def project(request, project):
                     # is marked as finished.
                     is_finished = True
 
-                if len(ans) == 1:
+                if len(answer_value) == 1:
                     progress_percent = task.get_progress_percent()
 
         # Do not display if the user can't start a task and there are no
@@ -628,17 +621,13 @@ def project(request, project):
 
         # Is this a protocol question?
         if mq.spec.get("protocol"):
-            # Switch to grid layout.
-            layout_mode = "grid"
-
             # Set flag if an app can be started here.
-            if can_start_task and (ans is None or mq.spec["type"] == "module-set"):
+            if can_start_task and (answer_value is None or mq.spec["type"] == "module-set"):
                 can_start_any_apps = True
 
-        # Create template context dict.
-        d = {
+        # Create template context dict for this question.
+        questions[mq.id] = {
             "question": mq,
-            "module": mq.answer_type_module,
             "is_finished": is_finished,
             "progress_percent": progress_percent,
             "tasks": tasks,
@@ -647,21 +636,38 @@ def project(request, project):
             "discussions": task_discussions,
             "invitations": [], # filled in below
         }
-        question_dict[mq.id] = d
-
-        if mq.spec.get("placement") == None:
-            groupname = mq.spec.get("group", "Modules")
-            group = groups.setdefault(groupname, {
-                "title": groupname,
-                "questions": [],
-            })
-            group["questions"].append(d)
-
-        elif mq.spec.get("placement") == "action-buttons":
-            action_buttons.append(d)
 
         # Pre-load the icon to show for this question.
-        load_unanswered_question_icon(d, mq)
+        load_unanswered_question_icon(questions[mq.id], mq)
+
+    # Assign questions to the main area or to the "action buttons" panel on the side of the page.
+    main_area_questions = []
+    action_buttons = []
+    for q in questions.values():
+        mq = q["question"]
+        if mq.spec.get("placement") == None:
+            main_area_questions.append(q)
+        elif mq.spec.get("placement") == "action-buttons":
+            action_buttons.append(q)
+
+    # Choose a layout mode. Use the grid layout if any question
+    # has a 'protocol' field. Otherwise use the row layout.
+    layout_mode = "rows"
+    for q in main_area_questions:
+        if q["question"].spec.get("protocol"):
+            layout_mode = "grid"
+
+    # Assign main-area questions to groups.
+    from collections import OrderedDict
+    groups = OrderedDict()
+    for q in main_area_questions:
+        mq = q["question"]
+        groupname = mq.spec.get("group", "Modules")
+        group = groups.setdefault(groupname, {
+            "title": groupname,
+            "questions": [],
+        })
+        group["questions"].append(q)
 
     # Are there any output documents that we can render?
     has_outputs = False
@@ -678,8 +684,8 @@ def project(request, project):
         if inv.target == project:
             into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
             if into_new_task_question_id:
-                if into_new_task_question_id in question_dict: # should always be True
-                    question_dict[into_new_task_question_id]["invitations"].append(inv)
+                if into_new_task_question_id in questions: # should always be True
+                    questions[into_new_task_question_id]["invitations"].append(inv)
                     continue
 
         # If the invitation didn't get put elsewhere, display in the
@@ -699,11 +705,12 @@ def project(request, project):
         "title": project.title,
         "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-        "groups": list(groups.values()),
-        "action_buttons": action_buttons,
         "has_outputs": has_outputs,
 
         "layout_mode": layout_mode,
+        "groups": list(groups.values()),
+        "action_buttons": action_buttons,
+
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
     })
 

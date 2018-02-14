@@ -13,9 +13,10 @@
   margin: 30px 0 20px 0;
 }
 
-.question-group-title {
+h3.question-group-title {
   color: #777;
   padding: 16px 18px;
+  margin: 0;
 }
 
 .question {
@@ -117,23 +118,23 @@
 
     {# action buttons #}
     {% if action_buttons %}
-      {% for rec in action_buttons %}
-        {% for t in rec.tasks %}
+      {% for q in action_buttons %}
+        {% for t in q.tasks %}
           <a
             class="btn btn-default" style="background: white"
             href="{{t.get_absolute_url}}?previous=project">
-            {{rec.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
+            {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
           </a>
         {% empty %}
-          {% if can_start_task and rec.can_start_new_task %}
+          {% if can_start_task and q.can_start_new_task %}
             <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
               {% csrf_token %}
               <input type="hidden" name="project" value="{{project.id}}"/>
-              <input type="hidden" name="question" value="{{rec.question.key}}"/>
+              <input type="hidden" name="question" value="{{q.question.key}}"/>
               <input type="hidden" name="previous" value="project"/>
               <a class="btn btn-default" style="background: white"
                 href="#" onclick="$(this).parent('form').submit(); return false;">
-                {{rec.question.spec.title}} &raquo;
+                {{q.question.spec.title}} &raquo;
               </a>
             </form>
           {% endif %}
@@ -186,21 +187,21 @@
             <div class="question-group">
 
               {% if groups|length > 1 %}
-              <div class="question-group-title">{{group.title}}</div>
+              <h3 class="question-group-title">{{group.title}}</h3>
               {% endif %}
 
               <div class="row">
 
-              {% for rec in group.questions %}
-                <div id="question-{{rec.question.key}}"
+              {% for q in group.questions %}
+                <div id="question-{{q.question.key}}"
                   class="
                     {# The layout of the project page is either a grid of components or a vertical list of components. #}
                     {% if layout_mode == "grid" %}col-sm-3 col-lg-2{% else %}col-xs-12{% endif %}
                     question
 
                     {# Add CSS classes for whether this question is finished or if it's the next item for the user to do. #}
-                    {% if rec.is_finished %}task_finished{% endif %}
-                    {% if rec.first_start %}first_start{% endif %}"
+                    {% if q.is_finished %}task_finished{% endif %}
+                    {% if q.first_start %}first_start{% endif %}"
                     >
 
                     {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
@@ -209,26 +210,26 @@
 
                       {# We need one of three forms here. If this is a module-type question and it's been answered already (it has a Task answer), then we simply link to that Task. Otherwise if it's not answered or if it's a module-set type quesion that can be answered multiple times, we show a form. If the question is answered by a particular module, clicking the icon submits a form that creates a new Task and redirects to it. If this question instead has a "protocol" field, then the user is simply redirected to the Apps Catalog and is presented with apps that satisfy the protocol. #}
 
-                      {% if not rec.can_start_new_task %}
+                      {% if not q.can_start_new_task %}
                         {# This is a module-type question that has been started. Clicking the question doesn't start a new task --- instead, it's just a link to the started Task. #}
 
                         {# Link to the Task. #}
-                        <a href="{{rec.tasks.0.get_absolute_url}}" style="display: block;">
+                        <a href="{{q.tasks.0.get_absolute_url}}" style="display: block;">
 
-                      {% elif not rec.question.spec.protocol %}
+                      {% elif not q.question.spec.protocol %}
                         {# Start a task directly using the module type in the specification. #}
                         <form class="start-task" method="post" action="/tasks/start"
                           onclick="$(this).submit();" style="cursor: pointer">
                           {% csrf_token %}
                           <input type="hidden" name="project" value="{{project.id}}"/>
-                          <input type="hidden" name="question" value="{{rec.question.key}}"/>
+                          <input type="hidden" name="question" value="{{q.question.key}}"/>
                           <input type="hidden" name="previous" value="project"/>
                       
                       {% else %}
                         {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
                         <form method="get" action="/store"
                           onclick="$(this).submit();" style="cursor: pointer">
-                          <input type="hidden" name="q" value="{{project.root_task.id}}/{{rec.question.key}}">
+                          <input type="hidden" name="q" value="{{project.root_task.id}}/{{q.question.key}}">
                       {% endif %}
                     {% endif %}
 
@@ -240,7 +241,7 @@
 
                     {% if authoring_tool_enabled %}
                       {# Pencil icon to edit this question. #}
-                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{rec.question.key}}">
+                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{q.question.key}}">
                         <span class="glyphicon glyphicon-pencil"></span>
                       </div>
                     {% endif %}
@@ -248,7 +249,7 @@
                     <div class="question-icon" style="position: relative;">
                         {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
                         <div style="position: absolute; left: -1px; top: -1px;">
-                          {% if not rec.can_start_new_task and rec.tasks.0.is_finished %}
+                          {% if not q.can_start_new_task and q.tasks.0.is_finished %}
                             <span class="glyphicon glyphicon-ok" style="color: #96B"></span>
                           {% endif %}
                         </div>
@@ -256,21 +257,21 @@
                         {# Select and show an icon. #}
                         <img
                           {# If the question has been answered, can only be answered once (i.e. is a module-type question), its Task comes with its own icon, and the question specification allows the use of that icon ('app_overrides_name_and_icon' is not set), then use it. #}
-                          {% if not rec.can_start_new_task and rec.tasks.0.get_app_icon_url and rec.question.spec.app_overrides_name_and_icon is None %}
-                          src="{{rec.tasks.0.get_app_icon_url}}"
+                          {% if not q.can_start_new_task and q.tasks.0.get_app_icon_url and q.question.spec.app_overrides_name_and_icon is None %}
+                          src="{{q.tasks.0.get_app_icon_url}}"
 
                           {# If the view computed an icon to show, show it. It's probably the icon from the question's specification. #}
-                          {% elif rec.icon %}
-                          src="{{rec.icon}}"
+                          {% elif q.icon %}
+                          src="{{q.icon}}"
 
                           {# Fall back to a shopping cart (if this question redirects/redirected to the Apps Catalog) or a default icon if this is just a Module. #}
-                          {% elif not rec.question.spec.protocol %}
+                          {% elif not q.question.spec.protocol %}
                           src="{% static "img/default_app_icon.png" %}"
                           {% else %}
                           src="{% static "img/default_cart_icon_sm.png" %}"
                           {% endif %}
 
-                          title="{{rec.question.spec.title}}"
+                          title="{{q.question.spec.title}}"
                           class="img-responsive">
                     </div>
 
@@ -283,19 +284,19 @@
                     {# The label for the icon is the title of the question in the question's specification. #}
                     <div class="question-title">
                         {# If the question has been answered, can only be answered once (i.e. is a module-type question), and the question specification allows the use of Task's title as the label ('app_overrides_name_and_icon' is not set), then use it. #}
-                        {% if not rec.can_start_new_task and rec.question.spec.app_overrides_name_and_icon is None %}
-                          {{rec.tasks.0.title}}
+                        {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
+                          {{q.tasks.0.title}}
 
                         {# Otherwise use the question's title as the label. #}
                         {% else %}
-                          {{rec.question.spec.title}}
+                          {{q.question.spec.title}}
                         {% endif %}
 
                         {# In the rows layout mode, indicate the question's progress (only if this question can only be answered once and is answered). #}
-                        {% if layout_mode == "rows" and not rec.can_start_new_task %}
-                          {% with task=rec.tasks.0 %}
+                        {% if layout_mode == "rows" and not q.can_start_new_task %}
+                          {% with task=q.tasks.0 %}
                             <div class="progress" style="width:80%;height:10px;margin-top:8px;">
-                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{rec.progress_percent}}%" aria-valuenow="{{rec.progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>   
+                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{q.progress_percent}}%" aria-valuenow="{{q.progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>   
                             </div>
                             {% if task.is_finished %}
                             <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37); ">Finished</div>
@@ -316,21 +317,21 @@
 
                     {# If the user had permission to start a task and we started an 'a' or 'form' element, end it. #}
                     {% if can_start_task %}
-                      {% if not rec.can_start_new_task %}
+                      {% if not q.can_start_new_task %}
                         </a>
                       {% else %}
                         </form>
                       {% endif %}
                     {% endif %}
 
-                    {% if rec.can_start_new_task %}
+                    {% if q.can_start_new_task %}
                     {# For a module-set question, list the existing answers (Tasks) to this question. In row mode, start a new row and offset to be aligned with the second column above. #}
                     {% if layout_mode == "rows" %}
                       <div class="row">
                       <div class="col-sm-push-3 col-sm-9">
                     {% endif %}
                     <div class="question-task-list">
-                      {% for t in rec.tasks %}
+                      {% for t in q.tasks %}
                         {# Show each task. #}
                         <div class="started-task">
                             <a href="{{t.get_absolute_url}}?previous=project">
@@ -354,7 +355,7 @@
 
                   <div class="question-body">
                     {# Show open invitations related to this question. #}
-                    {% for inv in rec.invitations %}
+                    {% for inv in q.invitations %}
                       <p class="invitation" data-invitation-id="{{inv.id}}">
                         You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
                         (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
@@ -362,10 +363,10 @@
                     {% endfor %}
 
                       {# If the user is a guest participant in a discussion inside this question, link to this discussion. They can't view the task directly. (?) #}
-                      {% if rec.discussions %}
+                      {% if q.discussions %}
                       <div>
                         <div><b>Discussions:</b></div>
-                        {% for d in rec.discussions %}
+                        {% for d in q.discussions %}
                           <div><a href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a></div>
                         {% endfor %}
                       </div>
