@@ -9,8 +9,50 @@
 {% block head %}
 {{block.super}}
 <style>
+{% if layout_mode == "columns" %}
+.question-column {
+  margin: 0 -10px;
+  padding: 10px;
+  background-color: #F3F3F3;
+  border-radius: 5px;
+}
+  .question-column h2 {
+    color: black;
+    margin: 5px 0 10px 0;
+    text-align: center;
+  }
+
+.question-group {
+
+}
+  .question-group h3 {
+    font-size: inherit;
+    font-weight: bold;    
+  }
+  .question-group > .row {
+    margin: 5px 0;
+  }
+
+.question {
+  background-color: white;
+  padding-top: 10px; /* can't mess with side padding because it is a bootstrap column */
+  padding-bottom: 10px; /* can't mess with side padding because it is a bootstrap column */
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.question-icon {
+  width: 30px;
+  float: right;
+  margin: 4px 0 5px 8px;
+}
+
+{% else %}
 .question-group {
   margin: 30px 0 20px 0;
+}
+
+h2.question-column-title {
 }
 
 h3.question-group-title {
@@ -59,6 +101,11 @@ h3.question-group-title {
     font-size: 14px;
     line-height: 128%;
   }
+{% endif %}
+
+.question .question-title {
+  line-height: 124%;
+}
 
 #project-members {
 	margin-top: 1em;
@@ -170,7 +217,7 @@ h3.question-group-title {
 
 {% block body_content %}
     {% if project.root_task.module.spec.introduction %}
-      <center>
+      <center style="margin: 30px 0;">
       {{project.root_task.render_introduction|safe}}
       </center>
     {% endif %}
@@ -181,12 +228,19 @@ h3.question-group-title {
       <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
     {% endif %}
 
+    <div class="row">
+    {% with ncolumns=columns|length %}
+    {% for column in columns %}
+      <div class="col-md-{{12|div:ncolumns|floatformat:0}}">
+        <div class="question-column">
+            {% if column.title %}
+              <h2 class="question-column-title">{{column.title}}</h2>
+            {% endif %}
 
-    <div>
-            {% for group in groups %}
+            {% for group in column.groups %}
             <div class="question-group">
 
-              {% if groups|length > 1 %}
+              {% if group.title %}
               <h3 class="question-group-title">{{group.title}}</h3>
               {% endif %}
 
@@ -246,6 +300,7 @@ h3.question-group-title {
                       </div>
                     {% endif %}
 
+                    {% if not q.hide_icon %}
                     <div class="question-icon" style="position: relative;">
                         {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
                         <div style="position: absolute; left: -1px; top: -1px;">
@@ -274,6 +329,7 @@ h3.question-group-title {
                           title="{{q.question.spec.title}}"
                           class="img-responsive">
                     </div>
+                    {% endif %}
 
                     {# Once again, different HTML depending on the layout mode being used. For row mode, move to the second column for the question's title. #}
                     {% if layout_mode == "rows" %}
@@ -293,17 +349,19 @@ h3.question-group-title {
                         {% endif %}
 
                         {# In the rows layout mode, indicate the question's progress (only if this question can only be answered once and is answered). #}
-                        {% if layout_mode == "rows" and not q.can_start_new_task %}
+                        {% if layout_mode != "grid" and not q.can_start_new_task %}
                           {% with task=q.tasks.0 %}
-                            <div class="progress" style="width:80%;height:10px;margin-top:8px;">
+                            <div class="progress" style="width:80%; height: 5px;margin: 8px 0 0 0;">
                               <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{q.progress_percent}}%" aria-valuenow="{{q.progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>   
                             </div>
+                            {% if layout_mode == "row" %}
                             {% if task.is_finished %}
                             <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37); ">Finished</div>
                             {% elif task.is_started %}
                             <span class="btn btn-sm btn-default">In progress</span>
                             {% else %}
                             <div class="btn btn-sm btn-default">Start section</div>
+                            {% endif %}
                             {% endif %}
                           {% endwith %}
                         {% endif %}
@@ -373,12 +431,28 @@ h3.question-group-title {
                       {% endif %}
                   </div> <!-- /.question-body -->
                 </div> <!-- /#question-__.question -->
-              {% endfor %}
-
+              {% endfor %} {# question #}
               </div> <!-- /row -->
               </div> <!-- /question-group -->
-            {% endfor %}
-    </div>
+            {% endfor %} {# group #}
+
+            {% if columns|length > 0 and column.groups|length == 0 %}
+              <p style="line-height: 122%; font-size: italic; font-size: 95%;">
+                {% if column.has_tasks_on_left %}
+                  There are no tasks in this column yet.
+                {% else %}
+                  There are no more tasks in this column. Congrats!
+                {% endif %}
+              </p>
+            {% endif %}
+
+        </div> <!-- /question-column -->
+      </div> <!-- /col -->
+    {% endfor %} {# column #}
+    {% endwith %}
+
+
+    </div> <!-- /row for columns -->
   </div>
 </div>
 {% endblock %}
@@ -493,6 +567,7 @@ $(function() {
     window.location.hash = "#tab=" + encodeURIComponent(tabid);
   })
 
+  {% if layout_mode == "grid" %}
   // Resize questions so they all have the same height, to the max height of any.
   var max_height = 0;
   $('.question').each(function() {
@@ -500,6 +575,7 @@ $(function() {
     if (h > max_height) max_height = h;
   });
   $('.question').css({ height: max_height });
+  {% endif %}
 })
 
 function invite_user_into_project() {

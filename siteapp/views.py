@@ -512,59 +512,6 @@ def project(request, project):
 
     can_start_task = project.can_start_task(request.user)
 
-    def load_unanswered_question_icon(d, mq):
-        # Set d["icon"] to a data: URL for an icon to show if the question
-        # is not answered or if the question is a "module-set" question.
-        # (If it is an answered module-type question, then the template
-        # will show the answer task's module's icon,)
-
-        # If the question specification specifies an icon asset, load the asset.
-        # This saves the browser a request to fetch it, which is somewhat
-        # expensive because assets are behind authorization logic.
-        if "icon" in mq.spec:
-            d["icon"] = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
-            return
-
-        if mq.spec["type"] in ("module", "module-set") and "protocol" in mq.spec:
-            # If the question is a module or module-set type question and it has
-            # a "protocol" set, then query the app catalog for compliance apps that
-            # satisfy the protocol and generate a "montage" icon previewing them.
-            # Each app's icon is already pre-loaded (and cached) with a data: URL
-            # icon that we can use.
-            catalog = get_compliance_apps_catalog(request.organization) # whole catalog
-            catalog = filter(lambda app : app_satifies_interface(app, mq), catalog) # apps that can answer this question
-            catalog = filter(lambda app : 'app-icon' in app, catalog) # and that have an icon
-            catalog = list(catalog)
-            if len(catalog) == 1:
-                # There's only one app. Return its icon.
-                d["icon"] = catalog[0]["app_icon_dataurl"]
-
-            elif len(catalog) > 0:
-                # Choose four random apps to use the icons of.
-                catalog = random.sample(catalog, min(4, len(catalog)))
-
-                # If there were fewer than four, just repeat the icons till
-                # we get four.
-                while len(catalog) < 4:
-                    catalog.append(random.choice(catalog))
-
-                # Construct a canvas and paste the images in in the
-                # four quadrants of the image.
-                from PIL import Image
-                from io import BytesIO
-                im = Image.new("RGBA", (128, 128))
-                locs = (0, 68) # => (0,0) (0, 68) (68, 0) (68, 68)
-                for i, app in enumerate(catalog):
-                    im2 = Image.open(BytesIO(app["app-icon"]))
-                    im2.thumbnail((60,60))
-                    im.paste(im2, box=(locs[i % 2], locs[i//2]))
-
-                from guidedmodules.models import image_to_dataurl
-                d["icon"] = image_to_dataurl(im, 128)
-
-        # Can't auto-make an icon.
-        return
-
     # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
     questions = { }
     first_start = True
@@ -637,8 +584,12 @@ def project(request, project):
             "invitations": [], # filled in below
         }
 
-        # Pre-load the icon to show for this question.
-        load_unanswered_question_icon(questions[mq.id], mq)
+        # If the question specification specifies an icon asset, load the asset.
+        # This saves the browser a request to fetch it, which is somewhat
+        # expensive because assets are behind authorization logic.
+        if "icon" in mq.spec:
+            questions[mq.id]["icon"] = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+
 
     # Assign questions to the main area or to the "action buttons" panel on the side of the page.
     main_area_questions = []
@@ -650,24 +601,67 @@ def project(request, project):
         elif mq.spec.get("placement") == "action-buttons":
             action_buttons.append(q)
 
-    # Choose a layout mode. Use the grid layout if any question
-    # has a 'protocol' field. Otherwise use the row layout.
+    # Choose a layout mode. Use the "columns" layout if any question
+    # has a 'protocol' field. Otherwise use the "rows" layout.
     layout_mode = "rows"
     for q in main_area_questions:
         if q["question"].spec.get("protocol"):
-            layout_mode = "grid"
+            layout_mode = "columns"
 
-    # Assign main-area questions to groups.
+    # Assign main-area questions to columns. For non-"columns" layouts,
+    # assign to one giant column.
+    if layout_mode != "columns":
+        columns= [{
+            "questions": main_area_questions,
+        }]
+    else:
+        # number of columns must divide 12 evenly
+        columns = [
+            { "title": "Backlog" },
+            { "title": "Selected" },
+            { "title": "Implement / Update" },
+            { "title": "Assessment" },
+        ]
+        for column in columns:
+            column["questions"] = []
+
+        for question in main_area_questions:
+            #import random
+            #random.choice(columns[0:1+random.choice(range(len(columns)))])["questions"].append(question)
+
+            if len(question["tasks"]) == 0:
+                col = 0
+                question["hide_icon"] = True
+            elif question["question"].spec["type"] == "module-set":
+                if question["is_finished"]:
+                    col = 3
+                else:
+                    col = 2
+            elif question["tasks"][0].is_finished():
+                col = 3
+            elif question["tasks"][0].is_started():
+                col = 2
+            else:
+                col = 1
+            columns[col]["questions"].append(question)
+
+
+    # Assign questions in columns to groups.
     from collections import OrderedDict
-    groups = OrderedDict()
-    for q in main_area_questions:
-        mq = q["question"]
-        groupname = mq.spec.get("group", "Modules")
-        group = groups.setdefault(groupname, {
-            "title": groupname,
-            "questions": [],
-        })
-        group["questions"].append(q)
+    for i, column in enumerate(columns):
+        column["groups"] = OrderedDict()
+        for q in column["questions"]:
+            mq = q["question"]
+            groupname = mq.spec.get("group")
+            group = column["groups"].setdefault(groupname, {
+                "title": groupname,
+                "questions": [],
+            })
+            group["questions"].append(q)
+        del column["questions"]
+        column["groups"] = list(column["groups"].values())
+
+        column["has_tasks_on_left"] = ((i > 0) and (columns[i-1]["groups"] or columns[i-1]["has_tasks_on_left"]))
 
     # Are there any output documents that we can render?
     has_outputs = False
@@ -708,7 +702,7 @@ def project(request, project):
         "has_outputs": has_outputs,
 
         "layout_mode": layout_mode,
-        "groups": list(groups.values()),
+        "columns": columns,
         "action_buttons": action_buttons,
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
