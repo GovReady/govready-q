@@ -489,7 +489,7 @@ def project_read_required(f):
 
 @project_read_required
 def project(request, project):
-    # Get this project's lifecycle stage.
+    # Get this project's lifecycle stage, which is shown below the project title.
     assign_project_lifecycle_stage([project])
     if project.lifecycle_stage[0]["id"] == "none":
         # Kill it if it's the default lifecycle.
@@ -501,7 +501,7 @@ def project(request, project):
             if stage == project.lifecycle_stage[1]:
                 break
 
-    # Get all of the discussions I'm participating in as a guest in this project.
+    # Get all of the discussions the user is participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
     # certain questions within those tasks.
     discussions = list(project.get_discussions_in_project_as_guest(request.user))
@@ -565,9 +565,9 @@ def project(request, project):
         # Can't auto-make an icon.
         return
 
-    # Create all of the module entries in a tabs & groups data structure.
+    # Create all of the module entries in groups.
     from collections import OrderedDict
-    tabs = OrderedDict()
+    groups = OrderedDict()
     action_buttons = []
     question_dict = { }
     first_start = True
@@ -649,26 +649,13 @@ def project(request, project):
         }
         question_dict[mq.id] = d
 
-        if mq.spec.get("placement", "tabpanel") == "tabpanel":
-            # Create the tab and group for this.
-            tabname = mq.spec.get("tab", "Modules")
-            tab = tabs.setdefault(tabname, {
-                "title": tabname,
-                "unfinished_tasks": 0,
-                "groups": OrderedDict(),
-            })
+        if mq.spec.get("placement") == None:
             groupname = mq.spec.get("group", "Modules")
-            group = tab["groups"].setdefault(groupname, {
+            group = groups.setdefault(groupname, {
                 "title": groupname,
                 "questions": [],
             })
             group["questions"].append(d)
-
-            # Add a flag to the tab if any tasks contained
-            # within it are unfinished.
-            for t in tasks:
-                if not t.is_finished():
-                    tab["unfinished_tasks"] += 1
 
         elif mq.spec.get("placement") == "action-buttons":
             action_buttons.append(d)
@@ -710,10 +697,9 @@ def project(request, project):
         "can_start_any_apps": can_start_any_apps,
 
         "title": project.title,
-        "intro" : project.root_task.render_field('introduction') if project.root_task.module.spec.get("introduction") else "",
         "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-        "tabs": list(tabs.values()),
+        "groups": list(groups.values()),
         "action_buttons": action_buttons,
         "has_outputs": has_outputs,
 

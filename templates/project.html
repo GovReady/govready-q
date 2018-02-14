@@ -9,41 +9,6 @@
 {% block head %}
 {{block.super}}
 <style>
-.tab-pane {
-}
-
-.folder_action {
-  margin-left: 1em;
-  color: #777;
-  cursor: pointer;
-  font-size: 13px;
-  display: none;
-}
-  *:hover > .folder_action {
-    display: inline-block;
-  }
-
-.nav-tabs {
-    border-bottom: none;
-}
-/* TODO: Move into side-wide stylesheet. The !important is here
-   because something on hover is canceling out the border. */
-.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover  {
-  font-weight: normal;
-  color: black;
-  border: none;
-  border-bottom: 3px solid #449d44 !important;
-}
-
-.nav-tabs>li>a {
-  border: none;
-  color: rgb(125,125,125);
-}
-
-.nav-tabs>li>a:hover {
-  color: black;
-}
-
 .question-group {
   margin: 30px 0 20px 0;
 }
@@ -83,16 +48,6 @@
   .question .question-title {
     margin-top: .5em;
     color: #222;
-  }
-  .question .task-commands a {
-    display: inline-block;
-    padding: 0 0.25em;
-    color: #666;
-    font-size: 10.5pt;
-    margin: 8px 0px 4px 0px;
-  }
-  .task-commands a:hover {
-    color: rgb(55,123,181);
   }
     .question.first_start .start-task a {
       color: #449d44;
@@ -225,44 +180,12 @@
       <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
     {% endif %}
 
-    {# tabs #}
 
-    {% if tabs|length > 1 %}
-    <ul id="project-tabs" class="nav nav-tabs">
-      {# question tabs #}
-      {% for tab in tabs %}
-        <li
-          class="{% if forloop.first %}active{% endif %}"
-          role="presentation"
-          >
-            <a
-              href="#{{tab.title|slugify}}"
-              aria-controls="{{forloop.counter}}-{{tab.title|slugify}}"
-              role="tab" data-toggle="tab">
-              {{tab.title}}
-              {% if tab.unfinished_tasks > 0 %}
-                <span class="label label-primary">{{tab.unfinished_tasks}}</span>
-              {% endif %}
-            </a>
-        </li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-
-    {# tab content #}
-
-    <div class="tab-content">
-      {# question tabs #}
-
-      {% for tab in tabs %}
-        <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{tab.title|slugify}}">
-            {{tab.intro.html|safe}}
-
-
-            {% for group in tab.groups.values %}
+    <div>
+            {% for group in groups %}
             <div class="question-group">
 
-              {% if tab.groups.values|length > 1 %}
+              {% if groups|length > 1 %}
               <div class="question-group-title">{{group.title}}</div>
               {% endif %}
 
@@ -454,9 +377,7 @@
               </div> <!-- /row -->
               </div> <!-- /question-group -->
             {% endfor %}
-        </div> <!-- /.tabpanel -->
-      {% endfor %}
-    </div> <!-- /tabs -->
+    </div>
   </div>
 </div>
 {% endblock %}
