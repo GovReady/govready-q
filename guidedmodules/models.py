@@ -598,8 +598,8 @@ class Task(models.Model):
         num_questions = 0
         for (q, is_answered, a, value) in answers.answertuples.values():
             # module-type questions with a real answer
-            if isinstance(a, ModuleAnswers) and a.task:
-                inner_answered, inner_total = a.task.compute_progress_percent()
+            if isinstance(value, ModuleAnswers) and value.task:
+                inner_answered, inner_total = value.task.compute_progress_percent()
                 num_answered += inner_answered
                 num_questions += inner_total
 
