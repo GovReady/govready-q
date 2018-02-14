@@ -368,13 +368,20 @@
                           {{rec.question.spec.title}}
                         {% endif %}
 
-                        {# In the rows layout mode, indicate if the question's answer is finished here (only if this question can only be answered once and is answered). #}
+                        {# In the rows layout mode, indicate the question's progress (only if this question can only be answered once and is answered). #}
                         {% if layout_mode == "rows" and not rec.can_start_new_task %}
-                          {% if rec.tasks.0.is_finished %}
-                            <span class="label label-primary" style="background-color: #96B">finished</span>
-                          {% else %}
-                            <span class="label label-primary">in progress</span>
-                          {% endif %}
+                          {% with task=rec.tasks.0 %}
+                            <div class="progress" style="width:80%;height:10px;margin-top:8px;">
+                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{rec.progress_percent}}%" aria-valuenow="{{rec.progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>   
+                            </div>
+                            {% if task.is_finished %}
+                            <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37); ">Finished</div>
+                            {% elif task.is_started %}
+                            <span class="btn btn-sm btn-default">In progress</span>
+                            {% else %}
+                            <div class="btn btn-sm btn-default">Start section</div>
+                            {% endif %}
+                          {% endwith %}
                         {% endif %}
                       </div>
 
