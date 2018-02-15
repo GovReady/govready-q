@@ -4,7 +4,7 @@ As described in the primary [README](README.md), Compliance apps map IT System c
 
 Compliance apps collect and assess information about one or more system components and translate that information to compliance documentation.
 
-![Apps map components to security/compliance controls](docs/assets/app_diagram2.png)
+![Apps map components to security/compliance controls](assets/app_diagram2.png)
 
 Compliance apps can collect information about a system component from people (via web-based questionnaires) and from system components (via an [Automation API](Automation.md)).
 
@@ -20,7 +20,7 @@ Technically speaking, a top level app is a module containing questions whose ans
 
 The below diagram depicts an exploded view of the relationships between a top level app to a component app to modules and questions.
 
-!["Top Level" compliance apps contain "component" compliance apps that contain modules and questions](docs/assets/app_exploded.png)
+!["Top Level" compliance apps contain "component" compliance apps that contain modules and questions](assets/app_exploded.png)
 
 
 ## App Structure
@@ -56,7 +56,7 @@ The `app.yaml` file that exists in every app serves two purposes:
 
 The `app.yaml` file looks like this:
 
-![App structure](docs/assets/app_structure_sm.png)
+![App structure](assets/app_structure_sm.png)
 
 
 	id: app
@@ -125,7 +125,7 @@ The process is currently a bit clumsy with terminology that reflects the softwar
 
 The below screenshot of the `AppSource` module in the Django admin interfaces shows the JSON "spec" file. 
 
-![Screenshot of AppSource from GovReady-Q Django admin interface](docs/assets/appsources.png)
+![Screenshot of AppSource from GovReady-Q Django admin interface](assets/appsources.png)
 
 The `AppSource` module also contains fields to indicate to which subdomains of the deployment the source's apps are avaiable.
 
