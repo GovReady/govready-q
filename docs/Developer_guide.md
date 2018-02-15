@@ -1,4 +1,4 @@
-Deveoper Guide
+Developer Guide
 ================================
 
 Documentation for developers of GovReady-Q Compliance Server.
