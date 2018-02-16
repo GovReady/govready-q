@@ -489,7 +489,7 @@ def project_read_required(f):
 
 @project_read_required
 def project(request, project):
-    # Get this project's lifecycle stage.
+    # Get this project's lifecycle stage, which is shown below the project title.
     assign_project_lifecycle_stage([project])
     if project.lifecycle_stage[0]["id"] == "none":
         # Kill it if it's the default lifecycle.
@@ -501,7 +501,7 @@ def project(request, project):
             if stage == project.lifecycle_stage[1]:
                 break
 
-    # Get all of the discussions I'm participating in as a guest in this project.
+    # Get all of the discussions the user is participating in as a guest in this project.
     # Meaning, I'm not a member, but I still need access to certain tasks and
     # certain questions within those tasks.
     discussions = list(project.get_discussions_in_project_as_guest(request.user))
@@ -512,77 +512,18 @@ def project(request, project):
 
     can_start_task = project.can_start_task(request.user)
 
-    def load_unanswered_question_icon(d, mq):
-        # Set d["icon"] to a data: URL for an icon to show if the question
-        # is not answered or if the question is a "module-set" question.
-        # (If it is an answered module-type question, then the template
-        # will show the answer task's module's icon,)
-
-        # If the question specification specifies an icon asset, load the asset.
-        # This saves the browser a request to fetch it, which is somewhat
-        # expensive because assets are behind authorization logic.
-        if "icon" in mq.spec:
-            d["icon"] = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
-            return
-
-        if mq.spec["type"] in ("module", "module-set") and "protocol" in mq.spec:
-            # If the question is a module or module-set type question and it has
-            # a "protocol" set, then query the app catalog for compliance apps that
-            # satisfy the protocol and generate a "montage" icon previewing them.
-            # Each app's icon is already pre-loaded (and cached) with a data: URL
-            # icon that we can use.
-            catalog = get_compliance_apps_catalog(request.organization) # whole catalog
-            catalog = filter(lambda app : app_satifies_interface(app, mq), catalog) # apps that can answer this question
-            catalog = filter(lambda app : 'app-icon' in app, catalog) # and that have an icon
-            catalog = list(catalog)
-            if len(catalog) == 1:
-                # There's only one app. Return its icon.
-                d["icon"] = catalog[0]["app_icon_dataurl"]
-
-            elif len(catalog) > 0:
-                # Choose four random apps to use the icons of.
-                catalog = random.sample(catalog, min(4, len(catalog)))
-
-                # If there were fewer than four, just repeat the icons till
-                # we get four.
-                while len(catalog) < 4:
-                    catalog.append(random.choice(catalog))
-
-                # Construct a canvas and paste the images in in the
-                # four quadrants of the image.
-                from PIL import Image
-                from io import BytesIO
-                im = Image.new("RGBA", (128, 128))
-                locs = (0, 68) # => (0,0) (0, 68) (68, 0) (68, 68)
-                for i, app in enumerate(catalog):
-                    im2 = Image.open(BytesIO(app["app-icon"]))
-                    im2.thumbnail((60,60))
-                    im.paste(im2, box=(locs[i % 2], locs[i//2]))
-
-                from guidedmodules.models import image_to_dataurl
-                d["icon"] = image_to_dataurl(im, 128)
-
-        # Can't auto-make an icon.
-        return
-
-    # Create all of the module entries in a tabs & groups data structure.
-    from collections import OrderedDict
-    tabs = OrderedDict()
-    action_buttons = []
-    question_dict = { }
+    # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
+    questions = { }
     first_start = True
     can_start_any_apps = False
-    layout_mode = "rows"
-    for mq in project.root_task.module.questions.all()\
-        .select_related("answer_type_module")\
-        .order_by('definition_order'):
+    for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
         if mq.spec.get("type") not in ("module", "module-set"):
             continue
 
         # Skip questions that are imputed.
-        if mq.key in root_task_answers.was_imputed:
+        if is_answered and not answer_obj:
             continue
 
         # Is this question answered yet? Are there any discussions the user
@@ -591,15 +532,14 @@ def project(request, project):
         progress_percent = 0
         tasks = []
         task_discussions = []
-        ans = root_task_answers.as_dict().get(mq.key)
-        if ans is not None:
+        if answer_value is not None:
             if mq.spec["type"] == "module":
                 # Convert a ModuleAnswers instance to an array containing just itself.
-                ans = [ans]
+                answer_value = [answer_value]
             elif mq.spec["type"] == "module-set":
                 # ans is already a list of ModuleAnswers instances.
                 pass
-            for module_answers in ans:
+            for module_answers in answer_value:
                 task = module_answers.task
 
                 task_discussions.extend([d for d in discussions if d.attached_to.task == task])
@@ -614,7 +554,7 @@ def project(request, project):
                     # is marked as finished.
                     is_finished = True
 
-                if len(ans) == 1:
+                if len(answer_value) == 1:
                     progress_percent = task.get_progress_percent()
 
         # Do not display if the user can't start a task and there are no
@@ -628,17 +568,13 @@ def project(request, project):
 
         # Is this a protocol question?
         if mq.spec.get("protocol"):
-            # Switch to grid layout.
-            layout_mode = "grid"
-
             # Set flag if an app can be started here.
-            if can_start_task and (ans is None or mq.spec["type"] == "module-set"):
+            if can_start_task and (answer_value is None or mq.spec["type"] == "module-set"):
                 can_start_any_apps = True
 
-        # Create template context dict.
-        d = {
+        # Create template context dict for this question.
+        questions[mq.id] = {
             "question": mq,
-            "module": mq.answer_type_module,
             "is_finished": is_finished,
             "progress_percent": progress_percent,
             "tasks": tasks,
@@ -647,34 +583,85 @@ def project(request, project):
             "discussions": task_discussions,
             "invitations": [], # filled in below
         }
-        question_dict[mq.id] = d
 
-        if mq.spec.get("placement", "tabpanel") == "tabpanel":
-            # Create the tab and group for this.
-            tabname = mq.spec.get("tab", "Modules")
-            tab = tabs.setdefault(tabname, {
-                "title": tabname,
-                "unfinished_tasks": 0,
-                "groups": OrderedDict(),
-            })
-            groupname = mq.spec.get("group", "Modules")
-            group = tab["groups"].setdefault(groupname, {
+        # If the question specification specifies an icon asset, load the asset.
+        # This saves the browser a request to fetch it, which is somewhat
+        # expensive because assets are behind authorization logic.
+        if "icon" in mq.spec:
+            questions[mq.id]["icon"] = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+
+
+    # Assign questions to the main area or to the "action buttons" panel on the side of the page.
+    main_area_questions = []
+    action_buttons = []
+    for q in questions.values():
+        mq = q["question"]
+        if mq.spec.get("placement") == None:
+            main_area_questions.append(q)
+        elif mq.spec.get("placement") == "action-buttons":
+            action_buttons.append(q)
+
+    # Choose a layout mode. Use the "columns" layout if any question
+    # has a 'protocol' field. Otherwise use the "rows" layout.
+    layout_mode = "rows"
+    for q in main_area_questions:
+        if q["question"].spec.get("protocol"):
+            layout_mode = "columns"
+
+    # Assign main-area questions to columns. For non-"columns" layouts,
+    # assign to one giant column.
+    if layout_mode != "columns":
+        columns= [{
+            "questions": main_area_questions,
+        }]
+    else:
+        # number of columns must divide 12 evenly
+        columns = [
+            { "title": "Backlog" },
+            { "title": "Selected" },
+            { "title": "In Progress" },
+            { "title": "Completed" },
+        ]
+        for column in columns:
+            column["questions"] = []
+
+        for question in main_area_questions:
+            #import random
+            #random.choice(columns[0:1+random.choice(range(len(columns)))])["questions"].append(question)
+
+            if len(question["tasks"]) == 0:
+                col = 0
+                question["hide_icon"] = True
+            elif question["question"].spec["type"] == "module-set":
+                if question["is_finished"]:
+                    col = 3
+                else:
+                    col = 2
+            elif question["tasks"][0].is_finished():
+                col = 3
+            elif question["tasks"][0].is_started():
+                col = 2
+            else:
+                col = 1
+            columns[col]["questions"].append(question)
+
+
+    # Assign questions in columns to groups.
+    from collections import OrderedDict
+    for i, column in enumerate(columns):
+        column["groups"] = OrderedDict()
+        for q in column["questions"]:
+            mq = q["question"]
+            groupname = mq.spec.get("group")
+            group = column["groups"].setdefault(groupname, {
                 "title": groupname,
                 "questions": [],
             })
-            group["questions"].append(d)
+            group["questions"].append(q)
+        del column["questions"]
+        column["groups"] = list(column["groups"].values())
 
-            # Add a flag to the tab if any tasks contained
-            # within it are unfinished.
-            for t in tasks:
-                if not t.is_finished():
-                    tab["unfinished_tasks"] += 1
-
-        elif mq.spec.get("placement") == "action-buttons":
-            action_buttons.append(d)
-
-        # Pre-load the icon to show for this question.
-        load_unanswered_question_icon(d, mq)
+        #column["has_tasks_on_left"] = ((i > 0) and (columns[i-1]["groups"] or columns[i-1]["has_tasks_on_left"]))
 
     # Are there any output documents that we can render?
     has_outputs = False
@@ -691,8 +678,8 @@ def project(request, project):
         if inv.target == project:
             into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
             if into_new_task_question_id:
-                if into_new_task_question_id in question_dict: # should always be True
-                    question_dict[into_new_task_question_id]["invitations"].append(inv)
+                if into_new_task_question_id in questions: # should always be True
+                    questions[into_new_task_question_id]["invitations"].append(inv)
                     continue
 
         # If the invitation didn't get put elsewhere, display in the
@@ -710,14 +697,14 @@ def project(request, project):
         "can_start_any_apps": can_start_any_apps,
 
         "title": project.title,
-        "intro" : project.root_task.render_field('introduction') if project.root_task.module.spec.get("introduction") else "",
         "open_invitations": other_open_invitations,
         "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
-        "tabs": list(tabs.values()),
-        "action_buttons": action_buttons,
         "has_outputs": has_outputs,
 
         "layout_mode": layout_mode,
+        "columns": columns,
+        "action_buttons": action_buttons,
+
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
     })
 

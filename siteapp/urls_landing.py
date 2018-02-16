@@ -28,3 +28,10 @@ if settings.DEBUG: # also in non-landing urls.py
     urlpatterns += [
         url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
     ]
+    
+    # has to be repeated here for the reverse() to work,
+    # but we don't want to expose user media without
+    # auth so this is disabled
+    #urlpatterns += [
+    #    url(r'^user-media', include('dbstorage.urls')),
+    #]

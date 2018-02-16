@@ -474,7 +474,11 @@ class Task(models.Model):
             # an asset.
             raise ValueError(asset_path + " is not an asset.")
         with self.module.assets.get(asset_path) as f:
-            return image_to_dataurl(f, max_image_size)
+            try:
+                return image_to_dataurl(f, max_image_size)
+            except:
+                # image processing error
+                raise ValueError(asset_path + " has invalid image data.")
 
 
     # ANSWERS
@@ -598,8 +602,8 @@ class Task(models.Model):
         num_questions = 0
         for (q, is_answered, a, value) in answers.answertuples.values():
             # module-type questions with a real answer
-            if isinstance(a, ModuleAnswers) and a.task:
-                inner_answered, inner_total = a.task.compute_progress_percent()
+            if isinstance(value, ModuleAnswers) and value.task:
+                inner_answered, inner_total = value.task.compute_progress_percent()
                 num_answered += inner_answered
                 num_questions += inner_total
 
@@ -876,7 +880,11 @@ class Task(models.Model):
     def get_app_icon_url(self):
         icon_img = self.module.spec.get("icon")
         if icon_img:
-            return self.get_static_asset_image_data_url(icon_img, 75)
+            try:
+                return self.get_static_asset_image_data_url(icon_img, 75)
+            except ValueError:
+                # no asset or image error
+                pass
         return None
 
     def get_subtask(self, question_id):

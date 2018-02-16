@@ -31,7 +31,7 @@ rtyaml # CC0
 email-validator # CC0
 exclusiveprocess # CC0
 django-html-emailer # MIT License
-django-database-storage-backend==0.0.3 # CC0, requires libmagic (libmagic1 in Debian)
+django-database-storage-backend==0.0.4 # CC0, requires libmagic (libmagic1 in Debian)
 commonmarkextensions # BSD 3
 
 # Only needed in production
