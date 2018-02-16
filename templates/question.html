@@ -15,6 +15,11 @@ Next Question: {{q.spec.title}} | {{task.title}}
 {{block.super}}
 
 <style>
+#focus-area-wrapper {
+  /* on mobile, space between columns */
+  margin-bottom: 30px;
+}
+
 h1 {
   margin: 4px 0 18px 0;
   font-size: 22px;
@@ -481,7 +486,7 @@ label:hover .onhover { display: inline; }
   </div> <!-- /col -->
 
   <div class="col-md-3">
-    <div id="question-history-context" style="border:0px solid black; max-height:600px; overflow-y:scroll; padding:4px; margin-top:110px;">
+    <div id="question-history-context" style="border:0px solid black; max-height:600px; overflow-y:scroll; padding:4px;">
         <ul>
         {% if context %}
           <p>Progress:</p>
