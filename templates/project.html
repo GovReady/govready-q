@@ -38,7 +38,8 @@
   padding-top: 10px; /* can't mess with side padding because it is a bootstrap column */
   padding-bottom: 10px; /* can't mess with side padding because it is a bootstrap column */
   margin-bottom: 15px;
-  border-radius: 5px;
+  border-radius: 3px;
+  border-bottom: 1px solid rgb(204, 204, 204);
 }
 
 .question-icon {
@@ -436,6 +437,7 @@ h3.question-group-title {
               </div> <!-- /question-group -->
             {% endfor %} {# group #}
 
+            {% comment %}
             {% if columns|length > 0 and column.groups|length == 0 %}
               <p style="line-height: 122%; font-size: italic; font-size: 95%;">
                 {% if column.has_tasks_on_left %}
@@ -445,6 +447,7 @@ h3.question-group-title {
                 {% endif %}
               </p>
             {% endif %}
+            {% endcomment %}
 
         </div> <!-- /question-column -->
       </div> <!-- /col -->

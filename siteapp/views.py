@@ -619,8 +619,8 @@ def project(request, project):
         columns = [
             { "title": "Backlog" },
             { "title": "Selected" },
-            { "title": "Implement / Update" },
-            { "title": "Assessment" },
+            { "title": "In Progress" },
+            { "title": "Completed" },
         ]
         for column in columns:
             column["questions"] = []
@@ -661,7 +661,7 @@ def project(request, project):
         del column["questions"]
         column["groups"] = list(column["groups"].values())
 
-        column["has_tasks_on_left"] = ((i > 0) and (columns[i-1]["groups"] or columns[i-1]["has_tasks_on_left"]))
+        #column["has_tasks_on_left"] = ((i > 0) and (columns[i-1]["groups"] or columns[i-1]["has_tasks_on_left"]))
 
     # Are there any output documents that we can render?
     has_outputs = False
