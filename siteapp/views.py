@@ -513,7 +513,8 @@ def project(request, project):
     can_start_task = project.can_start_task(request.user)
 
     # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
-    questions = { }
+    from collections import OrderedDict
+    questions = OrderedDict()
     first_start = True
     can_start_any_apps = False
     for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
@@ -647,7 +648,6 @@ def project(request, project):
 
 
     # Assign questions in columns to groups.
-    from collections import OrderedDict
     for i, column in enumerate(columns):
         column["groups"] = OrderedDict()
         for q in column["questions"]:
