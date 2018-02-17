@@ -1193,6 +1193,11 @@ class RenderedAnswer:
     def __html__(self):
         # How the template renders a question variable used plainly, i.e. {{q0}}.
         if self.answer is None:
+            if self.parent_context.is_computing_title:
+                # When computing an instance-name title,
+                # raise an exception (caught higher up) if
+                # an unanswered question is rendered.
+                raise ValueError("Attempt to render unanswered question {}.".format(self.question.key))
             value = "<%s>" % self.question.spec['title']
         elif self.question_type == "multiple-choice":
             # Render multiple-choice as a comma+space-separated list
@@ -1230,6 +1235,11 @@ class RenderedAnswer:
     def text(self):
         # How the template renders {{q0.text}} to get a nice display form of the answer.
         if self.answer is None:
+            if self.parent_context.is_computing_title:
+                # When computing an instance-name title,
+                # raise an exception (caught higher up) if
+                # an unanswered question is rendered.
+                raise ValueError("Attempt to render unanswered question {}.".format(self.question.key))
             value = "<not answered>"
         elif self.question_type == "date":
             # Format the ISO date for display.
