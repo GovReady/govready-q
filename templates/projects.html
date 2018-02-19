@@ -11,13 +11,8 @@ Your Compliance Projects
 
 {% block head %}
 <style>
-h1 {
-  margin: 15px 0 30px 0;
-}
-
 .btn .glyphicon { margin-right: 6px; }
 .btn.btn-success .glyphicon { color: #FFF; }
-
 
 .lifecycle {
   margin-bottom: 30px;
@@ -28,9 +23,10 @@ h1 {
 .lifecycle .stage {
   margin: 0 -10px;
   padding: 10px;
-  background-color: #F3F3F3;
+  background-color: rgb(247,247,247);
   border-radius: 5px;
   max-width: 530px; /* so individual cards don't stretch across whole page */
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
 }
   .lifecycle .stage h3 {
     color: black;
@@ -60,6 +56,15 @@ h1 {
       margin: 0;
       font-weight: bold;
     }
+
+  h1.mini {
+    font-size: 16px;
+    font-family: Hind, sands-serif;
+    line-height: 22px;
+    color: rgba(51, 51, 51);
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+  }
 </style>
 {% endblock %}
 
@@ -67,6 +72,7 @@ h1 {
 {% block contextbar %}{% endblock %}
 
 {% block body %}
+
 {% comment %}
 {% if request.user.can_see_org_settings and not request.organization.get_organization_project.root_task.is_finished %}
   <h2>Complete your organization profile</h2>
@@ -74,7 +80,8 @@ h1 {
 {% endif %}
 {% endcomment %}
 
-<div style="float: right; margin: 0 0 1em 5em;">
+<div style="margin-top: 15px">
+<div style="float: right; margin: 0 0.5em 0em 5em;">
   <a id="new-system" href="/store?protocol=govready.com/apps/compliance/2018/information-technology-system" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system </a>
   <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add other app </a>
   {% if is_lonely_admin %}
@@ -82,7 +89,8 @@ h1 {
   {% endif %}
 </div>
 
-<h1>Your Compliance Projects</h1>
+<h1 class="mini"><span class="glyphicon glyphicon-home" style="margin-right: .25em"></span> Assessments</h1>
+</div>
 
 {% for lifecycle in lifecycles %}
   <div class="clearfix"></div>

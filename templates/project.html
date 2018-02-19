@@ -9,13 +9,20 @@
 {% block head %}
 {{block.super}}
 <style>
-{% if layout_mode == "columns" %}
 .question-column {
   margin: 0 -10px;
   padding: 10px;
-  background-color: #F3F3F3;
+  background-color: rgb(247,247,247);
   border-radius: 5px;
+  max-width:66vw;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
 }
+{% if layout_mode == "rows" %}
+  .question-column {
+    padding: 0px 30px 0px 30px;
+}
+{% endif %}
+{% if layout_mode == "columns" %}
   .question-column h2 {
     color: black;
     margin: 5px 0 10px 0;
@@ -40,6 +47,7 @@
   margin-bottom: 15px;
   border-radius: 3px;
   border-bottom: 1px solid rgb(204, 204, 204);
+  /*border: 1px solid #D0D0D0;*/
 }
 
 .question-icon {
@@ -50,19 +58,23 @@
 
 {% else %}
 .question-group {
-  margin: 30px 0 20px 0;
+  margin: 10px 0 20px 0;
 }
 
 h2.question-column-title {
 }
 
 h3.question-group-title {
-  color: #777;
+  color: black;
+  font-weight: bold;
   padding: 16px 18px;
   margin: 0;
 }
 
 .question {
+  background-color: white;
+  border-bottom: 1px solid rgb(204, 204, 204);
+  margin-bottom: 15px;
   padding-top: .75em;
   padding-bottom: .75em;
   {% if layout_mode == "grid" %}
@@ -70,9 +82,10 @@ h3.question-group-title {
     margin-top: 10px;
   {% endif %}
   border-radius: 15px; /* good for highlighting */
+
 }
   .question:hover {
-    background-color: rgb(248,248,248);
+    background-color: rgb(246,250,249);
   }
   .question .question-icon {
     margin: 0 auto;
@@ -98,6 +111,9 @@ h3.question-group-title {
       font-weight: bold;
     }
 
+  .question-title > .btn {
+    margin: 8px 0 0 0;
+  }
   .question .invitation {
     font-size: 14px;
     line-height: 128%;
@@ -218,9 +234,9 @@ h3.question-group-title {
 
 {% block body_content %}
     {% if project.root_task.module.spec.introduction %}
-      <center style="margin: 30px 0;">
+      <p style="margin: 1em 0;">
       {{project.root_task.render_introduction|safe}}
-      </center>
+      </p>
     {% endif %}
 
     {% if project.root_task.module.spec.is_app_stub %}
@@ -353,13 +369,13 @@ h3.question-group-title {
                         {% if layout_mode != "grid" and not q.can_start_new_task %}
                           {% with task=q.tasks.0 %}
                             <div class="progress" style="width:80%; height: 5px;margin: 8px 0 0 0;">
-                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{q.progress_percent}}%" aria-valuenow="{{q.progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>   
+                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{q.progress_percent}}%" aria-valuenow="{{q.progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
-                            {% if layout_mode == "row" %}
+                            {% if layout_mode == "rows" %}
                             {% if task.is_finished %}
-                            <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37); ">Finished</div>
+                            <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37);">Finished</div>
                             {% elif task.is_started %}
-                            <span class="btn btn-sm btn-default">In progress</span>
+                            <div class="btn btn-sm btn-default">In progress</div>
                             {% else %}
                             <div class="btn btn-sm btn-default">Start section</div>
                             {% endif %}

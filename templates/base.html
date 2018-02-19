@@ -23,6 +23,8 @@
         <style>
             body {
                 padding-top: 50px !important; /* the !important is to fix a bug with the dashboard integration, remove it eventually */
+                padding-left: 20px;
+                padding-right: 20px;
                 padding-bottom: 20px;
                 overflow-y: scroll;
                 font-family: 'Hind', sans-serif;
@@ -35,16 +37,15 @@
             }
 
             #context-bar {
-               background-color: rgb(242,242,242);
+               background-color: rgb(247,247,247);
                padding: 14px 0 10px 0;
-               border: 1px solid rgb(207,207,207);
             }
               #context-bar .breadcrumb {
                 margin: 0; padding: 0; background: none;
                 cursor: default;
               }
               #context-bar .breadcrumb a {
-                color: #777;
+                color: black;
               }
             .glyphicon-globe { color: #888; }
             h1, h2 {
@@ -255,7 +256,7 @@
     {% endif %}
 
     {% block body-wide %}
-    <div class="container-fluid" style="min-height: 400px; margin-top: 2em;">
+    <div class="container-fluid" style="min-height: 70vh;">
       {% block body %}
       {% endblock %}
 

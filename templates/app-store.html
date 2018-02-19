@@ -7,6 +7,12 @@ Compliance Apps
 
 {% block head %}
 <style>
+body {
+  padding-left: 20px;
+  padding-right: 20px;
+  background-color: rgb(247,247,247);
+}
+
 h1 {
   margin-bottom: 30px;
 }
@@ -25,19 +31,19 @@ h2 {
     color: #66C;
     white-space: nowrap;
   }
-    .app-category-nav > *[data-category]:before {
-      content: " · ";
-    }
-    .app-category-nav > *[data-category].first:before {
-      display: none;
+
+  .app-category-nav *[data-category] {
+    margin-left: 20px;
+  }
+    .app-category-nav *[data-category].first {
+      margin-left: 0;
     }
 
 .app {
-  border: 1px solid #D0D0D0;
-  /*border-top: 4px solid #88A;*/
-  box-shadow: 0 0 0 1px rgba(128, 128, 128, .1), 0 2px 3px rgba(128, 128, 128, .4);
+  border-radius: 10px;
+  border-bottom: 1px solid rgb(204, 204, 204);
   padding: 12px;
-  background-color: #FBFBFB;
+  background-color: white;
   margin-bottom: 24px;
   cursor: default;
   overflow: hidden;
@@ -55,7 +61,7 @@ h2 {
       }
     }
   .app .app-icon {
-    width: 30%;
+    width: 20%;
     max-width: 128px;
   }
     @media screen and (max-width: 768px) {
@@ -92,35 +98,39 @@ h2 {
 </style>
 {% endblock %}
 
-{% block breadcrumbs %}
-<li class="active">Compliance Apps</li>
+{% block contextbar %} 
+  {# kill breadcrumbs but add some space below site header #}
+  <div id="contextbar">
+    &nbsp;
+  </div>
 {% endblock %}
 
 {% block body %}
-<h1>
-  <img alt="GovReady Q logo" src="{% static "img/brand/govready_logo_transparent.png" %}" width="190px" style="margin-top:-18.5px;">
-  Compliance Apps
-</h1>
+      <div>
+        <a href="/" style="color: black;">
+          <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
+        </a>
+        / Compliance Apps
+
+      <div class="pull-right" style="margin-bottom: 1em">
+        <form class="form-inline" onsubmit="return false;">
+          <div class="form-group">
+            <label class="sr-only" for="app-search">search apps for</label>
+            <div class="input-group">
+              <div class="input-group-addon">search</div>
+              <input type="text" class="form-control" id="app-search" placeholder="search apps">
+            </div>
+          </div>
+        </form>
+      </div>
+
 
 {% if filter_description %}
 <p style="margin-bottom: 30px">These apps can help you with <i>{{filter_description}}</i>.</p>
 {% endif %}
 
-<div class="pull-right" style="margin-bottom: 1em">
-  <form class="form-inline" onsubmit="return false;">
-    <div class="form-group">
-      <label class="sr-only" for="app-search">search apps for</label>
-      <div class="input-group">
-        <div class="input-group-addon">search</div>
-        <input type="text" class="form-control" id="app-search" placeholder="search apps">
-      </div>
-    </div>
-  </form>
-</div>
-
 {# since the category links disappear in response to search queries, this should come after the search box so the search box's position doesn't jump around if this element changes size or disappears #}
-<div class="pull-left app-category-nav" style="margin-bottom: 1em">
-  <span style="color: #666">Jump to...</span>
+<div class="pull-left app-category-nav" style="margin-bottom: 1em; width:96%; margin:0 20px 0 20px;">
   {% for app_category in apps %}
     <span data-category="{{app_category.title}}" {% if forloop.first %}class="first"{% endif %}>
       <a href="#" onclick="smooth_scroll_to($('.app-category').filter(function() { return this.getAttribute('data-category') == '{{app_category.title|escapejs}}' })); return false;">{{app_category.title}}</a>
@@ -147,46 +157,41 @@ h2 {
         <table>
         <tr valign="top">
 
-          {% if app.app_icon_dataurl %}
-            <td class="app-icon" style="padding-top: 1px; padding-right: 12px;">
-              <img src="{{app.app_icon_dataurl}}" class="img-responsive"">
-            </td>
-          {% endif %}
-
         <td>
+          <h3>{{app.title}}</h3>
 
-        <h3>
-          {% if app.vendor %}
-          <small>{{app.vendor}}</small><br/>
+          <div class="body">
+          {{app.description.short|safe|truncatewords_html:18}}
+          </div>
+
+          {% if app.authz != "none" %}
+          <div class="app-metadata">
+            Admin approval required</div>
+          </div>
           {% endif %}
-          {{app.title}}
-        </h3>
 
-        <div class="body">
-        {{app.description.short|safe|truncatewords_html:18}}
-        </div>
+          <div style="margin-top: .5em">
+          <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="get" style="display: inline-block;">
+            <button type="submit" class="btn btn-info btn-sm view-app">
+              <span class="glyphicon glyphicon-info-sign"> </span>
+              Info
+            </button>
+          </form>
+          <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-sm start-app">
+              Add ►
+            </button>
+          </form>
+          </div>
+        </td>
 
-        {% if app.authz != "none" %}
-        <div class="app-metadata">
-          Admin approval required</div>
-        </div>
+        {% if app.app_icon_dataurl %}
+        <td class="app-icon" style="padding-top: 1px; padding-right: 12px;">
+          <img src="{{app.app_icon_dataurl}}" class="img-responsive"">
+        </td>
         {% endif %}
 
-        <div style="margin-top: .5em">
-        <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="get" style="display: inline-block;">
-          <button type="submit" class="btn btn-info btn-sm view-app">
-            <span class="glyphicon glyphicon-info-sign"> </span>
-            Info
-          </button>
-        </form>
-        <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-success btn-sm start-app">
-            Add ►
-          </button>
-        </form>
-        </div>
-        </td>
         </tr>
         </table>
       </div>
