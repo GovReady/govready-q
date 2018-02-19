@@ -12,7 +12,7 @@ Each GovReady Compliance App provides a separate API, and each app's API is comp
 
 As an example, the screenshot below shows a demonstration of a macOS File Server compliance app. The app asks questions about the hostname of the server and the use of security groups.
 
-![macOS File Server Compliance App](docs/assets/macosapp.png)
+![macOS File Server Compliance App](assets/macosapp.png)
 
 The answers to these questions can be both read from Q and written to Q using a JSON data structure:
 
@@ -39,11 +39,11 @@ The answers to these questions can be both read from Q and written to Q using a 
 
 The second question, shown below, is a yes-no question. In the web browser this question appears as a radio select question with Yes and No choices. In the JSON data structure, shown above, it is encoded as the JSON strings `"yes"` or `"no"`.
 
-![macOS File Server Compliance App Question](docs/assets/macosapp_q1.png)
+![macOS File Server Compliance App Question](assets/macosapp_q1.png)
 
 Each compliance app that has been started in GovReady Q and added to a project folder provides an `API Docs` page with samples and data schema documentation:
 
-![API Docs Page](docs/assets/macosapp_api.png)
+![API Docs Page](assets/macosapp_api.png)
 
 Using the Compliance API
 ------------------------
