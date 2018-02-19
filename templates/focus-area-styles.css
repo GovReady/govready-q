@@ -6,9 +6,6 @@ body {
 
 
 #focus-area-wrapper {
-  /*border: 1px solid #D0D0D0;*/
-  /*border-top: 4px solid rgb(74,164,74);*/
-  /*box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);*/
   border-radius: 10px;
   border-bottom: 1px solid rgb(204, 204, 204);
   padding: 2em;

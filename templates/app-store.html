@@ -32,9 +32,12 @@ h2 {
     white-space: nowrap;
   }
 
-.app-category-nav a {
-  margin-left:20px;
-}
+  .app-category-nav *[data-category] {
+    margin-left: 20px;
+  }
+    .app-category-nav *[data-category].first {
+      margin-left: 0;
+    }
 
 .app {
   border-radius: 10px;
@@ -95,17 +98,19 @@ h2 {
 </style>
 {% endblock %}
 
-{% block contextbar %}
-    <div id="context-bar">
-    <div class="container-fluid">
+{% block contextbar %} 
+  {# kill breadcrumbs but add some space below site header #}
+  <div id="contextbar">
+    &nbsp;
+  </div>
+{% endblock %}
 
+{% block body %}
       <div>
-      {% block breadcrumbs %}
         <a href="/" style="color: black;">
           <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
         </a>
         / Compliance Apps
-      {% endblock %}
 
       <div class="pull-right" style="margin-bottom: 1em">
         <form class="form-inline" onsubmit="return false;">
@@ -119,11 +124,6 @@ h2 {
         </form>
       </div>
 
-    </div><!-- container -->
-    </div><!-- div wrapper -->
-{% endblock %}
-
-{% block body %}
 
 {% if filter_description %}
 <p style="margin-bottom: 30px">These apps can help you with <i>{{filter_description}}</i>.</p>

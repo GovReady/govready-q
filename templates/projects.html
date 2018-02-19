@@ -61,38 +61,32 @@ body {
       margin: 0;
       font-weight: bold;
     }
-
-  #context-bar {
-    background-color: white !important;
-  }
 </style>
 {% endblock %}
 
 <!-- Remove contextbar from top of page -->
-{% block contextbar %}
-    <div id="context-bar">
-    <div class="container-fluid">
-
-      <div style="float: right; margin: 0 0.5em 0em 5em;">
-        <a id="new-system" href="/store?protocol=govready.com/apps/compliance/2018/information-technology-system" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system </a>
-        <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add other app </a>
-        {% if is_lonely_admin %}
-        <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
-        {% endif %}
-      </div>
-
-      <div><span class="glyphicon glyphicon-home" style="margin-right: .25em"></span> Assessments</div>
-    </div><!-- container -->
-    </div><!-- div wrapper -->
-{% endblock %}
+{% block contextbar %}{% endblock %}
 
 {% block body %}
+
 {% comment %}
 {% if request.user.can_see_org_settings and not request.organization.get_organization_project.root_task.is_finished %}
   <h2>Complete your organization profile</h2>
   <p>Fill out your <a href="{{request.organization.get_organization_project.get_absolute_url}}">your organization&rsquo;s profile</a>.</p>
 {% endif %}
 {% endcomment %}
+
+<div style="margin-top: 15px">
+<div style="float: right; margin: 0 0.5em 0em 5em;">
+  <a id="new-system" href="/store?protocol=govready.com/apps/compliance/2018/information-technology-system" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system </a>
+  <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add other app </a>
+  {% if is_lonely_admin %}
+  <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
+  {% endif %}
+</div>
+
+<div><span class="glyphicon glyphicon-home" style="margin-right: .25em"></span> Assessments</div>
+</div>
 
 {% for lifecycle in lifecycles %}
   <div class="clearfix"></div>
