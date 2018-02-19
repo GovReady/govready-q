@@ -71,13 +71,10 @@ h3.question-group-title {
   margin: 0;
 }
 
-.question-row-container {
-  border-radius: 5px;
+.question {
+  background-color: white;
   border-bottom: 1px solid rgb(204, 204, 204);
   margin-bottom: 15px;
-}
-
-.question {
   padding-top: .75em;
   padding-bottom: .75em;
   {% if layout_mode == "grid" %}
@@ -85,9 +82,10 @@ h3.question-group-title {
     margin-top: 10px;
   {% endif %}
   border-radius: 15px; /* good for highlighting */
+
 }
   .question:hover {
-    background-color: rgb(248,248,248);
+    background-color: rgb(246,250,249);
   }
   .question .question-icon {
     margin: 0 auto;
@@ -113,6 +111,9 @@ h3.question-group-title {
       font-weight: bold;
     }
 
+  .question-title > .btn {
+    margin: 8px 0 0 0;
+  }
   .question .invitation {
     font-size: 14px;
     line-height: 128%;
@@ -268,12 +269,10 @@ h3.question-group-title {
                     {# The layout of the project page is either a grid of components or a vertical list of components. #}
                     {% if layout_mode == "grid" %}col-sm-3 col-lg-2{% else %}col-xs-12{% endif %}
                     question
-                    question-row-container
 
                     {# Add CSS classes for whether this question is finished or if it's the next item for the user to do. #}
                     {% if q.is_finished %}task_finished{% endif %}
                     {% if q.first_start %}first_start{% endif %}"
-                    style="background-color: white;"
                     >
 
                     {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
@@ -374,13 +373,10 @@ h3.question-group-title {
                             </div>
                             {% if layout_mode == "rows" %}
                             {% if task.is_finished %}
-                            <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37); margin-top: 8px;">Finished</div>
+                            <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37);">Finished</div>
                             {% elif task.is_started %}
                             <div class="btn btn-sm btn-default">In progress</div>
                             {% else %}
-                            <div class="progress" style="width:80%; height: 5px;margin: 8px 0 0 0;">
-                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{q.progress_percent}}%" aria-valuenow="{{q.progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
                             <div class="btn btn-sm btn-default">Start section</div>
                             {% endif %}
                             {% endif %}
