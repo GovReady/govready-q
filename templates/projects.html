@@ -56,6 +56,15 @@ Your Compliance Projects
       margin: 0;
       font-weight: bold;
     }
+
+  h1.mini {
+    font-size: 16px;
+    font-family: Hind, sands-serif;
+    line-height: 22px;
+    color: rgba(51, 51, 51);
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+  }
 </style>
 {% endblock %}
 
@@ -80,7 +89,7 @@ Your Compliance Projects
   {% endif %}
 </div>
 
-<div><span class="glyphicon glyphicon-home" style="margin-right: .25em"></span> Assessments</div>
+<h1 class="mini"><span class="glyphicon glyphicon-home" style="margin-right: .25em"></span> Assessments</h1>
 </div>
 
 {% for lifecycle in lifecycles %}
