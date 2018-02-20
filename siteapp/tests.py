@@ -843,6 +843,8 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         self.assertRegex(self.browser.title, "^Test The Media Question Types - ")
+        self.assertInNodeText("Download attachment (image; 90.5 kB; ",
+               ".output-document div[data-question='file']")
 
     def test_questions_module(self):
         # Log in and create a new project.
