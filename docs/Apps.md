@@ -243,13 +243,11 @@ Apps can contain executable content (some of which is disabled by default):
 
 * JavaScript executed by the client browser served as a static asset and referenced by a `<script>` tag.
 
-* Python scripts executed by the GovReady-Q server for `external-function` questions.
+Both sources of Javascript execute within the context of pages on the domain that the Q site itself runs on, which means the scripts have access to the page DOM, cookies, localStorage, etc. These scripts must only be enabled if they are trusted for these environments.
 
-Both sources of Javascript execute within the context of pages on the domain that the Q site itself runs on, which means the scripts have access to the page DOM, cookies, localStorage, etc. Server-side Python executes as the local Unix user within the Q Django process. These scripts must only be enabled if they are trusted for these environments.
+Javascript static assets  (**but not Javascript in module templates** - this is a TODO) are therefore disabled by default. (Javascript static assets are disabled by serving them with an incorrect MIME type.)
 
-Javascript static assets and Python scripts (**but not Javascript in module templates** - this is a TODO) are therefore disabled by default. (Javascript static assets are disabled by serving them with an incorrect MIME type. Python assets are not loaded if disabled.)
-
-To enable these scripts, the `Trust javascript assets` flag must be true on the AppSource that provides the app. This flag must only be true if any Apps provided by the AppSource, including Apps already loaded into Q, are trusted to have executable content that may have as much client or server-side access as the Q instance does itself.
+To enable these scripts, the `Trust assets` flag must be true on the AppSource that provides the app. This flag must only be true if any Apps provided by the AppSource, including Apps already loaded into Q, are trusted to have executable content that may have as much client or server-side access as the Q instance does itself.
 
 
 ### Updating modules

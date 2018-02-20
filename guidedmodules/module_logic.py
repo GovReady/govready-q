@@ -1028,19 +1028,6 @@ class TemplateContext(Mapping):
     def getitem(self, item):
         self._execute_lazy_module_answers()
 
-        # If 'item' matches an external function name (in the root template context only), return it.
-        # Un-wrap RenderedAnswer instances so the external function gets the value and not the
-        # RenderedAnswer instance.
-        if self.root and self.module_answers and item in self.module_answers.module.python_functions():
-            func = self.module_answers.module.python_functions()[item]
-            def arg_filter(arg):
-                if isinstance(arg, RenderedAnswer):
-                    return arg.answer
-                return arg
-            def wrapper(*args, **kwargs):
-                return func(*map(arg_filter, args), **kwargs)
-            return wrapper
-
         # If 'item' matches a question ID, wrap the internal Pythonic/JSON-able value
         # with a RenderedAnswer instance which take care of converting raw data values
         # into how they are rendered in templates (escaping, iteration, property accessors)
@@ -1103,12 +1090,6 @@ class TemplateContext(Mapping):
         self._execute_lazy_module_answers()
 
         seen_keys = set()
-
-        # external functions, in the root template context only
-        if self.root and self.module_answers and self.module_answers.module:
-            for fname in self.module_answers.module.python_functions():
-                seen_keys.add(fname)
-                yield fname
 
         # question names
         for q in self._module_questions.values():
@@ -1376,13 +1357,10 @@ class RenderedAnswer:
                 self.escapefunc, parent_context=self.parent_context)
                 for v in self.answer)
 
-        elif self.question_type == "external-function":
-            return iter(self.answer)
-
         raise TypeError("Answer of type %s is not iterable." % self.question_type)
 
     def __len__(self):
-        if self.question_type in ("multiple-choice", "module-set", "external-function"):
+        if self.question_type in ("multiple-choice", "module-set"):
             if self.answer is None: return 0
             return len(self.answer)
 
@@ -1416,10 +1394,11 @@ class RenderedAnswer:
                 tc = TemplateContext(ans, self.escapefunc, parent_context=self.parent_context)
             return tc[item]
 
-        # For external-function and "raw" question types, the answer value is any
-        # JSONable Python data structure. Forward the getattr request onto the value.
-        # Similarly for file questions.
-        elif self.question_type in ("external-function", "raw", "file"):
+        # For the "raw" question type, the answer value is any
+        # JSONable Python data structure. Forward the getattr
+        # request onto the value.
+        # Similarly for file questions which have their own structure.
+        elif self.question_type in ("raw", "file"):
             if self.answer is not None:
                 return self.answer[item]
             else:
@@ -1462,17 +1441,3 @@ class RenderedAnswer:
             # If one tries to compare a string to an integer, just
             # say false.
             return False
-
-def run_external_function(question, answers, **additional_args):
-    # Find and run the method.
-    import copy # don't give the function referneces to ORM values
-    function_name = question.spec.get("function", question.key)
-    funcs = question.module.python_functions()
-    if function_name not in funcs:
-        raise Exception("Invalid function name %s in %s question %s. Available functions are %s." % (
-        function_name, question.module, question.key,
-        ",".join(name for name in funcs if callable(funcs[name]))
-          if funcs else "[no functions defined]"
-        )) # not trapped / not user-visible error
-    method = funcs[function_name]
-    return method(module=copy.deepcopy(question.module.spec), question=copy.deepcopy(question.spec), answers=answers.as_dict(), **additional_args)

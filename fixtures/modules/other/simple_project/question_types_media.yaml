@@ -16,16 +16,9 @@ questions:
     prompt: This is an interstitial.
     type: interstitial
 
-  - id: q_external_function
-    title: external-function
-    prompt: I'm going to run a Python function.
-    type: external-function
-    function: sample_external_function
-
 output:
   - title: Your Answers
     format: markdown
     template: |
       {{q_file}}
       {{q_interstitial}}
-      {{q_external_function}}

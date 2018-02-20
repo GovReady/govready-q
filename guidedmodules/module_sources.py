@@ -262,18 +262,6 @@ class PyFsApp(App):
                     with self.fs.open(entry.name) as f:
                         module_spec = read_yaml_file(f)
 
-                    # Load any associated Python code.
-                    if (fn_name + ".py") in path_entries and self.store.source.trust_assets:
-                        # Read the file.
-                        with self.fs.open(fn_name + ".py") as f:
-                            code = f.read()
-
-                        # Validate that it compiles.
-                        compile(code, module_id, "exec")
-
-                        # Store it in source form in the module specification.
-                        module_spec["python-module"] = code
-
                     yield (module_id, module_spec)
 
             elif entry.name in ("assets", "private-assets"):

@@ -356,10 +356,6 @@ label:hover .onhover { display: inline; }
               {# no other content but an empty value #}
               <input type="hidden" name="value" value=""/>
 
-            {% elif q.spec.type == "external-function" %}
-              {# no other content but an empty value #}
-              <input type="hidden" name="value" value=""/>
-
             {% else %}
               <p class="text-danger">QUESTION TYPE NOT IMPLEMENTED: {{q.spec.type}}</p>
 
@@ -376,9 +372,6 @@ label:hover .onhover { display: inline; }
               onclick="$('#question > form input[name=method]').val('save')">
               {% if q.spec.type == "interstitial" %}
                 Got it
-              {% elif q.spec.type == "external-function" %}
-                {# function might be fetching external information or taking an action like submitting content to an existing system #}
-                Go
               {% elif not request.GET.q %}
                 {# user is proceeding through the questions in order #}
                 Next

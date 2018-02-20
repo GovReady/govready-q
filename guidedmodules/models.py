@@ -11,8 +11,6 @@ from .module_logic import ModuleAnswers, render_content
 from .answer_validation import validator
 from siteapp.models import User, Organization, Project, ProjectMembership
 
-ModulePythonCode = { }
-
 class AppSource(models.Model):
     is_system_source = models.BooleanField(default=False, help_text="This field is set to True for a single AppSource that holds the system modules such as user profiles.")
     slug = models.CharField(max_length=200, unique=True, help_text="A unique URL-safe string that names this AppSource.")
@@ -117,18 +115,6 @@ class Module(models.Model):
     def get_questions(self):
         # Return the ModuleQuestions in definition order.
         return list(self.questions.order_by('definition_order'))
-
-    def python_functions(self):
-        # Run exec() on the Python source code stored in the spec, and cache the
-        # globally defined functions, classes, and variables.
-        global ModulePythonCode
-        if self.id not in ModulePythonCode:
-            exec(
-                self.spec.get("python-module", ""),
-                None, # default globals - TODO: Make this safe?
-                ModulePythonCode.setdefault(self.id, {}) # put locals, i.e. global definitions, here
-            )
-        return ModulePythonCode[self.id]
 
     def export_json(self, serializer):
         # Exports this Module's metadata to a JSON-serializable Python data structure.
