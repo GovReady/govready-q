@@ -177,23 +177,6 @@ In addition to the `output` documents described above, a project module may also
 	  template: |
 	    Project {{name}}
 
-### Accessing External Python Code
-
-External Python functions can be made available in the template context when rendering documents. Define a Python file with the same file name as the YAML module specification file, except with a `.py` extension instead of `.yaml`. Any functions, classes, and variables defined at the top (global) level of the Python module are exposed as variables in the template context.
-
-For example, define in `mymodule.py`:
-
-	def your_function_name(arg1, arg2):
-		return str(arg1) + str(arg2)
-
-In `mymodule.yaml`, you can call this function from templates as:
-
-	{{ your_function_name(arg1, arg2) }}
-
-The arguments can refer to any other template context variables, such as question variables.
-
-The function is also available in impute conditions and impute expression values, but then without the outermost braces.
-
 
 Module Assets
 -------------
@@ -443,19 +426,6 @@ As with all questions, it is necessary to add the `id` of the interstitial to th
 
 In document templates and impute conditions, the value of `interstitial` questions is always a null value.
 
-#### `external-function`
-
-An `external-function` question is not really a question at all but instead runs some Python code when the user clicks the Submit button and stores the result as the value of the question. The `prompt` is displayed to the user as normal. The function is run when the user clicks the Submit button.
-
-The function is specified as
-
-    type: external-function
-    function: {function-name}
-
-where `{function-name}` identifies the Python function to be executed in an accompanying Python module. See Accessing External Python Code above for how Python functions are located (but the arguments provided to the function are different, see next paragraph).
-
-The arguments provide information about the module and the question being answered as well as all of the answers to the module that have been provided so far. `question` is a dict containing the question's specification (i.e. a dict containing keys `id`, `type`, and `function`, and whatever else might be in this part of the the YAML file). `answers` is a dict mapping question IDs to answer values. `**kwargs` ensures forwards-compatibility with future versions of Q.
-
 #### `raw`
 
 This type is meant for questions that are always imputed (i.e. that are never presented to the user) and where the answer value can be any JSON-serializable Python data structure, as given by the impute value (see Imputing Answers below).
@@ -501,7 +471,6 @@ In both conditions and `expression`-type values, as well as in documents, the va
 * `project`, which gives the project name
 * `project.question_id`, `project.question_id.subquestion_id`, etc. to access questions within the project
 * `organization`, which gives the organization name
-* The name of an external Python function (see Accessing External Python Code)
 
 We also have a funtion to retreive the URL of a module's static assets, e.g.:
 

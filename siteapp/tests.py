@@ -842,17 +842,9 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#save-button")
         var_sleep(.5)
 
-        # external-function
-        # There is nothing to really test in terms of functionality here, but
-        # the template result should show the output of the sample_external_function
-        # method defined below.
-        self.assertRegex(self.browser.title, "Next Question: external-function")
-        self.click_element("#save-button")
-        var_sleep(.5)
-
         self.assertRegex(self.browser.title, "^Test The Media Question Types - ")
-        self.assertInNodeText("Successfully ran an external function",
-        	".output-document span[data-question='external-function']")
+        self.assertInNodeText("Download attachment (image; 90.5 kB; ",
+               ".output-document div[data-question='file']")
 
     def test_questions_module(self):
         # Log in and create a new project.

@@ -116,11 +116,6 @@ class question_input_parser:
             raise ValueError("Invalid input.")
         return None
 
-    def parse_external_function(question, value):
-        # the user doesn't answer these directly
-        if value != "":
-            raise ValueError("Invalid input.")
-        return None # doesn't matter
 
 class validator:
     # Validate that an answer is of the right data type and meets the
@@ -317,6 +312,3 @@ class validator:
             raise ValueError("Invalid data type (%s)." % type(value))
         return value
 
-    def validate_external_function(question, value):
-        # Any data structure is OK.
-        return value
