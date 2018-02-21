@@ -482,6 +482,8 @@ class Task(models.Model):
                 .order_by('-id')
                 .select_related('taskanswer', 'taskanswer__task', 'taskanswer__question', 'answered_by')
                 .prefetch_related('answered_by_task')
+                .prefetch_related("answered_by_task__module__app__source")
+                .prefetch_related("answered_by_task__module__questions")
                 )
         def get_current_answer(q):
             for a in answers:
@@ -490,7 +492,7 @@ class Task(models.Model):
             return None
 
         # Loop over all of the questions and fetch each's answer.
-        for q in self.module.questions.all().order_by("definition_order"):
+        for q in sorted(self.module.questions.all(), key = lambda q : q.definition_order):
             # Get the latest TaskAnswerHistory instance for this TaskAnswer,
             # if there is any (there should be). If the answer is marked as
             # cleared, then treat as if it had not been answered.
@@ -1506,7 +1508,7 @@ class TaskAnswerHistory(models.Model):
         if q.spec["type"] in ("module", "module-set"):
             value = [
                 ModuleAnswers(t.module, t, None)
-                for t in self.answered_by_task.all().select_related('module')
+                for t in self.answered_by_task.all()
                 ]
             if q.spec["type"] == "module":
                 if len(value) == 0:
