@@ -635,24 +635,10 @@ function set_state_from_url_fragment() {
   var fragment = window.location.hash.substring(1); // chop off the "#"
 
   // The GovReady Dashboard React app appends a random code like `?_k=h9zm95` to the
-  // hashbang, so we need to strip that out.
+  // fragment, so we need to strip that out.
   fragment = fragment.split('?').shift();
 
   var fragment = parse_qs(fragment);
-
-  // Open the tab specified in the fragment.
-  var tabpath = fragment.tab;
-  if (tabpath) {
-    tabpath = tabpath.split('/');
-    var tab = tabpath.shift();
-    if (tab)
-      $('#project-tabs a[href="#' + tab + '"]').tab("show");
-
-    // If the GovReady Dashboard tab is clicked, we need to change the hashbang
-    // so that the React app works.
-    if (tab === 'document-1')
-      window.location.hash = '#/site-list';
-  }
 
   // Highlight the question.
   if (fragment.q) {
