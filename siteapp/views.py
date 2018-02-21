@@ -383,7 +383,7 @@ def apps_catalog_item(request, app_namespace, app_name):
         if task and q:
             # Redirect to the task containing the question that was just answered.
             from urllib.parse import urlencode
-            return HttpResponseRedirect(task.get_absolute_url() + "#" + urlencode({ "q": q.key }))
+            return HttpResponseRedirect(task.get_absolute_url() + "#" + urlencode({ "q": q.key, "t": project.root_task.id }))
 
         # Redirect to the new project.
         return HttpResponseRedirect(project.get_absolute_url())
@@ -510,12 +510,15 @@ def project(request, project):
     # that we know which questions are suppressed by imputed values.
     root_task_answers = project.root_task.get_answers().with_extended_info()
 
+    # Check if this user has authorization to start tasks in this Project.
     can_start_task = project.can_start_task(request.user)
 
     # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
+    # Create a "question" record for each question that is displayed by the template.
+    # For module-set questions, create one record to start new entries and separate
+    # records for each answered module.
     from collections import OrderedDict
     questions = OrderedDict()
-    first_start = True
     can_start_any_apps = False
     for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
         # Display module/module-set questions only. Other question types in a project
@@ -527,70 +530,54 @@ def project(request, project):
         if is_answered and not answer_obj:
             continue
 
-        # Is this question answered yet? Are there any discussions the user
-        # is a guest of in any of the tasks that answer this question?
-        is_finished = None
-        progress_percent = 0
-        tasks = []
-        task_discussions = []
-        if answer_value is not None:
-            if mq.spec["type"] == "module":
-                # Convert a ModuleAnswers instance to an array containing just itself.
-                answer_value = [answer_value]
-            elif mq.spec["type"] == "module-set":
-                # ans is already a list of ModuleAnswers instances.
-                pass
-            for module_answers in answer_value:
-                task = module_answers.task
-
-                task_discussions.extend([d for d in discussions if d.attached_to.task == task])
-                
-                tasks.append(task)
-                if not task.is_finished():
-                    # If any task is unfinished, the whole question
-                    # is marked as unfinished.
-                    is_finished = False
-                elif is_finished is None:
-                    # If all tasks are finished, the whole question
-                    # is marked as finished.
-                    is_finished = True
-
-                if len(answer_value) == 1:
-                    progress_percent = task.get_progress_percent()
-
-        # Do not display if the user can't start a task and there are no
-        # tasks visible to the user.
-        if not can_start_task and len(tasks) == 0 and len(task_discussions) == 0:
-            continue
-
-        # Is this the first Start?
-        d_first_start = first_start and (len(tasks) == 0)
-        if d_first_start: first_start = False
-
-        # Is this a protocol question?
-        if mq.spec.get("protocol"):
-            # Set flag if an app can be started here.
-            if can_start_task and (answer_value is None or mq.spec["type"] == "module-set"):
-                can_start_any_apps = True
-
-        # Create template context dict for this question.
-        questions[mq.id] = {
-            "question": mq,
-            "is_finished": is_finished,
-            "progress_percent": progress_percent,
-            "tasks": tasks,
-            "can_start_new_task": mq.spec["type"] == "module-set" or len(tasks) == 0,
-            "first_start": d_first_start,
-            "discussions": task_discussions,
-            "invitations": [], # filled in below
-        }
+        # Create a "question" record for all Task answers to this question.
+        if answer_value is None:
+            # Question is unanswered - there are no sub-tasks.
+            answer_value = []
+        elif mq.spec["type"] == "module":
+            # The answer is a ModuleAnswers instance. Wrap it in an array containing
+            # just itself so we create as single question entry.
+            answer_value = [answer_value]
+        elif mq.spec["type"] == "module-set":
+            # The answer is already a list of zero-or-more ModuleAnswers instances.
+            pass
 
         # If the question specification specifies an icon asset, load the asset.
         # This saves the browser a request to fetch it, which is somewhat
         # expensive because assets are behind authorization logic.
         if "icon" in mq.spec:
-            questions[mq.id]["icon"] = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+            icon = project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+        else:
+            icon = None
 
+        for i, module_answers in enumerate(answer_value):
+            # Create template context dict for this question.
+            key = mq.id
+            if mq.spec["type"] == "module-set":
+                key = (mq.id, i)
+            questions[key] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "task": module_answers.task,
+                "can_start_new_task": False,
+                "discussions": [d for d in discussions if d.attached_to.task == module_answers.task],
+            }
+
+        # Create a "question" record for the question itself it is is unanswered or if
+        # this is a module-set question, and only if the user has permission to start tasks.
+        if can_start_task and (len(answer_value) == 0 or mq.spec["type"] == "module-set"):
+            questions[mq.id] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "can_start_new_task": True,
+            }
+
+            # Set a flag if any app can be started, i.e. if this question has a protocol field.
+            # Is this a protocol question?
+            if mq.spec.get("protocol"):
+                can_start_any_apps = True
 
     # Assign questions to the main area or to the "action buttons" panel on the side of the page.
     main_area_questions = []
@@ -627,20 +614,12 @@ def project(request, project):
             column["questions"] = []
 
         for question in main_area_questions:
-            #import random
-            #random.choice(columns[0:1+random.choice(range(len(columns)))])["questions"].append(question)
-
-            if len(question["tasks"]) == 0:
+            if "task" not in question:
                 col = 0
                 question["hide_icon"] = True
-            elif question["question"].spec["type"] == "module-set":
-                if question["is_finished"]:
-                    col = 3
-                else:
-                    col = 2
-            elif question["tasks"][0].is_finished():
+            elif question["task"].is_finished():
                 col = 3
-            elif question["tasks"][0].is_started():
+            elif question["task"].is_started():
                 col = 2
             else:
                 col = 1
@@ -1050,7 +1029,7 @@ def project_start_apps(request, *args):
         for q in project.root_task.module.questions.order_by('definition_order'):
             if    q.spec["type"] in ("module", "module-set") \
              and  q.spec.get("protocol") \
-             and q.key not in root_task_answers:
+             and q.key not in root_task_answers or q.spec["type"] == "module-set":
                 # What apps can be used to start this question?
                 q.startable_apps = list(filter(lambda app : app_satifies_interface(app, q), all_apps))
                 if len(q.startable_apps) > 0:
