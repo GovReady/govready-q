@@ -866,14 +866,16 @@ class Task(models.Model):
 
 
     def get_app_icon_url(self):
-        icon_img = self.module.spec.get("icon")
-        if icon_img:
-            try:
-                return self.get_static_asset_image_data_url(icon_img, 75)
-            except ValueError:
-                # no asset or image error
-                pass
-        return None
+        if not hasattr(self, "_get_app_icon_url"):
+            self.get_app_icon_url = None
+            icon_img = self.module.spec.get("icon")
+            if icon_img:
+                try:
+                    self.get_app_icon_url = self.get_static_asset_image_data_url(icon_img, 75)
+                except ValueError:
+                    # no asset or image error
+                    pass
+        return self.get_app_icon_url
 
     def get_subtask(self, question_id):
         return self.get_or_create_subtask(None, question_id, create=False)
