@@ -54,8 +54,8 @@ django-model-utils==3.1.1 \
     --hash=sha256:4356fad5f6fc9910da865fbf9371f9c2e028606dff2bbd8e32e67569260e530d \
     --hash=sha256:a9baa7de943b4e8afa61728ce8c42ce99e88cc87d40e74df2b060a78d22c0f5c \
     # via django-notifications-hq
-https://github.com/phamk/django-notifications/archive/django-2.0.zip \
-    --hash=sha256:f46ef7b5702772adbd343f692eac4fc9712625cd6167c9bc927282ac98b66969
+https://github.com/phamk/django-notifications/archive/django-2-compatibility.zip \
+    --hash=sha256:4da98487dda2ffcdc108f5d30db4552055056cecedb7e08edab616de763927ed
     # see https://github.com/phamk/django-notifications/commit/652222d2b8b0ad9c23e61cf4880f85dc40d699d0
 django==2.0.2 \
     --hash=sha256:7c8ff92285406fb349e765e9ade685eec7271d6f5c3f918e495a74768b765c99 \
