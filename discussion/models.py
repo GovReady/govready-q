@@ -37,6 +37,13 @@ class Discussion(models.Model):
         else:
             return Discussion.objects.get(organization=org, attached_to_content_type=content_type, attached_to_object_id=object.id)
 
+    @staticmethod
+    def get_for_all(org, objects):
+        if objects.count() == 0:
+            return Discussion.objects.none() # empty QuerySet
+        content_type = ContentType.objects.get_for_model(objects.first())
+        return Discussion.objects.filter(organization=org, attached_to_content_type=content_type, attached_to_object_id__in=objects)
+
     def __str__(self):
         # for the admin, notification strings
         return self.title

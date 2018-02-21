@@ -446,11 +446,11 @@ class Project(models.Model):
             participants[pm.user]["is_admin"] = pm.is_admin
         for task in Task.objects.filter(project=self).select_related("editor"):
             participants[task.editor]["editor_of"].append(task)
-        for ta in TaskAnswer.objects.filter(task__project=self, task__deleted_at=None):
-            d = Discussion.get_for(self.organization, ta)
-            if d:
-                for user in d.guests.all():
-                    participants[user]["discussion_guest_in"].append(d)
+        discussions = Discussion.get_for_all(self.organization, TaskAnswer.objects.filter(task__project=self, task__deleted_at=None))\
+            .prefetch_related("guests")
+        for d in discussions:
+            for user in d.guests.all():
+                participants[user]["discussion_guest_in"].append(d)
 
         # Add text labels to describe user and authz.
         for user, info in participants.items():
