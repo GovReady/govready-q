@@ -37,11 +37,15 @@
             }
 
             #context-bar {
-               background-color: rgb(247,247,247);
-               padding: 14px 0 10px 0;
+               padding: 14px 0 8px 0;
+               margin-bottom: 8px;
             }
               #context-bar .breadcrumb {
-                margin: 0; padding: 0; background: none;
+                margin: 0;
+                padding: 0;
+                background-color: rgba(255,255,255,0.2);
+                padding: 8px;
+                max-width: 40vw;
                 cursor: default;
               }
               #context-bar .breadcrumb a {
@@ -98,6 +102,11 @@
             }
             .label[data-reviewed="2"] {
               background-color: #5cb85c;
+            }
+
+            footer .container-fluid {
+              background-color: rgba(255,255,255,0.1);
+              padding:8px;
             }
         </style>
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
@@ -270,10 +279,9 @@
         <div class="container-fluid">
           <div class="row">
             <div class="col-sm-12">
-              <hr>
               <div class="row">
                 <div class="col-sm-4"><p class="pull-left">&copy; GovReady {% now "Y" %}</p></div>
-                <div class="col-sm-4"><img alt="GovReady Q logo" src="{% static "img/brand/govready_logo_transparent.png" %}" width="110px;"></div>
+                <div class="col-sm-4">&nbsp;</div>
                 <div class="col-sm-4"><p class="pull-right">ver {{APP_VERSION_STRING}}</p></div>
             </div>
           </div>
