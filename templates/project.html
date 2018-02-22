@@ -96,20 +96,10 @@ h3.question-group-title {
     border-radius: 10px;
     background-color: #DDD;
   }
-    .question.task_finished .question-icon {
-      border-left: 0px solid #96B;
-    }
-    .question.first_start .question-icon {
-      border-left: 0px solid #449d44;
-    }
   .question .question-title {
     margin-top: .5em;
     color: #222;
   }
-    .question.first_start .start-task a {
-      color: #449d44;
-      font-weight: bold;
-    }
 
   .question-title > .btn {
     margin: 8px 0 0 0;
@@ -183,13 +173,6 @@ h3.question-group-title {
     {# action buttons #}
     {% if action_buttons %}
       {% for q in action_buttons %}
-        {% for t in q.tasks %}
-          <a
-            class="btn btn-default" style="background: white"
-            href="{{t.get_absolute_url}}?previous=project">
-            {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
-          </a>
-        {% empty %}
           {% if can_start_task and q.can_start_new_task %}
             <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
               {% csrf_token %}
@@ -201,8 +184,13 @@ h3.question-group-title {
                 {{q.question.spec.title}} &raquo;
               </a>
             </form>
+          {% else %}
+          <a
+            class="btn btn-default" style="background: white"
+            href="{{q.task.get_absolute_url}}?previous=project">
+            {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
+          </a>
           {% endif %}
-        {% endfor %}
       {% endfor %}
     {% endif %}
 {% endblock %}
@@ -265,14 +253,12 @@ h3.question-group-title {
 
               {% for q in group.questions %}
                 <div id="question-{{q.question.key}}"
+                  {% if q.task  %}data-task-id="{{q.task.id}}"{% endif %}
                   class="
                     {# The layout of the project page is either a grid of components or a vertical list of components. #}
                     {% if layout_mode == "grid" %}col-sm-3 col-lg-2{% else %}col-xs-12{% endif %}
                     question
-
-                    {# Add CSS classes for whether this question is finished or if it's the next item for the user to do. #}
-                    {% if q.is_finished %}task_finished{% endif %}
-                    {% if q.first_start %}first_start{% endif %}"
+                    "
                     >
 
                     {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
@@ -285,7 +271,7 @@ h3.question-group-title {
                         {# This is a module-type question that has been started. Clicking the question doesn't start a new task --- instead, it's just a link to the started Task. #}
 
                         {# Link to the Task. #}
-                        <a href="{{q.tasks.0.get_absolute_url}}" style="display: block;">
+                        <a href="{{q.task.get_absolute_url}}" style="display: block;">
 
                       {% elif not q.question.spec.protocol %}
                         {# Start a task directly using the module type in the specification. #}
@@ -321,7 +307,7 @@ h3.question-group-title {
                     <div class="question-icon" style="position: relative;">
                         {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
                         <div style="position: absolute; left: -1px; top: -1px;">
-                          {% if not q.can_start_new_task and q.tasks.0.is_finished %}
+                          {% if not q.can_start_new_task and q.task.is_finished %}
                             <span class="glyphicon glyphicon-ok" style="color: #96B"></span>
                           {% endif %}
                         </div>
@@ -329,8 +315,8 @@ h3.question-group-title {
                         {# Select and show an icon. #}
                         <img
                           {# If the question has been answered, can only be answered once (i.e. is a module-type question), its Task comes with its own icon, and the question specification allows the use of that icon ('app_overrides_name_and_icon' is not set), then use it. #}
-                          {% if not q.can_start_new_task and q.tasks.0.get_app_icon_url and q.question.spec.app_overrides_name_and_icon is None %}
-                          src="{{q.tasks.0.get_app_icon_url}}"
+                          {% if not q.can_start_new_task and q.task.get_app_icon_url and q.question.spec.app_overrides_name_and_icon is None %}
+                          src="{{q.task.get_app_icon_url}}"
 
                           {# If the view computed an icon to show, show it. It's probably the icon from the question's specification. #}
                           {% elif q.icon %}
@@ -358,18 +344,21 @@ h3.question-group-title {
                     <div class="question-title">
                         {# If the question has been answered, can only be answered once (i.e. is a module-type question), and the question specification allows the use of Task's title as the label ('app_overrides_name_and_icon' is not set), then use it. #}
                         {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
-                          {{q.tasks.0.title}}
+                          {{q.task.title}}
 
                         {# Otherwise use the question's title as the label. #}
                         {% else %}
+                          {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
+                            <span class="glyphicon glyphicon-plus pull-right"></span>
+                          {% endif %}
                           {{q.question.spec.title}}
                         {% endif %}
 
                         {# In the rows layout mode, indicate the question's progress (only if this question can only be answered once and is answered). #}
                         {% if layout_mode != "grid" and not q.can_start_new_task %}
-                          {% with task=q.tasks.0 %}
+                          {% with task=q.task %}
                             <div class="progress" style="width:80%; height: 5px;margin: 8px 0 0 0;">
-                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{q.progress_percent}}%" aria-valuenow="{{q.progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>
+                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{task.get_progress_percent}}%" aria-valuenow="{{task.get_progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                             {% if layout_mode == "rows" %}
                             {% if task.is_finished %}
@@ -397,33 +386,6 @@ h3.question-group-title {
                       {% else %}
                         </form>
                       {% endif %}
-                    {% endif %}
-
-                    {% if q.can_start_new_task %}
-                    {# For a module-set question, list the existing answers (Tasks) to this question. In row mode, start a new row and offset to be aligned with the second column above. #}
-                    {% if layout_mode == "rows" %}
-                      <div class="row">
-                      <div class="col-sm-push-3 col-sm-9">
-                    {% endif %}
-                    <div class="question-task-list">
-                      {% for t in q.tasks %}
-                        {# Show each task. #}
-                        <div class="started-task">
-                            <a href="{{t.get_absolute_url}}?previous=project">
-                              {{t.title}}
-                            </a>
-                            {% if t.is_finished %}
-                              <span class="label label-primary" style="background-color: #96B">finished</span>
-                            {% else %}
-                              <span class="label label-primary">in progress</span>
-                            {% endif %}
-                        </div>
-                      {% endfor %}
-                    </div>
-                    {% if layout_mode == "rows" %}
-                      </div> <!-- /col -->
-                      </div> <!-- /row -->
-                    {% endif %}
                     {% endif %}
                     
                   {# Show invitations and discussions for this question below the icon and label. #}
@@ -635,31 +597,18 @@ function set_state_from_url_fragment() {
   var fragment = window.location.hash.substring(1); // chop off the "#"
 
   // The GovReady Dashboard React app appends a random code like `?_k=h9zm95` to the
-  // hashbang, so we need to strip that out.
+  // fragment, so we need to strip that out.
   fragment = fragment.split('?').shift();
 
   var fragment = parse_qs(fragment);
 
-  // Open the tab specified in the fragment.
-  var tabpath = fragment.tab;
-  if (tabpath) {
-    tabpath = tabpath.split('/');
-    var tab = tabpath.shift();
-    if (tab)
-      $('#project-tabs a[href="#' + tab + '"]').tab("show");
-
-    // If the GovReady Dashboard tab is clicked, we need to change the hashbang
-    // so that the React app works.
-    if (tab === 'document-1')
-      window.location.hash = '#/site-list';
-  }
-
   // Highlight the question.
-  if (fragment.q) {
+  if (fragment.q && fragment.t) {
     $('.question').each(function() {
-      if (this.id == "question-" + fragment.q) {
+      if (this.id == "question-" + fragment.q && this.getAttribute("data-task-id") == fragment.t) {
         var elem = $(this);
         elem.css({ backgroundColor: "#FFA" });
+        smooth_scroll_to(elem);
         setTimeout(function() { elem.css({ backgroundColor: "#FFF" }); }, 2000);
       }
     });
