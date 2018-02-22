@@ -130,35 +130,39 @@ h3.question-group-title {
   right: 0;
   color: #31708f;
 }
+#action-buttons button {
+  width: 140px;
+}
 </style>
 {% endblock %}
 
 {% block action_buttons %}
+  <div class="btn-group-vertical" role="group" aria-label="action buttons group">
     {% if not project.is_account_project or project.is_deletable %}
-      <button class="btn btn-sm" onclick="$('#project_settings').modal();">
+      <button class="btn btn-sm btn-default" onclick="$('#project_settings').modal();">
         <i class="glyphicon glyphicon-cog"></i> Settings</a>
       </button>
     {% endif %}
     {% if send_invitation.can_add_invitee_to_team %}
-      <button id="show-project-invite" class="btn btn-sm" onclick="invite_user_into_project()">
+      <button id="show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
         <i class="glyphicon glyphicon-user"></i><i class="glyphicon glyphicon-plus"></i>
         Invite
       </button>
     {% endif %}
 
-    <button id="review-answers" class="btn btn-sm" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
+    <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
       <i class="glyphicon glyphicon-list"></i>
       Review
     </button>
 
     {% if has_outputs %}
-      <button id="review-answers" class="btn btn-sm" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
+      <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
         <i class="glyphicon glyphicon-list"></i>
         Related Controls
       </button>
     {% endif %}
 
-    <a class="btn btn-sm" href="{{project.get_absolute_url}}/api">
+    <a class="btn btn-sm btn-default" href="{{project.get_absolute_url}}/api">
       <i class="glyphicon glyphicon-sort"></i>
       API Docs
     </a>
@@ -169,6 +173,7 @@ h3.question-group-title {
         Authoring Tool
       </a>
     {% endif %}
+  </div>
 
     {# action buttons #}
     {% if action_buttons %}
