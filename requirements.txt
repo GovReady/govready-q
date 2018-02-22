@@ -75,6 +75,8 @@ exclusiveprocess==0.9.4 \
 filemagic==1.6 \
     --hash=sha256:e684359ef40820fe406f0ebc5bf8a78f89717bdb7fed688af68082d991d6dbf3 \
     # via django-database-storage-backend
+fpdf2==2.0.0 \
+    --hash=sha256:59be721cf9205d8ff2fe3587acb5fd7ec32252fbd46f3f311bd1369eed0ceec7
 fs==2.0.18 \
     --hash=sha256:2dc289f911e426e18a7009d7b57e6cfc0aafab06d2a95e1d9469ed3ec3c45889 \
     --hash=sha256:b73475775059547ef968941955ae57fb47f3216dc38018402ea30b0393bf7a42
@@ -202,7 +204,7 @@ selenium==3.9.0 \
 six==1.11.0 \
     --hash=sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9 \
     --hash=sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb \
-    # via dparse, fs, html5lib, packaging, python-dateutil
+    # via dparse, fpdf2, fs, html5lib, packaging, python-dateutil
 smmap2==2.0.3 \
     --hash=sha256:b78ee0f1f5772d69ff50b1cbdb01b8c6647a8354f02f23b488cf4b2cfc923956 \
     --hash=sha256:c7530db63f15f09f8251094b22091298e82bf6c699a6b8344aaaef3f2e1276c3 \

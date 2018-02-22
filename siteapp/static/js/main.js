@@ -182,3 +182,38 @@ function make_editable_div(elem, save_func) {
     save_func(value);
   });
 }
+
+// For automated generation of screenshots and videos,
+// add a picture of a cursor that follows the mouse cursor.
+// Adapted from:
+// https://stackoverflow.com/questions/35867776/visualize-show-mouse-cursor-position-in-selenium-2-tests-for-example-phpunit
+function enableMouseCursorFollower()
+{
+  var mouseimg = document.createElement("img");
+  mouseimg.setAttribute('src', 'data:image/png;base64,'
+    + 'iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAQAAACGG/bgAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAA'
+    + 'HsYAAB7GAZEt8iwAAAAHdElNRQfgAwgMIwdxU/i7AAABZklEQVQ4y43TsU4UURSH8W+XmYwkS2I0'
+    + '9CRKpKGhsvIJjG9giQmliHFZlkUIGnEF7KTiCagpsYHWhoTQaiUUxLixYZb5KAAZZhbunu7O/PKf'
+    + 'e+fcA+/pqwb4DuximEqXhT4iI8dMpBWEsWsuGYdpZFttiLSSgTvhZ1W/SvfO1CvYdV1kPghV68a3'
+    + '0zzUWZH5pBqEui7dnqlFmLoq0gxC1XfGZdoLal2kea8ahLoqKXNAJQBT2yJzwUTVt0bS6ANqy1ga'
+    + 'VCEq/oVTtjji4hQVhhnlYBH4WIJV9vlkXLm+10R8oJb79Jl1j9UdazJRGpkrmNkSF9SOz2T71s7M'
+    + 'SIfD2lmmfjGSRz3hK8l4w1P+bah/HJLN0sys2JSMZQB+jKo6KSc8vLlLn5ikzF4268Wg2+pPOWW6'
+    + 'ONcpr3PrXy9VfS473M/D7H+TLmrqsXtOGctvxvMv2oVNP+Av0uHbzbxyJaywyUjx8TlnPY2YxqkD'
+    + 'dAAAAABJRU5ErkJggg==');
+  mouseimg.setAttribute('id', 'selenium_mouse_follower');
+  mouseimg.setAttribute('style', 'display: none; position: absolute; z-index: 99999999999; pointer-events: none;');
+  document.body.appendChild(mouseimg);
+  window.addEventListener("mousemove", function(e) {
+    mouseimg.style.display = "block";
+    mouseimg.style.left = e.pageX + "px";
+    mouseimg.style.top = e.pageY + "px";
+  });
+  window.moveMouseToElem = function(elem) {
+    //var bounds = elem.getBoundingClientRect();
+    //mouseimg.style.left = (bounds.left+bounds.width/2) + "px";
+    //mouseimg.style.top = (bounds.top+bounds.height/2) + "px";
+    mouseimg.style.display = "block";
+    mouseimg.style.left = ($(elem).offset().left+$(elem).width()/2) + "px";
+    mouseimg.style.top = ($(elem).offset().top+$(elem).height()/2) + "px";
+  }
+};
