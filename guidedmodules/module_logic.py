@@ -870,7 +870,7 @@ class ModuleAnswers(object):
             # Lazy-load by calling the task's get_answers function
             # and copying its answers dictionary.
             if self.task is None:
-                self.answertuples = { q.key: (q, False, None, None) for q in self.module.questions.order_by('definition_order') }
+                self.answertuples = { q.key: (q, False, None, None) for q in sorted(self.module.questions.all(), key = lambda q : q.definition_order) }
             else:
                 self.answertuples = self.task.get_answers().answertuples
         if self.answers_dict is None:
@@ -1051,7 +1051,7 @@ class TemplateContext(Mapping):
             if item == "organization":
                 if self.parent_context is not None: # use parent's cache
                     return self.parent_context[item]
-                return RenderedOrganization(self.module_answers.task.project.organization, parent_context=self)
+                return RenderedOrganization(self.module_answers.task, parent_context=self)
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
                 # call the method here because that leads to infinite
@@ -1164,13 +1164,20 @@ class RenderedProject(TemplateContext):
         return self.escapefunc(None, None, None, None, self.as_raw_value())
 
 class RenderedOrganization(TemplateContext):
-    def __init__(self, organization, parent_context=None):
-        self.organization = organization
+    def __init__(self, task, parent_context=None):
+        self.task =task
         def _lazy_load():
-            project = organization.get_organization_project()
+            project = self.organization.get_organization_project()
             if project.root_task:
                 return project.root_task.get_answers()
         super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
+
+    @property
+    def organization(self):
+        if not hasattr(self, "_org"):
+            self._org = self.task.project.organization
+        return self._org
+
     def __str__(self):
         return "<TemplateContext for %s - %s>" % (self.organization, self.module_answers)
 
