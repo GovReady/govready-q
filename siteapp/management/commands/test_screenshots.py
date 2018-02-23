@@ -6,6 +6,11 @@
 # local database configuration to create a temporary test user
 # account and project data. Therefore, do not run this script on a
 # production server.
+#
+# Example:
+# ./manage.py test_screenshots --app-source '{ "type": "git", "url": "https://github.com/GovReady/govready-apps-dev", "path": "apps" }' \
+#                              --app fisma_level \
+#                              --path screenshots.pdf
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -28,7 +33,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--org-name', metavar='name', nargs='?', default="The Company, Inc.", help="The name of the temporary Organization that will be created.")
         parser.add_argument('--org', metavar='subdomain', nargs='?', help="The subdomain of an existing Organization to use.")
-        parser.add_argument('--app', metavar='source/app', nargs='?', help="The AppSource slug plus app name of a compliance app to fill out.")
+        parser.add_argument('--app-source', metavar='{source JSON}', nargs='?', help="The AppSource definition in JSON.")
+        parser.add_argument('--app', metavar='{source/}app', nargs='?', help="The AppSource slug plus app name of a compliance app to fill out, or if --app-source is given then just the app name.")
         parser.add_argument('--test', metavar='testid', nargs='?', help="The ID of the test to run defined in the app's app.yaml 'tests' key.")
         parser.add_argument('--path', metavar='dir_or_pdf', nargs='?', help="The path to write screenshots into, either a directory or a filename ending with .pdf.")
 
@@ -128,6 +134,17 @@ class Command(BaseCommand):
         # Killing the user now requires first killing their org-specific account settings project.
         self.objects_to_kill.append(self.user.get_account_project(self.org))
 
+        # Add an AppSource if the user specified one.
+        if options['app_source']:
+            import json
+            from guidedmodules.models import AppSource
+            src_spec = json.loads(options['app_source'])
+            self.app_source = AppSource.objects.create(
+                slug=get_random_string(8),
+                spec=src_spec
+            )
+            self.objects_to_kill.append(self.app_source)
+
     def init_screenshots(self, options):
         # Prepare for taking screenshots.
         self.screenshot_basepath = options['path']
@@ -159,7 +176,11 @@ class Command(BaseCommand):
     def reset_database(self):
         # Kill temporary objects.
         for obj in reversed(self.objects_to_kill):
-            obj.delete()
+            try:
+                obj.delete()
+            except:
+                print("Could not delete", repr(obj))
+                raise
 
     # SCRIPT UTILITY FUNCTIONS
 
@@ -221,13 +242,26 @@ class Command(BaseCommand):
         # Log in.
         self.login()
 
-        # Go to the app catalog.
-        self.browser.navigateToPage(self.org.subdomain, "/store")
-        self.screenshot("compliance_catalog")
+        # Go to the app catalog. Only show apps from the source that holds
+        # the app being started so that we don't leak in screenshots other
+        # apps that might be available.
+        if options['app_source']:
+            # A source specification was specified and we created an AppSource
+            # earlier. Use that.
+            app_sources_filter = self.app_source.slug
+            app_id = self.app_source.slug + "/" + options['app']
+        else:
+            # A source is specified by a slug in the --app name option.
+            assert "/" in options["app"]
+            app_sources_filter = options['app'].split("/")[0]
+            app_id = options["app"]
+
+        self.browser.navigateToPage(self.org.subdomain, "/store?source=" + app_sources_filter)
+        self.screenshot("compliane_apps_catalog")
 
         # Start the app.
-        self.click_with_screenshot(".app[data-app='" + options['app'] + "'] button.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
-        self.click_with_screenshot("#start-project", "start_app")
+        self.click_with_screenshot(".app[data-app='" + app_id + "'] button.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
+        self.click_with_screenshot("#start-project", "start_" + options['app'].replace("/", "_"))
 
         # Get the Project instance that was just created.
         import urllib.parse
@@ -244,7 +278,7 @@ class Command(BaseCommand):
         def answer_task(task, test):
             # Get the answers to start answering.
             assert isinstance(test, dict)
-            answers = test.get('answers')
+            answers = test.get('answers', {})
             assert isinstance(answers, dict)
 
             while True:
@@ -300,10 +334,9 @@ class Command(BaseCommand):
 
         def answer_project(project):
             # Get the test.
-            tests = project.root_task.module.spec.get('tests')
+            tests = project.root_task.module.spec.get('tests', {})
             assert isinstance(tests, dict)
-            assert options['test'] in tests
-            test = tests[options['test']]
+            test = tests.get(options['test'], { "answers": {} })
             assert isinstance(test, dict)
 
             # Get the answers to start answering.
@@ -312,9 +345,9 @@ class Command(BaseCommand):
 
             # Since this is a project, each answer is a sub-task that
             # needs to be started.
-            for key, value in answers.items():
+            for question in project.root_task.module.questions.all():
                 # Start it.
-                self.click_with_screenshot("#question-" + key, key)
+                self.click_with_screenshot("#question-" + question.key, question.key)
 
                 # Get the Task we just created and mark it for deletion later,
                 s = urllib.parse.urlsplit(self.browser.browser.current_url)
@@ -324,7 +357,7 @@ class Command(BaseCommand):
                 self.objects_to_kill.append(task)
                 
                 # Fill out the questions.
-                answer_task(task, value)
+                answer_task(task, answers.get(question.key, {}))
 
                 # Return to the project page.
                 self.browser.navigateToPage(self.org.subdomain, project.get_absolute_url())
