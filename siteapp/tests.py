@@ -62,7 +62,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         # clear the browser's cookies before each test
         self.browser.delete_all_cookies()
 
-    def naviateToPage(self, subdomain, path):
+    def navigateToPage(self, subdomain, path):
         self.browser.get(self.url(subdomain, path))
 
     def url(self, subdomain, path):
