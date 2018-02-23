@@ -391,7 +391,7 @@ class GithubApiAppSourceConnection(PyFsAppSourceConnection):
 class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
     """
         "url": "git@github.com:GovReady/myrepository",
-        "branch": "master", # optional - master is used by default
+        "branch": "master", # optional - remote's default branch is used by default
         "path": "/subpath", # this is optional, if specified it's the directory in the repo to look at
         "ssh_key": "-----BEGIN RSA PRIVATE KEY-----\nkey data\n-----END RSA PRIVATE KEY-----"
             # ^ for private repos only
@@ -399,7 +399,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
 
     def __init__(self, url, branch, path, ssh_key=None):
         self.url = url
-        self.branch = branch or "master"
+        self.branch = branch or None
         self.path = (path or "") + "/"
         self.ssh_key = ssh_key
 
@@ -408,7 +408,9 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         self.tempdir_obj = tempfile.TemporaryDirectory()
         self.tempdir = self.tempdir_obj.__enter__()
 
-        self.description = self.url + "/" + self.path.strip("/") + "@" + self.branch
+        self.description = self.url + "/" + self.path.strip("/")
+        if self.branch:
+            self.description += "@" + self.branch
 
         # Validate access.
         self.getdir("")
@@ -461,7 +463,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
                     "fetch",
                     "--depth", "1", # avoid getting whole repo history
                     self.url, # repo URL
-                    self.branch, # branch to fetch
+                    self.branch or "", # branch to fetch
                 ], kill_after_timeout=20)
         except git.exc.GitCommandError as e:
             # This is where errors occur, which is hopefully about auth.
@@ -473,7 +475,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         # The Pythonic way would be to add a remote for the remote repository, run
         # fetch, and then access its ref.
         #self.remote = self.repo.create_remote("origin", self.spec["url"])
-        #self.remote.fetch(self.spec.get("branch", "master"))
+        #self.remote.fetch(self.spec.get("branch"))
         #tree = self.repo.tree(self.remote.refs[0])
 
         # If a path was given, move to that subdirectory.
