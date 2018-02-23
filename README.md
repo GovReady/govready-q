@@ -39,7 +39,7 @@ That's the idea behind GovReady Compliance Apps: reusable data packages mapping 
 
 Compliance apps map IT System components to compliance controls. A "component" can be any part of a system that contributes to its operation -- including organizational processes. Compliance apps collect and assess information about one or more system components and translate that information to compliance documentation.
 
-![Apps map components to security/compliance controls](docs/assets/app_diagram2.png)
+![Apps map components to security/compliance controls](docs/assets/app_diagram.png)
 
 Compliance apps are data definitions written in YAML. Organizations can and should plan to develop their own compliance apps, just as they would develop their own configuration files. The principal benefit of compliance apps is their modularization and reusability.
 
