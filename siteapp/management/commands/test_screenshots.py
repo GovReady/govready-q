@@ -1,11 +1,8 @@
 # Generate screenshots of the application using a headless browser
 # for creating test artifacts and documentation.
 #
-# This tool is meant to be run in a local development environment
-# or as a part of a build/test pipeline. It uses your existing
-# local database configuration to create a temporary test user
-# account and project data. Therefore, do not run this script on a
-# production server.
+# A throw-away test database is used so that this command cannot see any existing
+# user data and database changes are not persistent.
 #
 # Example:
 # ./manage.py test_screenshots --app-source '{ "type": "git", "url": "https://github.com/GovReady/govready-apps-dev", "path": "apps" }' \
@@ -32,7 +29,6 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--org-name', metavar='name', nargs='?', default="The Company, Inc.", help="The name of the temporary Organization that will be created.")
-        parser.add_argument('--org', metavar='subdomain', nargs='?', help="The subdomain of an existing Organization to use.")
         parser.add_argument('--app-source', metavar='{source JSON}', nargs='?', help="The AppSource definition in JSON.")
         parser.add_argument('--app', metavar='{source/}app', nargs='?', help="The AppSource slug plus app name of a compliance app to fill out, or if --app-source is given then just the app name.")
         parser.add_argument('--test', metavar='testid', nargs='?', help="The ID of the test to run defined in the app's app.yaml 'tests' key.")
@@ -48,10 +44,18 @@ class Command(BaseCommand):
         # Prepare for taking screenshots.
         self.init_screenshots(options)
 
-        # Create a user and organization.
-        self.init_user_organization(options)
+        # Switch to the throw-away database.
+        from django.test.utils import setup_databases, teardown_databases
+        dbinfo = setup_databases(True, False)
+
+        # Initialize the database.
+        from guidedmodules.management.commands.load_modules import Command as load_modules
+        load_modules().handle()
 
         try:
+            # Create a user and organization.
+            self.init_user_organization(options)
+
             # Run a script on the headless browser, generating
             # a bunch of screenshots.
             if options['app']:
@@ -61,7 +65,7 @@ class Command(BaseCommand):
             if self.write_pdf_filename:
                 self.write_pdf()
         finally:
-            self.reset_database()
+            teardown_databases(dbinfo, 1)
             self.stop_headless_browser()
 
     # STARTUP/SHUTDOWN UTILITY FUNCTIONS
@@ -92,16 +96,10 @@ class Command(BaseCommand):
         SeleniumTest.tearDownClass()
 
     def init_user_organization(self, options):
-        # No database records we create here should live beyond
-        # this script. A database transaction would be handy, but
-        # the LiveServerTestCase uses a different database connection
-        # than what we have, and so it won't see the current transaction.
-        self.objects_to_kill = []
-
         # Make a new user so that we have the credentials to log the user in.
         # We use a randomly generated password so that even if the script is
-        # run on a non-test system, and if the database cleanup step at the
-        # end fails, we haven't left a User in the database with insecure
+        # run on a non-test system and the test database creation somehow
+        # fails, we haven't left a User in the database with insecure
         # credentials. The password will be thrown away when this process
         # terminates.
         self.temporary_user_random_password = get_random_string(24)
@@ -110,29 +108,12 @@ class Command(BaseCommand):
             email="test+user@q.govready.com")
         self.user.set_password(self.temporary_user_random_password)
         self.user.save()
-        self.objects_to_kill.append(self.user)
         
-        # Get the organization that will be used.
-        if options['org']:
-            # Use the specified org that already exists in the database.
-            self.org = Organization.objects.get(subdomain=options['org'])
-
-            # Add the user to the Organization.
-            from siteapp.models import ProjectMembership
-            pm, isnew = ProjectMembership.objects.get_or_create(user=self.user, project=self.org.get_organization_project())
-            pm.is_admin = True
-            pm.save()
-            self.objects_to_kill.append(pm)
-        else:
-            # Create a new Organization with the temporary user as the org's admin.
-            self.org = Organization.create(
-                subdomain="test-screenshots-"+get_random_string(6).lower(),
-                name=options['org_name'],
-                admin_user=self.user)
-            self.objects_to_kill.append(self.org)
-
-        # Killing the user now requires first killing their org-specific account settings project.
-        self.objects_to_kill.append(self.user.get_account_project(self.org))
+        # Create a new Organization with the temporary user as the org's admin.
+        self.org = Organization.create(
+            subdomain="test-screenshots-"+get_random_string(6).lower(),
+            name=options['org_name'],
+            admin_user=self.user)
 
         # Add an AppSource if the user specified one.
         if options['app_source']:
@@ -143,7 +124,6 @@ class Command(BaseCommand):
                 slug=get_random_string(8),
                 spec=src_spec
             )
-            self.objects_to_kill.append(self.app_source)
 
     def init_screenshots(self, options):
         # Prepare for taking screenshots.
@@ -173,14 +153,6 @@ class Command(BaseCommand):
         import shutil
         shutil.rmtree(self.screenshot_basepath)
 
-    def reset_database(self):
-        # Kill temporary objects.
-        for obj in reversed(self.objects_to_kill):
-            try:
-                obj.delete()
-            except:
-                print("Could not delete", repr(obj))
-                raise
 
     # SCRIPT UTILITY FUNCTIONS
 
@@ -242,25 +214,16 @@ class Command(BaseCommand):
         # Log in.
         self.login()
 
-        # Go to the app catalog. Only show apps from the source that holds
-        # the app being started so that we don't leak in screenshots other
-        # apps that might be available.
-        if options['app_source']:
-            # A source specification was specified and we created an AppSource
-            # earlier. Use that.
-            app_sources_filter = self.app_source.slug
-            app_id = self.app_source.slug + "/" + options['app']
-        else:
-            # A source is specified by a slug in the --app name option.
-            assert "/" in options["app"]
-            app_sources_filter = options['app'].split("/")[0]
-            app_id = options["app"]
+        # Screenshot the homepage.
+        self.browser.navigateToPage(self.org.subdomain, "/")
+        self.screenshot("home")
 
-        self.browser.navigateToPage(self.org.subdomain, "/store?source=" + app_sources_filter)
-        self.screenshot("compliane_apps_catalog")
+        # Ok click the "Add other app" button.
+        self.click_with_screenshot("#new-project", "home-new-app")
 
         # Start the app.
-        self.click_with_screenshot(".app[data-app='" + app_id + "'] button.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
+        self.screenshot("compliance_apps_catalog")
+        self.click_with_screenshot(".app[data-app='" + self.app_source.slug + "/" + options['app'] + "'] button.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
         self.click_with_screenshot("#start-project", "start_" + options['app'].replace("/", "_"))
 
         # Get the Project instance that was just created.
@@ -269,10 +232,6 @@ class Command(BaseCommand):
         m = re.match(r"/projects/(\d+)/.*", s.path)
         assert m
         project = Project.objects.get(id=m.group(1))
-
-        # Schedule it and its root task for deletion.
-        self.objects_to_kill.append(project)
-        self.objects_to_kill.append(project.root_task)
 
         # Begin answering questions.
         def answer_task(task, test):
@@ -349,12 +308,11 @@ class Command(BaseCommand):
                 # Start it.
                 self.click_with_screenshot("#question-" + question.key, question.key)
 
-                # Get the Task we just created and mark it for deletion later,
+                # Get the Task we just created,
                 s = urllib.parse.urlsplit(self.browser.browser.current_url)
                 m = re.match(r"/tasks/(\d+)/.*", s.path)
                 assert m
                 task = Task.objects.get(id=m.group(1))
-                self.objects_to_kill.append(task)
                 
                 # Fill out the questions.
                 answer_task(task, answers.get(question.key, {}))

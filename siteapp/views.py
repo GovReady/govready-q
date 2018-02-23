@@ -256,11 +256,6 @@ def app_satifies_interface(app, filter_protocols):
 def filter_app_catalog(catalog, request):
     filter_description = None
 
-    if request.GET.get("source"):
-        # Filter to apps only from this source.
-        catalog = filter(lambda app : app['appsource_slug'] in request.GET["source"].split(","), catalog)
-        filter_description = None # can't generate nice description of this filter
-
     if request.GET.get("q"):
         # Check if the app satisfies the interface required by a paricular question.
         # The "q" query string argument is a Task ID plus a ModuleQuestion key.
