@@ -168,7 +168,7 @@ h3.question-group-title {
     </a>
 
     {% if authoring_tool_enabled %}
-      <a class="btn btn-sm" href="#" onclick="$('.authoring-tool-hidden').fadeIn(); $(this).remove(); return false;">
+      <a id="open-authoring-tools" class="btn btn-sm" href="#" onclick="$('.authoring-tool-hidden').fadeIn(); $(this).remove(); return false;">
         <i class="glyphicon glyphicon-pencil"></i>
         Authoring Tool
       </a>
@@ -217,7 +217,7 @@ h3.question-group-title {
       Add Question
       </a>
 
-      <a href="#" onclick="authoring_tool_reload_app({{project.root_task.id}}); return false;" style="margin: 0 1em;">
+      <a id="authoring-tools-reload-app" href="#" onclick="authoring_tool_reload_app({{project.root_task.id}}); return false;" style="margin: 0 1em;">
       <span class="glyphicon glyphicon-refresh"></span>
       Reload App from {{project.root_task.module.app.source.get_description}}
       </a>

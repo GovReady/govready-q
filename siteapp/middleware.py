@@ -174,4 +174,5 @@ def QTemplateContextProcessor(request):
     return {
         "APP_VERSION_STRING": settings.APP_VERSION_STRING,
         "APP_VERSION_COMMIT": settings.APP_VERSION_COMMIT,
+        "MOUSE_CURSOR_FOLLOWER": getattr(settings, 'MOUSE_CURSOR_FOLLOWER', False),
     }

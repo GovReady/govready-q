@@ -29,6 +29,15 @@ AUTHENTICATION_BACKENDS += ['siteapp.models.DirectLoginBackend']
 
 INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 
+# Allow run-time disabling of the Django Debug Toolbar.
+DISABLE_DJANGO_DEBUG_TOOLBAR = False
+def DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK(r):
+    import debug_toolbar.middleware
+    return debug_toolbar.middleware.show_toolbar(r) and not DISABLE_DJANGO_DEBUG_TOOLBAR
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK,
+}
+
 # ALLWOED_HOSTS is set based on environment['host'], which gives us
 # our landing page domain. Also allow all subdomains of the organization
 # parent domain.

@@ -168,6 +168,7 @@ def render_app_catalog_entry(app):
             # Clone, I guess?
             catalog_info = dict(app.get_catalog_info())
 
+            catalog_info["appsource_slug"] = app.store.source.slug
             catalog_info["appsource_id"] = app.store.source.id
             catalog_info["key"] = "{source}/{name}".format(source=app.store.source.slug, name=app.name)
 
@@ -267,7 +268,7 @@ def filter_app_catalog(catalog, request):
     if request.GET.get("protocol"):
         # Check if the app satisfies the app protocol interface given.
         catalog = filter(lambda app : app_satifies_interface(app, request.GET["protocol"].split(",")), catalog)
-        filter_description = None
+        filter_description = None # can't generate nice description of this filter
 
     return catalog, filter_description
 
@@ -328,12 +329,12 @@ def apps_catalog(request):
     })
 
 @login_required
-def apps_catalog_item(request, app_namespace, app_name):
+def apps_catalog_item(request, source_slug, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
     from guidedmodules.models import AppSource
     for app_catalog_info in get_compliance_apps_catalog(request.organization):
-        if app_catalog_info["key"] == app_namespace + "/" + app_name:
+        if app_catalog_info["key"] == source_slug + "/" + app_name:
             # We found it.
             break
     else:

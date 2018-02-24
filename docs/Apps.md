@@ -4,7 +4,7 @@ As described in the primary [README](README.md), Compliance apps map IT System c
 
 Compliance apps collect and assess information about one or more system components and translate that information to compliance documentation.
 
-![Apps map components to security/compliance controls](assets/app_diagram2.png)
+![Apps map components to security/compliance controls](assets/app_diagram.png)
 
 Compliance apps can collect information about a system component from people (via web-based questionnaires) and from system components (via an [Automation API](Automation.md)).
 
@@ -121,7 +121,7 @@ Compliance apps are very much like modular plugins that customize the compliance
 
 This leaves the need to specify which compliance apps are available to a compliance server deployment. This specification of available apps is known as an "app source" and is done with a JSON "spec" file entered in the `AppSource` model via the Django admin interface. 
 
-The process is currently a bit clumsy with terminology that reflects the software's evolution toward the app concept. Nevertheless, the approach provides flexibility of sourcing apps from local file systems and  public and private git repositories. And each source specifies a virtual filesystem from which one or more top level apps and compliance apps can be found located.
+The process is currently a bit clumsy with terminology that reflects the software's evolution toward the app concept. Nevertheless, the approach provides flexibility of sourcing apps from local file systems and public and private git repositories. And each source specifies a virtual filesystem from which one or more top level apps and compliance apps can be found located.
 
 The below screenshot of the `AppSource` module in the Django admin interfaces shows the JSON "spec" file. 
 

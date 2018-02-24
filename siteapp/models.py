@@ -273,6 +273,8 @@ class Organization(models.Model):
     @staticmethod
     def create(admin_user=None, **kargs): # admin_user is a required kwarg
         # See admin.py::OrganizationAdmin also.
+
+        assert admin_user
         
         # Create instance by passing field values to the ORM.
         org = Organization.objects.create(**kargs)
@@ -380,6 +382,7 @@ class Project(models.Model):
 
     @property
     def title(self):
+        if not self.root_task: return "???"
         return self.root_task.title
 
     def organization_and_title(self):

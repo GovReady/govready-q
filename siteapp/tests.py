@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.test import SimpleTestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from unittest import skip
@@ -16,6 +15,8 @@ def var_sleep(duration):
     sleep(duration*2)
 
 class SeleniumTest(StaticLiveServerTestCase):
+    window_geometry = (1200, 1200)
+
     @classmethod
     def setUpClass(cls):
         super(SeleniumTest, cls).setUpClass()
@@ -41,7 +42,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         os.environ['PATH'] += ":/usr/lib/chromium" # 'chromedriver' executable needs to be in PATH (for Debian 8)
         options = selenium.webdriver.ChromeOptions()
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
-        options.add_argument("start-maximized") # too small screens make clicking some things difficult
+        if SeleniumTest.window_geometry == "maximized":
+            options.add_argument("start-maximized") # too small screens make clicking some things difficult
+        else:
+            options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
         options.add_argument("--incognito")
         cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
@@ -57,6 +61,9 @@ class SeleniumTest(StaticLiveServerTestCase):
     def setUp(self):
         # clear the browser's cookies before each test
         self.browser.delete_all_cookies()
+
+    def navigateToPage(self, subdomain, path):
+        self.browser.get(self.url(subdomain, path))
 
     def url(self, subdomain, path):
         # Construct a URL to the desired page. Use self.live_server_url

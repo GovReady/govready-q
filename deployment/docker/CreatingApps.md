@@ -90,8 +90,6 @@ You can now sign in with the administrative username and password you created.
 
 ![First run after logging in](docs/firststart3.png)
 
-At this time you may want to follow the links to complete your account and organization profile with some dummy information, and then return to the GovReady-Q start page.
-
 Congratulations! You've installed GovReady-Q Compliance Server configured for local development of compliance apps!
 
 
@@ -99,7 +97,7 @@ Congratulations! You've installed GovReady-Q Compliance Server configured for lo
 
 ### Creating the app
 
-In this section we'll create our first compliance app. The app will appear in the compliance apps catalog in GovReady-Q. Click `Add app` in your browser to go to the compliance apps catalog.
+In this section we'll create our first compliance app. The app will appear in the compliance apps catalog in GovReady-Q. Click `Add other app` in your browser to go to the compliance apps catalog.
 
 ![Compliance apps catalog](docs/appcatalog.png)
 
@@ -124,7 +122,7 @@ Your new app may not appear because the catalog is cached. To clear the cache, r
 
 	docker container restart govready-q
 
-After a few moments the container will be back up. Reload the compliance app catalog page. You should now see your app:
+After a few moments the container will be back up. Reload the compliance app catalog page. You should now see your app if you scroll to the end:
 
 ![Compliance apps catalog with your first app](docs/appcatalog2.png)
 
@@ -164,7 +162,7 @@ And then reload the catalog page in your browser to see your description beneath
 
 ### Start the app
 
-In your browser, click on the `myfirstapp` entry in the app catalog. Follow through the subsequent pages to start the app.
+In your browser, click on the `myfirstapp` entry's Add button in the app catalog.
 
 ![The new app](docs/startedapp.png)
 
@@ -192,7 +190,15 @@ Edit the `title` to:
 
 	  title: Start Compliance
 
-As described above, reloading the page in the browser will not show the change. This is by design. Since you are developing an app on your local filesystem, the GovReady-Q authoring tools appear in blue. Click `Reload App from local filesystem` at the bottom of the page. Note how `Start Compliance` now appears in the browser. (Alternatively, you could return to the compliance app catalog page and add the app again.)
+As described above, reloading the page in the browser will not show the change. This is by design. Since you are developing an app on your local filesystem, the GovReady-Q authoring tools are available.
+
+Click `Authoring Tool` in the right column, and then click `Reload App from local filesystem`. (Alternatively, you could return to the compliance app catalog page and add the app again.)
+
+![Module authoring tools](docs/authoringtools.png)
+
+Note how `Start Compliance` now appears in the browser.
+
+![Reloaded app](docs/reloadedapp.png)
 
 ### Editing the app's first module
 
@@ -221,9 +227,11 @@ Change the `prompt` or `choices`.
 
 (As with `app.yaml`, since this file was created by Docker the file will be owned by root. You may need to use sudo to edit this file.)
 
-As described above, reloading the page in the browser will not show the change. This is by design. Go back to the main app page, click `Reload App from local filesystem` at the bottom of the page, and then go back to the example module page. (Its label will have changed to `Example Module` on the main app page because once the module is started, its title is drawn from `example.yaml` rather than `app.yaml`.)
+As described above, reloading the page in the browser will not show the change. This is by design. Go back to the main app page, click `Authoring Tool` and then `Reload App from local filesystem`, and then go back to the Start Compliance page.
 
 Your changes are now seen in your browser.
+
+![The revised question](docs/revisedquestion.png)
 
 More information about the file format of modules can be found in [Schema.md](../../Schema.md).
 
