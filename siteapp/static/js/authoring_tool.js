@@ -221,8 +221,10 @@ function authoring_tool_new_question(task_id, is_project_page) {
 }
 
 var authoring_tool_reload_app_force = false;
+var authoring_tool_reload_app_confirm = true;
 function authoring_tool_reload_app(task_id) {
-  if (!confirm("Are you sure you want to reload this app from its source?"))
+  if (authoring_tool_reload_app_confirm // disabling is possible for headless scripting
+     && !confirm("Are you sure you want to reload this app from its source?"))
     return;
   ajax_with_indicator({
       url: "/tasks/_authoring_tool/reload-app",

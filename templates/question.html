@@ -103,7 +103,7 @@ label:hover .onhover { display: inline; }
 
     {% if authoring_tool_enabled %}
     <div style="float: right">
-      <a href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;" title="Edit This Question">
+      <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;" title="Edit This Question">
         <span class="glyphicon glyphicon-pencil"></span>
       </a>
     </div>
