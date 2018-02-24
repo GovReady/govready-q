@@ -62,7 +62,7 @@ When the container is launched it will let you know the URL to visit:
 
 It takes about 15 seconds for the GovReady-Q server to be ready. Open the URL (e.g. http://localhost:8000) and reload a few times until the GovReady-Q Compliance Server becomes available:
 
-![First run of GovReady-Q](docs/firststart.png)
+![First run of GovReady-Q](assets/firststart.png)
 
 ### Setting up your organization and administrative user
 
@@ -84,11 +84,11 @@ Your prompt and reply will look something like this:
 
 Now return to your browser, reload the page, and notice the company name has updated:
 
-![First run of GovReady-Q with the organization configured](docs/firststart2.png)
+![First run of GovReady-Q with the organization configured](assets/firststart2.png)
 
 You can now sign in with the administrative username and password you created.
 
-![First run after logging in](docs/firststart3.png)
+![First run after logging in](assets/firststart3.png)
 
 Congratulations! You've installed GovReady-Q Compliance Server configured for local development of compliance apps!
 
@@ -99,7 +99,7 @@ Congratulations! You've installed GovReady-Q Compliance Server configured for lo
 
 In this section we'll create our first compliance app. The app will appear in the compliance apps catalog in GovReady-Q. Click `Add other app` in your browser to go to the compliance apps catalog.
 
-![Compliance apps catalog](docs/appcatalog.png)
+![Compliance apps catalog](assets/appcatalog.png)
 
 Let's create our first commpliance app! Use the command below:
 
@@ -124,7 +124,7 @@ Your new app may not appear because the catalog is cached. To clear the cache, r
 
 After a few moments the container will be back up. Reload the compliance app catalog page. You should now see your app if you scroll to the end:
 
-![Compliance apps catalog with your first app](docs/appcatalog2.png)
+![Compliance apps catalog with your first app](assets/appcatalog2.png)
 
 The development directory on the workstation now holds:
 
@@ -156,7 +156,7 @@ Reload the container to clear the app catalog cache:
 
 And then reload the catalog page in your browser to see your description beneath `myfirstapp`. You can also edit the app's title and other catalog metadata, including the app's icon in `apps/myfirstapp/assets/app.png`.
 
-![Compliance apps catalog after metadata change](docs/appcatalogafterchange.png)
+![Compliance apps catalog after metadata change](assets/appcatalogafterchange.png)
 
 ## Step 4: Edit the compliance app's YAML files
 
@@ -164,7 +164,7 @@ And then reload the catalog page in your browser to see your description beneath
 
 In your browser, click on the `myfirstapp` entry's Add button in the app catalog.
 
-![The new app](docs/startedapp.png)
+![The new app](assets/startedapp.png)
 
 ### About editing the app
 
@@ -194,17 +194,17 @@ As described above, reloading the page in the browser will not show the change. 
 
 Click `Authoring Tool` in the right column, and then click `Reload App from local filesystem`. (Alternatively, you could return to the compliance app catalog page and add the app again.)
 
-![Module authoring tools](docs/authoringtools.png)
+![Module authoring tools](assets/authoringtools.png)
 
 Note how `Start Compliance` now appears in the browser.
 
-![Reloaded app](docs/reloadedapp.png)
+![Reloaded app](assets/reloadedapp.png)
 
 ### Editing the app's first module
 
 Click `Start Compliance`. This begins the app's module defined in `example.yaml`. The example module contains a single sample question:
 
-![The new app's sample question](docs/samplequestion.png)
+![The new app's sample question](assets/samplequestion.png)
 
 Open `example.yaml` and see that the question's type, prompt, and choices are defined in the YAML file's `question`'s section:
 
@@ -231,7 +231,7 @@ As described above, reloading the page in the browser will not show the change. 
 
 Your changes are now seen in your browser.
 
-![The revised question](docs/revisedquestion.png)
+![The revised question](assets/revisedquestion.png)
 
 More information about the file format of modules can be found in [Schema.md](../../Schema.md).
 
@@ -247,7 +247,7 @@ GovReady-Q's built-in authoring tools will let you edit and add questions, but c
 
 A blue pencil icon will appear at the top right of module questions when the authoring tools are available. Click the pencil icon for the sample question. The question editor will pop up:
 
-![Question authoring tool](docs/authoringtoolquestion.png)
+![Question authoring tool](assets/authoringtoolquestion.png)
 
 This is a much easier way of editing questions! Try editing this question. After clicking `Save Changes`, look in your text editor to see that the changes have been immediately saved to `example.yaml`.
 
@@ -257,7 +257,7 @@ It is also possible to add questions. In order to add a question, all of the exi
 
 You'll see an `Add Question` button on the module review page:
 
-![Add question button](docs/addquestion.png)
+![Add question button](assets/addquestion.png)
 
 Try out the Add Question button now. It will create a new text question. Use the blue pencil icon to change the question's prompt and choices.
 

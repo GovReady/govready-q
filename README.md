@@ -65,7 +65,7 @@ See [Schema.md](docs/Schema.md) for documentation on writing modules, which cont
 
 # <a name="creating-apps"></a> Creating GovReady-Q Compliance Apps
 
-To create your own compliance apps, visit the [step-by-step guide to creating compliance apps using the Docker version of the GovReady-Q Commpliance Server](deployment/docker/CreatingApps.md).
+To create your own compliance apps, visit the [step-by-step guide to creating compliance apps using the Docker version of the GovReady-Q Commpliance Server](docs/CreatingApps.md).
 
 This guide shows you how to:
 
