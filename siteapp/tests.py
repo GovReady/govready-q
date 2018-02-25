@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.utils.crypto import get_random_string
 
 from unittest import skip
 
@@ -172,15 +173,18 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         load_modules().handle()
 
         # Create a default user that is a member of the organization.
-        # Log the user into the test client.
+        # Log the user into the test client, which is used for API
+        # tests. The Selenium tests require a separate log in via the
+        # headless browser.
         from siteapp.models import User, ProjectMembership
         self.user = User.objects.create(
             username="me",
             email="test+user@q.govready.com")
-        self.user.set_password("1234")
+        self.user.clear_password = get_random_string(16)
+        self.user.set_password(self.user.clear_password)
         self.user.save()
         self.user.reset_api_keys()
-        self.client.login(username="me", password="1234")
+        self.client.login(username=self.user.username, password=self.user.clear_password)
 
         # Create the Organization.
         from siteapp.models import Organization
@@ -206,13 +210,14 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Within this test, we only generate URLs for the organization subdomain.
         return super().url(self.org.subdomain, path)
 
-    def _login(self, username="me", password="1234"):
-        # Fill in the login form and submit.
+    def _login(self, username=None, password=None):
+        # Fill in the login form and submit. Use self.user's credentials
+        # unless they are overridden in the arguments to test failed logins
+        # with other credentials.
         self.browser.get(self.url("/"))
-
         self.assertRegex(self.browser.title, "Home")
-        self.fill_field("#id_login", username)
-        self.fill_field("#id_password", password)
+        self.fill_field("#id_login", username or self.user.username)
+        self.fill_field("#id_password", password or self.user.clear_password)
         self.click_element("form button.primaryAction")
 
     def _new_project(self, module_key="project/simple_project"):
@@ -259,8 +264,9 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(.5) # wait for page to load
         self.fill_field("#id_username", "test+%d@q.govready.com" % random.randint(10000, 99999))
         self.fill_field("#id_email", email)
-        self.fill_field("#id_password1", "1234ABCDE")
-        self.fill_field("#id_password2", "1234ABCDE")
+        new_test_user_password = get_random_string(16)
+        self.fill_field("#id_password1", new_test_user_password)
+        self.fill_field("#id_password2", new_test_user_password)
         self.click_element("form.signup button") # This isn't a very good targetting of the "sign up" link.
         var_sleep(.5) # wait for next page to load
 
@@ -531,7 +537,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
         self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
 
-        # password
+        # password-type question input (this is not a user password)
         self.assertRegex(self.browser.title, "Next Question: password")
         self.fill_field("#inputctrl", "th1s1z@p@ssw0rd!")
         self.click_element("#save-button")
