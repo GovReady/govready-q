@@ -212,14 +212,14 @@ if environment.get('memcached'):
 	SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 # Logging.
+# Django disables console logging when DEBUG is false but console logging
+# is handy, especially in simple Docker deployments. Unhandled exception
+# stack traces are logged to the console.
 from django.utils.log import DEFAULT_LOGGING
 LOGGING = DEFAULT_LOGGING
-LOGGING['loggers'].update({
-	'': {
-		'handlers': ['console'],
-		'level': 'INFO',
-	},
-})
+if not DEBUG:
+	LOGGING['handlers']['console']['filters'].remove('require_debug_true')
+	LOGGING['handlers']['console']['level'] = 'WARNING'
 if "syslog" in environment:
 	# install the rfc5424-logging-handler package
 	import socket
