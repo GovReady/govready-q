@@ -221,7 +221,8 @@ if not DEBUG:
 	LOGGING['handlers']['console']['filters'].remove('require_debug_true')
 	LOGGING['handlers']['console']['level'] = 'WARNING'
 if "syslog" in environment:
-	# install the rfc5424-logging-handler package
+	# install the rfc5424-logging-handler package. Add a top-level
+	# logger that sends everything to the syslog receiver.
 	import socket
 	hostname, port = environment["syslog"].split(":", 1)
 	LOGGING['formatters'].update({
@@ -240,7 +241,10 @@ if "syslog" in environment:
 			'hostname': environment['host'] + "@" + socket.gethostname()
 		}
 	})
-	LOGGING['loggers']['']['handlers'].append('syslog')
+	LOGGING['loggers'][''] = {
+		'handlers': ['syslog'],
+		'level': 'INFO',
+	}
 
 # Settings that have normal values based on the primary app
 # (the app this file resides in).
