@@ -92,7 +92,7 @@ def walk_module_questions(module, callback):
         walk_question(q, [])
 
 
-def evaluate_module_state(current_answers, required, parent_context=None):
+def evaluate_module_state(current_answers, parent_context=None):
     # Compute the next question to ask the user, given the user's
     # answers to questions so far, and all imputed answers up to
     # that point.
@@ -162,14 +162,6 @@ def evaluate_module_state(current_answers, required, parent_context=None):
             # The user has provided an answer to this question.
             answerobj = current_answers.get(q.key)
             v = current_answers.as_dict()[q.key]
-
-            # If q is a required question and the required argument is true,
-            # and the question was skipped ('None' answer) then treat it as unanswered.
-            if q.spec.get("required") and required and v is None:
-                can_answer.add(q)
-                unanswered.add(q)
-                answertuples[q.key] = (q, False, None, None)
-                return state
 
         elif current_answers.module.spec.get("type") == "project" and q.key == "_introduction":
             # Projects have an introduction but it isn't displayed as a question.
@@ -877,10 +869,10 @@ class ModuleAnswers(object):
             self.answers_dict = { q.key: value for q, is_ans, ansobj, value in self.answertuples.values() if is_ans }
         return self.answers_dict
 
-    def with_extended_info(self, required=False, parent_context=None):
+    def with_extended_info(self, parent_context=None):
         # Return a new ModuleAnswers instance that has imputed values added
         # and information about the next question(s) and unanswered questions.
-        return evaluate_module_state(self, required, parent_context=parent_context)
+        return evaluate_module_state(self, parent_context=parent_context)
 
     def get(self, question_key):
         return self.answertuples[question_key][2]
@@ -926,7 +918,7 @@ class ModuleAnswers(object):
 
             yield (q, a, value_display)
 
-    def render_output(self, additional_context, use_data_urls=False):
+    def render_output(self, use_data_urls=False):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents. The
         # documents are lazy-rendered because not all of them may
@@ -965,15 +957,22 @@ class ModuleAnswers(object):
                         doc_name = "%s output document %s" % (self.module_answers.module.module_name, doc_name)
 
                         # Try to render it.
-                        try:
-                            self.rendered_content = render_content(self.document, self.module_answers, key, doc_name, additional_context, show_answer_metadata=True, use_data_urls=use_data_urls)
-                        except Exception as e:
-                            # Put errors into the output. Errors should not occur if the
-                            # template is designed correctly.
-                            self.rendered_content = str(e)
-                            if key == "html":
-                                import html
-                                self.rendered_content = "<p class=text-danger>" + html.escape(self.rendered_content) + "</p>"
+                        task_cache_key = "output_r1_{}_{}".format(
+                            self.index,
+                            1 if use_data_urls else 0,
+                        )
+                        def do_render():
+                            try:
+                                return render_content(self.document, self.module_answers, key, doc_name, show_answer_metadata=True, use_data_urls=use_data_urls)
+                            except Exception as e:
+                                # Put errors into the output. Errors should not occur if the
+                                # template is designed correctly.
+                                ret = str(e)
+                                if key == "html":
+                                    import html
+                                    ret = "<p class=text-danger>" + html.escape(ret) + "</p>"
+                                return ret
+                        self.rendered_content = self.module_answers.task._get_cached_state(task_cache_key, do_render)
 
                     return self.rendered_content
 
@@ -1042,6 +1041,8 @@ class TemplateContext(Mapping):
         # The context also provides the project and organization that the Task belongs to,
         # and other task attributes, assuming the keys are not overridden by question IDs.
         if self.module_answers and self.module_answers.task:
+            if item == "title":
+                return self.module_answers.task.title
             if item == "task_link":
                 return self.module_answers.task.get_absolute_url()
             if item == "project":
@@ -1099,7 +1100,7 @@ class TemplateContext(Mapping):
         # special values
         if self.module_answers and self.module_answers.task:
             # Attributes that are only available if there is a task.
-            for attribute in ("task_link", "project", "organization"):
+            for attribute in ("title", "task_link", "project", "organization"):
                 if attribute not in seen_keys:
                     yield attribute
 

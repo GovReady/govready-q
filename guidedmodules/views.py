@@ -542,9 +542,8 @@ def show_question(request, task, answered, context, q):
 
 @task_view
 def task_finished(request, task, answered, context, *unused_args):
-    # Either the task is finished, there are required questions that were skipped,
-    # or the user is returning to the finished page directly later and the task
-    # might or might not actually be finished.
+    # All of the questions in this task have been answered. Review the
+    # answers and show the task's output documents.
 
     # Add instrumentation event.
     # Has the user been here before?
@@ -658,7 +657,7 @@ def download_module_output(request, task, answered, context, question, document_
         html = '<meta charset="UTF-8" />' + html
 
         import subprocess
-        cmd = ["xvfb-run", "--", "wkhtmltopdf",
+        cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
                "-q", # else errors go to stdout
                "--disable-javascript",
                "--encoding", "UTF-8",
@@ -684,7 +683,7 @@ def download_module_output(request, task, answered, context, question, document_
             # convert from HTML to something else, writing to a temporary file
             outfn = os.path.join(tempdir, document_id + "." + file_extension)
             with subprocess.Popen(
-                ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+                ["/usr/bin/pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
                 stdin=subprocess.PIPE
                 ) as proc:
                 proc.communicate(

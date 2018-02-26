@@ -14,17 +14,9 @@
     {% if had_any_questions %}
     <div id="page-transition-paragraph">
       {% if previous_page_type == "project" %}
-        {% if task.is_finished %}
-          <p>This module was completed on {{task.updated|date}}.</p>
-        {% else %}
-          <p>All of the questions in this module have been responded to but some required questions were skipped.</p>
-        {% endif %}
+        <p>This module was last updated on {{task.updated|date}}.</p>
       {% elif previous_page_type == "nquestion" %}
-        {% if task.is_finished %}
-          <p>You have completed the module.</p>
-        {% else %}
-          <p>You have responded to all of the questions but skipped some required questions.</p>
-        {% endif %}
+        <p>You have completed the module.</p>
       {% endif %}
     </div>
     {% endif %}
@@ -230,7 +222,9 @@
           });
 
           // Dim the page and reload.
-          $('#ajax_loading_indicator').fadeIn();
+          var modal = $('<div style="display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 100000; text-align: center; background-color: rgba(255,255,255,.75)"><div style="margin: 20% auto"><div><span class="fas fa-spinner fa-pulse"></span></div><div class="message">Loading...</div></div></div>');
+          $('body').append(modal);
+          modal.fadeIn();
           window.location.reload();
         },
         complete: function() {

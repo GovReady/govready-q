@@ -4,7 +4,7 @@ import re
 from .settings import *
 
 INSTALLED_APPS += [
-    'debug_toolbar',
+    #'debug_toolbar',
 
     'htmlemailer',
     'notifications',
@@ -16,7 +16,7 @@ INSTALLED_APPS += [
 ]
 
 MIDDLEWARE += [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
     'siteapp.middleware.OrganizationSubdomainMiddleware',
     'guidedmodules.middleware.InstrumentQuestionPageLoadTimes',
 ]

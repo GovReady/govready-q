@@ -136,7 +136,7 @@ class User(AbstractUser):
         # Compute a hash over the user ID and username to generate
         # a stable random number.
         import hashlib
-        digest = hashlib.md5()
+        digest = hashlib.sha1()
         digest.update(("%d|%s|" % (self.id, self.username)).encode("utf8"))
         digest = digest.digest()
 
@@ -473,7 +473,7 @@ class Project(models.Model):
         return sorted(participants.items(), key = lambda kv : kv[0].username)
 
     @staticmethod
-    def get_projects_with_read_priv(user, organization, filters={}):
+    def get_projects_with_read_priv(user, organization, filters={}, excludes={}):
         # Gets all projects a user has read priv to, excluding
         # account and organization profile projects, and sorted
         # in reverse chronological order by modified date.
@@ -488,7 +488,9 @@ class Project(models.Model):
         for pm in ProjectMembership.objects\
             .filter(project__organization=organization, user=user)\
             .filter(**{ "project__"+k: v for k, v in filters.items() })\
-            .select_related('project'):
+            .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
+            .select_related('project__root_task__module')\
+            .prefetch_related('project__root_task__module__questions'):
             projects.add(pm.project)
             if pm.is_admin:
                 # Annotate with whether the user is an admin of the project.
@@ -499,8 +501,10 @@ class Project(models.Model):
         from guidedmodules.models import Task
         for task in Task.get_all_tasks_readable_by(user, organization)\
             .filter(**{ "project__"+k: v for k, v in filters.items() })\
+            .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
             .order_by('-created')\
-            .select_related('project'):
+            .select_related('project__root_task__module')\
+            .prefetch_related('project__root_task__module__questions'):
             projects.add(task.project)
 
         # Add projects that the user is participating in a Discussion in
@@ -509,7 +513,8 @@ class Project(models.Model):
         for d in Discussion.objects.filter(organization=organization, guests=user):
             if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
                 if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
-                    projects.add(d.attached_to.task.project)
+                    if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
+                        projects.add(d.attached_to.task.project)
 
         # Don't show system projects.
         system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)

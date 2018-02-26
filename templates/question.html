@@ -778,6 +778,7 @@ $(function() {
             url: "{{task.get_absolute_url|escapejs}}/_save",
             method: "POST",
             data: data,
+            indicator_parent: $('#question'),
             keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
             success: function(res) {
               window.location = res.redirect;

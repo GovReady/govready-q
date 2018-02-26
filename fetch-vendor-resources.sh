@@ -75,9 +75,9 @@ download \
 # update templates/bootstrap-helpers.html, which is the
 # corresponding HTML.
 download \
-  https://raw.githubusercontent.com/JoshData/html5-stub/6776a1b94b8898bab283c0a98fd082e0e0b6f4e0/static/js/bootstrap-helpers.js \
+  https://raw.githubusercontent.com/JoshData/html5-stub/b3c62ad/static/js/bootstrap-helpers.js \
   $VENDOR/bootstrap-helpers.js \
-  '46fd3af77b6b5978711b3b4fbc3282ab334e3b292707c7e8c860ad6900e78d45'
+  'ee9d222656eef25ad5e7b0e960a5c363d18084ca333c910e8c81579c45ca4ba5'
 
 # push.js (MIT License)
 download \

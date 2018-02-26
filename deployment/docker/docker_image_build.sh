@@ -11,12 +11,12 @@ fi
 
 # Check that there are no uncommitted changes.
 if ! git diff-index --quiet HEAD --; then
-    echo "There are uncommitted changes. Commit first."
-    exit 1
-fi
+    echo "WARNING: There are uncommitted changes."
+	echo
+	WARNINGS=1
 
 # Check that the HEAD commit is pushed.
-if ! git branch -r --contains | grep "^\s*origin/master$" > /dev/null; then
+elif ! git branch -r --contains | grep "^\s*origin/master$" > /dev/null; then
 	echo "WARNING: Your branch is ahead of origin/master. Push first."
 	echo
 	WARNINGS=1
