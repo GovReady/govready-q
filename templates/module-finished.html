@@ -222,7 +222,9 @@
           });
 
           // Dim the page and reload.
-          $('#ajax_loading_indicator').fadeIn();
+          var modal = $('<div style="display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 100000; text-align: center; background-color: rgba(255,255,255,.75)"><div style="margin: 20% auto"><div><span class="fas fa-spinner fa-pulse"></span></div><div class="message">Loading...</div></div></div>');
+          $('body').append(modal);
+          modal.fadeIn();
           window.location.reload();
         },
         complete: function() {
