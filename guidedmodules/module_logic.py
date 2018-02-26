@@ -918,7 +918,7 @@ class ModuleAnswers(object):
 
             yield (q, a, value_display)
 
-    def render_output(self, additional_context, use_data_urls=False):
+    def render_output(self, use_data_urls=False):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents. The
         # documents are lazy-rendered because not all of them may
@@ -957,15 +957,22 @@ class ModuleAnswers(object):
                         doc_name = "%s output document %s" % (self.module_answers.module.module_name, doc_name)
 
                         # Try to render it.
-                        try:
-                            self.rendered_content = render_content(self.document, self.module_answers, key, doc_name, additional_context, show_answer_metadata=True, use_data_urls=use_data_urls)
-                        except Exception as e:
-                            # Put errors into the output. Errors should not occur if the
-                            # template is designed correctly.
-                            self.rendered_content = str(e)
-                            if key == "html":
-                                import html
-                                self.rendered_content = "<p class=text-danger>" + html.escape(self.rendered_content) + "</p>"
+                        task_cache_key = "output_r1_{}_{}".format(
+                            self.index,
+                            1 if use_data_urls else 0,
+                        )
+                        def do_render():
+                            try:
+                                return render_content(self.document, self.module_answers, key, doc_name, show_answer_metadata=True, use_data_urls=use_data_urls)
+                            except Exception as e:
+                                # Put errors into the output. Errors should not occur if the
+                                # template is designed correctly.
+                                ret = str(e)
+                                if key == "html":
+                                    import html
+                                    ret = "<p class=text-danger>" + html.escape(ret) + "</p>"
+                                return ret
+                        self.rendered_content = self.module_answers.task._get_cached_state(task_cache_key, do_render)
 
                     return self.rendered_content
 

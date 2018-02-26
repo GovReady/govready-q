@@ -854,7 +854,7 @@ class Task(models.Model):
     def render_output_documents(self, answers=None, use_data_urls=False):
         if answers is None:
             answers = self.get_answers()
-        return answers.render_output({}, use_data_urls=use_data_urls)
+        return answers.render_output(use_data_urls=use_data_urls)
 
     def render_snippet(self):
         snippet = self.module.spec.get("snippet")
