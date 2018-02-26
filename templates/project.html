@@ -155,7 +155,7 @@ h3.question-group-title {
       Review
     </button>
 
-    {% if has_outputs %}
+    {% if has_outputs and 0 %}
       <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
         <i class="glyphicon glyphicon-list"></i>
         Related Controls
