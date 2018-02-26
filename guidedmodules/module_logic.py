@@ -92,7 +92,7 @@ def walk_module_questions(module, callback):
         walk_question(q, [])
 
 
-def evaluate_module_state(current_answers, required, parent_context=None):
+def evaluate_module_state(current_answers, parent_context=None):
     # Compute the next question to ask the user, given the user's
     # answers to questions so far, and all imputed answers up to
     # that point.
@@ -162,14 +162,6 @@ def evaluate_module_state(current_answers, required, parent_context=None):
             # The user has provided an answer to this question.
             answerobj = current_answers.get(q.key)
             v = current_answers.as_dict()[q.key]
-
-            # If q is a required question and the required argument is true,
-            # and the question was skipped ('None' answer) then treat it as unanswered.
-            if q.spec.get("required") and required and v is None:
-                can_answer.add(q)
-                unanswered.add(q)
-                answertuples[q.key] = (q, False, None, None)
-                return state
 
         elif current_answers.module.spec.get("type") == "project" and q.key == "_introduction":
             # Projects have an introduction but it isn't displayed as a question.
@@ -877,10 +869,10 @@ class ModuleAnswers(object):
             self.answers_dict = { q.key: value for q, is_ans, ansobj, value in self.answertuples.values() if is_ans }
         return self.answers_dict
 
-    def with_extended_info(self, required=False, parent_context=None):
+    def with_extended_info(self, parent_context=None):
         # Return a new ModuleAnswers instance that has imputed values added
         # and information about the next question(s) and unanswered questions.
-        return evaluate_module_state(self, required, parent_context=parent_context)
+        return evaluate_module_state(self, parent_context=parent_context)
 
     def get(self, question_key):
         return self.answertuples[question_key][2]

@@ -550,7 +550,7 @@ class Task(models.Model):
             # an answer and that all module-type questions are
             # finished.
             try:
-                answers = self.get_answers().with_extended_info(required=True)
+                answers = self.get_answers().with_extended_info()
             except Exception:
                 # If there is an error evaluating imputed conditions,
                 # just say the task is unfinished.

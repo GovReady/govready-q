@@ -542,9 +542,8 @@ def show_question(request, task, answered, context, q):
 
 @task_view
 def task_finished(request, task, answered, context, *unused_args):
-    # Either the task is finished, there are required questions that were skipped,
-    # or the user is returning to the finished page directly later and the task
-    # might or might not actually be finished.
+    # All of the questions in this task have been answered. Review the
+    # answers and show the task's output documents.
 
     # Add instrumentation event.
     # Has the user been here before?

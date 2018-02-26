@@ -14,17 +14,9 @@
     {% if had_any_questions %}
     <div id="page-transition-paragraph">
       {% if previous_page_type == "project" %}
-        {% if task.is_finished %}
-          <p>This module was completed on {{task.updated|date}}.</p>
-        {% else %}
-          <p>All of the questions in this module have been responded to but some required questions were skipped.</p>
-        {% endif %}
+        <p>This module was last updated on {{task.updated|date}}.</p>
       {% elif previous_page_type == "nquestion" %}
-        {% if task.is_finished %}
-          <p>You have completed the module.</p>
-        {% else %}
-          <p>You have responded to all of the questions but skipped some required questions.</p>
-        {% endif %}
+        <p>You have completed the module.</p>
       {% endif %}
     </div>
     {% endif %}
