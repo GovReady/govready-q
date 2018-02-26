@@ -83,8 +83,9 @@ def assign_project_lifecycle_stage(projects):
 def project_list(request):
     # Get all of the projects that the user can see *and* that are in a folder,
     # which indicates it is top-level.
-    projects = Project.get_projects_with_read_priv(request.user, request.organization)
-    projects = [p for p in projects if p.contained_in_folders.all().count() > 0]
+    projects = Project.get_projects_with_read_priv(
+        request.user, request.organization,
+        excludes={ "contained_in_folders": None })
 
     # Sort the projects by their creation date. The projects
     # won't always appear in that order, but it will determine
