@@ -1209,7 +1209,10 @@ class TaskAnswer(models.Model):
 
     def get_current_answer(self):
         # The current answer is the one with the highest primary key.
-        return self.answer_history.order_by('-id').first()
+        return self.answer_history\
+            .prefetch_related("answered_by_task__module__questions")\
+            .order_by('-id')\
+            .first()
 
     def has_answer(self):
         ans = self.get_current_answer()

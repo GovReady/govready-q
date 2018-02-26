@@ -489,7 +489,8 @@ class Project(models.Model):
             .filter(project__organization=organization, user=user)\
             .filter(**{ "project__"+k: v for k, v in filters.items() })\
             .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
-            .select_related('project'):
+            .select_related('project__root_task__module')\
+            .prefetch_related('project__root_task__module__questions'):
             projects.add(pm.project)
             if pm.is_admin:
                 # Annotate with whether the user is an admin of the project.
@@ -502,7 +503,8 @@ class Project(models.Model):
             .filter(**{ "project__"+k: v for k, v in filters.items() })\
             .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
             .order_by('-created')\
-            .select_related('project'):
+            .select_related('project__root_task__module')\
+            .prefetch_related('project__root_task__module__questions'):
             projects.add(task.project)
 
         # Add projects that the user is participating in a Discussion in
