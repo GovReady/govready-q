@@ -155,7 +155,7 @@ class PyFsAppSourceConnection(AppSourceConnection):
         import fs.errors
         try:
             self.root = self.fsfunc()
-        except AppSourceConnectionError as e:
+        except (fs.errors.CreateFailed, fs.errors.ResourceNotFound) as e:
             raise AppSourceConnectionError(
                 'There was an error accessing the AppSource "{}" which connects to {}. The error was: {}'.format(
                     self.source.slug,
@@ -346,11 +346,12 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
         self.path = (path or "") + "/"
 
         # Run a quick call to check access.
+        from fs.errors import CreateFailed
         from github.GithubException import GithubException
         try:
             self.repo.get_dir_contents(self.path)
         except GithubException as e:
-            raise AppSourceConnectionError(msg=e.data.get("message"))
+            raise CreateFailed(e.data.get("message"))
 
     def scandir(self, path, namespaces=None, page=None):
         from fs.info import Info
@@ -429,6 +430,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
 
         import os, os.path
         import git
+        from fs.errors import CreateFailed
 
         # Create an empty git repo in the temporary directory.
         self.repo = git.Repo.init(self.tempdir)
@@ -467,7 +469,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
                 ], kill_after_timeout=20)
         except git.exc.GitCommandError as e:
             # This is where errors occur, which is hopefully about auth.
-            raise AppSourceConnectionError("The repository URL is either not valid, not public, or ssh_key was not specified or not valid (%s)." % e.stderr)
+            raise CreateFailed("The repository URL is either not valid, not public, or ssh_key was not specified or not valid (%s)." % e.stderr)
 
         # Get the tree for the remote branch's HEAD.
         tree = self.repo.tree("FETCH_HEAD")
