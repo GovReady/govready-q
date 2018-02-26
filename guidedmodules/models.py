@@ -603,7 +603,7 @@ class Task(models.Model):
                     num_questions += 1
 
             return (num_answered, num_questions)
-        return self._get_cached_state("progress_percent", compute_progress_percent)
+        return self._get_cached_state("progress_percent_tuple", compute_progress_percent)
 
 
     # This method is called any time an answer to any of this Task's questions
