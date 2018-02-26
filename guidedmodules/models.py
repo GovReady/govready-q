@@ -1584,7 +1584,7 @@ class TaskAnswerHistory(models.Model):
                     try:
                         # Pipe to subprocess.
                         # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
-                        cmd = ["xvfb-run", "--", "wkhtmltoimage",
+                        cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltoimage",
                                 "-q", # else errors go to stdout
                                 "--disable-javascript",
                                 "-f", "png",

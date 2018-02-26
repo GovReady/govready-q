@@ -136,7 +136,7 @@ class User(AbstractUser):
         # Compute a hash over the user ID and username to generate
         # a stable random number.
         import hashlib
-        digest = hashlib.md5()
+        digest = hashlib.sha1()
         digest.update(("%d|%s|" % (self.id, self.username)).encode("utf8"))
         digest = digest.digest()
 

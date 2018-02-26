@@ -279,7 +279,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
     def test_login(self):
         # Test that a wrong password doesn't log us in.
-        self._login(password="badpw")
+        self._login(password=get_random_string(4))
         self.assertInNodeText("The username and/or password you specified are not correct.", "form.login .alert-danger")
 
         # Test that a wrong username doesn't log us in.

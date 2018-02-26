@@ -657,7 +657,7 @@ def download_module_output(request, task, answered, context, question, document_
         html = '<meta charset="UTF-8" />' + html
 
         import subprocess
-        cmd = ["xvfb-run", "--", "wkhtmltopdf",
+        cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
                "-q", # else errors go to stdout
                "--disable-javascript",
                "--encoding", "UTF-8",
@@ -683,7 +683,7 @@ def download_module_output(request, task, answered, context, question, document_
             # convert from HTML to something else, writing to a temporary file
             outfn = os.path.join(tempdir, document_id + "." + file_extension)
             with subprocess.Popen(
-                ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+                ["/usr/bin/pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
                 stdin=subprocess.PIPE
                 ) as proc:
                 proc.communicate(
