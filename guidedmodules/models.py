@@ -527,81 +527,83 @@ class Task(models.Model):
     def can_transfer_owner(self):
         return not self.project.is_account_project
 
+    def _get_cached_state(self, key, refresh_func):
+        # Initialize the cached_state field if it is null.
+        if not isinstance(self.cached_state, dict):
+            self.cached_state = { }
+
+        # Handle a cache miss --- call refresh_func() and
+        # then save it to cached_state (and save to the db).
+        if key not in self.cached_state:
+            self.cached_state[key] = refresh_func()
+            self.save(update_fields=["cached_state"])
+
+        # Return cached value.
+        return self.cached_state[key]
+
     def is_started(self):
         return self.answers.exists()
 
     def is_finished(self):
-        # Check that all questions that need an answer have
-        # an answer and that all module-type questions are
-        # finished.
-        if self.cached_state is None:
-            self.cached_state = { }
-        if "is_finished" not in self.cached_state:
-            self.cached_state["is_finished"] = self.is_finished_uncached()
-            self.save(update_fields=["cached_state"])
-        return self.cached_state["is_finished"]
-
-    def is_finished_uncached(self):
-        # Check that all questions that need an answer have
-        # an answer and that all module-type questions are
-        # finished.
-        try:
-            answers = self.get_answers().with_extended_info(required=True)
-        except Exception:
-            # If there is an error evaluating imputed conditions,
-            # just say the task is unfinished.
-            return False
-        if len(answers.can_answer) != 0:
-            return False
-        for a in answers.as_dict().values():
-            # module-type questions
-            if isinstance(a, ModuleAnswers) and a.task:
-                if not a.task.is_finished():
-                    return False
-            # module-set-type questions
-            if isinstance(a, list):
-                for item in a:
-                    if isinstance(item, ModuleAnswers) and item.task:
-                        if not item.task.is_finished():
-                            return False
-        return True
+        def compute_is_finished():
+            # Check that all questions that need an answer have
+            # an answer and that all module-type questions are
+            # finished.
+            try:
+                answers = self.get_answers().with_extended_info(required=True)
+            except Exception:
+                # If there is an error evaluating imputed conditions,
+                # just say the task is unfinished.
+                return False
+            if len(answers.can_answer) != 0:
+                return False
+            for a in answers.as_dict().values():
+                # module-type questions
+                if isinstance(a, ModuleAnswers) and a.task:
+                    if not a.task.is_finished():
+                        return False
+                # module-set-type questions
+                if isinstance(a, list):
+                    for item in a:
+                        if isinstance(item, ModuleAnswers) and item.task:
+                            if not item.task.is_finished():
+                                return False
+            return True
+        return self._get_cached_state("is_finished", compute_is_finished)
 
     def get_progress_percent(self):
-        if self.cached_state is None:
-            self.cached_state = { }
-        if "progress_percent" not in self.cached_state:
-            answered, total = self.compute_progress_percent()
-            self.cached_state["progress_percent"] = (answered/total*100) if (total > 0) else 100
-            self.save(update_fields=["cached_state"])
-        return self.cached_state["progress_percent"]
+         answered, total = self.get_progress_percent_tuple()
+         return (answered/total*100) if (total > 0) else 100
 
-    def compute_progress_percent(self):
-        # Return a tuple of the number of questions that have an answer
-        # and the total number of questions. For module-type questions
-        # that are answered, recursively add the questions of the inner module.
-        try:
-            answers = self.get_answers().with_extended_info()
-        except Exception:
-            # If there is an error evaluating imputed conditions,
-            # just say the task is empty.
-            return (0, 0)
+    def get_progress_percent_tuple(self):
+        def compute_progress_percent():
+            # Return a tuple of the number of questions that have an answer
+            # and the total number of questions. For module-type questions
+            # that are answered, recursively add the questions of the inner module.
+            try:
+                answers = self.get_answers().with_extended_info()
+            except Exception:
+                # If there is an error evaluating imputed conditions,
+                # just say the task is empty.
+                return (0, 0)
 
-        num_answered = 0
-        num_questions = 0
-        for (q, is_answered, a, value) in answers.answertuples.values():
-            # module-type questions with a real answer
-            if isinstance(value, ModuleAnswers) and value.task:
-                inner_answered, inner_total = value.task.compute_progress_percent()
-                num_answered += inner_answered
-                num_questions += inner_total
+            num_answered = 0
+            num_questions = 0
+            for (q, is_answered, a, value) in answers.answertuples.values():
+                # module-type questions with a real answer
+                if isinstance(value, ModuleAnswers) and value.task:
+                    inner_answered, inner_total = value.task.get_progress_percent_tuple()
+                    num_answered += inner_answered
+                    num_questions += inner_total
 
-            # all other questions
-            else:
-                if is_answered:
-                    num_answered += 1
-                num_questions += 1
+                # all other questions
+                else:
+                    if is_answered:
+                        num_answered += 1
+                    num_questions += 1
 
-        return (num_answered, num_questions)
+            return (num_answered, num_questions)
+        return self._get_cached_state("progress_percent", compute_progress_percent)
 
 
     # This method is called any time an answer to any of this Task's questions
