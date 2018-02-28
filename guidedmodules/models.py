@@ -613,6 +613,12 @@ class Task(models.Model):
     # * Clear the Task's cache_is_finished field.
     # * Recursively call on_answer_changed on any Tasks that this task is
     #   a current answer of a question to.
+    # * Since templates can peek up to the project and see anything within it,
+    #   then any Task in the same project must also have their cache cleared.
+    #   TODO: It would be nice to know whether or not the cached_state is actually
+    #   based on project-level information because most Tasks might not peek
+    #   up and Tasks that don't do not need to have their cached_state cleared
+    #   in this case.
     def on_answer_changed(self, seen_tasks=None):
         if seen_tasks is None: seen_tasks = set()
         if self in seen_tasks: return
@@ -622,6 +628,8 @@ class Task(models.Model):
         for ans in self.is_answer_to.select_related('taskanswer__task').all():
             if ans.is_latest():
                 ans.taskanswer.task.on_answer_changed(seen_tasks)
+        for task in Task.objects.filter(project=self.project):
+            task.on_answer_changed(seen_tasks)
 
     def get_status_display(self):
         # Is this task done?

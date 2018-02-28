@@ -28,6 +28,8 @@ jobs:
     #    name: Running X virtual framebuffer
     #    command: Xvfb :99 -screen 0 1280x1024x24
     #    background: true
+
+    # Install packages necesary for requirements_txt_checker.sh.
     - run: sudo pip3 install -U pip-tools liccheck safety
 
     # Run tests.

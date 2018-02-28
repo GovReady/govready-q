@@ -6,8 +6,8 @@
 
 set -euf -o pipefail # abort script on error
 
-# Install the latest pip-tools and pyup.io's safety tool.
-pip3 install -U pip-tools liccheck safety > /dev/null
+# You will need the latest pip-tools and pyup.io's safety tool:
+# pip3 install -U pip-tools liccheck safety
 
 # Flatten out all of the dependencies of our dependencies to
 # a temporary file.
