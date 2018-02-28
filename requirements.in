@@ -34,7 +34,8 @@ django-html-emailer # MIT License
 django-database-storage-backend==0.0.4 # CC0, requires libmagic (libmagic1 in Debian)
 commonmarkextensions # BSD 3
 
-# Only needed in production
+# Only needed in common production deployment configurations
+psycopg2 # LGPL
 rfc5424-logging-handler # BSD License
 
 # Development & testing only
