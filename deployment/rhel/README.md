@@ -138,7 +138,6 @@ Then in our GovReady Q `local/environment.json` file, configure the database (re
 
 Then initialize the database content:
 
-    pip3 install --user psycopg2
     python3 manage.py migrate
     python3 manage.py load_modules
 

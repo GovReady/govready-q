@@ -117,6 +117,8 @@ Start the GovReady-Q container with the argument:
 
 where `$DBHOST` is the hostname of the database server, `$DBDATABASE` is the name of the database, and `$DBUSER` and `$DBPASSWORD` are the credentials for the database.
 
+You can also use a MySQL or MariaDB server using the syntax `mysql://USER:PASSWORD@HOST:PORT/NAME`.
+
 ### Configuring email
 
 GovReady-Q sends outbound emails for notifications about invitations and discussions.
