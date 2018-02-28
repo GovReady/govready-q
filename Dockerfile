@@ -20,6 +20,7 @@ RUN yum -y install \
 	python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 \
 	unzip git2u jq \
 	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
+	mysql-devel \
 	&& yum clean all && rm -rf /var/cache/yum
 
 # Copy in the Python module requirements and install them.
@@ -27,6 +28,7 @@ RUN yum -y install \
 # file because they're not commonly used in development.
 COPY requirements.txt ./
 RUN pip3.6 install --no-cache-dir -r requirements.txt
+RUN pip3.6 install --no-cache-dir mysqlclient==1.3.12 # GPL
 
 # Run pyup.io's python package vulnerability check.
 RUN safety check
