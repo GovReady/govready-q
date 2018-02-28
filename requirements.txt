@@ -114,9 +114,9 @@ mondrianish==0.5.3 \
 oauthlib==2.0.6 \
     --hash=sha256:ce57b501e906ff4f614e71c36a3ab9eacbb96d35c24d1970d2539bbc3ec70ce1 \
     # via requests-oauthlib
-packaging==17.0 \
-    --hash=sha256:e9f654a6854321ac39d2e6745b820773ba9efa394e71dea1b387cc717d439f93 \
-    --hash=sha256:fd6933093a5462f61eec7e2d7f9bb042c28ee597ff6a93d27fb73bdc43f2684d \
+packaging==17.1 \
+    --hash=sha256:e9215d2d2535d3ae866c3d6efc77d5b24a0192cce0ff20e42896cc0664f889c0 \
+    --hash=sha256:f019b770dd64e585a99714f1fd5e01c7a8f11b45635aa953fd41c689a657375b \
     # via dparse, safety
 pillow==5.0.0 \
     --hash=sha256:0013f590a8f260df60bcfd65db19d18efc04e7f046c3c82a40e2e2b3292a937c \
