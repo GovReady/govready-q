@@ -32,12 +32,26 @@ jobs:
     #    command: Xvfb :99 -screen 0 1280x1024x24
     #    background: true
 
-    # Install packages necesary for requirements_txt_checker.sh.
-    - run: pip3 install --user -U pip-tools liccheck safety
-
     # Run tests.
+
+    # Install packages necesary for requirements_txt_checker.sh,
+    # and then run it.
+    - run: pip3 install --user -U pip-tools liccheck safety
     - run: ./requirements_txt_checker.sh
-    - run: ./manage.py test guidedmodules
-    - run: ./manage.py test siteapp.tests.LandingSiteFunctionalTests
-    - run: ./manage.py test siteapp.tests.GeneralTests
-    - run: ./manage.py test siteapp.tests.QuestionsTests
+
+    # Run unit and functional tests with code coverage, and store code coverage
+    # results. CircleCI commands can't go on forever, so we run the tests
+    # separately (with -p) and then combine code coverage results.
+    - run: coverage run --source='.' --branch -p manage.py test guidedmodules
+    - run: coverage run --source='.' --branch -p manage.py test discussion
+    - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
+    - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.GeneralTests
+    - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.QuestionsTests
+    - run: coverage combine
+    - run: coverage report # output to studout.
+    - run: coverage xml # generate report artifact coverage.xml.
+    - run: coverage html # generate report artifact htmlcov/*.
+    - store_artifacts:
+        path: coverage.xml
+    - store_artifacts:
+        path: htmlcov

@@ -15,6 +15,12 @@ Then run the test suite with:
 
 	./manage.py test
 
+To produce a code coverage report, run the tests with `coverage`:
+
+	coverage run --source='.' --branch manage.py test
+	coverage report
+
+
 ## <a name="dependencies"></a> Dependency Management
 
 Our `requirements.txt` file is designed to work with `pip install --require-hashes`, which ensures that every installed dependency matches a hash stored in this repository. The option requires that every dependency (including dependencies of dependencies) be listed, pinned to a version number, and paired with a hash. We therefore don't manually edit `requirements.txt`. Instead, we place our immediate dependencies in `requirements.in` and run `requirements_txt_updater.sh` (which calls pip-tools's pip-compile command) to update the `requirements.txt` file for production.
