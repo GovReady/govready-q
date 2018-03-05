@@ -1,0 +1,20 @@
+{% extends "project-base.html" %}
+
+{% block title %}
+Import Finished - {{project.title}}
+{% endblock %}
+
+{% block title_suffix_text %}
+Import Finished
+{% endblock %}
+
+{% block body_content %}
+  <p>Here&rsquo;s what happened:</p>
+
+  {% for line in log %}
+    <p>{{line}}</p>
+  {% endfor %}
+
+  <p><a href="{{project.get_absolute_url}}" class="btn btn-success">Return to {{project.title}} &raquo;</a></p>
+
+{% endblock %}

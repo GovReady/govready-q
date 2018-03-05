@@ -1008,15 +1008,19 @@ def import_project_data(request, project):
         data = json.loads(
             request.FILES["value"].read().decode("utf8", "replace"),
             object_pairs_hook=OrderedDict)
-
-        # Update project data.
-        project.import_json(data, request.user, "imp", lambda x : log_output.append(x))
     except Exception as e:
-        log_output.append(str(e))
+        log_output.append("There was an error reading the export file.")
+    else:
+        try:
+            # Update project data.
+            project.import_json(data, request.user, "imp", lambda x : log_output.append(x))
+        except Exception as e:
+            log_output.append(str(e))
 
-    # Show an unfriendly response containing log output.
-    return JsonResponse(log_output, safe=False, json_dumps_params={"indent": 2})
-
+    return render(request, "project-import-finished.html", {
+        "project": project,
+        "log": log_output,
+    })
 
 def project_start_apps(request, *args):
     # Load the Compliance Store catalog of apps.
