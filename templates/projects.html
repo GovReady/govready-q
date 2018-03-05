@@ -48,13 +48,22 @@ Your Compliance Projects
     .project-image {
       width: 30px;
       float: right;
-      margin: 4px 0 5px 8px;
+      margin: 4px 0 0 8px;
     }
+      .project-image img {
+        margin-bottom: 5px;
+      }
+      
     .project-text {
     }
-    .project h4 {
+    .project-text h4 {
       margin: 0;
       font-weight: bold;
+      font-size: inherit;
+    }
+    .project-text > * {
+      margin: .5em 0 0 0;
+      font-size: 13px;
     }
 
   h1.mini {
@@ -109,11 +118,20 @@ Your Compliance Projects
 
             {% for project in stage.projects %}
               <div class="project" data-project-id="{{project.id}}">
+                <div class="project-image">
                 {% if project.root_task.get_app_icon_url %}
-                  <a href="{{project.get_absolute_url}}" class="project-image">
+                  <a href="{{project.get_absolute_url}}">
                     <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive">
                   </a>
                 {% endif %}
+                  <div style="margin-top: 10px; text-align: right;">
+                    <span
+                      class="glyphicon glyphicon-info-sign"
+                      style="color: #AAA; cursor: pointer;"
+                      data-toggle="popover" title="{{project.root_task.module.spec.title}}" data-content="App version: {{project.root_task.module.spec.catalog.version|force_escape}}<br>Started: {{project.created|date}}<br> Updated: {{project.root_task.updated|date}}"
+                    ></span>
+                  </div>
+                </div>
 
                 <div class="project-text">
                   <h4>
@@ -131,14 +149,14 @@ Your Compliance Projects
 
                   {# what kind of project is this #}
                   {% if project.root_task.module.title != project.title %}
-                    <p class="small" style="margin-top: .5em">
+                    <p>
                       {{project.root_task.module.title}}
                     </p>
                   {% endif %}
 
                   {% with snippet=project.render_snippet %}
                     {% if snippet %}
-                      <div class="small" style="margin-top: .5em">
+                      <div>
                         {{project.render_snippet|safe}}
                       </div>
                     {% endif %}
@@ -159,6 +177,13 @@ Your Compliance Projects
 
 {% block scripts %}
 <script>
+$(function() {
+  // activate popovers
+  $('.project-text *[data-toggle=popover]').popover({
+    html: true
+  });
+})
+
 {% if is_lonely_admin %}
 function show_invite_to_org() {
   show_invite_modal(

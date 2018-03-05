@@ -733,7 +733,8 @@ class Project(models.Model):
                 self.user = user
                 self.answer_method = answer_method
                 self.ref_map = { }
-                self.log = logger
+                self.logger = logger
+                self.log_nesting_level = 0
 
                 if data.get("schema") == "GovReady Q Project Export Data 1.0":
                     self.included_metadata = True
@@ -742,6 +743,9 @@ class Project(models.Model):
 
                 else:
                     raise ValueError("Data does not look like it was exported from this application.")
+
+            def log(self, msg):
+                self.logger((" * "*self.log_nesting_level) + msg)
 
             def deserializeOnce(self, dictdata, deserialize_func):
                 # If dictdata is a reference to something we've already
