@@ -48,8 +48,12 @@ Your Compliance Projects
     .project-image {
       width: 30px;
       float: right;
-      margin: 4px 0 5px 8px;
+      margin: 4px 0 0 8px;
     }
+      .project-image img {
+        margin-bottom: 5px;
+      }
+      
     .project-text {
     }
     .project-text h4 {
@@ -114,11 +118,20 @@ Your Compliance Projects
 
             {% for project in stage.projects %}
               <div class="project" data-project-id="{{project.id}}">
+                <div class="project-image">
                 {% if project.root_task.get_app_icon_url %}
-                  <a href="{{project.get_absolute_url}}" class="project-image">
+                  <a href="{{project.get_absolute_url}}">
                     <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive">
                   </a>
                 {% endif %}
+                  <div style="margin-top: 10px; text-align: right;">
+                    <span
+                      class="glyphicon glyphicon-info-sign"
+                      style="color: #AAA; cursor: pointer;"
+                      data-toggle="popover" title="{{project.root_task.module.spec.title}}" data-content="App version: {{project.root_task.module.spec.catalog.version|force_escape}}<br>Started: {{project.created|date}}<br> Updated: {{project.root_task.updated|date}}"
+                    ></span>
+                  </div>
+                </div>
 
                 <div class="project-text">
                   <h4>
@@ -148,14 +161,6 @@ Your Compliance Projects
                       </div>
                     {% endif %}
                   {% endwith %}
-
-                  <div>
-                    <span
-                      class="glyphicon glyphicon-info-sign"
-                      style="color: #995; cursor: pointer;"
-                      data-toggle="popover" title="{{project.root_task.module.spec.title}}" data-content="App version: {{project.root_task.module.spec.catalog.version|force_escape}}<br>Started: {{project.created|date}}<br> Updated: {{project.root_task.updated|date}}"
-                    ></span>
-                  </div>
                 </div>
 
                 <div class="clearfix"></div>
