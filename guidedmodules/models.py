@@ -1588,7 +1588,7 @@ class TaskAnswerHistory(models.Model):
                 # Try to construct a thumbnail.
                 if sf.mime_type == "text/html":
                     # Use wkhtmltoimage.
-                    import subprocess
+                    import subprocess # nosec
                     try:
                         # Pipe to subprocess.
                         # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.

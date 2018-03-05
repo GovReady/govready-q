@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.utils.crypto import get_random_string
+
 from siteapp.models import User, ProjectMembership, Organization
 from siteapp.tests import SeleniumTest, var_sleep
 
@@ -82,7 +84,7 @@ class DiscussionTests(SeleniumTest):
         self.assertRegex(self.browser.title, "Sign In")
         self.click_element("p a") # This isn't a very good targetting of the "sign up" link.
         var_sleep(.5) # wait for page to load
-        self.fill_field("#id_username", "test+%d@q.govready.com" % random.randint(10000, 99999))
+        self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(6))
         self.fill_field("#id_email", email)
         self.fill_field("#id_password1", "1234")
         self.fill_field("#id_password2", "1234")

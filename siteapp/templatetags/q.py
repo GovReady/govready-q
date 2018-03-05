@@ -18,7 +18,7 @@ def json(value):
     value = value.replace("<", r'\u003c')
     value = value.replace(">", r'\u003e') # not necessary but for good measure
     value = value.replace("&", r'\u0026') # not necessary but for good measure
-    return mark_safe(value)
+    return mark_safe(value) # nosec
 
 @register.filter(is_safe=True)
 def div(value1, value2):
