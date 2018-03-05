@@ -5,7 +5,6 @@ from django.utils.crypto import get_random_string
 from unittest import skip
 
 import os
-import random
 import re
 
 def var_sleep(duration):
@@ -262,7 +261,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Sign In")
         self.click_element("p a") # This isn't a very good targetting of the "sign up" link.
         var_sleep(.5) # wait for page to load
-        self.fill_field("#id_username", "test+%d@q.govready.com" % random.randint(10000, 99999))
+        self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
         self.fill_field("#id_email", email)
         new_test_user_password = get_random_string(16)
         self.fill_field("#id_password1", new_test_user_password)
@@ -556,7 +555,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # test a good address
-        val = "test+%d@q.govready.com" % random.randint(10000, 99999)
+        val = "test+%s@q.govready.com" % get_random_string(8)
         self.clear_and_fill_field("#inputctrl", val)
         self.click_element("#save-button")
         var_sleep(1.5)

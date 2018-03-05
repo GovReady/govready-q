@@ -40,9 +40,11 @@ jobs:
     - run: ./requirements_txt_checker.sh
 
     # Run static code analysis using 'bandit'.
-    # Disable:
+    # Disable warning-like tests:
     # B101: Test for use of assert
-    - run: bandit -s B101 -r discussion/ guidedmodules/ siteapp/
+    # B110: try_except_pass
+    # B603: subprocess_without_shell_equals_true
+    - run: bandit -s B101,B110,B603 -r discussion/ guidedmodules/ siteapp/
 
     # Run unit and functional tests with code coverage, and store code coverage
     # results. CircleCI commands can't go on forever, so we run the tests

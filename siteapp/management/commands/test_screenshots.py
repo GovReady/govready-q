@@ -28,7 +28,6 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 import os
 import os.path
-import random
 import re
 import tempfile
 from time import sleep
@@ -120,7 +119,7 @@ class Command(BaseCommand):
         # terminates.
         self.temporary_user_random_password = get_random_string(24)
         self.user = User.objects.create(
-            username="screenshots-user-{}".format(random.randint(10000, 99999)),
+            username="screenshots-user-{}".format(get_random_string(6)),
             email="test+user@q.govready.com")
         self.user.set_password(self.temporary_user_random_password)
         self.user.save()

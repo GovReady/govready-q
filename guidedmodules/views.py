@@ -656,7 +656,7 @@ def download_module_output(request, task, answered, context, question, document_
         html = doc["html"]
         html = '<meta charset="UTF-8" />' + html
 
-        import subprocess
+        import subprocess # nosec
         cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
                "-q", # else errors go to stdout
                "--disable-javascript",
@@ -678,7 +678,7 @@ def download_module_output(request, task, answered, context, question, document_
         # odt and some other formats cannot pipe to stdout, so we always
         # generate a temporary file.
         pandoc_format, file_extension, mime_type = pandoc_opts[download_format]
-        import tempfile, os.path, subprocess
+        import tempfile, os.path, subprocess # nosec
         with tempfile.TemporaryDirectory() as tempdir:
             # convert from HTML to something else, writing to a temporary file
             outfn = os.path.join(tempdir, document_id + "." + file_extension)

@@ -71,7 +71,7 @@ if os.path.exists("VERSION"):
         APP_VERSION_COMMIT = f.readline().strip()
 else:
     # If there is no VERSION file, query the git working directory.
-    import subprocess
-    APP_VERSION_STRING = subprocess.check_output("git describe --tags --always", shell=True).strip().decode("ascii")
-    APP_VERSION_COMMIT = subprocess.check_output("git rev-parse HEAD", shell=True).strip().decode("ascii")
+    import subprocess # nosec
+    APP_VERSION_STRING = subprocess.check_output(["/usr/bin/git", "describe", "--tags", "--always"]).strip().decode("ascii")
+    APP_VERSION_COMMIT = subprocess.check_output(["/usr/bin/git", "rev-parse", "HEAD"]).strip().decode("ascii")
 
