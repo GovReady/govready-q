@@ -39,6 +39,11 @@ jobs:
     - run: pip3 install --user -U pip-tools liccheck safety
     - run: ./requirements_txt_checker.sh
 
+    # Run static code analysis using 'bandit'.
+    # Disable:
+    # B101: Test for use of assert
+    - run: bandit -s B101 -r discussion/ guidedmodules/ siteapp/
+
     # Run unit and functional tests with code coverage, and store code coverage
     # results. CircleCI commands can't go on forever, so we run the tests
     # separately (with -p) and then combine code coverage results.

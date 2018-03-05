@@ -20,6 +20,11 @@ To produce a code coverage report, run the tests with `coverage`:
 	coverage run --source='.' --branch manage.py test
 	coverage report
 
+To run a static code analysis with our typical settings:
+
+	bandit -s B101,B110,B603 -r discussion/ guidedmodules/ siteapp/
+
+We use `-s` on the command-line and `nosec` in limited places in the source code to disable some checks that are determined after review to be false positives.
 
 ## <a name="dependencies"></a> Dependency Management
 
