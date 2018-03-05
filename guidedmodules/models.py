@@ -1044,9 +1044,9 @@ class Task(models.Model):
             # is a part of the same organization as the question it answers.
             task = Task.objects.filter(uuid=data["id"], project__organization=for_question.task.project.organization).first()
             if task:
+                deserializer.log("Linking to & updating existing answers in %s (%s)." % (task.title, data['id']))
                 if not task.has_write_priv(deserializer.user):
-                    deserializer.log("%s (%s): You do not have permission to update that task."
-                        % (task.title, data['id']))
+                    deserializer.log("You do not have permission to update %s." % data['id'])
                     return None
 
             else:
@@ -1059,6 +1059,7 @@ class Task(models.Model):
                     module=for_question.question.answer_type_module,
                     uuid=data['id'], # preserve the UUID from the incoming data
                     )
+                deserializer.log("Created %s (%s)." % (task.title, data['id']))
 
             # Recursively fill in the answers to the newly created task.
             task.import_json_update(data, deserializer)
@@ -1086,15 +1087,17 @@ class Task(models.Model):
             # Only update the title if what's stored in the serialized data doesn't
             # match the automatically computed title.
             if data.get("title") and data["title"] != self.title:
+                deserializer.log("Updating title to {}.".format(data["title"]))
                 self.title_override = data["title"]
                 self.save(update_fields=["title_override"])
 
         # We don't chek that the module listed in the data matches the module
         # this Task actually uses in the database. We don't have a way to test
         # equality and if there's a mismatch there's nothing we can really do.
+        # In fact, that might be on purpose to migrate data from one app to
+        # another app.
         # Instead we just carefully validate the incoming answers.
 
-        my_name = "%s (%s)" % (self.title, data.get("id") or "no UUID")
         did_update_any_questions = False
 
         # Merge answers to questions.
@@ -1109,7 +1112,7 @@ class Task(models.Model):
             # Get the ModuleQuestion instance for this question.
             q = self.module.questions.filter(key=qkey).first()
             if q is None:
-                deserializer.log("Task %s question %s ignored (not a valid question ID)." % (my_name, qkey))
+                deserializer.log("Question %s is not a question ID in this project so it is being skipped." % qkey)
                 continue
 
             # For logging.
@@ -1129,7 +1132,7 @@ class Task(models.Model):
 
                 # Ensure the data type matches the current question specification.
                 if answer and q.spec["type"] != answer.get("questionType"):
-                    deserializer.log("Task %s question %s ignored (question type mismatch)." % (my_name, qname))
+                    deserializer.log("'%s' has a different data type than what is expected in this project, so it is being skipped." % qname)
                     continue
 
                 if answer is None or "value" not in answer:
@@ -1149,7 +1152,7 @@ class Task(models.Model):
                 try:
                     value = validator.validate(q, value)
                 except ValueError as e:
-                    deserializer.log("Task %s question %s ignored: %s" % (my_name, qname, str(e)))
+                    deserializer.log("'%s' has an invalid value: %s. It is being skipped." % qname, str(e))
                     continue
 
             # Get or create the TaskAnswer instance for this question.
@@ -1167,25 +1170,25 @@ class Task(models.Model):
             # Prepare the fields for saving.
             prep_fields = TaskAnswerHistory.import_json_prep(taskanswer, value, deserializer)
             if prep_fields is None:
-                deserializer.log("Task %s question %s has been skipped because a sub-task could not be used." % (my_name, qname))
+                deserializer.log("'%s' has been skipped because a sub-task could not be used." % qname)
                 continue
 
             value, answered_by_tasks, answered_by_file, subtasks_updated = prep_fields
 
             # And save the answer.
             if taskanswer.save_answer(value, answered_by_tasks, answered_by_file, deserializer.user, deserializer.answer_method):
-                deserializer.log("Task %s question %s was updated." % (my_name, qname))
+                deserializer.log("'%s' was updated." % qname)
                 did_update_any_questions = True
             elif not subtasks_updated:
                 # Warn if a value was not changed.
-                deserializer.log("Task %s question %s was not changed." % (my_name, qname))
+                deserializer.log("'%s' was not changed." % qname)
 
             # If any sub-task data was updated, don't warn about this task not being updated.
             if subtasks_updated:
                 did_update_any_questions = True
             
         if not did_update_any_questions:
-            deserializer.log("Task %s had no new answers to save." % (my_name,))
+            deserializer.log("There were no new answers to save.")
 
         return did_update_any_questions
 
@@ -1780,7 +1783,13 @@ class TaskAnswerHistory(models.Model):
                 # recurse to update its answers). Task.import_json can return
                 # None, and we handle that below.
                 for task in value:
-                    task = Task.import_json(task, deserializer, taskanswer)
+                    deserializer.log("Importing '{}'...".format(taskanswer.question.spec['title']))
+                    deserializer.log_nesting_level += 1
+                    try:
+                        task = Task.import_json(task, deserializer, taskanswer)
+                    finally:
+                        deserializer.log_nesting_level -= 1
+                        deserializer.log("Finished importing '{}'.".format(taskanswer.question.spec['title']))
                     answered_by_tasks.add(task)
                     subtasks_updated = True # TODO: Should be False if task existed and no change made.
 
