@@ -8,6 +8,9 @@ jobs:
     - image: circleci/python:3.5-jessie-browsers # matches Python version in Ubuntu 16.04 in deployment, python:3.5-slim works but not with selenium
 
     steps:
+    # Add .local/bin to PATH for utilities install by `pip install --user`.
+    - run: echo 'export PATH=~/.local/bin:$PATH' >> $BASH_ENV
+
     # Get source code.
     - checkout
 
@@ -30,7 +33,7 @@ jobs:
     #    background: true
 
     # Install packages necesary for requirements_txt_checker.sh.
-    - run: sudo pip3 install -U pip-tools liccheck safety
+    - run: pip3 install --user -U pip-tools liccheck safety
 
     # Run tests.
     - run: ./requirements_txt_checker.sh
