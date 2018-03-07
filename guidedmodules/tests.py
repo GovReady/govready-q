@@ -655,7 +655,6 @@ class ImportExportTests(TestCaseWithFixtureData):
             self.included_metadata = included_metadata
             self.answer_method = "web"
             def logger(message):
-                print(message)
                 self.log_capture.append(message)
             self.log = logger
 
