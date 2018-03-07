@@ -583,7 +583,7 @@ class Project(models.Model):
         # see has_read_priv, get_all_participants
         from discussion.models import Discussion
         for d in Discussion.objects.filter(guests=user):
-            if d.attached_to.task.project == self:
+            if d.attached_to is not None and d.attached_to.task.project == self:
                 if not d.attached_to.task.deleted_at:
                     yield d
     
