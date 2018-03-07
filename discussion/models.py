@@ -49,6 +49,9 @@ class Discussion(models.Model):
         return self.title
 
     def get_absolute_url(self):
+        if self.attached_to is None:
+            # Dangling!
+            return ""
         return self.attached_to.get_absolute_url() + "#discussion"
 
     @property
@@ -63,22 +66,24 @@ class Discussion(models.Model):
     def is_participant(self, user):
         # No one is a participant of a dicussion attached to (a question
         # of) a deleted Task.
-        if self.attached_to.is_discussion_deleted():
+        if self.attached_to is not None and self.attached_to.is_discussion_deleted():
             return False
         return user in self.get_all_participants()
 
     def get_all_participants(self):
-        return (
-            self.attached_to.get_discussion_participants()
-            | self.guests.all().distinct() # because get_discussion_participants uses distinct, this one must too
-            ).distinct()
+        # because get_discussion_participants uses distinct, self.guests must too
+        participants = self.guests.all().distinct()
+        if self.attached_to is not None:
+            participants = (participants | self.attached_to.get_discussion_participants()).distinct()
+        return participants
 
     ##
 
     def render_context_dict(self, user, comments_since=0, parent_events_since=0):
         # Build the event history.
         events = []
-        events.extend(self.attached_to.get_discussion_interleaved_events(parent_events_since))
+        if self.attached_to is not None:
+            events.extend(self.attached_to.get_discussion_interleaved_events(parent_events_since))
         events.extend([
             comment.render_context_dict(user)
             for comment in self.comments.filter(
@@ -101,7 +106,7 @@ class Discussion(models.Model):
             "discussion": {
                 "id": self.id,
                 "title": self.title,
-                "project": self.attached_to.get_project_context_dict(),
+                "project": self.attached_to.get_project_context_dict() if self.attached_to is not None else None,
                 "can_invite": self.can_invite_guests(user),
                 "can_comment": self.can_comment(user),
             },
@@ -150,6 +155,7 @@ class Discussion(models.Model):
         return user is not None and self.is_participant(user)
 
     def can_invite_guests(self, user):
+        if self.attached_to is None: return False
         return self.attached_to.can_invite_guests(user)
 
     def get_invitation_verb_inf(self, invitation):
@@ -175,6 +181,7 @@ class Discussion(models.Model):
             add_message('You are now a participant in the discussion on %s.' % self.title)
 
     def get_invitation_redirect_url(self, invitation):
+        if self.attached_to is None: return None
         return self.attached_to.get_absolute_url()
 
     @property
@@ -184,7 +191,7 @@ class Discussion(models.Model):
         return self.attached_to is None
 
     def get_notification_watchers(self):
-        if self.attached_to.is_discussion_deleted():
+        if self.attached_to is None or self.attached_to.is_discussion_deleted():
             return set()
         return set(self.attached_to.get_notification_watchers()) \
             | set(self.guests.all())
@@ -205,7 +212,7 @@ class Discussion(models.Model):
     def get_autocompletes(self, user):
         # When typing in a comment, what autocompletes are available to this user?
         # Ensure the user is a participant of the discussion.
-        if not self.is_participant(user):
+        if self.attached_to is None or not self.is_participant(user):
             return []
         return self.attached_to.get_discussion_autocompletes(self.organization)
 
