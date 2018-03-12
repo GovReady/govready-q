@@ -20,6 +20,8 @@ class AppSource(models.Model):
     available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
     available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this AppSource.")
 
+    approved_apps = JSONField(blank=True, help_text="Information about apps whitelisted or blacklisted for display in the catalog from this source.")
+
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 

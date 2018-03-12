@@ -258,10 +258,23 @@ def filter_app_catalog(catalog, request):
     filter_description = None
 
     # Filter out unpublished apps.
+    from guidedmodules.models import AppSource
+    approved_apps = { src.id: (src.approved_apps or {}) for src in AppSource.objects.all() }
     def is_app_available(app):
-        if app.get("published") == "unpublished":
+        # Query the AppSource for whether this app is considered
+        # published or not.
+        try:
+            published = approved_apps[app["appsource_id"]][app["name"]]
+
+        # Fall back to the app's catalog information.
+        except KeyError:
+            published = app.get("published")
+
+        # Hide if unpublished
+        if published == "unpublished":
             return False
         return True
+
     catalog = filter(is_app_available, catalog)
 
     if request.GET.get("q"):

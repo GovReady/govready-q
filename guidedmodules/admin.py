@@ -157,6 +157,70 @@ class AppSourceSpecWidget(forms.Widget):
 
     	return value
 
+class ApprovedAppsList(forms.Widget):
+	def __init__(self, appsource):
+		super().__init__()
+		self.appsource = appsource
+
+	def render(self, name, value, attrs=None):
+		# For some reason we get the JSON value as a string. Unless we override Form.clean(),
+		# and then strangely we get a dict.
+		if isinstance(value, str):
+			import json, collections
+			value = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(value or "{}")
+		if not isinstance(value, dict):
+			value = {}
+
+		# Get all of the apps to list from the AppSource instance, if this
+		# form is associated with an existing AppSource instance.
+		applist = []
+		seen_apps = set()
+		if self.appsource:
+			with self.appsource.open() as conn:
+				for app in conn.list_apps():
+					applist.append((app.name, app.get_catalog_info()))
+					seen_apps.add(app.name)
+
+		# Add in any apps that are no longer in the AppSource but have a
+		# value stored.
+		for appkey in value:
+			if appkey in seen_apps: continue
+			applist.append((appkey, {
+				"title": appkey,
+				"published": None,
+			}))
+
+		# Construct widget.
+		import html
+		widget = "<table><tbody>\n"
+		for appname, appinfo in applist:
+			widget += "<tr>"
+			widget += "<td style='padding: 14px'>"
+			widget += html.escape(appinfo["title"])
+			widget += "</td><td>"
+			widget += forms.Select(choices=[
+			 	("", "{} (Default)".format(
+			 		("Unpublished" if appinfo["published"] == "unpublished" else "Published")
+			 	)),
+			 	("unpublished", "Unpublished"),
+			 	("published", "Published"),
+			 	])\
+				.render(name + "__" + appname, value.get(appname))
+			widget += "</td></tr>\n"
+		widget += "</tobdy></table>\n"
+
+		return widget
+
+	def value_from_datadict(self, data, files, name):
+		from collections import OrderedDict
+		ret = {}
+		for key, value in data.items():
+			if not key.startswith(name + "__"): continue
+			key = key[len(name)+2:]
+			if value == "": continue # reset to default
+			ret[key] = value
+		return ret
+
 class AppSourceAdminForm(forms.ModelForm):
 	class Meta:
 		labels = {
@@ -165,9 +229,18 @@ class AppSourceAdminForm(forms.ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+
+		# Override the widget for 'spec' to break out the connection
+		# settings into separate fields.
 		self.fields['spec'].widget = AppSourceSpecWidget()
 		self.fields['spec'].label = "How is this AppSource accessed?"
 		self.fields['spec'].help_text = None
+
+		# Override the widget for 'approved_apps' to break out the apps
+		# into separate widgets.
+		self.fields['approved_apps'].widget = ApprovedAppsList(kwargs.get("instance"))
+		self.fields['approved_apps'].help_text = None
+
 	def clean(self):
 		# Do form field valudation.
 		super(AppSourceAdminForm, self).clean()
@@ -182,7 +255,7 @@ class AppSourceAdminForm(forms.ModelForm):
 
 
 class AppSourceAdmin(admin.ModelAdmin):
-	form = AppSourceAdminForm # customize spec widget
+	form = AppSourceAdminForm # customize spec and approved_apps widgets
 	list_display = ('slug', 'source', 'flags')
 	filter_horizontal = ('available_to_orgs',)
 	readonly_fields = ('is_system_source',)
