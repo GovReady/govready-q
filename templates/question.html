@@ -101,14 +101,6 @@ label:hover .onhover { display: inline; }
 <div class="col-md-9">
   <div id="focus-area-wrapper">
 
-    {% if authoring_tool_enabled %}
-    <div style="float: right">
-      <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;" title="Edit This Question">
-        <span class="glyphicon glyphicon-pencil"></span>
-      </a>
-    </div>
-    {% endif %}
-
     {% if source_invitation %}
       <div style="margin-bottom: 2em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -479,7 +471,7 @@ label:hover .onhover { display: inline; }
   </div> <!-- /col -->
 
   <div class="col-md-3">
-    <div id="question-history-context" style="border:0px solid black; max-height:600px; overflow-y:scroll; padding:4px;">
+    <div id="question-history-context" style="border:0px solid black; max-height: 550px; overflow-y:scroll; padding:4px;">
         <ul>
         {% if context %}
           <p>Progress:</p>
@@ -494,8 +486,17 @@ label:hover .onhover { display: inline; }
           </li>
         {% endif %}
         </ul>
+    </div> <!-- /question-history-context -->
 
-      </div> <!-- /question-history-context -->
+    {% if authoring_tool_enabled %}
+    <div style="margin: 2em 0; font-size: 90%;">
+      <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
+        <span class="glyphicon glyphicon-pencil"></span>
+        Authoring Tool
+      </a>
+    </div>
+    {% endif %}
+
   </div>
 
 </div> <!-- /row -->
