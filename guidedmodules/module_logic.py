@@ -1041,7 +1041,7 @@ class TemplateContext(Mapping):
         # The context also provides the project and organization that the Task belongs to,
         # and other task attributes, assuming the keys are not overridden by question IDs.
         if self.module_answers and self.module_answers.task:
-            if item == "title":
+            if item == "title" and (not self.is_computing_title or not self.root):
                 return self.module_answers.task.title
             if item == "task_link":
                 return self.module_answers.task.get_absolute_url()
@@ -1100,7 +1100,11 @@ class TemplateContext(Mapping):
         # special values
         if self.module_answers and self.module_answers.task:
             # Attributes that are only available if there is a task.
-            for attribute in ("title", "task_link", "project", "organization"):
+            if not self.is_computing_title or not self.root:
+                # 'title' isn't available if we're in the process of
+                # computing it
+                yield "title"
+            for attribute in ("task_link", "project", "organization"):
                 if attribute not in seen_keys:
                     yield attribute
 
