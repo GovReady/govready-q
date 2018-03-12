@@ -357,64 +357,70 @@ label:hover .onhover { display: inline; }
             	<p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
 
             {% elif write_priv %}
-            <div id="action-buttons">
+              <div id="action-buttons" class="clearfix">
 
-            <button id="save-button"
-              type="submit" class="btn btn-success"
-              onclick="$('#question > form input[name=method]').val('save')">
-              {% if q.spec.type == "interstitial" %}
-                Got it
-              {% elif not request.GET.q %}
-                {# user is proceeding through the questions in order #}
-                Next
-              {% else %}
-                {# user is visiting a specific question #}
-                Update
-              {% endif %}
-              &raquo;
-            </button>
+                {# Buttons to save or skip this question #}
+                <div class="pull-left">
+                  <button id="save-button"
+                    type="submit" class="btn btn-success"
+                    onclick="$('#question > form input[name=method]').val('save')">
+                    {% if q.spec.type == "interstitial" %}
+                      Got it
+                    {% elif not request.GET.q %}
+                      {# user is proceeding through the questions in order #}
+                      Next
+                    {% else %}
+                      {# user is visiting a specific question #}
+                      Update
+                    {% endif %}
+                    &raquo;
+                  </button>
 
-            {% if q.spec.type != "interstitial" %}
+                  {% if q.spec.type != "interstitial" %}
+                    {# Interstitial questions do not offer skip. #}
+                    <button id="skip-button"
+                      type="submit" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" 
+                      onclick="$('#question > form input[name=method]').val('skip')">
+                      {% if not answer %}
+                      Skip
+                      {% else %}
+                      Clear
+                      {% endif %}
+                      &raquo;
+                    </button>
+                  {% endif %}
 
-            <button id="skip-button"
-              type="submit" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" 
-              onclick="$('#question > form input[name=method]').val('skip')">
-              {% if not answer %}
-              Skip
-              {% else %}
-              Clear
-              {% endif %}
-              &raquo;
-            </button>
+                  {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
+                  {% if answer_obj and DEBUG %}
+                    <button id="clear-button"
+                      type="submit" class="btn btn-default"
+                      onclick="$('#question > form input[name=method]').val('clear')">
+                        Mark as Unanswered
+                        &raquo;
+                      </button>
+                  {% endif %}
+                </div> {# /.pull-left #}
 
-            {% if answer_obj and DEBUG %}
-              <button id="clear-button"
-                type="submit" class="btn btn-default"
-                onclick="$('#question > form input[name=method]').val('clear')">
-                  Mark as Unanswered
-                  &raquo;
-                </button>
-            {% endif %}
+                {# Meta-options like starting a discussion or changing the editor of this question. Interstitial questions do not offer these and individuals here as a discussion guest dont get it either. #}
+                {% if not is_discussion_guest and q.spec.type != "interstitial" %}
+                  <div class="pull-right">
+                    <span id="need-help" style="padding: 0;margin-top: 1.25em; list-style:none;">
+                      {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
+                        <button id="start-a-discussion" class="btn btn-default" style="background: white; color: #666; margin-left: 36px;" onclick="javascript:start_a_discussion();return false;">
+                            {# if you can see this page, you can start a conversation #}
+                            <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-comment"></span> Discuss</a>
+                        </button>
+                      {% endif %}
+                      {% if task.can_transfer_owner and write_priv %}
+                        <button id="transfer-editorship" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" onclick="javascript:invite_to_transfer_editor();return false;">
+                            <span class="glyphicon glyphicon-user"></span> Assign
+                        </button>
+                      {% endif %}
+                    </span>
+                  </div>
+                {% endif %}
 
-        {% if not is_discussion_guest %}
-
-        <span id="need-help" style="padding: 0;margin-top: 1.25em; list-style:none;">
-          {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
-            <button id="start-a-discussion" class="btn btn-default" style="background: white; color: #666; margin-left: 36px;" onclick="javascript:start_a_discussion();return false;">
-                {# if you can see this page, you can start a conversation #}
-                <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-comment"></span> Discuss</a>
-            </button>
-          {% endif %}
-          {% if task.can_transfer_owner and write_priv %}
-            <button id="transfer-editorship" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" onclick="javascript:invite_to_transfer_editor();return false;">
-                <span class="glyphicon glyphicon-user"></span> Assign
-            </button>
-          {% endif %}
-        </span>
-        {% endif %}
-
-            {% endif %} {# not interstitial #}
-        </div> <!-- /action-buttons -->
+              </div> <!-- /action-buttons -->
 
             {% if answer_obj and can_review %}
               <select style="display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this)">
@@ -427,7 +433,7 @@ label:hover .onhover { display: inline; }
             {% endif %}
 
           {% else %} {# write_priv #}
-            {# User does not have write permission. #}
+            {# User does not have write permission so cannot answer the question, start a discussion, or change the editor. But we instead still want to show the review state. #}
 
             {% if answer_obj %}
               {% for key, label in review_choices %}
