@@ -257,6 +257,13 @@ def app_satifies_interface(app, filter_protocols):
 def filter_app_catalog(catalog, request):
     filter_description = None
 
+    # Filter out unpublished apps.
+    def is_app_available(app):
+        if app.get("published") == "unpublished":
+            return False
+        return True
+    catalog = filter(is_app_available, catalog)
+
     if request.GET.get("q"):
         # Check if the app satisfies the interface required by a paricular question.
         # The "q" query string argument is a Task ID plus a ModuleQuestion key.
@@ -334,7 +341,8 @@ def apps_catalog_item(request, source_slug, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
     from guidedmodules.models import AppSource
-    for app_catalog_info in get_compliance_apps_catalog(request.organization):
+    catalog, _ = filter_app_catalog(get_compliance_apps_catalog(request.organization), request)
+    for app_catalog_info in catalog:
         if app_catalog_info["key"] == source_slug + "/" + app_name:
             # We found it.
             break
