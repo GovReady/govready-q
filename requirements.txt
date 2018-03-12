@@ -109,9 +109,9 @@ filemagic==1.6 \
     # via django-database-storage-backend
 fpdf2==2.0.0 \
     --hash=sha256:59be721cf9205d8ff2fe3587acb5fd7ec32252fbd46f3f311bd1369eed0ceec7
-fs==2.0.18 \
-    --hash=sha256:2dc289f911e426e18a7009d7b57e6cfc0aafab06d2a95e1d9469ed3ec3c45889 \
-    --hash=sha256:b73475775059547ef968941955ae57fb47f3216dc38018402ea30b0393bf7a42
+fs==2.0.19 \
+    --hash=sha256:5b0f256f280025a4aa387a01b21b27de5e2b611e8f1c449b603091af38d1f95d \
+    --hash=sha256:61e514d95d2d73d555e3c06292e13b88b93653b215e25394daa6c67fc7f1f751
 future==0.16.0 \
     --hash=sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb \
     # via commonmark
@@ -225,9 +225,9 @@ pyparsing==2.2.0 \
     --hash=sha256:0832bcf47acd283788593e7a0f542407bd9550a55a8a8435214a1960e04bcb04 \
     --hash=sha256:fee43f17a9c4087e7ed1605bd6df994c6173c1e977d7ade7b651292fab2bd010 \
     # via packaging
-python-dateutil==2.6.1 \
-    --hash=sha256:891c38b2a02f5bb1be3e4793866c8df49c7d19baabf9c1bad62547e0b4866aca \
-    --hash=sha256:95511bae634d69bc7329ba55e646499a842bc4ec342ad54a8cdb65645a0aad3c
+python-dateutil==2.7.0 \
+    --hash=sha256:07009062406cffd554a9b4135cd2ff167c9bf6b7aac61fe946c93e69fad1bbd8 \
+    --hash=sha256:8f95bb7e6edbb2456a51a1fb58c8dca942024b4f5844cae62c90aa88afe6e300
 python3-openid==3.1.0 \
     --hash=sha256:0086da6b6ef3161cfe50fb1ee5cceaf2cda1700019fda03c2c5c440ca6abe4fa \
     --hash=sha256:628d365d687e12da12d02c6691170f4451db28d6d68d050007e4a40065868502 \
@@ -262,9 +262,9 @@ rtyaml==0.0.4 \
 safety==1.7.0 \
     --hash=sha256:9fb74211a0a0ab09541fe894293d66a558b6138a9fe8ebabc8cf56670e8a009c \
     --hash=sha256:ff0c4b76ad791d33825e36c41671ea45330d438921e5395903c0e87e576a377a
-selenium==3.10.0 \
-    --hash=sha256:60b45c045e9e658ac033ccdafb36000f39088b94336e078c89e8df18d0ef080e \
-    --hash=sha256:6a76deef7d5ea9749e3348b6c1f39df26dbffb9f0ce19ae37bcef02ce9032e41
+selenium==3.11.0 \
+    --hash=sha256:2b6f018e55f50e9c67a67caec2f73f806f72c162fb38cf3ea79e0a8f6506bf56 \
+    --hash=sha256:5841fb30c3965866220c34d16de8e3d091e2833fcac385160a63db0c3522a297
 six==1.11.0 \
     --hash=sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9 \
     --hash=sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb \

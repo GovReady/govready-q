@@ -154,6 +154,7 @@ class PyFsAppSourceConnection(AppSourceConnection):
         # object is used in.
         import fs.errors
         try:
+            # Open the filesystem.
             self.root = self.fsfunc()
         except (fs.errors.CreateFailed, fs.errors.ResourceNotFound) as e:
             raise AppSourceConnectionError(
@@ -162,7 +163,12 @@ class PyFsAppSourceConnection(AppSourceConnection):
                     self.source.get_description(),
                     str(e)
                 ))
+
+        # Open catalog.yaml, which contains metadata attached to the apps.
+        self.catalog = self.load_catalog_file()
+
         return self
+
     def __exit__(self, *args):
         # Clean up the filesystem object at the end of the "with"
         # block.
@@ -172,31 +178,55 @@ class PyFsAppSourceConnection(AppSourceConnection):
     def __repr__(self):
         return "<AppSourceConnection {src}>".format(src=self.source.get_description())
 
+    def load_catalog_file(self):
+        # Load catalog.yaml.
+        try:
+            with self.root.open("catalog.yaml") as f:
+                catalog = read_yaml_file(f)
+        except fs.errors.ResourceNotFound:
+            catalog = { }
+
+        # Ensure 'apps' key exists.
+        if not isinstance(catalog.get("apps"), dict):
+            catalog["apps"] = {}
+
+        return catalog
+
     def list_apps(self):
-        # Every directory is an app containing app.yaml
+        # Every directory is an app containing app.yaml file
         # which is the app's root module YAML.
         for entry in self.root.scandir(""):
-            if entry.is_dir:
-                # Check for presence of app.yaml.
-                if "app.yaml" in self.root.listdir(entry.name):
-                    yield PyFsApp(
-                        self,
-                        entry.name,
-                        self.root.opendir(entry.name))
+            # Is this a valid app directory?
+            if not entry.is_dir: continue
+            if "app.yaml" not in self.root.listdir(entry.name): continue
+
+            # Yield an app instance.
+            yield PyFsApp(
+                self,
+                entry.name,
+                self.root.opendir(entry.name))
 
     def get_app(self, name):
+        # Is this a valid app name?
         if len(list(self.root.scandir(name))) == 0:
             raise ValueError("App not found.")
-        return PyFsApp(self,
+        if "app.yaml" not in self.root.listdir(name):
+            raise ValueError("App not found.")
+        return PyFsApp(
+            self,
             name,
             self.root.opendir(name))
 
     def get_app_catalog_info(self, app):
-        # All apps from a filesystem-based store require no credentials
-        # to get their contents because... we already got their contents.
-        return {
+        ret = {
+            # All apps from a filesystem-based store require no credentials
+            # to get their contents because... we already got their contents.
             "authz": "none",
+
+            # Add a 'published' key that comes from the catalog.yaml file.
+            "published": self.catalog["apps"].get(app.name),
         }
+        return ret
 
 class PyFsApp(App):
     """An App whose modules and assets are stored in a directory
@@ -222,15 +252,20 @@ class PyFsApp(App):
                     str(e)))
 
         # Construct catalog info.
-        ret = {
-            "name": self.name,
-            "title": yaml["title"],
-        }
+        ret = { }
+
+        # Start with the catalog information and protocol stored in the app.yaml.
+        ret["title"] = yaml["title"]
         ret.update(yaml.get("catalog", {}))
-        ret.update(self.store.get_app_catalog_info(self))
         if "protocol" in yaml: ret["protocol"] = yaml["protocol"]
 
-        # Load the app icon.
+        # Override with source-specified catalog information.
+        ret.update(self.store.get_app_catalog_info(self))
+
+        # Set non-overridable fields.
+        ret.update({
+            "name": self.name,
+        })
         if "icon" in yaml:
             import fs.errors
             try:
