@@ -3,6 +3,16 @@
 from django.db import migrations
 import jsonfield.fields
 
+def add_default_value(apps, schema_editor):
+    # MySQL does not support default values on TEXT fields,
+    # which back JSONField fields, and so the migration will
+    # fill in the column with the empty string, which is not
+    # valid JSON. This is a problem any time we add a JSONField
+    # in a migration *if* there are any rows in the table already.
+    # Since we create AppSource instances in migration 0016_auto_20170313_1639,
+    # there are definitely rows already.
+    AppSource = apps.get_model("guidedmodules", "AppSource")
+    AppSource.objects.update(approved_apps={})
 
 class Migration(migrations.Migration):
 
@@ -14,6 +24,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='appsource',
             name='approved_apps',
-            field=jsonfield.fields.JSONField(default={}, blank=True, help_text='Information about apps whitelisted or blacklisted for display in the catalog from this source.'),
+            field=jsonfield.fields.JSONField(blank=True, help_text='Information about apps whitelisted or blacklisted for display in the catalog from this source.'),
         ),
+        migrations.RunPython(add_default_value),
     ]
