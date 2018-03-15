@@ -205,7 +205,7 @@ if [ ! -z "$APPSDEVDIR" ]; then
 fi
 
 # Form the "docker container run command".
-CMD="docker container run $ARGS $NAMEARG $DASHP $ENVS $DBMNT $APPSMNT $IMAGE"
+CMD="docker container run $ARGS $NAMEARG $DASHP $ENVS $DBMNT $APPSMNT $@ $IMAGE"
 
 # Echo it for debugging.
 # Don't echo out of debugging because it may leak secrets.
