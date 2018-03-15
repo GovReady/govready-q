@@ -51,7 +51,9 @@ acceptable_licenses = {
 	"PSFL",
 	"Standard PIL",
 	"LGPL",
-	"GNU Library or Lesser General Public License (LGPL)"
+	"GNU Library or Lesser General Public License (LGPL)",
+	"LGPLv3",
+	"LGPLv3+"
 }
 dont_check_packages = {
 }
