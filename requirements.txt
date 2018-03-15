@@ -75,8 +75,8 @@ django-allauth==0.35.0 \
     --hash=sha256:7b31526cccd1c46f9f09acf0703068e8a9669337d29eb065f7e8143c2d897339
 django-bootstrap3==9.1.0 \
     --hash=sha256:9f56fa30a2c32142a2785148816cc4e14e7efc8699c5f87a8cb5be162a81658d
-django-database-storage-backend==0.0.4 \
-    --hash=sha256:b08aa974f31dab8fc661f390fab2815b784c04bd901d4f5376ea0ef0fbdbf81f
+django-database-storage-backend==0.0.5 \
+    --hash=sha256:130449ddb0604546769c818aab88b70dfaa207f75300bf7e370040447fae3278
 django-debug-toolbar==1.9.1 \
     --hash=sha256:4af2a4e1e932dadbda197b18585962d4fc20172b4e5a479490bc659fe998864d \
     --hash=sha256:d9ea75659f76d8f1e3eb8f390b47fc5bad0908d949c34a8a3c4c87978eb40a0f
@@ -109,9 +109,9 @@ filemagic==1.6 \
     # via django-database-storage-backend
 fpdf2==2.0.0 \
     --hash=sha256:59be721cf9205d8ff2fe3587acb5fd7ec32252fbd46f3f311bd1369eed0ceec7
-fs==2.0.19 \
-    --hash=sha256:5b0f256f280025a4aa387a01b21b27de5e2b611e8f1c449b603091af38d1f95d \
-    --hash=sha256:61e514d95d2d73d555e3c06292e13b88b93653b215e25394daa6c67fc7f1f751
+fs==2.0.20 \
+    --hash=sha256:93486a6be63a5a29ff29e04fd44f57f74973f01369d60897e509f06de6d0cdd1 \
+    --hash=sha256:abb0d53da9fcafcd06ece08c5d662a12c01cdcb06e2e92d27080d84491d11d41
 future==0.16.0 \
     --hash=sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb \
     # via commonmark

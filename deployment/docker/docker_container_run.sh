@@ -67,6 +67,12 @@ EMAIL_DOMAIN=
 # with "docker container rm -f" first.
 KILLEXISTING=
 
+# If set, output the actual 'docker container run' command.
+# If any credentials are being sent to the container like
+# the database or mail relay password, they'll be shown so
+# be careful.
+VERBOSE=
+
 # Parse command-line arguments
 ##############################
 
@@ -125,6 +131,11 @@ while [ $# -gt 0 ]; do
     --relaunch)
       KILLEXISTING=1
       shift 1;;
+
+    -v)
+      VERBOSE=1
+      shift 1;;
+
     --)
         shift
         break
@@ -205,11 +216,13 @@ if [ ! -z "$APPSDEVDIR" ]; then
 fi
 
 # Form the "docker container run command".
-CMD="docker container run $ARGS $NAMEARG $DASHP $ENVS $DBMNT $APPSMNT $IMAGE"
+CMD="docker container run $ARGS $NAMEARG $DASHP $ENVS $DBMNT $APPSMNT $@ $IMAGE"
 
 # Echo it for debugging.
 # Don't echo out of debugging because it may leak secrets.
-#echo $CMD
+if [ ! -z "$VERBOSE" ]; then
+  echo "Launch command: $CMD"
+fi
 
 # Execute and capture the output, which is a container ID.
 CONTAINER_ID=$($CMD)
