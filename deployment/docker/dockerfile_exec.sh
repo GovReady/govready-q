@@ -1,6 +1,8 @@
 # This is the main entry point, i.e. process zero, of the
 # Docker container.
 
+set -euf -o pipefail # abort script on error
+
 # Generate a local/environment.json file. Use the jq
 # tool to ensure that we produce valid JSON from
 # the environment variables.
