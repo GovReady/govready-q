@@ -109,9 +109,9 @@ filemagic==1.6 \
     # via django-database-storage-backend
 fpdf2==2.0.0 \
     --hash=sha256:59be721cf9205d8ff2fe3587acb5fd7ec32252fbd46f3f311bd1369eed0ceec7
-fs==2.0.19 \
-    --hash=sha256:5b0f256f280025a4aa387a01b21b27de5e2b611e8f1c449b603091af38d1f95d \
-    --hash=sha256:61e514d95d2d73d555e3c06292e13b88b93653b215e25394daa6c67fc7f1f751
+fs==2.0.20 \
+    --hash=sha256:93486a6be63a5a29ff29e04fd44f57f74973f01369d60897e509f06de6d0cdd1 \
+    --hash=sha256:abb0d53da9fcafcd06ece08c5d662a12c01cdcb06e2e92d27080d84491d11d41
 future==0.16.0 \
     --hash=sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb \
     # via commonmark
