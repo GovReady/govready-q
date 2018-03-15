@@ -75,8 +75,8 @@ django-allauth==0.35.0 \
     --hash=sha256:7b31526cccd1c46f9f09acf0703068e8a9669337d29eb065f7e8143c2d897339
 django-bootstrap3==9.1.0 \
     --hash=sha256:9f56fa30a2c32142a2785148816cc4e14e7efc8699c5f87a8cb5be162a81658d
-django-database-storage-backend==0.0.4 \
-    --hash=sha256:b08aa974f31dab8fc661f390fab2815b784c04bd901d4f5376ea0ef0fbdbf81f
+django-database-storage-backend==0.0.5 \
+    --hash=sha256:130449ddb0604546769c818aab88b70dfaa207f75300bf7e370040447fae3278
 django-debug-toolbar==1.9.1 \
     --hash=sha256:4af2a4e1e932dadbda197b18585962d4fc20172b4e5a479490bc659fe998864d \
     --hash=sha256:d9ea75659f76d8f1e3eb8f390b47fc5bad0908d949c34a8a3c4c87978eb40a0f
