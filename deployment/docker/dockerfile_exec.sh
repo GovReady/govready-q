@@ -54,7 +54,8 @@ python3.6 manage.py load_modules
 # Create an initial administrative user and organization
 # non-interactively and write the administrator's initial
 # password to standard output.
-if [ ! -z "$FIRST_RUN" ]; then
+if [ ! -z "${FIRST_RUN-}" ]; then
+	echo "Running FIRST_RUN actions..."
 	python3.6 manage.py first_run --non-interactive
 fi
 

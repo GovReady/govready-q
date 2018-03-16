@@ -26,11 +26,11 @@ colour==0.1.5 \
     --hash=sha256:33f6db9d564fadc16e59921a56999b79571160ce09916303d35346dddc17978c \
     --hash=sha256:af20120fefd2afede8b001fbef2ea9da70ad7d49fafdb6489025dae8745c3aee \
     # via mondrianish
-commonmark==0.7.4 \
-    --hash=sha256:24678b72094398df96312fb927e274ccaf5148f25e47aca9f7fc062693ae7577 \
-    --hash=sha256:4d3e6853c17c5f92a5bec77343d816254f135e34b8935d0d61f0afc1226c51b7
-commonmarkextensions==0.0.2 \
-    --hash=sha256:5f7775e2fd53d2649fa88b53f17806bbedd7aecd1d75025ab394d586a22f95f8
+commonmark==0.7.5 \
+    --hash=sha256:12deadd8ef46155a0af4213a91a95833ae6c29e1ff36cc3f6121668f345af5ad \
+    --hash=sha256:4dfbbd1dbc669a9b71a015032b2bbe5c4b019ca8b6ca410d89cf7020de46d2c0
+commonmarkextensions==0.0.3 \
+    --hash=sha256:3289f2bddadd1e8f3ecde814a7c31cb8fb9b8ea8745b54838a0a946cb3743fc0
 coverage==4.5.1 \
     --hash=sha256:03481e81d558d30d230bc12999e3edffe392d244349a90f4ef9b88425fac74ba \
     --hash=sha256:0b136648de27201056c1869a6c0d4e23f464750fd9a9ba9750b8336a244429ed \
@@ -80,8 +80,8 @@ django-database-storage-backend==0.0.5 \
 django-debug-toolbar==1.9.1 \
     --hash=sha256:4af2a4e1e932dadbda197b18585962d4fc20172b4e5a479490bc659fe998864d \
     --hash=sha256:d9ea75659f76d8f1e3eb8f390b47fc5bad0908d949c34a8a3c4c87978eb40a0f
-django-html-emailer==0.0.5 \
-    --hash=sha256:5dc187fed5060b3d21e5c04061dc9becb121ee1898c635880b0bdc199d0f1054
+django-html-emailer==0.0.6 \
+    --hash=sha256:638b479327860589f70723340cb1e972f2e011d500818ed90ce1f3a7ecce500e
 django-model-utils==3.1.1 \
     --hash=sha256:4356fad5f6fc9910da865fbf9371f9c2e028606dff2bbd8e32e67569260e530d \
     --hash=sha256:a9baa7de943b4e8afa61728ce8c42ce99e88cc87d40e74df2b060a78d22c0f5c \
