@@ -1277,10 +1277,11 @@ class TaskAnswer(models.Model):
             })
 
         # The invitation of the help squad.
+        from django.utils.dateparse import parse_datetime
         if (self.extra or {}).get("invited-help-squad"):
             history.append({
                 "type": "event",
-                "date": self.extra["invited-help-squad"],
+                "date": parse_datetime(self.extra["invited-help-squad"]),
                 "html": html.escape("Help squad invited to this discussion."),
                 "notification_text": "Help squad invited to this discussion.",
             })
@@ -1289,9 +1290,7 @@ class TaskAnswer(models.Model):
         history.sort(key = lambda item : item["date"])
 
         # render events for easier client-side processing
-        from django.utils.dateparse import parse_datetime
         for item in history:
-            if isinstance(item["date"], str): item["date"] = parse_datetime(item["date"])
             item["date_relative"] = reldate(item["date"], timezone.now()) + " ago"
             item["date_posix"] = item["date"].timestamp()
             del item["date"] # not JSON serializable
