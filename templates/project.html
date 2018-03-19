@@ -622,9 +622,10 @@ function set_state_from_url_fragment() {
 
 function rename_project() {
   // Allow setting the title to the empty string, which clears the override if set.
-  // If the user is renaming it to what we already have, ignore the change.
+  // If the user is renaming it to what we already have, or cancelled the dialog,
+  // then ignore the change.
   var new_title = prompt("Rename this project?", "{{project.title|escapejs}}");
-  if (new_title == "{{project.title|escapejs}}") return;
+  if (new_title === null || new_title == "{{project.title|escapejs}}") return;
   ajax_with_indicator({
    url: '{% url "rename_project" project.id %}',
    method: "POST",
