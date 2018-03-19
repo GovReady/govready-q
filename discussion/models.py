@@ -424,8 +424,8 @@ def match_autocompletes(text, autocompletes, replace_mentions=None):
     # Make a big regex for all mentions of all autocompletable things.
     # Since we're matching against Markdown, allow the prefix character
     # (@ or #) to be preceded by a backslash, since punctuation can
-    # be escaped. Since we're generating Markdown from the Quill editor,
-    # we get escapes in funny places.
+    # be escaped. If this Markdown came from a rich text editor, we
+    # might have escapes in funny places.
     pattern = "|".join(
         r"\\?" + char + "(" + "|".join(
             re.escape(item["tag"])
