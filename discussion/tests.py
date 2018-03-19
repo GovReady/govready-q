@@ -109,13 +109,13 @@ class DiscussionTests(SeleniumTest):
         # We're now on the first actual question.
         # Start a team conversation.
         self.click_element("#start-a-discussion a")
-        self.fill_field("#discussion-your-comment .ql-editor", "Hello is anyone *here*?")
+        self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
         var_sleep(.5)
 
         # Test Script injection
-        self.fill_field("#discussion-your-comment .ql-editor",
+        self.fill_field("#discussion-your-comment",
             "<script id='injectiontest2'>document.getElementsByTagName('body')[0].appendChild('<div id=\\'injectiontest1\\'></div>');</script>")
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
@@ -130,7 +130,7 @@ class DiscussionTests(SeleniumTest):
             self.browser.find_element_by_css_selector('#injectiontest2')
 
         # Test some special characters
-        self.fill_field("#discussion-your-comment .ql-editor", "¥")
+        self.fill_field("#discussion-your-comment", "¥")
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
         var_sleep(.5)

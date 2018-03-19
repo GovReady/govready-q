@@ -4,10 +4,6 @@
 
 <script src="{% static "vendor/push.js" %}"> </script>
 
-<link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
-<script src="{% static "vendor/quill/quill.min.js" %}"></script>
-<script src="{% static "js/quill_commonmark.js" %}"></script>
-
 <style>
 #discussion-your-comment-tips {
   padding: 2px;
@@ -18,6 +14,16 @@
     color: inherit;
     font-weight: normal;
     cursor: pointer;
+  }
+
+  #discussion-your-comment-preview-container {
+    border: 1px solid #DDD;
+    border-radius: .25em;
+    background-color: white;
+    padding: .5em;
+  }
+  #discussion-your-comment-preview-container p:last-child {
+    margin: 0;
   }
 
 #discussion .comment-thread {
@@ -108,16 +114,27 @@
     </div>
     <div class="comment-input" style="display: none">
       <form onsubmit="submit_comment(); return false;">
+        <div style="float: right">
+          <a id="preview_comment_toggle" href="#" onclick="preview_comment_toggle(); return false;">Preview</a>
+        </div>
         <label id="discussion-your-comment-label" for="discussion-your-comment">
           ...
         </label>
-        <div id="discussion-your-comment"></div>
-        <div id="discussion-your-comment-saved" style="display: none; float: right; margin-top: 2px; font-size: 12px; color: #666;"></div>
-        <div id="discussion-your-comment-tips">
-         <label for="discussion-attach-file"><span class="glyphicon glyphicon-paperclip" style="margin-right: 3px"></span>Attach a File</label>
-         <div style="display: none">
-            <input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" />
-         </div>
+        <div id="discussion-your-comment-input-container">
+          <div style="position: relative;"> {# textcomplete gets confused by bootstrap cols? -- need a new relative container? #}
+            <textarea id="discussion-your-comment" class="form-control" rows="3" placeholder=""></textarea>
+            <div id="discussion-your-comment-saved" style="display: none; position: absolute; bottom: 8px; right: 8px; padding: .25em; background-color: rgba(255,255,255,.9); border: 1px solid #DDD; border
+-radius: .25em;"></div>
+          </div>
+          <div id="discussion-your-comment-tips">
+            <span><b>**bold**</b></span> <span><i>*italic*</i></span> <span>* list</span> <span>[link](http://to)</span> <span># heading.</span>
+            <a href="http://commonmark.org/help/" target="_blank"><span class="glyphicon glyphicon-info-sign" style="margin-right: 3px">
+            </a>
+            <label for="discussion-attach-file"><span class="glyphicon glyphicon-paperclip" style="margin-right: 3px"></span>Attach a File</label>
+            <div style="display: none"><input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" /></div>
+          </div>
+        </div>
+        <div id="discussion-your-comment-preview-container" style="display: none;">
         </div>
         <div style="margin-top: 1em; text-align: right">
           {# <button type="submit" class="btn btn-default">Propose an Answer</button> #}
@@ -177,7 +194,7 @@
       <div class="comment-text"> </div>
 
       <form class="comment-edit clearfix" style="display: none" onsubmit="do_comment_save(this); return false;">
-        <div class='quill-holder'> </div>
+        <textarea class="form-control" style="width: 100%;"> </textarea>
         <div style="margin: 1em 0; float: right">
           <button type="submit" class="btn btn-cancel" onclick="return close_comment_edit(this);">Cancel</button>
           <button type="submit" class="btn btn-primary">Save</button>
@@ -303,13 +320,12 @@ function display_discussion(discussion, is_page_load) {
     $('#discussion-your-comment-label').text("Add the first comment:")
 
     // initialize the editor
-    quill = new CommonMarkQuill('#discussion-your-comment', { });
-    if (!is_page_load || discussion.events.length == 0) quill.focus();
+    if (!is_page_load || discussion.events.length == 0) $('#discussion-your-comment').focus();
 
     // show an existing draft and poll for updating the draft
     if (discussion.draft) {
       draft_state = discussion.draft;
-      quill.clipboard.dangerouslyPasteHTML(0, discussion.draft.text_rendered);
+      $('#discussion-your-comment').val(discussion.draft.text);
     }
 
     // start polling for changes to save as draft
@@ -321,13 +337,11 @@ function display_discussion(discussion, is_page_load) {
     // anything in it, which is used if we have a "Close & Comment" / "Re-open & Comment"
     // button
     function discussion_update_your_comment_empty_class() {
-      var isEmpty = quill.isEmpty();
+      var isEmpty = $('#discussion-your-comment').val() == "";
       $('#discussion .comment-input').toggleClass('user-input-empty', isEmpty);
       $('#discussion .comment-input').toggleClass('user-input-not-empty', !isEmpty);
     }
-    quill.on('text-change', function(delta, oldDelta, source) {
-      discussion_update_your_comment_empty_class();
-    });
+    $('#discussion-your-comment').on("keyup change paste", discussion_update_your_comment_empty_class);
     discussion_update_your_comment_empty_class();
   }
 
@@ -402,11 +416,12 @@ function display_discussion(discussion, is_page_load) {
       replace: function(value, event) { return "$1" + (trigger_character + value.tag).replace(/\$/g, "$$$$") + " "; } // must escape any dollar signs in the replacement text, and since we're using replace to do it we need to escape the literal $ twice!
     }
   };
-  /* broken  $('#discussion-your-comment').textcomplete(
+  new Textcomplete(new Textcomplete.editors.Textarea($('#discussion-your-comment')[0]))
+  .register(
     Object.keys(discussion.autocomplete).map(make_autocomplete_strategy)
   , {
     // options
-  });*/
+  });
 
   // start polling the server for new events
   // don't poll if the user can't comment because the discussion view
@@ -507,6 +522,7 @@ function render_comment(item) {
   n.find('.comment-author-role').text(item.user_role ? ("(" + item.user_role + ")") : "");
   n.find('.comment-text').html(item.text_rendered);
     n.find('.comment-text').find("img").addClass("img-responsive");
+  n.attr('data-text', item.text);
   if (item.can_edit)
     n.addClass('has-edit-priv');
   if (item.can_delete)
@@ -619,10 +635,9 @@ function render_avatar(container, user) {
 function start_update_draft_poller() {
   // Record the last time of a keypress in the comment box.
   var last_keypress_time = Date.now();
-  quill.on('text-change', function(delta, oldDelta, source) {
-    if (source == "user")
-      last_keypress_time = Date.now();
-  });
+  $('#discussion-your-comment').keypress(function() {
+    last_keypress_time = Date.now();
+  })
 
   // Check at intervals.
   setInterval(function() {
@@ -652,7 +667,7 @@ function update_draft(force, callback) {
   // If force is not truthy, then don't save an empty editor if there's
   // no draft yet. Attachments require saving an empty editor so there is
   // something to attach the attachment to, so it passes force=true.
-  var current_text = quill.getContentsAsCommonMark();
+  var current_text = $('#discussion .comment-input form textarea').val();
   if ((draft_state && current_text == draft_state.text)
       || (!force && !/\S/.test(current_text) && draft_state == null)) {
     callback();
@@ -705,10 +720,11 @@ function update_draft(force, callback) {
 }
 
 function submit_comment(callback) {
-  if (quill.isEmpty()) {
+  var text = $('#discussion-your-comment').val();
+  if (!/\S/.test(text)) {
     // The comment is only whitespace. Don't save.
     // Put focus back. Execute callback immediately.
-    quill.focus();
+    $('#discussion-your-comment').focus();
     if (callback)
       callback();
     return;
@@ -737,9 +753,10 @@ function submit_comment(callback) {
         // up.
         var y = $('#discussion .comment-input').offset().top - $(window).scrollTop();
 
-        // clear text input, put focus back, reset draft state
-        quill.setText("");
-        quill.focus();
+        // clear text input, trigger events
+        $('#discussion .comment-input form textarea')
+          .val('')
+          .trigger("change");
         draft_state = null;
 
         // render the comment in the thread
@@ -759,6 +776,26 @@ function submit_comment(callback) {
   });
 }
 
+function preview_comment_toggle() {
+  var state = $('#preview_comment_toggle').text();
+  if (state == "Preview") {
+    update_draft(false, function() {
+      var text_rendered = "<i>your comment is empty</i>";
+      if (draft_state)
+        text_rendered = draft_state.text_rendered;
+      $("#discussion-your-comment-preview-container").css({ minHeight: $("#discussion-your-comment-input-container").outerHeight() });
+      $("#discussion-your-comment-input-container").hide();
+      $("#discussion-your-comment-preview-container").show();
+      $("#discussion-your-comment-preview-container").html(text_rendered);
+      $('#preview_comment_toggle').text('Hide Preview');
+    })
+  } else {
+    $("#discussion-your-comment-input-container").show();
+    $("#discussion-your-comment-preview-container").hide();
+    $('#preview_comment_toggle').text('Preview');
+  }
+}
+
 function get_comment_from_command_elem(command_elem) {
   var c = $(command_elem).parents(".comment");
   if (c.length == 0) throw "something went wrong";
@@ -769,22 +806,8 @@ var open_editors = { };
 
 function begin_comment_edit(command_elem) {
   var c = get_comment_from_command_elem(command_elem);
-
-  // Create a place that will hold the Quill editor and clone the DOM content
-  // of the comment's text that the Quill editor will initialize from. Quill
-  // will create the editor in the div we give it, but it will put the toolbar
-  // in a preceding sibling, so we put the content in a div within a div so that
-  // we can reliably destroy all of the editor if we need to make a new one for
-  // this comment.
-  c.find('.comment-edit .quill-holder').html("");
-  c.find('.comment-edit .quill-holder').append($("<div></div>"));
-  c.find('.comment-edit .quill-holder div').html(c.find('.comment-text').html());
-
-  // Create the editor. (Any previous editor )
-  var q = new CommonMarkQuill(c.find('.comment-edit .quill-holder > div')[0], { });
-  q.focus()
-  open_editors[c.attr("data-id")] = q;
-
+  c.find('.comment-edit textarea').css({ minHeight: c.find('.comment-text').height()+30 });
+  c.find('.comment-edit textarea').val(c.attr('data-text'));
   c.find('.comment-text').hide();
   c.find('.comment-edit').show();
   return false;
@@ -794,7 +817,6 @@ function close_comment_edit(command_elem) {
   var c = get_comment_from_command_elem(command_elem);
   c.find('.comment-text').show();
   c.find('.comment-edit').hide();
-  open_editors[c.attr("data-id")] = null; // release Quill data structures
   return false;
 }
 
@@ -805,7 +827,7 @@ function do_comment_save(command_elem) {
     method: "POST",
     data: {
       id: c.attr('data-id'),
-      text: open_editors[c.attr("data-id")].getContentsAsCommonMark()
+      text: c.find('.comment-edit textarea').val()
     },
     controls: c.find('textarea, input, button'),
     success: function(res) {
@@ -830,7 +852,6 @@ function do_delete_comment(command_elem) {
           id: c.attr('data-id')
         },
         success: function(res) {
-          open_editors[c.attr("data-id")] = null; // release Quill data structures
           c.slideUp();
         }
       })
@@ -936,20 +957,11 @@ function attach_files(files) {
         Object.keys(res).forEach(function(key) {
           var attachment = res[key];
           var ins;
-          if (attachment.is_image) {
-            quill.insertEmbed(
-              quill.getSelection(true).index,
-              'image',
-              attachment.url);
-          } else {
-            // Insert a link to the attachment.
-            quill.insertText(
-              quill.getSelection(true).index, 
-              attachment.original_fn.replace(/[\\[\]]/g, ""),
-              {
-                'link': attachment.url
-              });
-          }
+          if (attachment.is_image)
+            ins = "\n![Uploaded File](attachment:" + attachment.id + ")\n";
+          else
+            ins = " [" + attachment.original_fn.replace(/[\\[\]]/g, "") + "](attachment:" + attachment.id + ") ";
+          $('#discussion-your-comment').insertAtCaret(ins);
         });
 
         if (next)

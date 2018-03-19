@@ -1421,16 +1421,17 @@ class TaskAnswer(models.Model):
         return list(mbr.user for mbr in ProjectMembership.objects.filter(project=self.task.project))
 
     # required to attach a Discussion to it
-    def get_discussion_autocompletes(self, organization):
+    def get_discussion_autocompletes(self, discussion):
+        organization = self.task.project.organization
         return {
-            # @-mention other participants in the discussion
+            # @-mention other mentionable users
             "@": [
                 {
                     "user_id": user.id,
                     "tag": user.username,
                     "display": user.render_context_dict(organization)["name"],
                 }
-                for user in self.get_discussion_participants()
+                for user in self.get_mentionable_users(discussion)
             ],
 
             # #-mention Organization-defined terms
@@ -1441,6 +1442,18 @@ class TaskAnswer(models.Model):
                 for term in organization.extra.get("vocabulary", [])
             ]
         }
+
+    def get_mentionable_users(self, discussion):
+        # Who can be mentioned? List discussion participants first, which are
+        # Discussion guests and members of the Project containing this TaskAnswer.
+        users = list(discussion.get_all_participants())
+
+        # Add all users with read permission on the Organization.
+        for u in self.task.project.organization.get_who_can_read():
+            if u not in users:
+                users.append(u)
+
+        return users
 
     # required to attach a Discussion to it
     def on_discussion_comment(self, comment):

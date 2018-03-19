@@ -214,7 +214,7 @@ class Discussion(models.Model):
         # Ensure the user is a participant of the discussion.
         if self.attached_to is None or not self.is_participant(user):
             return []
-        return self.attached_to.get_discussion_autocompletes(self.organization)
+        return self.attached_to.get_discussion_autocompletes(self)
 
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE, help_text="The Discussion that this comment is attached to.")
@@ -292,14 +292,31 @@ class Comment(models.Model):
             description=self.text,
             comment_id=self.id)
 
-        # Issue a notification to anyone @-mentioned in the comment.
+        # Issue a notification to anyone @-mentioned in the comment
+        # that is already a discussion participant.
+        discussion_participants = set(self.discussion.get_all_participants())
         issue_notification(
             self.user,
             "mentioned you in a comment on",
             self.discussion,
-            recipients=mentioned_users,
+            recipients=mentioned_users & discussion_participants,
             description=self.text,
             comment_id=self.id)
+
+        # Send invitations to anyone @-mentioned who is not yet a participant
+        # in the discussion.
+        from siteapp.models import Invitation
+        for user in mentioned_users - discussion_participants:
+            inv = Invitation.objects.create(
+                organization=self.discussion.organization,
+                from_user=self.user,
+                from_project=self.discussion.attached_to.task.project, # TODO: Breaks abstraction, assumes attached_to => TaskAnswer.
+                target=self.discussion,
+                target_info={ "what": "invite-guest" },
+                to_user=user,
+                text="{} mentioned you in a discussion:\n\n{}".format(self.user, self.text),
+            )
+            inv.send()
 
         # Let the owner object of the discussion know that a comment was left.
         if hasattr(self.discussion.attached_to, 'on_discussion_comment'):
@@ -424,8 +441,8 @@ def match_autocompletes(text, autocompletes, replace_mentions=None):
     # Make a big regex for all mentions of all autocompletable things.
     # Since we're matching against Markdown, allow the prefix character
     # (@ or #) to be preceded by a backslash, since punctuation can
-    # be escaped. Since we're generating Markdown from the Quill editor,
-    # we get escapes in funny places.
+    # be escaped. If this Markdown came from a rich text editor, we
+    # might have escapes in funny places.
     pattern = "|".join(
         r"\\?" + char + "(" + "|".join(
             re.escape(item["tag"])

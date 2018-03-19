@@ -40,50 +40,9 @@ def update_discussion_comment_draft(request):
             request.user, text, "web",
             is_draft=True)
 
-    # Process attachments submitted in-line.
-    text = process_attachments(comment, request.user)
-
-    if text != comment.text:
-        comment.text = text
-        comment.save()
-
     # Return the comment's id and rendered text for displaying a preview.
     return JsonResponse(comment.render_context_dict(request.user))
 
-def process_attachments(comment, user):
-    # Although attachments can be created on drafts with create_attachments,
-    # the Quill editor also allows attachments to come in in two other ways.
-
-    text = comment.text
-
-    # In order for the Quill editor to show live previews of attachments, we
-    # populate the editor with an absolute URL to the resource. On save, we'll
-    # convert the absolute URL back to our attachment:### format so we can
-    # track in a structured way that there is a reference to an attachment.
-    import re
-    from django.urls import reverse
-    pattern = re.escape(settings.SITE_ROOT_URL + reverse("discussion-attachment", args=["0123456789"]))\
-        .replace("0123456789", r"(\d+)")
-    text = re.sub(pattern, lambda m : "attachment:" + m.group(1), text)
-
-    # Move embedded data URLs to attachments. We get these from the Quill editor, where
-    # image inserts turn into data URLs.
-    import re, base64, io
-    from django.core.files.base import ContentFile
-    def handle_data_url(m):
-        try:
-            content = base64.b64decode(m.group(2))
-        except:
-            return ""
-        attachment = Attachment.objects.create(
-            comment=comment,
-            user=user,
-        )
-        attachment.file.save("noname." + m.group(1), ContentFile(content))
-        return "attachment:%d" % attachment.id
-    text = re.sub("(?<=\]\()data:image/(png|jpeg)(?:;|%3B)base64,(.*?)(?=\))", handle_data_url, text)
-
-    return text 
 
 @login_required
 @transaction.atomic
@@ -124,9 +83,6 @@ def edit_discussion_comment(request):
 
     # edit
     comment.text = request.POST['text']
-
-    # handle changes in attachments
-    comment.text = process_attachments(comment, request.user)
 
     # save
     comment.save()
@@ -251,6 +207,7 @@ def create_attachments(request):
         is_image = sf.mime_type and sf.mime_type.startswith("image/")
 
         ret[fn] = {
+            "id": attachment.id,
             "url": settings.SITE_ROOT_URL + attachment.get_absolute_url(),
             "original_fn": request.FILES[fn].name,
             "is_image": is_image,
