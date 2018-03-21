@@ -48,16 +48,23 @@ class Discussion(models.Model):
         # for the admin, notification strings
         return self.title
 
+    @property
+    def attached_to_obj(self):
+        # Cache .attached_to.
+        if not hasattr(self, '_attached_to'):
+            self._attached_to = self.attached_to
+        return self._attached_to
+
     def get_absolute_url(self):
-        if self.attached_to is None:
+        if self.attached_to_obj is None:
             # Dangling!
             return ""
-        return self.attached_to.get_absolute_url() + "#discussion"
+        return self.attached_to_obj.get_absolute_url() + "#discussion"
 
     @property
     def title(self):
-        if self.attached_to is not None:
-            return self.attached_to.title
+        if self.attached_to_obj is not None:
+            return self.attached_to_obj.title
         else:
             # Dangling - because it's a generic relation, there is no
             # delete protection and attached_to can get reset to None.
@@ -66,15 +73,15 @@ class Discussion(models.Model):
     def is_participant(self, user):
         # No one is a participant of a dicussion attached to (a question
         # of) a deleted Task.
-        if self.attached_to is not None and self.attached_to.is_discussion_deleted():
+        if self.attached_to_obj is not None and self.attached_to_obj.is_discussion_deleted():
             return False
         return user in self.get_all_participants()
 
     def get_all_participants(self):
         # because get_discussion_participants uses distinct, self.guests must too
         participants = self.guests.all().distinct()
-        if self.attached_to is not None:
-            participants = (participants | self.attached_to.get_discussion_participants()).distinct()
+        if self.attached_to_obj is not None:
+            participants = (participants | self.attached_to_obj.get_discussion_participants()).distinct()
         return participants
 
     ##
@@ -82,8 +89,8 @@ class Discussion(models.Model):
     def render_context_dict(self, user, comments_since=0, parent_events_since=0):
         # Build the event history.
         events = []
-        if self.attached_to is not None:
-            events.extend(self.attached_to.get_discussion_interleaved_events(parent_events_since))
+        if self.attached_to_obj is not None:
+            events.extend(self.attached_to_obj.get_discussion_interleaved_events(parent_events_since))
         events.extend([
             comment.render_context_dict(user)
             for comment in self.comments.filter(
@@ -106,7 +113,7 @@ class Discussion(models.Model):
             "discussion": {
                 "id": self.id,
                 "title": self.title,
-                "project": self.attached_to.get_project_context_dict() if self.attached_to is not None else None,
+                "project": self.attached_to_obj.get_project_context_dict() if self.attached_to_obj is not None else None,
                 "can_invite": self.can_invite_guests(user),
                 "can_comment": self.can_comment(user),
             },
@@ -149,14 +156,14 @@ class Discussion(models.Model):
     ##
 
     def is_public(self):
-        return getattr(self.attached_to, 'is_discussion_public', lambda : False)
+        return getattr(self.attached_to_obj, 'is_discussion_public', lambda : False)
 
     def can_comment(self, user):
         return user is not None and self.is_participant(user)
 
     def can_invite_guests(self, user):
-        if self.attached_to is None: return False
-        return self.attached_to.can_invite_guests(user)
+        if self.attached_to_obj is None: return False
+        return self.attached_to_obj.can_invite_guests(user)
 
     def get_invitation_verb_inf(self, invitation):
         return "to join the discussion"
@@ -181,24 +188,24 @@ class Discussion(models.Model):
             add_message('You are now a participant in the discussion on %s.' % self.title)
 
     def get_invitation_redirect_url(self, invitation):
-        if self.attached_to is None: return None
-        return self.attached_to.get_absolute_url()
+        if self.attached_to_obj is None: return None
+        return self.attached_to_obj.get_absolute_url()
 
     @property
     def supress_link_from_notifications(self):
         # Dangling - because it's a generic relation, there is no
         # delete protection and attached_to can get reset to None.
-        return self.attached_to is None
+        return self.attached_to_obj is None
 
     def get_notification_watchers(self):
-        if self.attached_to is None or self.attached_to.is_discussion_deleted():
+        if self.attached_to_obj is None or self.attached_to_obj.is_discussion_deleted():
             return set()
-        return set(self.attached_to.get_notification_watchers()) \
+        return set(self.attached_to_obj.get_notification_watchers()) \
             | set(self.guests.all())
 
     def get_notification_link(self, notification):
         if notification.data and notification.data.get("comment_id"):
-            return self.attached_to.get_absolute_url() + "#discussion-comment-" + str(notification.data.get("comment_id"))
+            return self.attached_to_obj.get_absolute_url() + "#discussion-comment-" + str(notification.data.get("comment_id"))
         return None # fall back to default behavior
 
     def post_notification_reply(self, notification, user, message):
@@ -212,9 +219,9 @@ class Discussion(models.Model):
     def get_autocompletes(self, user):
         # When typing in a comment, what autocompletes are available to this user?
         # Ensure the user is a participant of the discussion.
-        if self.attached_to is None or not self.is_participant(user):
+        if self.attached_to_obj is None or not self.is_participant(user):
             return []
-        return self.attached_to.get_discussion_autocompletes(self)
+        return self.attached_to_obj.get_discussion_autocompletes(self)
 
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE, help_text="The Discussion that this comment is attached to.")
@@ -274,8 +281,8 @@ class Comment(models.Model):
         self.save()
 
         # Kick the attached object.
-        if hasattr(self.discussion.attached_to, 'on_discussion_comment'):
-            self.discussion.attached_to.on_discussion_comment(self)
+        if hasattr(self.discussion.attached_to_obj, 'on_discussion_comment'):
+            self.discussion.attached_to_obj.on_discussion_comment(self)
 
         # Issue a notification to anyone watching the discussion
         # via discussion.get_notification_watchers() except to
@@ -310,7 +317,7 @@ class Comment(models.Model):
             inv = Invitation.objects.create(
                 organization=self.discussion.organization,
                 from_user=self.user,
-                from_project=self.discussion.attached_to.task.project, # TODO: Breaks abstraction, assumes attached_to => TaskAnswer.
+                from_project=self.discussion.attached_to_obj.task.project, # TODO: Breaks abstraction, assumes attached_to => TaskAnswer.
                 target=self.discussion,
                 target_info={ "what": "invite-guest" },
                 to_user=user,
@@ -319,8 +326,8 @@ class Comment(models.Model):
             inv.send()
 
         # Let the owner object of the discussion know that a comment was left.
-        if hasattr(self.discussion.attached_to, 'on_discussion_comment'):
-            self.discussion.attached_to.on_discussion_comment(self)
+        if hasattr(self.discussion.attached_to_obj, 'on_discussion_comment'):
+            self.discussion.attached_to_obj.on_discussion_comment(self)
 
 
     def push_history(self, field):
@@ -352,7 +359,7 @@ class Comment(models.Model):
             notification_text = None
 
         def get_user_role():
-            ret = self.discussion.attached_to.get_user_role(self.user)
+            ret = self.discussion.attached_to_obj.get_user_role(self.user)
             if ret is not None:
                 return ret
             if self.user in self.discussion.guests.all():
