@@ -529,7 +529,7 @@ class Project(models.Model):
         parents = []
         project = self
         while project.root_task.is_answer_to.count():
-            ans = self.root_task.is_answer_to.first()
+            ans = project.root_task.is_answer_to.select_related("taskanswer__task__project__root_task__module").first()
             project = ans.taskanswer.task.project
             parents.append(project)
         parents.reverse()
