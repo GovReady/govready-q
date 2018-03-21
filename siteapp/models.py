@@ -265,8 +265,11 @@ class Organization(models.Model):
         if not logo:
             prj_task = self.get_organization_project().root_task
             profile_task = prj_task.get_subtask("organization_profile")
-            profile = profile_task.get_answers().as_dict()
-            logo = profile.get("logo")
+            if profile_task:
+                profile = profile_task.get_answers().as_dict()
+                logo = profile.get("logo")
+            else:
+                logo = None
             cache.set(cache_key, logo, 60*10) # 10 minutes
         return logo
 

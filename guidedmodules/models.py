@@ -893,42 +893,68 @@ class Task(models.Model):
         return self.get_or_create_subtask(None, question_id, create=False)
 
     @transaction.atomic
-    def get_or_create_subtask(self, user, question_id, create=True):
+    def get_or_create_subtask(self, user, question, create=True):
         # For "module" type questions, creates a sub-Task for the question,
         # or if the question has already been answered then returns its
         # subtask.
         #
         # For "module-set" type questions, creates a new sub-Task and appends
         # it to the set of Tasks that answer the question.
+        #
+        # 'question' is either a ModuleQuestion instance or the string
+        # key of a ModuleQuestion for this Task's Module.
 
         # Get the ModuleQuestion from the question_id.
-        if not isinstance(question_id, ModuleQuestion):
-            q = self.module.questions.get(key=question_id)
+        if isinstance(question, ModuleQuestion):
+            qfilter = { "": question } # instance
         else:
-            q = question_id
+            qfilter = { "__key": question } # string key
 
-        # Get or create a TaskAnswer for that question.
-        if create:
-            ans, is_new = self.answers.get_or_create(question=q)
+        # Optimize for the sub-task already existing. Query directly for
+        # the most recent TaskAnswerHistory record.
+        ansh = TaskAnswerHistory.objects\
+            .filter(taskanswer__task=self, **{ "taskanswer__question"+k: v for k, v in qfilter.items() })\
+            .select_related("taskanswer__task__module", "taskanswer__question", "answered_by")\
+            .prefetch_related("answered_by_task__module__questions")\
+            .order_by('-id')\
+            .first()
+
+        if ansh:
+            # This question is answered.
+            ans = ansh.taskanswer
+            q = ans.question
+
         else:
-            ans = self.answers.get(question=q)
-        
+            # This question is not answered yet.
+
+            # If the caller doesn't want us to answer it,
+            # return.
+            if not create:
+                return None
+
+            # Get or create a TaskAnswer for that question. The TaskAnswer
+            # may exist even if a TaskAnswerHistory doesn't.
+            q = question if   isinstance(question, ModuleQuestion)\
+                         else self.module.questions.get(key=question)
+            ans, _ = TaskAnswer.objects.select_related("question").get_or_create(task=self, question=q)
+
         # Get or create a TaskAnswerHistory for that TaskAnswer. For
         # "module"-type questions that have a sub-Task already, just
         # return the existing sub-Task.
-        ansh = ans.get_current_answer()
-        if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count():
+        if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count() > 0:
             # We'll re-use the subtask.
             return ansh.answered_by_task.first()
 
         elif not create:
+            # The question is answered but it's empty or it's a module-set
+            # type question and the caller doesn't want to create a new answer.
             return None
 
         else:
-            # There is no Task yet (for "module"-type questions) or
-            # we're creating and appending a new task.
+            # The question is either unanswered, empty, or it's a module-set
+            # type question, in which case we create a new subtask.
 
-            # Which module will the Task instantiate?
+            # Which module will the new sub-Task instantiate?
             module = q.answer_type_module
             if module is None:
                 raise ValueError("The question specifies a protocol -- it can't be answered this way.")
