@@ -449,7 +449,10 @@ def match_autocompletes(text, autocompletes, replace_mentions=None):
             for item in items
         ) + ")"
         for char, items in autocompletes.items()
+        if len(items) > 0
     )
+    if pattern == "":
+        return (text, set())
 
     # Wrap in a lookbehind and a lookahead to not match if surrounded
     # by word-ish characters.
