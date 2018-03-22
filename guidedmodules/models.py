@@ -471,36 +471,55 @@ class Task(models.Model):
 
     # ANSWERS
 
-    def get_current_answer_records(self):
-        # Efficiently get the current answer to every question.
+    @staticmethod
+    def get_all_current_answer_records(tasks):
+        # Efficiently get the current answer to every question of each of the tasks.
         #
         # Since we track the history of answers to each question, we need to get the most
         # recent answer for each question. It's fastest if we pre-load the complete history
         # of every question rather than making a separate database call for each question
         # to find its most recent answer. See TaskAnswer.get_current_answer().
-        answers = list(
-            TaskAnswerHistory.objects
-                .filter(taskanswer__task=self)
+        #
+        # Return a generator that yields tuples of (Task, ModuleQuestion, TaskAnswerHistory).
+        # Among tuples for a particular Task, the tuples are in order of ModuleQuestion.definition_order.
+
+        # Batch load all of the current answers of the tasks.
+        current_answers = { } # Question => TaskAnswerHistory
+        for ansh in \
+            (TaskAnswerHistory.objects
+                .filter(taskanswer__task__in=tasks)
                 .order_by('-id')
                 .select_related('taskanswer', 'taskanswer__task', 'taskanswer__question', 'answered_by')
                 .prefetch_related('answered_by_task')
                 .prefetch_related("answered_by_task__module__app__source")
-                .prefetch_related("answered_by_task__module__questions")
-                )
-        def get_current_answer(q):
-            for a in answers:
-                if a.taskanswer.question == q:
-                    return a
-            return None
+                .prefetch_related("answered_by_task__module__questions")):\
+            current_answers.setdefault((ansh.taskanswer.task, ansh.taskanswer.question), ansh)
 
-        # Loop over all of the questions and fetch each's answer.
-        for q in sorted(self.module.questions.all(), key = lambda q : q.definition_order):
-            # Get the latest TaskAnswerHistory instance for this TaskAnswer,
-            # if there is any (there should be). If the answer is marked as
-            # cleared, then treat as if it had not been answered.
-            a = get_current_answer(q) # faster than but equivalent to q.get_current_answer()
-            if a and a.cleared: a = None
-            yield (q, a)
+        # Batch load all of the ModuleQuestions.
+        questions = ModuleQuestion.objects.filter(module__in={ task.module for task in tasks })\
+            .order_by("definition_order")
+
+        # Iterate over the tasks and their questions in order...
+        for task in tasks:
+            for question in questions:
+                # Skip if this question is not for this task.
+                if question.module != task.module: continue
+
+                # Get the latest TaskAnswerHistory instance, if there is any.
+                answer = current_answers.get((task, question), None)
+
+                # If the answer is marked as cleared, then treat as if it had
+                # not been there at all.
+                if answer and answer.cleared:
+                    answer = None
+
+                # Yield.
+                yield (task, question, answer)
+
+    def get_current_answer_records(self):
+        for task, question, answer in \
+            Task.get_all_current_answer_records([self]):
+            yield (question, answer)
 
     def get_answers(self):
         # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
@@ -893,42 +912,68 @@ class Task(models.Model):
         return self.get_or_create_subtask(None, question_id, create=False)
 
     @transaction.atomic
-    def get_or_create_subtask(self, user, question_id, create=True):
+    def get_or_create_subtask(self, user, question, create=True):
         # For "module" type questions, creates a sub-Task for the question,
         # or if the question has already been answered then returns its
         # subtask.
         #
         # For "module-set" type questions, creates a new sub-Task and appends
         # it to the set of Tasks that answer the question.
+        #
+        # 'question' is either a ModuleQuestion instance or the string
+        # key of a ModuleQuestion for this Task's Module.
 
         # Get the ModuleQuestion from the question_id.
-        if not isinstance(question_id, ModuleQuestion):
-            q = self.module.questions.get(key=question_id)
+        if isinstance(question, ModuleQuestion):
+            qfilter = { "": question } # instance
         else:
-            q = question_id
+            qfilter = { "__key": question } # string key
 
-        # Get or create a TaskAnswer for that question.
-        if create:
-            ans, is_new = self.answers.get_or_create(question=q)
+        # Optimize for the sub-task already existing. Query directly for
+        # the most recent TaskAnswerHistory record.
+        ansh = TaskAnswerHistory.objects\
+            .filter(taskanswer__task=self, **{ "taskanswer__question"+k: v for k, v in qfilter.items() })\
+            .select_related("taskanswer__task__module", "taskanswer__question", "answered_by")\
+            .prefetch_related("answered_by_task__module__questions")\
+            .order_by('-id')\
+            .first()
+
+        if ansh:
+            # This question is answered.
+            ans = ansh.taskanswer
+            q = ans.question
+
         else:
-            ans = self.answers.get(question=q)
-        
+            # This question is not answered yet.
+
+            # If the caller doesn't want us to answer it,
+            # return.
+            if not create:
+                return None
+
+            # Get or create a TaskAnswer for that question. The TaskAnswer
+            # may exist even if a TaskAnswerHistory doesn't.
+            q = question if   isinstance(question, ModuleQuestion)\
+                         else self.module.questions.get(key=question)
+            ans, _ = TaskAnswer.objects.select_related("question").get_or_create(task=self, question=q)
+
         # Get or create a TaskAnswerHistory for that TaskAnswer. For
         # "module"-type questions that have a sub-Task already, just
         # return the existing sub-Task.
-        ansh = ans.get_current_answer()
-        if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count():
+        if q.spec["type"] == "module" and ansh and ansh.answered_by_task.count() > 0:
             # We'll re-use the subtask.
             return ansh.answered_by_task.first()
 
         elif not create:
+            # The question is answered but it's empty or it's a module-set
+            # type question and the caller doesn't want to create a new answer.
             return None
 
         else:
-            # There is no Task yet (for "module"-type questions) or
-            # we're creating and appending a new task.
+            # The question is either unanswered, empty, or it's a module-set
+            # type question, in which case we create a new subtask.
 
-            # Which module will the Task instantiate?
+            # Which module will the new sub-Task instantiate?
             module = q.answer_type_module
             if module is None:
                 raise ValueError("The question specifies a protocol -- it can't be answered this way.")
@@ -1422,6 +1467,8 @@ class TaskAnswer(models.Model):
     # required to attach a Discussion to it
     def get_discussion_autocompletes(self, discussion):
         organization = self.task.project.organization
+        mentionable_users = self.get_mentionable_users(discussion)
+        User.localize_users_to_org(organization, mentionable_users)
         return {
             # @-mention other mentionable users
             "@": [
@@ -1430,7 +1477,7 @@ class TaskAnswer(models.Model):
                     "tag": user.username,
                     "display": user.render_context_dict(organization)["name"],
                 }
-                for user in self.get_mentionable_users(discussion)
+                for user in mentionable_users
             ],
 
             # #-mention Organization-defined terms

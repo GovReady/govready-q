@@ -189,9 +189,7 @@
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
-                {% if user.user_settings_task %}
-                  <li><a href="{{user.user_settings_task.get_absolute_url}}" id="user-menu-account-settings">Account Settings</a></li>
-                {% endif %}
+                <li><a href="{{user.user_settings_task_create_if_doesnt_exist.get_absolute_url}}" id="user-menu-account-settings">Account Settings</a></li>
                 <li><a href="/api-keys">Your API Keys</a></li>
                 <li role="separator" class="divider"></li>
                 <li><a href="{% url "account_logout" %}">Log Out</a></li>
