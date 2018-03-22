@@ -30,10 +30,69 @@ class User(AbstractUser):
         # User has not entered their name.
         return self.email or "Anonymous User"
 
+    @staticmethod
+    def localize_users_to_org(org, users):
+        # Set cached state for when the users are viewed from a particular Organization.
+        # For each user, set:
+        # * user_settings_task, which holds the account project's settings Task, if created
+        # * user_settings_dict, which holds that Task's current answers as a dict, if the Task was created
+        # * can_see_org_settings, which holds whether the user is in the org's organization project
+
+        org_members = org.get_organization_project().get_members()
+        if len(users) > 1: org_members = set(org_members) # pre-load
+
+        # Get the account projects of all of the users in batch.
+        account_project_root_tasks = { }
+        for pm in ProjectMembership.objects.filter(
+            user__in=users,
+            project__organization=org,
+            project__is_account_project=True)\
+            .select_related("project", "project__root_task", "project__root_task__module"):
+            account_project_root_tasks[pm.user] = pm.project.root_task
+
+        # Get the account_settings answer object for all of the account projects in batch.
+        # Load all TaskAnswerHistory objects that answer the "account_settings" question
+        # in each account project. This gives us the whole history of answers. Take the
+        # most recent (reverse sort + take first) for each project.
+        from guidedmodules.models import TaskAnswerHistory
+        account_project_settings = { }
+        for ansh in TaskAnswerHistory.objects\
+            .filter(
+                taskanswer__task__in=account_project_root_tasks.values(),
+                taskanswer__question__key="account_settings",
+            )\
+            .select_related("taskanswer__task__module", "taskanswer__question", "answered_by")\
+            .prefetch_related("answered_by_task__module__questions")\
+            .order_by('-id'):
+            account_project_settings.setdefault(
+                ansh.taskanswer.task,
+                ansh.answered_by_task.first()
+            )
+
+        # Get all of the current answers for the settings tasks.
+        from guidedmodules.models import Task
+        settings = { }
+        for task, question, answer in Task.get_all_current_answer_records(account_project_settings.values()):
+            settings.setdefault(task, {})[question.key] = (answer.get_value() if answer else None)
+
+        # Set attributes on each user instance.
+        for user in users:
+            user.localized_to = org
+            user.user_settings_task = account_project_settings.get(account_project_root_tasks.get(user))
+            user.user_settings_task_answers = settings.get(user.user_settings_task, None)
+            user.can_see_org_settings = (user in org_members)
+
     def localize_to_org(self, org):
-        # Prep this user's cached state when viewed from a particular Organization/
-        self.user_settings_task = self.get_settings_task(org)
-        self.can_see_org_settings = self in org.get_organization_project().get_members()
+        # Prep this user's cached state when viewed from a particular Organization.
+        User.localize_users_to_org(org, [self])
+
+    def user_settings_task_create_if_doesnt_exist(self):
+        # If a task is set, return it.
+        if getattr(self, 'user_settings_task', None):
+            return self.user_settings_task
+
+        # Otherwise, create it for the localized organization.
+        return self.get_settings_task(self.localized_to)
 
     def _get_settings_task(self):
         return getattr(self, 'user_settings_task', None)
@@ -72,7 +131,6 @@ class User(AbstractUser):
             return pm.project
 
         # Create a new one.
-        from guidedmodules.models import Module, Task
         p = Project.objects.create(
             organization=org,
             is_account_project=True,
@@ -121,7 +179,10 @@ class User(AbstractUser):
 
     def render_context_dict(self, req_organization):
         organization = req_organization if isinstance(req_organization, Organization) else req_organization.organization
-        profile = self.get_settings_task(organization).get_answers().as_dict()
+        if getattr(self, 'user_settings_task', None) and self.user_settings_task.project.organization == organization:
+            profile = dict(self.user_settings_task_answers)
+        else:
+            profile = self.get_settings_task(organization).get_answers().as_dict()
         profile.update({
             "id": self.id,
             "fallback_avatar": self.get_avatar_fallback_css(),

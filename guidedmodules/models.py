@@ -471,36 +471,55 @@ class Task(models.Model):
 
     # ANSWERS
 
-    def get_current_answer_records(self):
-        # Efficiently get the current answer to every question.
+    @staticmethod
+    def get_all_current_answer_records(tasks):
+        # Efficiently get the current answer to every question of each of the tasks.
         #
         # Since we track the history of answers to each question, we need to get the most
         # recent answer for each question. It's fastest if we pre-load the complete history
         # of every question rather than making a separate database call for each question
         # to find its most recent answer. See TaskAnswer.get_current_answer().
-        answers = list(
-            TaskAnswerHistory.objects
-                .filter(taskanswer__task=self)
+        #
+        # Return a generator that yields tuples of (Task, ModuleQuestion, TaskAnswerHistory).
+        # Among tuples for a particular Task, the tuples are in order of ModuleQuestion.definition_order.
+
+        # Batch load all of the current answers of the tasks.
+        current_answers = { } # Question => TaskAnswerHistory
+        for ansh in \
+            (TaskAnswerHistory.objects
+                .filter(taskanswer__task__in=tasks)
                 .order_by('-id')
                 .select_related('taskanswer', 'taskanswer__task', 'taskanswer__question', 'answered_by')
                 .prefetch_related('answered_by_task')
                 .prefetch_related("answered_by_task__module__app__source")
-                .prefetch_related("answered_by_task__module__questions")
-                )
-        def get_current_answer(q):
-            for a in answers:
-                if a.taskanswer.question == q:
-                    return a
-            return None
+                .prefetch_related("answered_by_task__module__questions")):\
+            current_answers.setdefault((ansh.taskanswer.task, ansh.taskanswer.question), ansh)
 
-        # Loop over all of the questions and fetch each's answer.
-        for q in sorted(self.module.questions.all(), key = lambda q : q.definition_order):
-            # Get the latest TaskAnswerHistory instance for this TaskAnswer,
-            # if there is any (there should be). If the answer is marked as
-            # cleared, then treat as if it had not been answered.
-            a = get_current_answer(q) # faster than but equivalent to q.get_current_answer()
-            if a and a.cleared: a = None
-            yield (q, a)
+        # Batch load all of the ModuleQuestions.
+        questions = ModuleQuestion.objects.filter(module__in={ task.module for task in tasks })\
+            .order_by("definition_order")
+
+        # Iterate over the tasks and their questions in order...
+        for task in tasks:
+            for question in questions:
+                # Skip if this question is not for this task.
+                if question.module != task.module: continue
+
+                # Get the latest TaskAnswerHistory instance, if there is any.
+                answer = current_answers.get((task, question), None)
+
+                # If the answer is marked as cleared, then treat as if it had
+                # not been there at all.
+                if answer and answer.cleared:
+                    answer = None
+
+                # Yield.
+                yield (task, question, answer)
+
+    def get_current_answer_records(self):
+        for task, question, answer in \
+            Task.get_all_current_answer_records([self]):
+            yield (question, answer)
 
     def get_answers(self):
         # Return a ModuleAnswers instance that wraps this Task and its Pythonic answer values.
@@ -1448,6 +1467,8 @@ class TaskAnswer(models.Model):
     # required to attach a Discussion to it
     def get_discussion_autocompletes(self, discussion):
         organization = self.task.project.organization
+        mentionable_users = self.get_mentionable_users(discussion)
+        User.localize_users_to_org(organization, mentionable_users)
         return {
             # @-mention other mentionable users
             "@": [
@@ -1456,7 +1477,7 @@ class TaskAnswer(models.Model):
                     "tag": user.username,
                     "display": user.render_context_dict(organization)["name"],
                 }
-                for user in self.get_mentionable_users(discussion)
+                for user in mentionable_users
             ],
 
             # #-mention Organization-defined terms
