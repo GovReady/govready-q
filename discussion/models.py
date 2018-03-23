@@ -87,17 +87,32 @@ class Discussion(models.Model):
     ##
 
     def render_context_dict(self, user, comments_since=0, parent_events_since=0):
-        # Build the event history.
+        # Build the event history...
         events = []
+
+        # From the object that this discussion is attached to...
         if self.attached_to_obj is not None:
             events.extend(self.attached_to_obj.get_discussion_interleaved_events(parent_events_since))
-        events.extend([
-            comment.render_context_dict(user)
-            for comment in self.comments.filter(
+
+        # And from the comments.
+        comments = list(self.comments
+            .select_related('user')
+            .filter(
                 id__gt=comments_since,
                 deleted=False,
-                draft=False)
+                draft=False))
+
+        # Speed up rendering by allowing Discussion-level data to be cached on the
+        # Discussion instance.
+        for c in comments: c.discussion = self
+
+        # Add.
+        events.extend([
+            comment.render_context_dict(user)
+            for comment in comments
         ])
+
+        # Sort by date, since we are interleaving two sources of events.
         events.sort(key = lambda item : item["date_posix"])
 
         # Is there a draft in progress?
@@ -105,6 +120,7 @@ class Discussion(models.Model):
         if user:
             draft = self.comments.filter(user=user, draft=True).first()
             if draft:
+                draft.discussion = self # reuse instance for caching
                 draft = draft.render_context_dict(user)
 
         # Get the initial state of the discussion to populate the HTML.
@@ -218,10 +234,15 @@ class Discussion(models.Model):
 
     def get_autocompletes(self, user):
         # When typing in a comment, what autocompletes are available to this user?
-        # Ensure the user is a participant of the discussion.
+        # Ensure the user is a participant of the discussion. Cache this on the
+        # instance since when we render the Discussion event history we fetch this
+        # once for each comment we render.
+        if hasattr(self, '_get_autocompletes'): return self._get_autocompletes
         if self.attached_to_obj is None or not self.is_participant(user):
-            return []
-        return self.attached_to_obj.get_discussion_autocompletes(self)
+            self._get_autocompletes = []
+        else:
+            self._get_autocompletes = self.attached_to_obj.get_discussion_autocompletes(self)
+        return self._get_autocompletes
 
 class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE, help_text="The Discussion that this comment is attached to.")
