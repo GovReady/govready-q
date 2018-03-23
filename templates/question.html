@@ -815,7 +815,7 @@ function update_review_status(elem) {
 {% endif %}
 
 function start_a_discussion(is_page_load) {
-    ajax_with_indicator({
+    $.ajax({
         url: "{% url 'start_a_discussion' %}",
         method: "POST",
         data: {
