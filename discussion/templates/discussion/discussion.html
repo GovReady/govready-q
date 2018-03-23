@@ -652,9 +652,11 @@ function start_update_draft_poller() {
 var draft_state = null;
 var is_submitting = false;
 var publish_draft_after_save = null;
-function update_draft(force, callback) {
+function update_draft(force, callback, error_callback) {
+  // Show the "Saved" indicator only if this is happening in the
+  // update_draft_poller.
   var show_saved = (callback == null);
-
+  
   // Simplify the code below - if no callback was given, make it a dummy.
   if (!callback) {
     callback = function(next) {
@@ -708,15 +710,24 @@ function update_draft(force, callback) {
       // have to wait for our own callback to finish first if
       // e.g. this draft is being saved because the user is adding
       // an attachment, and the we publish after the attachment is
-      // added.
-      is_submitting = false;
-      callback(publish_draft_after_save);
+      // added. Run the callback on a different dick so that the
+      // complete handler finishes first.
+      setTimeout(function() { callback(publish_draft_after_save) }, 1);
       publish_draft_after_save = null;
+    },
+    error: function() {
+      if (error_callback)
+        error_callback();
     },
     complete: function() {
       is_submitting = false;
     }
   });  
+}
+
+function disable_enable_submit_comment_controls(state) {
+  $('#discussion .comment-input form').find('textarea, input, button')
+    .prop("disabled", state);
 }
 
 function submit_comment(callback) {
@@ -737,16 +748,16 @@ function submit_comment(callback) {
   }
 
   // First update the draft, then publish the draft.
+  disable_enable_submit_comment_controls(true);
   update_draft(true, function() {
     is_submitting = true;
-    ajax_with_indicator({
+    $.ajax({
       url: "{% url 'discussion-comment-submit' %}",
       method: "POST",
       data: {
         discussion: discussion_info.id,
         draft: draft_state.id
       },
-      controls: $('#discussion .comment-input form').find('textarea, input, button'),
       success: function(c) {
         // keep the window scrolled such that the input box stays
         // in the same place -- i.e., the new comment pushes things
@@ -771,8 +782,12 @@ function submit_comment(callback) {
       },
       complete: function() {
         is_submitting = false;
+        disable_enable_submit_comment_controls(false);
       }
-    })
+    });
+  }, function() {
+    // update_draft error handler
+    disable_enable_submit_comment_controls(false);
   });
 }
 
@@ -939,6 +954,7 @@ function save_emoji_reaction() {
 function attach_files(files) {
   // Update the draft to ensure there is a draft to attach the
   // attachments to.
+  disable_enable_submit_comment_controls(true);
   update_draft(true, function(next) {
     // Create an AJAX request to upload all of the files at once.
     var data = new FormData();
@@ -966,8 +982,14 @@ function attach_files(files) {
 
         if (next)
           next();
+      },
+      complete: function() {
+        disable_enable_submit_comment_controls(false);
       }
     });
+  }, function() {
+    // update_draft error handler
+    disable_enable_submit_comment_controls(false);
   });
 }
 </script>
