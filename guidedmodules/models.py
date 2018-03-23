@@ -1467,10 +1467,11 @@ class TaskAnswer(models.Model):
     # required to attach a Discussion to it
     def get_discussion_autocompletes(self, discussion):
         organization = self.task.project.organization
-        mentionable_users = self.get_mentionable_users(discussion)
+        mentionable_users = discussion.get_all_participants()
         User.localize_users_to_org(organization, mentionable_users)
         return {
-            # @-mention other mentionable users
+            # @-mention participants in the discussion and other
+            # users in mentionable_users.
             "@": [
                 {
                     "user_id": user.id,
@@ -1489,17 +1490,6 @@ class TaskAnswer(models.Model):
             ]
         }
 
-    def get_mentionable_users(self, discussion):
-        # Who can be mentioned? List discussion participants first, which are
-        # Discussion guests and members of the Project containing this TaskAnswer.
-        users = list(discussion.get_all_participants())
-
-        # Add all users with read permission on the Organization.
-        for u in self.task.project.organization.get_who_can_read():
-            if u not in users:
-                users.append(u)
-
-        return users
 
     # required to attach a Discussion to it
     def on_discussion_comment(self, comment):

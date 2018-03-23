@@ -94,20 +94,10 @@ class User(AbstractUser):
         # Otherwise, create it for the localized organization.
         return self.get_settings_task(self.localized_to)
 
-    def _get_settings_task(self):
-        return getattr(self, 'user_settings_task', None)
-
     def _get_setting(self, key):
-        # any org-localized settings?
-        if not self._get_settings_task():
-            return None
-
-        # initialize cache by fetching all of the answers to the settings
-        # task, as a dict from question keys to Pythonic values.
-        if not hasattr(self, "_settings"):
-            self._settings = self._get_settings_task().get_answers().as_dict()
-
-        return self._settings.get(key)
+        if getattr(self, 'user_settings_task_answers', None):
+            return self.user_settings_task_answers.get(key)
+        return None
 
     def get_account_project(self, org):
         p = getattr(self, "_account_project", None)
@@ -178,17 +168,29 @@ class User(AbstractUser):
         )
 
     def render_context_dict(self, req_organization):
+        # Get the user's account settings task's answers as a dict.
         organization = req_organization if isinstance(req_organization, Organization) else req_organization.organization
         if getattr(self, 'user_settings_task', None) and self.user_settings_task.project.organization == organization:
             profile = dict(self.user_settings_task_answers)
         else:
             profile = self.get_settings_task(organization).get_answers().as_dict()
+
+        # Add some information.
         profile.update({
             "id": self.id,
             "fallback_avatar": self.get_avatar_fallback_css(),
         })
         if not profile.get("name"):
             profile["name"] = self.email or "Anonymous User"
+
+        # If set, remove the profile picture content_dataurl since it can
+        # be quite large and will unexpectedly blow up the response size of
+        # e.g. AJAX requests that get user info.
+        try:
+            del profile["picture"]["content_dataurl"]
+        except:
+            pass
+
         return profile
 
 
@@ -292,8 +294,6 @@ class Organization(models.Model):
         # * they are an editor of a Task within a Project within the Organization (but might not otherwise be a Project member)
         # * they are a guest in any Discussion on TaskQuestion in a Task in a Project in the Organization
         # The inverse function is below.
-        from guidedmodules.models import Task
-        from discussion.models import Discussion
         return (
                User.objects.filter(projectmembership__project__organization=self)
              | User.objects.filter(tasks_editor_of__project__organization=self)
@@ -301,7 +301,11 @@ class Organization(models.Model):
              ).distinct()
 
     def can_read(self, user):
-        return user in self.get_who_can_read()
+        # Although we can check it by evaluating:
+        #   user in self.get_who_can_read()
+        # it's very slow on Postgres. "IN" and "DISTINCT" often don't work
+        # well together. Using the inverse function is faster:
+        return (self in Organization.get_all_readable_by(user))
 
     @staticmethod
     def get_all_readable_by(user):

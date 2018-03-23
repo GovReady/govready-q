@@ -1,4 +1,4 @@
 unittest-xml-reporting==2.1.1
-pipenv==11.8.3
-pip==9.0.2
-
+pipenv==11.9.0
+pip==9.0.3
+virtualenv==15.2.0

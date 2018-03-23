@@ -93,7 +93,7 @@ download \
 
 # auto resize textareas (MIT License)
 download \
-  https://raw.githubusercontent.com/jackmoore/autosize/master/dist/autosize.min.js \
+  https://raw.githubusercontent.com/jackmoore/autosize/4.0.0/dist/autosize.min.js \
   $VENDOR/autosize.min.js \
   '17b05b73ede11afdf80fea1bb071ec4a6dd929106e75647b7b61f47d2d1b7a89'
 
