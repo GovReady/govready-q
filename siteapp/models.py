@@ -178,17 +178,29 @@ class User(AbstractUser):
         )
 
     def render_context_dict(self, req_organization):
+        # Get the user's account settings task's answers as a dict.
         organization = req_organization if isinstance(req_organization, Organization) else req_organization.organization
         if getattr(self, 'user_settings_task', None) and self.user_settings_task.project.organization == organization:
             profile = dict(self.user_settings_task_answers)
         else:
             profile = self.get_settings_task(organization).get_answers().as_dict()
+
+        # Add some information.
         profile.update({
             "id": self.id,
             "fallback_avatar": self.get_avatar_fallback_css(),
         })
         if not profile.get("name"):
             profile["name"] = self.email or "Anonymous User"
+
+        # If set, remove the profile picture content_dataurl since it can
+        # be quite large and will unexpectedly blow up the response size of
+        # e.g. AJAX requests that get user info.
+        try:
+            del profile["picture"]["content_dataurl"]
+        except:
+            pass
+
         return profile
 
 
