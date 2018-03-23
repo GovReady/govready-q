@@ -294,8 +294,6 @@ class Organization(models.Model):
         # * they are an editor of a Task within a Project within the Organization (but might not otherwise be a Project member)
         # * they are a guest in any Discussion on TaskQuestion in a Task in a Project in the Organization
         # The inverse function is below.
-        from guidedmodules.models import Task
-        from discussion.models import Discussion
         return (
                User.objects.filter(projectmembership__project__organization=self)
              | User.objects.filter(tasks_editor_of__project__organization=self)
@@ -303,7 +301,11 @@ class Organization(models.Model):
              ).distinct()
 
     def can_read(self, user):
-        return user in self.get_who_can_read()
+        # Although we can check it by evaluating:
+        #   user in self.get_who_can_read()
+        # it's very slow on Postgres. "IN" and "DISTINCT" often don't work
+        # well together. Using the inverse function is faster:
+        return (self in Organization.get_all_readable_by(user))
 
     @staticmethod
     def get_all_readable_by(user):
