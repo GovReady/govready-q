@@ -378,12 +378,13 @@ class Comment(models.Model):
             raise ValueError()
 
         # Render for a notification.
-        if self.text:
-            notification_text = str(self.user) + ": " + self.text
-        elif self.emojis:
-            notification_text = str(self.user) + " reacted with " + self.emojis + "."
-        else:
-            notification_text = None
+        def notification_text():
+            if self.text:
+                return str(self.user) + ": " + self.text
+            elif self.emojis:
+                return str(self.user) + " reacted with " + self.emojis + "."
+            else:
+                return None
 
         def get_user_role():
             ret = self.discussion.attached_to_obj.get_user_role(self.user)
@@ -405,7 +406,7 @@ class Comment(models.Model):
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
             "text": self.text,
             "text_rendered": render_text(self.text, autocompletes=self.discussion.get_autocompletes(whose_asking), comment=self),
-            "notification_text": notification_text,
+            "notification_text": notification_text(),
             "emojis": self.emojis.split(",") if self.emojis else None,
         }
 

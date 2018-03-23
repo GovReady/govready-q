@@ -94,20 +94,10 @@ class User(AbstractUser):
         # Otherwise, create it for the localized organization.
         return self.get_settings_task(self.localized_to)
 
-    def _get_settings_task(self):
-        return getattr(self, 'user_settings_task', None)
-
     def _get_setting(self, key):
-        # any org-localized settings?
-        if not self._get_settings_task():
-            return None
-
-        # initialize cache by fetching all of the answers to the settings
-        # task, as a dict from question keys to Pythonic values.
-        if not hasattr(self, "_settings"):
-            self._settings = self._get_settings_task().get_answers().as_dict()
-
-        return self._settings.get(key)
+        if getattr(self, 'user_settings_task_answers', None):
+            return self.user_settings_task_answers.get(key)
+        return None
 
     def get_account_project(self, org):
         p = getattr(self, "_account_project", None)
