@@ -434,7 +434,6 @@ class Command(BaseCommand):
 
             # Start authoring tools.
             self.click_with_screenshot("#open-authoring-tools", "authoring-tool-link")
-            sleep(1) # fade in
             self.browser.browser.execute_script("authoring_tool_reload_app_confirm=false")
             self.click_with_screenshot("#authoring-tools-reload-app", "authoring-tools-reload")
             sleep(1) # ajax...
@@ -453,17 +452,14 @@ class Command(BaseCommand):
             self.browser.click_element("#open-authoring-tools")
             self.browser.browser.execute_script("authoring_tool_reload_app_confirm=false")
             self.browser.click_element("#authoring-tools-reload-app")
-            sleep(1)
+            sleep(1) # wait for ajax to cause page to be reloaded
             self.browser.click_element("#question-example > a")
-            sleep(1)
             self.screenshot("revised-question")
 
             # Edit using in-browser tool.
             self.click_with_screenshot("#show_question_authoring_tool", "click_authoring_tool")
-            sleep(1) # modal fadein
             self.screenshot("question-authoring-tool")
             self.browser.click_element("#question_authoring_tool button[data-dismiss=\"modal\"]") # clear modal
-            sleep(1) # modal fadeout
 
             # Answer question.
             self.browser.click_element("#question input[value=startrek]")

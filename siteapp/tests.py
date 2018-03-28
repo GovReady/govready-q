@@ -363,7 +363,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         def start_invitation(email):
             # Fill out the invitation modal.
-            var_sleep(.5) # wait for modal to show
 
             # in case there are other team members and the select box is showing,
             # choose
@@ -395,14 +394,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # happening. So load the modal using Javascript.
         #self.click_element("#show-project-invite")
         self.browser.execute_script("invite_user_into_project()")
-        var_sleep(.5) # modal fades in
 
         # Test an invalid email address.
         start_invitation("example")
         var_sleep(.5)
         self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
+        var_sleep(.25)
         #self.click_element("#show-project-invite") # Re-open the invite box.
         self.browser.execute_script("invite_user_into_project()") # See comment above.
 
@@ -450,7 +448,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Invite a guest to join.
         var_sleep(.5) # wait for the you-are-alone div to show
         self.click_element("#discussion-you-are-alone a")
-        var_sleep(.5) # wait for modal to show
         self.fill_field("#invitation_modal #invite-user-email", "invited-user@q.govready.com")
         self.click_element("#invitation_modal button.btn-submit")
         var_sleep(1) # wait for invitation to be sent
@@ -607,7 +604,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
         self.assertInNodeText("day is out of range for month", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
 
         # test a good date
         self.select_option("select[name='value_year']", "2016")
@@ -682,7 +678,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
 
         # Test a string.
         self.clear_and_fill_field("#inputctrl", "asdf")
@@ -710,7 +705,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
 
         # Test a too-large number
         self.clear_and_fill_field("#inputctrl", "27")
@@ -719,7 +713,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         self.assertInNodeText("Must be at most 10.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
 
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
@@ -750,7 +743,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
 
         # Test a too-large number
         self.clear_and_fill_field("#inputctrl", "15000")
@@ -759,7 +751,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         self.assertInNodeText("Must be at most 10000.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
 
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
@@ -768,7 +759,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         self.assertInNodeText("Invalid input. Must be a whole number.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
 
         # Test a good integer that has a comma in it.
         self.clear_and_fill_field("#inputctrl", "1,234")
@@ -804,7 +794,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # var_sleep(60)
         self.assertInNodeText("Must be at least 1.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
 
         # Test a number that's too large.
         self.clear_and_fill_field("#inputctrl", "1000")
@@ -813,7 +802,6 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         self.assertInNodeText("Must be at most 100.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.5)
 
         # Test a real number.
         self.clear_and_fill_field("#inputctrl", "23.051")
