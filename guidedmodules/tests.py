@@ -711,7 +711,13 @@ class ImportExportTests(TestCaseWithFixtureData):
             task_dict = {
                 question_name: answer_value
             }
-        task.import_json_update(task_dict, ImportExportTests.DummyDeserializer(self.user, include_metadata))
+        deserializer = ImportExportTests.DummyDeserializer(self.user, include_metadata)
+        task.import_json_update(task_dict, deserializer)
+
+        # Check that the log of what occurred during import matches expectations.
+        self.assertEqual(deserializer.log_capture, [
+            "'{}' was updated.".format(m.questions.get(key=question_name).spec['title'])
+        ])
 
         # Export it and check that the exported JSON matches the JSON that we imported.
         # In other words, it should round-trip. Only check that the keys in the test JSON
