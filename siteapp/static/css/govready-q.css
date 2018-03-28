@@ -43,6 +43,10 @@ footer { margin-top:60px;
   color: #888;
 }
 
+.ql-editor {
+  min-height: 6em;
+}
+
 .question-answer[data-answer-type="skipped"] {
   background-color: #eeee99;
   padding: 1px 1px;
