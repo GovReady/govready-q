@@ -1119,7 +1119,13 @@ def send_invitation(request):
             raise ValueError("Select a team member or enter an email address.")
 
         if request.POST['user_email']:
-            email_validator.validate_email(request.POST['user_email'])
+            # Validate that the provided email address is syntactically
+            # correct and that the domain name resolved.
+            #
+            # When we're running tests, skip DNS-based deliverability checks
+            # so that tests can be run in a completely offline mode. Otherwise
+            # dns.resolver.NoNameservers will result in EmailUndeliverableError.
+            email_validator.validate_email(request.POST['user_email'], check_deliverability=settings.VALIDATE_EMAIL_DELIVERABILITY)
 
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.

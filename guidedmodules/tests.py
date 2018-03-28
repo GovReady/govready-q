@@ -10,6 +10,10 @@ class TestCaseWithFixtureData(TestCase):
     def setUpClass(self):
         super().setUpClass()
 
+        # In order for these tests to succeed when not connected to the
+        # Internet, disable email deliverability checks which query DNS.
+        settings.VALIDATE_EMAIL_DELIVERABILITY = False
+
         # Load modules from the fixtures directory.
         from guidedmodules.models import AppSource, AppInstance
         from guidedmodules.management.commands.load_modules import Command as load_modules

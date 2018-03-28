@@ -60,6 +60,8 @@ NOTIFICATIONS_USE_JSONFIELD = True # allows us to store extra data on Notificati
 GOVREADY_CMS_API_AUTH = environment.get('govready_cms_api_auth')
 MAILGUN_API_KEY = environment.get('mailgun_api_key', '') # for the incoming mail route
 
+VALIDATE_EMAIL_DELIVERABILITY = True
+ 
 # Get the version of this software.
 import os.path
 if os.path.exists("VERSION"):

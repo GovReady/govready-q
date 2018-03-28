@@ -32,6 +32,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         settings.SITE_ROOT_URL = cls.live_server_url
         settings.ORGANIZATION_PARENT_DOMAIN = 'orgs.localhost'
 
+        # In order for these tests to succeed when not connected to the
+        # Internet, disable email deliverability checks which query DNS.
+        settings.VALIDATE_EMAIL_DELIVERABILITY = False
+
         ## Turn on DEBUG so we can see errors better.
         #settings.DEBUG = True
 

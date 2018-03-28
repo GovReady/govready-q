@@ -143,8 +143,13 @@ class validator:
         value = validator.validate_text(question, value)
 
         # Then validate and normalize the value as an email address.
+        # When we're running tests, skip DNS-based deliverability checks
+        # so that tests can be run in a completely offline mode. Otherwise
+        # dns.resolver.NoNameservers will result in EmailUndeliverableError.
         import email_validator
-        return email_validator.validate_email(value)["email"]
+        from django.conf import settings
+        info = email_validator.validate_email(value, check_deliverability=settings.VALIDATE_EMAIL_DELIVERABILITY)
+        return info["email"]
 
     def validate_url(question, value):
         # Run the same checks as text (data type is str, stripped, and is not empty).
