@@ -9,6 +9,21 @@
 {{block.super}}
 <style>
 h2 { margin-top: 1.5em; }
+.review-state-list {
+  margin: 2px 0;
+}
+  .review-state-list > span {
+    display: inline-block;
+    padding: 4px 4px 2px 4px;
+    cursor: default;
+  }
+    .review-state-list > span:not(.inactive) {
+      border: 1px solid #222;
+    }
+    .review-state-list > span.inactive {
+      opacity: .55;
+      cursor: pointer;
+    }
 </style>
 {% endblock %}
 
@@ -59,36 +74,43 @@ h2 { margin-top: 1.5em; }
         {% for question, answer, value_html in section.answers %}
           <tr>
             <td>
+              <!-- the question title -->
               <a href="{{answer.taskanswer.get_absolute_url}}">
                 {{question.spec.title}}
               </a>
             </td>
             <td>
-              <div style="float: right; margin: 0 0 .25em .25em; padding-bottom: 2px;">
-                <span
-                  class="label"
-                  data-task="{{section.task.get_absolute_url}}"
-                  data-question="{{question.id}}"
-                  data-answer="{{answer.id}}"
-                  data-reviewed="{{answer.reviewed}}" {# css triggers bg color #}
-                  style="cursor: pointer; display: inline-block;"
-                  onclick="change_review_state(this, {% if section.can_review %}true{% else %}false{% endif %});"
-                  >
-                  {% for key, label in review_choices %}
-                    {% if answer.reviewed == key %}
-                      {{label}}
-                    {% endif %}
-                  {% endfor %}
-                </span>
-              </div>
-
+              <!-- the answer -->
               <div>
                 {{value_html|safe}}
               </div>
 
+              <!-- for module-type questions, link to the unfurled answers
+                   for the task that answered this question lower down on
+                   the page -->
               {% if question.spec.type == "module" %}
                 [<a href="#task-{{section.task.id}}">see below</a>]
               {% endif %}
+
+              <!-- review state -->
+              <div class="review-state-list">
+                {% for key, label in review_choices %}
+                <span
+                  class="label {% if answer.reviewed != key %}inactive{% endif %}"
+                  data-task="{{section.task.get_absolute_url}}"
+                  data-taskid="{{section.task.id}}"
+                  data-question="{{question.id}}"
+                  data-answer="{{answer.id}}"
+                  data-reviewed="{{key}}" {# css triggers bg color #}
+                  {% if section.can_review %}title="Change review state to {{label}}"{% endif %}
+                  onclick="change_review_state(this, {% if section.can_review %}true{% else %}false{% endif %});"
+                  >
+                      {{label}}
+                </span>
+                {% endfor %}
+              </div>
+
+
             </td>
           </tr>
         {% endfor %}
@@ -109,59 +131,41 @@ h2 { margin-top: 1.5em; }
 {% block scripts %}
 <script>
 function change_review_state(elem, can_review) {
+  // If the element isn't 'inactive', then it's the current review
+  // state and clicking it wouldn't do anything, so ignore the
+  // click. By CSS it doesn't have a pointer cursor.
+  elem = $(elem);
+  if (!elem.hasClass('inactive'))
+    return;
+
   // Check permission flag. (It's of course checked server-side too.)
+  // We allow the UI interaction in the first place because it's
+  // confusing for an element to be clickable for some users to not
+  // be clickable by others --- users who know it can be clickable
+  // can get confused why it's not clickable for them.
   if (!can_review) {
     alert("Only organization reviewers have permission to change the review state of answers.");
     return;
   }
 
-  // Build the select element.
-  var elem = $(elem);
-  var dom = $("<div><p>Change the review state to:</p> <select class='form-control'></select></div>");
-  var review_choices = {{review_choices|json}};
-  review_choices.forEach(function(item) {
-    var opt = $("<option/>");
-    opt.attr("value", item[0]);
-    opt.text(item[1]);
-    if (item[0] == elem.attr('data-reviewed')) opt.prop("selected", true);
-    dom.find("select").append(opt);
-  })
-
-  // Attach event listener.
-  var value = elem.attr('data-reviewed');
-  dom.find("select").change(function() {
-    value = $(this).val();
-  })
-
-  // Show the <select> in a modal.
-  show_modal_confirm(
-    "Change Review State",
-    dom,
-    "Save", function() {
-      // return if change
-      if (elem.attr('data-reviewed') == value) return;
-
-      // submit the change to the server
-      ajax_with_indicator({
-          url: elem.attr('data-task') + "/_save",
-          method: "POST",
-          data: {
-            question: elem.attr('data-question'), {# database id #}
-            answer: elem.attr('data-answer'), {# TaskAnswerHistory id #}
-            method: "review",
-            reviewed: value
-          },
-          success: function() {
-            // Update DOM.
-            review_choices.forEach(function(item) {
-              if (item[0] == value) {
-                elem.attr("data-reviewed", item[0]);
-                elem.text(item[1])
-              }
-            });
-          }
-      });
-    })
+  // Save new review state.
+  var new_state = elem.attr('data-reviewed');
+  ajax_with_indicator({
+      url: elem.attr('data-task') + "/_save",
+      method: "POST",
+      data: {
+        question: elem.attr('data-question'), {# database id #}
+        answer: elem.attr('data-answer'), {# TaskAnswerHistory id #}
+        method: "review",
+        reviewed: new_state
+      },
+      success: function() {
+        // Update DOM.
+        $('.review-state-list > span[data-taskid=' + elem.attr('data-taskid') + '][data-question='+ elem.attr('data-question') + ']').each(function() {
+          $(this).toggleClass("inactive", $(this).attr('data-reviewed') != new_state);
+        })
+      }
+  });
 }
 </script>
 {% endblock %}
