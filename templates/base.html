@@ -20,95 +20,7 @@
 
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}">
         <link rel="stylesheet" href="{% static "vendor/google-fonts.css" %}">
-        <style>
-            body {
-                padding-top: 50px !important; /* the !important is to fix a bug with the dashboard integration, remove it eventually */
-                padding-left: 20px;
-                padding-right: 20px;
-                padding-bottom: 20px;
-                overflow-y: scroll;
-                font-family: 'Hind', sans-serif;
-            }
-            body, blockquote {
-                font-size: 16px;
-            }
-            .navbar .notification.unread a span {
-                font-weight: bold;
-            }
-
-            #context-bar {
-               padding: 14px 0 8px 0;
-               margin-bottom: 8px;
-            }
-              #context-bar .breadcrumb {
-                margin: 0;
-                padding: 0;
-                background-color: rgba(255,255,255,0.2);
-                padding: 8px;
-                max-width: 40vw;
-                cursor: default;
-              }
-              #context-bar .breadcrumb a {
-                color: black;
-              }
-            .glyphicon-globe { color: #888; }
-            h1, h2 {
-              font-family: 'Lato', sans-serif;
-              font-weight: bold;
-            }
-              h1 { font-size: 44px; color: #444; }
-              h2 { font-size: 20px; }
-              h3 { font-size: 18px; }
-            .btn { white-space: normal; font-size: inherit; }
-            .btn.btn-sm { font-size: 12px; }
-            footer { margin-top:60px;
-              font-size: .75em;
-              color: #888;
-            }
-
-            .question-answer[data-answer-type="skipped"] {
-              background-color: #eeee99;
-              padding: 1px 1px;
-            }
-
-            span.question-answer[data-reviewed] {
-              background-repeat: repeat-x;
-              background-origin: content-box;
-              background-clip: content-box;
-              background-position-y: 1.15em;
-              background-size: .5em .35em;
-            }
-            div.question-answer[data-reviewed] {
-              margin-bottom: 1em;
-              padding-right: .66em;
-              background-repeat: repeat-y;
-              background-position-x: 100%;
-              background-size: .5em .4em;
-            }
-              div.question-answer[data-reviewed] p { margin: 0; }
-              div.question-answer[data-reviewed] a { text-decoration: underline; }
-            .question-answer[data-reviewed="0"] {
-              background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAA4UlEQVQY063PywqCQBTG8WMNXegyI+0CG9z0ALUpjKBlj9d7tPAhFNskbSI3EipMEEKadiWjxYh0cdny/Djw8ReezwQAACC5n/br+dm3CB23ulMu/ka1tZnAnx7XIHC0mJn1do/QEaqQVHarqigj/hE6+tFbNKWBKE+KpdqXoOR+Chzt6C2wNMRUKZZqv4L26/ktcJrSAFMlW4nYMhMAQGffwh0ldyUV10CEjnFnmLvCJXT1j7qILRvt/kcdM8uE/rHO36iXw/arLmbme13B1mZVURblCb9D1whdvUxoJgDwAuRFz6Fquj96AAAAAElFTkSuQmCC);
-            }
-            .question-answer[data-reviewed="1"] {
-              background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAA30lEQVQY02P89fMPAwMDAwPDj++/92y4cf/WG2MbOStnZYjIgW23Vi7czQhR9PnTj4snnly/8ELTQELfQoaXjwMicuPSCxlFQRa4ikunn+qZSpvYynNwsqKJMP34/hvO17eQ4eBkxRRh2bPhxvPHHyF8uC1Xzz+HizAwMLDcv/XG0FIWqy0Qkcunn7IY28jpmkpjtQUicv74YxTfXT3/XNtQEtne6xdeSMryU9F3B7bdenL/PZrvrl94gew7ZqYvKlYO2lYuytw87AwMDGePPDx37LGskpCNuwpEhIGBAQDIZc55AMSNhQAAAABJRU5ErkJggg==);
-            }
-            
-            .label[data-reviewed="0"] {
-              background-color: #bda27e;
-            }
-            .label[data-reviewed="1"] {
-              background-color: #907ebd;
-            }
-            .label[data-reviewed="2"] {
-              background-color: #5cb85c;
-            }
-
-            footer .container-fluid {
-              background-color: rgba(255,255,255,0.1);
-              padding:8px;
-            }
-        </style>
+        <link rel="stylesheet" href="{% static "css/govready-q.css" %}">
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
         <script defer src="{% static "vendor/fontawesome.js" %}"></script>
 
@@ -289,7 +201,7 @@
 
 {% include "bootstrap-helpers.html" %}
 
-<div id="invitation_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true" data-url="{% url "send_invitation" %}">
+<div id="invitation_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="invitation_modal_title" aria-hidden="true" data-url="{% url "send_invitation" %}">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">

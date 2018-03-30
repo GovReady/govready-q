@@ -1199,7 +1199,7 @@ class Task(models.Model):
                 try:
                     value = validator.validate(q, value)
                 except ValueError as e:
-                    deserializer.log("'%s' has an invalid value: %s. It is being skipped." % qname, str(e))
+                    deserializer.log("'%s' has an invalid value: %s. It is being skipped." % (qname, str(e)))
                     continue
 
             # Get or create the TaskAnswer instance for this question.
