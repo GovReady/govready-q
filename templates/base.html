@@ -79,9 +79,7 @@
                 <li><a href="/store">Compliance Apps</a></li>
                 {% if user.can_see_org_settings or user.is_staff %}
                   <li role="separator" class="divider"></li>
-                {% endif %}
-                {% if user.can_see_org_settings %}
-                  <li><a href="{{request.organization.get_organization_project.get_absolute_url}}">Organization Settings</a></li>
+                  <li><a href="/settings">Settings</a></li>
                 {% endif %}
                 {% if user.is_staff %}
                   <li><a href="{% url "guidedmodules_analytics" %}">Analytics</a></li>

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}
+GovReady-Q Setup
+{% endblock %}
+
+{% block contextbar %}
+  {# kill it on this page #}
+{% endblock %}
+
+{% block body %}
+  <h1>Settings</h1>
+
+  
+  {# Edit organization name, help squad, reviewers. #}
+  {% if can_edit_org_settings %}
+    <h2>Help Squad</h2>
+
+    <p>There {% if help_squad|length == 1 %}is{% else %}are{% endif %} {{help_squad|length}} user{{help_squad|length|pluralize}} in this organization&rsquo;s help squad.</p>
+
+    {% if help_squad|length > 0 %}
+    <ul>
+      {% for user in help_squad %}
+        <li>
+          {% if can_visit_user_in_django_admin %}<a href="{{django_admin_url}}/siteapp/user/{{user.id}}">{% endif %}
+          {{user.name_and_email}}
+          {% if can_visit_user_in_django_admin %}</a>{% endif %}
+          <span class="glyphicon glyphicon-trash" style="cursor: pointer; color: #FAA;" title="remove user from help squad" onclick="org_user_list_remove('help-squad', {{user.id}}, '{{user.name_and_email|escapejs}}');"></span>
+        </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <p>
+      <input id="help-squad-select-user" type="text" class="form-control" style="width: 20em; display: inline-block; height: 30px" placeholder="name, username, or email">
+      <button id="help-squad-select-user-submit" class="btn btn-primary btn-sm" disabled onclick="org_user_list_add(this)"><span class="glyphicon glyphicon-plus"></span> Add User to Help Squad</button>
+    </p>
+
+    <h2>Reviewers</h2>
+
+    <p>There {% if reviewers|length == 1 %}is{% else %}are{% endif %} {{reviewers|length}} user{{reviewers|length|pluralize}} who can change the reviewed state of answers.</p>
+
+    {% if reviewers|length > 0 %}
+    <ul>
+      {% for user in reviewers %}
+        <li>
+          {% if can_visit_user_in_django_admin %}<a href="{{django_admin_url}}/siteapp/user/{{user.id}}">{% endif %}
+          {{user.name_and_email}}
+          {% if can_visit_user_in_django_admin %}</a>{% endif %}
+          <span class="glyphicon glyphicon-trash" style="cursor: pointer; color: #FAA;" title="remove user from reviewers" onclick="org_user_list_remove('reviewers', {{user.id}}, '{{user.name_and_email|escapejs}}');"></span>
+        </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <p>
+      <input id="reviewers-select-user" type="text" class="form-control" style="width: 20em; display: inline-block; height: 30px" placeholder="name, username, or email">
+      <button id="reviewers-select-user-submit" class="btn btn-primary btn-sm" disabled onclick="org_user_list_add(this)"><span class="glyphicon glyphicon-plus"></span> Add User to Reviewers</button>
+    </p>
+
+  {% endif %}
+
+
+  {# Link to the 'organization project' which is a Task that has questions about the organization. #}
+  {% if can_see_org_settings %}
+    <h2>Organization Profile</h2>
+
+    <p>
+      <a href="{{request.organization.get_organization_project.get_absolute_url}}">
+        {% if can_edit_org_settings %}
+         Edit
+        {% else %}
+         View
+        {% endif %}
+        Organiztion Profile &raquo;
+      </a>
+    </p>
+  {% endif %}
+
+
+  {# Link to the Django Admin if the user is permitted to go there. #}
+  {% if is_django_staff %}
+    <h2>Database Records Administration</h2>
+
+    <p>
+      <a href="{{django_admin_url}}">
+        Django Admin homepage &raquo;
+      </a>
+    </p>
+
+    {% if can_visit_org_in_django_admin %}
+    <p>
+      <a href="{{django_admin_url}}/siteapp/organization/{{request.organization.id}}">
+        Django Admin for this Organization &raquo;
+      </a>
+    </p>
+    {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(function() {
+    // Initialize the autocompletes.
+    $('#help-squad-select-user, #reviewers-select-user').each(function() {
+      var input = $(this);
+      var submit_btn = $('#' + input.attr('id') + "-submit");
+      var textcomplete = new Textcomplete(new Textcomplete.editors.Textarea(this));
+      textcomplete.register([{
+        match: new RegExp(/^(.*\S)$/), // see replace() for why \S
+        search: function (term, callback, match) {
+          // Clear any time a new search is performed.
+          submit_btn.attr('data-user-id', '');
+          submit_btn.prop('disabled', true);
+
+          // Search for matching users.
+          $.ajax({
+              url: "/settings/_save",
+              method: "POST",
+              data: {
+                action: "search-users",
+                query: match[0]
+              },
+              success: function(res) {
+                callback(res.users);
+              }
+          });
+        },
+        template: function(value) {
+          var node = $("<span></span>");
+          node.text(value.name_and_email);
+          return node.html();
+        },
+        replace: function(value, event) {
+          // Store the chosen user, enable the button, and
+          // replace the user input with the full user display
+          // string (for display only) plus a space, which
+          // blocks a match on the match regex, forcing the
+          // autocomplete to close.
+          submit_btn.attr('data-user-id', value.id);
+          submit_btn.prop('disabled', false);
+          return value.name_and_email + " ";
+        }
+      }], {
+        style: {
+          zIndex: 10000
+        }
+      });
+    });
+
+  })
+
+  function org_user_list_remove(list_id, user_id, user_name) {
+    var prompts = {
+      "help-squad": "Remove " + user_name + " from the organization's help squad?",
+      "reviewers": "Remove " + user_name + " from the organization's reviewers?",
+    }
+    show_modal_confirm(
+      "Remove User",
+      prompts[list_id],
+      "Remove",
+      function() {
+        ajax_with_indicator({
+            url: "/settings/_save",
+            method: "POST",
+            data: {
+              action: "remove-from-" + list_id,
+              user: user_id
+            },
+            keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+            success: function(res) {
+              window.location.reload();
+            }
+        });
+      });
+  }
+
+  function org_user_list_add(elem) {
+    var list_id = elem.getAttribute('id').substring(0, elem.getAttribute('id').length-19);
+    var user_id = elem.getAttribute('data-user-id');
+    ajax_with_indicator({
+        url: "/settings/_save",
+        method: "POST",
+        data: {
+          action: "add-to-" + list_id,
+          user: user_id
+        },
+        keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+        success: function(res) {
+          window.location.reload();
+        }
+    });
+  }
+</script>
+{% endblock %}
