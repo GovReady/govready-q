@@ -96,7 +96,7 @@ h2 { margin-top: 1.5em; }
               <div class="review-state-list">
                 {% for key, label in review_choices %}
                 <span
-                  class="label {% if answer.reviewed != key %}inactive{% endif %}"
+                  class="label {% if answer.reviewed != key %}inactive{% endif %} task-{{section.task.id}}-answer-{{question.key}}-review-{{key}}"
                   data-task="{{section.task.get_absolute_url}}"
                   data-taskid="{{section.task.id}}"
                   data-question="{{question.id}}"
