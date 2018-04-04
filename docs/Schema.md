@@ -239,7 +239,16 @@ The `title` is used to describe the Question in places where a long-form prompt 
 
 The `prompt` is the text the user is prompted with when presented with the question. The prompt is rendered like other Module documents but it is always specified in `markdown` format (see Documents). The first line (paragraph) of the prompt is shown in larger, bold type.
 
-A question may optionally have a `reference_text` field for additional content to show with the question, and like the `prompt` it is a Markdown template.
+A question may have other optional fields that provide the user with other information, such as:
+
+	    examples:
+	    - example: |
+	       First example.
+	    - example: |
+	       Second example.
+	    reference_text: See NIST SP 800-171 page 102.
+
+Like the `prompt`, each entry inside `examples` and the `reference_text` are Markdown templates.
 
 Removing a question, changing a question type, and other changes as noted below are incompatible changes (see Updating Modules).
 
