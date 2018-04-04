@@ -194,6 +194,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.org = Organization.create(name="Our Organization", subdomain="testorg",
             admin_user=self.user)
 
+        # Grant the user permission to change the review state of answers.
+        self.org.reviewers.add(self.user)
+
     def client_get(self, *args, domain=None, **kwargs):
         # Wrap the Django test client's get/post functions that sets the HTTP
         # Host: header so that the request gets to the organization site.
@@ -242,6 +245,10 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # Start the task.
         self.click_element('#question-simple_module')
+
+        # Return the Task instance that we just created or are now visiting.
+        from guidedmodules.models import Task
+        return Task.objects.get(id=re.search(r"/tasks/(\d+)/", self.browser.current_url).group(1))
 
 class GeneralTests(OrganizationSiteFunctionalTests):
 
@@ -328,7 +335,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Log in and create a new project and start its task.
         self._login()
         self._new_project()
-        self._start_task()
+        task = self._start_task()
 
         # Answer the questions.
 
@@ -345,6 +352,17 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Finished.
         self.assertRegex(self.browser.title, "^A Simple Module - ")
+
+        # Go to project page, then review page.
+        self.click_element("#return-to-project")
+        self.click_element("#review-answers")
+
+        # Mark the answer as reviewed then test that it was saved.
+        self.click_element(".task-" + str(task.id) + "-answer-q1-review-1")
+        var_sleep(.5) # wait for ajax
+        for question, answer in task.get_current_answer_records():
+            if question.key == "q1":
+                self.assertEqual(answer.reviewed, 1)
 
     def test_invitations(self):
         # Test a bunch of invitations.

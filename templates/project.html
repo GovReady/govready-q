@@ -59,6 +59,7 @@
 {% else %}
 .question-group {
   margin: 10px 0 20px 0;
+  padding-top: 16px;
 }
 
 h2.question-column-title {
@@ -67,7 +68,7 @@ h2.question-column-title {
 h3.question-group-title {
   color: black;
   font-weight: bold;
-  padding: 16px 18px;
+  padding: 0 18px 14px 0;
   margin: 0;
 }
 
@@ -156,7 +157,7 @@ h3.question-group-title {
     </button>
 
     {% if has_outputs and 0 %}
-      <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
+      <button id="related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
         <i class="glyphicon glyphicon-list"></i>
         Related Controls
       </button>
@@ -359,8 +360,8 @@ h3.question-group-title {
                           {{q.question.spec.title}}
                         {% endif %}
 
-                        {# In the rows layout mode, indicate the question's progress (only if this question can only be answered once and is answered). #}
-                        {% if layout_mode != "grid" and not q.can_start_new_task %}
+                        {# In the rows layout mode, indicate the question's progress and show a button to start or continue the task #}
+                        {% if layout_mode != "grid" %}
                           {% with task=q.task %}
                             <div class="progress" style="width:80%; height: 5px;margin: 8px 0 0 0;">
                               <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{task.get_progress_percent}}%" aria-valuenow="{{task.get_progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>

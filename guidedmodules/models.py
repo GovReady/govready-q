@@ -37,7 +37,7 @@ class AppSource(models.Model):
         if self.spec["type"] == "local":
             return "local filesystem at %s" % self.spec.get("path")
         if self.spec["type"] == "git":
-            return self.spec.get("url")
+            return self.spec.get("url") + ("@"+self.spec["branch"] if self.spec.get("branch") else "")
         if self.spec["type"] == "github":
             return "github.com/%s" % self.spec.get("repo")
 

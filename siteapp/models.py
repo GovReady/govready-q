@@ -30,8 +30,23 @@ class User(AbstractUser):
         # User has not entered their name.
         return self.email or "Anonymous User"
 
+    def name(self):
+        return self._get_setting("name")
+
+    def name_and_email(self):
+        name = self._get_setting("name")
+        if name:
+            if self.email:
+                return "{} <{}>".format(name, self.email)
+            else:
+                return name
+        elif self.email:
+            return self.email
+        else:
+            return "Anonymous User Without Email Address"
+
     @staticmethod
-    def localize_users_to_org(org, users):
+    def localize_users_to_org(org, users, sort=False):
         # Set cached state for when the users are viewed from a particular Organization.
         # For each user, set:
         # * user_settings_task, which holds the account project's settings Task, if created
@@ -81,6 +96,10 @@ class User(AbstractUser):
             user.user_settings_task = account_project_settings.get(account_project_root_tasks.get(user))
             user.user_settings_task_answers = settings.get(user.user_settings_task, None)
             user.can_see_org_settings = (user in org_members)
+
+        # Apply a standard sort.
+        if sort:
+            users.sort(key = lambda user : user.name_and_email())
 
     def localize_to_org(self, org):
         # Prep this user's cached state when viewed from a particular Organization.
@@ -182,6 +201,7 @@ class User(AbstractUser):
         })
         if not profile.get("name"):
             profile["name"] = self.email or "Anonymous User"
+        profile["name_and_email"] = self.name_and_email()
 
         # If set, remove the profile picture content_dataurl since it can
         # be quite large and will unexpectedly blow up the response size of

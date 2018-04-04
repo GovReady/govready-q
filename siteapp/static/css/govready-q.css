@@ -89,3 +89,7 @@ footer .container-fluid {
   background-color: rgba(255,255,255,0.1);
   padding:8px;
 }
+
+.textcomplete-item {
+  cursor: pointer;
+}
