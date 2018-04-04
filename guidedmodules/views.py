@@ -570,9 +570,18 @@ def task_finished(request, task, answered, context, *unused_args):
     )
 
     # Construct the page.
+
+    top_of_page_output = None
+    outputs = task.render_output_documents(answered)
+    for i, output in enumerate(outputs):
+        if output.get("display") == "top":
+            top_of_page_output = output
+            del outputs[i]
+
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
-        "output": task.render_output_documents(answered),
+        "top_of_page_output": top_of_page_output,
+        "outputs": outputs,
         "all_answers": answered.render_answers(show_metadata=True, show_imputed_nulls=False),
         "can_review": task.has_review_priv(request.user),
         "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),

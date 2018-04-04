@@ -104,6 +104,8 @@ Output documents of a project module that have an `id` field are used in the fol
 * They are displayed in the Related Controls page for the project. Add a `title` attribute to set the heading text above the document's content.
 * They can be accessed from higher-level apps into which this app has been added. In a higher-level app, access the rendered HTML value of the output document as `{{question.output_documents.document_id}}`.
 
+When `display: top` is set on an output document, it is rendered above the *Your Answers* section.
+
 #### Test Answers
 
 Projects can provide sets of exemplar answers for use in test scripts. e.g.:
