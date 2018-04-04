@@ -574,6 +574,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
         "output": task.render_output_documents(answered),
         "all_answers": answered.render_answers(show_metadata=True, show_imputed_nulls=False),
+        "can_review": task.has_review_priv(request.user),
         "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),
     })
     return render(request, "module-finished.html", context)

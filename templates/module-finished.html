@@ -152,6 +152,13 @@
       </a></p>
     {% endif %}
   {% endwith %}
+
+  {% if can_review %}
+    <p><a href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
+      <i class="glyphicon glyphicon-list"></i>
+      Review &raquo;
+    </a></p>
+  {% endif %}
 </div> <!-- / continue panel -->
 </div> <!-- focus-area-wrapper -->
 
