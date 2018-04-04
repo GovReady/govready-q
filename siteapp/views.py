@@ -1369,7 +1369,8 @@ def organization_settings(request):
     # Authorization. Different users can see different things on
     # this page.
     can_see_org_settings = request.user.can_see_org_settings
-    can_edit_org_settings = request.user in request.organization.get_organization_project().get_admins()
+    org_admins = request.organization.get_organization_project().get_admins()
+    can_edit_org_settings = request.user in org_admins
     is_django_staff = request.user.is_staff
 
     # If the user doesn't have permission to see anything on this
@@ -1389,6 +1390,7 @@ def organization_settings(request):
         "can_visit_org_in_django_admin": is_django_staff and request.user.has_perm("organization_change"),
         "can_visit_user_in_django_admin": is_django_staff and request.user.has_perm("user_change"),
         "django_admin_url": settings.SITE_ROOT_URL + "/admin",
+        "org_admins": localize_and_sort_users(org_admins),
         "help_squad": localize_and_sort_users(request.organization.help_squad.all()),
         "reviewers": localize_and_sort_users(request.organization.reviewers.all()),
     })

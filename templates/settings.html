@@ -11,56 +11,37 @@ GovReady-Q Setup
 {% block body %}
   <h1>Settings</h1>
 
-  
+  <h2>Administrators</h2>
+
+  <p>There {% if org_admins|length == 1 %}is{% else %}are{% endif %} {{org_admins|length}} administrator{{org_admins|length|pluralize}} in this organization that can change settings.</p>
+
+  {% include "settings_usertable.html" with users=org_admins %}
+
   {# Edit organization name, help squad, reviewers. #}
   {% if can_edit_org_settings %}
+    <hr>
+
     <h2>Help Squad</h2>
 
-    <p>There {% if help_squad|length == 1 %}is{% else %}are{% endif %} {{help_squad|length}} user{{help_squad|length|pluralize}} in this organization&rsquo;s help squad.</p>
+    <p>There {% if help_squad|length == 1 %}is{% else %}are{% endif %} {{help_squad|length}} user{{help_squad|length|pluralize}} designated to help others by automatically receiving all discussion comments.</p>
 
-    {% if help_squad|length > 0 %}
-    <ul>
-      {% for user in help_squad %}
-        <li>
-          {% if can_visit_user_in_django_admin %}<a href="{{django_admin_url}}/siteapp/user/{{user.id}}">{% endif %}
-          {{user.name_and_email}}
-          {% if can_visit_user_in_django_admin %}</a>{% endif %}
-          <span class="glyphicon glyphicon-trash" style="cursor: pointer; color: #FAA;" title="remove user from help squad" onclick="org_user_list_remove('help-squad', {{user.id}}, '{{user.name_and_email|escapejs}}');"></span>
-        </li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-    <p>
-      <input id="help-squad-select-user" type="text" class="form-control" style="width: 20em; display: inline-block; height: 30px" placeholder="name, username, or email">
-      <button id="help-squad-select-user-submit" class="btn btn-primary btn-sm" disabled onclick="org_user_list_add(this)"><span class="glyphicon glyphicon-plus"></span> Add User to Help Squad</button>
-    </p>
+    {% include "settings_usertable.html" with users=help_squad listid="help-squad" listname="Help Squad" %}
+
+    <hr>
 
     <h2>Reviewers</h2>
 
-    <p>There {% if reviewers|length == 1 %}is{% else %}are{% endif %} {{reviewers|length}} user{{reviewers|length|pluralize}} who can change the reviewed state of answers.</p>
+    <p>There {% if reviewers|length == 1 %}is{% else %}are{% endif %} {{reviewers|length}} user{{reviewers|length|pluralize}} who can change the “review” status of answers.</p>
 
-    {% if reviewers|length > 0 %}
-    <ul>
-      {% for user in reviewers %}
-        <li>
-          {% if can_visit_user_in_django_admin %}<a href="{{django_admin_url}}/siteapp/user/{{user.id}}">{% endif %}
-          {{user.name_and_email}}
-          {% if can_visit_user_in_django_admin %}</a>{% endif %}
-          <span class="glyphicon glyphicon-trash" style="cursor: pointer; color: #FAA;" title="remove user from reviewers" onclick="org_user_list_remove('reviewers', {{user.id}}, '{{user.name_and_email|escapejs}}');"></span>
-        </li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-    <p>
-      <input id="reviewers-select-user" type="text" class="form-control" style="width: 20em; display: inline-block; height: 30px" placeholder="name, username, or email">
-      <button id="reviewers-select-user-submit" class="btn btn-primary btn-sm" disabled onclick="org_user_list_add(this)"><span class="glyphicon glyphicon-plus"></span> Add User to Reviewers</button>
-    </p>
+    {% include "settings_usertable.html" with users=reviewers listid="reviewers" listname="Reviewers" %}
 
   {% endif %}
 
 
   {# Link to the 'organization project' which is a Task that has questions about the organization. #}
   {% if can_see_org_settings %}
+    <hr>
+
     <h2>Organization Profile</h2>
 
     <p>
@@ -78,6 +59,8 @@ GovReady-Q Setup
 
   {# Link to the Django Admin if the user is permitted to go there. #}
   {% if is_django_staff %}
+    <hr>
+
     <h2>Database Records Administration</h2>
 
     <p>

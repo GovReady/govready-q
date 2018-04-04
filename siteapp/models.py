@@ -30,6 +30,9 @@ class User(AbstractUser):
         # User has not entered their name.
         return self.email or "Anonymous User"
 
+    def name(self):
+        return self._get_setting("name")
+
     def name_and_email(self):
         name = self._get_setting("name")
         if name:
