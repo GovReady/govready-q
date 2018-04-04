@@ -131,26 +131,27 @@ label:hover .onhover { display: inline; }
             {# ADDITIONAL INFORMATION BELOW THE PROMPT #}
 
             {% if example_answers %}
-              <div id="example-answers" class="well" style="margin: 35px 0; position: relative; background: none;">
-                <h2 style="margin: 0 0 8px 0">Examples</h2>
-                <div class="expandy" style="max-height: 7.25em; overflow: hidden;">
+              <div id="example-answers" class="expandable" style="margin: 35px 0; font-size: 80%; border-left: 2px solid #CCC; padding-left: 8px;">
+                <div class="expandy" style="max-height: 4.25em; overflow: hidden;">
                   <div>
                     {% for ex in example_answers %}
-                      {% if example_answers|length > 1 %}
-                        <div><small>Example {{forloop.counter}}</small></div>
-                      {% endif %}
-                      {{ex|safe}}
+                      <div> 
+                        {% if example_answers|length > 1 %}
+                          <div><small style="color: #666;">Example {{forloop.counter}}</small></div>
+                        {% endif %}
+                        {{ex|safe}}
+                      </div>
                     {% endfor %}
                   </div>
                 </div>
                 <div class="toggler"
-                     style="margin: 0 -19px; position: absolute; bottom: 0; width: 100%; text-align: center; padding: .75em 1em .5em 1em; background: linear-gradient(0deg, white 75%, transparent); font-weight: bold;">
+                     style="text-align: right; font-style: italic; font-size: 90%;">
                   <a
                      href="#more"
-                     onclick="$(this).parents('.well').find('.expandy').data('original-height', $(this).parents('.well').find('.expandy').height()); $(this).parents('.well').find('.expandy').animate({ minHeight: $(this).parents('.well').find('.expandy>div').outerHeight() + $(this).parents('.well').find('.toggler').outerHeight() }); $(this).parents('.well').find('a[href=&quot;#more&quot;]').hide(); $(this).parents('.well').find('a[href=&quot;#less&quot;]').show(); return false;">Show More</a>
+                     onclick="$(this).parents('.expandable').find('.expandy').data('original-height', $(this).parents('.expandable').find('.expandy').height()); $(this).parents('.expandable').find('.expandy').animate({ minHeight: $(this).parents('.expandable').find('.expandy>div').outerHeight() + $(this).parents('.expandable').find('.toggler').outerHeight() }); $(this).parents('.expandable').find('a[href=&quot;#more&quot;]').hide(); $(this).parents('.expandable').find('a[href=&quot;#less&quot;]').show(); return false;">Show more</a>
                   <a href="#less"
                      style="display: none;"
-                     onclick="$(this).parents('.well').find('.expandy').animate({ minHeight: $(this).parents('.well').find('.expandy').data('original-height') }); $(this).parents('.well').find('a[href=&quot;#less&quot;]').hide(); $(this).parents('.well').find('a[href=&quot;#more&quot;]').show(); return false;">Show Less</a>
+                     onclick="$(this).parents('.expandable').find('.expandy').animate({ minHeight: $(this).parents('.expandable').find('.expandy').data('original-height') }); $(this).parents('.expandable').find('a[href=&quot;#less&quot;]').hide(); $(this).parents('.expandable').find('a[href=&quot;#more&quot;]').show(); return false;">Show less</a>
                 </div>
               </div>
             {% endif %}
