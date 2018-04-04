@@ -136,9 +136,7 @@ label:hover .onhover { display: inline; }
                   <div>
                     {% for ex in example_answers %}
                       <div> 
-                        {% if example_answers|length > 1 %}
-                          <div><small style="color: #666;">Example {{forloop.counter}}</small></div>
-                        {% endif %}
+                        <div><small style="color: #666;">Example{% if example_answers|length > 1 %} {{forloop.counter}}{% endif %}</small></div>
                         {{ex|safe}}
                       </div>
                     {% endfor %}
