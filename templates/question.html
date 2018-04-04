@@ -128,6 +128,8 @@ label:hover .onhover { display: inline; }
               {{prompt|safe}}
             </div>
 
+            {# ADDITIONAL INFORMATION BELOW THE PROMPT #}
+
             {% if example_answers %}
               <div id="example-answers" class="well" style="margin: 35px 0; position: relative; background: none;">
                 <h2 style="margin: 0 0 8px 0">Examples</h2>
@@ -152,6 +154,21 @@ label:hover .onhover { display: inline; }
                 </div>
               </div>
             {% endif %}
+
+            {% if reference_text %}
+              <p style="font-size: 80%; color: #666;">
+                <a href="#" onclick="$(this).hide(); $('#reference-text').slideDown(); return false;">
+                  Additional information...
+                </a>
+              </p>
+              <div id="reference-text" style="display: none; font-size: 80%;" class="well">
+                <p><b><small>Additional Information</small></b></p>
+                {{reference_text|safe}}
+              </div>
+            {% endif %}
+
+            {# THE QUESTION FORM WIDGETS #}
+
             {% if q.spec.type == "text" or q.spec.type == "email-address" or q.spec.type == "url" %}
               <div class="form-group">
                 <input
@@ -469,28 +486,6 @@ label:hover .onhover { display: inline; }
 
           {% endif %} {# write_priv #}
         </form>
-
-        {% if reference_text %}
-          <div id="reference-text" class="well" style="margin: 20px 0; position: relative; background: none;">
-            <div id="reference-text-wrapper" style="max-height: 7.25em; overflow: hidden;">
-              <div>
-                {{reference_text|safe}}
-              </div>
-            </div>
-            <div id="reference-text-toggle"
-                 style="margin: 0 -19px; position: absolute; bottom: 0; width: 100%; text-align: center; padding: .75em 1em .5em 1em; background: linear-gradient(0deg, white 75%, transparent); font-weight: bold;">
-              <a id="reference-text-more"
-                 href="#"
-                 onclick="$('#reference-text-wrapper').data('original-height', $('#reference-text-wrapper').height()); $('#reference-text-wrapper').animate({ minHeight: $('#reference-text-wrapper>div').outerHeight() + $('#reference-text-toggle').outerHeight() }); $('#reference-text-more').hide(); $('#reference-text-less').show(); return false;">Show More</a>
-              <a id="reference-text-less"
-                 href="#"
-                 style="display: none;"
-                 onclick="$('#reference-text-wrapper').animate({ minHeight: $('#reference-text-wrapper').data('original-height') }); $('#reference-text-more').show(); $('#reference-text-less').hide(); return false;">Show Less</a>
-            </div>
-          </div>
-        {% endif %}
-
-
 
     </div> <!-- /question -->
 
