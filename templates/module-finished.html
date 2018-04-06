@@ -11,7 +11,11 @@
 
   <div id="focus-area-wrapper">
 
-    {% if had_any_questions %}
+    {% if top_of_page_output %}
+      <div style="margin-bottom: 30px;">
+        {{top_of_page_output.html|safe}}
+      </div>
+    {% elif had_any_questions %}
     <div id="page-transition-paragraph">
       {% if previous_page_type == "project" %}
         <p>This module was last updated on {{task.updated|date}}.</p>
@@ -85,7 +89,7 @@
     </div>
   {% endif %}
 
-  {% for document in output %}
+  {% for document in outputs %}
     <div class="panel panel-default">
       <div class="panel-heading" role="tab" id="document-{{forloop.counter}}-title">
         <h4 class="panel-title">
@@ -152,6 +156,13 @@
       </a></p>
     {% endif %}
   {% endwith %}
+
+  {% if can_review %}
+    <p><a href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
+      <i class="glyphicon glyphicon-list"></i>
+      Review &raquo;
+    </a></p>
+  {% endif %}
 </div> <!-- / continue panel -->
 </div> <!-- focus-area-wrapper -->
 

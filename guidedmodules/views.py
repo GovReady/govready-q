@@ -434,12 +434,9 @@ def show_question(request, task, answered, context, q):
     }
 
     # Construct the page.
-    def render_markdown_field(field, output_format, **kwargs):
-        template = q.spec.get(field)
-        if not template:
-            return None
+    def render_markdown_value(template, output_format, reference, **kwargs):
         if not isinstance(template, str):
-            raise ValueError("%s question %s %s is not a string" % (repr(q.module), q.key, field))
+            raise ValueError(reference + " is not a string")
         try:
             return module_logic.render_content({
                     "template": template,
@@ -447,15 +444,20 @@ def show_question(request, task, answered, context, q):
                 },
                 answered,
                 output_format,
-                "%s question %s %s" % (repr(q.module), q.key, field),
+                reference,
                 **kwargs
             )
         except Exception as e:
-            error = "There was a problem rendering the {} for this question: {}.".format(field, str(e))
+            error = "There was a problem rendering {} for this question: {}.".format(reference, str(e))
             if output_format == "html":
                 import html
                 error = "<p class='text-danger'>" + html.escape(error) + "</p>\n"
             return error
+    def render_markdown_field(field, output_format, **kwargs):
+        template = q.spec.get(field)
+        if not template:
+            return None
+        return render_markdown_value(template, output_format, field)
 
     # Get any existing answer for this question.
     existing_answer = None
@@ -501,6 +503,7 @@ def show_question(request, task, answered, context, q):
         "title": title,
         "prompt": prompt,
         "placeholder_answer": render_markdown_field("placeholder", "text") or "", # Render Jinja2 template but don't turn Markdown into HTML.
+        "example_answers": [render_markdown_value(ex.get("example", ""), "html", "example {}".format(i+1)) for i, ex in enumerate(q.spec.get("examples", []))],
         "reference_text": render_markdown_field("reference_text", "html"),
         "history": taskq.get_history() if taskq else None,
         "answer_obj": answer,
@@ -567,10 +570,20 @@ def task_finished(request, task, answered, context, *unused_args):
     )
 
     # Construct the page.
+
+    top_of_page_output = None
+    outputs = task.render_output_documents(answered)
+    for i, output in enumerate(outputs):
+        if output.get("display") == "top":
+            top_of_page_output = output
+            del outputs[i]
+
     context.update({
         "had_any_questions": len(set(answered.as_dict()) - answered.was_imputed) > 0,
-        "output": task.render_output_documents(answered),
+        "top_of_page_output": top_of_page_output,
+        "outputs": outputs,
         "all_answers": answered.render_answers(show_metadata=True, show_imputed_nulls=False),
+        "can_review": task.has_review_priv(request.user),
         "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),
     })
     return render(request, "module-finished.html", context)
