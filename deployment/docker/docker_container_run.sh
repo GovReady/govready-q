@@ -3,6 +3,8 @@
 # This script simplifies what users need to know in
 # order to launch our Docker container.
 
+set -euf -o pipefail # abort script on error
+
 # Check that docker is installed and a version late
 # enough to support the "docker container run" command.
 if ! docker container 2>&1 | grep -q "Manage containers"; then
