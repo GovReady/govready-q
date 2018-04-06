@@ -14,8 +14,11 @@ fi
 ##########
 
 # The image on hub.docker.com to use. Set with
-# --image IMAGENAME. The default is:
+# --image IMAGENAME. The default is govready/govready-q.
+# If --image is given, then it is up to the user to
+# run `docker image pull`.
 IMAGE="govready/govready-q"
+PULLIMAGE=1
 
 # The name for the newly run container. Set with
 # --name NAME. If set to the empty string, no name
@@ -80,6 +83,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --image)
       IMAGE="$2"
+      PULLIMAGE=0
       shift 2 ;;
     --name)
       NAME="$2"
@@ -172,8 +176,9 @@ if [ ! -z "$NAME" ]; then
 fi
 
 # Check for an updated image.
-
-docker image pull $IMAGE
+if [ $PULLIMAGE -eq 1 ]; then
+  docker image pull $IMAGE
+fi
 
 # Construct the arguments to "docker container run".
 
