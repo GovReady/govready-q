@@ -39,14 +39,6 @@ if [ ! -z "$EMAIL_HOST" ]; then
 	> local/environment.json
 fi
 
-# See first_run.sh. This directory must be created
-# every time the container starts if the AppSource
-# fixture has been loaded.
-mkdir -p /mnt/apps
-
-# Flatten static files.
-python3.6 manage.py collectstatic --noinput
-
 # Initialize the database.
 python3.6 manage.py migrate
 python3.6 manage.py load_modules
