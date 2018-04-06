@@ -3,6 +3,8 @@
 # This script simplifies what users need to know in
 # order to launch our Docker container.
 
+set -euf -o pipefail # abort script on error
+
 # Check that docker is installed and a version late
 # enough to support the "docker container run" command.
 if ! docker container 2>&1 | grep -q "Manage containers"; then
@@ -14,8 +16,11 @@ fi
 ##########
 
 # The image on hub.docker.com to use. Set with
-# --image IMAGENAME. The default is:
+# --image IMAGENAME. The default is govready/govready-q.
+# If --image is given, then it is up to the user to
+# run `docker image pull`.
 IMAGE="govready/govready-q"
+PULLIMAGE=1
 
 # The name for the newly run container. Set with
 # --name NAME. If set to the empty string, no name
@@ -80,6 +85,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --image)
       IMAGE="$2"
+      PULLIMAGE=0
       shift 2 ;;
     --name)
       NAME="$2"
@@ -172,8 +178,9 @@ if [ ! -z "$NAME" ]; then
 fi
 
 # Check for an updated image.
-
-docker image pull $IMAGE
+if [ $PULLIMAGE -eq 1 ]; then
+  docker image pull $IMAGE
+fi
 
 # Construct the arguments to "docker container run".
 
@@ -192,7 +199,7 @@ fi
 
 # Form the -p option, which maps host:port (an interface and host port)
 # to a container port, which is always 8000. See dockerfile_exec.sh.
-DASHP="-p $BIND:8000"
+PORTMAP="-p $BIND:8000"
 
 # Set environment variables for the Django process to use.
 ENVS="-e HOST=$HOST -e PORT=$PORT -e HTTPS=$HTTPS -e DBURL=$DBURL -e DEBUG=$DEBUG"
@@ -215,8 +222,29 @@ if [ ! -z "$APPSDEVDIR" ]; then
   APPSMNT="--mount type=bind,src=$APPSDEVDIR,dst=/mnt/apps"
 fi
 
+# Container filesystem options.
+#
+# We'd ideally like to run the container in read-only mode if there is no
+# persistent data stored in it. If database options are specified, then
+# there's nothing persistent, and we can use read-only options.
+#
+# Since Sqlite requires a writable journal file in the same directory as
+# the database file, the use of a bind mount for the database file itself
+# still leaves the journal file present on the root filesystem, and updating
+# the database will fail if the filesystem is read-only. So, we do not use
+# a read-only filesystem if DBMNT is set, only if DBURL is set. If we wanted
+# to do this with DBMNT, then we'd have to also bind-mount the journal file
+# onto the host.
+FSOPTS=
+if [ ! -z "$DBURL" ]; then
+  # Start the container with a read-only filesystem except for /run and /tmp
+  # which will use tempfs, which means they'll be cleared on container restarts.
+  echo "Starting container with a read-only filesystem."
+  FSOPTS="--read-only --tmpfs /run --tmpfs /tmp"
+fi
+
 # Form the "docker container run command".
-CMD="docker container run $ARGS $NAMEARG $DASHP $ENVS $DBMNT $APPSMNT $@ $IMAGE"
+CMD="docker container run $ARGS $NAMEARG $FSOPTS $PORTMAP $ENVS $DBMNT $APPSMNT $@ $IMAGE"
 
 # Echo it for debugging.
 # Don't echo out of debugging because it may leak secrets.
@@ -246,7 +274,7 @@ echo
 # writes out a 'ready' file once migrations are finished,
 # and then it's probably another second before the Django
 # server is listening.
-while ! docker container exec ${CONTAINER_ID} test -f ready; do
+while ! docker container exec ${CONTAINER_ID} test -f /tmp/govready-q-is-ready; do
   echo "Waiting for GovReady-Q to come online..."
   sleep 3
 done
@@ -261,3 +289,4 @@ if [ "$HTTPS" == true ]; then echo -n s; fi
 echo -n "://$HOST"
 if [ "$PORT" != 80 ]; then echo -n ":$PORT"; fi
 echo
+echo "For additional information run: docker container logs $NAME"

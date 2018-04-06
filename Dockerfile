@@ -52,8 +52,40 @@ COPY siteapp ./siteapp
 COPY templates ./templates
 COPY fixtures ./fixtures
 COPY manage.py .
-COPY deployment/docker/first_run.sh .
+
+# Flatten static files. Create a local/environment.json file that
+# has the static directory set and only setting necessary for collectstatic
+# to work. It matches what's set in dockerfile_exec.sh.
+RUN mkdir -p local && echo '{ "static": "static_root", "debug": false, "host": "_", "https": false }' > local/environment.json
+RUN python3.6 manage.py collectstatic --noinput
+
+# Add container startup scripts.
 COPY deployment/docker/dockerfile_exec.sh .
+COPY deployment/docker/first_run.sh .
+
+# This directory must be present for the AppSource created by our
+# first_run script. The directory only has something in it if
+# the container is launched with --mount.
+RUN mkdir -p /mnt/apps
+
+# Create a non-root user and group for the application to run as to guard against
+# run-time modification of the system and application.
+RUN groupadd application && \
+    useradd -g application -d /home/application -s /sbin/nologin -c "application process" application && \
+    chown -R application:application /home/application
+
+# Give the non-root user access to scratch space.
+RUN mkdir -p local
+RUN chown -R application:application local
+
+# Move the environment.json to /tmp because in some environments the main
+# filesystem is read-only and we won't be able to update local/environment.json
+# once the container starts. In those cases, /tmp must be a tmpfs. We use
+# /tmp for other purposes at run-time as well.
+RUN ln -sf /tmp/environment.json local/environment.json
+
+# Run the container's process zero as this user.
+USER application
 
 # Set the startup script.
 CMD [ "bash", "dockerfile_exec.sh" ]
