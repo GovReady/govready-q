@@ -253,7 +253,7 @@ echo
 # writes out a 'ready' file once migrations are finished,
 # and then it's probably another second before the Django
 # server is listening.
-while ! docker container exec ${CONTAINER_ID} test -f ready; do
+while ! docker container exec ${CONTAINER_ID} test -f /tmp/govready-q-is-ready; do
   echo "Waiting for GovReady-Q to come online..."
   sleep 3
 done

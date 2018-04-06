@@ -68,5 +68,18 @@ COPY deployment/docker/first_run.sh .
 # the container is launched with --mount.
 RUN mkdir -p /mnt/apps
 
+# Create a non-root user and group for the application to run as to guard against
+# run-time modification of the system and application.
+RUN groupadd application && \
+    useradd -g application -d /tmp/home -s /sbin/nologin -c "application process" application && \
+    chown -R application:application /tmp/home
+
+# Give the non-root user access to scratch space.
+RUN mkdir -p local
+RUN chown -R application:application local
+
+# Run the container's process zero as this user.
+USER application
+
 # Set the startup script.
 CMD [ "bash", "dockerfile_exec.sh" ]

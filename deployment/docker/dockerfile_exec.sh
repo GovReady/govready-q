@@ -3,11 +3,6 @@
 
 set -euf -o pipefail # abort script on error
 
-# Generate a local/environment.json file. Use the jq
-# tool to ensure that we produce valid JSON from
-# the environment variables.
-mkdir -p local
-
 # What's the address (and port, if not 80) that end users
 # will access the site at? If the HOST and PORT environment
 # variables are set (and PORT is not 80), take the values
@@ -53,7 +48,7 @@ fi
 
 # Write a file that indicates to the host that Q
 # is now fully configured.
-echo "done" > ready
+echo "done" > /tmp/govready-q-is-ready
 echo "GovReady-Q is fully up and running."
 
 # Start the server. The port is fixed --- see docker_container_run.sh.
