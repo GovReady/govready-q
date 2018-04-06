@@ -289,3 +289,4 @@ if [ "$HTTPS" == true ]; then echo -n s; fi
 echo -n "://$HOST"
 if [ "$PORT" != 80 ]; then echo -n ":$PORT"; fi
 echo
+echo "For additional information run: docker container logs $NAME"
