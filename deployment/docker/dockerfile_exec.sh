@@ -18,7 +18,7 @@ cat > local/environment.json << EOF;
 	"host": $(echo ${ADDRESS} | jq -R .),
 	"https": ${HTTPS-false},
 	"single-organization": "main",
-	"static": "/tmp/static_root",
+	"static": "static_root",
 	"db": $(echo ${DBURL} | jq -R .)
 }
 EOF

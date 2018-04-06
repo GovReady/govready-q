@@ -199,7 +199,7 @@ fi
 
 # Form the -p option, which maps host:port (an interface and host port)
 # to a container port, which is always 8000. See dockerfile_exec.sh.
-DASHP="-p $BIND:8000"
+PORTMAP="-p $BIND:8000"
 
 # Set environment variables for the Django process to use.
 ENVS="-e HOST=$HOST -e PORT=$PORT -e HTTPS=$HTTPS -e DBURL=$DBURL -e DEBUG=$DEBUG"
@@ -222,8 +222,29 @@ if [ ! -z "$APPSDEVDIR" ]; then
   APPSMNT="--mount type=bind,src=$APPSDEVDIR,dst=/mnt/apps"
 fi
 
+# Container filesystem options.
+#
+# We'd ideally like to run the container in read-only mode if there is no
+# persistent data stored in it. If database options are specified, then
+# there's nothing persistent, and we can use read-only options.
+#
+# Since Sqlite requires a writable journal file in the same directory as
+# the database file, the use of a bind mount for the database file itself
+# still leaves the journal file present on the root filesystem, and updating
+# the database will fail if the filesystem is read-only. So, we do not use
+# a read-only filesystem if DBMNT is set, only if DBURL is set. If we wanted
+# to do this with DBMNT, then we'd have to also bind-mount the journal file
+# onto the host.
+FSOPTS=
+if [ ! -z "$DBURL" ]; then
+  # Start the container with a read-only filesystem except for /run and /tmp
+  # which will use tempfs, which means they'll be cleared on container restarts.
+  echo "Starting container with a read-only filesystem."
+  FSOPTS="--read-only --tmpfs /run --tmpfs /tmp"
+fi
+
 # Form the "docker container run command".
-CMD="docker container run $ARGS $NAMEARG $DASHP $ENVS $DBMNT $APPSMNT $@ $IMAGE"
+CMD="docker container run $ARGS $NAMEARG $FSOPTS $PORTMAP $ENVS $DBMNT $APPSMNT $@ $IMAGE"
 
 # Echo it for debugging.
 # Don't echo out of debugging because it may leak secrets.
