@@ -2,6 +2,31 @@ from django.conf import settings
 from allauth.account.adapter import DefaultAccountAdapter
 
 class AllauthAccountAdapter(DefaultAccountAdapter):
+    # Override save_user.
+    def save_user(self, request, *args, **kwargs):
+        # Create the new user account.
+        user = super(AllauthAccountAdapter, self).save_user(request, *args, **kwargs)
+
+        # Send a message to site administrators. Since the user isn't
+        # logged in on signup page, we're not 'inside' an organization
+        # subdomain --- the sign-up page is not behind organization
+        # authentication. So request.organization isn't set. But
+        # unauthenticated_organization_subdomain is.
+        from django.core.mail import mail_admins
+        def subvars(s):
+            return s.format(
+                org_subdomain=request.unauthenticated_organization_subdomain.subdomain if hasattr(request, 'unauthenticated_organization_subdomain') else "<no organization>",
+                org_name=request.unauthenticated_organization_subdomain.name if hasattr(request, 'unauthenticated_organization_subdomain') else "<no organization>",
+                username=user.username,
+                email=user.email,
+                link=settings.SITE_ROOT_URL + "/admin/siteapp/user/{}/change".format(user.id),
+            )
+        mail_admins(
+            subvars("New account on {org_subdomain}: {username} <{email}>"),
+            subvars("A user registered!\n\nUsername: {username}\nEmail: {email}\nOrganization: {org_name}\nAdmin: {link}"))
+
+        return user
+
     def authenticate(self, request, **credentials):
         ret = super(AllauthAccountAdapter, self).authenticate(request, **credentials)
 
@@ -31,7 +56,7 @@ def signup_wrapper(request, *args, **kwargs):
     from allauth.account.views import signup
     ret = signup(request, *args, **kwargs)
 
-    # Log login attempts.
+    # Log signup attempts.
     if request.method == "POST":
         import django.http.response
         import django.template.response

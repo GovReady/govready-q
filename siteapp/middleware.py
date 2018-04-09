@@ -80,6 +80,7 @@ class OrganizationSubdomainMiddleware:
             # Does this subdomain correspond with a known organization?
             org = Organization.objects.filter(subdomain=subdomain).first()
             if org:
+                request.unauthenticated_organization_subdomain = org
                 if request.user.is_authenticated and org.can_read(request.user):
                     # This request is from an authenticated user who is
                     # authorized to participate in the organization.
