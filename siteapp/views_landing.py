@@ -69,7 +69,24 @@ def homepage(request):
                     login(request, user)
                 else:
                     user = request.user
+
                 org = Organization.create(admin_user=user, **neworg_form.cleaned_data)
+
+                # Send a message to site administrators.
+                from django.core.mail import mail_admins
+                def subvars(s):
+                    return s.format(
+                        org_subdomain=org.subdomain,
+                        org_name=org.name,
+                        org_link=settings.SITE_ROOT_URL + "/admin/siteapp/organization/{}/change".format(org.id),
+                        username=user.username,
+                        email=user.email,
+                        user_link=settings.SITE_ROOT_URL + "/admin/siteapp/user/{}/change".format(user.id),
+                    )
+                mail_admins(
+                    subvars("New organization: {org_name} (created by {email})"),
+                    subvars("A new organization has been registered!\n\nOrganization\n------------\nName: {org_name}\nSubdomain: {org_subdomain}\nAdmin: {org_link}\n\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}\nOrganization: {org_name}\nAdmin: {user_link}"))
+
                 return HttpResponseRedirect("/welcome/" + org.subdomain)
 
     elif request.POST.get("action") == "login":
