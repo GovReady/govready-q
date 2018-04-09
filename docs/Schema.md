@@ -446,8 +446,6 @@ In document templates and impute conditions, the value of `module` questions is 
 
 An `interstitial` question is not really a question at all! The `prompt` contains template content, as with other questions, but it is typically longer content with deeper explanatory text. The user is not asked to enter any information.
 
-As with all questions, it is necessary to add the `id` of the interstitial to the template document or make the interstitial a dependency of another question (such as with `ask-first`) to make the interstitial actually appear, since only questions that the output template depends on are displayed to the user. Put the intersititual `id` in a comment to keep it from displaying in the rendered template, e.g. for both `markdown` and `html` you can use `<!--{{interstitial_id}}-->`.
-
 In document templates and impute conditions, the value of `interstitial` questions is always a null value.
 
 #### `raw`
