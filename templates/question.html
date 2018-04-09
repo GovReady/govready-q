@@ -36,6 +36,7 @@ h1 {
 }
   #question form.disabled label {
     color: #777;
+    cursor: not-allowed;
   }
 
 #question-prompt blockquote {
@@ -77,6 +78,36 @@ h1 {
 
 label .onhover { display: none; }
 label:hover .onhover { display: inline; }
+
+#confidence-buttons {
+  margin: 25px 0;
+}
+    #confidence-buttons button {
+        border: 1px solid rgba(255,255,255,0); /* same width as .active but no color */
+        border-radius: 4px;
+        padding: 2px 6px 2px 4px;
+        font-size: 80%;
+        background: none;
+        opacity: .6;
+        margin-right: .5em;
+    }
+        #confidence-buttons span.emoji {
+          display: none; /* until image loaded */
+        }
+        #confidence-buttons button img {
+            height: 1.25em;
+            margin-right: .25em;
+        }
+        #confidence-buttons button.active {
+            border: 1px solid #AAA;
+            color: black;
+            background: #EEE;
+            opacity: 1;
+        }
+        #confidence-buttons:hover button {
+            border: 1px solid #AAA;
+            opacity: 1;
+        }
 
 #action-buttons {
   margin: 25px 0;
@@ -123,6 +154,8 @@ label:hover .onhover { display: inline; }
         <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="save">
+            <input type="hidden" name="skipped_reason" value="">
+            <input type="hidden" name="unsure" value="">
 
             <div id="question-prompt">
               {{prompt|safe}}
@@ -394,9 +427,48 @@ label:hover .onhover { display: inline; }
             {% endif %}
 
             {% if not is_answerable %}
-            	<p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
+                <p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
 
             {% elif write_priv %}
+
+              {% if q.spec.type != "interstitial" %}
+                {# Interstitial questions do not offer these options because the user is just acknowledging the page and not providing an answer. #}
+                <div id="confidence-buttons">
+                    <button id="no-idea-button" type=button {# type=button prevents button from causing form submit #}>
+                        <span class="emoji">:man_shrugging:</span>
+                        I don&rsquo;t know
+                    </button>
+                    <button id="not-applicable-button" type=button>
+                        <span class="emoji">:person_raising_hand:</span>
+                        It doesn&rsquo;t apply
+                    </button>
+                    <button id="not-now-button" type=button>
+                        <span class="emoji">:round_pushpin:</span>
+                        I&rsquo;ll come back
+                    </button>
+                    <button id="not-sure-button" type=button>
+                        <span class="emoji">:thinking:</span>
+                        Not sure
+                    </button>
+
+                    {# Meta-options like starting a discussion or changing the editor of this question. Interstitial questions do not offer these and individuals here as a discussion guest dont get it either. #}
+                    {% if not is_discussion_guest and q.spec.type != "interstitial" %}
+                      {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
+                        <button id="start-a-discussion" onclick="start_a_discussion();" type=button data-toggleable=false>
+                            {# if you can see this page, you can start a conversation #}
+                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss
+                        </button>
+                      {% endif %}
+                      {% if task.can_transfer_owner and write_priv %}
+                        <button id="transfer-editorship" onclick="invite_to_transfer_editor();" type=button data-toggleable=false>
+                            <span class="glyphicon glyphicon-user" style="color: #A65;"></span> Assign
+                        </button>
+                      {% endif %}
+                    {% endif %}
+
+                </div>
+              {% endif %}
+
               <div id="action-buttons" class="clearfix">
 
                 {# Buttons to save or skip this question #}
@@ -416,20 +488,6 @@ label:hover .onhover { display: inline; }
                     &raquo;
                   </button>
 
-                  {% if q.spec.type != "interstitial" %}
-                    {# Interstitial questions do not offer skip. #}
-                    <button id="skip-button"
-                      type="submit" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" 
-                      onclick="$('#question > form input[name=method]').val('skip')">
-                      {% if not answer %}
-                      Skip
-                      {% else %}
-                      Clear
-                      {% endif %}
-                      &raquo;
-                    </button>
-                  {% endif %}
-
                   {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
                   {% if answer_obj and DEBUG %}
                     <button id="clear-button"
@@ -440,25 +498,6 @@ label:hover .onhover { display: inline; }
                       </button>
                   {% endif %}
                 </div> {# /.pull-left #}
-
-                {# Meta-options like starting a discussion or changing the editor of this question. Interstitial questions do not offer these and individuals here as a discussion guest dont get it either. #}
-                {% if not is_discussion_guest and q.spec.type != "interstitial" %}
-                  <div class="pull-right">
-                    <span id="need-help" style="padding: 0;margin-top: 1.25em; list-style:none;">
-                      {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
-                        <button id="start-a-discussion" class="btn btn-default" style="background: white; color: #666; margin-left: 36px;" onclick="javascript:start_a_discussion();return false;">
-                            {# if you can see this page, you can start a conversation #}
-                            <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-comment"></span> Discuss</a>
-                        </button>
-                      {% endif %}
-                      {% if task.can_transfer_owner and write_priv %}
-                        <button id="transfer-editorship" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" onclick="javascript:invite_to_transfer_editor();return false;">
-                            <span class="glyphicon glyphicon-user"></span> Assign
-                        </button>
-                      {% endif %}
-                    </span>
-                  </div>
-                {% endif %}
 
               </div> <!-- /action-buttons -->
 
@@ -546,26 +585,9 @@ $(function() {
     var form = $("#question > form");
 
     // CONTROL INITIALIZATION
+
     {% if q.spec.type == "longtext" %}
       window.inputctrl_quill = CommonMarkQuill("#inputctrl", {});
-    {% endif %}
-
-    // DEFAULT STATE
-
-    {% if write_priv %}
-      {# If the control is editable, give it focus. #}
-      $('#inputctrl').focus();
-      {% if q.spec.type == "longtext" %}
-        window.inputctrl_quill.focus();
-      {% endif %}
-
-    {% else %}
-      {# If the control is not editable, make it disabled. #}
-      form.find('input, textarea').prop('disabled', true);
-      {% if q.spec.type == "longtext" %}
-        window.inputctrl_quill.enable(false);
-      {% endif %}
-
     {% endif %}
 
     // DEFAULT VALUE
@@ -595,21 +617,18 @@ $(function() {
 
     // BUTTON STATE
 
-    function update_save_skip_clear_state() {
-      {% if answer %}
-      // If the answer is unchanged, change the submit button text.
-      $('#save-button').text(
-        (!is_answer_unchanged() ? "Update »" : "Keep »")
-      );
-      {% endif %}
-
-      // The save button is enabled just when the input is valid.
+    function update_save_button_enabled() {
+      // The save button is enabled just when the input is valid
+      // and Don't Know, Doesn't Apply, Not Now aren't active (if they
+      // are, the answer inputs aren't used).
       var ok = (typeof validate_answer()) == "undefined";
+      if ($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active') || $('#not-now-button').hasClass('active'))
+        ok = true;
       $('#save-button').prop('disabled', !ok);
     }
 
-    on_input_changed(update_save_skip_clear_state); // register event handler
-    update_save_skip_clear_state(); // run initially
+    on_input_changed(update_save_button_enabled); // register event handler
+    update_save_button_enabled(); // run initially
 
     // INSTRUMENTATION
 
@@ -630,18 +649,9 @@ $(function() {
       $('#inputctrl').change(handler);
       $('#inputctrl').on('keyup', handler);
     }
-
-    {% if q.spec.type == "text" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "url" %}
-    function is_answer_unchanged() {
-      var val = $('#inputctrl').val();
-      if (val == "{{answer|escapejs}}")
-        return true;
+    function disable_input_controls(disabled) {
+      $('#inputctrl').prop('disabled', disabled);
     }
-    {# TODO: for integer and real questions, we need to parse the value to know if the answer really changed #}
-    {% else %}
-    {# dont reveal for password-type questions #}
-    function is_answer_unchanged() { }
-    {% endif %}
 
     {% elif q.spec.type == "longtext" %}
 
@@ -657,12 +667,8 @@ $(function() {
           handler();
       });
     }
-    function is_answer_unchanged() {
-      // TODO: The values might need to be normalized because things can
-      // have non-significant changes in the markdown-HTML-markdown conversion.
-      var val = window.inputctrl_quill.getContentsAsCommonMark();
-      if (val == "{{answer|escapejs}}")
-        return true;
+    function disable_input_controls(disabled) {
+      window.inputctrl_quill.enable(!disabled);
     }
 
     {% elif q.spec.type == "date" %}
@@ -685,11 +691,8 @@ $(function() {
     function on_input_changed(handler) {
       $('#question select').change(handler);
     }
-    function is_answer_unchanged() {
-      // This is called on the on_input_changed handler, which
-      // is before validate_answer, so the YYYY-MM-DD field hasn't
-      // been constructed yet. Do that first.
-      return !validate_answer() && $("#question input[name='value']").val() == {{answer|json}};
+    function disable_input_controls(disabled) {
+      $("#question select").prop('disabled', disabled);
     }
 
     {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
@@ -703,7 +706,9 @@ $(function() {
     function on_input_changed(handler) {
       form.find('input').click(handler);
     }
-    function is_answer_unchanged() { }
+    function disable_input_controls(disabled) {
+      $("#question input[type=\"radio\"]").prop('disabled', disabled);
+    }
 
     {% elif q.spec.type == "multiple-choice" %}
 
@@ -724,7 +729,9 @@ $(function() {
     function on_input_changed(handler) {
       form.find('input').click(handler);
     }
-    function is_answer_unchanged() { }
+    function disable_input_controls(disabled) {
+      $("#question input[type=\"checkbox\"]").prop('disabled', disabled);
+    }
 
     {% elif q.spec.type == "file" %}
 
@@ -748,32 +755,125 @@ $(function() {
       // form state is reset.
       form.find('input[type=reset]').click(function() { setTimeout(handler, 0); });
     }
-    function is_answer_unchanged() {
-      var ctrl = $('#inputctrl')[0];
-      if (ctrl.files.length == 0)
-        return true;
+    function disable_input_controls(disabled) {
+      $("#inputctrl").prop('disabled', disabled);
     }
 
     {% else %}
 
     // other question types are considered always valid
     function validate_answer() { }
-    function is_answer_unchanged() { }
     function on_input_changed(handler) { }
+    function disable_input_controls(disabled) { }
 
     {% endif %}
 
+    // DEFAULT STATE
+
+    function disable_form(disabled) {
+      form.toggleClass('disabled', disabled);
+      disable_input_controls(disabled);
+    }
+
+    {% if write_priv %}
+      {# If the control is editable, give it focus. #}
+      $('#inputctrl').focus();
+      {% if q.spec.type == "longtext" %}
+        window.inputctrl_quill.focus();
+      {% endif %}
+
+      {# If the question was skipped, set the right skip button state. #}
+      {% if answer_obj.skipped_reason %}
+        {% if answer_obj.skipped_reason == "dont-know" %}
+          $('#no-idea-button').addClass('active');
+        {% elif answer_obj.skipped_reason == "doesnt-apply" %}
+          $('#not-applicable-button').addClass('active');
+        {% else %}
+          $('#not-now-button').addClass('active');
+        {% endif %}
+        disable_form(true);
+      {% endif %}
+
+      {% if answer_obj.unsure %}
+        $('#not-sure-button').addClass('active');
+      {% endif %}
+
+      update_save_button_enabled();
+
+    {% else %}
+      {# If the control is not editable, make it disabled. #}
+      disable_form(true);
+    {% endif %}
+
+    // SKIP / CONFIDENCE LEVEL BUTTONS
+
+    $('#confidence-buttons .emoji').each(function() {
+        var shortname = $(this).text();
+        $(this)
+          .html(emojione.toImage(shortname))
+          .show();
+      });
+    $('#confidence-buttons button:not([data-toggleable=false])')
+      .click(function() {
+        $(this).toggleClass('active');
+        if ($(this).hasClass('active')) {
+            // Don't Know, Doesn't Apply, and Not Now
+            // are mutually exclusive.
+            if ( $(this).attr('id') == "no-idea-button"
+              || $(this).attr('id') == "not-applicable-button"
+              || $(this).attr('id') == "not-now-button")
+                $('#no-idea-button, #not-applicable-button, #not-now-button, #not-sure-button')
+                  .filter(":not([id=" + $(this).attr('id') + "])")
+                  .removeClass('active');
+        }
+
+        // Controls are disabled when Don't Know, Doesn't Apply, or Not Now
+        // are selected.
+        disable_form($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active') || $('#not-now-button').hasClass('active'));
+        update_save_button_enabled();
+      });
+
+    // SUBMIT
+
     form.on("submit", function() {
-        // Run client-side validation.
+        // Which submit button was pressed? In normal usage there is
+        // only a Save button. When debugging, we have a Mark as Cleared
+        // button that resets a question to a state of not even having
+        // ever been answered.
         var method = form.find('input[name=method]').val();
         if (method == "save") {
-          // client-side validation, block form if not valid
-          var problem = validate_answer();
-          if (problem) {
-              alert(problem);
-              return false;
+          if ($('#no-idea-button').hasClass('active')) {
+            // Skipping this question because the user doesn't know
+            // the answer.
+            form.find('input[name=method]').val('skip');
+            form.find('input[name=skipped_reason]').val('dont-know');
+          
+          } else if ($('#not-applicable-button').hasClass('active')) {
+            // Skipping this question because the question doesn't
+            // apply to the user's circumstances.
+            form.find('input[name=method]').val('skip');
+            form.find('input[name=skipped_reason]').val('doesnt-apply');
+
+          } else if ($('#not-now-button').hasClass('active')) {
+            // Skipping this question because the user wants to come
+            // back later.
+            form.find('input[name=method]').val('skip');
+            form.find('input[name=skipped_reason]').val('come-back');
+
+          } else {
+            // Saving the answer. Run client-side validation, and block
+            // submit form if not valid.
+              var problem = validate_answer();
+              if (problem) {
+                  alert(problem);
+                  return false;
+              }
           }
         }
+
+        // Set the unsure flag.
+        form.find('input[name=unsure]').val($('#not-sure-button').hasClass('active')
+            ? "yes" : "");
 
         // Assemble the form submission data.
         //
@@ -841,9 +941,6 @@ function start_a_discussion(is_page_load) {
             question: "{{q.id|escapejs}}"
         },
         success: function(res) {
-          // replace link that starts discussion with static text
-          $('#start-a-discussion').html('<span class="glyphicon glyphicon-comment"></span> <b>Discuss</b>');
-
           // load the discussion
           display_discussion(res, is_page_load);
 

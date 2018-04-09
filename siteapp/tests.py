@@ -458,7 +458,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # We're now on the first actual question.
         # Start a team conversation.
-        self.click_element("#start-a-discussion a")
+        self.click_element("#start-a-discussion")
         self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
         var_sleep(.5) # wait for options to slideDown
         self.click_element("#discussion .comment-input button.btn-primary")

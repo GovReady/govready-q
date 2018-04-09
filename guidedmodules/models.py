@@ -1294,6 +1294,10 @@ class TaskAnswer(models.Model):
                 is_cleared = True
             elif answer.is_skipped():
                 vp = "skipped the question"
+                if answer.skipped_reason:
+                    vp += " ({})".format(answer.get_skipped_reason_display())
+                if answer.skipped_reason != "dont-know" and answer.unsure:
+                    vp += " (unsure)"
                 is_cleared = False
             elif is_cleared:
                 if self.question.spec["type"] == "interstitial":
@@ -1301,9 +1305,13 @@ class TaskAnswer(models.Model):
                     vp = "acknowledged this page"
                 else:
                     vp = "answered the question"
+                    if answer.unsure:
+                        vp += " (unsure)"
                 is_cleared = False
             else:
                 vp = "changed the answer"
+                if answer.unsure:
+                    vp += " (unsure)"
                 is_cleared = False
 
             # get a dict with information about the user
@@ -1363,7 +1371,11 @@ class TaskAnswer(models.Model):
         self.task.on_answer_changed()
         return True
 
-    def save_answer(self, value, answered_by_tasks, answered_by_file, user, method):
+    def save_answer(self,
+        value, answered_by_tasks, answered_by_file,
+        user, method,
+        skipped_reason=None, unsure=False):
+
         # Save the answer and return True if the answer was changed (vs was not
         # updated because the value matched the value of the existing answer).
         current_answer = self.get_current_answer()
@@ -1392,7 +1404,9 @@ class TaskAnswer(models.Model):
             and value == current_answer.stored_value \
             and value_encoding == current_answer.stored_encoding \
             and set(answered_by_tasks) == set(current_answer.answered_by_task.all()) \
-            and are_files_same():
+            and are_files_same() \
+            and skipped_reason == current_answer.skipped_reason \
+            and unsure == current_answer.unsure:
             return False
 
         # The answer is new or changing. Create a new record for it.
@@ -1402,7 +1416,9 @@ class TaskAnswer(models.Model):
             answered_by_method=method,
             stored_value=value,
             stored_encoding=value_encoding,
-            answered_by_file=answered_by_file)
+            answered_by_file=answered_by_file,
+            skipped_reason=skipped_reason,
+            unsure=unsure)
         for t in answered_by_tasks:
             answer.answered_by_task.add(t)
 
@@ -1529,6 +1545,9 @@ class TaskAnswerHistory(models.Model):
 
     answered_by_task = models.ManyToManyField(Task, blank=True, related_name="is_answer_to", help_text="A Task or Tasks that supplies the answer for this question (of type 'module' or 'module-set').")
     answered_by_file = models.FileField(upload_to='q/files', blank=True, null=True)
+
+    skipped_reason = models.CharField(max_length=24, blank=True, null=True, choices=[("dont-know", "Don't Know"), ("doesnt-apply", "Doesn't Apply"), ("come-back", "Come Back Later")], help_text="The reason no answer was given.")
+    unsure = models.BooleanField(default=False, help_text="A flag for if the user wasn't sure the answer is correct and should come back to it later.")
 
     cleared = models.BooleanField(default=False, help_text="Set to True to indicate that the user wants to clear their answer. This is different from a null-valued answer, which means not applicable/don't know/skip.")
 
