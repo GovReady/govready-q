@@ -4,7 +4,7 @@ set -euf -o pipefail # abort script on error
 
 # Check that the database is ready. The docker exec command
 # writes out a 'ready' file once migrations are finished.
-while [ ! -f ready ]; do
+while [ ! -f /tmp/govready-q-is-ready ]; do
 	echo "Waiting for the database to finish initializing..."
 	sleep 3
 done

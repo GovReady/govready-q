@@ -61,7 +61,7 @@ RUN python3.6 manage.py collectstatic --noinput
 
 # Add container startup scripts.
 COPY deployment/docker/dockerfile_exec.sh .
-COPY deployment/docker/first_run.sh .
+COPY deployment/docker/first_run.sh /usr/local/bin/first_run
 
 # This directory must be present for the AppSource created by our
 # first_run script. The directory only has something in it if
