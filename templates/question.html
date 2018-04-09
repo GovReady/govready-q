@@ -450,6 +450,22 @@ label:hover .onhover { display: inline; }
                         <span class="emoji">:thinking:</span>
                         Not sure
                     </button>
+
+                    {# Meta-options like starting a discussion or changing the editor of this question. Interstitial questions do not offer these and individuals here as a discussion guest dont get it either. #}
+                    {% if not is_discussion_guest and q.spec.type != "interstitial" %}
+                      {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
+                        <button id="start-a-discussion" onclick="start_a_discussion();" type=button data-toggleable=false>
+                            {# if you can see this page, you can start a conversation #}
+                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss
+                        </button>
+                      {% endif %}
+                      {% if task.can_transfer_owner and write_priv %}
+                        <button id="transfer-editorship" onclick="invite_to_transfer_editor();" type=button data-toggleable=false>
+                            <span class="glyphicon glyphicon-user" style="color: #A65;"></span> Assign
+                        </button>
+                      {% endif %}
+                    {% endif %}
+
                 </div>
               {% endif %}
 
@@ -482,25 +498,6 @@ label:hover .onhover { display: inline; }
                       </button>
                   {% endif %}
                 </div> {# /.pull-left #}
-
-                {# Meta-options like starting a discussion or changing the editor of this question. Interstitial questions do not offer these and individuals here as a discussion guest dont get it either. #}
-                {% if not is_discussion_guest and q.spec.type != "interstitial" %}
-                  <div class="pull-right">
-                    <span id="need-help" style="padding: 0;margin-top: 1.25em; list-style:none;">
-                      {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
-                        <button id="start-a-discussion" class="btn btn-default" style="background: white; color: #666; margin-left: 36px;" onclick="javascript:start_a_discussion();return false;">
-                            {# if you can see this page, you can start a conversation #}
-                            <a href="javascript:start_a_discussion()"><span class="glyphicon glyphicon-comment"></span> Discuss</a>
-                        </button>
-                      {% endif %}
-                      {% if task.can_transfer_owner and write_priv %}
-                        <button id="transfer-editorship" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" onclick="javascript:invite_to_transfer_editor();return false;">
-                            <span class="glyphicon glyphicon-user"></span> Assign
-                        </button>
-                      {% endif %}
-                    </span>
-                  </div>
-                {% endif %}
 
               </div> <!-- /action-buttons -->
 
@@ -816,7 +813,7 @@ $(function() {
           .html(emojione.toImage(shortname))
           .show();
       });
-    $('#confidence-buttons button')
+    $('#confidence-buttons button:not([data-toggleable=false])')
       .click(function() {
         $(this).toggleClass('active');
         if ($(this).hasClass('active')) {
@@ -944,9 +941,6 @@ function start_a_discussion(is_page_load) {
             question: "{{q.id|escapejs}}"
         },
         success: function(res) {
-          // replace link that starts discussion with static text
-          $('#start-a-discussion').html('<span class="glyphicon glyphicon-comment"></span> <b>Discuss</b>');
-
           // load the discussion
           display_discussion(res, is_page_load);
 
