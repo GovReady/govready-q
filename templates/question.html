@@ -36,6 +36,7 @@ h1 {
 }
   #question form.disabled label {
     color: #777;
+    cursor: not-allowed;
   }
 
 #question-prompt blockquote {
@@ -83,20 +84,28 @@ label:hover .onhover { display: inline; }
 }
     #confidence-buttons button {
         border: 1px solid rgba(255,255,255,0); /* same width as .active but no color */
-        padding: 2px 4px 2px 2px;
+        border-radius: 4px;
+        padding: 2px 6px 2px 4px;
         font-size: 80%;
         background: none;
         opacity: .6;
-        margin-right: 1em;
+        margin-right: .5em;
     }
+        #confidence-buttons span.emoji {
+          display: none; /* until image loaded */
+        }
         #confidence-buttons button img {
-            height: 1.75em;
+            height: 1.25em;
             margin-right: .25em;
         }
         #confidence-buttons button.active {
             border: 1px solid #AAA;
             color: black;
             background: #EEE;
+            opacity: 1;
+        }
+        #confidence-buttons:hover button {
+            border: 1px solid #AAA;
             opacity: 1;
         }
 
@@ -145,6 +154,7 @@ label:hover .onhover { display: inline; }
         <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="save">
+            <input type="hidden" name="skipped_reason" value="">
             <input type="hidden" name="unsure" value="">
 
             <div id="question-prompt">
@@ -424,17 +434,21 @@ label:hover .onhover { display: inline; }
               {% if q.spec.type != "interstitial" %}
                 {# Interstitial questions do not offer these options because the user is just acknowledging the page and not providing an answer. #}
                 <div id="confidence-buttons">
-                    <button id="no-idea-button" type=button> {# type=button prevents button from causing form submit #}
+                    <button id="no-idea-button" type=button {# type=button prevents button from causing form submit #}>
                         <span class="emoji">:man_shrugging:</span>
                         I don&rsquo;t know
                     </button>
                     <button id="not-applicable-button" type=button>
                         <span class="emoji">:person_raising_hand:</span>
-                        This doesn&rsquo;t apply to me
+                        It doesn&rsquo;t apply
+                    </button>
+                    <button id="not-now-button" type=button>
+                        <span class="emoji">:round_pushpin:</span>
+                        I&rsquo;ll come back
                     </button>
                     <button id="not-sure-button" type=button>
                         <span class="emoji">:thinking:</span>
-                        I&rsquo;m not sure
+                        Not sure
                     </button>
                 </div>
               {% endif %}
@@ -608,10 +622,10 @@ $(function() {
 
     function update_save_button_enabled() {
       // The save button is enabled just when the input is valid
-      // and Don't Know and Doesn't Apply aren't active (if they
+      // and Don't Know, Doesn't Apply, Not Now aren't active (if they
       // are, the answer inputs aren't used).
       var ok = (typeof validate_answer()) == "undefined";
-      if ($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active'))
+      if ($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active') || $('#not-now-button').hasClass('active'))
         ok = true;
       $('#save-button').prop('disabled', !ok);
     }
@@ -753,10 +767,16 @@ $(function() {
     // other question types are considered always valid
     function validate_answer() { }
     function on_input_changed(handler) { }
+    function disable_input_controls(disabled) { }
 
     {% endif %}
 
     // DEFAULT STATE
+
+    function disable_form(disabled) {
+      form.toggleClass('disabled', disabled);
+      disable_input_controls(disabled);
+    }
 
     {% if write_priv %}
       {# If the control is editable, give it focus. #}
@@ -766,52 +786,53 @@ $(function() {
       {% endif %}
 
       {# If the question was skipped, set the right skip button state. #}
-      {% if answer_obj.skipped_reason == "dont-know" %}
-        $('#no-idea-button').addClass('active');
-        disable_input_controls(true);
-      {% elif answer_obj.skipped_reason == "doesnt-apply" %}
-        $('#not-applicable-button').addClass('active');
-        disable_input_controls(true);
+      {% if answer_obj.skipped_reason %}
+        {% if answer_obj.skipped_reason == "dont-know" %}
+          $('#no-idea-button').addClass('active');
+        {% elif answer_obj.skipped_reason == "doesnt-apply" %}
+          $('#not-applicable-button').addClass('active');
+        {% else %}
+          $('#not-now-button').addClass('active');
+        {% endif %}
+        disable_form(true);
       {% endif %}
-      {% if answer_obj.unsure and answer_obj.skipped_reason != "dont-know" %}
+
+      {% if answer_obj.unsure %}
         $('#not-sure-button').addClass('active');
       {% endif %}
 
+      update_save_button_enabled();
+
     {% else %}
       {# If the control is not editable, make it disabled. #}
-      disable_input_controls(true);
+      disable_form(true);
     {% endif %}
 
     // SKIP / CONFIDENCE LEVEL BUTTONS
 
     $('#confidence-buttons .emoji').each(function() {
         var shortname = $(this).text();
-        $(this).html(emojione.toImage(shortname));
+        $(this)
+          .html(emojione.toImage(shortname))
+          .show();
       });
     $('#confidence-buttons button')
       .click(function() {
         $(this).toggleClass('active');
         if ($(this).hasClass('active')) {
-            // Don't Know is mutually exclusive with Doesn't
-            // Apply and Not Sure.
-            if ($(this).attr('id') == "no-idea-button")
-                $('#not-applicable-button, #not-sure-button').removeClass('active');
-            
-            // Doesn't Apply is mutually exclusive with Don't Know.
-            if ($(this).attr('id') == "not-applicable-button")
-                $('#no-idea-button').removeClass('active');
-
-            // Not Sure is mutually exclusive with Don't Know, but
-            // if it's selected don't just unselect it --- select
-            // Doesn't Apply instead so that the form state remains
-            // disabled.
-            if ($(this).attr('id') == "not-sure-button" && $('#no-idea-button').hasClass('active'))
-                $('#no-idea-button, #not-applicable-button').toggleClass('active');
+            // Don't Know, Doesn't Apply, and Not Now
+            // are mutually exclusive.
+            if ( $(this).attr('id') == "no-idea-button"
+              || $(this).attr('id') == "not-applicable-button"
+              || $(this).attr('id') == "not-now-button")
+                $('#no-idea-button, #not-applicable-button, #not-now-button, #not-sure-button')
+                  .filter(":not([id=" + $(this).attr('id') + "])")
+                  .removeClass('active');
         }
 
-        // Controls are disabled when Don't Know or Doesn't Apply are
-        // selected.
-        disable_input_controls($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active'));
+        // Controls are disabled when Don't Know, Doesn't Apply, or Not Now
+        // are selected.
+        disable_form($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active') || $('#not-now-button').hasClass('active'));
         update_save_button_enabled();
       });
 
@@ -827,12 +848,20 @@ $(function() {
           if ($('#no-idea-button').hasClass('active')) {
             // Skipping this question because the user doesn't know
             // the answer.
-            form.find('input[name=method]').val('dont-know');
+            form.find('input[name=method]').val('skip');
+            form.find('input[name=skipped_reason]').val('dont-know');
           
           } else if ($('#not-applicable-button').hasClass('active')) {
             // Skipping this question because the question doesn't
             // apply to the user's circumstances.
-            form.find('input[name=method]').val('doesnt-apply');
+            form.find('input[name=method]').val('skip');
+            form.find('input[name=skipped_reason]').val('doesnt-apply');
+
+          } else if ($('#not-now-button').hasClass('active')) {
+            // Skipping this question because the user wants to come
+            // back later.
+            form.find('input[name=method]').val('skip');
+            form.find('input[name=skipped_reason]').val('come-back');
 
           } else {
             // Saving the answer. Run client-side validation, and block

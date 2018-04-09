@@ -1374,7 +1374,7 @@ class TaskAnswer(models.Model):
     def save_answer(self,
         value, answered_by_tasks, answered_by_file,
         user, method,
-        skipped_reason=None, unsure=None):
+        skipped_reason=None, unsure=False):
 
         # Save the answer and return True if the answer was changed (vs was not
         # updated because the value matched the value of the existing answer).
@@ -1546,7 +1546,7 @@ class TaskAnswerHistory(models.Model):
     answered_by_task = models.ManyToManyField(Task, blank=True, related_name="is_answer_to", help_text="A Task or Tasks that supplies the answer for this question (of type 'module' or 'module-set').")
     answered_by_file = models.FileField(upload_to='q/files', blank=True, null=True)
 
-    skipped_reason = models.CharField(max_length=24, blank=True, null=True, choices=[("dont-know", "Don't Know"), ("doesnt-apply", "Doesn't Apply")], help_text="The reason no answer was given.")
+    skipped_reason = models.CharField(max_length=24, blank=True, null=True, choices=[("dont-know", "Don't Know"), ("doesnt-apply", "Doesn't Apply"), ("come-back", "Come Back Later")], help_text="The reason no answer was given.")
     unsure = models.BooleanField(default=False, help_text="A flag for if the user wasn't sure the answer is correct and should come back to it later.")
 
     cleared = models.BooleanField(default=False, help_text="Set to True to indicate that the user wants to clear their answer. This is different from a null-valued answer, which means not applicable/don't know/skip.")

@@ -200,21 +200,13 @@ def save_answer(request, task, answered, context, __):
         skipped_reason = None
         unsure = False
     
-    elif request.POST.get("method") == "dont-know":
+    elif request.POST.get("method") == "skip":
         # The question is being skipped, i.e. answered with a null value,
-        # because the user doesn't know the answer.
+        # because the user doesn't know the answer, it doesn't apply to
+        # the user's circumstances, or they want to return to it later.
         value = None
         cleared = False
-        skipped_reason = "dont-know"
-        unsure = True
-    
-    elif request.POST.get("method") == "doesnt-apply":
-        # The question is being skipped, i.e. answered with a null value,
-        # because the user thinks the question doesn't apply to their
-        # circumstances.
-        value = None
-        cleared = False
-        skipped_reason = "doesnt-apply"
+        skipped_reason = request.POST.get("skipped_reason") or None
         unsure = bool(request.POST.get("unsure"))
 
     elif request.POST.get("method") == "save":
