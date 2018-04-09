@@ -18,7 +18,7 @@ ENV LANGUAGE en_US:en
 RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 RUN yum -y install \
 	python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 \
-	unzip git2u jq \
+	unzip git2u jq nmap-ncat \
 	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
 	mysql-devel \
 	&& yum clean all && rm -rf /var/cache/yum
@@ -62,6 +62,7 @@ RUN python3.6 manage.py collectstatic --noinput
 # Add container startup scripts.
 COPY deployment/docker/dockerfile_exec.sh .
 COPY deployment/docker/first_run.sh /usr/local/bin/first_run
+COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
 
 # This directory must be present for the AppSource created by our
 # first_run script. The directory only has something in it if

@@ -177,9 +177,6 @@ Install `supervisor` which will keep the Python/Django process running and symli
     yum install supervisor
     ln -s /home/govready-q/govready-q/deployment/rhel/supervisor.ini /etc/supervisord.d/govready-q.ini
 
-    # as the govready-q user
-    pip3 install --user uwsgi
-
 Restart services:
 
     service supervisord restart

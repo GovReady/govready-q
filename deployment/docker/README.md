@@ -170,6 +170,14 @@ to force the app catalog cache to be cleared by restarting the container:
 
 	docker container restart govready-q
 
+## Production deployment
+
+The GovReady-Q container runs [uWSGI](http://uwsgi-docs.readthedocs.io/) as the HTTP layer server.
+
+uWSGI's server status JSON data can be retreived using:
+
+	docker container exec govready-q uwsgi_stats
+
 
 ## Updating to a new release of GovReady-Q
 
