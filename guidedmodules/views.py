@@ -192,15 +192,31 @@ def save_answer(request, task, answered, context, __):
 
     # validate and parse value
     if request.POST.get("method") == "clear":
-        # clear means that the question returns to an unanswered state
+        # Clear means that the question returns to an unanswered state.
+        # This method is only offered during debugging to make it easier
+        # to test the application's behavior when questions are unanswered.
         value = None
         cleared = True
+        skipped_reason = None
+        unsure = False
     
-    elif request.POST.get("method") == "skip":
-        # skipped means the question is answered with a null value
+    elif request.POST.get("method") == "dont-know":
+        # The question is being skipped, i.e. answered with a null value,
+        # because the user doesn't know the answer.
         value = None
         cleared = False
+        skipped_reason = "dont-know"
+        unsure = True
     
+    elif request.POST.get("method") == "doesnt-apply":
+        # The question is being skipped, i.e. answered with a null value,
+        # because the user thinks the question doesn't apply to their
+        # circumstances.
+        value = None
+        cleared = False
+        skipped_reason = "doesnt-apply"
+        unsure = bool(request.POST.get("unsure"))
+
     elif request.POST.get("method") == "save":
         # load the answer from the HTTP request
         if q.spec["type"] == "file":
@@ -230,6 +246,8 @@ def save_answer(request, task, answered, context, __):
             return JsonResponse({ "status": "error", "message": str(e) })
 
         cleared = False
+        skipped_reason = None
+        unsure = bool(request.POST.get("unsure"))
 
     elif request.POST.get("method") == "review":
         # Update the reviewed flag on the answer.
@@ -306,7 +324,11 @@ def save_answer(request, task, answered, context, __):
     else:
         # Save the answer.
         had_answer = question.has_answer()
-        if question.save_answer(value, answered_by_tasks, answered_by_file, request.user, "web"):
+        if question.save_answer(
+            value, answered_by_tasks, answered_by_file,
+            request.user, "web",
+            skipped_reason=skipped_reason, unsure=unsure):
+
             # The answer was changed (not just saved as a new answer).
             if request.POST.get("method") == "skip":
                 instrumentation_event_type = "skip"

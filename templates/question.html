@@ -78,6 +78,28 @@ h1 {
 label .onhover { display: none; }
 label:hover .onhover { display: inline; }
 
+#confidence-buttons {
+  margin: 25px 0;
+}
+    #confidence-buttons button {
+        border: 1px solid rgba(255,255,255,0); /* same width as .active but no color */
+        padding: 2px 4px 2px 2px;
+        font-size: 80%;
+        background: none;
+        opacity: .6;
+        margin-right: 1em;
+    }
+        #confidence-buttons button img {
+            height: 1.75em;
+            margin-right: .25em;
+        }
+        #confidence-buttons button.active {
+            border: 1px solid #AAA;
+            color: black;
+            background: #EEE;
+            opacity: 1;
+        }
+
 #action-buttons {
   margin: 25px 0;
 }
@@ -123,6 +145,7 @@ label:hover .onhover { display: inline; }
         <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
             <input type="hidden" name="question" value="{{q.id}}">
             <input type="hidden" name="method" value="save">
+            <input type="hidden" name="unsure" value="">
 
             <div id="question-prompt">
               {{prompt|safe}}
@@ -394,9 +417,28 @@ label:hover .onhover { display: inline; }
             {% endif %}
 
             {% if not is_answerable %}
-            	<p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
+                <p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
 
             {% elif write_priv %}
+
+              {% if q.spec.type != "interstitial" %}
+                {# Interstitial questions do not offer these options because the user is just acknowledging the page and not providing an answer. #}
+                <div id="confidence-buttons">
+                    <button id="no-idea-button" type=button> {# type=button prevents button from causing form submit #}
+                        <span class="emoji">:man_shrugging:</span>
+                        I don&rsquo;t know
+                    </button>
+                    <button id="not-applicable-button" type=button>
+                        <span class="emoji">:person_raising_hand:</span>
+                        This doesn&rsquo;t apply to me
+                    </button>
+                    <button id="not-sure-button" type=button>
+                        <span class="emoji">:thinking:</span>
+                        I&rsquo;m not sure
+                    </button>
+                </div>
+              {% endif %}
+
               <div id="action-buttons" class="clearfix">
 
                 {# Buttons to save or skip this question #}
@@ -415,20 +457,6 @@ label:hover .onhover { display: inline; }
                     {% endif %}
                     &raquo;
                   </button>
-
-                  {% if q.spec.type != "interstitial" %}
-                    {# Interstitial questions do not offer skip. #}
-                    <button id="skip-button"
-                      type="submit" class="btn btn-default" style="background: white; color: #666; margin-left: 15px;" 
-                      onclick="$('#question > form input[name=method]').val('skip')">
-                      {% if not answer %}
-                      Skip
-                      {% else %}
-                      Clear
-                      {% endif %}
-                      &raquo;
-                    </button>
-                  {% endif %}
 
                   {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
                   {% if answer_obj and DEBUG %}
@@ -546,26 +574,9 @@ $(function() {
     var form = $("#question > form");
 
     // CONTROL INITIALIZATION
+
     {% if q.spec.type == "longtext" %}
       window.inputctrl_quill = CommonMarkQuill("#inputctrl", {});
-    {% endif %}
-
-    // DEFAULT STATE
-
-    {% if write_priv %}
-      {# If the control is editable, give it focus. #}
-      $('#inputctrl').focus();
-      {% if q.spec.type == "longtext" %}
-        window.inputctrl_quill.focus();
-      {% endif %}
-
-    {% else %}
-      {# If the control is not editable, make it disabled. #}
-      form.find('input, textarea').prop('disabled', true);
-      {% if q.spec.type == "longtext" %}
-        window.inputctrl_quill.enable(false);
-      {% endif %}
-
     {% endif %}
 
     // DEFAULT VALUE
@@ -595,21 +606,18 @@ $(function() {
 
     // BUTTON STATE
 
-    function update_save_skip_clear_state() {
-      {% if answer %}
-      // If the answer is unchanged, change the submit button text.
-      $('#save-button').text(
-        (!is_answer_unchanged() ? "Update »" : "Keep »")
-      );
-      {% endif %}
-
-      // The save button is enabled just when the input is valid.
+    function update_save_button_enabled() {
+      // The save button is enabled just when the input is valid
+      // and Don't Know and Doesn't Apply aren't active (if they
+      // are, the answer inputs aren't used).
       var ok = (typeof validate_answer()) == "undefined";
+      if ($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active'))
+        ok = true;
       $('#save-button').prop('disabled', !ok);
     }
 
-    on_input_changed(update_save_skip_clear_state); // register event handler
-    update_save_skip_clear_state(); // run initially
+    on_input_changed(update_save_button_enabled); // register event handler
+    update_save_button_enabled(); // run initially
 
     // INSTRUMENTATION
 
@@ -630,18 +638,9 @@ $(function() {
       $('#inputctrl').change(handler);
       $('#inputctrl').on('keyup', handler);
     }
-
-    {% if q.spec.type == "text" or q.spec.type == "email-address" or q.spec.type == "longtext" or q.spec.type == "url" %}
-    function is_answer_unchanged() {
-      var val = $('#inputctrl').val();
-      if (val == "{{answer|escapejs}}")
-        return true;
+    function disable_input_controls(disabled) {
+      $('#inputctrl').prop('disabled', disabled);
     }
-    {# TODO: for integer and real questions, we need to parse the value to know if the answer really changed #}
-    {% else %}
-    {# dont reveal for password-type questions #}
-    function is_answer_unchanged() { }
-    {% endif %}
 
     {% elif q.spec.type == "longtext" %}
 
@@ -657,12 +656,8 @@ $(function() {
           handler();
       });
     }
-    function is_answer_unchanged() {
-      // TODO: The values might need to be normalized because things can
-      // have non-significant changes in the markdown-HTML-markdown conversion.
-      var val = window.inputctrl_quill.getContentsAsCommonMark();
-      if (val == "{{answer|escapejs}}")
-        return true;
+    function disable_input_controls(disabled) {
+      window.inputctrl_quill.enable(!disabled);
     }
 
     {% elif q.spec.type == "date" %}
@@ -685,11 +680,8 @@ $(function() {
     function on_input_changed(handler) {
       $('#question select').change(handler);
     }
-    function is_answer_unchanged() {
-      // This is called on the on_input_changed handler, which
-      // is before validate_answer, so the YYYY-MM-DD field hasn't
-      // been constructed yet. Do that first.
-      return !validate_answer() && $("#question input[name='value']").val() == {{answer|json}};
+    function disable_input_controls(disabled) {
+      $("#question select").prop('disabled', disabled);
     }
 
     {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
@@ -703,7 +695,9 @@ $(function() {
     function on_input_changed(handler) {
       form.find('input').click(handler);
     }
-    function is_answer_unchanged() { }
+    function disable_input_controls(disabled) {
+      $("#question input[type=\"radio\"]").prop('disabled', disabled);
+    }
 
     {% elif q.spec.type == "multiple-choice" %}
 
@@ -724,7 +718,9 @@ $(function() {
     function on_input_changed(handler) {
       form.find('input').click(handler);
     }
-    function is_answer_unchanged() { }
+    function disable_input_controls(disabled) {
+      $("#question input[type=\"checkbox\"]").prop('disabled', disabled);
+    }
 
     {% elif q.spec.type == "file" %}
 
@@ -748,32 +744,110 @@ $(function() {
       // form state is reset.
       form.find('input[type=reset]').click(function() { setTimeout(handler, 0); });
     }
-    function is_answer_unchanged() {
-      var ctrl = $('#inputctrl')[0];
-      if (ctrl.files.length == 0)
-        return true;
+    function disable_input_controls(disabled) {
+      $("#inputctrl").prop('disabled', disabled);
     }
 
     {% else %}
 
     // other question types are considered always valid
     function validate_answer() { }
-    function is_answer_unchanged() { }
     function on_input_changed(handler) { }
 
     {% endif %}
 
+    // DEFAULT STATE
+
+    {% if write_priv %}
+      {# If the control is editable, give it focus. #}
+      $('#inputctrl').focus();
+      {% if q.spec.type == "longtext" %}
+        window.inputctrl_quill.focus();
+      {% endif %}
+
+      {# If the question was skipped, set the right skip button state. #}
+      {% if answer_obj.skipped_reason == "dont-know" %}
+        $('#no-idea-button').addClass('active');
+        disable_input_controls(true);
+      {% elif answer_obj.skipped_reason == "doesnt-apply" %}
+        $('#not-applicable-button').addClass('active');
+        disable_input_controls(true);
+      {% endif %}
+      {% if answer_obj.unsure and answer_obj.skipped_reason != "dont-know" %}
+        $('#not-sure-button').addClass('active');
+      {% endif %}
+
+    {% else %}
+      {# If the control is not editable, make it disabled. #}
+      disable_input_controls(true);
+    {% endif %}
+
+    // SKIP / CONFIDENCE LEVEL BUTTONS
+
+    $('#confidence-buttons .emoji').each(function() {
+        var shortname = $(this).text();
+        $(this).html(emojione.toImage(shortname));
+      });
+    $('#confidence-buttons button')
+      .click(function() {
+        $(this).toggleClass('active');
+        if ($(this).hasClass('active')) {
+            // Don't Know is mutually exclusive with Doesn't
+            // Apply and Not Sure.
+            if ($(this).attr('id') == "no-idea-button")
+                $('#not-applicable-button, #not-sure-button').removeClass('active');
+            
+            // Doesn't Apply is mutually exclusive with Don't Know.
+            if ($(this).attr('id') == "not-applicable-button")
+                $('#no-idea-button').removeClass('active');
+
+            // Not Sure is mutually exclusive with Don't Know, but
+            // if it's selected don't just unselect it --- select
+            // Doesn't Apply instead so that the form state remains
+            // disabled.
+            if ($(this).attr('id') == "not-sure-button" && $('#no-idea-button').hasClass('active'))
+                $('#no-idea-button, #not-applicable-button').toggleClass('active');
+        }
+
+        // Controls are disabled when Don't Know or Doesn't Apply are
+        // selected.
+        disable_input_controls($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active'));
+        update_save_button_enabled();
+      });
+
+    // SUBMIT
+
     form.on("submit", function() {
-        // Run client-side validation.
+        // Which submit button was pressed? In normal usage there is
+        // only a Save button. When debugging, we have a Mark as Cleared
+        // button that resets a question to a state of not even having
+        // ever been answered.
         var method = form.find('input[name=method]').val();
         if (method == "save") {
-          // client-side validation, block form if not valid
-          var problem = validate_answer();
-          if (problem) {
-              alert(problem);
-              return false;
+          if ($('#no-idea-button').hasClass('active')) {
+            // Skipping this question because the user doesn't know
+            // the answer.
+            form.find('input[name=method]').val('dont-know');
+          
+          } else if ($('#not-applicable-button').hasClass('active')) {
+            // Skipping this question because the question doesn't
+            // apply to the user's circumstances.
+            form.find('input[name=method]').val('doesnt-apply');
+
+          } else {
+            // Saving the answer. Run client-side validation, and block
+            // submit form if not valid.
+              var problem = validate_answer();
+              if (problem) {
+                  alert(problem);
+                  return false;
+              }
           }
         }
+
+        // Set the unsure flag.
+        form.find('input[name=unsure]').val($('#not-sure-button').hasClass('active')
+            ? "yes" : "");
 
         // Assemble the form submission data.
         //

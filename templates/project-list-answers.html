@@ -92,6 +92,13 @@ h2 { margin-top: 1.5em; }
                 [<a href="#task-{{section.task.id}}">see below</a>]
               {% endif %}
 
+              <!-- unsure -->
+              {% if answer.unsure %}
+              <div>
+                <span class="label label-warning">unsure</span>
+              </div>
+              {% endif %}
+
               <!-- review state -->
               <div class="review-state-list">
                 {% for key, label in review_choices %}

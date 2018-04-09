@@ -109,13 +109,13 @@ rm -rf /tmp/textcomplete.tgz /tmp/textcomplete
 
 # emojione (Creative Commons Attribution 4.0 International & MIT License)
 download \
-  https://raw.githubusercontent.com/Ranks/emojione/v2.2.7/assets/css/emojione.min.css \
+  https://raw.githubusercontent.com/Ranks/emojione/v3.1.1/assets/css/emojione.min.css \
   $VENDOR/emojione.min.css \
-  '519edf0dc00972d9a811c5e60b94cf719b30351a8dfe62f38fab8d4b5182558b'
+  '395408a3dc9c3db2b5c200b8722a13a60898c861633b99e6e250186adffd1370'
 download \
-  https://raw.githubusercontent.com/Ranks/emojione/v2.2.7/lib/js/emojione.min.js \
+  https://raw.githubusercontent.com/Ranks/emojione/v3.1.1/lib/js/emojione.min.js \
   $VENDOR/emojione.min.js \
-  'f5c06455e539dcd889f7f05d709b5adc76c444099fe57f431365af2fc57e803b'
+  'cdf5daa4185ebb25660e2e6f4fcf4bc5448dde7bd8ca3a07f1d97fc0cc481a86'
 
 # quill rich text editor (BSD License)
 download \

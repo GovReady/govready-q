@@ -895,7 +895,10 @@ class ModuleAnswers(object):
             if q.spec["type"] == "interstitial": continue # skip question types that display awkwardly
             if value is None:
                 # Question is skipped.
-                value_display = "<i>skipped</i>"
+                if a.skipped_reason:
+                    value_display = "<i>{}</i>".format( a.get_skipped_reason_display() )
+                else:
+                    value_display = "<i>skipped</i>"
             else:
                 # Use the template rendering system to produce a human-readable
                 # HTML rendering of the value.
