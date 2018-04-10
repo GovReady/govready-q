@@ -18,8 +18,9 @@ ENV LANGUAGE en_US:en
 RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 RUN yum -y install \
 	python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 \
-	unzip git2u jq \
+	unzip git2u jq nmap-ncat \
 	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
+	supervisor \
 	mysql-devel \
 	&& yum clean all && rm -rf /var/cache/yum
 
@@ -59,9 +60,26 @@ COPY manage.py .
 RUN mkdir -p local && echo '{ "static": "static_root", "debug": false, "host": "_", "https": false }' > local/environment.json
 RUN python3.6 manage.py collectstatic --noinput
 
-# Add container startup scripts.
+# Configure supervisord.
+# a) Make /var/{run,log}/supervisor world-writable because we start supervisord
+# as the non-root application user and the OS package makes these paths
+# writable only by root. When the container is run with a read-only root
+# filesystem, /var/{run,log} must be mounted with --tmpfs (or a writable volume)
+# and in this case the directories will be empty on container start, so
+# the OS package directory layout won't be there, and we must make the directorries
+# world-writable so that the container can create the inner 'supervisor'
+# directory (see dockerfile_exec.sh).
+# b) Move the child process logs from /tmp to /var/log/supervisor to make them
+# more easily accessible if /var/log is mounted to a volume.
+RUN chmod a+rwx /run /run/supervisor /var/log /var/log/supervisor
+RUN sed -i "s:^;childlogdir=/tmp:childlogdir=/var/log/supervisor:" /etc/supervisord.conf
+COPY deployment/docker/supervisord.ini /etc/supervisord.d/application.ini
+
+# Add container startup and management scripts.
 COPY deployment/docker/dockerfile_exec.sh .
-COPY deployment/docker/first_run.sh .
+COPY deployment/docker/first_run.sh /usr/local/bin/first_run
+COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
+COPY deployment/docker/tail_logs.sh /usr/local/bin/tail_logs
 
 # This directory must be present for the AppSource created by our
 # first_run script. The directory only has something in it if

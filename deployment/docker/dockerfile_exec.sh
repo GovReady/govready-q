@@ -46,10 +46,28 @@ if [ ! -z "${FIRST_RUN-}" ]; then
 	python3.6 manage.py first_run --non-interactive
 fi
 
-# Write a file that indicates to the host that Q
-# is now fully configured.
-echo "done" > /tmp/govready-q-is-ready
-echo "GovReady-Q is fully up and running."
+# Configure the HTTP+applications server.
+# * The port is fixed --- see docker_container_run.sh.
+# * Use 4 concurrent processes by default. Expose management statistics to localhost only.
+cat > /tmp/uwsgi.ini <<EOF;
+[uwsgi]
+http = 0.0.0.0:8000
+wsgi-file = siteapp/wsgi.py
+processes = ${PROCESSES-4}
+stats = 127.0.0.1:9191
+EOF
 
-# Start the server. The port is fixed --- see docker_container_run.sh.
-python3.6 manage.py runserver 0.0.0.0:8000
+# Write a file that indicates to the host that Q
+# is now fully configured. It will still be a few
+# moments before uWSGI is accepting connections.
+echo "done" > /tmp/govready-q-is-ready
+echo "GovReady-Q is starting."
+echo # usgi output follows
+
+# Start the server. Ensure some paths exist since
+# if the containing directories are mounted with
+# --tmpfs then they'll be empty but supervisord
+# expects its paths to be there. See the Dockerfile.
+mkdir -p /var/{run,log}/supervisor
+exec supervisord -n
+

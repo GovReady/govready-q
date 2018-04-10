@@ -30,7 +30,7 @@ If the site does not come up, check the container logs for an error message:
 
 With the container started and the database initialized, run our first-run script to create a Django database superuser and set up your first organization:
 
-	docker container exec -it govready-q ./first_run.sh
+	docker container exec -it govready-q first_run
 
 To pause and restart the container without destroying its data:
 
@@ -170,6 +170,38 @@ to force the app catalog cache to be cleared by restarting the container:
 
 	docker container restart govready-q
 
+## Production deployment
+
+The GovReady-Q container runs several processes, including an HTTP/application server and a background process for sending notification emails.
+
+### Console and logs
+
+The container's console, which can be accessed with
+
+	docker container logs govready-q
+
+shows the output of container's start-up commands including database migrations and process startup. Additional log files are stored in /var/log (in particular, /var/log/supervisor) within the container. A special management command can be used to follow the log files:
+
+	docker container exec govready-q tail_logs -f
+
+The log files can also be accessed by mounting `/var/log` with a Docker bind-mount or as a volume (and that's the only way to see the logs if `docker container exec` cannot be used in your environment).
+
+### Secure deployments
+
+The container's processes run exclusively as a non-root user with UID 1000 and GID 1000.
+
+The container may be run with a read-only root filesystem (Docker's `--read-only` argument) so long as `/run`, `/tmp`, and `/var/log` are writable. When the `--dburl` argument is given to our `docker_container_run.sh` script, a read-only filesystem is activated using:
+
+	--read-only --tmpfs /run --tmpfs /tmp --tmpfs /var/log
+
+The three directories can be made writable either by being mounted as tmpfs temporary filesystems, as above, or using a bind mount or a Docker volume. In production environments where the container is launched without our script, it is recommended to use tempfs for `/run` and `/tmp` and to mount `/var/log` to a volume.
+
+
+### Other management commands
+
+See the [uWSGI](http://uwsgi-docs.readthedocs.io/) application server JSON process stats:
+
+	docker container exec govready-q uwsgi_stats
 
 ## Updating to a new release of GovReady-Q
 

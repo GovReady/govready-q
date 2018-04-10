@@ -68,7 +68,7 @@ It takes about 15 seconds for the GovReady-Q server to be ready. Open the URL (e
 
 Now that the GovReady-Q Compliance Server is running, create an administrative account and an organization. Run the following command and answer the prompts:
 
-	docker container exec -it govready-q ./first_run.sh
+	docker container exec -it govready-q first_run
 
 Your prompt and reply will look something like this:
 

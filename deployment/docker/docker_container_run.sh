@@ -240,7 +240,7 @@ if [ ! -z "$DBURL" ]; then
   # Start the container with a read-only filesystem except for /run and /tmp
   # which will use tempfs, which means they'll be cleared on container restarts.
   echo "Starting container with a read-only filesystem."
-  FSOPTS="--read-only --tmpfs /run --tmpfs /tmp"
+  FSOPTS="--read-only --tmpfs /run --tmpfs /tmp --tmpfs /var/log"
 fi
 
 # Form the "docker container run command".
