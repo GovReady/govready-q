@@ -67,6 +67,13 @@ fi
 # Append the current commit hash as the second line of the VERSION file.
 COMMIT=$(git rev-parse HEAD)
 
+# Update the local copy of the base image so we are building against
+# the latest upstream base.
+BASEIMAGE=$(grep FROM Dockerfile | sed "s/FROM //")
+echo "Updating $BASEIMAGE..."
+docker image pull $BASEIMAGE
+
+# Write a VERSION file to go into the image.
 cat > VERSION << EOF;
 $VERSION
 $COMMIT
