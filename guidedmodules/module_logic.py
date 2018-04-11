@@ -389,11 +389,9 @@ def render_content(content, answers, output_format, source, additional_context={
                 return substitutions[int(m.group(1))]
             template_body = re.sub("\uE000(\d+)\uE001", replace, template_body)
 
-        elif output_format == "text":
-            # When rendering a Markdown template for plain-text output, we can just
-            # pass the Markdown directly as if it were plain-text. Auto-escaping is
-            # turned off in this mode.
-            template_format = "text"
+        elif output_format in ("text", "markdown"):
+            # Pass through the markdown markup unchanged.
+            pass
 
         else:
             raise ValueError("Cannot render a markdown template to %s in %s." % (output_format, source))
@@ -456,7 +454,7 @@ def render_content(content, answers, output_format, source, additional_context={
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
 
-    elif template_format in ("text", "html"):
+    elif template_format in ("text", "markdown", "html"):
         # The plain-text and HTML template types are rendered using Jinja2.
         #
         # The only difference is in how escaping of substituted variables works.
@@ -465,7 +463,7 @@ def render_content(content, answers, output_format, source, additional_context={
         # paragraphs aren't collapsed in HTML, and gives us other benefits.
         # For other values we perform standard HTML escaping.
 
-        if template_format == "text":
+        if template_format in ("text", "markdown"):
             def escapefunc(question, task, has_answer, answerobj, value):
                 # Don't perform any escaping.
                 return str(value)
@@ -482,7 +480,7 @@ def render_content(content, answers, output_format, source, additional_context={
         import jinja2
         env = Jinja2Environment(
             autoescape=True,
-            undefined=jinja2.StrictUndefined)
+            undefined=jinja2.StrictUndefined) # see below - we defined any undefined variables
         try:
             template = env.from_string(template_body)
         except jinja2.TemplateSyntaxError as e:
@@ -508,6 +506,38 @@ def render_content(content, answers, output_format, source, additional_context={
                 tc = TemplateContext(answers, escapefunc, root=True, show_answer_metadata=show_answer_metadata, is_computing_title=is_computing_title)
                 context.update(tc)
 
+            # Define undefined variables. Jinja2 will normally raise an exception
+            # when an undefined variable is accessed. It can also be set to not
+            # raise an exception and treat the variables as nulls. As a middle
+            # ground, we'll render these variables as error messages. This isn't
+            # great because an undefined variable indicates an incorrectly authored
+            # template, and rendering the variable might mean no one will notice
+            # the template is incorrect. But it's probably better UX than having
+            # a big error message for the output as a whole or silently ignoring it.
+            for varname in get_jinja2_template_vars(template_body):
+                if output_format == "html" and show_answer_metadata:
+                    # In HTML outputs with popovers for answer metadata, use a popover
+                    # to display detailed error info. module-finished.html explicitly
+                    # renders popovers in templates.
+                    var_error_msg = jinja2.Markup("""
+                    <span class="text-danger"
+                     data-toggle="popover" data-content="
+                       Invalid reference to variable '{}' in {}.
+                     ">
+                        &lt;invalid reference&gt;
+                    </span>
+                    """.format(jinja2.escape(varname), jinja2.escape(source)))
+                else:
+                    # Simple error message for text or markdown output, or HTML
+                    # output when popovers are not being used. For HTML, this
+                    # needs escaping so let auto-escaping occur. For text/markdown,
+                    # auto-escaping must be supressed.
+                    var_error_msg = "<invalid reference to '{}' in {}>".format(varname, source)
+                    if output_format != "html":
+                        var_error_msg = jinja2.Markup(var_error_msg)
+
+                context.setdefault(varname, var_error_msg)
+
             # Now really render.
             output = template.render(context)
         except Exception as e:
@@ -519,10 +549,20 @@ def render_content(content, answers, output_format, source, additional_context={
             if output_format == "text":
                 # text => text (nothing to do)
                 return output
+            # TODO: text => markdown
             elif output_format == "html":
                 # convert text to HTML by ecaping and wrapping in a <pre> tag
                 import html
                 return "<pre>" + html.escape(output) + "</pre>"
+        elif template_format == "markdown":
+            if output_format == "text":
+                # TODO: markdown => text, for now just return the Markdown markup
+                return output
+            elif output_format == "markdown":
+                # markdown => markdown -- nothing to do
+                return output
+            # markdown => html never occurs because we convert the Markdown to
+            # HTML earlier and then we see it as html => html.
         elif template_format == "html":
             if output_format == "html":
                 # html => html
@@ -926,7 +966,7 @@ class ModuleAnswers(object):
         # module's output. The output is a set of documents. The
         # documents are lazy-rendered because not all of them may
         # be used by the caller.
-        output_formats = ("html", "text")
+        output_formats = ("html", "text", "markdown")
         class LazyRenderedDocument:
             def __init__(self, module_answers, document, index, use_data_urls):
                 self.module_answers = module_answers
@@ -957,11 +997,12 @@ class ModuleAnswers(object):
                             doc_name = "at index " + str(self.index)
                             if "title" in self.document:
                                 doc_name = repr(self.document["title"]) + " (" + doc_name + ")"
-                        doc_name = "%s output document %s" % (self.module_answers.module.module_name, doc_name)
+                        doc_name = "'%s' output document '%s'" % (self.module_answers.module.module_name, doc_name)
 
                         # Try to render it.
-                        task_cache_key = "output_r1_{}_{}".format(
+                        task_cache_key = "output_r1_{}_{}_{}".format(
                             self.index,
+                            key,
                             1 if use_data_urls else 0,
                         )
                         def do_render():
@@ -987,7 +1028,7 @@ class ModuleAnswers(object):
                 raise KeyError(key)
                 
             def get(self, key, default=None):
-                if key == "html" or key in self.document:
+                if key in output_formats or key in self.document:
                     return self[key]
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
@@ -1131,7 +1172,7 @@ class TemplateContext(Mapping):
                     if doc.get("id") == item:
                         # Render it.
                         content = render_content(doc, self.context.module_answers, "html",
-                            "%s output document %s" % (repr(self.context.module_answers.module), item),
+                            "'%s' output document '%s'" % (repr(self.context.module_answers.module), item),
                             {}, show_answer_metadata=self.context.show_answer_metadata)
 
                         # Mark it as safe.

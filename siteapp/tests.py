@@ -280,6 +280,10 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element("form.signup button") # This isn't a very good targetting of the "sign up" link.
         var_sleep(.5) # wait for next page to load
 
+        for admin in settings.ADMINS:
+            # Test that administrators got a notice about the new user.
+            self.assertIn("A user registered!", self.pop_email().body)
+
         # Test that an allauth confirmation email was sent.
         self.assertIn("Please confirm your email address at GovReady Q by following this link", self.pop_email().body)
 

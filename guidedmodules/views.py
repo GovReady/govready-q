@@ -670,9 +670,15 @@ def download_module_output(request, task, answered, context, question, document_
         "markdown": ("markdown_github", "md", "text/plain"),
         "docx": ("docx", "docx", "application/octet-stream"),
         "odt": ("odt", "odt", "application/octet-stream"),
-    } 
+    }
 
-    if download_format == "html":
+    if download_format == "markdown" and doc["format"] == "markdown":
+        # When a Markdown output is requested for a template that is
+        # authored in markdown, use its markdown output format. Otherwise
+        # use pandoc below.
+        return HttpResponse(doc["markdown"], content_type="text/plain")
+
+    elif download_format == "html":
         # Return the raw HTML.
         return HttpResponse(doc["html"], content_type="text/html")
 
