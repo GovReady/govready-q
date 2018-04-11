@@ -1,6 +1,24 @@
 GovReady-Q Release Notes
 ========================
 
+v0.7.0-rc9 (March 30, 2018)
+---------------------------
+
+This release was incorrectly named with a "7" instead of an "8".
+
+Application changes:
+
+* On the review page, the reviewed state of questions can now be changed with one click.
+* Some performance improvements.
+* Some UI improvements.
+* Fixed a bug in project import with invalid data.
+
+Development changes:
+
+* Pinned a dependency version that changed upstream.
+* Minor changes to tests.
+* Upgraded some dependencies.
+
 v0.8.0-rc8 (March 21, 2018)
 ---------------------------
 
