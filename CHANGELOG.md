@@ -1,6 +1,23 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.0-rc12 (April 6, 2018)
+---------------------------
+
+Application changes:
+
+* Minor UI fixes.
+
+Deployment changes:
+
+* Docker deployments now run the container's CMD process as a non-root user.
+* Docker deployments now support running with a read-only root filesystem.
+
+Development changes:
+
+* Improvements to the Docker launch scripts.
+* Upgraded some dependencies.
+
 v0.8.0-rc11 (April 4, 2018)
 ---------------------------
 
