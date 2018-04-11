@@ -6,6 +6,7 @@ In Development
 
 Application changes:
 
+* Downloading output documents in 'markdown' format no longer round-trips through pandoc when the template was authored as Markdown.
 * Fix caching bug with output documents in multiple formats.
 * Small UI improvements.
 

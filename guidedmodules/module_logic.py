@@ -389,11 +389,9 @@ def render_content(content, answers, output_format, source, additional_context={
                 return substitutions[int(m.group(1))]
             template_body = re.sub("\uE000(\d+)\uE001", replace, template_body)
 
-        elif output_format == "text":
-            # When rendering a Markdown template for plain-text output, we can just
-            # pass the Markdown directly as if it were plain-text. Auto-escaping is
-            # turned off in this mode.
-            template_format = "text"
+        elif output_format in ("text", "markdown"):
+            # Pass through the markdown markup unchanged.
+            pass
 
         else:
             raise ValueError("Cannot render a markdown template to %s in %s." % (output_format, source))
@@ -456,7 +454,7 @@ def render_content(content, answers, output_format, source, additional_context={
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
 
-    elif template_format in ("text", "html"):
+    elif template_format in ("text", "markdown", "html"):
         # The plain-text and HTML template types are rendered using Jinja2.
         #
         # The only difference is in how escaping of substituted variables works.
@@ -465,7 +463,7 @@ def render_content(content, answers, output_format, source, additional_context={
         # paragraphs aren't collapsed in HTML, and gives us other benefits.
         # For other values we perform standard HTML escaping.
 
-        if template_format == "text":
+        if template_format in ("text", "markdown"):
             def escapefunc(question, task, has_answer, answerobj, value):
                 # Don't perform any escaping.
                 return str(value)
@@ -519,10 +517,20 @@ def render_content(content, answers, output_format, source, additional_context={
             if output_format == "text":
                 # text => text (nothing to do)
                 return output
+            # TODO: text => markdown
             elif output_format == "html":
                 # convert text to HTML by ecaping and wrapping in a <pre> tag
                 import html
                 return "<pre>" + html.escape(output) + "</pre>"
+        elif template_format == "markdown":
+            if output_format == "text":
+                # TODO: markdown => text, for now just return the Markdown markup
+                return output
+            elif output_format == "markdown":
+                # markdown => markdown -- nothing to do
+                return output
+            # markdown => html never occurs because we convert the Markdown to
+            # HTML earlier and then we see it as html => html.
         elif template_format == "html":
             if output_format == "html":
                 # html => html
@@ -926,7 +934,7 @@ class ModuleAnswers(object):
         # module's output. The output is a set of documents. The
         # documents are lazy-rendered because not all of them may
         # be used by the caller.
-        output_formats = ("html", "text")
+        output_formats = ("html", "text", "markdown")
         class LazyRenderedDocument:
             def __init__(self, module_answers, document, index, use_data_urls):
                 self.module_answers = module_answers
@@ -988,7 +996,7 @@ class ModuleAnswers(object):
                 raise KeyError(key)
                 
             def get(self, key, default=None):
-                if key == "html" or key in self.document:
+                if key in output_formats or key in self.document:
                     return self[key]
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
