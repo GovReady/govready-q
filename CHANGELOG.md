@@ -1,6 +1,26 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.0-rc6 (March 15, 2018)
+--------------------------
+
+Application changes:
+
+* Various UI improvements.
+
+App authoring changes:
+
+* Apps can now be hidden by AppSource repositories using a catalog.yaml file.
+* AppSources can now control which apps are shown in the catalog.
+
+Deployment changes:
+
+* Various fixes for Docker, including supporting MySQL databases.
+
+Development changes:
+
+* Upgraded some dependencies.
+
 v0.8.0-rc5 (March 7, 2018)
 --------------------------
 
