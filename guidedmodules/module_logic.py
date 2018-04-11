@@ -960,8 +960,9 @@ class ModuleAnswers(object):
                         doc_name = "%s output document %s" % (self.module_answers.module.module_name, doc_name)
 
                         # Try to render it.
-                        task_cache_key = "output_r1_{}_{}".format(
+                        task_cache_key = "output_r1_{}_{}_{}".format(
                             self.index,
+                            key,
                             1 if use_data_urls else 0,
                         )
                         def do_render():

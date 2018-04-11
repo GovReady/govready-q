@@ -6,6 +6,7 @@ In Development
 
 Application changes:
 
+* Fix caching bug with output documents in multiple formats.
 * Small UI improvements.
 
 Deployment changes:
