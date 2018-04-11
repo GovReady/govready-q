@@ -463,13 +463,35 @@ def render_content(content, answers, output_format, source, additional_context={
         # paragraphs aren't collapsed in HTML, and gives us other benefits.
         # For other values we perform standard HTML escaping.
 
+        import jinja2
+
         if template_format in ("text", "markdown"):
             def escapefunc(question, task, has_answer, answerobj, value):
-                # Don't perform any escaping.
+                # Don't perform any escaping. The caller will wrap the
+                # result in jinja2.Markup().
                 return str(value)
+            def errorfunc(message, short_message, long_message, **format_vars):
+                # Wrap in jinja2.Markup to prevent auto-escaping.
+                return jinja2.Markup("<" + message.format(**format_vars) + ">")
     
         elif template_format == "html":
             escapefunc = HtmlAnswerRenderer(show_metadata=show_answer_metadata, use_data_urls=use_data_urls)
+            def errorfunc(message, short_message, long_message, **format_vars):
+                if output_format == "html" and show_answer_metadata:
+                    # In HTML outputs with popovers for answer metadata, use a popover
+                    # to display detailed error info. module-finished.html explicitly
+                    # renders popovers in templates.
+                    return jinja2.Markup("""
+                    <span class="text-danger"
+                     data-toggle="popover" data-content="{}">
+                        &lt;{}&gt;
+                    </span>
+                    """.format(jinja2.escape(long_message.format(**format_vars)),
+                               jinja2.escape(short_message.format(**format_vars))))
+                else:
+                    # Simple error message for HTML output when popovers are not
+                    # being used. Auto-escaping will take care of escaping.
+                    return "<{}>".format(message.format(**format_vars))
 
         # Execute the template.
 
@@ -477,7 +499,6 @@ def render_content(content, answers, output_format, source, additional_context={
         # we handle it ourselves, we do so using the __html__ method on
         # RenderedAnswer, which relies on autoescaping logic. This also lets
         # the template writer disable autoescaping with "|safe".
-        import jinja2
         env = Jinja2Environment(
             autoescape=True,
             undefined=jinja2.StrictUndefined) # see below - we defined any undefined variables
@@ -503,7 +524,11 @@ def render_content(content, answers, output_format, source, additional_context={
             # context.update will immediately load all top-level values, which
             # unfortuntately might throw an error if something goes wrong
             if answers:
-                tc = TemplateContext(answers, escapefunc, root=True, show_answer_metadata=show_answer_metadata, is_computing_title=is_computing_title)
+                tc = TemplateContext(answers, escapefunc,
+                    root=True,
+                    errorfunc=errorfunc,
+                    show_answer_metadata=show_answer_metadata,
+                    is_computing_title=is_computing_title)
                 context.update(tc)
 
             # Define undefined variables. Jinja2 will normally raise an exception
@@ -515,28 +540,13 @@ def render_content(content, answers, output_format, source, additional_context={
             # the template is incorrect. But it's probably better UX than having
             # a big error message for the output as a whole or silently ignoring it.
             for varname in get_jinja2_template_vars(template_body):
-                if output_format == "html" and show_answer_metadata:
-                    # In HTML outputs with popovers for answer metadata, use a popover
-                    # to display detailed error info. module-finished.html explicitly
-                    # renders popovers in templates.
-                    var_error_msg = jinja2.Markup("""
-                    <span class="text-danger"
-                     data-toggle="popover" data-content="
-                       Invalid reference to variable '{}' in {}.
-                     ">
-                        &lt;invalid reference&gt;
-                    </span>
-                    """.format(jinja2.escape(varname), jinja2.escape(source)))
-                else:
-                    # Simple error message for text or markdown output, or HTML
-                    # output when popovers are not being used. For HTML, this
-                    # needs escaping so let auto-escaping occur. For text/markdown,
-                    # auto-escaping must be supressed.
-                    var_error_msg = "<invalid reference to '{}' in {}>".format(varname, source)
-                    if output_format != "html":
-                        var_error_msg = jinja2.Markup(var_error_msg)
-
-                context.setdefault(varname, var_error_msg)
+                context.setdefault(varname, errorfunc(
+                    "invalid reference to '{varname}' in {source}",
+                    "invalid reference",
+                    "Invalid reference to variable '{varname}' in {source}.",
+                    varname=varname,
+                    source=source
+                ))
 
             # Now really render.
             output = template.render(context)
@@ -1039,10 +1049,11 @@ class TemplateContext(Mapping):
        template and expression functionality like the '.' accessor to get to
        the answers of a sub-task."""
 
-    def __init__(self, module_answers, escapefunc, parent_context=None, root=False, show_answer_metadata=None, is_computing_title=False):
+    def __init__(self, module_answers, escapefunc, parent_context=None, root=False, errorfunc=None, show_answer_metadata=None, is_computing_title=False):
         self.module_answers = module_answers
         self.escapefunc = escapefunc
         self.root = root
+        self.errorfunc = parent_context.errorfunc if parent_context else errorfunc
         self.show_answer_metadata = parent_context.show_answer_metadata if parent_context else (show_answer_metadata or False)
         self.is_computing_title = parent_context.is_computing_title if parent_context else is_computing_title
         self._cache = { }
@@ -1129,7 +1140,11 @@ class TemplateContext(Mapping):
             return TemplateContext.LazyOutputDocuments(self)
 
         # The item is not something found in the context.
-        raise AttributeError(item + " is not a question or property of " + (self.module_answers.task.title if self.module_answers and self.module_answers.task else self.module_answers.module.spec["title"]) + ".")
+        error_message = "'{item}' is not a question or property of '{object}'."
+        error_message_vars = { "item": item, "object": (self.module_answers.task.title if self.module_answers and self.module_answers.task else self.module_answers.module.spec["title"]) }
+        if self.errorfunc:
+            return self.errorfunc(error_message, "invalid reference", error_message, **error_message_vars)
+        raise AttributeError(error_message.format(error_message_vars))
 
     def __iter__(self):
         self._execute_lazy_module_answers()

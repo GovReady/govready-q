@@ -12,7 +12,7 @@ Application changes:
 
 App authoring changes:
 
-* Templates no longer die but instead show inline error messages when an undefined context variable is accessed.
+* Templates no longer die but instead show inline error messages when an undefined variable is accessed.
 
 Deployment changes:
 
