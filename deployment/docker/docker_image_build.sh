@@ -37,6 +37,12 @@ if not isinstance(v, SetuptoolsVersion) or v.local:
 	sys.exit(1)
 EOF
 
+	# Check that the tag has a CHANGELOG entry.
+	if ! grep "^$VERSION " CHANGELOG.md > /dev/null; then
+		echo "ERROR: There is no CHANGELOG.md entry for $VERSION."
+		exit 1
+	fi
+
 	# Validate that the tag is pushed (check that it exists on
 	# origin and refers to the same commit and, if applicable,
 	# has same annotated tag content).
@@ -67,6 +73,13 @@ fi
 # Append the current commit hash as the second line of the VERSION file.
 COMMIT=$(git rev-parse HEAD)
 
+# Update the local copy of the base image so we are building against
+# the latest upstream base.
+BASEIMAGE=$(grep FROM Dockerfile | sed "s/FROM //")
+echo "Updating $BASEIMAGE..."
+docker image pull $BASEIMAGE
+
+# Write a VERSION file to go into the image.
 cat > VERSION << EOF;
 $VERSION
 $COMMIT

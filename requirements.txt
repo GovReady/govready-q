@@ -151,9 +151,9 @@ packaging==17.1 \
     --hash=sha256:e9215d2d2535d3ae866c3d6efc77d5b24a0192cce0ff20e42896cc0664f889c0 \
     --hash=sha256:f019b770dd64e585a99714f1fd5e01c7a8f11b45635aa953fd41c689a657375b \
     # via dparse, safety
-pbr==4.0.1 \
-    --hash=sha256:56b7a8ba7d64bf6135a9dfefb85a80d95924b3fde5ed6343a1a1d464a040dae3 \
-    --hash=sha256:de75cf1d510542c746beeff66b52241eb12c8f95f2ef846ee50ed5d72392caa4 \
+pbr==4.0.2 \
+    --hash=sha256:4e8a0ed6a8705a26768f4c3da26026013b157821fe5f95881599556ea9d91c19 \
+    --hash=sha256:dae4aaa78eafcad10ce2581fc34d694faa616727837fd8e55c1a00951ad6744f \
     # via stevedore
 pillow==5.1.0 \
     --hash=sha256:00633bc2ec40313f4daf351855e506d296ec3c553f21b66720d0f1225ca84c6f \
@@ -211,8 +211,8 @@ psycopg2==2.7.4 \
     --hash=sha256:d74cf9234ba76426add5e123449be08993a9b13ff434c6efa3a07caa305a619f \
     --hash=sha256:f3d3a88128f0c219bdc5b2d9ccd496517199660cea021c560a3252116df91cbd \
     --hash=sha256:fe6a7f87356116f5ea840c65b032af17deef0e1a5c34013a2962dd6f99b860dd
-pygithub==1.38 \
-    --hash=sha256:1ed08f775ec5067bc8452b72bde2dbb95cf4e52ff2bd50cc32c69c91ffad9272
+pygithub==1.39 \
+    --hash=sha256:8a87bc0fbd0b70c2f12911f7f25a493cd13371bc1bbac6c548cc61b69e7d006f
 pygments==2.2.0 \
     --hash=sha256:78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d \
     --hash=sha256:dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc
@@ -235,9 +235,9 @@ python3-openid==3.1.0 \
     --hash=sha256:0086da6b6ef3161cfe50fb1ee5cceaf2cda1700019fda03c2c5c440ca6abe4fa \
     --hash=sha256:628d365d687e12da12d02c6691170f4451db28d6d68d050007e4a40065868502 \
     # via django-allauth
-pytz==2018.3 \
-    --hash=sha256:07edfc3d4d2705a20a6e99d97f0c4b61c800b8232dc1c04d87e8554f130148dd \
-    --hash=sha256:410bcd1d6409026fbaa65d9ed33bf6dd8b1e94a499e32168acfc7b332e4095c0 \
+pytz==2018.4 \
+    --hash=sha256:65ae0c8101309c45772196b21b74c46b2e5d11b6275c45d251b150d5da334555 \
+    --hash=sha256:c06425302f2cf668f1bba7a0a03f3c1d34d4ebeef2c72003da308b3947c7f749 \
     # via django, django-notifications-hq, fs, tzlocal
 pyyaml==3.12 \
     --hash=sha256:16b20e970597e051997d90dc2cddc713a2876c47e3d92d59ee198700c5427736 \
