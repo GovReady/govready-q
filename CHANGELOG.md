@@ -1,8 +1,22 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.0-rc8 (March 21, 2018)
+---------------------------
+
+Application changes:
+
+* Discussion comments are now entered using a plain text editor instead of a rich text editor, and @-mention autocompletes are working again.
+* Minor bugs fixed.
+* Some performance improvements.
+
+Development changes:
+
+* Documentation improvemnts.
+* Upgraded some dependencies.
+
 v0.8.0-rc7 (March 16, 2018)
---------------------------
+---------------------------
 
 Deployment changes:
 
@@ -13,7 +27,7 @@ Development changes:
 * Upgraded some dependencies.
 
 v0.8.0-rc6 (March 15, 2018)
---------------------------
+---------------------------
 
 Application changes:
 
