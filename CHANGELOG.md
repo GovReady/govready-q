@@ -1,6 +1,17 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.0-rc7 (March 16, 2018)
+--------------------------
+
+Deployment changes:
+
+* Docker containers wouldn't start if FIRST_RUN wasn't set.
+
+Development changes:
+
+* Upgraded some dependencies.
+
 v0.8.0-rc6 (March 15, 2018)
 --------------------------
 
