@@ -1,6 +1,12 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.0-rc1 (Feb. 28, 2018)
+--------------------------
+
+* Fixes related to recent performance improvements.
+* Upgraded some dependencies.
+
 v0.8.0-rc0 (Feb. 27, 2018)
 --------------------------
 
