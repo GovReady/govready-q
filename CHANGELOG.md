@@ -1,10 +1,28 @@
 GovReady-Q Release Notes
 ========================
 
-v0.7.0-rc9 (March 30, 2018)
+v0.8.0-rc11 (April 4, 2018)
 ---------------------------
 
-This release was incorrectly named with a "7" instead of an "8".
+Application changes:
+
+* Add a new settings page for administrative functions including setting up the help squad and reviewers and listing organization administrators.
+* Minor UI fixes.
+
+App authoring changes:
+
+* Added an 'examples' field to questions for showing example answers on question pages.
+* Added 'display: top' option to output documents to show the document at the top of the task finished page.
+
+Development changes:
+
+* Added some tests.
+* Upgraded some dependencies.
+
+v0.7.0-rc9/v0.7.0-rc10 (March 30, 2018)
+---------------------------------------
+
+This release was incorrectly named with a "7" instead of an "8" and was released twice.
 
 Application changes:
 
