@@ -1,10 +1,27 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.0-rc2 (Feb. 28, 2018)
+--------------------------
+
+Deployment changes:
+
+* Docker: Install mysqlclient so MySQL databases are supported.
+* The installation of psycopg2 in the Dockerfile is now in requirements.txt so its hashes are checked when downloaded.
+
+Development changes:
+
+* Upgraded some dependencies.
+
 v0.8.0-rc1 (Feb. 28, 2018)
 --------------------------
 
+Application changes:
+
 * Fixes related to recent performance improvements.
+
+Development changes:
+
 * Upgraded some dependencies.
 
 v0.8.0-rc0 (Feb. 27, 2018)
