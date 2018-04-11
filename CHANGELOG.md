@@ -10,6 +10,10 @@ Application changes:
 * Fix caching bug with output documents in multiple formats.
 * Small UI improvements.
 
+App authoring changes:
+
+* Templates no longer die but instead show inline error messages when an undefined context variable is accessed.
+
 Deployment changes:
 
 * Docker launch failed if some environment variables were not passed in.

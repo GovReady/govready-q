@@ -480,7 +480,7 @@ def render_content(content, answers, output_format, source, additional_context={
         import jinja2
         env = Jinja2Environment(
             autoescape=True,
-            undefined=jinja2.StrictUndefined)
+            undefined=jinja2.StrictUndefined) # see below - we defined any undefined variables
         try:
             template = env.from_string(template_body)
         except jinja2.TemplateSyntaxError as e:
@@ -505,6 +505,38 @@ def render_content(content, answers, output_format, source, additional_context={
             if answers:
                 tc = TemplateContext(answers, escapefunc, root=True, show_answer_metadata=show_answer_metadata, is_computing_title=is_computing_title)
                 context.update(tc)
+
+            # Define undefined variables. Jinja2 will normally raise an exception
+            # when an undefined variable is accessed. It can also be set to not
+            # raise an exception and treat the variables as nulls. As a middle
+            # ground, we'll render these variables as error messages. This isn't
+            # great because an undefined variable indicates an incorrectly authored
+            # template, and rendering the variable might mean no one will notice
+            # the template is incorrect. But it's probably better UX than having
+            # a big error message for the output as a whole or silently ignoring it.
+            for varname in get_jinja2_template_vars(template_body):
+                if output_format == "html" and show_answer_metadata:
+                    # In HTML outputs with popovers for answer metadata, use a popover
+                    # to display detailed error info. module-finished.html explicitly
+                    # renders popovers in templates.
+                    var_error_msg = jinja2.Markup("""
+                    <span class="text-danger"
+                     data-toggle="popover" data-content="
+                       Invalid reference to variable '{}' in {}.
+                     ">
+                        &lt;invalid reference&gt;
+                    </span>
+                    """.format(jinja2.escape(varname), jinja2.escape(source)))
+                else:
+                    # Simple error message for text or markdown output, or HTML
+                    # output when popovers are not being used. For HTML, this
+                    # needs escaping so let auto-escaping occur. For text/markdown,
+                    # auto-escaping must be supressed.
+                    var_error_msg = "<invalid reference to '{}' in {}>".format(varname, source)
+                    if output_format != "html":
+                        var_error_msg = jinja2.Markup(var_error_msg)
+
+                context.setdefault(varname, var_error_msg)
 
             # Now really render.
             output = template.render(context)
@@ -965,7 +997,7 @@ class ModuleAnswers(object):
                             doc_name = "at index " + str(self.index)
                             if "title" in self.document:
                                 doc_name = repr(self.document["title"]) + " (" + doc_name + ")"
-                        doc_name = "%s output document %s" % (self.module_answers.module.module_name, doc_name)
+                        doc_name = "'%s' output document '%s'" % (self.module_answers.module.module_name, doc_name)
 
                         # Try to render it.
                         task_cache_key = "output_r1_{}_{}_{}".format(
@@ -1140,7 +1172,7 @@ class TemplateContext(Mapping):
                     if doc.get("id") == item:
                         # Render it.
                         content = render_content(doc, self.context.module_answers, "html",
-                            "%s output document %s" % (repr(self.context.module_answers.module), item),
+                            "'%s' output document '%s'" % (repr(self.context.module_answers.module), item),
                             {}, show_answer_metadata=self.context.show_answer_metadata)
 
                         # Mark it as safe.
