@@ -19,12 +19,14 @@ cat > local/environment.json << EOF;
 	"https": ${HTTPS-false},
 	"single-organization": "main",
 	"static": "static_root",
-	"db": $(echo ${DBURL} | jq -R .)
+	"db": $(echo ${DBURL-} | jq -R .)
 }
 EOF
 
+echo "Starting GovReady-Q at ${ADDRESS} with HTTPS ${HTTPS}."
+
 # Add email parameters.
-if [ ! -z "$EMAIL_HOST" ]; then
+if [ ! -z "${EMAIL_HOST-}" ]; then
 	cat local/environment.json \
 	| jq ".email.host = $(echo ${EMAIL_HOST} | jq -R .)" \
 	| jq ".email.port = $(echo ${EMAIL_PORT} | jq -R .)" \
