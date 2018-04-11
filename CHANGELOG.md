@@ -1,6 +1,20 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.0-rc3 (March 5, 2018)
+--------------------------
+
+Application changes:
+
+* Project import now has a better UI for its results page.
+* Various other UI improvements.
+
+Development changes:
+
+* Add static code analysis testing in CircleCI using bandit.
+* Added code coverage artifact to CircleCI builds.
+* Upgraded some dependencies.
+
 v0.8.0-rc2 (Feb. 28, 2018)
 --------------------------
 
