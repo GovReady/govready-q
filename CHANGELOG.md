@@ -1,6 +1,20 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.2-rc1 (April 9, 2018)
+--------------------------
+
+Administrative changes:
+
+* Send site admins an email whenever a user signs up or an organization is created.
+
+Deployment changes:
+
+* Docker now uses uWSGI as the production-grade HTTP+application server instead of `manage.py runserver`.
+* Docker now uses supervisord to run the application server and the notification emails background process, which had not been running in Docker deployments.
+* Our Docker first_run script was broken by a recent release.
+
+
 v0.8.1 (April 9, 2018)
 ----------------------
 
