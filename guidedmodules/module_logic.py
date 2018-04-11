@@ -527,6 +527,7 @@ def render_content(content, answers, output_format, source, additional_context={
                 tc = TemplateContext(answers, escapefunc,
                     root=True,
                     errorfunc=errorfunc,
+                    source=source,
                     show_answer_metadata=show_answer_metadata,
                     is_computing_title=is_computing_title)
                 context.update(tc)
@@ -540,13 +541,7 @@ def render_content(content, answers, output_format, source, additional_context={
             # the template is incorrect. But it's probably better UX than having
             # a big error message for the output as a whole or silently ignoring it.
             for varname in get_jinja2_template_vars(template_body):
-                context.setdefault(varname, errorfunc(
-                    "invalid reference to '{varname}' in {source}",
-                    "invalid reference",
-                    "Invalid reference to variable '{varname}' in {source}.",
-                    varname=varname,
-                    source=source
-                ))
+                context.setdefault(varname, UndefinedReference(varname, errorfunc, [source]))
 
             # Now really render.
             output = template.render(context)
@@ -1042,6 +1037,23 @@ class ModuleAnswers(object):
                     return self[key]
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
+
+class UndefinedReference:
+    def __init__(self, varname, errorfunc, path=[]):
+        self.varname = varname
+        self.errorfunc = errorfunc
+        self.path = path
+    def __html__(self):
+        return self.errorfunc(
+            "invalid reference to '{varname}' in {source}",
+            "invalid reference",
+            "Invalid reference to variable '{varname}' in {source}.",
+            varname=self.varname,
+            source=" -> ".join(self.path),
+        )
+    def __getitem__(self, item):
+        return UndefinedReference(item, self.errorfunc, self.path+[self.varname])
+
 from collections.abc import Mapping
 class TemplateContext(Mapping):
     """A Jinja2 execution context that wraps the Pythonic answers to questions
@@ -1049,11 +1061,12 @@ class TemplateContext(Mapping):
        template and expression functionality like the '.' accessor to get to
        the answers of a sub-task."""
 
-    def __init__(self, module_answers, escapefunc, parent_context=None, root=False, errorfunc=None, show_answer_metadata=None, is_computing_title=False):
+    def __init__(self, module_answers, escapefunc, parent_context=None, root=False, errorfunc=None, source=None, show_answer_metadata=None, is_computing_title=False):
         self.module_answers = module_answers
         self.escapefunc = escapefunc
         self.root = root
         self.errorfunc = parent_context.errorfunc if parent_context else errorfunc
+        self.source = (parent_context.source if parent_context else []) + ([source] if source else [])
         self.show_answer_metadata = parent_context.show_answer_metadata if parent_context else (show_answer_metadata or False)
         self.is_computing_title = parent_context.is_computing_title if parent_context else is_computing_title
         self._cache = { }
@@ -1143,8 +1156,8 @@ class TemplateContext(Mapping):
         error_message = "'{item}' is not a question or property of '{object}'."
         error_message_vars = { "item": item, "object": (self.module_answers.task.title if self.module_answers and self.module_answers.task else self.module_answers.module.spec["title"]) }
         if self.errorfunc:
-            return self.errorfunc(error_message, "invalid reference", error_message, **error_message_vars)
-        raise AttributeError(error_message.format(error_message_vars))
+            return UndefinedReference(item, self.errorfunc, self.source + ["(" + error_message_vars["object"] + ")"])
+        raise AttributeError(error_message.format(**error_message_vars))
 
     def __iter__(self):
         self._execute_lazy_module_answers()
@@ -1215,6 +1228,7 @@ class RenderedProject(TemplateContext):
             if self.project.root_task:
                 return self.project.root_task.get_answers()
         super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
+        self.source = self.source + ["project variable"]
     def __str__(self):
         return "<TemplateContext for %s - %s>" % (self.project, self.module_answers)
 
@@ -1235,6 +1249,7 @@ class RenderedOrganization(TemplateContext):
             if project.root_task:
                 return project.root_task.get_answers()
         super().__init__(_lazy_load, parent_context.escapefunc, parent_context=parent_context)
+        self.source = self.source + ["organization variable"]
 
     @property
     def organization(self):
