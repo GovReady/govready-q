@@ -1,6 +1,17 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.0-rc5 (March 7, 2018)
+--------------------------
+
+Application changes:
+
+* Fixed crash related to discussion guests on dangling discussions.
+
+Deployment changes:
+
+* Upgraded to the Django 2.0.3 framework.
+
 v0.8.0-rc4 (March 5, 2018)
 --------------------------
 
