@@ -1,8 +1,18 @@
 GovReady-Q Release Notes
 ========================
 
-v0.8.0-rc12 (April 6, 2018)
----------------------------
+v0.8.1 (April 9, 2018)
+----------------------
+
+Application changes:
+
+* Replace the "Skip" button with I don't know, It doesn't apply, I'll come back, and Not sure.
+* Minor UI improvements.
+
+v0.8.0-rc12/v0.8.0-rc13 (April 6, 2018)
+---------------------------------------
+
+This release appears to have been tagged twice.
 
 Application changes:
 
