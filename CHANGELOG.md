@@ -1,6 +1,18 @@
 GovReady-Q Release Notes
 ========================
 
+In Development
+--------------
+
+Deployment changes:
+
+* Docker launch failed if some environment variables were not passed in.
+
+Developer changes:
+
+* Docker image build script now pulls the latest CentOS image before building and checks that a CHANGELOG entry has been added for the release version.
+* Changelog entries added for recent past releases.
+
 v0.8.2-rc1 (April 9, 2018)
 --------------------------
 
