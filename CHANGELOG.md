@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 In Development
 --------------
 
+Application changes:
+
+* Small UI improvements.
+
 Deployment changes:
 
 * Docker launch failed if some environment variables were not passed in.

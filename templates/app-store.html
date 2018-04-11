@@ -171,12 +171,10 @@ h2 {
           {% endif %}
 
           <div style="margin-top: .5em">
-          <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="get" style="display: inline-block;">
-            <button type="submit" class="btn btn-info btn-sm view-app">
+          <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-info btn-sm view-app">
               <span class="glyphicon glyphicon-info-sign"> </span>
               Info
-            </button>
-          </form>
+          </a>
           <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
             {% csrf_token %}
             <button type="submit" class="btn btn-success btn-sm start-app">
