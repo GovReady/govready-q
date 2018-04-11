@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.0-rc4 (March 5, 2018)
+--------------------------
+
+Application changes:
+
+* Fix a UI problem introduced in the previous release.
+
 v0.8.0-rc3 (March 5, 2018)
 --------------------------
 
