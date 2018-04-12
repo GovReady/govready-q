@@ -44,8 +44,8 @@ else:
 SECRET_KEY = environment.get("secret-key") or make_secret_key()
 
 # The DEBUG flag must be set in the environment.
-DEBUG = environment["debug"]
-ADMINS = environment.get("admins", [])
+DEBUG = bool(environment.get("debug"))
+ADMINS = environment.get("admins") or []
 
 # Set ALLOWED_HOSTS from the host environment. If it has a port, strip it.
 # The port is used in SITE_ROOT_URL must must be removed from ALLOWED_HOSTS.
@@ -220,7 +220,7 @@ LOGGING = DEFAULT_LOGGING
 if not DEBUG:
 	LOGGING['handlers']['console']['filters'].remove('require_debug_true')
 	LOGGING['handlers']['console']['level'] = 'WARNING'
-if "syslog" in environment:
+if environment.get("syslog"):
 	# install the rfc5424-logging-handler package. Add a top-level
 	# logger that sends everything to the syslog receiver.
 	import socket

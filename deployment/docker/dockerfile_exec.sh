@@ -10,31 +10,54 @@ set -euf -o pipefail # abort script on error
 ADDRESS="${HOST-localhost}:${PORT-8080}"
 ADDRESS=$(echo $ADDRESS | sed s/:80$//; )
 
-# Create a local/environment.json file. Use jq on some of
-# the inputs to guarantee valid JSON encoding of strings.
+# Create a local/environment.json file. Use jq to
+# guarantee valid JSON encoding of strings.
 cat > local/environment.json << EOF;
 { 
 	"debug": ${DEBUG-false},
 	"host": $(echo ${ADDRESS} | jq -R .),
 	"https": ${HTTPS-false},
-	"single-organization": "main",
+	"secret-key": $(echo ${SECRET_KEY-} | jq -R .),
+	"syslog": $(echo ${SYSLOG-} | jq -R .),
+	"admins": ${ADMINS-[]},
 	"static": "static_root",
 	"db": $(echo ${DBURL-} | jq -R .)
 }
 EOF
 
-echo "Starting GovReady-Q at ${ADDRESS} with HTTPS ${HTTPS-false}."
+function set_env_setting {
+	# set_env_setting keypath value
+	cat local/environment.json \
+	| jq ".[\"$1\"] = $(echo $2 | jq -R .)" \
+	> /tmp/new-environment.json
+	cat /tmp/new-environment.json > local/environment.json
+	rm -f /tmp/new-environment.json
+}
+
+# Add Q settings.
+if [ -z "${ORGANIZATION_PARENT_DOMAIN-}" ]; then
+	# Not multi-tenant with "main" as the subdomain of the
+	# default organization.
+	set_env_setting single-organization main
+else
+	# Multi-tenant.
+	set_env_setting organization-parent-domain "$ORGANIZATION_PARENT_DOMAIN"
+fi
 
 # Add email parameters.
 if [ ! -z "${EMAIL_HOST-}" ]; then
-	cat local/environment.json \
-	| jq ".email.host = $(echo ${EMAIL_HOST} | jq -R .)" \
-	| jq ".email.port = $(echo ${EMAIL_PORT} | jq -R .)" \
-	| jq ".email.user = $(echo ${EMAIL_USER} | jq -R .)" \
-	| jq ".email.pw = $(echo ${EMAIL_PW} | jq -R .)" \
-	| jq ".email.domain = $(echo ${EMAIL_DOMAIN} | jq -R .)" \
-	> local/environment.json
+	set_env_setting email.host "$EMAIL_HOST"
+	set_env_setting email.port "$EMAIL_PORT"
+	set_env_setting email.user "$EMAIL_USER"
+	set_env_setting email.pw "$EMAIL_PW"
+	set_env_setting email.domain "$EMAIL_DOMAIN"
 fi
+if [ ! -z "${MAILGUN_API_KEY-}" ]; then
+	set_env_setting mailgun_api_key "$MAILGUN_API_KEY"
+fi
+
+# Write out the settings that indicate where we think the site is running at.
+echo "Starting GovReady-Q at ${ADDRESS} with HTTPS ${HTTPS-false}."
 
 # Initialize the database.
 python3.6 manage.py migrate
