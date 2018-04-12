@@ -15,6 +15,7 @@ Deployment changes:
 * Docker deployments now support environment variables for all application settings.
 * Added a new `branding` environment setting for sites to override templates and provide new assets using a custom Django app.
 * Move mysqlclient dependency from Dockerfile to requirements.in --- pip-compile doesn't have a problem with it anymore.
+* Added preliminary documentation for deplying to Amazon Web Services Elastic Container Service.
 
 v0.8.2-rc2 (April 12, 2018)
 ---------------------------
