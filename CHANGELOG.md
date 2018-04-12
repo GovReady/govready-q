@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-In Development
---------------
+v0.8.2-rc2 (April 12, 2018)
+---------------------------
 
 Application changes:
 
@@ -12,7 +12,7 @@ Application changes:
 
 App authoring changes:
 
-* Templates no longer die but instead show inline error messages when an undefined variable is accessed.
+* Templates no longer die when an undefined variable is accessed but instead show inline error messages.
 
 Deployment changes:
 
