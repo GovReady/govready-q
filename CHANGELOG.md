@@ -7,6 +7,7 @@ In Development
 Application changes:
 
 * Minor UI improvements.
+* Minor bug fixes.
 
 v0.8.2-rc2 (April 12, 2018)
 ---------------------------
