@@ -9,6 +9,10 @@ Application changes:
 * Minor UI improvements.
 * Minor bug fixes.
 
+Deployment changes:
+
+* Added a new `branding` environment setting for sites to override templates and provide new assets using a custom Django app.
+
 v0.8.2-rc2 (April 12, 2018)
 ---------------------------
 

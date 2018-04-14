@@ -310,5 +310,12 @@ if environment.get("static"):
 # settings
 SITE_ROOT_URL = "%s://%s" % (("http" if not environment["https"] else "https"), environment["host"])
 
+# Enable custom branding. If "branding" is set, it's the name of an
+# app to add and whose templates supersede the built-in templates.
+if environment.get("branding"):
+	INSTALLED_APPS.append(environment["branding"])
+	TEMPLATES[0].setdefault('DIRS', [])\
+		.insert(0, os.path.join(environment["branding"], 'templates'))
+
 # Load all additional settings from settings_application.py.
 from .settings_application import *
