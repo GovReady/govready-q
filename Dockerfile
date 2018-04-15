@@ -29,7 +29,6 @@ RUN yum -y install \
 # file because they're not commonly used in development.
 COPY requirements.txt ./
 RUN pip3.6 install --no-cache-dir -r requirements.txt
-RUN pip3.6 install --no-cache-dir mysqlclient==1.3.12 # GPL
 
 # Run pyup.io's python package vulnerability check.
 RUN safety check
