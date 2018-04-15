@@ -7,7 +7,7 @@
 set -euf -o pipefail # abort script on error
 
 # You will need the latest pip-tools and pyup.io's safety tool:
-# pip3 install -U pip-tools liccheck safety
+# pip3 install -U pip-tools safety
 
 # Flatten out all of the dependencies of our dependencies to
 # a temporary file.
@@ -38,35 +38,6 @@ fi
 rm $FN $FN2
 echo "requirements.txt is in sync with requirements.in."
 echo
-
-# Check packages for inappropriate licenses.
-python3 <<EOF;
-acceptable_licenses = {
-	"CC0 (copyright waived)", "CC0 1.0 Universal",
-	"BSD", "Simplified BSD", "BSD 3-Clause", "BSD 3", "BSD-3-Clause", "BSD-like",
-	"MIT",
-	"Apache 2.0", "Apache License 2.0", "Apache Software",
-	"MPL-2.0",
-	"BSD or Apache License, Version 2.0",
-	"PSFL",
-	"Standard PIL",
-	"LGPL",
-	"GNU Library or Lesser General Public License (LGPL)",
-	"LGPLv3",
-	"LGPLv3+"
-}
-dont_check_packages = {
-}
-
-import re
-from liccheck.command_line import get_packages_info
-acceptable_licenses = { item.lower() for item in acceptable_licenses }
-for pkg in get_packages_info("requirements.txt"):
-	license_strings = [pkg["license"]] + pkg["license_OSI_classifiers"]
-	normalized_license_strings = { re.sub(" license$", "", license.strip().lower()) for license in license_strings }
-	if len(normalized_license_strings & acceptable_licenses) == 0:
-		print("Unknown/unapproved license for", pkg["name"] + ":", license_strings)
-EOF
 
 # Check packages for known vulnerabilities using pyup.io.
 # Script exits on error.

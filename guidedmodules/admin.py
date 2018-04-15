@@ -173,13 +173,17 @@ class ApprovedAppsList(forms.Widget):
 
 		# Get all of the apps to list from the AppSource instance, if this
 		# form is associated with an existing AppSource instance.
+		from .module_sources import AppSourceConnectionError
 		applist = []
 		seen_apps = set()
 		if self.appsource:
-			with self.appsource.open() as conn:
-				for app in conn.list_apps():
-					applist.append((app.name, app.get_catalog_info()))
-					seen_apps.add(app.name)
+			try:
+				with self.appsource.open() as conn:
+					for app in conn.list_apps():
+						applist.append((app.name, app.get_catalog_info()))
+						seen_apps.add(app.name)
+			except AppSourceConnectionError:
+				pass
 
 		# Add in any apps that are no longer in the AppSource but have a
 		# value stored.
