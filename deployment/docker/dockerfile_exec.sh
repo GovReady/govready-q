@@ -23,7 +23,7 @@ cat > local/environment.json << EOF;
 }
 EOF
 
-echo "Starting GovReady-Q at ${ADDRESS} with HTTPS ${HTTPS}."
+echo "Starting GovReady-Q at ${ADDRESS} with HTTPS ${HTTPS-false}."
 
 # Add email parameters.
 if [ ! -z "${EMAIL_HOST-}" ]; then
