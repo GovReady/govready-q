@@ -36,7 +36,7 @@ jobs:
 
     # Install packages necesary for requirements_txt_checker.sh,
     # and then run it.
-    - run: pip3 install --user -U pip-tools liccheck safety
+    - run: pip3 install --user -U pip-tools safety
     - run: ./requirements_txt_checker.sh
 
     # Run static code analysis using 'bandit'.
