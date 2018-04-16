@@ -184,9 +184,15 @@ DATABASES = {
 }
 if not environment.get('db'):
 	# Ensure the 'local' directory exists for the default Sqlite
-	# database.
+	# database and then try touching the path to check for write
+	# access. If Sqlite can't open the database for reading, it
+	# gives an unhelpful error, so we issue our own error. If
+	# we create an empty file, Sqlite is fine with that.
 	if not os.path.exists(os.path.dirname(local('.'))):
 		os.mkdir(os.path.dirname(local('.')))
+	with open(DATABASES['default']['NAME'], 'a') as f:
+		pass
+
 elif isinstance(environment['db'], str):
 	# Set up the database using a connection string.
 	import dj_database_url
