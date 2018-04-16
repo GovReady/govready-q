@@ -9,7 +9,7 @@ function CommonMarkQuill(element, options) {
     theme: 'snow',
 
     // Allow only formatting we can convert to CommonMark.
-    formats: ['bold', 'italic', 'code', 'link', 'blockquote', 'header', 'list', 'code-block', 'image'],
+    formats: ['bold', 'italic', 'code', 'link', 'blockquote', 'header', 'list', 'code-block'],
 
     // Provide a toolbar for creating that formatting.
     modules: {
