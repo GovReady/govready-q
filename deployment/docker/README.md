@@ -226,6 +226,25 @@ For example:
 	./docker_container_run.sh --relaunch [your same command-line arguments]
 
 
+## Environment variables for launching the container without our run script
+
+The following environment variables are used to configure the container when launching GovReady-Q using `docker run` or a container service (i.e., not when using our `docker_container_run.sh` helper script).
+
+* `HOST`: The domain name that GovReady-Q will be accessible at by end users. (Default: `localhost`)
+* `PORT`: The port that GovReady-Q will be accessed at by end users, typically either 80 (no HTTPS) or 443 (HTTPS). (Default: `8080`)
+* `HTTPS`: Set to `true` if GovReady-Q will be accessed by end users at an https: address. (Default: `false`)
+* `DEBUG`: Set to `true` to run in Django debug mode. (Default: `false`)
+* `DBURL`: Set to a database connection string as described in [https://github.com/kennethreitz/dj-database-url](https://github.com/kennethreitz/dj-database-url). We recommend using PostgreSQL [using a TLS server certificate](https://www.postgresql.org/docs/9.1/static/libpq-ssl.html), e.g. `postgresql://user:password@dbhost/govready_q?sslmode=verify-full&sslrootcert=/path/to/pgsql.crt` (although you'll have to figure out how to get the server certificate accessible via the container filesystem). (Default: Not set, which means using a Sqlite database stored in the container at `/usr/src/app/local/database.sqlite`, which will be ephemeral if the path is not mounted to the host or a Docker volume.)
+* `ORGANIZATION_PARENT_DOMAIN`: If not set, GovReady-Q will be single-tenant and the database must be configured with a single organization whose subdomain is `main`. If set, GovReady-Q will be multi-tenant, serving a landing page and organization-specific sites on different domain names. A landing/signup page and the Django `/admin` site will be available at the domain name given in the `HOST` environment variable and organization sites will be served at subdomains of the `ORGANIZATION_PARENT_DOMAIN` domain name value. (Default: Not set).
+* `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PW`, and `EMAIL_DOMAIN` to enable outbound email. The host, port, username, and password settings specify a TLS-enabled SMTP server. `EMAIL_DOMAIN` is the domain name to use in outbound mail. (Default: Not set and outbound emails are dumped to logs for debugging.)
+* `FIRST_RUN`: If set to `1`, an administrator user will be created when the container launches and a randomly generated password will be given to the user and printed on the console, which will be visible in the container's logs. An organization with subdomain `main` will also be created.
+* `PROCESSES`: The number of concurrent requests that can be handled by the container. (Default: 4)
+* `SECRET_KEY`: The [Django SECRET_KEY](https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key) for session management. (Try [this tool](https://www.miniwebtool.com/django-secret-key-generator/) to generate one.)
+* `ADMINS`: The [Django ADMINS](https://docs.djangoproject.com/en/2.0/ref/settings/#admins) setting, passed as raw JSON. Example: `[["Admin Name 1", "admin1@example.com"], ["Admin Name 2", "admin2@example.com"]]`. (Default: Empty list, i.e. `[]`.)
+* `SYSLOG`: The host and port of a syslog-compatible log message sink. (Default: None.)
+* `MAILGUN_API_KEY`: An API key for Mailgun which is used to validate incoming webhook requests from Mailgun when an incoming email is received, when Mailgun is configured to handle incoming mail. (Default: None)
+
+
 ## Building and publishing the Docker image for GovReady-Q maintainers
 
 You may build the Docker image locally from the current source code rather than obtaining it from the Docker Hub. Prior to building the image:
@@ -244,6 +263,14 @@ If you are a GovReady-Q maintainer, you can then push the image to hub.docker.co
 	# respond to prompts with credentials
 	docker image push govready/govready-q
 
+Or to an AWS Elastic Container Registry:
+
+	aws ecr get-login --region us-east-1
+	docker login -u AWS -p ... # copy from output of last line, but remove '-e none'
+	REGISTRYURI=...dkr.ecr...amazonaws.com/name
+	docker tag govready/govready-q:latest $REGISTRYURI:latest
+	docker push $REGISTRYURI:latest
+
 ## Running tests
 
 GovReady-Q's unit tests can be run within the Docker container. After building the image:
@@ -261,3 +288,22 @@ The functional tests run a headless Chromium web browser session and we have not
 	python3.6 manage.py test
 	...
 	selenium.common.exceptions.WebDriverException: Message: unknown error: Chrome failed to start: exited abnormally
+
+## Deployment on Amazon Web Services Elastic Container Service with AWS Fargate
+
+* In AWS RDS, create a Postgres database instance. For simplicity, use `govready_q` as the root username and database name.
+* In AWS ECS, Create a Cluster using the "Networking only (powered by AWS Fargate)" template and using a VPC.
+* Create a new Task Definition using the Fargate launch type. Leave the task role blank. The task size is up to you.
+(NOT WORKING YET) * Scroll past containers and add three volumes: `govready-q-tmp`, `govready-q-run`, `govready-q-logs`. Since Fargate does not yet support tmpfs mounts, we will use a volume for `/tmp` and `/run` so that we can make the rest of the filesystem read-only.
+* Add a container with image `govready/govready-q` to use a GovReady image on the Docker Hub. (If using an AWS Elastic Container Registry, specify an image like `...dkr.ecr...amazonaws.com/repository-name:latest`.) Add a port mapping for port 8000 (there source and destination ports here at the same).
+* Set the environment variables as appropriate for your deployment (see above). Set `DBURL` to use the RDS database using e.g. `postgresql://govready_q:password@...rds.amazonaws.com/govready_q?sslmode=require`.
+* (NOT WORKING YET) Turn on `Read only root file system` and mount `/tmp`, `/run`, and `/var/log` to the corresponding volumes.
+* Leave `Auto-configure CloudWatch Logs` on so that the container's console output is available in CloudWatch.
+* In the Task Definition, in Actions, click Create Service. Set launch type to Fargate.
+* Choose the same VPC that the RDS database is in, and choose two subnets, and remember your selection. Edit the security group to allow inbound traffic on port 8000.
+* In the RDS console, edit the database instance's security group to permit inbound traffic from the security group set to the ECS service.
+* In the Amazon EC2 console in a separate browser tab, create a new Load Balancer using the Application Load Balancer type. Select internet-facing. Add a listener on port 80. Use the same VPC and subnets as in the previous step. Add a security group that permits traffic on HTTP (80) and/or HTTPS (443). Create a dummy target group if you have to --- we won't use this --- and skip registering targets. Add a health check using the path `/` and add status code `400` to the acceptable status codes because at this time the ELB status checks will not send a valid HTTP Host: header and Django will reject the request with a 400 response code.
+* Back in the ECS tab, click the refresh button next to the load balancer field. Choose the load balancer created in the previous step. Add the Task Definition's container to the load balancer and select HTTP or HTTPS as the listener port as appropriate and set the Path Pattern to `/` and Evaluation Order to 1.
+* Enable service discovery.
+* Somewhere the Health Checks path should be set to `/` or some real path.
+* If you are accessing GovReady-Q using the load balancer's DNS name, go back to the Task Definition and change the `HOST` environment variable to match the public DNS name of the load balancer.

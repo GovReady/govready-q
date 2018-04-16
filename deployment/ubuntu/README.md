@@ -12,7 +12,8 @@ Update system packages and install packages helpful for GovReay-Q:
 		python3-yaml \
 		nginx uwsgi-plugin-python3 supervisor \
 		memcached \
-		graphviz
+		graphviz \
+		libmysqlclient-dev
 
 Configure nginx to use nginx.conf in this directory:
 

@@ -11,9 +11,16 @@ Application changes:
 
 Deployment changes:
 
-* Docker launch failed if `HTTPS` environment variable was not passed in and may have failed with a permission denied error.
+* Docker launch failed if `HTTPS` environment variable was not passed in and may have failed with a permission denied error and now gives a better error message when the database cannot be created on a read-only filesystem.
+* Docker deployments now support environment variables for all application settings.
+opened, such as if we're in a Docker container with a read-only filesystem
 * Added a new `branding` environment setting for sites to override templates and provide new assets using a custom Django app.
 * Move mysqlclient dependency from Dockerfile to requirements.in --- pip-compile doesn't have a problem with it anymore.
+* Added preliminary documentation for deplying to Amazon Web Services Elastic Container Service.
+
+Developer changes:
+
+* Upgraded some dependencies.
 
 v0.8.2-rc2 (April 12, 2018)
 ---------------------------

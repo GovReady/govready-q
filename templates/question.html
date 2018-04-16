@@ -246,6 +246,31 @@ label:hover .onhover { display: inline; }
                     {% elif default_answer %}{{default_answer|safe}}{% endif %}
                   </div>
                 </div>
+                <div id="inputctrl-quill-toolbar">
+                  <span class="ql-formats">
+                    <select class="ql-header">
+                      <option value="1"></option>
+                      <option value="2"></option>
+                      <option value="3"></option>
+                      <option selected></option>
+                    </select>
+                  </span>
+                  <span class="ql-formats">
+                    <button class="ql-bold"></button>
+                    <button class="ql-italic"></button>
+                    <button class="ql-link"></button>
+                    <button class="ql-code"></button>
+                  </span>
+                  <span class="ql-formats">
+                    <button class="ql-blockquote"></button>
+                    <button class="ql-list" value="bullet"></button>
+                    <button class="ql-list" value="ordered"></button>
+                    <button class="ql-code-block"></button>
+                  </span>
+                  <span class="ql-formats">
+                    <button class="ql-clean"></button>
+                  </span>
+                </div>
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
@@ -587,7 +612,13 @@ $(function() {
     // CONTROL INITIALIZATION
 
     {% if q.spec.type == "longtext" %}
-      window.inputctrl_quill = CommonMarkQuill("#inputctrl", {});
+      window.inputctrl_quill = CommonMarkQuill("#inputctrl", {
+        "modules": {
+          "toolbar": {
+            "container": "#inputctrl-quill-toolbar",
+          }
+        }
+      });
     {% endif %}
 
     // DEFAULT VALUE
