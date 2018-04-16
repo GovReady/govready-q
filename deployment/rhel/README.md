@@ -35,7 +35,7 @@ Deploy GovReady-Q source code:
     cd govready-q
 
     # Install required software. (You probably need to jump out of being the govready-q user for this line, then come back.)
-    sudo yum install graphviz postgresql pandoc xorg-x11-server-Xvfb wkhtmltopdf
+    sudo yum install graphviz postgresql mysql-devel pandoc xorg-x11-server-Xvfb wkhtmltopdf
     
     # Install pip packages
     pip3 install --user -r requirements.txt

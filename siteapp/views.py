@@ -1439,3 +1439,18 @@ def organization_settings_save(request):
         return JsonResponse({ "users": [user.render_context_dict(request.organization) for user in users] })
 
     return JsonResponse({ "status": "error", "message": str(request.POST) })
+
+def shared_static_pages(request, page):
+    from django.utils.module_loading import import_string
+    from django.contrib.humanize.templatetags.humanize import intcomma
+    password_hasher = import_string(settings.PASSWORD_HASHERS[0])()
+    password_hash_method = password_hasher.algorithm.upper().replace("_", " ") \
+        + " (" + intcomma(password_hasher.iterations) + " iterations)"
+
+    return render(request,
+        page + ".html", {
+        "base_template": "base-landing.html" if not hasattr(request, "organization")
+                         else "base.html",
+        "SITE_ROOT_URL": request.build_absolute_uri("/"),
+        "password_hash_method": password_hash_method,
+    })

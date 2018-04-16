@@ -60,18 +60,21 @@ RUN mkdir -p local && echo '{ "static": "static_root", "debug": false, "host": "
 RUN python3.6 manage.py collectstatic --noinput
 
 # Configure supervisord.
-# a) Make /var/{run,log}/supervisor world-writable because we start supervisord
-# as the non-root application user and the OS package makes these paths
-# writable only by root. When the container is run with a read-only root
-# filesystem, /var/{run,log} must be mounted with --tmpfs (or a writable volume)
-# and in this case the directories will be empty on container start, so
-# the OS package directory layout won't be there, and we must make the directorries
-# world-writable so that the container can create the inner 'supervisor'
-# directory (see dockerfile_exec.sh).
-# b) Move the child process logs from /tmp to /var/log/supervisor to make them
-# more easily accessible if /var/log is mounted to a volume.
-RUN chmod a+rwx /run /run/supervisor /var/log /var/log/supervisor
-RUN sed -i "s:^;childlogdir=/tmp:childlogdir=/var/log/supervisor:" /etc/supervisord.conf
+# a) Wipe out /var/{run,log} because when these directories are mounted with
+#    tmpfs they will be empty, so start them empty so the two setups match.
+# b) Make /var/{run,log} world-writable because when we start the container with
+#    the non-root user it will need permission to write there.
+# c) Move the supervisor log from /var/log/supervisor and the child process logs
+#    from /tmp to /var/log to make them all easily accessible if /var/log is mounted
+#    to a volume, and similarly the run socket from /var/run/supervisor.
+#    Otherwise we have to mess with file permissions so the inner directories are
+#    writable, and I couldn't get that to work. Even if the directories had chmod 777
+#    the non-root user could not create files inside them.
+RUN rm -rf /run/* /var/log/*
+RUN chmod a+rwx /run /var/log
+RUN sed -i "s:/var/run/supervisor/:/var/run/:" /etc/supervisord.conf
+RUN sed -i "s:/var/log/supervisor/:/var/log/:" /etc/supervisord.conf
+RUN sed -i "s:^;childlogdir=/tmp:childlogdir=/var/log:" /etc/supervisord.conf
 COPY deployment/docker/supervisord.ini /etc/supervisord.d/application.ini
 
 # Add container startup and management scripts.

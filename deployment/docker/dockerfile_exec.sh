@@ -66,10 +66,6 @@ echo "done" > /tmp/govready-q-is-ready
 echo "GovReady-Q is starting."
 echo # usgi output follows
 
-# Start the server. Ensure some paths exist since
-# if the containing directories are mounted with
-# --tmpfs then they'll be empty but supervisord
-# expects its paths to be there. See the Dockerfile.
-mkdir -p /var/{run,log}/supervisor
+# Start the server.
 exec supervisord -n
 

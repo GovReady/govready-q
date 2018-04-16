@@ -10,6 +10,9 @@ from .good_settings_helpers import signup_wrapper
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
 
+    # static pages that also exist on the landing domain
+    url(r"^(privacy|terms-of-service)$", views.shared_static_pages),
+
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),

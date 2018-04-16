@@ -11,7 +11,7 @@ Application changes:
 
 Deployment changes:
 
-* Docker launch failed if `HTTPS` environment variable was not passed in.
+* Docker launch failed if `HTTPS` environment variable was not passed in and may have failed with a permission denied error.
 * Added a new `branding` environment setting for sites to override templates and provide new assets using a custom Django app.
 * Move mysqlclient dependency from Dockerfile to requirements.in --- pip-compile doesn't have a problem with it anymore.
 
