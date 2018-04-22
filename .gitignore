@@ -88,3 +88,6 @@ VERSION
 # Emacs
 *~
 \#*\#
+
+# Local Sphinx / Read The Docs files
+docs/build

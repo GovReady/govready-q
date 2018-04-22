@@ -1,9 +1,9 @@
 Developer Guide
-================================
+===============
 
 Documentation for developers of GovReady-Q Compliance Server.
 
-# Overview
+## Overview
 
 GovReady-Q Compliance Server is a GRC platform for creating automated compliance processes ranging from gathering information from persons and computers to generating compliance artifacts.
 
@@ -17,7 +17,7 @@ The GovReady Compliance ecosystem consists of the following:
 1. OpenControl - an emerging standard for expressing control implementation information in machine readable format
 1. ComplianceLib - a Python library for modeling controls and control catalogs
 
-# GovReady-Q Django Apps
+## GovReady-Q Django Apps
 
 The GovReady-Q Compliance Server is a Django Project consisting of three interacting Django Apps:
 
@@ -27,7 +27,7 @@ The GovReady-Q Compliance Server is a Django Project consisting of three interac
 
 Both `siteapp` and `discussion` are fairly intuitive. The `guidedmodules` app is the most sophisticated and least intuitive of the three and provides the core functionality of the GovReady-Q Compliance Server.
 
-## Siteapp
+### Siteapp
 
 The diagram below provides a summary representation of GovReady-Q's Django siteapp data model that handles users, organizations, projects and folders, and invitations.
 
@@ -38,7 +38,7 @@ GovReady-Q is multi-tenant. The siteapp data model represents users who are uniq
 Access control is based on organization and projects. Information cannot be shared acrossed organizations and only limited information can be shared across projects within an organization.
 
 
-## Guidedmodules
+### Guidedmodules
 
 The diagram below provides a summary representation of GovReady-Q's Django guidedmodules data model that handles compliance apps, modules and questions, (tasks,) answers. 
 
@@ -70,7 +70,7 @@ To this "app-module-task-taskanswer" model we add relationships to deal with tas
 This might all seem a long way from compliance, but it's not. Compliance is the discipline of scaling attestation and verification. To show compliance entities attest to completing multiple tasks in a manner that can be verified. Hence, "app-module-task-taskanswer".
 
 
-## Discussion
+### Discussion
 
 The diagram below provides a summary representation of GovReady-Q's Django discussion data model that handles discussions, comments, and invitations.
 
@@ -79,7 +79,7 @@ The diagram below provides a summary representation of GovReady-Q's Django discu
 A single discussion can be instantiated and associated to any task (task ~= "question"). A discussion can have multiple comments. Comments can have multiple attachments.
 
 
-# Developer Tools
+## Developer Tools
 
 ### Generating Detailed Data Models
 

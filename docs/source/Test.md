@@ -1,10 +1,7 @@
 Testing
 =======
 
-1. [Running tests](#testing)
-1. [Dependency management](#dependencies)
-
-## <a name="testing"></a> Running tests
+## Running tests
 
 To run the integration tests, you'll also need to install chromedriver:
 
@@ -26,7 +23,7 @@ To run a static code analysis with our typical settings:
 
 We use `-s` on the command-line and `nosec` in limited places in the source code to disable some checks that are determined after review to be false positives.
 
-## <a name="dependencies"></a> Dependency Management
+## Dependency Management
 
 Our `requirements.txt` file is designed to work with `pip install --require-hashes`, which ensures that every installed dependency matches a hash stored in this repository. The option requires that every dependency (including dependencies of dependencies) be listed, pinned to a version number, and paired with a hash. We therefore don't manually edit `requirements.txt`. Instead, we place our immediate dependencies in `requirements.in` and run `requirements_txt_updater.sh` (which calls pip-tools's pip-compile command) to update the `requirements.txt` file for production.
 

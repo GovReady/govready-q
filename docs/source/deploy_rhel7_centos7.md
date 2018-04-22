@@ -1,7 +1,5 @@
 # Deploying Q to Red Hat Enterprise Linux 7 / CentOS 7
 
-**DEPRECATED APRIL 2018 - SEE READ THE DOCS VERSION**
-
 ## Preparing System Packages
 
 Install Python 3.4 and the `pip` command line tool, and then upgrade `pip` because the RHEL package version is out of date (need >=9.1 to properly process hashes in requirements.txt):

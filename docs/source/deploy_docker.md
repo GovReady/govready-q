@@ -1,6 +1,4 @@
-# Launching with Docker
-
-**DEPRECATED APRIL 2018 - SEE READ THE DOCS VERSION**
+# Deploying GovReady-Q with Docker
 
 A demo of GovReady Q is available on the Docker Hub at [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/).
 
