@@ -1,48 +1,56 @@
-# Deploying Q to Red Hat Enterprise Linux 7 / CentOS 7
+# Deploying Q to Red Hat Enterprise Linux 7 / CentOS 7 / Amazon Linux 2
 
 **DEPRECATED APRIL 2018 - SEE READ THE DOCS VERSION**
 
 ## Preparing System Packages
 
-Install Python 3.4 and the `pip` command line tool, and then upgrade `pip` because the RHEL package version is out of date (need >=9.1 to properly process hashes in requirements.txt):
-
-    yum install python34-pip
-    pip3 install --upgrade pip
-
 Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
 
+    # if necessary, enable EPEL and IUS repositories
+    rpm -i https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm https://rhel7.iuscommunity.org/ius-release.rpm
+
+    # if necessary, remove any git currently installed
     yum remove git
+
     yum install git2u
 
 ## Preparing Q Source Code
 
-Create a UNIX user named `govready-q` and a deploy key to add to the Github repository:
+Create a UNIX user named `govready-q`:
 
     # Create user.
     useradd govready-q -c "govready-q"
     
-    # Switch to user's home directory.
-    sudo su govready-q
-    cd /home/govready-q
-    chmod a+rx . # so that Apache can read static files
-
-    # Create deployment key without a passphrase.
-    ssh-keygen -t rsa -b 2096 -C "govready-q_deploy_key"
-    cat ~/.ssh/id_rsa.pub
-    # add this to the govready-q Github repository so the machine can access the source code
+    # Change permissions so that Apache can read static files.
+    chmod a+rx /home/govready-q
 
 Deploy GovReady-Q source code:
 
-    git clone git@github.com:GovReady/govready-q.git
-    cd govready-q
+    # Install required software.
+    #
+    # Note that python34-devel and mysql-devel are needed to compile & install
+    # the mysqlclient Python package. But mysql-devl has an installation conflict
+    # with IUS. Adding --disablerepo=ius fixes it.
+    #
+    # gcc is needed to build the uWSGI Python package.
+    sudo yum install --disablerepo=ius \
+        unzip gcc python34-pip python34-devel \
+        graphviz \
+        pandoc xorg-x11-server-Xvfb wkhtmltopdf \
+        postgresql mysql-devel
 
-    # Install required software. (You probably need to jump out of being the govready-q user for this line, then come back.)
-    sudo yum install graphviz postgresql mysql-devel pandoc xorg-x11-server-Xvfb wkhtmltopdf
-    
-    # Install pip packages
+Upgrade `pip` because the RHEL package version is out of date (we need >=9.1 to properly process hashes in `requirements.txt`):
+
+    pip3 install --upgrade pip
+
+Then switch to the govready-q user and install Q:
+
+    sudo su govready-q
+    cd
+    git clone https://github.com/govready/govready-q
+    cd govready-q
+    git checkout {choose the tag for the current released version}
     pip3 install --user -r requirements.txt
-    
-    # Install other static dependencies.
     ./fetch-vendor-resources.sh
     
 ### Test Q with a Local Database
@@ -80,28 +88,26 @@ This deployment script uses PostgreSQL but other database servers may be used.
 
 On the database server, install Postgres:
 	
-	yum install postgresql-server postgresql-contrib -y
+	yum install postgresql-server postgresql-contrib
 	postgresql-setup initdb
 
 In `/var/lib/pgsql/data/postgresql.conf`, enable TLS connections by changing the `ssl` option to
 
     ssl = on 
-      
+
 and enable remote connections by binding to all interfaces:
 
     listen_addresses = '*'
-      
-Enable remote connections to the database *only* from the web server and *only* encrypted with TLS by editing `/var/lib/pgsql/data/pg_hba.conf` and adding the line:
+
+Enable remote connections to the database *only* from the web server and *only* encrypted with TLS by editing `/var/lib/pgsql/data/pg_hba.conf` and adding the line (replacing the hostname with the hostname of the Q web server):
 
     hostssl all all webserver.hostname.com md5
     
-Generate a self-signed certificate:
+Generate a self-signed certificate (replace `db.govready-q.internal` with the database server's hostname if possible):
 
-    openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /var/lib/pgsql/data/server.key -out /var/lib/pgsql/data/server.crt -subj '/CN=dbserver.hostname.com'
+    openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /var/lib/pgsql/data/server.key -out /var/lib/pgsql/data/server.crt -subj '/CN=db.govready-q.internal'
     chmod 600 /var/lib/pgsql/data/server.{key,crt}
     chown postgres.postgres /var/lib/pgsql/data/server.{key,crt}
-
-(Be sure to replace `webserver.hostname.com` and `dbserver.hostname.com` with your web and database servers's hostnames.)
 
 Copy the certificate to the web server so that the web server can make trusted connections to the database server:
 
@@ -149,10 +155,9 @@ And generate static files:
 
 ## Setting Up Apache & uWSGI
 
-Install Apache 2.x with SSL:
+Install Apache 2.x with SSL (back to being root):
 
-	# as root
-	yum instal -y mod_ssl
+	yum install httpd mod_ssl
 
 Copy the Apache config into place:
 
@@ -160,7 +165,7 @@ Copy the Apache config into place:
 
 And then edit the file replacing `q.govready.com` and `*.govready.com` with your hostnames.
 
-If you don't have a TLS certificate ready to use, create a self-signed certificate:
+If you don't have a TLS certificate ready to use, create a self-signed certificate (replacing `webserver.hostname.com` with your hostname):
 
     openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /home/govready-q/ssl_certificate.key -out /home/govready-q/ssl_certificate.crt -subj '/CN=webserver.hostname.com'
     chmod 600 /home/govready-q/ssl_certificate.{key,crt}
@@ -210,7 +215,7 @@ which will serve just the Organization instance whose subdomain field is "main",
 
 You should now be able to log into GovReady-Q using the user created in this section.
 
-## Setting up an SSL Certificate
+## Setting up an HTTPS Certificate
 
 The instructions above created a self-signed certificate to get the website up and running. To use Let's Encrypt to automatically provision a real certificate, install and run `certbot`:
 
@@ -245,6 +250,6 @@ When there are changes to the GovReady Q software, pull new sources and restart 
     
 As root, you can also restart just the Python/Django process:    
 
-    sudo supervisorctl restart app-uwsgi
+    sudo supervisorctl restart all
     
 But this won't do a full update so don't normally do that (it won't restart the separate notifications process or generate static assets, etc.).
