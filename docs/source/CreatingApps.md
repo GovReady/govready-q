@@ -1,4 +1,4 @@
-# Creating GovReady-Q Compliance Apps using the Docker version
+# Creating Compliance Apps
 
 This is a step-by-step guide to creating compliance apps using the Docker version of the GovReady-Q Commpliance Server.
 
@@ -138,7 +138,7 @@ The development directory on the workstation now holds:
 	├── database.sqlite
 	└── docker_container_run.sh
 
-(More information about the structure of the app directory can be found in [Apps.md](../../Apps.md).)
+(More information about the structure of the app directory can be found in [Understanding Compliance Apps](Apps.html).)
 
 ### Editing app catalog metadata
 
@@ -233,7 +233,7 @@ Your changes are now seen in your browser.
 
 ![The revised question](assets/revisedquestion.png)
 
-More information about the file format of modules can be found in [Schema.md](../../Schema.md).
+More information about the file format of modules can be found in [Modules, Questions, and Documents](Schema.html).
 
 ## Step 5: Edit a compliance app using GovReady-Q's authoring tools
 
@@ -301,7 +301,7 @@ With this method you can give access to a private Github repository. Set the `ss
 
 As with local development, the production system's compliance app catalog may be cached. To see new apps, restart the production instance of GovReady-Q.
 
-See [Apps.md](../../Apps.md) for more information about how to configure your production instance of GovReady-Q to load apps from local filesystem directories, git repositories (including on-prem git repositories), or Github.
+See [Understanding Compliance Apps](Apps.html) for more information about how to configure your production instance of GovReady-Q to load apps from local filesystem directories, git repositories (including on-prem git repositories), or Github.
 
 ### Advanced setups for development with a repository of apps
 

@@ -1,5 +1,5 @@
-Schema for Modules and Questions
-================================
+Modules, Questions, and Documents
+=================================
 
 A module and its questions are defined in YAML specification files. The schema for the specification files is as follows:
 

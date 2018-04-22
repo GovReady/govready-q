@@ -1,5 +1,5 @@
-Automating Compliance with GovReady Q
-=====================================
+Automation API
+==============
 
 GovReady Q Compliance Apps can be updated with information gathered from live systems via the GovReady Q API. The benefit of this capability is that the documentation produced by GovReady Compliance Apps, such as System Security Plans (SSPs), can be assembled and updated with actual system data in an automated way.
 
@@ -8,7 +8,7 @@ Overview of the GovReady Q API
 
 The GovReady Q API provides read and write access to the information stored in GovReady Q's question-and-answer data model. It is a RESTful API using HTTP GET and POST requests, API keys that are issued per user, and JSON for request and response data.
 
-Each GovReady Compliance App provides a separate API, and each app's API is composed of fields for the same information the app would ask an end-user using the Q website in a web browser. The app's definition of questions to ask the end user (see [Schema.md](Schema.md)) also define the data model of the API.
+Each GovReady Compliance App provides a separate API, and each app's API is composed of fields for the same information the app would ask an end-user using the Q website in a web browser. The app's definition of questions to ask the end user (see [Modules, Questions, and Documents](Schema.html also define the data model of the API.
 
 As an example, the screenshot below shows a demonstration of a macOS File Server compliance app. The app asks questions about the hostname of the server and the use of security groups.
 
@@ -147,4 +147,4 @@ All fields can also hold `null`, which indicates the question has been explicitl
 
 Single-choice, multiple-choice, and yes-no fields also appear in human-readable form as a second read-only field that uses a `.text` suffix in the field's name. Long text fields have an HTML display form, in which the CommonMark is pre-rendered, in a parallel field with a `.html` suffix in the field's name. These fields cannot be used in the POST API.
 
-More information about Q's data types can be found in [Schema.md](Schema.md).
+More information about Q's data types can be found in [Schema.md](Schema.md#).

@@ -1,7 +1,5 @@
 # Deployment Scripts for Pivotal Web Services
 
-**DEPRECATED APRIL 2018 - SEE READ THE DOCS VERSION**
-
 This directory contains documentation and scripts for deployment to Pivotal Web Services (PWS) using Cloud Foundry tools.
 
 ## Create a PWS Space

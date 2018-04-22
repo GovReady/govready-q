@@ -1,5 +1,5 @@
-User Permissions in Q
-=====================
+Permissions
+===========
 
 This document describes the user permissions model in Q.
 

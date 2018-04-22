@@ -1,18 +1,18 @@
-# More About Compliance Apps
+# Understanding Compliance Apps
 
-As described in the primary [README](README.md), Compliance apps map IT System components to compliance controls. A "component" can be any part of a system that contributes to its operation including organizational processes.
+Compliance apps map IT System components to compliance controls. A "component" can be any part of a system that contributes to its operation including organizational processes.
 
 Compliance apps collect and assess information about one or more system components and translate that information to compliance documentation.
 
 ![Apps map components to security/compliance controls](assets/app_diagram.png)
 
-Compliance apps can collect information about a system component from people (via web-based questionnaires) and from system components (via an [Automation API](Automation.md)).
+Compliance apps can collect information about a system component from people (via web-based questionnaires) and from system components (via an [Automation API](Automation.html)).
 
-# Compliance Apps are Collections of Modules
+## Compliance Apps are Collections of Modules
 
 A Compliance app is a collection of "modules" for gathering information. A module is a collection of questions and output documents. A module can have just questions and output documents, just output documents and no questions, or both questions and output documents.
 
-An "app" is a collection of "modules," one of which must be named "app." Modules are linear sequence of questions presented to users that produces zero or more output documents. Modules are stored in YAML files. Output documents of various types are supported such as markdown, HTML, and YAML. (See [Schema.md](Schema.md) for documentation on writing modules.)
+An "app" is a collection of "modules," one of which must be named "app." Modules are linear sequence of questions presented to users that produces zero or more output documents. Modules are stored in YAML files. Output documents of various types are supported such as markdown, HTML, and YAML. (See [Modules, Questions, and Documents](Schema.html) for documentation on writing modules.)
 
 The typical user experience will be to first pick a "top level" app from the compliance catalog representative of IT System, then pick the "component" apps that represent the specific components of the IT System, and then iteratively complete the questions within the component apps modules.
 
@@ -52,7 +52,7 @@ The `assets` subdirectory can contain any static assets that will be served when
 The `app.yaml` file that exists in every app serves two purposes:
 
 1. It includes app catalog information, i.e. metadata, that will be shown in the app directory, such as the app's short and long description, version number, vendor, etc.
-1. It also defines a module (see [Schema.md](Schema.md)) which defines the top-level layout of the app. The module may only contain questions whose type are `module` or `module-set`.
+1. It also defines a module (see [Modules, Questions, and Documents](Schema.html)) which defines the top-level layout of the app. The module may only contain questions whose type are `module` or `module-set`.
 
 The `app.yaml` file looks like this:
 
@@ -105,7 +105,7 @@ The `app.yaml` file looks like this:
 	    template: |
 	      This (optional) content will appear at the top of the TabName tab.
 
-The questions in the app YAML file can only be of type `module` and `module-set`. The questions can specify a `module-id` to refer to another module within the same app or a `protocol` to allow the user to choose any app that has a matching `protocol` value set at the top level of the YAML file. See [Schema.md](Schema.md) for details on these question types.
+The questions in the app YAML file can only be of type `module` and `module-set`. The questions can specify a `module-id` to refer to another module within the same app or a `protocol` to allow the user to choose any app that has a matching `protocol` value set at the top level of the YAML file. See [Modules, Questions, and Documents](Schema.html) for details on these question types.
 
 A `module` YAML structure is identical to `app.yaml` structure but without the catalog details section.
 
