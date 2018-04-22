@@ -1,7 +1,5 @@
 # Deploying Q to Red Hat Enterprise Linux 7 / CentOS 7 / Amazon Linux 2
 
-**DEPRECATED APRIL 2018 - SEE READ THE DOCS VERSION**
-
 ## Preparing System Packages
 
 Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
