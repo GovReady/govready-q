@@ -39,12 +39,12 @@ If you have questions about if hosted version, email <a href="mailto:info@govrea
 
 ## Installing GovReady-Q
 
-| Deployment Guide                           | Where                                             |
-|--------------------------------------------|---------------------------------------------------|
-| Installing on Workstations for Development | [deploy_local_dev](deploy_local_dev.html)         |
-| Deploying with Docker                      | [deploy_docker](deploy_docker.html)               |
-| Deploying on RHEL 7 / CentOS 7             | [deploy_rhel7_centos7](deploy_rhel7_centos7.html) |
-| Deploying on Ubuntu                        | [deploy_ubuntu](deploy_ubuntu.html)               |
+| Deployment Guide                           | Where                                                                                         |
+|--------------------------------------------|-----------------------------------------------------------------------------------------------|
+| Installing on Workstations for Development | [deploy_local_dev](https://govready-q.readthedocs.io/en/latest/deploy_local_dev.html)         |
+| Deploying with Docker                      | [deploy_docker](https://govready-q.readthedocs.io/en/latest/deploy_docker.html)               |
+| Deploying on RHEL 7 / CentOS 7             | [deploy_rhel7_centos7](https://govready-q.readthedocs.io/en/latest/deploy_rhel7_centos7.html) |
+| Deploying on Ubuntu                        | [deploy_ubuntu](https://govready-q.readthedocs.io/en/latest/deploy_ubuntu.html)               |
 
 
 ## Support
