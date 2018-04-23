@@ -86,18 +86,33 @@ If you have questions about if hosted version, email <a href="mailto:info@govrea
 
 | Downloading               | Where                                                                                                           |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------|
-| Current release on Docker | [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/)                  |
+| Current Release on Docker | [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/)                  |
 | Nightly Build on Docker   | [https://hub.docker.com/r/govready/govready-q-nightly/](https://hub.docker.com/r/govready/govready-q-nightly/)  |
 | Clone the GitHub repo     | [https://github.com/govready/govready-q](https://github.com/govready/govready-q)                                |
 
 ## Installing GovReady-Q
 
-| Deployment Guide                           | Where                                             |
-|--------------------------------------------|---------------------------------------------------|
-| Installing on Workstations for Development | [deploy_local_dev](deploy_local_dev.html)         |
-| Deploying with Docker                      | [deploy_docker](deploy_docker.html)               |
-| Deploying on RHEL 7 / CentOS 7             | [deploy_rhel7_centos7](deploy_rhel7_centos7.html) |
-| Deploying on Ubuntu                        | [deploy_ubuntu](deploy_ubuntu.html)               |
+| Deployment Guide                             | Where                                             |
+|----------------------------------------------|---------------------------------------------------|
+| Installing on Workstations for Development   | [deploy_local_dev](deploy_local_dev.html)         |
+| Deploying with Docker                        | [deploy_docker](deploy_docker.html)               |
+| Deploying on RHEL 7 / CentOS 7 / AWS Linux 2 | [deploy_rhel7_centos7](deploy_rhel7_centos7.html) |
+| Deploying on Ubuntu                          | [deploy_ubuntu](deploy_ubuntu.html)               |
+
+
+A production system may need to set more options in `local/environment.json`. Here are recommended settings:
+
+	{
+	  "debug": false,
+	  "admins": [["Name", "email@domain.com"], ...],
+	  "host": "q.<yourdomain>.com",
+	  "organization-parent-domain": "<yourdomain>.com",
+	  "organization-seen-anonymously": false,
+	  "https": true,
+	  "secret-key": "something random here",
+	  "static": "/root/public_html"
+	}
+
 
 ## Finding Compliance Apps
 

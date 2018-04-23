@@ -1,6 +1,12 @@
 # Deploying GovReady-Q with Docker
 
-A demo of GovReady Q is available on the Docker Hub at [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/).
+#### GovReady-Q on Docker Hub
+
+| Container                 | Where                                                                                                           |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------|
+| Current Release on Docker | [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/)                  |
+| Nightly Build on Docker   | [https://hub.docker.com/r/govready/govready-q-nightly/](https://hub.docker.com/r/govready/govready-q-nightly/)  |
+
 
 ## Running
 
