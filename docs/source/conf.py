@@ -18,6 +18,7 @@
 # import recommonmark
 # from recommonmark.parser import CommonMarkParser
 # from recommonmark.transform import AutoStructify
+import m2r
 
 # -- Project information -----------------------------------------------------
 
