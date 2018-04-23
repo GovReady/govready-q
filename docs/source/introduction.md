@@ -7,30 +7,30 @@
 For too many organizations, compliance has become the main bottleneck---the primary constraint---on the pace of innovation. Their staff experience assesments, documentation, and audits as exasperating invisible work holding back their ability to deliver new value.
 -->
 
-Everything about developing and deploying software is accelerating...except for compliance. Why is that? We think it's because:
+Everything about developing and deploying software is accelerating...except for compliance. Why? Because:
 
 * maintaining written documentation is too slow,
 * pondering how jargon-laden control guidance applies is too hard,
 * there's little reuse and no compliance documentation supply chain.
 
-To remove the compliance bottleneck of taking months to authorize applications that deploy and re-deploy in minutes, assessments and authorizations need to be assembled from vetted, pre-fabricated components sourced from the same software supply chain we assemble applications.
-
-And to do that, we need new tooling. Govready-Q is that tooling.
+To stop needing months to authorize systems that deploy in minutes, assessments and authorizations need to be assembled from vetted, pre-fabricated components sourced from the same software supply chain we assemble applications.
 
 ## How GovReady-Q Accelerates Compliance
+
+GovReady accelerates compliance through component-centric guidance, pre-written documentation, and collaboration.
 
 **When you use or install GovReady-Q, you gain access to a marketplace of small, self-service compliance apps written by peers and vendors that map system components to security controls and guide you step-by-step through assessments and documentation.** 
 
 ![Apps map components to security/compliance controls](assets/app_diagram.png)
 
-As you and your teammates collaboratively answer questions, the compliance apps work with GovReady-Q platform to store your data in a relational database and automagically generate and maintain your compliance artifacts for auditors.
+As you and your teammates collaboratively answer questions, the compliance apps work with GovReady-Q to store your data in a relational database and automagically generate and maintain your compliance artifacts for auditors.
 
-GovReady-Q's contribution to emerging field of Compliance-as-Code is figuring out the data abstractions for a shareable, reusable package to map the customizable relationship between a system component and a set of controls. The approach is innovative, yet familiar:
+GovReady-Q's contribution to Compliance-as-Code is the data abstractions for shareable, reusable, and customizable packages---*Compliance Apps*---to map the relationship between a system component and a set of controls. The approach is innovative, yet familiar. Compliance Apps:
 
-* it enables a hub/marketplace for community contributions.
-* it extends the accepted practice of inherited controls to each system component;
-* it enables a modern, user-friendly interface;
-* it supports an agile, iterative workflow
+* enable a hub/marketplace for community contributions;
+* extend inherited controls model to each system component;
+* enable modern, user-friendly experiences;
+* support agile, iterative workflows.
 
 .. ATTENTION::
    GovReady-Q software is "Beta" software best suited for early adopters needing faster compliance for DevSecOps.
@@ -39,7 +39,6 @@ GovReady-Q's contribution to emerging field of Compliance-as-Code is figuring ou
 
 GovReady-Q is open source GRC (Governance Risk & Compliance) platform for self-service preparation of compliance artifacts. It's ultra-friendly to use and ultra-compatible with Agile/DevOps Software Development Life Cycle.
 -->
-
 
 ## GovReady-Q Philosophy
 
@@ -56,12 +55,12 @@ Compliance is a technique humans have developed for enabling trust in systems th
 
 ## GovReady-Q Features
 
-* Step-by-step guidance through compliance processes
+* Easy-to-use, beautiful questionnaires
 * Jargon-free approach to security controls and compliance
-* Beautiful, easy-to-use questionnaires
-* Discuss questions and answers in the tool instead of in email
-* Support for multi-media for rich, clear communication
+* Step-by-step guidance through assessments
 * Compliance-as-Code approach to documentation
+* Discuss questions and answers in the tool instead of in email
+* Support for rich, clear multi-media communication
 * RESTful Automation API to integrate with DevOps pipeline and existing agents
 * Innovative, reusable "Compliance Apps" model 
 * Friendly Open Source license so you can start now
@@ -86,24 +85,43 @@ If you have questions about if hosted version, email <a href="mailto:info@govrea
 
 | Downloading               | Where                                                                                                           |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------|
-| Current release on Docker | [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/)                  |
+| Current Release on Docker | [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/)                  |
 | Nightly Build on Docker   | [https://hub.docker.com/r/govready/govready-q-nightly/](https://hub.docker.com/r/govready/govready-q-nightly/)  |
 | Clone the GitHub repo     | [https://github.com/govready/govready-q](https://github.com/govready/govready-q)                                |
 
 ## Installing GovReady-Q
 
-| Deployment Guide                           | Where                                             |
-|--------------------------------------------|---------------------------------------------------|
-| Installing on Workstations for Development | [deploy_local_dev](deploy_local_dev.html)         |
-| Deploying with Docker                      | [deploy_docker](deploy_docker.html)               |
-| Deploying on RHEL 7 / CentOS 7             | [deploy_rhel7_centos7](deploy_rhel7_centos7.html) |
-| Deploying on Ubuntu                        | [deploy_ubuntu](deploy_ubuntu.html)               |
+| Deployment Guide                             | Where                                             |
+|----------------------------------------------|---------------------------------------------------|
+| Installing on Workstations for Development   | [deploy_local_dev](deploy_local_dev.html)         |
+| Deploying with Docker                        | [deploy_docker](deploy_docker.html)               |
+| Deploying on RHEL 7 / CentOS 7 / AWS Linux 2 | [deploy_rhel7_centos7](deploy_rhel7_centos7.html) |
+| Deploying on Ubuntu                          | [deploy_ubuntu](deploy_ubuntu.html)               |
+
+
+A production system may need to set more options in `local/environment.json`. Here are recommended settings:
+
+	{
+	  "debug": false,
+	  "admins": [["Name", "email@domain.com"], ...],
+	  "host": "q.<yourdomain>.com",
+	  "organization-parent-domain": "<yourdomain>.com",
+	  "organization-seen-anonymously": false,
+	  "https": true,
+	  "secret-key": "something random here",
+	  "static": "/root/public_html"
+	}
+
 
 ## Finding Compliance Apps
 
 Compliance Apps are GovReady-Q modular, shareable, reusable, data packages mapping the relationship between system components and security controls. See [Understanding Compliance Apps](Apps.html) for a more detailed description.
 
+#### For Hosted Version
+
 When using the Hosted Version of GovReady-Q, GovReady PBC manages the Compliance Apps available to your organization. Send email to <a href="mailto:info@govready.com">info@govready.com</a> to request changes.
+
+#### For Local Installs
 
 The docker and downloaded version of GovReady-Q automatically loads a small set of example Compliance Apps. Compliance Apps are published in collections known as "AppSources" (e.g., repos). Here are a few:
 
@@ -111,13 +129,30 @@ The docker and downloaded version of GovReady-Q automatically loads a small set 
 
 You can can show and hide compliance apps from the Django administration page at `main.localhost:8000/admin/guidedmodules/appsource/`.
 
-To get started writing your own Compliance Apps see: [Creating Compliance Apps](CreatingApps.html)
+#### Creating Your Own Compliance Apps
+
+To get started writing your own Compliance Apps see: [Creating Compliance Apps](CreatingApps.html).
+
+## Documentation
+
+The official GovReady-Q documentation is maintained at [govready-q.readthedocs.io](https://govready-q.readthedocs.io/).
 
 ## Support
 
 Commercial support for GovReady-Q is provided by GovReady PBC. Email <a href="mailto:info@govready.com">info@govready.com</a>.
 
-Sign up for Security Notifications email list at [GovReady Security Alerts](http://eepurl.com/dsi9YL)
+Sign up for Security Notifications email list at [GovReady Security Alerts](http://eepurl.com/dsi9YL).
+
+## Reporting Bugs & Issues
+
+Please file bug reports on our [GitHub issue](https://github.com/GovReady/govready-q/issues). When reporting a bug, please include as much information as possible. This includes:
+
+* Install type: Hosted, Local, Docker, etc
+* URL
+* Action taken
+* Expected result
+* Actual result
+* Screenshot (if relevant)
 
 ## License / Credits
 
@@ -126,9 +161,6 @@ This repository is licensed under the [GNU GPL v3](https://github.com/GovReady/g
 * Emoji icons by http://emojione.com/developers/.
 * Generic server icon by [Stock Image Folio from Noun Project](https://thenounproject.com/search/?q=computer&i=870428).
 
-
-
 ## About GovReady PBC
 
-GovReady® PBC is Public Benefit Corporation whose mission is to lower the cost of innovation in digital services to citizens. GovReady’s innovative self-service IT compliance tool GovReady-Q was developed as part of a R&D contract to automate and lower the cost of cyber security compliance from the Department of Homeland Security, Science and Technology Directorate, Cyber Security Division. GovReady PBC is based in the greater Washingtong, DC metro aread.
-
+GovReady® PBC is Public Benefit Corporation whose mission is to lower the cost of innovation in digital services to citizens. GovReady’s innovative self-service IT compliance tool GovReady-Q was developed as part of a R&D contract to automate and lower the cost of cyber security compliance from the Department of Homeland Security, Science and Technology Directorate, Cyber Security Division. GovReady PBC is based in the greater Washingtong, DC metro area.
