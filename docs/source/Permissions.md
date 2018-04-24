@@ -5,7 +5,7 @@ This document describes the user permissions model in Q.
 
 What Q tracks
 -------------
-GovReady Q tracks the following major entities
+GovReady-Q tracks the following major entities
 
 * Users - individuals with logins to an installed instance of Q
 * Organizations - entities, e.g., companies, around with data in Q is segmented

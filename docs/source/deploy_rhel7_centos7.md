@@ -2,7 +2,7 @@
 
 ## Preparing System Packages
 
-Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
+GovReady-Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
 
     # if necessary, enable EPEL and IUS repositories
     rpm -i https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm https://rhel7.iuscommunity.org/ius-release.rpm
@@ -10,8 +10,7 @@ Q calls out to `git` to fetch apps from git repositories, but that requires git 
     # if necessary, remove any git currently installed
     yum remove git
 
-    yum install git2u
-
+    yum install git2u=
 ## Preparing Q Source Code
 
 Create a UNIX user named `govready-q`:
@@ -138,7 +137,7 @@ On the web server, now check that secure connections can be made:
 
 (It should fail if the TLS certificate file is not provided, if sslmode is set to `disable`, if a different user or database is given, or if the wrong password is given.)
 
-Then in our GovReady Q `local/environment.json` file, configure the database (replace `THEPASSWORDHERE`) by setting the following key:
+Then in our GovReady-Q `local/environment.json` file, configure the database (replace `THEPASSWORDHERE`) by setting the following key:
 
         "db": "postgresql://govready_q:THEPASSWORDHERE@dbserver.hostname.com/govready_q?sslmode=verify-full&sslrootcert=/home/govready-q/pgsql.crt",
 
@@ -242,7 +241,7 @@ Set up email by adding to `local/environment.json`:
 
 ## Updating Deployment
 
-When there are changes to the GovReady Q software, pull new sources and restart processes with:
+When there are changes to the GovReady-Q software, pull new sources and restart processes with:
 
     sudo -iu govready-q /home/govready-q/govready-q/deployment/rhel/update.sh
     
