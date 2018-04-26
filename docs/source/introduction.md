@@ -91,12 +91,12 @@ If you have questions about if hosted version, email <a href="mailto:info@govrea
 
 ## Installing GovReady-Q
 
-| Deployment Guide                             | Where                                             |
-|----------------------------------------------|---------------------------------------------------|
-| Installing on Workstations for Development   | [deploy_local_dev](deploy_local_dev.html)         |
-| Deploying with Docker                        | [deploy_docker](deploy_docker.html)               |
-| Deploying on RHEL 7 / CentOS 7 / AWS Linux 2 | [deploy_rhel7_centos7](deploy_rhel7_centos7.html) |
-| Deploying on Ubuntu                          | [deploy_ubuntu](deploy_ubuntu.html)               |
+| Deployment Guide                                                                                                |
+|-----------------------------------------------------------------------------------------------------------------|
+| [Installing on Workstations for Development](https://govready-q.readthedocs.io/en/latest/deploy_local_dev.html) |
+| [Deploying with Docker](https://govready-q.readthedocs.io/en/latest/deploy_docker.html)                         |
+| [Deploying on RHEL 7 / CentOS 7](https://govready-q.readthedocs.io/en/latest/deploy_rhel7_centos7.html)         |
+| [Deploying on Ubuntu](https://govready-q.readthedocs.io/en/latest/deploy_ubuntu.html)                           |
 
 
 A production system may need to set more options in `local/environment.json`. Here are recommended settings:
