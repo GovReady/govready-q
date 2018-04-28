@@ -13,3 +13,8 @@ A production system may need to set more options in `local/environment.json`. He
 	  "secret-key": "something random here",
 	  "static": "/root/public_html"
 	}
+
+Custom Branding
+---------------
+
+You may override the templates and stylesheets that are used for GovReady-Q's branding by adding a new key named `branding` that is the name of an installed Django app Python module (i.e. created using `manage.py startapp`) that holds templates and static files.
