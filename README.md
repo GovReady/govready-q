@@ -2,7 +2,7 @@
 
 The GovReady-Q Compliance Server is an open source GRC platform for highly automated, user-friendly, self-service compliance assessments and documentation. It's perfect for DevSecOps.
 
-GovReady-Q solves the painful compliance bottleneck of needing months to authorize applications that deploy and re-deploy in minutes.
+GovReady-Q solves the painful compliance bottleneck of needing months to authorize applications that deploy and redeploy in minutes.
 
 ![Apps map components to security/compliance controls](docs/source/assets/app_diagram.png)
 
