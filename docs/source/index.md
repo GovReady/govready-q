@@ -15,12 +15,11 @@ The code is open source, and [available on GitHub](The code is open source, and 
    :caption: Contents:
 
    introduction.md
-   Apps.md
    Automation.md
-   Developer_guide.md
-   CreatingApps.md
-   Schema.md
+   Authoring.md
+   Deploy.md
    Permissions.md
+   Developer_guide.md
    Test.md
    
 Indices and tables
