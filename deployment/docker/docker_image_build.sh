@@ -75,7 +75,7 @@ COMMIT=$(git rev-parse HEAD)
 
 # Update the local copy of the base image so we are building against
 # the latest upstream base.
-BASEIMAGE=$(grep FROM Dockerfile | sed "s/FROM //")
+BASEIMAGE=$(grep ^FROM Dockerfile | sed "s/FROM //")
 echo "Updating $BASEIMAGE..."
 docker image pull $BASEIMAGE
 
