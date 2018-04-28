@@ -98,21 +98,6 @@ If you have questions about if hosted version, email <a href="mailto:info@govrea
 | Deploying on RHEL 7 / CentOS 7 / AWS Linux 2 | [deploy_rhel7_centos7](deploy_rhel7_centos7.html) |
 | Deploying on Ubuntu                          | [deploy_ubuntu](deploy_ubuntu.html)               |
 
-
-A production system may need to set more options in `local/environment.json`. Here are recommended settings:
-
-	{
-	  "debug": false,
-	  "admins": [["Name", "email@domain.com"], ...],
-	  "host": "q.<yourdomain>.com",
-	  "organization-parent-domain": "<yourdomain>.com",
-	  "organization-seen-anonymously": false,
-	  "https": true,
-	  "secret-key": "something random here",
-	  "static": "/root/public_html"
-	}
-
-
 ## Finding Compliance Apps
 
 Compliance Apps are GovReady-Q modular, shareable, reusable, data packages mapping the relationship between system components and security controls. See [Understanding Compliance Apps](Apps.html) for a more detailed description.
