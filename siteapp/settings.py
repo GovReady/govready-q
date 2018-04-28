@@ -252,6 +252,8 @@ if environment.get("syslog"):
 		'level': 'INFO',
 	}
 
+SILENCED_SYSTEM_CHECKS = []
+
 # Settings that have normal values based on the primary app
 # (the app this file resides in).
 
@@ -291,16 +293,26 @@ if environment.get("email", {}).get("host"):
 	EMAIL_USE_TLS = True
 
 # If the "https" environment setting is true, set the settings
-# that keep sessions and cookies secure.
+# that keep sessions and cookies secure and redirect any non-HTTPS
+# requests to HTTPS.
 if environment["https"]:
 	SESSION_COOKIE_HTTPONLY = True
 	SESSION_COOKIE_SECURE = True
 	CSRF_COOKIE_HTTPONLY = True
 	CSRF_COOKIE_SECURE = True
+else:
+	# Silence some checks about HTTPS.
+	SILENCED_SYSTEM_CHECKS += [
+		'security.W004', # SECURE_HSTS_SECONDS not set
+		'security.W008', # SECURE_SSL_REDIRECT not set
+		'security.W012', # SESSION_COOKIE_SECURE not set
+		'security.W016', # CSRF_COOKIE_SECURE not set
+	]
 
 # Other security headers.
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
 
 # Put static files in the virtual path "/static/". When the "static"
 # environment setting is present, then it's a local directory path

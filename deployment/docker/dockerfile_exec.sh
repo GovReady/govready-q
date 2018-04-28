@@ -64,6 +64,9 @@ fi
 # Write out the settings that indicate where we think the site is running at.
 echo "Starting GovReady-Q at ${ADDRESS} with HTTPS ${HTTPS-false}."
 
+# Run checks.
+python3.6 manage.py check --deploy
+
 # Initialize the database.
 python3.6 manage.py migrate
 python3.6 manage.py load_modules
