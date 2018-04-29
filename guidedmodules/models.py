@@ -984,6 +984,7 @@ class Task(models.Model):
                 project=self.project,
                 editor=user,
                 module=module)
+            task.was_just_created_by_get_or_create_subtask = True
 
             # Create a new TaskAnswerHistory instance. We never modify
             # existing instances!
@@ -1080,10 +1081,10 @@ class Task(models.Model):
 
             # Basic validation.
             if not isinstance(data, dict):
-                deserializer.log("Data format error.")
+                deserializer.log("Data format error. Expecting JSON Object.")
                 return
             if not isinstance(data.get("id"), str):
-                deserializer.log("Data format error.")
+                deserializer.log("Data format error. Missing/invalid Task 'id'.")
                 return
 
             # If there's a Task in the system with the UUID found in the incoming
@@ -1125,7 +1126,10 @@ class Task(models.Model):
         # Since this method is called directly on a Project root task, we must
         # repeat some of the same validation that occurs in Task.import_json.
         if not isinstance(data, dict):
-            deserializer.log("Data format error.")
+            deserializer.log("Data format error. Expecting JSON Object updating {} (got {}).".format(
+                self,
+                data
+            ))
             return
 
         if deserializer.included_metadata:
@@ -1151,7 +1155,7 @@ class Task(models.Model):
         if deserializer.included_metadata:
             data = data.get("answers", {})
         if not isinstance(data, dict):
-            deserializer.log("Data format error.")
+            deserializer.log("Data format error. Expecting JSON Object.")
             return
 
         # Loop through the key-value pairs.
@@ -1843,12 +1847,12 @@ class TaskAnswerHistory(models.Model):
             # These questions are stored in the answered_by_tasks field
             # as foreign keys to other Task instances.
 
-            if deserializer.included_metadata:
-                # Make module-type questions look like module-set questions
-                # so we can handle the rest the same.
-                if q.spec["type"] == "module":
-                    value = [value]
+            # Make module-type questions look like module-set questions
+            # so we can handle the rest the same.
+            if q.spec["type"] == "module":
+                value = [value]
 
+            if deserializer.included_metadata:
                 # For each sub-taks, get or create the Task instance (and
                 # recurse to update its answers). Task.import_json can return
                 # None, and we handle that below.
@@ -1872,24 +1876,42 @@ class TaskAnswerHistory(models.Model):
             else:
                 # In the short form, the inner tasks are serialized as dicts
                 # of answers. No UUIDs are stored to data with existing tasks,
-                # so module-set questions would be difficult to update. For
-                # module questions, we can create the sub-Task if it hasn't
-                # been started or update the existing one. We can return None
-                # to signal that this question cannot be updated.
-                if q.spec["type"] != "module": return None
-                try:
-                    t = Task.get_or_create_subtask(taskanswer.task, deserializer.user, taskanswer.question.key, create=True)
-                except ValueError:
-                    # Can't create sub-Task because question specifies a
-                    # protocol and not a module.
-                    return None
+                # so we don't know explicitly which Task we are supposed to
+                # set as the answer and update. For module-type questions, we
+                # can create the sub-Task if it hasn't been started (though
+                # that isn't always possible --- in which case we return None)
+                # or update the existing one. For module-set questions, we'll
+                # simply always create a new subtask and we'll *append* it to
+                # any existing Tasks that are answers to the question.
 
-                # This is redundant. The answer has already been updated by
-                # get_or_create_subtask.
-                answered_by_tasks.add(t)
+                # Append.
+                if q.spec["type"] == "module-set":
+                    answered_by_tasks |= set(taskanswer.get_current_answer().answered_by_task.all())
 
-                # Import data in the sub-Task.
-                subtasks_updated = t.import_json_update(value, deserializer)
+                for task in value: # loop over Tasks that are the answer to a module-set question, or just the one
+                    try:
+                        t = Task.get_or_create_subtask(taskanswer.task, deserializer.user, taskanswer.question.key, create=True)
+                    except ValueError:
+                        # Can't create sub-Task because question specifies a
+                        # protocol and not a module.
+                        return None
+
+                    # This is redundant. The answer has already been updated by
+                    # get_or_create_subtask.
+                    answered_by_tasks.add(t)
+
+                    if not hasattr(t, 'was_just_created_by_get_or_create_subtask'):
+                        deserializer.log("Importing '{}'...".format(taskanswer.question.spec['title']))
+                    else:
+                        deserializer.log("Creating new sub-task for '{}'...".format(taskanswer.question.spec['title']))
+                    deserializer.log_nesting_level += 1
+
+                    # Import data in the sub-Task.
+                    subtasks_updated = t.import_json_update(task, deserializer)
+
+                    deserializer.log_nesting_level -= 1
+                    deserializer.log("Finished importing '{}'.".format(taskanswer.question.spec['title']))
+                    
 
             # Reset this variable so stored_value is set to None.
             value = None
