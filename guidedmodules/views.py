@@ -122,7 +122,7 @@ def task_view(view_func):
             # show a more friendly page than an access denied. Discussion
             # guests will have been denied above because is_participant
             # will fail on deleted tasks.
-            return HttpResponse("This module was deleted by its editor or a project administrator.")
+            return HttpResponse("This module was deleted by a project administrator.")
 
         # Redirect if slug is not canonical. We do this after checking for
         # read privs so that we don't reveal the task's slug to unpriv'd users.
@@ -147,6 +147,7 @@ def task_view(view_func):
             "task": task,
             "is_discussion_guest": not task.has_read_priv(request.user), # i.e. only here for discussion
             "write_priv": task.has_write_priv(request.user),
+            "is_admin": request.user in task.project.get_admins(),
             "send_invitation": Invitation.form_context_dict(request.user, task.project, [task.editor]),
             "open_invitations": task.get_open_invitations(request.user, request.organization),
             "source_invitation": task.get_source_invitation(request.user, request.organization),
@@ -1023,22 +1024,43 @@ def authoring_edit_module(request, task):
 
 
 @login_required
-def change_task_state(request):
+@transaction.atomic
+def delete_task(request):
+    # Mark a Task as deleted and un-link it from any questions it
+    # answers by saving new answers with the Task removed. Only
+    # Project admins can delete tasks. It's not a destructive
+    # operation at the database level, but it does cause the Task
+    # to become inaccessible.
+
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
     task = get_object_or_404(Task, id=request.POST["id"], project__organization=request.organization)
-    if not task.has_write_priv(request.user, allow_access_to_deleted=True):
+    if not request.user in task.project.get_admins():
         return HttpResponseForbidden()
 
-    if request.POST['state'] == "delete":
+    # Don't allow root tasks to be deleted this way.
+    if task is task.project.root_task:
+        return HttpResponseForbidden()
+
+    if task.deleted_at is None:
+        # Mark.
         task.deleted_at = timezone.now()
-    elif request.POST['state'] == "undelete":
-        task.deleted_at = None
-    else:
-        return HttpResponseForbidden()
+        task.save(update_fields=["deleted_at"])
 
-    task.save(update_fields=["deleted_at"])
+        # Update answers that this Task is an answer to with the same
+        # value but missing this Task.
+        for ans in task.is_answer_to.all():
+            if not ans.is_latest(): continue # only update if we're looking at the current answer to a question
+            ans.taskanswer.save_answer(
+                None, # if it had a Task answer, it can't have had stored_value
+                set(ans.answered_by_task.all()) - { task }, # remove the task
+                None, # if it had a Task answer, it can't have had an answer file
+                request.user,
+                "delete", # save method - unique to this operation because it violates normal auth checks on modifying tasks
+                skipped_reason=ans.skipped_reason, # preserve this
+                unsure=ans.unsure, # preserve this
+            )
 
     return HttpResponse("ok")
 

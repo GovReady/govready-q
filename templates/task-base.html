@@ -47,6 +47,14 @@
 
 
 {% block breadcrumbs %}
+  {% if is_admin %}
+  <div class="pull-right">
+    <a href="#" onclick="return delete_task();">
+      <span class="glyphicon glyphicon-trash" style="color: #BBB;"></span>
+    </a>
+  </div>
+  {% endif %}
+
   {% if not task.project.is_account_project %}
   <li>
     <a href="/">
@@ -108,6 +116,26 @@ function invite_to_transfer_editor() {
       into_task_editorship: {{task.id}}
     });
   return false;
+}
+
+function delete_task() {
+  show_modal_confirm(
+    "Delete Task",
+    "Are you sure you want to delete {{task.title|escapejs}}?",
+    "Delete", function() {
+      ajax_with_indicator({
+          url: "{% url 'delete_task' %}",
+          method: "POST",
+          data: {
+            id: {{task.id}}
+          },
+          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+          success: function(res) {
+            window.location = "{{task.project.get_absolute_url|escapejs}}";
+          }
+      });
+    });
+  return false; // cancel link
 }
 </script>
 {% endblock %}
