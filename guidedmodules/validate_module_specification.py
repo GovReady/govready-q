@@ -22,7 +22,7 @@ def validate_module(spec, is_authoring_tool=False):
         try:
             render_content(spec["introduction"], None, "PARSE_ONLY", "(introduction)")
         except ValueError as e:
-            raise ValidationError("module introduction", "Invalid Jinja2 template: " + str(e))
+            raise ValidationError("module introduction", "Invalid template: " + str(e))
 
     if not isinstance(spec.get("output", []), list):
         raise ValidationError("module output", "Must be a list, not a %s." % type(spec.get("output")).__name__)
@@ -30,7 +30,7 @@ def validate_module(spec, is_authoring_tool=False):
         try:
             render_content(doc, None, "PARSE_ONLY", "(output document)")
         except ValueError as e:
-            raise ValidationError("output document #%d" % (i+1), "Invalid Jinja2 template: %s" % str(e))
+            raise ValidationError("output document #%d" % (i+1), "Invalid template: %s" % str(e))
 
     # 'introduction' fields are an alias for an interstitial
     # question that comes before all other questions, and since

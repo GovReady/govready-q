@@ -505,7 +505,7 @@ def render_content(content, answers, output_format, source, additional_context={
         try:
             template = env.from_string(template_body)
         except jinja2.TemplateSyntaxError as e:
-            raise ValueError("There was an error loading the template %s: %s" % (source, str(e)))
+            raise ValueError("There was an error loading the Jinja2 template %s: %s, line %d" % (source, str(e), e.lineno))
 
         # For tests, callers can use the "PARSE_ONLY" output format to
         # stop after the template is compiled.
