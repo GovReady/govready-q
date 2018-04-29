@@ -22,11 +22,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if not options["appsource"]:
             # Show valid appsources.
-            print("Specify one of the following app sources:")
+            print("Specify one of the following app sources plus an app name:")
             for appsrc in AppSource.objects.all():
                 if appsrc.spec["type"] == "local" and appsrc.spec.get("path"):
                     print(appsrc.slug, "(path: " + appsrc.spec["path"] + ")")
-            return
+            print("")
+            print("Or create a new AppSource using '--path path/to/apps appsource'.")
 
         elif options["path"]:
             if options["appname"]:
