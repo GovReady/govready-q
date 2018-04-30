@@ -1057,7 +1057,7 @@ def delete_task(request):
                 set(ans.answered_by_task.all()) - { task }, # remove the task
                 None, # if it had a Task answer, it can't have had an answer file
                 request.user,
-                "delete", # save method - unique to this operation because it violates normal auth checks on modifying tasks
+                "del", # save method - unique to this operation because it violates normal auth checks on modifying tasks
                 skipped_reason=ans.skipped_reason, # preserve this
                 unsure=ans.unsure, # preserve this
             )
