@@ -4,9 +4,10 @@ from django.db.models.deletion import ProtectedError
 from collections import OrderedDict
 import enum
 import json
+import re
 import sys
 
-import fs
+import fs, fs.errors
 from fs.base import FS as fsFS
 
 from .models import AppSource, AppInstance, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task
@@ -152,7 +153,6 @@ class PyFsAppSourceConnection(AppSourceConnection):
     def __enter__(self):
         # Initialize at the start of the "with" block that this
         # object is used in.
-        import fs.errors
         try:
             # Open the filesystem.
             self.root = self.fsfunc()
@@ -259,6 +259,22 @@ class PyFsApp(App):
         ret.update(yaml.get("catalog", {}))
         if "protocol" in yaml: ret["protocol"] = yaml["protocol"]
 
+        # Load an optional README.md which provides the app's long description.
+        try:
+            # Read the README.md.
+            with self.fs.open("README.md") as f:
+                readme = f.read()
+
+            # Strip any initial heading that has the app name itself, since
+            # that is expected to not be included in the long description.
+            # Check both CommonMark heading formats.
+            readme = re.sub(r"^\s*#+ *" + re.escape(ret["title"]) + r"\s*", "", readme)
+            readme = re.sub(r"^\s*" + re.escape(ret["title"]) + r"\s*[-=]+\s*", "", readme)
+
+            ret.setdefault("description", {})["long"] = readme
+        except fs.errors.ResourceNotFound:
+            pass
+
         # Override with source-specified catalog information.
         ret.update(self.store.get_app_catalog_info(self))
 
@@ -267,7 +283,6 @@ class PyFsApp(App):
             "name": self.name,
         })
         if "icon" in yaml:
-            import fs.errors
             try:
                 with self.fs.open("assets/" + yaml["icon"], "rb") as f:
                     ret["app-icon"] = f.read()
@@ -381,12 +396,11 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
         self.path = (path or "") + "/"
 
         # Run a quick call to check access.
-        from fs.errors import CreateFailed
         from github.GithubException import GithubException
         try:
             self.repo.get_dir_contents(self.path)
         except GithubException as e:
-            raise CreateFailed(e.data.get("message"))
+            raise fs.errors.CreateFailed(e.data.get("message"))
 
     def scandir(self, path, namespaces=None, page=None):
         from fs.info import Info
@@ -465,7 +479,6 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
 
         import os, os.path
         import git
-        from fs.errors import CreateFailed
 
         # Create an empty git repo in the temporary directory.
         self.repo = git.Repo.init(self.tempdir)
@@ -504,7 +517,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
                 ], kill_after_timeout=20)
         except git.exc.GitCommandError as e:
             # This is where errors occur, which is hopefully about auth.
-            raise CreateFailed("The repository URL is either not valid, not public, or ssh_key was not specified or not valid (%s)." % e.stderr)
+            raise fs.errors.CreateFailed("The repository URL is either not valid, not public, or ssh_key was not specified or not valid (%s)." % e.stderr)
 
         # Get the tree for the remote branch's HEAD.
         tree = self.repo.tree("FETCH_HEAD")
@@ -528,7 +541,6 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
         return tree
 
     def getdir(self, path):
-        import fs.errors
         tree = self.get_repo_root()
         for item in path.split("/"):
             if item != "":

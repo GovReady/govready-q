@@ -101,11 +101,19 @@ RUN chown -R application:application local
 # Move the environment.json to /tmp because in some environments the main
 # filesystem is read-only and we won't be able to update local/environment.json
 # once the container starts. In those cases, /tmp must be a tmpfs. We use
-# /tmp for other purposes at run-time as well.
+# /tmp for other purposes at run-time as well. Although we don't need a
+# working environment.json file for the remainder of this Dockerfile, downstream
+# packagers using 'FROM govready/govready-q' might want to run additional
+# management commands, so we'll keep it working.
+RUN cp local/environment.json /tmp
+RUN chown -R application:application /tmp/environment.json
 RUN ln -sf /tmp/environment.json local/environment.json
 
 # Run the container's process zero as this user.
 USER application
+
+# Test.
+RUN python3.6 manage.py check
 
 # Set the startup script.
 CMD [ "bash", "dockerfile_exec.sh" ]

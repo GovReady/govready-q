@@ -66,6 +66,8 @@ API
 
     <p>The fields are documented below.</p>
 
+    <p>Updating fields within a <code>module-set</code>-type question creates a single, new answer to the <code>module-set</code>-type question on each POST request.</p>
+
     <p>As with the GET API, an API key must be passed in the HTTP <code>Authorization</code> header. An API key with write permission must be used. You can get an API key from the <a href="/api-keys">API keys page</a>.</p>
 
     <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API using <code>curl</code>. Replace <code>your-api-key</code> in the command below with <a href="/api-keys">your full access API key</a>. Then run the following command. (The slash in the command below indicates a continued line.)</p>
@@ -151,11 +153,16 @@ API
             <small>
             <p>{{question.spec.help}}</p>
             {% if question.spec.type == "module" or question.spec.type == "module-set" %}
+              <p>
               {% if question.answer_type_module %}
-               <p>This data field is a JSON object which has sub-fields documented in the &ldquo;<b>{{question.answer_type_module.spec.title}}</b>&rdquo; section below.</p>
+               This data field is a JSON object which has sub-fields documented in the &ldquo;<b>{{question.answer_type_module.spec.title}}</b>&rdquo; section below.
+               {% if question.spec.type == "module-set" %}
+                 When updating answers within this key, a new {{question.answer_type_module.spec.title}} is created on each POST request and appended to the existing set of answers.
+               {% endif %}
               {% else %}
-               <p>An app must be selected manually in Q before schema information for this field can be determined.</p>
+               An app must be selected manually in Q before schema information for this field can be determined.
               {% endif %}
+              </p>
             {% elif question.spec.type == "text" or question.spec.type == "password" %}
               <p>Data type: string (or null).</p>
             {% elif question.spec.type == "email-address" %}

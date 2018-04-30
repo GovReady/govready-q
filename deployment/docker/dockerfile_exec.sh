@@ -56,8 +56,16 @@ if [ ! -z "${MAILGUN_API_KEY-}" ]; then
 	set_env_setting mailgun_api_key "$MAILGUN_API_KEY"
 fi
 
+# Overridden branding.
+if [ ! -z "${BRANDING-}" ]; then
+	set_env_setting branding "$BRANDING"
+fi
+
 # Write out the settings that indicate where we think the site is running at.
 echo "Starting GovReady-Q at ${ADDRESS} with HTTPS ${HTTPS-false}."
+
+# Run checks.
+python3.6 manage.py check --deploy
 
 # Initialize the database.
 python3.6 manage.py migrate

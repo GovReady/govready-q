@@ -13,8 +13,6 @@ catalog:
   description:
     short: |
       Short description.
-    long: |
-      Long description.
   recommended_for:
   - key_short: Org
     value: Small

@@ -238,7 +238,7 @@ The following environment variables are used to configure the container when lau
 
 * `HOST`: The domain name that GovReady-Q will be accessible at by end users. (Default: `localhost`)
 * `PORT`: The port that GovReady-Q will be accessed at by end users, typically either 80 (no HTTPS) or 443 (HTTPS). (Default: `8080`)
-* `HTTPS`: Set to `true` if GovReady-Q will be accessed by end users at an https: address. (Default: `false`)
+* `HTTPS`: Set to `true` if GovReady-Q will be accessed by end users at an https: address. Requests to an http: URL will automatically be redirected to https:. (Default: `false`)
 * `DEBUG`: Set to `true` to run in Django debug mode. (Default: `false`)
 * `DBURL`: Set to a database connection string as described in [https://github.com/kennethreitz/dj-database-url](https://github.com/kennethreitz/dj-database-url). We recommend using PostgreSQL [using a TLS server certificate](https://www.postgresql.org/docs/9.1/static/libpq-ssl.html), e.g. `postgresql://user:password@dbhost/govready_q?sslmode=verify-full&sslrootcert=/path/to/pgsql.crt` (although you'll have to figure out how to get the server certificate accessible via the container filesystem). (Default: Not set, which means using a Sqlite database stored in the container at `/usr/src/app/local/database.sqlite`, which will be ephemeral if the path is not mounted to the host or a Docker volume.)
 * `ORGANIZATION_PARENT_DOMAIN`: If not set, GovReady-Q will be single-tenant and the database must be configured with a single organization whose subdomain is `main`. If set, GovReady-Q will be multi-tenant, serving a landing page and organization-specific sites on different domain names. A landing/signup page and the Django `/admin` site will be available at the domain name given in the `HOST` environment variable and organization sites will be served at subdomains of the `ORGANIZATION_PARENT_DOMAIN` domain name value. (Default: Not set).
@@ -249,7 +249,7 @@ The following environment variables are used to configure the container when lau
 * `ADMINS`: The [Django ADMINS](https://docs.djangoproject.com/en/2.0/ref/settings/#admins) setting, passed as raw JSON. Example: `[["Admin Name 1", "admin1@example.com"], ["Admin Name 2", "admin2@example.com"]]`. (Default: Empty list, i.e. `[]`.)
 * `SYSLOG`: The host and port of a syslog-compatible log message sink. (Default: None.)
 * `MAILGUN_API_KEY`: An API key for Mailgun which is used to validate incoming webhook requests from Mailgun when an incoming email is received, when Mailgun is configured to handle incoming mail. (Default: None)
-
+* (downstream packaging only) `BRANDING`: You may override the templates and stylesheets that are used for GovReady-Q's branding by setting this environment variable to the name of an installed Django app Python module (i.e. created using `manage.py startapp`) that holds templates and static files. No such app is provided in the GovReady-Q published Docker image, so this variable can only be used by downstream image maintainers.
 
 ## Building and publishing the Docker image for GovReady-Q maintainers
 
@@ -297,19 +297,28 @@ The functional tests run a headless Chromium web browser session and we have not
 
 ## Deployment on Amazon Web Services Elastic Container Service with AWS Fargate
 
-* In AWS RDS, create a Postgres database instance. For simplicity, use `govready_q` as the root username and database name.
-* In AWS ECS, Create a Cluster using the "Networking only (powered by AWS Fargate)" template and using a VPC.
+### Preparation
+
+* In the AWS VPC console, use the Start VPC Wizard to create a new "VPC with a Single Public Subnet". After creating it, go to the Subnets tab and find the subnet and rename it to, e.g., GovReady-Q Production Public Subnet 1. Check which Availability Zone it uses. Then add a second Subnet in the same VPC. Use similar settings as the first subnet but a) choose a different Availability Zone because an Elastic Load Balancer requires operating two zones and b) modify the IPv4 CIDR block because it must be different (if the first subnet used 10.0.0.0/24, you can use 10.0.1.0/24 here). Then edit the new Subnet's Route Table to use the same Route Table as the first Subnet, and delete the new subnet's previous-and-now-unused route table.
+* In the AWS EC2 console, create a Security Group in the new VPC for the Load Balancer and any other public-facing systems. Enable inbound HTTP and HTTPS traffic.
+* Create a new Load Balancer using the Application Load Balancer type. Select internet-facing. Add a listener on HTTPS (port 80) and/or HTTPS (port 443). Use the VPC just created and the Security Group for public facting systems. Create a dummy target group if you have to --- we won't use this --- and skip registering targets.
+* Edit the VPC's default Security Group, which we'll use for all non-public-facing systems, to permit all inbound traffic from the new public facing security group.
+* In AWS RDS, create a Postgres database instance. For simplicity, use `govready_q` as the root username and database name. Choose the VPC created above, one of the Availability Zones tied to VPC's two subnets, and the default VPC security group.
+
+### In AWS ECS
+
 * Create a new Task Definition using the Fargate launch type. Leave the task role blank. The task size is up to you.
-(NOT WORKING YET) * Scroll past containers and add three volumes: `govready-q-tmp`, `govready-q-run`, `govready-q-logs`. Since Fargate does not yet support tmpfs mounts, we will use a volume for `/tmp` and `/run` so that we can make the rest of the filesystem read-only.
-* Add a container with image `govready/govready-q` to use a GovReady image on the Docker Hub. (If using an AWS Elastic Container Registry, specify an image like `...dkr.ecr...amazonaws.com/repository-name:latest`.) Add a port mapping for port 8000 (there source and destination ports here at the same).
-* Set the environment variables as appropriate for your deployment (see above). Set `DBURL` to use the RDS database using e.g. `postgresql://govready_q:password@...rds.amazonaws.com/govready_q?sslmode=require`.
-* (NOT WORKING YET) Turn on `Read only root file system` and mount `/tmp`, `/run`, and `/var/log` to the corresponding volumes.
+* Add a container with image `govready/govready-q` to use a GovReady image on the Docker Hub. (If using an AWS Elastic Container Registry, specify an image like `...dkr.ecr...amazonaws.com/repository-name:latest`. After creating the ECS Task Definition, go back to ECR and add the "Pull only actions" permission for the Task Definition's role, which is probably `ecsTaskExecutionRole`.)
+* Add a port mapping for port 8000 (there source and destination ports here at the same).
+* Set the environment variables as appropriate for your deployment (see above). Set the `HOST` environment variable to match the public DNS name of the load balancer. Set `DBURL` to use the RDS database using e.g. `postgresql://govready_q:password@...rds.amazonaws.com/govready_q?sslmode=require`.
 * Leave `Auto-configure CloudWatch Logs` on so that the container's console output is available in CloudWatch.
-* In the Task Definition, in Actions, click Create Service. Set launch type to Fargate.
-* Choose the same VPC that the RDS database is in, and choose two subnets, and remember your selection. Edit the security group to allow inbound traffic on port 8000.
-* In the RDS console, edit the database instance's security group to permit inbound traffic from the security group set to the ECS service.
-* In the Amazon EC2 console in a separate browser tab, create a new Load Balancer using the Application Load Balancer type. Select internet-facing. Add a listener on port 80. Use the same VPC and subnets as in the previous step. Add a security group that permits traffic on HTTP (80) and/or HTTPS (443). Create a dummy target group if you have to --- we won't use this --- and skip registering targets. Add a health check using the path `/` and add status code `400` to the acceptable status codes because at this time the ELB status checks will not send a valid HTTP Host: header and Django will reject the request with a 400 response code.
-* Back in the ECS tab, click the refresh button next to the load balancer field. Choose the load balancer created in the previous step. Add the Task Definition's container to the load balancer and select HTTP or HTTPS as the listener port as appropriate and set the Path Pattern to `/` and Evaluation Order to 1.
+* Save the Task Definition.
+* Create a Cluster using the "Networking only (powered by AWS Fargate)" template. Don't create a VPC (you already did that).
+* Create a Service in the new Cluster. Set launch type to Fargate. Choose the Task Defintion.
+* Choose the same VPC that was created above, the subnet the RDS database is in, and the VPC's default security group. Auto-assign public IP must be Enabled so that it can have routing to the Internet. Choose the Application Load Balancer created early. Click to add the Task Definition's container to the load balancer for each of HTTP and HTTPS as appropriate (all ports the load balancer is listening on --- if using HTTPS, GovReady-Q will issue redirects from HTTP to HTTPS), and set the Path Pattern to `/*` and Evaluation Order to 1 for each.
 * Enable service discovery.
-* Somewhere the Health Checks path should be set to `/` or some real path.
-* If you are accessing GovReady-Q using the load balancer's DNS name, go back to the Task Definition and change the `HOST` environment variable to match the public DNS name of the load balancer.
+* Go to the EC2 console and in Target Groups find the Target Group that was created by ECS. Edit its Health Checks. Set the health check to the path `/health-check` and add status codes `400,404` to the acceptable status codes because at this time Load Balancer status checks will not send a valid HTTP Host: header and Django will reject the request with a 400 response code, and if that were fixed the `/health-check` page isn't yet implemented.
+
+### Post deployment steps
+
+* If using HTTPS, import a certificate into AWS Certificate Manager and apply it to the Load Balancer.

@@ -216,6 +216,7 @@ def project_api(request, org_slug, project_id):
             # For each item...
             log = []
             ok = True
+            subtasks = { }
             for key, v in list(request.POST.lists()) + list(request.FILES.items()):
                 try:
                     # The item is a dotted path of project + question IDs to the
@@ -231,22 +232,49 @@ def project_api(request, org_slug, project_id):
                         # must have been a module-type question. Move to its *answer*,
                         # which is another Task.
                         if question is not None:
-                            if question.spec["type"] != "module": raise ValueError("Invalid question ID: " + key)
-                            try:
-                                task = task.get_or_create_subtask(user, question)
-                            except ValueError:
-                                # Raised if the question is not answered and the question uses
-                                # a protocol for selecting compliance apps rather than specifying
-                                # a concrete Module to use for answers. In this case, we can't
-                                # start a Task implicitly.
-                                raise ValueError("Invalid question ID '{}': {} has not been answered yet by a compliance app so its data fields cannot be set.".format(
+                            # Only module-type questions have subtasks.
+                            if question.spec["type"] not in ("module", "module-set"):
+                                raise ValueError("Invalid question ID: {}. {} does not refer to a task that has sub-answers.".format(
                                     key,
-                                    ".".join(key.split(".")[:i+1])
-                                ))
+                                    ".".join(key.split(".")[:i+1]),
+                                    ))
+
+                            # If we've already traversed this path in a previous field,
+                            # use the same Task. For module-type questions, this acts as
+                            # a cache and saves us a database query. For module-set questions,
+                            # this ensures we create just one subtask for this path for
+                            # this POST request and share it across all POST parameters that
+                            # use this path.
+                            if (task, question) in subtasks:
+                                task = subtasks[(task, question)]
+                            else:
+                                # If we haven't seen this path yet, query for the subtask
+                                try:
+                                    subtask = task.get_or_create_subtask(user, question)
+                                except ValueError:
+                                    # Raised if the question is not answered and the question uses
+                                    # a protocol for selecting compliance apps rather than specifying
+                                    # a concrete Module to use for answers. In this case, we can't
+                                    # start a Task implicitly.
+                                    raise ValueError("Invalid question ID '{}': {} has not been answered yet by a compliance app so its data fields cannot be set.".format(
+                                        key,
+                                        ".".join(key.split(".")[:i+1])
+                                    ))
+
+                                if hasattr(subtask, 'was_just_created_by_get_or_create_subtask'):
+                                    log.append("Creating new answer to {}.".format(question.spec['title']))
+
+                                # Save to cache for this request and move forward.
+                                subtasks[(task, question)] = subtask
+                                task = subtask
 
                         # Get the question this corresponds to within the task
                         question = task.module.questions.filter(key=pathitem).first()
-                        if not question: raise ValueError("Invalid question ID: " + key)
+                        if not question:
+                            raise ValueError("Invalid question ID: {}. '{}' is not a question in {}.".format(
+                                key,
+                                pathitem,
+                                task.module.spec['title']))
 
                     # Parse and validate the answer.
                     v = question_input_parser.parse(question, v)

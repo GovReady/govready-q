@@ -28,6 +28,7 @@ The below diagram depicts an exploded view of the relationships between a top le
 Each app is defined by a set of YAML files and asset files stored in the following directory structure:
 
     app_name
+	├── README.md
 	├── app.yaml
 	├── assets
 	│   ├── app.png
@@ -38,9 +39,7 @@ Each app is defined by a set of YAML files and asset files stored in the followi
 	├── module_two.yaml
 	└── ...
 
-By convention, each app is required to have `app.yaml` file which includes metadata for the displaying the app in the catalog and an `assets/app.png` graphic which displays as the app's icon.
-
-`app.yaml` is a required file in every app which includes app catalog metadata, such as the app's description, as well as module questions which define the layout of the app's main screen once it is started by the user.
+By convention, each app is required to have `app.yaml` file which holds metadata for displaying the app in the compliance apps catalog, such as its title and description, and an `assets/app.png` graphic which displays as the app's icon. `app.yaml` also holds the top-level module questions which define the layout of the app's main screen once it is started by the user. The contents of `README.md` are also displayed in the apps catalog.
 
 Other module YAML file may be includes in the app as well, as needed.
 
@@ -79,7 +78,8 @@ The `app.yaml` file looks like this:
 	    short: |
 	      One-line description of the app here, using Markdown.
 	    long: |
-	      Long description of the app here.
+	      Long description of the app here only if README.md is
+	      not present.
 
 	      It can be multiple paragraphs and is Markdown.
 	  recommended_for:
