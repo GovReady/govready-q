@@ -116,7 +116,7 @@ You can can show and hide compliance apps from the Django administration page at
 
 #### Creating Your Own Compliance Apps
 
-To get started writing your own Compliance Apps see: [Creating Compliance Apps](CreatingApps.html).
+To get started writing your own Compliance Apps see: [Creating Compliance Apps](Authoring.html).
 
 ## Documentation
 

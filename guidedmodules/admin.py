@@ -16,7 +16,7 @@ class AppSourceSpecWidget(forms.Widget):
 		 	("local", "Local Directory"),
 		 	("git-web", "Git Repository over HTTPS (Public Repository)"),
 		 	("git-ssh", "Git Repository over SSH (Private Repository)"),
-		 	("github", "Github Repository using Github API")]),
+		 	("github", "GitHub Repository using Github API")]),
 		 "What kind of app source is it?",
 		 None),
 		("url-web",
