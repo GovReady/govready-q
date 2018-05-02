@@ -364,21 +364,64 @@ class Command(BaseCommand):
             # Since this is a project, each answer is a sub-task that
             # needs to be started.
             for question in project.root_task.module.questions.all():
+                # Skip if not in the test.
+                if question.key not in answers:
+                    continue
+
                 # Start it.
                 self.click_with_screenshot("#question-" + question.key, question.key)
                 sleep(.5)
 
-                # Get the Task we just created,
-                s = urllib.parse.urlsplit(self.browser.browser.current_url)
-                m = re.match(r"/tasks/(\d+)/.*", s.path)
-                assert m
-                task = Task.objects.get(id=m.group(1))
-                
-                # Fill out the questions.
-                answer_task(task, answers.get(question.key, {}))
+                # Where did we go?
+                if question.spec['type'] in ('module', 'module-set') and question.spec.get("protocol"):
+                    inner_test = answers.get(question.key, {}).get('test', { })
+                    if "/store" in self.browser.browser.current_url:
+                        # This unanswered module-type question has a protocol, so we've been taken
+                        # to the compliance apps catalog. Start the first app that we see.
+                        css_filter = ""
+                        inner_app_id = answers.get(question.key, {}).get('app', '')
+                        if inner_app_id:
+                            css_filter = "[data-app='" + inner_app_id + "']"
+                        self.click_with_screenshot(".app{} a.view-app".format(css_filter), "compliance_catalog_app")
+                        self.click_with_screenshot("#start-project", "start")
+                        sleep(2) # scrolling to app
+                        self.browser.browser.execute_script("$(window).scrollTop(0)") # go back to top
 
-                # Return to the project page.
-                self.browser.navigateToPage(self.org.subdomain, project.get_absolute_url())
+                        # We're now back at the original project.
+                        # If there's no inner test data, don't do anything further.
+                        if not inner_test:
+                            continue
+
+                        # Otherwise, click the question again to go
+                        # to the Project that we started by starting an app.
+                        self.click_with_screenshot("#question-" + question.key, question.key)
+
+                    # We either just started the inner app or it already existed.
+                    # What project was just created?
+                    s = urllib.parse.urlsplit(self.browser.browser.current_url)
+                    m = re.match(r"/projects/(\d+)/.*", s.path)
+                    assert m
+                    p = Project.objects.get(id=m.group(1))
+                    answer_project(p)
+
+                    # At the end of the project, go back to the higher-up project.
+                    self.click_with_screenshot('a.parent-project', "back")
+
+                else:
+                    # Get the inner test data for Task that we just clicked.
+                    inner_test = answers.get(question.key, {})
+
+                    # Get the Task we just created or navigated to,
+                    s = urllib.parse.urlsplit(self.browser.browser.current_url)
+                    m = re.match(r"/tasks/(\d+)/.*", s.path)
+                    assert m
+                    task = Task.objects.get(id=m.group(1))
+
+                    # Fill out the questions.
+                    answer_task(task, inner_test)
+
+                    # Return to the project page.
+                    self.browser.navigateToPage(self.org.subdomain, project.get_absolute_url())
         
 
         # Kick if off.
