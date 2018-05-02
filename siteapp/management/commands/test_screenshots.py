@@ -52,7 +52,8 @@ class Command(BaseCommand):
         self.start_headless_browser(options['size'])
 
         # Prepare for taking screenshots.
-        self.init_screenshots(options)
+        if options['path']:
+            self.init_screenshots(options)
 
         # Switch to the throw-away database.
         from django.test.utils import setup_databases, teardown_databases
@@ -75,7 +76,7 @@ class Command(BaseCommand):
                 self.screenshot_author_new_app(options)
 
             # Combine images into a  PDF.
-            if self.write_pdf_filename:
+            if getattr(self, 'write_pdf_filename', None):
                 self.write_pdf()
         finally:
             teardown_databases(dbinfo, 1)
@@ -144,8 +145,8 @@ class Command(BaseCommand):
         # Prepare for taking screenshots.
         self.screenshot_basepath = options['path']
         self.write_pdf_filename = None
-        if options['path'].lower().endswith(".pdf"):
-            self.write_pdf_filename = options['path']
+        if self.screenshot_basepath.lower().endswith(".pdf"):
+            self.write_pdf_filename = self.screenshot_basepath
             self.screenshot_basepath += "-temp"
         self.screenshot_image_filenames = []
 
