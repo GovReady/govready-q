@@ -256,7 +256,7 @@ class Command(BaseCommand):
 
         # Start the app.
         self.screenshot("compliance_apps_catalog")
-        self.click_with_screenshot(".app[data-app='" + options['app'] + "'] button.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
+        self.click_with_screenshot(".app[data-app='" + options['app'] + "'] a.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
         self.click_with_screenshot("#start-project", "start_" + options['app'].replace("/", "_"))
 
         # Get the Project instance that was just created.
@@ -288,7 +288,6 @@ class Command(BaseCommand):
                 question = task.module.questions.get(key=m.group(3))
 
                 # If we have an answer for this question, fill it in.
-                button_selector = "#save-button"
                 if question.spec['type'] == "interstitial":
                     # Nothing to do.
                     pass
@@ -304,21 +303,22 @@ class Command(BaseCommand):
                     elif question.spec['type'] in ('choice', 'yesno'):
                         # To make YAML definition easier...
                         if isinstance(answer, bool): answer = "yes" if answer else "no"
-                        self.browser.click_element("#question input[value=" + str(answer) + "]") # TODO: Answer might not fit a valid CSS selector.
+                        self.browser.click_element("#question input[value=" + repr(answer) + "]") # TODO: Answer might not fit a valid CSS selector.
                     elif question.spec['type'] == 'multiple-choice':
                         assert isinstance(answer, list)
                         for choice in answer:
-                            self.browser.click_element("#question input[value=" + str(choice) + "]") # TODO: Answer might not fit a valid CSS selector.
+                            self.browser.click_element("#question input[value=" + repr(choice) + "]") # TODO: Answer might not fit a valid CSS selector.
                     elif question.spec['type'] in ('file', 'module', 'module-set'):
                         raise Exception("not implemented")
                 else:
-                    button_selector = "#skip-button"
+                    # Skip this question.
+                    self.browser.click_element('#no-idea-button')
 
                 # Take screenshot. Save answer, which redirects to next question
                 # via AJAX. Since it's asynchronous, Selenium won't wait for the
                 # next page to load.
                 cur_url = self.browser.browser.current_url # see below
-                self.click_with_screenshot(button_selector, task.module.module_name + "-" + question.key)
+                self.click_with_screenshot("#save-button", task.module.module_name + "-" + question.key)
 
                 # Since this is ajax, wait for page URL to change.
                 while self.browser.browser.current_url == cur_url:
@@ -340,6 +340,7 @@ class Command(BaseCommand):
             for question in project.root_task.module.questions.all():
                 # Start it.
                 self.click_with_screenshot("#question-" + question.key, question.key)
+                sleep(.5)
 
                 # Get the Task we just created,
                 s = urllib.parse.urlsplit(self.browser.browser.current_url)
