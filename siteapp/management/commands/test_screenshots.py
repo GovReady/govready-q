@@ -309,7 +309,7 @@ class Command(BaseCommand):
                 if m.group(2) == "finished":
                     # We reached the end of this module.
                     self.screenshot(task.module.module_name + "-finished")
-                    return
+                    break
 
                 # We're at a question. Answer it.
                 question = task.module.questions.get(key=m.group(3))
@@ -350,6 +350,13 @@ class Command(BaseCommand):
                 # Since this is ajax, wait for page URL to change.
                 while self.browser.browser.current_url == cur_url:
                     sleep(.5)
+
+            # Finished.
+            for scroll_target in test.get("scroll-to", []):
+                sleep(float(test["pause"]))
+                self.browser.browser.execute_script("$('html, body').animate({ scrollTop: Math.max($(arguments[0]).offset().top-50, 0)}, 'slow');", scroll_target)
+            if test.get("pause"):
+                sleep(float(test["pause"]))
 
         def answer_project(project, test):
             # Get the test.
