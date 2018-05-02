@@ -1,4 +1,4 @@
-# Creating Compliance Apps
+# Compliance App Authoring Tutorial
 
 This is a step-by-step guide to creating compliance apps using the Docker version of the GovReady-Q Commpliance Server.
 
@@ -282,26 +282,35 @@ If you have an existing source code control system containing apps in this layou
 
 ### Configuring a production system to load apps from the git repository
 
-On the production GovReady-Q instance, log into the Django admin at `https://production-q/admin`. Add a new `AppSource`.
+On the production GovReady-Q instance, log into the Django admin at `https://production-q/admin`. Add a new App Source.
 
-Set its `Namespace` to anything short composed of letters, numbers, and underscores. It might be based on the name of the repository holding the apps.
+Set its `Slug` to a short name for the repository, composed of letters, numbers, and underscores, such as `mygitrepo`.
 
-Set its `Spec` to a JSON data structure describing where to load the apps from. In this example the apps are in a private repository on Github:
+#### If your git repository is public or accessible over an https: URL
 
-	{
-	    "type": "git",
-	    "url": "git@github.com:your-org/your-apps",
-	    "branch": "master",
-	    "ssh_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"
-	}
+If your git repository is accessible over an https: URL (such as a public GitHub repository), change the Source Type to Git Repository over HTTPS and paste the URL into the URL field. The other fields can be left blank. Here's what that looks like:
 
-With this method you can give access to a private Github repository. Set the `ssh_key` to a JSON-encoded string (i.e. replace newlines with `\n`) holding an SSH private key corresponding to a public key that has been added to the repository as a deploy key. Using the `jq` tool available in most package managers, it's easy to get the JSON-encoded string for a private key by running:
+![App Source for a public git repository](assets/appsource_git_https.png)
 
-	cat ~/.ssh/id_rsa | jq -Rs
+#### If your git repository is private
+
+If your git repository is private and accessible instead using an SSH URL (typically git@github.com:organization/repository.git) and an SSH public/private keypair, such as with GitHub or GitLab deploy keys, then first create a new SSH key for your GovReady-Q instance:
+
+	ssh-keygen -q -t rsa -b 2048 -N "" -C "_your-repo-name_-deployment-key" -f ./repo_deploy_key
+
+Your GovReady-Q instance will hold the private key half of the newly generated keypair, and your source code control system will hold the public key. Back in the Django admin, set the Source Type to Git Repository over SSH. Paste the SSH URL into the URL field. Then open the newly generated file `repo_deploy_key` and paste its contents into the SSH Key field. The other fields can be left blank. Here's what that looks like:
+
+![App Source for a private git repository](assets/appsource_git_ssh.png)
+
+Copy the public key in the newly generated file `repo_deploy_key.pub` into the deploy keys section of your source code repository. Here is what that looks like on GitHub:
+
+![Adding a deploy key to GitHub](assets/github_deploy_key_add.png)
+
+#### Other information about App Sources
 
 As with local development, the production system's compliance app catalog may be cached. To see new apps, restart the production instance of GovReady-Q.
 
-See [Understanding Compliance Apps](Apps.html) for more information about how to configure your production instance of GovReady-Q to load apps from local filesystem directories, git repositories (including on-prem git repositories), or Github.
+See [App Sources](AppSources.html) for more information about how to configure your production instance of GovReady-Q to load apps from local filesystem directories, git repositories (including on-prem git repositories), or Github.
 
 ### Advanced setups for development with a repository of apps
 
@@ -334,19 +343,7 @@ Recall that the path given to `--appsdevdir` is mapped to a path within the Dock
 
 Log into the Django admin at `http://localhost:8000/admin`. Add two new `AppSource` entries:
 
-For the first, set the `Namespace` to `repo1` (or any other label that will help you distinguish the two repositories) and the `Spec` to
-
-	{
-	  "type":"local"
-	  "path":"/mnt/apps/repo1/compliance_apps",
-	}
-
-For the second, set the `Namespace` to `repo2` and the `Spec` to
-
-	{
-	  "type":"local"
-	  "path":"/mnt/apps/repo2/compliance_apps",
-	}
+For the first, set the `Slug` to `repo1` (or any other label that will help you distinguish the two repositories), the `Source Type` to `Local Directory`, and the `Path` to `/mnt/apps/repo1/compliance_apps`. For the second, set the `Slug` to `repo2`, the `Source Type` to `Local Directory`, and the `Path` to `/mnt/apps/repo2/compliance_apps`.
 
 Then restart the container:
 

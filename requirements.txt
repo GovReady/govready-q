@@ -73,8 +73,8 @@ dj-database-url==0.5.0 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9
 django-allauth==0.35.0 \
     --hash=sha256:7b31526cccd1c46f9f09acf0703068e8a9669337d29eb065f7e8143c2d897339
-django-bootstrap3==9.1.0 \
-    --hash=sha256:9f56fa30a2c32142a2785148816cc4e14e7efc8699c5f87a8cb5be162a81658d
+django-bootstrap3==10.0.1 \
+    --hash=sha256:1a5cc3583a208f423b8a081d3fb432957a3e82416512cbafc4a3b10f27cc884a
 django-database-storage-backend==0.0.5 \
     --hash=sha256:130449ddb0604546769c818aab88b70dfaa207f75300bf7e370040447fae3278
 django-debug-toolbar==1.9.1 \
@@ -89,9 +89,9 @@ django-model-utils==3.1.1 \
 https://github.com/phamk/django-notifications/archive/django-2-compatibility.zip \
     --hash=sha256:4da98487dda2ffcdc108f5d30db4552055056cecedb7e08edab616de763927ed
     # see https://github.com/phamk/django-notifications/commit/652222d2b8b0ad9c23e61cf4880f85dc40d699d0
-django==2.0.4 \
-    --hash=sha256:2d8b9eed8815f172a8e898678ae4289a5e9176bc08295676eff4228dd638ea61 \
-    --hash=sha256:d81a1652963c81488e709729a80b510394050e312f386037f26b54912a3a10d0
+django==2.0.5 \
+    --hash=sha256:26b34f4417aa38d895b6b5307177b51bc3f4d53179d8696a5c19dcb50582523c \
+    --hash=sha256:71d1a584bb4ad2b4f933d07d02c716755c1394feaac1ce61ce37843ac5401092
 dnspython==1.15.0 \
     --hash=sha256:40f563e1f7a7b80dc5a4e76ad75c23da53d62f1e15e6e517293b04e1f84ead7c \
     --hash=sha256:861e6e58faa730f9845aaaa9c6c832851fbf89382ac52915a51f89c71accdd31 \
@@ -114,9 +114,9 @@ filemagic==1.6 \
     # via django-database-storage-backend
 fpdf2==2.0.0 \
     --hash=sha256:59be721cf9205d8ff2fe3587acb5fd7ec32252fbd46f3f311bd1369eed0ceec7
-fs==2.0.20 \
-    --hash=sha256:93486a6be63a5a29ff29e04fd44f57f74973f01369d60897e509f06de6d0cdd1 \
-    --hash=sha256:abb0d53da9fcafcd06ece08c5d662a12c01cdcb06e2e92d27080d84491d11d41
+fs==2.0.21 \
+    --hash=sha256:729893ac1bb9be12af4952688f00e1d93ff0aaf6e2b2f0a10fd61864197e384a \
+    --hash=sha256:740026e2eec4e1992f2f9939528ee6e3da94250312e9a5fb8d7bd4bfda75982f
 future==0.16.0 \
     --hash=sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb \
     # via commonmark
@@ -301,6 +301,11 @@ stevedore==1.28.0 \
     --hash=sha256:e3d96b2c4e882ec0c1ff95eaebf7b575a779fd0ccb4c741b9832bed410d58b3d \
     --hash=sha256:f1c7518e7b160336040fee272174f1f7b29a46febb3632502a8f2055f973d60b \
     # via bandit
+typing==3.6.4 \
+    --hash=sha256:3a887b021a77b292e151afb75323dea88a7bc1b3dfa92176cff8e44c8b68bddf \
+    --hash=sha256:b2c689d54e1144bbcfd191b0832980a21c2dbcf7b5ff7a66248a60c90e951eb8 \
+    --hash=sha256:d400a9344254803a2368533e4533a4200d21eb7b6b729c173bc38201a74db3f2 \
+    # via fs
 tzlocal==1.5.1 \
     --hash=sha256:4ebeb848845ac898da6519b9b31879cf13b6626f7184c496037b818e238f2c4e \
     # via rfc5424-logging-handler

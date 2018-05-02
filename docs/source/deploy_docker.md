@@ -75,7 +75,7 @@ You may change the hostname and port of the GovReady-Q server using:
 If the Docker container is behind a proxy, then `--address` specifies the public address
 that end-users will use to access GovReady-Q. This may differ from the address and port that the container is accessed at on your organization's network, which is set using `--bind`.
 
-Add `--https` if end users will access GovReady-Q with https: URLs.
+Add `--https` if end users will access GovReady-Q with https: URLs. This must be done through a proxy that accepts HTTPS connections and passes the requests using HTTP to the Docker container. See the `HTTPS` environment variable, below.
 
 #### The address that the container is bound to
 
@@ -241,7 +241,7 @@ The following environment variables are used to configure the container when lau
 
 `PORT`: The port that GovReady-Q will be accessed at by end users, typically either 80 (no HTTPS) or 443 (HTTPS). (Default: `8080`)
 
-`HTTPS`: Set to `true` if GovReady-Q will be accessed by end users at an https: address. Requests to an http: URL will automatically be redirected to https:. (Default: `false`)
+`HTTPS`: Set to `true` if GovReady-Q will be accessed by end users at an https: address.  This must be done through a proxy that accepts HTTPS connections and passes the requests using HTTP to the Docker container. The proxy must set the `X-Forwarded-Proto: https` header. It is also permissible for the proxy to forward HTTP requests, and those requests will be automatically redirected to the https: URL. (Default: `false`)
 
 `DEBUG`: Set to `true` to run in Django debug mode. (Default: `false`)
 
