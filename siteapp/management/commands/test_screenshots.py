@@ -33,6 +33,7 @@ import os.path
 import re
 import tempfile
 from time import sleep
+import rtyaml
 
 class Command(BaseCommand):
     help = 'Generate screenshots using Selenium.'
@@ -41,7 +42,7 @@ class Command(BaseCommand):
         parser.add_argument('--org-name', metavar='name', nargs='?', default="The Company, Inc.", help="The name of the temporary Organization that will be created.")
         parser.add_argument('--app-source', metavar='{source JSON}', action="append", help="An AppSource definition in JSON. This argument can be repeated.")
         parser.add_argument('--app', metavar='source/app', nargs='?', help="The AppSource slug plus app name of a compliance app to fill out.")
-        parser.add_argument('--test', metavar='testid', nargs='?', help="The ID of the test to run defined in the app's app.yaml 'tests' key.")
+        parser.add_argument('--test', metavar='testid', nargs='?', help="The ID of the test to run defined in the app's app.yaml 'tests' key, or @filename to load a test from a YAML file.")
         parser.add_argument('--author-new-app', action="store_true", help="Take screenshots for Q documentation showing how to author a new compliance app.")
         parser.add_argument('--path', metavar='dir_or_pdf', nargs='?', help="The path to write screenshots into, either a directory or a filename ending with .pdf.")
         parser.add_argument('--size', metavar='widthXheight', nargs='?', help="The width and height, in pixels, of the headless web browser window.")
@@ -350,16 +351,22 @@ class Command(BaseCommand):
                 while self.browser.browser.current_url == cur_url:
                     sleep(.5)
 
-        def answer_project(project):
+        def answer_project(project, test):
             # Get the test.
-            tests = project.root_task.module.spec.get('tests', {})
-            assert isinstance(tests, dict)
-            test = tests.get(options['test'], { "answers": {} })
             assert isinstance(test, dict)
+            for step in test.get("steps", []):
+                assert isinstance(step, dict)
+                if step["type"] == "answer-questions":
+                    # Get the answers and start answering all of the
+                    # questions with those answers.
+                    answer_project_questions(
+                        project,
+                        step.get('answers', {}))
 
-            # Get the answers to start answering.
-            answers = test.get('answers')
-            assert isinstance(answers, dict)
+        def answer_project_questions(project, answers):
+            print("Running", project, "with answers:")
+            print(rtyaml.dump(answers))
+            print()
 
             # Since this is a project, each answer is a sub-task that
             # needs to be started.
@@ -402,7 +409,12 @@ class Command(BaseCommand):
                     m = re.match(r"/projects/(\d+)/.*", s.path)
                     assert m
                     p = Project.objects.get(id=m.group(1))
-                    answer_project(p)
+
+                    # Get test data for the inner app.
+                    inner_test = answers.get(question.key, {}).get('test', { "answers": {} })
+
+                    # Run it.
+                    answer_project(p, inner_test)
 
                     # At the end of the project, go back to the higher-up project.
                     self.click_with_screenshot('a.parent-project', "back")
@@ -424,11 +436,25 @@ class Command(BaseCommand):
                     self.browser.navigateToPage(self.org.subdomain, project.get_absolute_url())
         
 
+        # Get the test to run.
+        if options['test'] and options['test'].startswith("@"):
+            # Load from file.
+            with open(options['test'][1:]) as f:
+                test = rtyaml.load(f)
+        else:
+            # Load from app metadata.
+            tests = project.root_task.module.spec.get('tests', {})
+            assert isinstance(tests, dict)
+            test = tests.get(options['test'], { "answers": {} })
+
         # Kick if off.
-        answer_project(project)
+        answer_project(project, test)
 
         # Take a final screenshot.
         self.screenshot("done")
+
+        # Let the user see how cool this was.
+        sleep(self.mouse_speed*5)
 
     def screenshot_author_new_app(self, options):
         # Demonstrate how to author a new compliance app.
