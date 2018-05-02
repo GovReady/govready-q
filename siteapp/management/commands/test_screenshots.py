@@ -44,7 +44,8 @@ class Command(BaseCommand):
         parser.add_argument('--test', metavar='testid', nargs='?', help="The ID of the test to run defined in the app's app.yaml 'tests' key.")
         parser.add_argument('--author-new-app', action="store_true", help="Take screenshots for Q documentation showing how to author a new compliance app.")
         parser.add_argument('--path', metavar='dir_or_pdf', nargs='?', help="The path to write screenshots into, either a directory or a filename ending with .pdf.")
-        parser.add_argument('--size', metavar='WIDTHxHEIGHT', nargs='?', help="The width and height, in pixels, of the headless web browser window.")
+        parser.add_argument('--size', metavar='widthXheight', nargs='?', help="The width and height, in pixels, of the headless web browser window.")
+        parser.add_argument('--mouse-speed', metavar='seconds', nargs='?', default="0", type=float, help="Each mouse move will have this duration.")
 
     def handle(self, *args, **options):
         # Fix up some settings.
@@ -52,6 +53,7 @@ class Command(BaseCommand):
 
         # Start the headless browser.
         self.start_headless_browser(options['size'])
+        self.mouse_speed = options["mouse_speed"]
 
         # Prepare for taking screenshots.
         if options['path']:
@@ -179,6 +181,22 @@ class Command(BaseCommand):
 
     # SCRIPT UTILITY FUNCTIONS
 
+    def fill_field(self, field, value):
+        self.browser.fill_field(field, value)
+        sleep(self.mouse_speed)
+
+    def move_cursor_to(self, elem):
+        elem = self.browser.browser.find_element_by_css_selector(elem)
+        sleep(self.mouse_speed * .25) # pause before the next motion
+        self.browser.browser.execute_script("moveMouseToElem(arguments[0], arguments[1]);", elem, self.mouse_speed)
+        scrollTop0 = self.browser.browser.execute_script("return $(window).scrollTop()")
+        while not self.browser.browser.execute_script("return moveMouseToElem_finished"): sleep(.1) # wait for mouse movement animation to complete
+        sleep(.1 + self.mouse_speed * .5) # pause so the user can see where the mouse ended up before we click
+        scrollTop1 = self.browser.browser.execute_script("return $(window).scrollTop()")
+        if scrollTop0 != scrollTop1:
+            sleep(self.mouse_speed * .5) # pause extra if the window scrolled
+        self.browser.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
+
     def screenshot(self, slug, cursor_at=None):
         # Take a screenshot of the current browser window.
         #
@@ -191,10 +209,7 @@ class Command(BaseCommand):
 
         # Move the fake cursor.
         if cursor_at:
-            elem = self.browser.browser.find_element_by_css_selector(cursor_at)
-            self.browser.browser.execute_script("moveMouseToElem(arguments[0]);", elem)
-            self.browser.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
-            sleep(.1)
+            self.move_cursor_to(cursor_at)
 
         # Make the output directory, construct the output filename,
         # and save the screenshot there. Remember the filename for
@@ -217,26 +232,37 @@ class Command(BaseCommand):
             .expand(im, border=1, fill='black')\
             .save(fn)
 
+    def click_element(self, elem):
+        self.move_cursor_to(elem)
+        self.browser.click_element(elem)
+
     def click_with_screenshot(self, selector, slug):
         self.screenshot(slug, cursor_at=selector)
         self.browser.click_element(selector)
 
     def login(self):
+        # speed up this part
+        old_mouse_speed = self.mouse_speed
+        self.mouse_speed = 0
+
         # Log the temporary user in.
         self.browser.navigateToPage(self.org.subdomain, "/")
         assert "Home" in self.browser.browser.title
-        self.browser.fill_field("#id_login", self.user.username)
-        self.browser.fill_field("#id_password", self.temporary_user_random_password)
-        self.browser.click_element("form button.primaryAction")
+        self.fill_field("#id_login", self.user.username)
+        self.fill_field("#id_password", self.temporary_user_random_password)
+        self.click_element("form button.primaryAction")
 
         # Set their display name so the site header shows a nicer name than their email address.
-        self.browser.click_element('#user-menu-dropdown'); sleep(.1)
-        self.browser.click_element('#user-menu-account-settings'); sleep(.1)
+        self.click_element('#user-menu-dropdown'); sleep(.1)
+        self.click_element('#user-menu-account-settings'); sleep(.1)
         assert "Introduction | GovReady Account Settings" in self.browser.browser.title
-        self.browser.click_element("#save-button"); sleep(.2) # intro page
+        self.click_element("#save-button"); sleep(.2) # intro page
         # Now at the what is your name page?
-        self.browser.fill_field("#inputctrl", "User") # user's display name
-        self.browser.click_element("#save-button"); sleep(.25)
+        self.fill_field("#inputctrl", "User") # user's display name
+        self.click_element("#save-button"); sleep(.25)
+
+        # restore setting
+        self.mouse_speed = old_mouse_speed
 
     # BROWSER SESSION SCRIPTS
 
@@ -295,24 +321,24 @@ class Command(BaseCommand):
                     # Fill in the answer.
                     answer = answers[question.key]
                     if question.spec['type'] in ('text', 'password', "email-address", "url", "integer", "real"):
-                        self.browser.fill_field('#inputctrl', str(answer))
+                        self.fill_field('#inputctrl', str(answer))
                     elif question.spec['type'] in ('longtext',):
-                        self.browser.fill_field('#inputctrl', str(answer))
+                        self.fill_field('#inputctrl', str(answer))
                     elif question.spec['type'] in ('date',):
                         raise Exception("not implemented")
                     elif question.spec['type'] in ('choice', 'yesno'):
                         # To make YAML definition easier...
                         if isinstance(answer, bool): answer = "yes" if answer else "no"
-                        self.browser.click_element("#question input[value=" + repr(answer) + "]") # TODO: Answer might not fit a valid CSS selector.
+                        self.click_element("#question input[value=" + repr(answer) + "]") # TODO: Answer might not fit a valid CSS selector.
                     elif question.spec['type'] == 'multiple-choice':
                         assert isinstance(answer, list)
                         for choice in answer:
-                            self.browser.click_element("#question input[value=" + repr(choice) + "]") # TODO: Answer might not fit a valid CSS selector.
+                            self.click_element("#question input[value=" + repr(choice) + "]") # TODO: Answer might not fit a valid CSS selector.
                     elif question.spec['type'] in ('file', 'module', 'module-set'):
                         raise Exception("not implemented")
                 else:
                     # Skip this question.
-                    self.browser.click_element('#no-idea-button')
+                    self.click_element('#no-idea-button')
 
                 # Take screenshot. Save answer, which redirects to next question
                 # via AJAX. Since it's asynchronous, Selenium won't wait for the
@@ -459,20 +485,20 @@ class Command(BaseCommand):
 
             # Go back to project, reload app, return to the question.
             self.browser.browser.get(project_url)
-            self.browser.click_element("#open-authoring-tools")
+            self.click_element("#open-authoring-tools")
             self.browser.browser.execute_script("authoring_tool_reload_app_confirm=false")
-            self.browser.click_element("#authoring-tools-reload-app")
+            self.click_element("#authoring-tools-reload-app")
             sleep(1) # wait for ajax to cause page to be reloaded
-            self.browser.click_element("#question-example > a")
+            self.click_element("#question-example > a")
             self.screenshot("revised-question")
 
             # Edit using in-browser tool.
             self.click_with_screenshot("#show_question_authoring_tool", "click_authoring_tool")
             self.screenshot("question-authoring-tool")
-            self.browser.click_element("#question_authoring_tool button[data-dismiss=\"modal\"]") # clear modal
+            self.click_element("#question_authoring_tool button[data-dismiss=\"modal\"]") # clear modal
 
             # Answer question.
-            self.browser.click_element("#question input[value=startrek]")
-            self.browser.click_element("#save-button")
+            self.click_element("#question input[value=startrek]")
+            self.click_element("#save-button")
             sleep(1) # wait for AJAX redirect
             self.screenshot("module-finished")
