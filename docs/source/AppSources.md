@@ -43,7 +43,7 @@ The path can be absolute or relative to the path in which GovReady-Q is installe
 
 The Git Repository over HTTPS source type is for git repositories, such as on GitHub or GitLab, that can be cloned using an HTTPS URL. These repositories are typically public, or in an enterprise environment public within your organization's network.
 
-Paste the HTTPS git clone URL into the URL field. Here's what that looks like:
+Paste the HTTPS git clone URL --- such as https://github.com/GovReady/govready-apps-dev --- into the URL field. Here's what that looks like:
 
 ![App Source for a public git repository](assets/appsource_git_https.png)
 
@@ -62,6 +62,12 @@ The `Path` field optionally specifies a sub-directory within the repository in w
 then set the `Path` field to `apps`.
 
 If the compliance apps are not in the repository's default branch (i.e. something other than the typical `master` default branch), then set the `Branch` field to the name of the branch to read the compliance apps from.
+
+You can use HTTPS to access private repositories by placing your username and password or [personal access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/) into the URL, such as:
+
+    https://username:password@github.com/GovReady/govready-apps-dev
+
+Since this requires user credentials, it should be avoided for production deployments in favor of using Git Repository over SSH (see below).
 
 #### Git Repository over SSH
 
