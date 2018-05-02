@@ -7,9 +7,11 @@
 # Examples:
 #
 # Create screenshots for the FISMA Level app:
-# ./manage.py test_screenshots --app-source '{ "type": "git", "url": "https://github.com/GovReady/govready-apps-dev", "path": "apps" }' \
-#                              --app fisma_level \
+# ./manage.py test_screenshots --app-source '{ "slug": "govready-apps-dev", "type": "git", "url": "https://github.com/GovReady/govready-apps-dev", "path": "apps" }' \
+#                              --app govready-apps-dev/fisma_level \
 #                              --path screenshots.pdf
+# The --app-source argument can be repeated multiple times if more than one AppSource
+# is needed to run the script.
 #
 # Create screenshots for authoring a new app and set
 # (approximate) output image size:
@@ -37,8 +39,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--org-name', metavar='name', nargs='?', default="The Company, Inc.", help="The name of the temporary Organization that will be created.")
-        parser.add_argument('--app-source', metavar='{source JSON}', nargs='?', help="The AppSource definition in JSON.")
-        parser.add_argument('--app', metavar='{source/}app', nargs='?', help="The AppSource slug plus app name of a compliance app to fill out, or if --app-source is given then just the app name.")
+        parser.add_argument('--app-source', metavar='{source JSON}', action="append", help="An AppSource definition in JSON. This argument can be repeated.")
+        parser.add_argument('--app', metavar='source/app', nargs='?', help="The AppSource slug plus app name of a compliance app to fill out.")
         parser.add_argument('--test', metavar='testid', nargs='?', help="The ID of the test to run defined in the app's app.yaml 'tests' key.")
         parser.add_argument('--author-new-app', action="store_true", help="Take screenshots for Q documentation showing how to author a new compliance app.")
         parser.add_argument('--path', metavar='dir_or_pdf', nargs='?', help="The path to write screenshots into, either a directory or a filename ending with .pdf.")
@@ -131,15 +133,20 @@ class Command(BaseCommand):
             name=options['org_name'],
             admin_user=self.user)
 
-        # Add an AppSource if the user specified one.
-        if options['app_source']:
+        # Add AppSources specified by the user.
+        for spec in options['app_source']:
             import json
             from guidedmodules.models import AppSource
-            src_spec = json.loads(options['app_source'])
-            self.app_source = AppSource.objects.create(
-                slug=get_random_string(8),
+            try:
+                src_spec = json.loads(spec)
+                if not isinstance(src_spec, dict): raise ValueError()
+            except ValueError as e:
+                raise ValueError("Invalid value for --app-source '{}': {}".format(spec, e))
+            app_source = AppSource.objects.create(
+                slug=src_spec.get("slug") or get_random_string(8),
                 spec=src_spec
             )
+            print("Created AppSource", app_source, "=>", app_source.get_description())
 
     def init_screenshots(self, options):
         # Prepare for taking screenshots.
@@ -192,6 +199,7 @@ class Command(BaseCommand):
         # Make the output directory, construct the output filename,
         # and save the screenshot there. Remember the filename for
         # forming a PDF at the end.
+        if not hasattr(self, 'screenshot_basepath'): return # no screenshots are requested
         os.makedirs(self.screenshot_basepath, exist_ok=True)
         fn = os.path.join(
             self.screenshot_basepath,
@@ -248,7 +256,7 @@ class Command(BaseCommand):
 
         # Start the app.
         self.screenshot("compliance_apps_catalog")
-        self.click_with_screenshot(".app[data-app='" + self.app_source.slug + "/" + options['app'] + "'] button.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
+        self.click_with_screenshot(".app[data-app='" + options['app'] + "'] button.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
         self.click_with_screenshot("#start-project", "start_" + options['app'].replace("/", "_"))
 
         # Get the Project instance that was just created.
