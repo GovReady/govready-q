@@ -45,7 +45,7 @@ class Command(BaseCommand):
         parser.add_argument('--test', metavar='testid', nargs='?', help="The ID of the test to run defined in the app's app.yaml 'tests' key, or @filename to load a test from a YAML file.")
         parser.add_argument('--author-new-app', action="store_true", help="Take screenshots for Q documentation showing how to author a new compliance app.")
         parser.add_argument('--path', metavar='dir_or_pdf', nargs='?', help="The path to write screenshots into, either a directory or a filename ending with .pdf.")
-        parser.add_argument('--size', metavar='widthXheight', nargs='?', help="The width and height, in pixels, of the headless web browser window.")
+        parser.add_argument('--size', metavar='widthXheight', nargs='?', help="The width and height, in pixels, of the headless web browser window, or 'maximized'.")
         parser.add_argument('--mouse-speed', metavar='seconds', nargs='?', default="0", type=float, help="Each mouse move will have this duration.")
 
     def handle(self, *args, **options):
@@ -105,7 +105,7 @@ class Command(BaseCommand):
         # StaticLiveServerTestCase.
         from siteapp.tests import SeleniumTest
         if geometry:
-            SeleniumTest.window_geometry = geometry.split("x")
+            SeleniumTest.window_geometry = (geometry.split("x") if geometry != "maximized" else geometry)
         SeleniumTest.setUpClass()
         self.browser = SeleniumTest()
         self.browser.setUp()
@@ -354,7 +354,7 @@ class Command(BaseCommand):
             # Finished.
             for scroll_target in test.get("scroll-to", []):
                 sleep(float(test["pause"]))
-                self.browser.browser.execute_script("$('html, body').animate({ scrollTop: Math.max($(arguments[0]).offset().top-50, 0)}, 'slow');", scroll_target)
+                self.browser.browser.execute_script("$('html, body').animate({ scrollTop: Math.max($(arguments[0]).offset().top-50, 0)}, 4000);", scroll_target)
             if test.get("pause"):
                 sleep(float(test["pause"]))
 
