@@ -99,7 +99,13 @@ You can use a Sqlite file stored on the host machine:
 
 	--sqlitedb /path/to/govready-q-database.sqlite
 
-You must specify an absolute path.
+You must specify an absolute path. The path is mounted using a Docker bind mount into the container filesytem.
+
+The file must be readable & writable by the container process, which is running as user 1000/group 1000. Although the container is running as a user isolated from the host environment, filesystem permissions for mounted files are based on comparing the raw user/group IDs of the file's owner/group on the host to the raw user/group ID of the process running in the container. Consider granting user 1000 read/write permission to the database using ACLs:
+
+	setfacl -m u:1000:rw /path/to/govready-q-database.sqlite
+
+Of course, do not do this if the host machine has a user 1000 that you do not trust.
 
 #### Remote database
 
@@ -159,9 +165,24 @@ do so, start the container with the additional command-line argument:
 	--appsdevdir /path/to/apps
 
 The directory may be empty but it must exist, and you must specify it as an
-absolute path (due to a Docker limitation). If the directory is not empty,
-it should have subdirectories for each of your apps. For instance,
-you would have a YAML file at `/path/to/apps/my_app/app.yaml`.
+absolute path (due to a Docker limitation).
+
+The directory and its contents must also be readable --- and writable, if you
+intend to use GovReady-Q's authoring tools --- by the container process. The
+container process is running as user 1000/group 1000. Although the container
+is running as a user isolated from the host environment, filesystem permissions
+for mounted files are based on comparing the raw user/group IDs of the file's
+owner/group on the host to the raw user/group ID of the process running in the
+container.  Consider granting user 1000 read/write permission to the files,
+plus execute (i.e. browse) permission to the directories, in the mounted path
+using ACLs:
+
+	setfacl -R -m u:1000:rwX /path/to/apps
+
+Of course, do not do this if the host machine has a user 1000 that you do not trust.
+
+If the directory is not empty, it should have subdirectories for each of your apps.
+For instance, you would have a YAML file at `/path/to/apps/my_app/app.yaml`.
 
 To create your first app, you can run
 
