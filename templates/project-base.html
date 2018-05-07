@@ -40,7 +40,7 @@ div.subtitle {
   {% for parent_project in project.get_parent_projects %}
     {% if not forloop.counter == 1 %} &gt; {% endif %}
     <li>
-    <a href="{{parent_project.get_absolute_url}}" style="margin-left: .25em">
+    <a href="{{parent_project.get_absolute_url}}" class="parent-project" style="margin-left: .25em">
       {{parent_project.title}}
     </a>
     </li>

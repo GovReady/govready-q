@@ -180,7 +180,7 @@ h3.question-group-title {
     {% if action_buttons %}
       {% for q in action_buttons %}
           {% if can_start_task and q.can_start_new_task %}
-            <form class="start-task" method="post" action="/tasks/start" style="display:inline;">
+            <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
               {% csrf_token %}
               <input type="hidden" name="project" value="{{project.id}}"/>
               <input type="hidden" name="question" value="{{q.question.key}}"/>
@@ -191,7 +191,7 @@ h3.question-group-title {
               </a>
             </form>
           {% else %}
-          <a
+          <a id="question-{{q.question.key}}"
             class="btn btn-default" style="background: white"
             href="{{q.task.get_absolute_url}}?previous=project">
             {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}

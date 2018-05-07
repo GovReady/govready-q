@@ -7,9 +7,11 @@
 # Examples:
 #
 # Create screenshots for the FISMA Level app:
-# ./manage.py test_screenshots --app-source '{ "type": "git", "url": "https://github.com/GovReady/govready-apps-dev", "path": "apps" }' \
-#                              --app fisma_level \
+# ./manage.py test_screenshots --app-source '{ "slug": "govready-apps-dev", "type": "git", "url": "https://github.com/GovReady/govready-apps-dev", "path": "apps" }' \
+#                              --app govready-apps-dev/fisma_level \
 #                              --path screenshots.pdf
+# The --app-source argument can be repeated multiple times if more than one AppSource
+# is needed to run the script.
 #
 # Create screenshots for authoring a new app and set
 # (approximate) output image size:
@@ -31,18 +33,20 @@ import os.path
 import re
 import tempfile
 from time import sleep
+import rtyaml
 
 class Command(BaseCommand):
     help = 'Generate screenshots using Selenium.'
 
     def add_arguments(self, parser):
         parser.add_argument('--org-name', metavar='name', nargs='?', default="The Company, Inc.", help="The name of the temporary Organization that will be created.")
-        parser.add_argument('--app-source', metavar='{source JSON}', nargs='?', help="The AppSource definition in JSON.")
-        parser.add_argument('--app', metavar='{source/}app', nargs='?', help="The AppSource slug plus app name of a compliance app to fill out, or if --app-source is given then just the app name.")
-        parser.add_argument('--test', metavar='testid', nargs='?', help="The ID of the test to run defined in the app's app.yaml 'tests' key.")
+        parser.add_argument('--app-source', metavar='{source JSON}', action="append", help="An AppSource definition in JSON. This argument can be repeated.")
+        parser.add_argument('--app', metavar='source/app', nargs='?', help="The AppSource slug plus app name of a compliance app to fill out.")
+        parser.add_argument('--test', metavar='testid', nargs='?', help="The ID of the test to run defined in the app's app.yaml 'tests' key, or @filename to load a test from a YAML file.")
         parser.add_argument('--author-new-app', action="store_true", help="Take screenshots for Q documentation showing how to author a new compliance app.")
         parser.add_argument('--path', metavar='dir_or_pdf', nargs='?', help="The path to write screenshots into, either a directory or a filename ending with .pdf.")
-        parser.add_argument('--size', metavar='WIDTHxHEIGHT', nargs='?', help="The width and height, in pixels, of the headless web browser window.")
+        parser.add_argument('--size', metavar='widthXheight', nargs='?', help="The width and height, in pixels, of the headless web browser window, or 'maximized'.")
+        parser.add_argument('--mouse-speed', metavar='seconds', nargs='?', default="0", type=float, help="Each mouse move will have this duration.")
 
     def handle(self, *args, **options):
         # Fix up some settings.
@@ -50,9 +54,11 @@ class Command(BaseCommand):
 
         # Start the headless browser.
         self.start_headless_browser(options['size'])
+        self.mouse_speed = options["mouse_speed"]
 
         # Prepare for taking screenshots.
-        self.init_screenshots(options)
+        if options['path']:
+            self.init_screenshots(options)
 
         # Switch to the throw-away database.
         from django.test.utils import setup_databases, teardown_databases
@@ -75,7 +81,7 @@ class Command(BaseCommand):
                 self.screenshot_author_new_app(options)
 
             # Combine images into a  PDF.
-            if self.write_pdf_filename:
+            if getattr(self, 'write_pdf_filename', None):
                 self.write_pdf()
         finally:
             teardown_databases(dbinfo, 1)
@@ -99,7 +105,7 @@ class Command(BaseCommand):
         # StaticLiveServerTestCase.
         from siteapp.tests import SeleniumTest
         if geometry:
-            SeleniumTest.window_geometry = geometry.split("x")
+            SeleniumTest.window_geometry = (geometry.split("x") if geometry != "maximized" else geometry)
         SeleniumTest.setUpClass()
         self.browser = SeleniumTest()
         self.browser.setUp()
@@ -130,22 +136,27 @@ class Command(BaseCommand):
             name=options['org_name'],
             admin_user=self.user)
 
-        # Add an AppSource if the user specified one.
-        if options['app_source']:
+        # Add AppSources specified by the user.
+        for spec in options['app_source']:
             import json
             from guidedmodules.models import AppSource
-            src_spec = json.loads(options['app_source'])
-            self.app_source = AppSource.objects.create(
-                slug=get_random_string(8),
+            try:
+                src_spec = json.loads(spec)
+                if not isinstance(src_spec, dict): raise ValueError()
+            except ValueError as e:
+                raise ValueError("Invalid value for --app-source '{}': {}".format(spec, e))
+            app_source = AppSource.objects.create(
+                slug=src_spec.get("slug") or get_random_string(8),
                 spec=src_spec
             )
+            print("Created AppSource", app_source, "=>", app_source.get_description())
 
     def init_screenshots(self, options):
         # Prepare for taking screenshots.
         self.screenshot_basepath = options['path']
         self.write_pdf_filename = None
-        if options['path'].lower().endswith(".pdf"):
-            self.write_pdf_filename = options['path']
+        if self.screenshot_basepath.lower().endswith(".pdf"):
+            self.write_pdf_filename = self.screenshot_basepath
             self.screenshot_basepath += "-temp"
         self.screenshot_image_filenames = []
 
@@ -171,6 +182,22 @@ class Command(BaseCommand):
 
     # SCRIPT UTILITY FUNCTIONS
 
+    def fill_field(self, field, value):
+        self.browser.fill_field(field, value)
+        sleep(self.mouse_speed)
+
+    def move_cursor_to(self, elem):
+        elem = self.browser.browser.find_element_by_css_selector(elem)
+        sleep(self.mouse_speed * .25) # pause before the next motion
+        self.browser.browser.execute_script("moveMouseToElem(arguments[0], arguments[1]);", elem, self.mouse_speed)
+        scrollTop0 = self.browser.browser.execute_script("return $(window).scrollTop()")
+        while not self.browser.browser.execute_script("return moveMouseToElem_finished"): sleep(.1) # wait for mouse movement animation to complete
+        sleep(.1 + self.mouse_speed * .5) # pause so the user can see where the mouse ended up before we click
+        scrollTop1 = self.browser.browser.execute_script("return $(window).scrollTop()")
+        if scrollTop0 != scrollTop1:
+            sleep(self.mouse_speed * .5) # pause extra if the window scrolled
+        self.browser.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
+
     def screenshot(self, slug, cursor_at=None):
         # Take a screenshot of the current browser window.
         #
@@ -183,14 +210,12 @@ class Command(BaseCommand):
 
         # Move the fake cursor.
         if cursor_at:
-            elem = self.browser.browser.find_element_by_css_selector(cursor_at)
-            self.browser.browser.execute_script("moveMouseToElem(arguments[0]);", elem)
-            self.browser.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
-            sleep(.1)
+            self.move_cursor_to(cursor_at)
 
         # Make the output directory, construct the output filename,
         # and save the screenshot there. Remember the filename for
         # forming a PDF at the end.
+        if not hasattr(self, 'screenshot_basepath'): return # no screenshots are requested
         os.makedirs(self.screenshot_basepath, exist_ok=True)
         fn = os.path.join(
             self.screenshot_basepath,
@@ -208,26 +233,37 @@ class Command(BaseCommand):
             .expand(im, border=1, fill='black')\
             .save(fn)
 
+    def click_element(self, elem):
+        self.move_cursor_to(elem)
+        self.browser.click_element(elem)
+
     def click_with_screenshot(self, selector, slug):
         self.screenshot(slug, cursor_at=selector)
         self.browser.click_element(selector)
 
     def login(self):
+        # speed up this part
+        old_mouse_speed = self.mouse_speed
+        self.mouse_speed = 0
+
         # Log the temporary user in.
         self.browser.navigateToPage(self.org.subdomain, "/")
         assert "Home" in self.browser.browser.title
-        self.browser.fill_field("#id_login", self.user.username)
-        self.browser.fill_field("#id_password", self.temporary_user_random_password)
-        self.browser.click_element("form button.primaryAction")
+        self.fill_field("#id_login", self.user.username)
+        self.fill_field("#id_password", self.temporary_user_random_password)
+        self.click_element("form button.primaryAction")
 
         # Set their display name so the site header shows a nicer name than their email address.
-        self.browser.click_element('#user-menu-dropdown'); sleep(.1)
-        self.browser.click_element('#user-menu-account-settings'); sleep(.1)
+        self.click_element('#user-menu-dropdown'); sleep(.1)
+        self.click_element('#user-menu-account-settings'); sleep(.1)
         assert "Introduction | GovReady Account Settings" in self.browser.browser.title
-        self.browser.click_element("#save-button"); sleep(.2) # intro page
+        self.click_element("#save-button"); sleep(.2) # intro page
         # Now at the what is your name page?
-        self.browser.fill_field("#inputctrl", "User") # user's display name
-        self.browser.click_element("#save-button"); sleep(.25)
+        self.fill_field("#inputctrl", "User") # user's display name
+        self.click_element("#save-button"); sleep(.25)
+
+        # restore setting
+        self.mouse_speed = old_mouse_speed
 
     # BROWSER SESSION SCRIPTS
 
@@ -247,7 +283,7 @@ class Command(BaseCommand):
 
         # Start the app.
         self.screenshot("compliance_apps_catalog")
-        self.click_with_screenshot(".app[data-app='" + self.app_source.slug + "/" + options['app'] + "'] button.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
+        self.click_with_screenshot(".app[data-app='" + options['app'] + "'] a.view-app", "compliance_catalog_app") # TODO: Mixing into CSS selector.
         self.click_with_screenshot("#start-project", "start_" + options['app'].replace("/", "_"))
 
         # Get the Project instance that was just created.
@@ -273,13 +309,12 @@ class Command(BaseCommand):
                 if m.group(2) == "finished":
                     # We reached the end of this module.
                     self.screenshot(task.module.module_name + "-finished")
-                    return
+                    break
 
                 # We're at a question. Answer it.
                 question = task.module.questions.get(key=m.group(3))
 
                 # If we have an answer for this question, fill it in.
-                button_selector = "#save-button"
                 if question.spec['type'] == "interstitial":
                     # Nothing to do.
                     pass
@@ -287,69 +322,146 @@ class Command(BaseCommand):
                     # Fill in the answer.
                     answer = answers[question.key]
                     if question.spec['type'] in ('text', 'password', "email-address", "url", "integer", "real"):
-                        self.browser.fill_field('#inputctrl', str(answer))
+                        self.fill_field('#inputctrl', str(answer))
                     elif question.spec['type'] in ('longtext',):
-                        self.browser.fill_field('#inputctrl', str(answer))
+                        self.fill_field('#inputctrl', str(answer))
                     elif question.spec['type'] in ('date',):
                         raise Exception("not implemented")
                     elif question.spec['type'] in ('choice', 'yesno'):
                         # To make YAML definition easier...
                         if isinstance(answer, bool): answer = "yes" if answer else "no"
-                        self.browser.click_element("#question input[value=" + str(answer) + "]") # TODO: Answer might not fit a valid CSS selector.
+                        self.click_element("#question input[value=" + repr(answer) + "]") # TODO: Answer might not fit a valid CSS selector.
                     elif question.spec['type'] == 'multiple-choice':
                         assert isinstance(answer, list)
                         for choice in answer:
-                            self.browser.click_element("#question input[value=" + str(choice) + "]") # TODO: Answer might not fit a valid CSS selector.
+                            self.click_element("#question input[value=" + repr(choice) + "]") # TODO: Answer might not fit a valid CSS selector.
                     elif question.spec['type'] in ('file', 'module', 'module-set'):
                         raise Exception("not implemented")
                 else:
-                    button_selector = "#skip-button"
+                    # Skip this question.
+                    self.click_element('#no-idea-button')
 
                 # Take screenshot. Save answer, which redirects to next question
                 # via AJAX. Since it's asynchronous, Selenium won't wait for the
                 # next page to load.
                 cur_url = self.browser.browser.current_url # see below
-                self.click_with_screenshot(button_selector, task.module.module_name + "-" + question.key)
+                self.click_with_screenshot("#save-button", task.module.module_name + "-" + question.key)
 
                 # Since this is ajax, wait for page URL to change.
                 while self.browser.browser.current_url == cur_url:
                     sleep(.5)
 
-        def answer_project(project):
-            # Get the test.
-            tests = project.root_task.module.spec.get('tests', {})
-            assert isinstance(tests, dict)
-            test = tests.get(options['test'], { "answers": {} })
-            assert isinstance(test, dict)
+            # Finished.
+            for scroll_target in test.get("scroll-to", []):
+                sleep(float(test["pause"]))
+                self.browser.browser.execute_script("$('html, body').animate({ scrollTop: Math.max($(arguments[0]).offset().top-50, 0)}, 4000);", scroll_target)
+            if test.get("pause"):
+                sleep(float(test["pause"]))
 
-            # Get the answers to start answering.
-            answers = test.get('answers')
-            assert isinstance(answers, dict)
+        def answer_project(project, test):
+            # Get the test.
+            assert isinstance(test, dict)
+            for step in test.get("steps", []):
+                assert isinstance(step, dict)
+                if step["type"] == "answer-questions":
+                    # Get the answers and start answering all of the
+                    # questions with those answers.
+                    answer_project_questions(
+                        project,
+                        step.get('answers', {}))
+
+        def answer_project_questions(project, answers):
+            print("Running", project, "with answers:")
+            print(rtyaml.dump(answers))
+            print()
 
             # Since this is a project, each answer is a sub-task that
             # needs to be started.
             for question in project.root_task.module.questions.all():
+                # Skip if not in the test.
+                if question.key not in answers:
+                    continue
+
                 # Start it.
                 self.click_with_screenshot("#question-" + question.key, question.key)
+                sleep(.5)
 
-                # Get the Task we just created,
-                s = urllib.parse.urlsplit(self.browser.browser.current_url)
-                m = re.match(r"/tasks/(\d+)/.*", s.path)
-                assert m
-                task = Task.objects.get(id=m.group(1))
-                
-                # Fill out the questions.
-                answer_task(task, answers.get(question.key, {}))
+                # Where did we go?
+                if question.spec['type'] in ('module', 'module-set') and question.spec.get("protocol"):
+                    inner_test = answers.get(question.key, {}).get('test', { })
+                    if "/store" in self.browser.browser.current_url:
+                        # This unanswered module-type question has a protocol, so we've been taken
+                        # to the compliance apps catalog. Start the first app that we see.
+                        css_filter = ""
+                        inner_app_id = answers.get(question.key, {}).get('app', '')
+                        if inner_app_id:
+                            css_filter = "[data-app='" + inner_app_id + "']"
+                        self.click_with_screenshot(".app{} a.view-app".format(css_filter), "compliance_catalog_app")
+                        self.click_with_screenshot("#start-project", "start")
+                        sleep(2) # scrolling to app
+                        self.browser.browser.execute_script("$(window).scrollTop(0)") # go back to top
 
-                # Return to the project page.
-                self.browser.navigateToPage(self.org.subdomain, project.get_absolute_url())
+                        # We're now back at the original project.
+                        # If there's no inner test data, don't do anything further.
+                        if not inner_test:
+                            continue
+
+                        # Otherwise, click the question again to go
+                        # to the Project that we started by starting an app.
+                        self.click_with_screenshot("#question-" + question.key, question.key)
+
+                    # We either just started the inner app or it already existed.
+                    # What project was just created?
+                    s = urllib.parse.urlsplit(self.browser.browser.current_url)
+                    m = re.match(r"/projects/(\d+)/.*", s.path)
+                    assert m
+                    p = Project.objects.get(id=m.group(1))
+
+                    # Get test data for the inner app.
+                    inner_test = answers.get(question.key, {}).get('test', { "answers": {} })
+
+                    # Run it.
+                    answer_project(p, inner_test)
+
+                    # At the end of the project, go back to the higher-up project.
+                    self.click_with_screenshot('a.parent-project', "back")
+
+                else:
+                    # Get the inner test data for Task that we just clicked.
+                    inner_test = answers.get(question.key, {})
+
+                    # Get the Task we just created or navigated to,
+                    s = urllib.parse.urlsplit(self.browser.browser.current_url)
+                    m = re.match(r"/tasks/(\d+)/.*", s.path)
+                    assert m
+                    task = Task.objects.get(id=m.group(1))
+
+                    # Fill out the questions.
+                    answer_task(task, inner_test)
+
+                    # Return to the project page.
+                    self.browser.navigateToPage(self.org.subdomain, project.get_absolute_url())
         
 
+        # Get the test to run.
+        if options['test'] and options['test'].startswith("@"):
+            # Load from file.
+            with open(options['test'][1:]) as f:
+                test = rtyaml.load(f)
+        else:
+            # Load from app metadata.
+            tests = project.root_task.module.spec.get('tests', {})
+            assert isinstance(tests, dict)
+            test = tests.get(options['test'], { "answers": {} })
+
         # Kick if off.
-        answer_project(project)
+        answer_project(project, test)
 
         # Take a final screenshot.
         self.screenshot("done")
+
+        # Let the user see how cool this was.
+        sleep(self.mouse_speed*5)
 
     def screenshot_author_new_app(self, options):
         # Demonstrate how to author a new compliance app.
@@ -449,20 +561,20 @@ class Command(BaseCommand):
 
             # Go back to project, reload app, return to the question.
             self.browser.browser.get(project_url)
-            self.browser.click_element("#open-authoring-tools")
+            self.click_element("#open-authoring-tools")
             self.browser.browser.execute_script("authoring_tool_reload_app_confirm=false")
-            self.browser.click_element("#authoring-tools-reload-app")
+            self.click_element("#authoring-tools-reload-app")
             sleep(1) # wait for ajax to cause page to be reloaded
-            self.browser.click_element("#question-example > a")
+            self.click_element("#question-example > a")
             self.screenshot("revised-question")
 
             # Edit using in-browser tool.
             self.click_with_screenshot("#show_question_authoring_tool", "click_authoring_tool")
             self.screenshot("question-authoring-tool")
-            self.browser.click_element("#question_authoring_tool button[data-dismiss=\"modal\"]") # clear modal
+            self.click_element("#question_authoring_tool button[data-dismiss=\"modal\"]") # clear modal
 
             # Answer question.
-            self.browser.click_element("#question input[value=startrek]")
-            self.browser.click_element("#save-button")
+            self.click_element("#question input[value=startrek]")
+            self.click_element("#save-button")
             sleep(1) # wait for AJAX redirect
             self.screenshot("module-finished")

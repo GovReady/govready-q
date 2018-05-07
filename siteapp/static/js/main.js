@@ -189,6 +189,8 @@ function make_editable_div(elem, save_func) {
 // https://stackoverflow.com/questions/35867776/visualize-show-mouse-cursor-position-in-selenium-2-tests-for-example-phpunit
 function enableMouseCursorFollower()
 {
+  // Initialize a div that has an icon of a mouse cursor in it
+  // and put it where we last saw the mouse on a previous page.
   var mouseimg = document.createElement("img");
   mouseimg.setAttribute('src', 'data:image/png;base64,'
     + 'iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAQAAACGG/bgAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAA'
@@ -203,17 +205,74 @@ function enableMouseCursorFollower()
   mouseimg.setAttribute('id', 'selenium_mouse_follower');
   mouseimg.setAttribute('style', 'display: none; position: absolute; z-index: 99999999999; pointer-events: none;');
   document.body.appendChild(mouseimg);
+  var xy = sessionStorage.getItem("mouse_cursor_follower_mouse_position");
+  if (xy) {
+    xy = xy.split(/,/);
+    mouseimg.style.display = "block";
+    mouseimg.style.left = xy[0] + "px";
+    mouseimg.style.top = xy[1] + "px";
+  }
+
+  // Track the actual mouse. Selenium clicks cause the mouse position
+  // to move.
   window.addEventListener("mousemove", function(e) {
     mouseimg.style.display = "block";
     mouseimg.style.left = e.pageX + "px";
     mouseimg.style.top = e.pageY + "px";
+    sessionStorage.setItem("mouse_cursor_follower_mouse_position", e.pageX + "," + (e.pageY-$(window).scrollTop()));
   });
-  window.moveMouseToElem = function(elem) {
+
+  // Move the mouse manually, with animation.
+  window.moveMouseToElem = function(elem, animation_duration) {
     //var bounds = elem.getBoundingClientRect();
     //mouseimg.style.left = (bounds.left+bounds.width/2) + "px";
     //mouseimg.style.top = (bounds.top+bounds.height/2) + "px";
-    mouseimg.style.display = "block";
-    mouseimg.style.left = ($(elem).offset().left+$(elem).width()/2) + "px";
-    mouseimg.style.top = ($(elem).offset().top+$(elem).height()/2) + "px";
+
+    // Create a function that smoothly moves the cursor between its current
+    // position and the target location on the passed element.
+    var current_pos = [$(mouseimg).offset().left, $(mouseimg).offset().top];
+    var target_pos = [$(elem).offset().left+$(elem).width()/2, $(elem).offset().top+$(elem).height()/2];
+    function move_cursor(t) {
+      // make the motion curved
+      var tx = t**1.5;
+      var ty = t**.5;
+
+      // move toward target
+      var new_pos = [(1-tx)*current_pos[0] + tx*target_pos[0], (1-ty)*current_pos[1] + ty*target_pos[1]];
+      mouseimg.style.display = "block";
+      mouseimg.style.left = new_pos[0] + "px";
+      mouseimg.style.top = new_pos[1] + "px";
+
+      // Ensure mouse is in view.
+      mouseimg.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
+
+      // Save mouse position relative to the top of the viewport.
+      sessionStorage.setItem("mouse_cursor_follower_mouse_position", new_pos[0] + "," + (new_pos[1]-$(window).scrollTop()));
+    }
+
+    // Adjust the animation duration so the mouse moves at
+    // constant speed.
+    var distance = ((target_pos[0]-current_pos[0])**2 + (target_pos[1]-current_pos[1])**2)**.5;
+    var base_distance = ($(window).width()**2 + $(window).height()**2)**.5 / 2;
+    animation_duration *= distance/base_distance;
+
+    // Run an animation.
+    var delay = 33;
+    var steps = parseInt(animation_duration*1000/delay) + 1;
+    function make_animation_frame_function(t) {
+      return (function() {
+        if (t > 1) t = 1; // clip
+        move_cursor(t);
+        if (t >= 1) {
+          // no more frames
+          window.moveMouseToElem_finished = true;
+          return;
+        }
+        setTimeout(make_animation_frame_function(t+1/steps), delay);
+      });
+    }
+    var initial_keyframe = make_animation_frame_function(0);
+    initial_keyframe();
+    window.moveMouseToElem_finished = false;
   }
 };
