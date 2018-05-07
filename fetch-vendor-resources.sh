@@ -51,9 +51,9 @@ mkdir -p $VENDOR
 
 # jQuery (MIT License)
 download \
-  https://code.jquery.com/jquery-3.1.1.min.js \
+  https://code.jquery.com/jquery-3.3.1.min.js \
   $VENDOR/jquery.js \
-  '85556761a8800d14ced8fcd41a6b8b26bf012d44a318866c0d81a62092efd9bf'
+  '160a426ff2894252cd7cebbdd6d6b7da8fcd319c65b70468f10b6690c45d02ef'
 
 # Bootstrap (MIT License)
 download \
@@ -66,9 +66,9 @@ rm -f /tmp/bootstrap.zip
 
 # Font Awesome (for the spinner on ajax calls, various icons; MIT License)
 download \
-  https://use.fontawesome.com/releases/v5.0.0/js/all.js \
+  https://use.fontawesome.com/releases/v5.0.12/js/all.js \
   $VENDOR/fontawesome.js \
-  '350f72771ceaf9b8392c1646cf2b9f495599c1d5ab31f63a0e709ade6cc336de'
+  '4f59f47836471cf3f02edfb217afdf107bf29cfe25c424c8c514a32712fc2ee8'
 
 # Josh's Bootstrap Helpers (MIT License)
 # When this (client side JS) is updated, you must also
@@ -93,15 +93,15 @@ download \
 
 # auto resize textareas (MIT License)
 download \
-  https://raw.githubusercontent.com/jackmoore/autosize/4.0.0/dist/autosize.min.js \
+  https://raw.githubusercontent.com/jackmoore/autosize/4.0.2/dist/autosize.min.js \
   $VENDOR/autosize.min.js \
-  '17b05b73ede11afdf80fea1bb071ec4a6dd929106e75647b7b61f47d2d1b7a89'
+  '756f2ee1dbc42834e1269591c0b806ba06c04670373b6c2a05c55eae583d2cc7'
 
 # text input autocomplete (MIT License)
 download \
-  https://github.com/yuku-t/textcomplete/releases/download/v0.16.0/textcomplete-0.16.0.tgz \
+  https://github.com/yuku-t/textcomplete/releases/download/v0.17.1/textcomplete-0.17.1.tgz \
   /tmp/textcomplete.tgz \
-  '1be2f6cf71a51d13879b0e497805d7a81d0968b4da139b5a69fdf4a063144b0d'
+  '6b189a50c9dd4ba1f27f16b275d34022dec57b0797f60c4afe6a7600f309ee35'
 mkdir -p /tmp/textcomplete
 tar -zx -C /tmp/textcomplete -f /tmp/textcomplete.tgz
 mv /tmp/textcomplete/package/dist/*.min* $VENDOR/
@@ -109,27 +109,27 @@ rm -rf /tmp/textcomplete.tgz /tmp/textcomplete
 
 # emojione (Creative Commons Attribution 4.0 International & MIT License)
 download \
-  https://raw.githubusercontent.com/Ranks/emojione/v3.1.1/assets/css/emojione.min.css \
+  https://raw.githubusercontent.com/Ranks/emojione/3.1.4/extras/css/emojione.min.css \
   $VENDOR/emojione.min.css \
-  '395408a3dc9c3db2b5c200b8722a13a60898c861633b99e6e250186adffd1370'
+  '519edf0dc00972d9a811c5e60b94cf719b30351a8dfe62f38fab8d4b5182558b'
 download \
-  https://raw.githubusercontent.com/Ranks/emojione/v3.1.1/lib/js/emojione.min.js \
+  https://raw.githubusercontent.com/Ranks/emojione/3.1.4/lib/js/emojione.min.js \
   $VENDOR/emojione.min.js \
-  'cdf5daa4185ebb25660e2e6f4fcf4bc5448dde7bd8ca3a07f1d97fc0cc481a86'
+  'e3fdbf19705dd3c7933cbcc77171d06b953f580317f2490d5fe3a9c7ca3027e8'
 
 # quill rich text editor (BSD License)
 download \
-  https://github.com/quilljs/quill/releases/download/v1.2.5/quill.tar.gz \
+  https://github.com/quilljs/quill/releases/download/v1.3.6/quill.tar.gz \
   /tmp/quill.tar.gz \
-  '9f1756d90c6330b2d91209bbc7634ca32916f2388387b1e93cbf11655dfeff6b'
+  'a7e8b79ace3f620725d4fb543795a4cf0349db1202624c4b16304954745c3890'
 tar -zx -C $VENDOR -f /tmp/quill.tar.gz
 rm -f /tmp/quill.tar.gz
 
 # js-yaml, for the authoring tool (MIT License)
 download \
-  https://raw.githubusercontent.com/nodeca/js-yaml/3.9.1/dist/js-yaml.min.js \
+  https://raw.githubusercontent.com/nodeca/js-yaml/3.11.0/dist/js-yaml.min.js \
   $VENDOR/js-yaml.min.js \
-  'fb3094718fec03e5a536355b69c57b6abae6d3306dda168841405bc0d28437b9'
+  'd55680b958a58d88fb547b694a9dd37d4013ff7e2f64fe776d41c16a10c2f58e'
 
 # google fonts
 #  Hind: SIL Open Font License 1.1
