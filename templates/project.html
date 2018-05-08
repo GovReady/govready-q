@@ -166,10 +166,10 @@ h3.question-group-title {
       </button>
     {% endif %}
 
-    <a class="btn btn-sm btn-default" href="{{project.get_absolute_url}}/api">
+    <button class="btn btn-sm btn-default" href="{{project.get_absolute_url}}/api">
       <i class="glyphicon glyphicon-sort"></i>
       API Docs
-    </a>
+    </button>
 
     {% if can_upgrade_app %}
       <a id="upgrade-app" class="btn btn-sm" href="#" onclick="return upgrade_app({{project.root_task.module.app.id}});">
