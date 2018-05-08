@@ -812,10 +812,11 @@ def authoring_edit_reload_app(request, task):
     from .module_sources import AppImportUpdateMode, ValidationError, IncompatibleUpdate
     from .module_sources import ModuleDefinitionError
     with task.module.source.open() as store:
-        for app in store.list_apps():
-            # Only update using the app that provided this Task's Module.
-            if app.name != task.module.app.appname:
-                continue
+            # Load app.
+            try:
+                app = store.get_app(task.module.app.appname)
+            except ValueError as e:
+                return JsonResponse({ "status": "error", "message": str(e) })
 
             # Import.
             try:
