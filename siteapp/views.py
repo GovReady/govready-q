@@ -695,6 +695,7 @@ def project(request, project):
         "project": project,
 
         "is_admin": request.user in project.get_admins(),
+        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
         "can_start_task": can_start_task,
         "can_start_any_apps": can_start_any_apps,
 
@@ -1107,6 +1108,31 @@ def project_start_apps(request, *args):
                 return JsonResponse({ "status": "error", "message": message })
 
     return viewfunc(request, *args)
+
+
+@project_read_required
+def project_upgrade_app(request, project):
+    # Get the app's catalog information.
+    error = False
+    try:
+        for app in get_compliance_apps_catalog(request.organization):
+            if app['appsource_id'] == project.root_task.module.app.source.id:
+                if app['name'] == project.root_task.module.app.appname:
+                    break
+        else:
+            error = "App not found in compliance catalog."
+    except Exception as e:
+        error = str(e)
+
+    # Show information about the app.
+    return render(request, "project-upgrade-app.html", {
+        "page_title": "Upgrade App",
+        "project": project,
+        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
+        "error": error,
+        "app": app,
+    })
+
 
 # INVITATIONS
 

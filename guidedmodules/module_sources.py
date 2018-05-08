@@ -207,11 +207,17 @@ class PyFsAppSourceConnection(AppSourceConnection):
                 self.root.opendir(entry.name))
 
     def get_app(self, name):
-        # Is this a valid app name?
-        if len(list(self.root.scandir(name))) == 0:
-            raise ValueError("App not found.")
-        if "app.yaml" not in self.root.listdir(name):
-            raise ValueError("App not found.")
+        # Is this a valid app name? Force evaluation of scandir
+        # to check that the app directory and an app.yaml exist.
+        try:
+            if "app.yaml" not in self.root.listdir(name):
+                raise fs.errors.ResourceNotFound()
+        except fs.errors.ResourceNotFound:
+            raise ValueError("App {} not found in {} ({}).".format(
+                name,
+                self.source.slug,
+                self.source.get_description(),
+            ))
         return PyFsApp(
             self,
             name,

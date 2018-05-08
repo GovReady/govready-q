@@ -6,6 +6,7 @@ In Development
 
 Application changes:
 
+* Apps can now be upgraded by project administrators.
 * Project administrators can now delete tasks.
 * Minor UI improvements.
 * Minor bug fixes.

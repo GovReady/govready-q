@@ -220,26 +220,6 @@ function authoring_tool_new_question(task_id, is_project_page) {
   })
 }
 
-var authoring_tool_reload_app_force = false;
-var authoring_tool_reload_app_confirm = true;
-function authoring_tool_reload_app(task_id) {
-  if (authoring_tool_reload_app_confirm // disabling is possible for headless scripting
-     && !confirm("Are you sure you want to reload this app from its source?"))
-    return;
-  ajax_with_indicator({
-      url: "/tasks/_authoring_tool/reload-app",
-      method: "POST",
-      data: {
-        task: task_id,
-        force: authoring_tool_reload_app_force ? "true" : "false"
-      },
-      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
-      success: function(res) {
-        window.location.reload();
-      }
-  })
-}
-
 function show_authoring_tool_module_editor() {
   // Initialize form state.
   $('#authoring_tool_mspec').val(window.q_authoring_tool_state.module_yaml);
