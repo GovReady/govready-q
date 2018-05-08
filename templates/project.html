@@ -172,9 +172,9 @@ h3.question-group-title {
     </button>
 
     {% if can_upgrade_app %}
-      <a id="upgrade-app" class="btn btn-sm" href="#" onclick="return upgrade_app({{project.root_task.module.app.id}});">
+      <a id="upgrade-app" class="btn btn-sm" href="{{project.get_absolute_url}}/upgrade">
         <i class="glyphicon glyphicon-download"></i>
-        Upgrade App
+        Update App
       </a>
     {% endif %}
 

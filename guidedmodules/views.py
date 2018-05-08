@@ -842,6 +842,9 @@ def upgrade_app(request):
             except (ModuleDefinitionError, ValidationError, IncompatibleUpdate) as e:
                 return JsonResponse({ "status": "error", "message": str(e) })
 
+    from django.contrib import messages
+    messages.add_message(request, messages.INFO, 'App upgraded.')
+
     return JsonResponse({ "status": "ok" })
 
 @authoring_tool_auth

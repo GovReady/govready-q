@@ -15,7 +15,7 @@
 #
 # Create screenshots for authoring a new app and set
 # (approximate) output image size:
-# /manage.py test_screenshots --author-new-app \
+# ./manage.py test_screenshots --author-new-app \
 #                             --path screenshots.pdf \
 #                             --size 1024x768
 
@@ -137,7 +137,7 @@ class Command(BaseCommand):
             admin_user=self.user)
 
         # Add AppSources specified by the user.
-        for spec in options['app_source']:
+        for spec in (options['app_source'] or []):
             import json
             from guidedmodules.models import AppSource
             try:
@@ -544,10 +544,10 @@ class Command(BaseCommand):
             with EditAppFile("app.yaml") as app:
                 app['questions'][0]['title'] = "Start Compliance"
 
-            # Start authoring tools.
-            self.click_with_screenshot("#open-authoring-tools", "authoring-tool-link")
+            # Upgrade the app.
+            self.click_with_screenshot("#upgrade-app", "upgrade app button")
             self.browser.browser.execute_script("upgrade_app_option_confirm=false")
-            self.click_with_screenshot("#upgrade-app", "authoring-tools-reload")
+            self.click_with_screenshot("#do-upgrade", "upgrade app page")
             sleep(1) # ajax...
             project_url = self.browser.browser.current_url
 
@@ -559,11 +559,11 @@ class Command(BaseCommand):
             with EditAppFile("example.yaml") as app:
                 app['questions'][0]['prompt'] = "What is your *least* favorite science fiction franchise?"
 
-            # Go back to project, reload app, return to the question.
+            # Go back to project, ugprade app, return to the question.
             self.browser.browser.get(project_url)
-            self.click_element("#open-authoring-tools")
+            self.click_with_screenshot("#upgrade-app", "upgrade app button")
             self.browser.browser.execute_script("upgrade_app_option_confirm=false")
-            self.click_element("#upgrade-app")
+            self.click_with_screenshot("#do-upgrade", "upgrade app page")
             sleep(1) # wait for ajax to cause page to be reloaded
             self.click_element("#question-example > a")
             self.screenshot("revised-question")
