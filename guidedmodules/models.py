@@ -91,6 +91,10 @@ class AppInstance(models.Model):
         # For debugging.
         return "<AppInstance [%d] %s from %s>" % (self.id, self.appname, self.source)
 
+    def is_authoring_tool_enabled(self, user):
+        return (self.source.spec["type"] == "local" # so we can save to disk
+            and user.has_perm('guidedmodules.change_module'))
+
 
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
@@ -233,10 +237,8 @@ class Module(models.Model):
             })
 
     def is_authoring_tool_enabled(self, user):
-        return (
-                self.app is not None # legacy Module not associated with an AppInstance
-            and self.source.spec["type"] == "local" # so we can save to disk
-            and user.has_perm('guidedmodules.change_module'))
+        # legacy Modules don't have self.app set
+        return self.app is not None and self.app.is_authoring_tool_enabled(user)
     def get_referenceable_modules(self):
         # Return the modules that can be referenced by this
         # one in YAML as an answer type. That's any Module
@@ -754,6 +756,8 @@ class Task(models.Model):
     def has_review_priv(self, user):
         return user in self.project.organization.reviewers.all()
 
+    def has_delete_priv(self, user):
+        return user in self.project.get_admins()
 
     # INVITATION TARGET FUNCTIONS
 

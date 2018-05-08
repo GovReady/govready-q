@@ -1037,7 +1037,7 @@ def delete_task(request):
         return HttpResponseNotAllowed(["POST"])
 
     task = get_object_or_404(Task, id=request.POST["id"], project__organization=request.organization)
-    if not request.user in task.project.get_admins():
+    if not task.has_delete_priv(request.user):
         return HttpResponseForbidden()
 
     # Don't allow root tasks to be deleted this way.
