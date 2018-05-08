@@ -17,6 +17,7 @@ INSTALLED_APPS += [
 
 MIDDLEWARE += [
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'siteapp.middleware.ContentSecurityPolicyMiddleware',
     'siteapp.middleware.OrganizationSubdomainMiddleware',
     'guidedmodules.middleware.InstrumentQuestionPageLoadTimes',
 ]
