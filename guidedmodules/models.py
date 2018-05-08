@@ -32,12 +32,29 @@ class AppSource(models.Model):
         return self.slug
 
     def get_description(self):
+        # Return a description of the connection that this AppSource
+        # provides. The output should be safe to share with users of
+        # the site --- so credentials should not be returned in this
+        # string.
         if self.spec["type"] == "null":
             return "null source"
         if self.spec["type"] == "local":
             return "local filesystem at %s" % self.spec.get("path")
         if self.spec["type"] == "git":
-            return self.spec.get("url") + ("@"+self.spec["branch"] if self.spec.get("branch") else "")
+            try:
+                # Remove credentials from URL.
+                from urllib.parse import urlsplit, urlunsplit
+                (scheme, host, path, query, fragment) = urlsplit(self.spec["url"])
+                host = host.split("@", 1)[-1]
+
+                # Set fragment to git branch.
+                fragment = self.spec.get("branch")
+
+                # Re-form URL.
+                url = urlunsplit((scheme, host, path, query, fragment))
+            except Exception:
+                url = "<invalid url>"
+            return url + ("@"+self.spec["branch"] if self.spec.get("branch") else "")
         if self.spec["type"] == "github":
             return "github.com/%s" % self.spec.get("repo")
 
