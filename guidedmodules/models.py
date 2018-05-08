@@ -95,6 +95,35 @@ class AppInstance(models.Model):
         return (self.source.spec["type"] == "local" # so we can save to disk
             and user.has_perm('guidedmodules.change_module'))
 
+    def has_upgrade_priv(self, user):
+        # Does a user have permission to ugprade the Modules in this AppInstance?
+        # Yes if the user is an admin of all the Projects that the Tasks that use
+        # the Modules are in. In practice, that's just the one Project that was
+        # created when this AppInstance was created.
+        #
+        # In the database, we allow AppInstances to be shared across many Projects.
+        # The system AppInstance which holds e.g. the user profile module *is*
+        # shared across many user projects, but that AppInstance is blacklisted
+        # from upgrades below. But in other cases there's an implicit constraint
+        # that Projects and AppInstances are one-to-one because when we "start"
+        # an app **we always create an AppInstance and a Project as a pair.**
+        #
+        # In an abundance of caution, the permission check is coded to not make
+        # that assuption that there is just one Project tied to this AppInstance,
+        # so we check that the user is an admin to all relevant Projects. We would
+        # not want to upgrade an AppInstance associated with a Task that the user
+        # does not have administrative rights to. If in the future the implicit
+        # constraint is removed, we would need to be more precise about what is
+        # upgrade since we would not want to upgrade all Projects at once necessarily.
+        if self.system_app: return False
+        projects = Task.objects.filter(module__app=self).values_list("project", flat=True).distinct()
+        if len(projects) == 0:
+            # This AppInstance doesn't appear to be in use! Well, lock it down.
+            return False
+        for project in projects:
+            if user not in Project.objects.get(id=project).get_admins():
+                return False
+        return True
 
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")

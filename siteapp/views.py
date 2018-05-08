@@ -695,6 +695,7 @@ def project(request, project):
         "project": project,
 
         "is_admin": request.user in project.get_admins(),
+        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
         "can_start_task": can_start_task,
         "can_start_any_apps": can_start_any_apps,
 

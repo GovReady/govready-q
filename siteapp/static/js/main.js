@@ -276,3 +276,23 @@ function enableMouseCursorFollower()
     window.moveMouseToElem_finished = false;
   }
 };
+
+var upgrade_app_option_force = false; // can only be set to true in dev console
+var upgrade_app_option_confirm = true; // is set to true in dev tools for headless scripting
+function upgrade_app(app_id) {
+  if (upgrade_app_option_confirm
+     && !confirm("Are you sure you want to ugrade this app?"))
+    return;
+  ajax_with_indicator({
+      url: "/tasks/_upgrade-app",
+      method: "POST",
+      data: {
+        app: app_id,
+        force: upgrade_app_option_force ? "true" : "false"
+      },
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        window.location.reload();
+      }
+  })
+}

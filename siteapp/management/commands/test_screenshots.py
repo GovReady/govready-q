@@ -546,8 +546,8 @@ class Command(BaseCommand):
 
             # Start authoring tools.
             self.click_with_screenshot("#open-authoring-tools", "authoring-tool-link")
-            self.browser.browser.execute_script("authoring_tool_reload_app_confirm=false")
-            self.click_with_screenshot("#authoring-tools-reload-app", "authoring-tools-reload")
+            self.browser.browser.execute_script("upgrade_app_option_confirm=false")
+            self.click_with_screenshot("#upgrade-app", "authoring-tools-reload")
             sleep(1) # ajax...
             project_url = self.browser.browser.current_url
 
@@ -562,8 +562,8 @@ class Command(BaseCommand):
             # Go back to project, reload app, return to the question.
             self.browser.browser.get(project_url)
             self.click_element("#open-authoring-tools")
-            self.browser.browser.execute_script("authoring_tool_reload_app_confirm=false")
-            self.click_element("#authoring-tools-reload-app")
+            self.browser.browser.execute_script("upgrade_app_option_confirm=false")
+            self.click_element("#upgrade-app")
             sleep(1) # wait for ajax to cause page to be reloaded
             self.click_element("#question-example > a")
             self.screenshot("revised-question")

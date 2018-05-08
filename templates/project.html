@@ -134,6 +134,9 @@ h3.question-group-title {
 #action-buttons button {
   width: 140px;
 }
+#action-buttons a {
+  margin: .25em 0;
+}
 </style>
 {% endblock %}
 
@@ -167,6 +170,13 @@ h3.question-group-title {
       <i class="glyphicon glyphicon-sort"></i>
       API Docs
     </a>
+
+    {% if can_upgrade_app %}
+      <a id="upgrade-app" class="btn btn-sm" href="#" onclick="return upgrade_app({{project.root_task.module.app.id}});">
+        <i class="glyphicon glyphicon-download"></i>
+        Upgrade App
+      </a>
+    {% endif %}
 
     {% if authoring_tool_enabled %}
       <a id="open-authoring-tools" class="btn btn-sm" href="#" onclick="$('.authoring-tool-hidden').fadeIn(); $(this).remove(); return false;">
@@ -216,11 +226,6 @@ h3.question-group-title {
       <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
       <span class="glyphicon glyphicon-plus"></span>
       Add Question
-      </a>
-
-      <a id="authoring-tools-reload-app" href="#" onclick="authoring_tool_reload_app({{project.root_task.id}}); return false;" style="margin: 0 1em;">
-      <span class="glyphicon glyphicon-refresh"></span>
-      Reload App from {{project.root_task.module.app.source.get_description}}
       </a>
     </p></center>
     {% endif %}

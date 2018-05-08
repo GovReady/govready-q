@@ -804,27 +804,41 @@ def authoring_tool_auth(f):
 
     return g
 
-@authoring_tool_auth
+@login_required
 @transaction.atomic
-def authoring_edit_reload_app(request, task):
-    # Refresh the app that this Task is a part of by reloading all of the
-    # Modules associated with this instance of the app.
+def upgrade_app(request):
+    # Upgrade an AppInstance by reloading all of its Modules from the
+    # app's current definition in its AppSource.
+
+    # Check that the user is permitted to do so.
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    from .models import AppInstance
+    appinst = get_object_or_404(AppInstance, id=request.POST["app"])
+    if not appinst.has_upgrade_priv(request.user):
+        return HttpResponseForbidden()
+
     from .module_sources import AppImportUpdateMode, ValidationError, IncompatibleUpdate
     from .module_sources import ModuleDefinitionError
-    with task.module.source.open() as store:
+    with appinst.source.open() as store:
             # Load app.
             try:
-                app = store.get_app(task.module.app.appname)
+                app = store.get_app(appinst.appname)
             except ValueError as e:
                 return JsonResponse({ "status": "error", "message": str(e) })
 
+            # What update mode? By default, only allow compatible updates.
+            mode = AppImportUpdateMode.CompatibleUpdate
+
+            # If using authoring tools, allow forced updates.
+            if appinst.is_authoring_tool_enabled(request.user) \
+                and request.POST.get("force") == "true":
+                mode = AppImportUpdateMode.ForceUpdate
+
             # Import.
             try:
-                app.import_into_database(
-                    AppImportUpdateMode.ForceUpdate
-                     if request.POST.get("force") == "true"
-                     else AppImportUpdateMode.CompatibleUpdate,
-                    task.module.app)
+                app.import_into_database(mode, appinst)
             except (ModuleDefinitionError, ValidationError, IncompatibleUpdate) as e:
                 return JsonResponse({ "status": "error", "message": str(e) })
 
