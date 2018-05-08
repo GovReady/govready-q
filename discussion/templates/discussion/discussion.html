@@ -1,7 +1,6 @@
 {% load static %}
-<script src="{% static "vendor/emojione.min.js" %}"></script>
-<link rel="stylesheet" href="{% static "vendor/emojione.min.css" %}"/>
 
+<link href="{% static "vendor/emojione-sprite-24.min.css" %}" rel="stylesheet">
 <script src="{% static "vendor/push.js" %}"> </script>
 
 <style>
@@ -266,11 +265,11 @@
       <div>
       </div>  
       <div>
-        <div class="emoji" title="React with a heart!">heart</div>
-        <div class="emoji" title="React with a thumbs-up!">thumbsup</div>
-        <div class="emoji" title="React with a thumbs-down!">thumbsdown</div>
-        <div class="emoji" title="React with a smiley face!">smile</div>
-        <div class="emoji" title="React with a frowning face!">slight_frown</div>
+        <span class="emoji" title="React with a heart!" data-sprite="symbols" data-code="2764">heart</span>
+        <span class="emoji" title="React with a thumbs-up!" data-sprite="people" data-code="1f44d">thumbsup</span>
+        <span class="emoji" title="React with a thumbs-down!" data-sprite="people" data-code="1f44e">thumbsdown</span>
+        <span class="emoji" title="React with a smiley face!" data-sprite="people" data-code="1f603">smile</span>
+        <span class="emoji" title="React with a frowning face!" data-sprite="people" data-code="1f641">slight_frown</span>
       </div>
     </div>
     </div>
@@ -285,11 +284,11 @@ function init_discussion_html() {
   $('#emoji-selector').click(function(event) { event.stopPropagation(); });
   $('#emoji-selector .emoji').each(function() {
     // Initialize - replace text in markup with images.
-    var shortname = $(this).text();
     $(this)
-      .html(emojione.toImage(":" + shortname + ":"))
+      .addClass("emojione-24-" + $(this).attr('data-sprite'))
+      .addClass("_" + $(this).attr('data-code'))
       .click(function() { $(this).toggleClass('active'); save_emoji_reaction(); })
-      .attr('data-emoji-name', shortname);
+      .attr('data-emoji-name', $(this).text());
   });
 };
 
@@ -535,7 +534,14 @@ function render_comment(item) {
   if (!item.emojis) item.emojis = []; // if null, turn into empty array
   n.attr('data-emojis', item.emojis.join(','));
   item.emojis.forEach(function(item) {
-    n.find('.comment-emojis').append(emojione.toImage(":" + item + ":"))
+    // Find matching emoji from selector, which holds sprite and code.
+    $('#emoji-selector .emoji').each(function() {
+      if (item == $(this).text()) {
+        var em = $(this).clone();
+        em.attr("title", item);
+        n.find('.comment-emojis').append(em);
+      }
+    })
   })
 
   // The rest is only if we're seeing a new comment.

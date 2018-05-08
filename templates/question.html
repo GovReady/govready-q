@@ -8,6 +8,7 @@ Next Question: {{q.spec.title}} | {{task.title}}
 
 {% block head %}
 
+<link href="{% static "vendor/emojione-sprite-24.min.css" %}" rel="stylesheet">
 {% if q.spec.type == "longtext" %}
   <link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
 {% endif %}
@@ -85,15 +86,12 @@ label:hover .onhover { display: inline; }
     #confidence-buttons button {
         border: 1px solid rgba(255,255,255,0); /* same width as .active but no color */
         border-radius: 4px;
-        padding: 2px 6px 2px 4px;
+        padding: 6px 6px 4px 4px;
         font-size: 80%;
         background: none;
         opacity: .6;
         margin-right: .5em;
     }
-        #confidence-buttons span.emoji {
-          display: none; /* until image loaded */
-        }
         #confidence-buttons button img {
             height: 1.25em;
             margin-right: .25em;
@@ -460,19 +458,19 @@ label:hover .onhover { display: inline; }
                 {# Interstitial questions do not offer these options because the user is just acknowledging the page and not providing an answer. #}
                 <div id="confidence-buttons">
                     <button id="no-idea-button" type=button {# type=button prevents button from causing form submit #}>
-                        <span class="emoji">:man_shrugging:</span>
+                        <span class="emoji" data-sprite="people" data-code="1f937-2642" data-name="man shrugging"></span>
                         I don&rsquo;t know
                     </button>
                     <button id="not-applicable-button" type=button>
-                        <span class="emoji">:person_raising_hand:</span>
+                        <span class="emoji" data-sprite="people" data-code="1f64b" data-name="person raising hand"></span>
                         It doesn&rsquo;t apply
                     </button>
                     <button id="not-now-button" type=button>
-                        <span class="emoji">:round_pushpin:</span>
+                        <span class="emoji" data-sprite="objects" data-code="1f4cd" data-name="round_pushpin"></span>
                         I&rsquo;ll come back
                     </button>
                     <button id="not-sure-button" type=button>
-                        <span class="emoji">:thinking:</span>
+                        <span class="emoji"  data-sprite="people" data-code="1f914" data-name="thinking face"></span>
                         Not sure
                     </button>
 
@@ -839,10 +837,9 @@ $(function() {
     // SKIP / CONFIDENCE LEVEL BUTTONS
 
     $('#confidence-buttons .emoji').each(function() {
-        var shortname = $(this).text();
         $(this)
-          .html(emojione.toImage(shortname))
-          .show();
+          .addClass("emojione-24-" + $(this).attr('data-sprite'))
+          .addClass("_" + $(this).attr('data-code'));
       });
     $('#confidence-buttons button:not([data-toggleable=false])')
       .click(function() {

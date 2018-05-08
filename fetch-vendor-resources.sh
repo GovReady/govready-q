@@ -107,15 +107,35 @@ tar -zx -C /tmp/textcomplete -f /tmp/textcomplete.tgz
 mv /tmp/textcomplete/package/dist/*.min* $VENDOR/
 rm -rf /tmp/textcomplete.tgz /tmp/textcomplete
 
-# emojione (Creative Commons Attribution 4.0 International & MIT License)
+# emojione (EmojiOne "Free License" https://github.com/emojione/emojione-assets/blob/master/LICENSE.md)
 download \
-  https://raw.githubusercontent.com/Ranks/emojione/3.1.4/extras/css/emojione.min.css \
-  $VENDOR/emojione.min.css \
-  '519edf0dc00972d9a811c5e60b94cf719b30351a8dfe62f38fab8d4b5182558b'
+  https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24.min.css \
+  $VENDOR/emojione-sprite-24.min.css \
+  '9643c4f2b950f462f71ea15ffab848c949f3fe72a8a4a01e0a082f4d580ac754'
 download \
-  https://raw.githubusercontent.com/Ranks/emojione/3.1.4/lib/js/emojione.min.js \
-  $VENDOR/emojione.min.js \
-  'e3fdbf19705dd3c7933cbcc77171d06b953f580317f2490d5fe3a9c7ca3027e8'
+  https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-people.png \
+  $VENDOR/emojione-sprite-24-people.png \
+  'f4324a31aabc175b083d4c136c6cd28fd0718f10d77519ba47525f1efee251b6'
+download \
+  https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-people\%402x.png \
+  $VENDOR/emojione-sprite-24-people\%402x.png \
+  '031c43fb61be40004e1a2a1dc379fe7e0ade4cbf2998e10c9077950f1a58e8c5'
+download \
+  https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-objects.png \
+  $VENDOR/emojione-sprite-24-objects.png \
+  'b2a66a73e1a4c14a6b637a987d942c6b676c6033b365efc370fa9fc1a6fa8c8f'
+download \
+  https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-objects\%402x.png \
+  $VENDOR/emojione-sprite-24-objects\%402x.png \
+  '40ac2aa1a1b90494431990689a69d8e114a7de27d5b8a6121fe0ce9f1f8b3e97'
+download \
+  https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-symbols.png \
+  $VENDOR/emojione-sprite-24-symbols.png \
+  '21f2268645db0cf8b5fae40b3c6263840558da4d9277ecac72adbf44fddbea22'
+download \
+  https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-symbols\%402x.png \
+  $VENDOR/emojione-sprite-24-symbols\%402x.png \
+  '4a2d61983164c43c33dc9b2af772447175fee8ad236d430f385caf3b79184661'
 
 # quill rich text editor (BSD License)
 download \

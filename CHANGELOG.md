@@ -9,13 +9,14 @@ Application changes:
 * Project administrators can now delete tasks.
 * Minor UI improvements.
 * Minor bug fixes.
+* Emojis are now served using static assets and an emoji-related IE11 incompatibiltiy was fixed.
 
 Deployment changes:
 
 * Documentation is now published at http://govready-q.readthedocs.io/en/latest/.
 * Docker launch failed if `HTTPS` environment variable was not passed in and may have failed with a permission denied error and now gives a better error message when the database cannot be created on a read-only filesystem.
 * Docker deployments now support environment variables for all application settings.
-opened, such as if we're in a Docker container with a read-only filesystem
+opened, such as if we're in a Docker container with a read-only filesystem, and documentation improved.
 * Added a new `branding` environment setting for sites to override templates and provide new assets using a custom Django app, and improved our Dockerfile to make it easier for downstream packagers to incorporate into their own images.
 * Added HTTP->HTTPS redirects in Docker deployments using HTTPS.
 * Move mysqlclient dependency from Dockerfile to requirements.in --- pip-compile doesn't have a problem with it anymore.
@@ -28,6 +29,8 @@ API changes:
 
 Developer changes:
 
+* Docker builds now run `yum update`.
+* Improved the test_screenshots management command to help creating screencasts.
 * Dropped dependency licensing checking.
 * Upgraded some dependencies.
 
