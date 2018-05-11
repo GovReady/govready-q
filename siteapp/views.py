@@ -230,7 +230,7 @@ def app_satifies_interface(app, filter_protocols):
         # Does this question specify a protocol? It must specify a list of protocols.
         question = filter_protocols
         if not isinstance(question.spec.get("protocol"), list):
-            raise ValueError("Question does not expect a protocol.")
+            raise ValueError("Question {} does not expect a protocol.".format(question))
         filter_protocols = set(question.spec["protocol"])
     elif isinstance(filter_protocols, (list, set)):
         # A list or set of protocol IDs is passed. Turn it into a set if it isn't already.
@@ -1057,7 +1057,7 @@ def project_start_apps(request, *args):
         for q in project.root_task.module.questions.order_by('definition_order'):
             if    q.spec["type"] in ("module", "module-set") \
              and  q.spec.get("protocol") \
-             and q.key not in root_task_answers or q.spec["type"] == "module-set":
+             and (q.key not in root_task_answers or q.spec["type"] == "module-set"):
                 # What apps can be used to start this question?
                 q.startable_apps = list(filter(lambda app : app_satifies_interface(app, q), all_apps))
                 if len(q.startable_apps) > 0:
