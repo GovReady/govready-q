@@ -842,6 +842,10 @@ def upgrade_app(request):
             except (ModuleDefinitionError, ValidationError, IncompatibleUpdate) as e:
                 return JsonResponse({ "status": "error", "message": str(e) })
 
+    # Since ModuleQuestions may have changed...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
+
     from django.contrib import messages
     messages.add_message(request, messages.INFO, 'App upgraded.')
 
@@ -889,6 +893,10 @@ def authoring_new_question(request, task):
         question.module.serialize_to_disk()
     except Exception as e:
         return JsonResponse({ "status": "error", "message": "Could not update local YAML file: " + str(e) })
+
+    # Clear cache...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
 
     # Return status. The browser will reload/redirect --- if the question key
     # changed, this sends the new key.
@@ -1007,6 +1015,10 @@ def authoring_edit_question(request, task):
     except Exception as e:
         return JsonResponse({ "status": "error", "message": "Could not update local YAML file: " + str(e) })
 
+    # Clear cache...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
+
     # Return status. The browser will reload/redirect --- if the question key
     # changed, this sends the new key.
     return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url_to_question(question) })
@@ -1035,6 +1047,10 @@ def authoring_edit_module(request, task):
         task.module.serialize_to_disk()
     except Exception as e:
         return JsonResponse({ "status": "error", "message": "Could not update local YAML file: " + str(e) })
+
+    # Clear cache...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
 
     # Return status. The browser will reload/redirect --- if the question key
     # changed, this sends the new key.
