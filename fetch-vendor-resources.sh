@@ -118,7 +118,7 @@ download \
   'f4324a31aabc175b083d4c136c6cd28fd0718f10d77519ba47525f1efee251b6'
 download \
   https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-people\%402x.png \
-  $VENDOR/emojione-sprite-24-people\%402x.png \
+  $VENDOR/emojione-sprite-24-people@2x.png \
   '031c43fb61be40004e1a2a1dc379fe7e0ade4cbf2998e10c9077950f1a58e8c5'
 download \
   https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-objects.png \
@@ -126,7 +126,7 @@ download \
   'b2a66a73e1a4c14a6b637a987d942c6b676c6033b365efc370fa9fc1a6fa8c8f'
 download \
   https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-objects\%402x.png \
-  $VENDOR/emojione-sprite-24-objects\%402x.png \
+  $VENDOR/emojione-sprite-24-objects@2x.png \
   '40ac2aa1a1b90494431990689a69d8e114a7de27d5b8a6121fe0ce9f1f8b3e97'
 download \
   https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-symbols.png \
@@ -134,8 +134,13 @@ download \
   '21f2268645db0cf8b5fae40b3c6263840558da4d9277ecac72adbf44fddbea22'
 download \
   https://raw.githubusercontent.com/emojione/emojione-assets/3.1.2/sprites/emojione-sprite-24-symbols\%402x.png \
-  $VENDOR/emojione-sprite-24-symbols\%402x.png \
+  $VENDOR/emojione-sprite-24-symbols@2x.png \
   '4a2d61983164c43c33dc9b2af772447175fee8ad236d430f385caf3b79184661'
+# make empty files for other sprites because Django's ManifestStaticFilesStorage will bail during collectstatic
+# if any assets mentioned in any CSS files (namely emojione-sprite-24.min.css) are not present.
+for sprite in nature food activity travel flags regional diversity; do
+  touch $VENDOR/emojione-sprite-24-$sprite.png $VENDOR/emojione-sprite-24-$sprite@2x.png
+done
 
 # quill rich text editor (BSD License)
 download \
