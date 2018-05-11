@@ -764,7 +764,8 @@ class Task(models.Model):
                     for tah in TaskAnswerHistory.objects
                         .filter(answered_by_task__in=search_tasks)
                         .exclude(taskanswer__task__id__in=[t.id for t in parent_tasks])
-                        .select_related("taskanswer__task"))
+                        .select_related("taskanswer__task")
+                    if tah.is_latest())
                 parent_tasks |= ptasks
                 search_tasks = ptasks
 
