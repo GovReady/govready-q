@@ -82,9 +82,9 @@ django-debug-toolbar==1.9.1 \
     --hash=sha256:d9ea75659f76d8f1e3eb8f390b47fc5bad0908d949c34a8a3c4c87978eb40a0f
 django-html-emailer==0.0.6 \
     --hash=sha256:638b479327860589f70723340cb1e972f2e011d500818ed90ce1f3a7ecce500e
-django-model-utils==3.1.1 \
-    --hash=sha256:4356fad5f6fc9910da865fbf9371f9c2e028606dff2bbd8e32e67569260e530d \
-    --hash=sha256:a9baa7de943b4e8afa61728ce8c42ce99e88cc87d40e74df2b060a78d22c0f5c \
+django-model-utils==3.1.2 \
+    --hash=sha256:2c057f3bf0859aba27f04389f0cedd2d48f8c9b3848acb86fd9970794e58f477 \
+    --hash=sha256:8cd377744aa45f9f131d652ec460c57d1aaa88d3e9b586c8e27eb709341b9084 \
     # via django-notifications-hq
 https://github.com/phamk/django-notifications/archive/django-2-compatibility.zip \
     --hash=sha256:4da98487dda2ffcdc108f5d30db4552055056cecedb7e08edab616de763927ed
@@ -245,9 +245,9 @@ pyparsing==2.2.0 \
     --hash=sha256:0832bcf47acd283788593e7a0f542407bd9550a55a8a8435214a1960e04bcb04 \
     --hash=sha256:fee43f17a9c4087e7ed1605bd6df994c6173c1e977d7ade7b651292fab2bd010 \
     # via packaging
-python-dateutil==2.7.2 \
-    --hash=sha256:3220490fb9741e2342e1cf29a503394fdac874bc39568288717ee67047ff29df \
-    --hash=sha256:9d8074be4c993fbe4947878ce593052f71dac82932a677d49194d8ce9778002e
+python-dateutil==2.7.3 \
+    --hash=sha256:1adb80e7a782c12e52ef9a8182bebeb73f1d7e24e374397af06fb4956c8dc5c0 \
+    --hash=sha256:e27001de32f627c22380a688bcc43ce83504a7bc5da472209b4c70f02829f0b8
 python3-openid==3.1.0 \
     --hash=sha256:0086da6b6ef3161cfe50fb1ee5cceaf2cda1700019fda03c2c5c440ca6abe4fa \
     --hash=sha256:628d365d687e12da12d02c6691170f4451db28d6d68d050007e4a40065868502 \
