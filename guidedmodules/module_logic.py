@@ -742,6 +742,11 @@ class HtmlAnswerRenderer:
         )
 
 
+def clear_module_question_cache():
+    if hasattr(get_all_question_dependencies, 'cache'):
+        del get_all_question_dependencies.cache
+
+
 def get_all_question_dependencies(module):
     # Initialize cache, query cache.
     if not hasattr(get_all_question_dependencies, 'cache'):
