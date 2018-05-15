@@ -678,27 +678,52 @@ class Task(models.Model):
     # This method is called any time an answer to any of this Task's questions
     # is changed, or for questions that are answered by sub-tasks, and if any
     # of their answers changed too, recursively.
-    #
-    # * Clear the Task's cache_is_finished field.
-    # * Recursively call on_answer_changed on any Tasks that this task is
-    #   a current answer of a question to.
+    def on_answer_changed(self):
+        Task.clear_state({ self })
+
+    # Do the work of clearing the cached_state of a set of Tasks.
+    # * Clear the Tasks' cached_state field and bump their 'updated' time so
+    #   anyone waiting for changes to the tasks knows a change ocurred.
+    # * Do the same for any Tasks that these Tasks are a current answer of a question to.
     # * Since templates can peek up to the project and see anything within it,
     #   then any Task in the same project must also have their cache cleared.
     #   TODO: It would be nice to know whether or not the cached_state is actually
     #   based on project-level information because most Tasks might not peek
     #   up and Tasks that don't do not need to have their cached_state cleared
     #   in this case.
-    def on_answer_changed(self, seen_tasks=None):
-        if seen_tasks is None: seen_tasks = set()
-        if self in seen_tasks: return
-        seen_tasks.add(self)
-        self.cached_state = None
-        self.save(update_fields=["cached_state", "updated"])
-        for ans in self.is_answer_to.select_related('taskanswer__task').all():
-            if ans.is_latest():
-                ans.taskanswer.task.on_answer_changed(seen_tasks)
-        for task in Task.objects.filter(project=self.project):
-            task.on_answer_changed(seen_tasks)
+    @staticmethod
+    def clear_state(tasks):
+        tasks = set(tasks)
+        target_tasks = tasks
+        while target_tasks:
+            new_tasks = set()
+
+            # Add Tasks whose current answers include any of these Tasks. First
+            # find TaskAnswerHistory records that reference the tasks....
+            ans = TaskAnswerHistory.objects.filter(answered_by_task__in=target_tasks)\
+                .select_related("taskanswer__task")
+
+            # Then find the IDs of the *current* answers of any of those questions.
+            curans = list(TaskAnswer.objects\
+                .filter(id__in={ a.taskanswer.id for a in ans })\
+                .annotate(current_answer_id=models.Max('answer_history__id'))\
+                .values_list('current_answer_id', flat=True))
+
+            # And filter so we only have current answers remaining.
+            ans = ans.filter(id__in=curans)
+
+            # Add Tasks in the same Project as any of the Tasks seen so far.
+            for task in Task.objects.filter(project__in={ t.project_id for t in target_tasks }):
+                new_tasks.add(task)
+
+            new_tasks -= tasks
+            tasks |= new_tasks
+            target_tasks = new_tasks
+
+        # Clear cached_state
+        tasks_qs = Task.objects.filter(id__in={ t.id for t in tasks })
+        tasks_qs.update(cached_state=None, updated=timezone.now())
+
 
     def get_status_display(self):
         # Is this task done?

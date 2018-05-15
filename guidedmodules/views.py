@@ -846,6 +846,10 @@ def upgrade_app(request):
     from .module_logic import clear_module_question_cache
     clear_module_question_cache()
 
+    # Since impute conditions, output documents, and other generated
+    # data may have changed, clear all cached Task state.
+    Task.clear_state(Task.objects.filter(module__app=appinst))
+
     from django.contrib import messages
     messages.add_message(request, messages.INFO, 'App upgraded.')
 
