@@ -1,16 +1,31 @@
 GovReady-Q Release Notes
 ========================
 
-In Development
---------------
+v0.8.2-rc3 (May 18, 2018)
+-------------------------
 
 Application changes:
 
 * Apps can now be upgraded by project administrators.
 * Project administrators can now delete tasks.
+* Emojis are now served using static assets and an emoji-related IE11 incompatibiltiy was fixed.
+* Performance improvements.
 * Minor UI improvements.
 * Minor bug fixes.
-* Emojis are now served using static assets and an emoji-related IE11 incompatibiltiy was fixed.
+
+App authoring changes:
+
+* Apps can now have a README.md file which is displayed in the app's catalog page, replacing the catalog long description field.
+* Templates now allow multi-line Jinja2 directives.
+* Template errors now show line numbers.
+
+API changes:
+
+* module-set questions can now be created through the API.
+
+Administrative changes:
+
+* Minor bug fixes.
 
 Deployment changes:
 
@@ -19,18 +34,13 @@ Deployment changes:
 * Docker deployments now support environment variables for all application settings.
 opened, such as if we're in a Docker container with a read-only filesystem, and documentation improved.
 * Added a new `branding` environment setting for sites to override templates and provide new assets using a custom Django app, and improved our Dockerfile to make it easier for downstream packagers to incorporate into their own images.
-* Added HTTP->HTTPS redirects in Docker deployments using HTTPS.
-* Move mysqlclient dependency from Dockerfile to requirements.in --- pip-compile doesn't have a problem with it anymore.
-* Updated App Source documentation.
+* Added HTTP->HTTPS redirects in Docker deployments using HTTPS that also respond to HTTP requests.
+* Updated documentation for App Sources and RHEL deployments.
 * Added preliminary documentation for deplying to Amazon Web Services Elastic Container Service.
-
-API changes:
-
-* module-set questions can now be created through the API.
 
 Developer changes:
 
-* Docker builds now run `yum update`.
+* Docker builds now run `yum update`, install a MySQL database driver, and run Django checks.
 * Improved the test_screenshots management command to help creating screencasts.
 * Dropped dependency licensing checking.
 * Upgraded some dependencies.
