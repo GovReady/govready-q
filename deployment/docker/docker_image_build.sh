@@ -30,9 +30,9 @@ if VERSION=$(git describe --tags --exact-match --match $VERSION_TAG_PATTERN 2> /
 	# which is in the form N(.N)*[{a|b|rc}N][.postN][.devN].
 	python3 - "$VERSION" <<EOF;
 import sys
-from pkg_resources import parse_version, SetuptoolsVersion
+from pkg_resources import parse_version
 v = parse_version(sys.argv[1])
-if not isinstance(v, SetuptoolsVersion) or v.local:
+if not hasattr(v, 'local') or v.local:
 	print("ERROR: The version number {} is not a PEP440-compliant public version number.".format(repr(sys.argv[1])))
 	sys.exit(1)
 EOF
