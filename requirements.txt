@@ -114,9 +114,9 @@ filemagic==1.6 \
     # via django-database-storage-backend
 fpdf2==2.0.0 \
     --hash=sha256:59be721cf9205d8ff2fe3587acb5fd7ec32252fbd46f3f311bd1369eed0ceec7
-fs==2.0.21 \
-    --hash=sha256:729893ac1bb9be12af4952688f00e1d93ff0aaf6e2b2f0a10fd61864197e384a \
-    --hash=sha256:740026e2eec4e1992f2f9939528ee6e3da94250312e9a5fb8d7bd4bfda75982f
+fs==2.0.23 \
+    --hash=sha256:3a6605a48a08fb780f9871a24eae25cfdaad551813b6fce81b8520d4dfbad3eb \
+    --hash=sha256:fab582f0418c7db336d27b40191cefa7284046a2428bee61cb75e43655f729fd
 future==0.16.0 \
     --hash=sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb \
     # via commonmark
@@ -124,9 +124,9 @@ gitdb2==2.0.3 \
     --hash=sha256:b60e29d4533e5e25bb50b7678bbc187c8f6bcff1344b4f293b2ba55c85795f09 \
     --hash=sha256:cf9a4b68e8c4da8d42e48728c944ff7af2d8c9db303ac1ab32eac37aa4194b0e \
     # via gitpython
-gitpython==2.1.9 \
-    --hash=sha256:05069e26177c650b3cb945dd543a7ef7ca449f8db5b73038b465105673c1ef61 \
-    --hash=sha256:c47cc31af6e88979c57a33962cbc30a7c25508d74a1b3a19ec5aa7ed64b03129
+gitpython==2.1.10 \
+    --hash=sha256:1ec4c44846cf76a1e55769560673a97731849c9d05401e035e607495f10db959 \
+    --hash=sha256:b60b045cf64a321e5b620debb49890099fa6c7be6dfb7fb249027e5d34227301
 graphviz==0.8.3 \
     --hash=sha256:c61de040e5354c088d2785ea447dd8c26fc572dcc389e4e23e2b46947808d43e \
     --hash=sha256:e1e839596d5ada2b7b5a80e8dffef343cd9f242e95c2387f765755795430ef3c
@@ -233,9 +233,9 @@ pygithub==1.39 \
 pygments==2.2.0 \
     --hash=sha256:78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d \
     --hash=sha256:dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc
-pyjwt==1.6.1 \
-    --hash=sha256:bca523ef95586d3a8a5be2da766fe6f82754acba27689c984e28e77a12174593 \
-    --hash=sha256:dacba5786fe3bf1a0ae8673874e29f9ac497860955c501289c63b15d3daae63a \
+pyjwt==1.6.3 \
+    --hash=sha256:c365c2c92063bdc609a9ef328958a910e249ffcad953895914b87e645412cf81 \
+    --hash=sha256:d527c3330d83d7278a0a8ef570b7c9c39fbf2c0c1edbe564a1a8a02d5352322b \
     # via pygithub
 pynliner==0.8.0 \
     --hash=sha256:32da16ed8ba1fec775909e39f0ffa8e6e02a674b889286c9a2370c3c03f617a5 \
