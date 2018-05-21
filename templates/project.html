@@ -166,7 +166,7 @@ h3.question-group-title {
       </button>
     {% endif %}
 
-    <button class="btn btn-sm btn-default" href="{{project.get_absolute_url}}/api">
+    <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
       <i class="glyphicon glyphicon-sort"></i>
       API Docs
     </button>
