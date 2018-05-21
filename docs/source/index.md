@@ -19,7 +19,7 @@ The code is open source, and [available on GitHub](The code is open source, and 
    Authoring.md
    Deploy.md
    Permissions.md
-   Developer_guide.md
+   DataDesign.md
    Test.md
    
 Indices and tables
