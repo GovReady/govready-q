@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+In Development
+--------------
+
+Deployment changes:
+
+* The HTTP Content-Security-Policy header is now set to prevent the loading of third-party assets.
+
 v0.8.2-rc3 (May 18, 2018)
 -------------------------
 

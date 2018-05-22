@@ -10,6 +10,15 @@ from .models import Organization
 allowed_paths = None
 account_login_url = None
 
+class ContentSecurityPolicyMiddleware:
+    # Set the CSP header on all responses.
+    def __init__(self, next_middleware):
+        self.next_middleware = next_middleware
+    def __call__(self, request):
+        response = self.next_middleware(request)
+        response['Content-Security-Policy'] = "default-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+        return response
+
 class OrganizationSubdomainMiddleware:
     def __init__(self, next_middleware):
         self.next_middleware = next_middleware
