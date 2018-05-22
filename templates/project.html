@@ -141,7 +141,7 @@ h3.question-group-title {
 {% endblock %}
 
 {% block action_buttons %}
-  <div class="btn-group-vertical" role="group" aria-label="action buttons group">
+  <div class="btn-group" role="group" aria-label="action buttons group">
     {% if not project.is_account_project or project.is_deletable %}
       <button class="btn btn-sm btn-default" onclick="$('#project_settings').modal();">
         <i class="glyphicon glyphicon-cog"></i> Settings</a>
@@ -166,29 +166,30 @@ h3.question-group-title {
       </button>
     {% endif %}
 
-    <button class="btn btn-sm btn-default" href="{{project.get_absolute_url}}/api">
+    <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
       <i class="glyphicon glyphicon-sort"></i>
       API Docs
     </button>
 
     {% if can_upgrade_app %}
-      <a id="upgrade-app" class="btn btn-sm" href="{{project.get_absolute_url}}/upgrade">
+      <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/upgrade';">
         <i class="glyphicon glyphicon-download"></i>
-        Update App
-      </a>
+        Upgrade App
+      </button>
     {% endif %}
 
     {% if authoring_tool_enabled %}
-      <a id="open-authoring-tools" class="btn btn-sm" href="#" onclick="$('.authoring-tool-hidden').fadeIn(); $(this).remove(); return false;">
+      <button id="open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
         <i class="glyphicon glyphicon-pencil"></i>
         Authoring Tool
-      </a>
+      </button>
     {% endif %}
   </div>
 
     {# action buttons #}
     {% if action_buttons %}
       {% for q in action_buttons %}
+        <div style="margin-top: 1em">
           {% if can_start_task and q.can_start_new_task %}
             <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
               {% csrf_token %}
@@ -207,6 +208,7 @@ h3.question-group-title {
             {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
           </a>
           {% endif %}
+        </div>
       {% endfor %}
     {% endif %}
 {% endblock %}
