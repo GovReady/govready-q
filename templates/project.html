@@ -680,6 +680,7 @@ $(function() {
     task: {{project.root_task.id}},
     module: {{project.root_task.module.spec|json}},
     module_yaml: "{{project.root_task.module.spec_yaml|escapejs}}",
+    catalog_yaml: "{{project.root_task.module.app.catalog_metadata_yaml|escapejs}}",
     questions: {
       {% for q in project.root_task.module.questions.all %}
       {{q.key}}: {

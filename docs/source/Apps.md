@@ -73,6 +73,7 @@ The `app.yaml` file looks like this:
 	  vendor_url: https://www.govready.com
 	  status: Operational
 	  version: 0.6
+	  version-name: First Release
 	  source_url: https://github.com/GovReady/govready-app-example
 	  description:
 	    short: |

@@ -78,6 +78,10 @@ class AppInstance(models.Model):
         # for NULLs but does for False/True, and we want the constraint to apply only for True.
     system_app = models.NullBooleanField(default=None, help_text="Set to True for AppInstances that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
 
+    catalog_metadata = JSONField(blank=True, help_text="The catalog metadata that was stored in the 'app' module.")
+    version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
+    version_name = models.CharField(blank=True, null=True, max_length=128, help_text="The name of this version/release of the compliance app.")
+
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
@@ -93,6 +97,10 @@ class AppInstance(models.Model):
     def __repr__(self):
         # For debugging.
         return "<AppInstance [%d] %s from %s>" % (self.id, self.appname, self.source)
+
+    def catalog_metadata_yaml(self):
+        import rtyaml
+        return rtyaml.dump(self.catalog_metadata)
 
     def is_authoring_tool_enabled(self, user):
         return (self.source.spec["type"] == "local" # so we can save to disk
@@ -127,6 +135,67 @@ class AppInstance(models.Model):
             if user not in Project.objects.get(id=project).get_admins():
                 return False
         return True
+
+def extract_catalog_metadata(app_module, migration=None):
+    # Note that this function is used in migration 0044 and so
+    # must be compatible to run in the migration and must be
+    # preserved so long as migration 0044 exists.
+    #
+    # app_module.spec and app_module.app are updated.
+
+    app_module.app.catalog_metadata = {
+    }
+
+    # Take some top-level fields that apply to both the module and the
+    # catalog and copy them into the catalog, leaving it also in the
+    # Module.
+    for field in ("title", "icon"):
+        if field in app_module.spec:
+            app_module.app.catalog_metadata[field] = app_module.spec[field]
+
+    # Take the 'catalog', overriding any module-level fields.
+    if "catalog" in app_module.spec:
+        app_module.app.catalog_metadata.update(app_module.spec["catalog"])
+        del app_module.spec["catalog"]
+
+    # Also update the version_number and version_name fields.
+    # Except in migration 0044 because those fields don't
+    # exist yet. That's handled in migration 0045.
+    if migration is None:
+        app_module.app.version_number = app_module.app.catalog_metadata.get('version')
+        app_module.app.version_name = app_module.app.catalog_metadata.get('version-name')
+        for field in ('version', 'version-name'):
+            if field in app_module.app.catalog_metadata:
+                del app_module.app.catalog_metadata[field]
+
+def recombine_catalog_metadata(app_module):
+    # Note that this function is used in migration 0044 and so
+    # must be compatible to run in the migration and must be
+    # preserved so long as migration 0044 exists.
+    #
+    # A new dict is returned which should replace app_module.spec['catalog'].
+
+    # Move the data into a 'catalog' key.
+    from copy import deepcopy
+    ret = deepcopy(app_module.app.catalog_metadata)
+
+    # Move the version_number and version_name fields back.
+    for field1, field2 in (('version_number', 'version'), ('version_name', 'version-name')):
+        if getattr(app_module.app, field1, None):
+            ret[field2] = getattr(app_module.app, field1)
+
+    # Some top-level fields are shared between the 'app' module
+    # and the catalog. They still exist the 'app' module metadata,
+    # so just remove them from the catalog metadata, unless they
+    # differ, in which case leave them in the catalog dict where
+    # they take precedence.
+    for field in ("title", "icon"):
+        if   field in ret \
+         and field in app_module.spec \
+         and app_module.spec[field] == ret[field]:
+            del ret[field]
+
+    return ret
 
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
@@ -292,6 +361,9 @@ class Module(models.Model):
         import os.path
         import rtyaml
         spec = OrderedDict(self.spec)
+        if self.module_name == "app" and self.app:
+            # Add back compliance app catalog information!
+            spec['catalog'] = recombine_catalog_metadata(self)
         spec["questions"] = []
         for i, q in enumerate(self.questions.order_by('definition_order')):
             if i == 0 and q.key == "_introduction":

@@ -10,7 +10,7 @@ import sys
 import fs, fs.errors
 from fs.base import FS as fsFS
 
-from .models import AppSource, AppInstance, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task
+from .models import AppSource, AppInstance, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task, extract_catalog_metadata
 from .validate_module_specification import validate_module, ValidationError as ModuleValidationError
 
 class AppImportUpdateMode(enum.Enum):
@@ -71,6 +71,7 @@ class App(object):
             appinst = AppInstance.objects.create(
                 source=self.store.source,
                 appname=self.name,
+                catalog_metadata={},
             )
         else:
             # Update Modules in this one.
@@ -86,6 +87,13 @@ class App(object):
                 module_id,
                 available_modules, processed_modules,
                 [], asset_pack, update_mode)
+
+        # If there's an 'app' module, move the app catalog information
+        # to the AppInstance.
+        if 'app' in processed_modules:
+            extract_catalog_metadata(processed_modules['app'])
+            appinst.save()
+            processed_modules['app'].save()
 
         return appinst
 

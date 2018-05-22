@@ -1045,6 +1045,13 @@ def authoring_edit_module(request, task):
     task.module.spec = spec
     task.module.save()
 
+    # Update the compliance app's catalog_metadata if the user is
+    # editing a root_task.
+    if task.module.module_name == "app":
+        import rtyaml
+        task.module.app.catalog_metadata = rtyaml.load(request.POST["catalog_metadata"])
+        task.module.app.save()
+
     # Write to disk. Errors writing should not be suppressed because
     # saving to disk is a part of the contract of how app editing works.
     try:

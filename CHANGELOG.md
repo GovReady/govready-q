@@ -8,6 +8,11 @@ Application changes:
 
 * Javascript and CSS static assets of compliance apps may have had the wrong MIME type set.
 
+App authoring changes:
+
+*  The authoring tool is updated to show app catalog and other app-module YAML in two textareas instead of one, since they are now stored separately in the database (see below), but they are recombined when the authoring tool updates local files.
+* A new `version-name` field is added to app.yaml catalog information.
+
 Deployment changes:
 
 * The HTTP Content-Security-Policy header is now set to prevent browsers from loading any third-party assets.
@@ -18,7 +23,7 @@ Deployment changes:
 
 Developer changes:
 
-* The AppInstance table now has created and updated datetime columns.
+* The AppInstance table now has created and updated datetime columns, version_number and version_name columns extracted from the catalog metadata, and a new catalog_metadata field that holds the original YAML 'catalog' information (but in JSON in the database; this information was previously in the 'app' Module's spec field).
 * Upgraded some dependencies.
 
 v0.8.2-rc3 (May 18, 2018)
