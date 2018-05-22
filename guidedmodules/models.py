@@ -78,6 +78,9 @@ class AppInstance(models.Model):
         # for NULLs but does for False/True, and we want the constraint to apply only for True.
     system_app = models.NullBooleanField(default=None, help_text="Set to True for AppInstances that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
 
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
     class Meta:
         unique_together = [
             ("source", "appname", "system_app")
