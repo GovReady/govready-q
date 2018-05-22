@@ -681,6 +681,10 @@ $(function() {
     function disable_input_controls(disabled) {
       $('#inputctrl').prop('disabled', disabled);
     }
+    function user_has_entered_clearable_answer() {
+      // any non-whitespace character
+      return /\S/.test($('#inputctrl').val());
+    }
 
     {% elif q.spec.type == "longtext" %}
 
@@ -698,6 +702,11 @@ $(function() {
     }
     function disable_input_controls(disabled) {
       window.inputctrl_quill.enable(!disabled);
+    }
+    function user_has_entered_clearable_answer() {
+      // any non-whitespace character
+      var val = window.inputctrl_quill.getContentsAsCommonMark();
+      return /\S/.test(val);
     }
 
     {% elif q.spec.type == "date" %}
@@ -723,6 +732,10 @@ $(function() {
     function disable_input_controls(disabled) {
       $("#question select").prop('disabled', disabled);
     }
+    function user_has_entered_clearable_answer() {
+      // there's no UI to clear their answer
+      return false;
+    }
 
     {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
 
@@ -737,6 +750,10 @@ $(function() {
     }
     function disable_input_controls(disabled) {
       $("#question input[type=\"radio\"]").prop('disabled', disabled);
+    }
+    function user_has_entered_clearable_answer() {
+      // there's no UI to clear their answer
+      return false;
     }
 
     {% elif q.spec.type == "multiple-choice" %}
@@ -760,6 +777,9 @@ $(function() {
     }
     function disable_input_controls(disabled) {
       $("#question input[type=\"checkbox\"]").prop('disabled', disabled);
+    }
+    function user_has_entered_clearable_answer() {
+      return form.find('input[type="checkbox"]:checked').length > 0;
     }
 
     {% elif q.spec.type == "file" %}
@@ -787,6 +807,10 @@ $(function() {
     function disable_input_controls(disabled) {
       $("#inputctrl").prop('disabled', disabled);
     }
+    function user_has_entered_clearable_answer() {
+      var ctrl = $('#inputctrl')[0];
+      return (ctrl.files.length > 0);
+    }
 
     {% else %}
 
@@ -794,6 +818,7 @@ $(function() {
     function validate_answer() { }
     function on_input_changed(handler) { }
     function disable_input_controls(disabled) { }
+    function user_has_entered_clearable_answer() { return false; }
 
     {% endif %}
 
@@ -843,6 +868,24 @@ $(function() {
       });
     $('#confidence-buttons button:not([data-toggleable=false])')
       .click(function() {
+        // Don't Know, Doesn't Apply, and Not Now
+        // are mutually exclusive with the user
+        // also providing an answer. If they typed
+        // anything into a text field, or any field
+        // that is resettable (e.g. radios aren't)
+        // then show a message and stop.
+        if (($(this).attr('id') == "no-idea-button"
+              || $(this).attr('id') == "not-applicable-button"
+              || $(this).attr('id') == "not-now-button")
+            && user_has_entered_clearable_answer()) {
+          show_modal_error(
+            "",
+            "Please clear your answer before selecting "
+            + "“" + $(this).text().replace(/^\s+|\s+$/g, '') + ".” "
+            + "Click “Not sure” to save an answer you will return to later.")
+          return;
+        }
+
         $(this).toggleClass('active');
         if ($(this).hasClass('active')) {
             // Don't Know, Doesn't Apply, and Not Now
