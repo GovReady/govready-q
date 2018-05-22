@@ -102,6 +102,10 @@ Database Query Examples
 
 *Scenario: Unix File Server App contains a text-type question named "Hostname". Many users have finished answering all of the questions in the app. However, our reviewers have only approved some of the answers so far. I want to write an SQL query to return all approved answers to the "Hostname" question.*
 
+In this section, we will build up an SQL query to extract the data identified in the scenario. The query will be built progressively over the next several sections to explain the rationale behind the GovReady-Q data model. Some of GovReady-Q's design choices --- including separating the defintions of compliance apps from user-submitted data, as well as recording an immutable history of user answers --- are reflected in the SQL queries below. The complete SQL query is shown at the end.
+
+You may prefer to use the GovReady-Q API instead of writing a low-level database query, but this example is illustrative for understanding GovReady-Q's data model no matter which method you use to query the data.
+
 #### Find the AppInstances
 
 First locate the `AppSource` "slug" and `AppInstance` "appname" that identifies a compliance app in GovReady-Q's database. Find the app in the compliance apps catalog and click its *Info* button:
@@ -112,7 +116,7 @@ The slug and the appname of the compliance app can be found in the URL:
 
 > http://mygovreadyq/store/**myapps**/**unix_file_server**
 
-In this case the slug is "myapps" and the appname is "unix_file_server".
+In this case the slug is "myapps" and the appname is "unix_file_server". These two fields identify the compliance app across its versions.
 
 Construct an SQL query to return the numeric IDs of the AppInstances in the database for this compliance app. Each AppInstance may be a different version of the compliance app or a different instance of the same app in use by different users.
 
@@ -124,6 +128,8 @@ LEFT JOIN guidedmodules_appsource
 WHERE guidedmodules_appsource.slug = "myapps"
   AND guidedmodules_appinstance.appname = "unix_file_server";
 ```
+
+This query will be adapted in the next section to find the hostname question.
 
 #### Find the ModuleQuestions
 
@@ -144,7 +150,7 @@ WHERE guidedmodules_module.module_name = "file_server"
   AND guidedmodules_modulequestion.key = "hostname";
 ```
 
-This query might be too broad --- it does not restrict the questions to those defined in the Unix File Server compliance app. There might be other compliance apps that use the same module_name and question key. Combine the first two queries to ensure only questions in the Unix File Server app are returned.
+This query might be too broad --- it does not restrict the questions to those defined in the Unix File Server compliance app. There might be other compliance apps that use the same module_name and question key. Combine the first two queries to ensure only questions in the Unix File Server app are returned using a LEFT JOIN to bridge the tables:
 
 ```sql
 SELECT guidedmodules_modulequestion.id
@@ -161,11 +167,11 @@ WHERE guidedmodules_appsource.slug = "myapps"
   AND guidedmodules_modulequestion.key = "hostname";
 ```
 
-Let the result of this query be `MODULE_QUESTIONS` in the statements below.
+We'll call this query `MODULE_QUESTIONS` --- we'll use it as a sub-query in the next step.
 
 #### Find the history of answers
 
-Separate tables contain the user-submitted answers to questions. Each answer is connected to a `ModuleQuestion` through a `TaskAnswer`. Locate the TaskAnswers for the questions:
+GovReady-Q has been designed so that separate tables contain the definition of the question and the user-submitted answers to the question. Each answer is connected to a `ModuleQuestion` through a `TaskAnswer`. Locate the TaskAnswers for the questions:
 
 ```sql
 SELECT guidedmodules_taskanswer.id
@@ -173,7 +179,9 @@ FROM guidedmodules_taskanswer
 WHERE guidedmodules_taskanswer.question_id IN (MODULE_QUESTIONS);
 ```
 
-However, the TaskAnswer table does not hold user answers. Answers are stored in the `TaskAnswerHistory` table where the complete history of answers to questions are stored. Fetch the history of answers to this question, including some metadata about the answers:
+Replace `MODULE_QUESTIONS` with the preceding SQL query, inserting it as a sub-query.
+
+The TaskAnswer table does not hold user answers, however. Answers are stored in the `TaskAnswerHistory` table where the complete history of answers to questions are stored. We'll now adapt the query to fetch the history of answers to this question, including some metadata about the answers, by using a LEFT JOIN to bridge the TaskAnswerHistory table and the TaskAnswer table:
 
 ```sql
 SELECT guidedmodules_taskanswer.id, answer.stored_value, answer.created, siteapp_user.username
@@ -194,11 +202,17 @@ Here is an example result:
 | 10 | null                  | 2018-05-20 10:35 | user1 |
 | 11 | "server2.company.com" | 2018-05-19 16:20 | user2 |
 
-This is the complete history of answers for the "hostname" question in two separate instantiations of the compliance app for different users. The two instantiations of the question are identified by the `TaskAnswer` "id"s 10 and 11. The history for TaskAnswer 10 has three rows. Two rows -- the first two --- reflect old answers to questions. This indicates the user returned to the question twice. On the first occasion, the user replaced the original answer with `"server2.company.com"`. On the second revisit, the user replaced the original answer with `null`, clearing the answer because the user decided they didn't know the answer or the question didn't apply to them. The second TaskAnswer was answered once.
+This is the complete history of answers for the "hostname" question in two separate Tasks, i.e. two instantiations of the compliance app started by different users. The two instantiations of the question are identified by their `TaskAnswer` "id"s, 10 and 11.
+
+The history for TaskAnswer 10 has three rows. Two rows -- the first two --- reflect old answers to questions. This indicates the user returned to the question twice. On the first occasion, the user replaced the original answer with `"server2.company.com"`. On the second revisit, the user replaced the original answer with `null`, clearing the answer because the user decided they didn't know the answer or the question didn't apply to them.
+
+The second TaskAnswer was answered once.
+
+We'll adapt this query in the next step to fetch just the current (most recent) answer in each Task.
 
 #### Find the current answer to each question
 
-The current answer for each question is stored in the `TaskAnswerHistory` record with the highest "id" for each TaskAnswer. To determine which TaskAnswerHistory record holds the current answer, use `GROUP BY` and `max` to fetch one TaskAnswerHistory for each TaskAnswer:
+The current answer for each question is stored in the `TaskAnswerHistory` record with the highest "id" for each TaskAnswer. The IDs in the TaskAnswerHistory table are assigned strictly sequentially. To determine which TaskAnswerHistory record holds the current answer, use `GROUP BY` and `max` to fetch one TaskAnswerHistory for each TaskAnswer:
 
 ```sql
 SELECT max(answer.id)
@@ -216,9 +230,9 @@ GROUP BY guidedmodules_taskanswer.id;
 | 103 |
 | 104 |
 
-This result holds the current answers to the hostname question. Let the result of this query be `CURRENT_ANSWERS` in the statements below.
+This result holds the current answers to the hostname question. We'll call this query `CURRENT_ANSWERS` --- we'll use it as a sub-query in the next query.
 
-Fetch the answers and metadata again but for just current answers:
+To fetch the answers and metadata but for the current answers, we'll query the `TaskAnswerHistory` table using the `CURRENT_ANSWERS` query as a sub-query to identify just the rows that are current answers to questions:
 
 ```sql
 SELECT taskanswer_id, stored_value, created, username, reviewed
@@ -239,9 +253,11 @@ This result holds the current answers to the Unix File Server hostname question 
 
 The "stored_value" column holds the user's answer encoded in JSON. In JSON, text (strings) are enclosed in double quotes. Therefore we know that the second answer is text. In JSON, `null` (without double quotes around it) represents an empty value --- in GovReady-Q, that means the user skipped the question choosing *I Don't Know*, *It Doesn't Apply*, or *I'll Come Back*.
 
+We'll modify this query in the next section to filter on the reviewed status of each answer.
+
 ### Filter on approved answers
 
-The "reviewed" field of `TaskAnswerHistory` stores GovReady-Q's simple workflow status of the answer. The values are `0` (not reviewed), `1` (reviewed), and `2` (approved). To select just approved answers, add a WHERE clause to the SQL query:
+The "reviewed" field of `TaskAnswerHistory` stores GovReady-Q's simple workflow status of the answer. The values are `0` (not reviewed), `1` (reviewed), and `2` (approved). To select just approved answers, add a WHERE clause to the previous SQL query:
 
 ```sql
 SELECT taskanswer_id, stored_value, created, username, reviewed
@@ -252,6 +268,11 @@ WHERE guidedmodules_taskanswerhistory.id IN (CURRENT_ANSWERS)
   AND reviewed = 2;
 ```
 
+The query extracts the answers in a structure similar to the following table:
+
 | Task Answer | Stored Value | Created | Username | Reviewed |
 |-------------|--------------|---------|----------| -------- |
 | 11 | "server2.company.com" | 2018-05-19 16:20 | user2 | 2 |
+
+
+This is the complete query to extract the approved answers to the hostname question in the Unix File Server compliance app. The query has been simplified by replacing a sub-query with `CURRENT_ANSWERS`, which itself has a sub-query that has been replaced by `MODULE_QUESTIONS`. Both sub-queries can be found above.
