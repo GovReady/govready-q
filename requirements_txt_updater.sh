@@ -28,10 +28,6 @@ pip3 install -U pip-tools safety
 # don't do the same here, the files won't match and the check will fail.)
 pip-compile --generate-hashes --upgrade --output-file requirements.txt --no-header requirements.in
 
-# Run some temporary patches on the final requirements.txt file that
-# are not possible to automatically generate from requirements.in.
-./requirements_txt_fixup.sh requirements.txt
-
 # Check packages for known vulnerabilities.
 safety check -r requirements.txt
 
