@@ -4,6 +4,10 @@ GovReady-Q Release Notes
 In Development
 --------------
 
+Application changes:
+
+* Javascript and CSS static assets of compliance apps may have had the wrong MIME type set.
+
 Deployment changes:
 
 * The HTTP Content-Security-Policy header is now set to prevent the loading of third-party assets.
