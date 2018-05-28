@@ -38,14 +38,13 @@ def download_module_asset(request, taskid, taskslug, asset_path):
     task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
     if not task.has_read_priv(request.user): raise Http404()
 
-    # Check that the Task's Module has assets and that this path is
-    # one of them.
-    if not task.module.assets or asset_path not in task.module.assets.paths:
+    # Check that this path is one of app's assets.
+    if asset_path not in task.module.app.asset_paths:
         raise Http404()
 
     # Look up the ModuleAsset object.
-    content_hash = task.module.assets.paths[asset_path]
-    asset = task.module.assets.assets.get(content_hash=content_hash)
+    content_hash = task.module.app.asset_paths[asset_path]
+    asset = task.module.app.asset_files.get(content_hash=content_hash)
 
     # Get the dbstorage.models.StoredFile instance which holds
     # an auto-detected mime type.
@@ -55,7 +54,7 @@ def download_module_asset(request, taskid, taskslug, asset_path):
     # Construct the response. The file content is probably untrusted, in which
     # case it must not be served as an inline resource from our domain unless it is
     # an image, which browsers won't execute.
-    if (sf.mime_type and sf.mime_type.startswith("image/")) or task.module.assets.trust_assets:
+    if (sf.mime_type and sf.mime_type.startswith("image/")) or task.module.app.trust_assets:
         mime_type = sf.mime_type
         disposition = "inline"
     else:

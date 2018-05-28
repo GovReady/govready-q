@@ -10,7 +10,7 @@ import sys
 import fs, fs.errors
 from fs.base import FS as fsFS
 
-from .models import AppSource, AppInstance, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, Task, extract_catalog_metadata
+from .models import AppSource, AppInstance, Module, ModuleQuestion, ModuleAsset, Task, extract_catalog_metadata
 from .validate_module_specification import validate_module, ValidationError as ModuleValidationError
 
 class AppImportUpdateMode(enum.Enum):
@@ -58,10 +58,6 @@ class App(object):
 
     @transaction.atomic # there can be an error mid-way through updating a Module
     def import_into_database(self, update_mode=AppImportUpdateMode.CreateInstance, update_appinst=None):
-        # Get or create a ModuleAssetPack first, since there is a foriegn key
-        # from Modules to ModuleAssetPacks.
-        asset_pack = load_module_assets_into_database(self)
-
         # Pull in all of the modules. We need to know them all because they'll
         # be processed recursively.
         available_modules = dict(self.get_modules())
@@ -72,6 +68,7 @@ class App(object):
                 source=self.store.source,
                 appname=self.name,
                 catalog_metadata={},
+                asset_paths={},
             )
         else:
             # Update Modules in this one.
@@ -86,7 +83,10 @@ class App(object):
                 appinst,
                 module_id,
                 available_modules, processed_modules,
-                [], asset_pack, update_mode)
+                [], update_mode)
+
+        # Load assets.
+        load_module_assets_into_database(self, appinst)
 
         # If there's an 'app' module, move the app catalog information
         # to the AppInstance.
@@ -635,7 +635,7 @@ class DependencyError(ModuleDefinitionError):
 class IncompatibleUpdate(Exception):
     pass
 
-def load_module_into_database(app, appinst, module_id, available_modules, processed_modules, dependency_path, asset_pack, update_mode):
+def load_module_into_database(app, appinst, module_id, available_modules, processed_modules, dependency_path, update_mode):
     # Prevent cyclic dependencies between modules.
     if module_id in dependency_path:
         raise CyclicDependency(dependency_path)
@@ -673,7 +673,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
     # Recursively update any modules this module references.
     dependencies = { }
     for m1 in get_module_spec_dependencies(spec):
-        mdb = load_module_into_database(app, appinst, m1, available_modules, processed_modules, dependency_path + [spec["id"]], asset_pack, update_mode)
+        mdb = load_module_into_database(app, appinst, m1, available_modules, processed_modules, dependency_path + [spec["id"]], update_mode)
         dependencies[m1] = mdb
 
     # Now that dependent modules are loaded, replace module string IDs with database numeric IDs.
@@ -694,7 +694,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
             pass
     if m:
         # What is the difference between the app's module and the module in the database?
-        change = is_module_changed(m, app.store.source, spec, asset_pack)
+        change = is_module_changed(m, app.store.source, spec)
     
         if change is None:
             # There is no difference, so we can go on immediately.
@@ -705,7 +705,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
             # There are no incompatible changes and we're allowed to update modules,
             # or we're forcing an update and it doesn't matter whether or not there
             # are changes --- update this one in place.
-            update_module(m, spec, asset_pack, True)
+            update_module(m, spec, True)
 
         else:
             # Block an incompatible update --- don't create a new module.
@@ -714,7 +714,7 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
     if not m:
         # No Module in the database matched what we need, or an existing
         # one cannot be updated. Create one.
-        m = create_module(app, appinst, spec, asset_pack)
+        m = create_module(app, appinst, spec)
 
     processed_modules[module_id] = m
     return m
@@ -732,14 +732,14 @@ def get_module_spec_dependencies(spec):
                 yield question["module-id"]
 
 
-def create_module(app, appinst, spec, asset_pack):
+def create_module(app, appinst, spec):
     # Create a new Module instance.
     m = Module()
     m.source = app.store.source
     m.app = appinst
     m.module_name = spec['id']
     print("Creating", m.app, m.module_name, file=sys.stderr)
-    update_module(m, spec, asset_pack, False)
+    update_module(m, spec, False)
     return m
 
 
@@ -750,7 +750,7 @@ def remove_questions(spec):
     return spec
 
 
-def update_module(m, spec, asset_pack, log_status):
+def update_module(m, spec, log_status):
     # Update a module instance according to the specification data.
     # See is_module_changed.
     if log_status:
@@ -760,7 +760,6 @@ def update_module(m, spec, asset_pack, log_status):
     # stored with the ModuleQuestion instances.
     m.visible = True
     m.spec = remove_questions(spec)
-    m.assets = asset_pack
     m.save()
 
     # Update its questions.
@@ -813,7 +812,7 @@ def update_question(m, definition_order, spec, log_status):
     return q
 
 
-def is_module_changed(m, source, spec, asset_pack):
+def is_module_changed(m, source, spec):
     # Returns whether a module specification has changed since
     # it was loaded into a Module object (and its questions).
     # Returns:
@@ -825,7 +824,6 @@ def is_module_changed(m, source, spec, asset_pack):
     # If all other metadata is the same, then there are no changes.
     if \
             json.dumps(m.spec, sort_keys=True) == json.dumps(remove_questions(spec), sort_keys=True) \
-        and m.assets == asset_pack \
         and json.dumps([q.spec for q in m.get_questions()], sort_keys=True) \
             == json.dumps([q for q in spec.get("questions", [])], sort_keys=True):
         return None
@@ -944,48 +942,17 @@ def is_question_changed(mq, definition_order, spec):
     # The changes to this question do not create a data inconsistency.
     return False
 
-def load_module_assets_into_database(app):
+def load_module_assets_into_database(app, appinst):
     # Load all of the static assets from the source into the database.
-    # If a ModuleAsset already exists for an asset, use that. If a
-    # ModulePack exists for the entire collection of assets, return it
-    # and don't create any new database entries.
+    # If a ModuleAsset already exists for an asset, use that.
 
     source = app.store.source
-    assets = list(app.get_assets())
-
-    if len(assets) == 0:
-        # Don't bother creating an AssetPack if there are no assets.
-        return None
-
-    # Provisionally create a ModuleAssetPack.
-    pack = ModuleAssetPack()
-    pack.source = source
-    pack.basepath = "/"
-    pack.trust_assets = source.trust_assets
-    pack.paths = {
-        file_path: file_hash
-        for file_path, file_hash, content_loader
-        in assets
-    }
-
-    # Compute the total_hash over the pack to see if this already
-    # exists as a ModuleAssetPack in the database.
-    pack.set_total_hash()
-
-    existing_pack = ModuleAssetPack.objects.filter(
-        source=source,
-        total_hash=pack.total_hash,
-        trust_assets = source.trust_assets).first()
-    if existing_pack:
-        # Nothing to update.
-        return existing_pack
-
-    # Create a new ModuleAssetPack. Save the instance.
-    pack.save()
 
     # Add the assets.
-    for file_path, file_hash, content_loader in assets:
-        # Get or create the ModuleAsset --- it might already exist in an earlier pack.
+    appinst.trust_assets = source.trust_assets # remember setting at time of app load
+    appinst.asset_paths = { }
+    for file_path, file_hash, content_loader in app.get_assets():
+        # Get or create the ModuleAsset --- it might already exist in an earlier app.
         asset, is_new = ModuleAsset.objects.get_or_create(
             source=source,
             content_hash=file_hash,
@@ -996,8 +963,9 @@ def load_module_assets_into_database(app):
             asset.file.save(file_path, ContentFile(content_loader()))
             asset.save()
 
-        # Add to the pack.
-        pack.assets.add(asset)
+        # Add to the app.
+        appinst.asset_files.add(asset)
+        appinst.asset_paths[file_path] = file_hash
 
         mime_types = {
             "css": "text/css",
@@ -1010,4 +978,4 @@ def load_module_assets_into_database(app):
                 .filter(path=asset.file.name)\
                 .update(mime_type=mime_type)
 
-    return pack
+    appinst.save()

@@ -24,6 +24,7 @@ Deployment changes:
 Developer changes:
 
 * The AppInstance table now has created and updated datetime columns, version_number and version_name columns extracted from the catalog metadata, and a new catalog_metadata field that holds the original YAML 'catalog' information (but in JSON in the database; this information was previously in the 'app' Module's spec field).
+* The ModuleAssetPack table is dropped and its columns have been moved to the AppInstance table.
 * Upgraded some dependencies.
 
 v0.8.2-rc3 (May 18, 2018)

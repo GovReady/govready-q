@@ -82,6 +82,10 @@ class AppInstance(models.Model):
     version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
     version_name = models.CharField(blank=True, null=True, max_length=128, help_text="The name of this version/release of the compliance app.")
 
+    asset_files = models.ManyToManyField('guidedmodules.ModuleAsset', help_text="The assets linked to this pack.")
+    asset_paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
+    trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
+
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
@@ -97,6 +101,11 @@ class AppInstance(models.Model):
     def __repr__(self):
         # For debugging.
         return "<AppInstance [%d] %s from %s>" % (self.id, self.appname, self.source)
+
+    def get_asset(self, asset_path):
+        if asset_path not in self.asset_paths:
+            raise ValueError("{} is not an asset in {}.".format(asset_path, self))
+        return self.asset_files.get(source=self.source, content_hash=self.asset_paths[asset_path]).file
 
     def catalog_metadata_yaml(self):
         import rtyaml
@@ -206,7 +215,6 @@ class Module(models.Model):
     superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="This field is no longer used. When a Module is superseded by a new version, this points to the newer version.")
 
     spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
-    assets = models.ForeignKey('ModuleAssetPack', blank=True, null=True, on_delete=models.CASCADE, help_text="A mapping from asset paths to ModuleAsset instances with the binary content of the asset.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -394,42 +402,13 @@ class ModuleAsset(models.Model):
     class Meta:
         unique_together = [('source', 'content_hash')]
 
-class ModuleAssetPack(models.Model):
-    source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of these assets.")
-    assets = models.ManyToManyField(ModuleAsset, help_text="The assets linked to this pack.")
-    basepath = models.SlugField(max_length=100, help_text="The base path of all assets in this pack.")
-    paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
-    total_hash = models.CharField(max_length=64, help_text="A SHA256 hash over the paths and the content_hashes of the assets.")
+    def __str__(self):
+        # For the admin.
+        return "%s [%d] (from %s)" % (self.file.name, self.id, self.source)
 
-    trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
-
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
-
-    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
-
-    class Meta:
-        unique_together = [('source', 'total_hash')]
-
-    def set_total_hash(self):
-        import hashlib, json
-        m = hashlib.sha256()
-        m.update(
-            json.dumps({
-                    "trust_assets": self.source.trust_assets,
-                    "basepath": self.basepath,
-                    "paths": self.paths,
-                },
-                sort_keys=True,
-            ).encode("utf8")
-        )
-        self.total_hash = m.hexdigest()
-
-    def get(self, asset_path):
-        if asset_path not in self.paths:
-            raise ValueError(asset_path + " is not an asset.")
-        return self.assets.get(content_hash=self.paths[asset_path]).file
-
+    def __repr__(self):
+        # For debugging.
+        return "<ModuleAsset [%d] %s from %s>" % (self.id, self.file.name, self.source)
 
 class ModuleQuestion(models.Model):
     module = models.ForeignKey(Module, related_name="questions", on_delete=models.CASCADE, help_text="The Module that this ModuleQuestion is a part of.")
@@ -570,9 +549,8 @@ class Task(models.Model):
             return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
 
     def get_static_asset_url(self, asset_path, use_data_urls=False):
-        if not self.module.assets or asset_path not in self.module.assets.paths:
-            # No assets are defined for this Module, or this path is not
-            # an asset, so just return the path as it's probably an absolute URL.
+        if asset_path not in self.module.app.asset_paths:
+            # This path is not an asset, so just return the path as it's probably an absolute URL.
             return asset_path
         if not use_data_urls:
             return self.get_absolute_url() + "/media/" + asset_path
@@ -580,11 +558,10 @@ class Task(models.Model):
             return self.get_static_asset_image_data_url(asset_path, 640)
 
     def get_static_asset_image_data_url(self, asset_path, max_image_size):
-        if not self.module.assets or asset_path not in self.module.assets.paths:
-            # No assets are defined for this Module, or this path is not
-            # an asset.
+        if self.module.app is None or asset_path not in self.module.app.asset_paths:
+            # This path is not an asset.
             raise ValueError(asset_path + " is not an asset.")
-        with self.module.assets.get(asset_path) as f:
+        with self.module.app.get_asset(asset_path) as f:
             try:
                 return image_to_dataurl(f, max_image_size)
             except:
