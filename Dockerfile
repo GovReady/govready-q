@@ -95,6 +95,7 @@ RUN mkdir -p /mnt/apps
 RUN groupadd application && \
     useradd -g application -d /home/application -s /sbin/nologin -c "application process" application && \
     chown -R application:application /home/application
+RUN echo -n "the non-root user is: " && grep ^application /etc/passwd
 
 # Give the non-root user access to scratch space.
 RUN mkdir -p local

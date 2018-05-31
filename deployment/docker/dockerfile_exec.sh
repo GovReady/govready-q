@@ -3,6 +3,24 @@
 
 set -euf -o pipefail # abort script on error
 
+# Show the version immediately, which might help diagnose problems
+# from console output.
+echo "This is GovReady-Q."
+cat VERSION
+
+# Check that we're running as the 'application' user. Our Dockerfile
+# specifies to run containers as that user. But cluster environments
+# can override the start user and might do so to enforce running as
+# a non-root user, so this process might have started up as the wrong
+# user.
+if [ "$(whoami)" != "application" ]; then
+	echo "The container is running as the wrong UNIX user."
+	id
+	echo "Should be:"
+	id application
+	echo
+fi
+
 # What's the address (and port, if not 80) that end users
 # will access the site at? If the HOST and PORT environment
 # variables are set (and PORT is not 80), take the values
@@ -62,7 +80,7 @@ if [ ! -z "${BRANDING-}" ]; then
 fi
 
 # Write out the settings that indicate where we think the site is running at.
-echo "Starting GovReady-Q at ${ADDRESS} with HTTPS ${HTTPS-false}."
+echo "Starting at ${ADDRESS} with HTTPS ${HTTPS-false}."
 
 # Run checks.
 python3.6 manage.py check --deploy
