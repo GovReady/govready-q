@@ -271,7 +271,7 @@ class AppSourceAdmin(admin.ModelAdmin):
 		return ", ".join(flags)
 
 class AppInstanceAdmin(admin.ModelAdmin):
-	list_display = ('appname', 'source', 'system_app')
+	list_display = ('appname', 'version_number', 'version_name', 'source', 'system_app')
 	list_filter = ('source', 'system_app')
 	raw_id_fields = ('source', 'asset_files',)
 	readonly_fields = ('asset_files','asset_paths')

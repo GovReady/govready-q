@@ -120,11 +120,9 @@ class FolderAdmin(admin.ModelAdmin):
     readonly_fields = ('projects', 'extra')
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('project', 'root_task', 'created')
+    list_display = ('id', 'organization', 'title', 'root_task', 'created')
     raw_id_fields = ('organization', 'root_task')
-    readonly_fields = ('extra',)
-    def project(self, obj):
-        return obj.organization_and_title()
+    readonly_fields = ('id', 'extra',)
 
 class ProjectMembershipAdmin(admin.ModelAdmin):
     list_display = ('project', 'organization', 'user', 'is_admin', 'created')
