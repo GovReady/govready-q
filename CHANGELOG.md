@@ -13,6 +13,7 @@ Deployment changes:
 * The HTTP Content-Security-Policy header is now set to prevent the loading of third-party assets.
 * A CentOS 7-based Vagrantfile has been added to the source distribution for those looking to deploy using a VM.
 * Added some outputs to Docker launches to see the Q version and the container user during build and at the very start of container startup.
+* We're now publishing version tags to Docker Hub so that past versions of GovReady-Q remain available when we publish a new release.
 
 Developer changes:
 

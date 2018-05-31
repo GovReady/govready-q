@@ -90,8 +90,14 @@ cat VERSION
 echo
 
 # Build the image.
-docker image build --tag govready/govready-q:${TAG-latest} .
+docker image build --tag govready/govready-q:$VERSION .
 rm -f VERSION # it's for Docker only
+
+# Show push commands.
+echo
+echo "To publish, run:"
+echo "docker image push govready/govready-q:$VERSION"
+echo "docker image tag govready/govready-q:$VERSION govready/govready-q:latest && docker image push govready/govready-q:latest"
 
 # Show warning again.
 if [ $WARNINGS -gt 0 ]; then
