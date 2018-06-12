@@ -362,14 +362,9 @@ def apps_catalog_item(request, source_slug, app_name):
     else:
         raise Http404()
 
-    if request.method == "GET":
-        # Show the "app" page.
+    error = None
 
-        return render(request, "app-store-item.html", {
-            "app": app_catalog_info,
-        })
-    
-    else:
+    if request.method == "POST":
         # Start the app.
 
         if not request.GET.get("q"):
@@ -400,15 +395,25 @@ def apps_catalog_item(request, source_slug, app_name):
             if not app_satifies_interface(app_catalog_info, q):
                 raise ValueError("Invalid protocol.")
 
-        project = start_app(app_catalog_info, request.organization, request.user, folder, task, q)
+        from guidedmodules.module_sources import ValidationError
+        try:
+            project = start_app(app_catalog_info, request.organization, request.user, folder, task, q)
+        except ValidationError as e:
+            error = str(e)
+        else:
+            if task and q:
+                # Redirect to the task containing the question that was just answered.
+                from urllib.parse import urlencode
+                return HttpResponseRedirect(task.get_absolute_url() + "#" + urlencode({ "q": q.key, "t": project.root_task.id }))
 
-        if task and q:
-            # Redirect to the task containing the question that was just answered.
-            from urllib.parse import urlencode
-            return HttpResponseRedirect(task.get_absolute_url() + "#" + urlencode({ "q": q.key, "t": project.root_task.id }))
+            # Redirect to the new project.
+            return HttpResponseRedirect(project.get_absolute_url())
 
-        # Redirect to the new project.
-        return HttpResponseRedirect(project.get_absolute_url())
+    # Show the "app" page.
+    return render(request, "app-store-item.html", {
+        "app": app_catalog_info,
+        "error": error,
+    })
 
 
 def start_app(app_catalog_info, organization, user, folder, task, q):

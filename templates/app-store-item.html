@@ -39,6 +39,11 @@
 <div class="row">
   <div class="col-sm-9 col-sm-push-3">
     <h1><small>{{app.vendor}}</small><br/>{{app.title}}</h1>
+
+    {% if error %}
+      <p class="text-danger">{{error}}</p>
+    {% endif %}
+
     <div class="body">
       {{app.description.long|safe}}
     </div>
