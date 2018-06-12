@@ -366,7 +366,6 @@ def apps_catalog_item(request, source_slug, app_name):
         # Show the "app" page.
 
         return render(request, "app-store-item.html", {
-            "first": not ProjectMembership.objects.filter(user=request.user, project__organization=request.organization).exists(),
             "app": app_catalog_info,
         })
     
