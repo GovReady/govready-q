@@ -1,5 +1,10 @@
 # Deploying Q to Red Hat Enterprise Linux 7 / CentOS 7 / Amazon Linux 2
 
+<!-- Please update the project's Vagrantfile when revising these instructions. -->
+
+These instructions can be used to configure a Red Hat Enterprise Linux 7, CentOS 7, or Amazon Linux 2 system to run GovReady-Q.
+A Vagrantfile based on CentOS 7 and these instructions is also provided at the root of the GovReady-Q source code.
+
 ## Preparing System Packages
 
 GovReady-Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
@@ -10,7 +15,8 @@ GovReady-Q calls out to `git` to fetch apps from git repositories, but that requ
     # if necessary, remove any git currently installed
     yum remove git
 
-    yum install git2u=
+    yum install git2u
+
 ## Preparing Q Source Code
 
 Create a UNIX user named `govready-q`:

@@ -7,6 +7,7 @@ In Development
 Deployment changes:
 
 * The HTTP Content-Security-Policy header is now set to prevent the loading of third-party assets.
+* A CentOS 7-based Vagrantfile has been added to the source distribution for those looking to deploy using a VM.
 
 v0.8.2-rc3 (May 18, 2018)
 -------------------------
