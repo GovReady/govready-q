@@ -14,10 +14,6 @@ set -euf -o pipefail # abort script on error
 FN=$(tempfile)
 pip-compile --generate-hashes --output-file $FN --no-header --no-annotate requirements.in > /dev/null
 
-# Run some temporary patches on the final requirements.txt file that
-# are not possible to automatically generate from requirements.in.
-./requirements_txt_fixup.sh $FN
-
 # The reverse-dependency metadata doesn't seem to be entirely
 # accurate and changes nondeterministically? We omit it above
 # with --no-annotate and remove it from a copy of our requirements.txt
