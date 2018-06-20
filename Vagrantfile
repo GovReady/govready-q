@@ -59,9 +59,15 @@ Vagrant.configure(2) do |config|
     # 'local' subdirectory on the host system. Use sudo to run as the vagrant
     # user so that if the database is being created, the vagrant user will
     # have write access instead of it being owned by root.
-    sudo -u vagrant python3 manage.py migrate
+    python3 manage.py migrate
     python3 manage.py load_modules
     python3 manage.py collectstatic --noinput
+
+    # Give the vagrant user write access to the Sqlite database that was just
+    # created by 'migrate', as well as to the directory containing it because
+    # Sqlite needs to create a journal file there for write operations.
+    chown vagrant.vagrant local/db.sqlite3
+    chmod a+w local
 
     # Configure supervisor to run the uWSGI process and the background notification
     # emails process and start supervisor, which starts the Q uWSGI HTTP server process.
