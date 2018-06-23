@@ -4,6 +4,7 @@ from django.conf import settings
 from siteapp.models import Organization, Project, User
 from .models import Module, Task, TaskAnswer
 from .module_logic import *
+from .app_loading import load_app_into_database
 
 class TestCaseWithFixtureData(TestCase):
     @classmethod
@@ -15,9 +16,9 @@ class TestCaseWithFixtureData(TestCase):
         settings.VALIDATE_EMAIL_DELIVERABILITY = False
 
         # Load modules from the fixtures directory.
-        from guidedmodules.models import AppSource, AppInstance
-        from guidedmodules.management.commands.load_modules import Command as load_modules
-        from guidedmodules.module_sources import MultiplexedAppSourceConnection
+        from .models import AppSource, AppInstance
+        from .management.commands.load_modules import Command as load_modules
+        from .app_source_connections import MultiplexedAppSourceConnection
         src = AppSource.objects.create(
             slug="fixture",
             spec={
@@ -27,7 +28,7 @@ class TestCaseWithFixtureData(TestCase):
         )
         with MultiplexedAppSourceConnection(ms for ms in AppSource.objects.all()) as store:
             for app in store.list_apps():
-                app.import_into_database()
+                load_app_into_database(app)
         self.fixture_app = AppInstance.objects.get(source=src, appname="simple_project")
 
         # Create a dummy organization, project, and user.

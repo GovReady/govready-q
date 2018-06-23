@@ -311,7 +311,7 @@ def apps_catalog(request):
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
-    from guidedmodules.module_sources import AppSourceConnectionError
+    from guidedmodules.app_source_connections import AppSourceConnectionError
     try:
         catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog(request.organization), request)
     except (ValueError, AppSourceConnectionError) as e:
@@ -395,10 +395,10 @@ def apps_catalog_item(request, source_slug, app_name):
             if not app_satifies_interface(app_catalog_info, q):
                 raise ValueError("Invalid protocol.")
 
-        from guidedmodules.module_sources import ValidationError
+        from guidedmodules.app_loading import ModuleDefinitionError
         try:
             project = start_app(app_catalog_info, request.organization, request.user, folder, task, q)
-        except ValidationError as e:
+        except ModuleDefinitionError as e:
             error = str(e)
         else:
             if task and q:
@@ -418,6 +418,7 @@ def apps_catalog_item(request, source_slug, app_name):
 
 def start_app(app_catalog_info, organization, user, folder, task, q):
     from guidedmodules.models import AppSource
+    from guidedmodules.app_loading import load_app_into_database
 
     # If the first argument is a string, it's an app id of the
     # form "source/appname". Get the catalog info.
@@ -449,7 +450,7 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
                     raise ValueError("Invalid access.")
 
                 # 4) Import. Use the module named "app".
-                appinst = app.import_into_database()
+                appinst = load_app_into_database(app)
                 module = appinst.modules.get(module_name="app")
 
         else:

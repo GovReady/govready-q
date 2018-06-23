@@ -67,7 +67,7 @@ class AppSource(models.Model):
 
     def open(self):
         # Return an AppSourceConnection instance for this source.
-        from .module_sources import AppSourceConnection
+        from .app_source_connections import AppSourceConnection
         return AppSourceConnection.create(self)
 
 class AppInstance(models.Model):
