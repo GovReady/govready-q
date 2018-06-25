@@ -21,14 +21,13 @@
 # as long as we can access it with PyFilesystem2.
 #
 # Each AppSourceConnection implementation is configured by
-# passing it an AppSource instance. The AppSource's "spec"
-# property holds a dict holding key/value data, such as the
+# passing it an options dict holding key/value data, such as the
 # local directory path or a git repository and credentials.
-# AppSourceConnection.create(source) creates an AppSourceConnection
-# instance by reading source.spec["type"] to determine which
-# class to instantiate and then passing the source to the
+# AppSourceConnection.create(source, options) creates an
+# AppSourceConnection by reading options["type"] to determine which
+# class to instantiate and then passing the arguments to the
 # appropriate implementation. See comments below for details
-# about what should be in source.spec.
+# about what should be in options.
 #
 # AppSourceConnections should be used in with ...: blocks
 # so that resources opened by the connection are automatically
@@ -49,11 +48,11 @@ class AppSourceConnection(object):
     """An AppSourceConnection provides methods to access apps in an AppSource."""
 
     @staticmethod
-    def create(source):
+    def create(source, options):
         """Returns a new AppSourceConnection instance given an AppSource."""
-        if source.spec.get("type") in AppSourceConnectionTypes:
-            return AppSourceConnectionTypes[source.spec["type"]](source)
-        raise ValueError("Invalid AppSourceConnection type: %s" % repr(source.spec.get("type")))
+        if options.get("type") in AppSourceConnectionTypes:
+            return AppSourceConnectionTypes[options["type"]](source, options)
+        raise ValueError("Invalid AppSourceConnection type: %s" % repr(options.get("type")))
 
     def list_apps(self):
         raise Exception("Not implemented!")
@@ -82,13 +81,13 @@ class App(object):
 ### IMPLEMENTATIONS ###
 
 # This class implements AppSourceConnection for an empty
-# set of apps. source.spec should look like:
+# set of apps. options should look like:
 # {
 #  "type": "null"
 # }
 class NullAppSourceConnection(AppSourceConnection):
     """The NullAppSourceConnection contains no apps."""
-    def __init__(self, source):
+    def __init__(self, source, options):
         pass
     def __enter__(self): return self
     def __exit__(self, *args): return
@@ -105,7 +104,7 @@ class MultiplexedAppSourceConnection(AppSourceConnection):
         self.loaders = []
         for ms in sources:
             try:
-                self.loaders.append(AppSourceConnection.create(ms))
+                self.loaders.append(AppSourceConnection.create(ms, ms.spec))
             except ValueError as e:
                 raise ValueError('There was an error creating the AppSource "{}": {}'.format(ms.slug, e))
 
@@ -361,16 +360,16 @@ class PyFsApp(App):
 
 
 # This class implements AppSourceConnection for a local path using fs.osfs.OSFS.
-# source.spec should look like:
+# options should look like:
 # {
 #  "type": "local",
 #  "path": "path/to/apps",
 # }
 class LocalDirectoryAppSourceConnection(PyFsAppSourceConnection):
     """An App Store provided by a local directory."""
-    def __init__(self, source):
+    def __init__(self, source, options):
         from fs.osfs import OSFS
-        super().__init__(source, lambda : OSFS(source.spec["path"]))
+        super().__init__(source, lambda : OSFS(options["path"]))
 
 
 class SimplifiedReadonlyFilesystem(fsFS):
@@ -433,7 +432,7 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
 
 # This class implements AppSourceConnection using the GitHub API,
 # using the GithubApiFilesystem class above to wrap the GitHub API
-# in a PyFilesystem2 filesystem. source.spec should look like:
+# in a PyFilesystem2 filesystem. options should look like:
 # {
 #	"type": "github",
 #   "repo": "organization/repository",
@@ -441,15 +440,14 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
 #   "auth": { "user": "username", "pw": "password" } # optional
 # }
 class GithubApiAppSourceConnection(PyFsAppSourceConnection):
-    def __init__(self, source):
-        # the spec is incomplete
-        if not isinstance(source.spec.get("repo"), str): raise ValueError("The AppSource is misconfigured: missing or invalid 'repo'.")
-        if not isinstance(source.spec.get("path"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'path'.")
-        if not (isinstance(source.spec.get("auth"), dict) and isinstance(source.spec["auth"].get("user"), str)): raise ValueError("The AppSource is misconfigured: missing or invalid 'auth.user'.")
-        if not (isinstance(source.spec.get("auth"), dict) and isinstance(source.spec["auth"].get("pw"), str)): raise ValueError("The AppSource is misconfigured: missing or invalid 'auth.pw'.")
+    def __init__(self, source, options):
+        if not isinstance(options.get("repo"), str): raise ValueError("The AppSource is misconfigured: missing or invalid 'repo'.")
+        if not isinstance(options.get("path"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'path'.")
+        if not (isinstance(options.get("auth"), dict) and isinstance(options["auth"].get("user"), str)): raise ValueError("The AppSource is misconfigured: missing or invalid 'auth.user'.")
+        if not (isinstance(options.get("auth"), dict) and isinstance(options["auth"].get("pw"), str)): raise ValueError("The AppSource is misconfigured: missing or invalid 'auth.pw'.")
         super().__init__(source, lambda : GithubApiFilesystem(
-            source.spec["repo"], source.spec.get("path"),
-            source.spec["auth"]["user"], source.spec["auth"]["pw"]))
+            options["repo"], options.get("path"),
+            options["auth"]["user"], options["auth"]["pw"]))
 
 
 class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
@@ -582,7 +580,7 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
 
 # This class implements AppSourceConnection for a git repository,
 # using the GitRepositoryFilesystem class above to wrap the git client
-# in a PyFilesystem2 filesystem. source.spec should look like:
+# in a PyFilesystem2 filesystem. options should look like:
 # {
 #  "type": "git",
 #  "url": "git@github.com:GovReady/myrepository",
@@ -593,14 +591,13 @@ class GitRepositoryFilesystem(SimplifiedReadonlyFilesystem):
 # }
 class GitRepositoryAppSourceConnection(PyFsAppSourceConnection):
     """An App Store provided by a local directory."""
-    def __init__(self, source):
-        # validate spec
-        if not isinstance(source.spec.get("url"), str): raise ValueError("The AppSource is misconfigured: missing or invalid 'url'.")
-        if not isinstance(source.spec.get("branch"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'url'.")
-        if not isinstance(source.spec.get("path"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'path'.")
+    def __init__(self, source, options):
+        if not isinstance(options.get("url"), str): raise ValueError("The AppSource is misconfigured: missing or invalid 'url'.")
+        if not isinstance(options.get("branch"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'url'.")
+        if not isinstance(options.get("path"), (str, type(None))): raise ValueError("The AppSource is misconfigured: missing or invalid 'path'.")
         super().__init__(source, lambda : GitRepositoryFilesystem(
-            source.spec["url"], source.spec.get("branch"), source.spec.get("path"),
-            source.spec.get("ssh_key")))
+            options["url"], options.get("branch"), options.get("path"),
+            options.get("ssh_key")))
 
 
 def read_yaml_file(f):

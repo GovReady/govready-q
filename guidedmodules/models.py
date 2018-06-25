@@ -68,7 +68,7 @@ class AppSource(models.Model):
     def open(self):
         # Return an AppSourceConnection instance for this source.
         from .app_source_connections import AppSourceConnection
-        return AppSourceConnection.create(self)
+        return AppSourceConnection.create(self, self.spec)
 
 class AppInstance(models.Model):
     source = models.ForeignKey(AppSource, related_name="appinstances", on_delete=models.CASCADE, help_text="The source of this AppInstance.")
