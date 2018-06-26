@@ -227,8 +227,8 @@ psycopg2-binary==2.7.5 \
     --hash=sha256:e70ebcfc5372dc7b699c0110454fc4263967f30c55454397e5769eb72c0eb0ce \
     --hash=sha256:eadbd32b6bc48b67b0457fccc94c86f7ccc8178ab839f684eb285bb592dc143e \
     --hash=sha256:ecbc6dfff6db06b8b72ae8a2f25ff20fbdcb83cb543811a08f7cb555042aa729
-pygithub==1.39 \
-    --hash=sha256:8a87bc0fbd0b70c2f12911f7f25a493cd13371bc1bbac6c548cc61b69e7d006f
+pygithub==1.40 \
+    --hash=sha256:b9f5cf80197ba0e3848e084de289ffa19ce1c8c279070a58754ad694d364d481
 pygments==2.2.0 \
     --hash=sha256:78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d \
     --hash=sha256:dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc
@@ -272,7 +272,7 @@ requests-oauthlib==1.0.0 \
 requests==2.19.1 \
     --hash=sha256:63b52e3c866428a224f97cab011de738c36aec0185aa91cfacd418b5d58911d1 \
     --hash=sha256:ec22d826a36ed72a7358ff3fe56cbd4ba69dd7a6718ffd450ff0e9df7a47ce6a \
-    # via django-allauth, requests-oauthlib, safety
+    # via django-allauth, pygithub, requests-oauthlib, safety
 rfc5424-logging-handler==1.1.2 \
     --hash=sha256:0fa181ba9ef4b517c938c90608f4c3a5c1abf3ea29250f0df294bef439ba2c9e \
     --hash=sha256:a78a0a42b19e44215cd8a5be4ab42bfd3593c0c30a9cbfde9478e398f502ea00
@@ -281,9 +281,9 @@ rtyaml==0.0.4 \
 safety==1.8.1 \
     --hash=sha256:0bd2a26b872668767c6db8efecfc8869b547463bedff5e7cd7b52f037aa6f200 \
     --hash=sha256:fc3fc55656f1c909d65311b49a38211c42c937f57a05393289fb3f17cadfa4a1
-selenium==3.12.0 \
-    --hash=sha256:1372101ad23798462038481f92ba1c7fab8385c788b05da6b44318f10ea52422 \
-    --hash=sha256:b8a2630fd858636c894960726ca3c94d8277e516ea3a9d81614fb819a5844764
+selenium==3.13.0 \
+    --hash=sha256:6f4c7727d44034b8d635d7cf1c3377f76efc95e192ed5cfb97e0057fe5a92d44 \
+    --hash=sha256:f35bb209cab740c195276a323c1b750dbcfdb9f6983e7d6e3abba9cd8838f355
 six==1.11.0 \
     --hash=sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9 \
     --hash=sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb \
