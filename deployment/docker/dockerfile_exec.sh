@@ -28,7 +28,7 @@ EOF
 function set_env_setting {
 	# set_env_setting keypath value
 	cat local/environment.json \
-	| jq ".[\"$1\"] = $(echo $2 | jq -R .)" \
+	| jq ".$1 = $(echo $2 | jq -R .)" \
 	> /tmp/new-environment.json
 	cat /tmp/new-environment.json > local/environment.json
 	rm -f /tmp/new-environment.json
@@ -38,10 +38,10 @@ function set_env_setting {
 if [ -z "${ORGANIZATION_PARENT_DOMAIN-}" ]; then
 	# Not multi-tenant with "main" as the subdomain of the
 	# default organization.
-	set_env_setting single-organization main
+	set_env_setting '["single-organization"]' main
 else
 	# Multi-tenant.
-	set_env_setting organization-parent-domain "$ORGANIZATION_PARENT_DOMAIN"
+	set_env_setting '["organization-parent-domain"]' "$ORGANIZATION_PARENT_DOMAIN"
 fi
 
 # Add email parameters.
