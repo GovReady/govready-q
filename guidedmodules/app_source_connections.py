@@ -39,8 +39,6 @@ import re
 import fs, fs.errors
 from fs.base import FS as fsFS
 
-from .app_loading import ModuleDefinitionError
-
 class AppSourceConnectionError(Exception):
     pass
 
@@ -241,12 +239,8 @@ class PyFsApp(App):
             err_str = "%s/app.yaml" % self.fs.desc('')
             try:
                 yaml = read_yaml_file(f)
-            except ModuleDefinitionError as e:
-                raise ModuleDefinitionError("There was an error loading the module at %s: %s" % (
-                    err_str,
-                    str(e)))
-            except Exception as e:
-                raise ModuleDefinitionError("There was an unhandled error loading the module at %s." % (
+            except AppSourceConnectionError as e:
+                raise AppSourceConnectionError("There was an error loading the module at %s: %s" % (
                     err_str,
                     str(e)))
 
@@ -607,7 +601,7 @@ def read_yaml_file(f):
     try:
         return rtyaml.load(f)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError, yaml.constructor.ConstructorError) as e:
-        raise ModuleDefinitionError("There was an error parsing the YAML file: " + str(e))
+        raise AppSourceConnectionError("There was an error parsing the YAML file: " + str(e))
 
 AppSourceConnectionTypes = {
     "null": NullAppSourceConnection,
