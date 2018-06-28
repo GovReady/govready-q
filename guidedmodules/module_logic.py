@@ -990,7 +990,7 @@ class ModuleAnswers(object):
                 self.module_answers = module_answers
                 self.document = document
                 self.index = index
-                self.rendered_content = None
+                self.rendered_content = { }
                 self.use_data_urls = use_data_urls
             def __iter__(self):
                 # Yield all of the keys that are in the output document
@@ -1005,7 +1005,7 @@ class ModuleAnswers(object):
                 if key in output_formats:
                     # key is an output format -> lazy render.
 
-                    if self.rendered_content is None:
+                    if key not in self.rendered_content:
                         # Cache miss.
 
                         # For errors, what is the name of this document?
@@ -1034,9 +1034,9 @@ class ModuleAnswers(object):
                                     import html
                                     ret = "<p class=text-danger>" + html.escape(ret) + "</p>"
                                 return ret
-                        self.rendered_content = self.module_answers.task._get_cached_state(task_cache_key, do_render)
+                        self.rendered_content[key] = self.module_answers.task._get_cached_state(task_cache_key, do_render)
 
-                    return self.rendered_content
+                    return self.rendered_content[key]
 
                 elif key in self.document:
                     # key is a key in the specification for the document.
