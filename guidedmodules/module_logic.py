@@ -430,6 +430,14 @@ def render_content(content, answers, output_format, source, additional_context={
         # Render strings within the data structure.
         value = walk(template_body, [])
 
+        # If we're just testing parsing the template, return
+        # any output now. Since the inner templates may have
+        # returned a value of any type, we can't serialize back to
+        # JSON --- pyyaml's safe dumper will raise an error if
+        # it gets a non-safe value type.
+        if output_format == "PARSE_ONLY":
+            return value
+
         # Render to JSON or YAML depending on what was specified on the
         # template.
         if template_format == "json":
