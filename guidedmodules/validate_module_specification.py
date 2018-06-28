@@ -15,6 +15,11 @@ class ValidationError(ValueError):
         return self.context + ": " + self.message
 
 def validate_module(spec, is_authoring_tool=False):
+    # The module must have a title.
+    for field in ("title",):
+        if field not in spec:
+            raise ValidationError("module specification", "Missing '%s' field." % field)
+
     # Validate that the introduction and output documents are renderable.
     if "introduction" in spec:
         if not isinstance(spec["introduction"], dict):

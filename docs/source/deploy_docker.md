@@ -207,9 +207,13 @@ The container's console, which can be accessed with
 
 	docker container logs govready-q
 
-shows the output of container's start-up commands including database migrations and process startup. Additional log files are stored in /var/log (in particular, /var/log/supervisor) within the container. A special management command can be used to follow the log files:
+shows the output of container's start-up commands including database migrations and process startup.
 
-	docker container exec govready-q tail_logs -f
+Additional log files are stored in /var/log within the container. These files contain access logs and other program output, including logs for unhandled error messages that appear as 500 Internal Server Error pages to end users. A special management command can be used to see the log files:
+
+	docker container exec govready-q tail_logs
+
+`tail_logs` takes the same arguments as Unix `tail`. For instance, add `-n 1000` to see the most recent 1,000 log lines, or add `-f` to continue to output the logs as the log files grow.
 
 The log files can also be accessed by mounting `/var/log` with a Docker bind-mount or as a volume (and that's the only way to see the logs if `docker container exec` cannot be used in your environment).
 

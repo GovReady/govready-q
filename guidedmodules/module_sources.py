@@ -991,4 +991,15 @@ def load_module_assets_into_database(app):
         # Add to the pack.
         pack.assets.add(asset)
 
+        mime_types = {
+            "css": "text/css",
+            "js": "text/javascript",
+        }
+        mime_type = mime_types.get(file_path.rsplit(".", 1)[-1])
+        if mime_type:
+            from dbstorage.models import StoredFile
+            StoredFile.objects\
+                .filter(path=asset.file.name)\
+                .update(mime_type=mime_type)
+
     return pack
