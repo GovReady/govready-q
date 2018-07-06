@@ -6,16 +6,14 @@ Below are instructions to use `django-extensions` to generate detailed data mode
 ```
 # Install django-extensions
 # http://django-extensions.readthedocs.io/en/latest/installation_instructions.html
-pip3 install django-extensions
+apt install graphviz-dev
+pip3 install django-extensions pygraphviz
 
 # Add django-extensions INSTALLED_APPS in siteapp > settings.py
 # INSTALLED_APPS = (
 #    ...
 #    'django_extensions',
 # )
-
-# You may need to install pyparsing
-pip3 install pyparsing
 
 # examples:
 python3 manage.py graph_models -a -g -o my_project_visualized.png

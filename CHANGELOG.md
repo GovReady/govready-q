@@ -8,9 +8,14 @@ Application changes:
 
 * Javascript and CSS static assets of compliance apps may have had the wrong MIME type set.
 
+App authoring changes:
+
+*  The authoring tool is updated to show app catalog and other app-module YAML in two textareas instead of one, since they are now stored separately in the database (see below), but they are recombined when the authoring tool updates local files.
+* A new `version-name` field is added to app.yaml catalog information.
+
 Deployment changes:
 
-* The HTTP Content-Security-Policy header is now set to prevent the loading of third-party assets.
+* The HTTP Content-Security-Policy header is now set to prevent browsers from loading any third-party assets.
 * A CentOS 7-based Vagrantfile has been added to the source distribution for those looking to deploy using a VM.
 * Added some outputs to Docker launches to see the Q version and the container user during build and at the very start of container startup.
 * We're now publishing version tags to Docker Hub so that past versions of GovReady-Q remain available when we publish a new release.
@@ -18,6 +23,8 @@ Deployment changes:
 
 Developer changes:
 
+* The AppInstance table now has created and updated datetime columns, version_number and version_name columns extracted from the catalog metadata, and a new catalog_metadata field that holds the original YAML 'catalog' information (but in JSON in the database; this information was previously in the 'app' Module's spec field).
+* The ModuleAssetPack table is dropped and its columns have been moved to the AppInstance table.
 * Upgraded some dependencies.
 
 v0.8.2-rc3 (May 18, 2018)

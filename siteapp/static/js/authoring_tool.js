@@ -221,7 +221,10 @@ function authoring_tool_new_question(task_id, is_project_page) {
 }
 
 function show_authoring_tool_module_editor() {
-  // Initialize form state.
+  // Initialize form state for the compliance app catalog information
+  // field and the module specification field.
+  $('#authoring_tool_catalog_metadata').parents('.form-group').toggle(typeof window.q_authoring_tool_state.catalog_yaml != "undefined");
+  $('#authoring_tool_catalog_metadata').val(window.q_authoring_tool_state.catalog_yaml);
   $('#authoring_tool_mspec').val(window.q_authoring_tool_state.module_yaml);
 
   // Show modal.

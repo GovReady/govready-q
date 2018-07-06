@@ -78,6 +78,17 @@ class AppInstance(models.Model):
         # for NULLs but does for False/True, and we want the constraint to apply only for True.
     system_app = models.NullBooleanField(default=None, help_text="Set to True for AppInstances that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
 
+    catalog_metadata = JSONField(blank=True, help_text="The catalog metadata that was stored in the 'app' module.")
+    version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
+    version_name = models.CharField(blank=True, null=True, max_length=128, help_text="The name of this version/release of the compliance app.")
+
+    asset_files = models.ManyToManyField('guidedmodules.ModuleAsset', help_text="The assets linked to this pack.")
+    asset_paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
+    trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
+
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
     class Meta:
         unique_together = [
             ("source", "appname", "system_app")
@@ -90,6 +101,15 @@ class AppInstance(models.Model):
     def __repr__(self):
         # For debugging.
         return "<AppInstance [%d] %s from %s>" % (self.id, self.appname, self.source)
+
+    def get_asset(self, asset_path):
+        if asset_path not in self.asset_paths:
+            raise ValueError("{} is not an asset in {}.".format(asset_path, self))
+        return self.asset_files.get(source=self.source, content_hash=self.asset_paths[asset_path]).file
+
+    def catalog_metadata_yaml(self):
+        import rtyaml
+        return rtyaml.dump(self.catalog_metadata)
 
     def is_authoring_tool_enabled(self, user):
         return (self.source.spec["type"] == "local" # so we can save to disk
@@ -125,6 +145,67 @@ class AppInstance(models.Model):
                 return False
         return True
 
+def extract_catalog_metadata(app_module, migration=None):
+    # Note that this function is used in migration 0044 and so
+    # must be compatible to run in the migration and must be
+    # preserved so long as migration 0044 exists.
+    #
+    # app_module.spec and app_module.app are updated.
+
+    app_module.app.catalog_metadata = {
+    }
+
+    # Take some top-level fields that apply to both the module and the
+    # catalog and copy them into the catalog, leaving it also in the
+    # Module.
+    for field in ("title", "icon"):
+        if field in app_module.spec:
+            app_module.app.catalog_metadata[field] = app_module.spec[field]
+
+    # Take the 'catalog', overriding any module-level fields.
+    if "catalog" in app_module.spec:
+        app_module.app.catalog_metadata.update(app_module.spec["catalog"])
+        del app_module.spec["catalog"]
+
+    # Also update the version_number and version_name fields.
+    # Except in migration 0044 because those fields don't
+    # exist yet. That's handled in migration 0045.
+    if migration is None:
+        app_module.app.version_number = app_module.app.catalog_metadata.get('version')
+        app_module.app.version_name = app_module.app.catalog_metadata.get('version-name')
+        for field in ('version', 'version-name'):
+            if field in app_module.app.catalog_metadata:
+                del app_module.app.catalog_metadata[field]
+
+def recombine_catalog_metadata(app_module):
+    # Note that this function is used in migration 0044 and so
+    # must be compatible to run in the migration and must be
+    # preserved so long as migration 0044 exists.
+    #
+    # A new dict is returned which should replace app_module.spec['catalog'].
+
+    # Move the data into a 'catalog' key.
+    from copy import deepcopy
+    ret = deepcopy(app_module.app.catalog_metadata)
+
+    # Move the version_number and version_name fields back.
+    for field1, field2 in (('version_number', 'version'), ('version_name', 'version-name')):
+        if getattr(app_module.app, field1, None):
+            ret[field2] = getattr(app_module.app, field1)
+
+    # Some top-level fields are shared between the 'app' module
+    # and the catalog. They still exist the 'app' module metadata,
+    # so just remove them from the catalog metadata, unless they
+    # differ, in which case leave them in the catalog dict where
+    # they take precedence.
+    for field in ("title", "icon"):
+        if   field in ret \
+         and field in app_module.spec \
+         and app_module.spec[field] == ret[field]:
+            del ret[field]
+
+    return ret
+
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
     app = models.ForeignKey(AppInstance, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppInstance that this Module is a part of. Null for legacy Modules created before we had this field.")
@@ -134,7 +215,6 @@ class Module(models.Model):
     superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="This field is no longer used. When a Module is superseded by a new version, this points to the newer version.")
 
     spec = JSONField(help_text="Module definition data.", load_kwargs={'object_pairs_hook': OrderedDict})
-    assets = models.ForeignKey('ModuleAssetPack', blank=True, null=True, on_delete=models.CASCADE, help_text="A mapping from asset paths to ModuleAsset instances with the binary content of the asset.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -289,6 +369,9 @@ class Module(models.Model):
         import os.path
         import rtyaml
         spec = OrderedDict(self.spec)
+        if self.module_name == "app" and self.app:
+            # Add back compliance app catalog information!
+            spec['catalog'] = recombine_catalog_metadata(self)
         spec["questions"] = []
         for i, q in enumerate(self.questions.order_by('definition_order')):
             if i == 0 and q.key == "_introduction":
@@ -319,42 +402,13 @@ class ModuleAsset(models.Model):
     class Meta:
         unique_together = [('source', 'content_hash')]
 
-class ModuleAssetPack(models.Model):
-    source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of these assets.")
-    assets = models.ManyToManyField(ModuleAsset, help_text="The assets linked to this pack.")
-    basepath = models.SlugField(max_length=100, help_text="The base path of all assets in this pack.")
-    paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
-    total_hash = models.CharField(max_length=64, help_text="A SHA256 hash over the paths and the content_hashes of the assets.")
+    def __str__(self):
+        # For the admin.
+        return "%s [%d] (from %s)" % (self.file.name, self.id, self.source)
 
-    trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
-
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now=True, db_index=True)
-
-    extra = JSONField(blank=True, help_text="Additional information stored with this object.")
-
-    class Meta:
-        unique_together = [('source', 'total_hash')]
-
-    def set_total_hash(self):
-        import hashlib, json
-        m = hashlib.sha256()
-        m.update(
-            json.dumps({
-                    "trust_assets": self.source.trust_assets,
-                    "basepath": self.basepath,
-                    "paths": self.paths,
-                },
-                sort_keys=True,
-            ).encode("utf8")
-        )
-        self.total_hash = m.hexdigest()
-
-    def get(self, asset_path):
-        if asset_path not in self.paths:
-            raise ValueError(asset_path + " is not an asset.")
-        return self.assets.get(content_hash=self.paths[asset_path]).file
-
+    def __repr__(self):
+        # For debugging.
+        return "<ModuleAsset [%d] %s from %s>" % (self.id, self.file.name, self.source)
 
 class ModuleQuestion(models.Model):
     module = models.ForeignKey(Module, related_name="questions", on_delete=models.CASCADE, help_text="The Module that this ModuleQuestion is a part of.")
@@ -495,9 +549,8 @@ class Task(models.Model):
             return self.get_absolute_url() + "/question/" + urllib.parse.quote(question.key)
 
     def get_static_asset_url(self, asset_path, use_data_urls=False):
-        if not self.module.assets or asset_path not in self.module.assets.paths:
-            # No assets are defined for this Module, or this path is not
-            # an asset, so just return the path as it's probably an absolute URL.
+        if asset_path not in self.module.app.asset_paths:
+            # This path is not an asset, so just return the path as it's probably an absolute URL.
             return asset_path
         if not use_data_urls:
             return self.get_absolute_url() + "/media/" + asset_path
@@ -505,11 +558,10 @@ class Task(models.Model):
             return self.get_static_asset_image_data_url(asset_path, 640)
 
     def get_static_asset_image_data_url(self, asset_path, max_image_size):
-        if not self.module.assets or asset_path not in self.module.assets.paths:
-            # No assets are defined for this Module, or this path is not
-            # an asset.
+        if self.module.app is None or asset_path not in self.module.app.asset_paths:
+            # This path is not an asset.
             raise ValueError(asset_path + " is not an asset.")
-        with self.module.assets.get(asset_path) as f:
+        with self.module.app.get_asset(asset_path) as f:
             try:
                 return image_to_dataurl(f, max_image_size)
             except:

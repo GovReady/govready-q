@@ -3,7 +3,7 @@ from django import forms
 from django.utils.html import escape as escape_html
 
 from .models import \
-	AppSource, AppInstance, Module, ModuleQuestion, ModuleAssetPack, ModuleAsset, \
+	AppSource, AppInstance, Module, ModuleQuestion, ModuleAsset, \
 	Task, TaskAnswer, TaskAnswerHistory, \
 	InstrumentationEvent
 
@@ -271,23 +271,19 @@ class AppSourceAdmin(admin.ModelAdmin):
 		return ", ".join(flags)
 
 class AppInstanceAdmin(admin.ModelAdmin):
-	list_display = ('appname', 'source', 'system_app')
+	list_display = ('appname', 'version_number', 'version_name', 'source', 'system_app')
 	list_filter = ('source', 'system_app')
-	raw_id_fields = ('source',)
+	raw_id_fields = ('source', 'asset_files',)
+	readonly_fields = ('asset_files','asset_paths')
 
 class ModuleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'app_', 'module_name', 'created')
 	list_filter = ('source',)
-	raw_id_fields = ('source', 'app', 'superseded_by', 'assets')
+	raw_id_fields = ('source', 'app', 'superseded_by')
 	def app_(self, obj): return "{} [{}]".format(obj.app.appname, obj.app.id) if obj.app else "(not in an app)"
 
 class ModuleQuestionAdmin(admin.ModelAdmin):
 	raw_id_fields = ('module', 'answer_type_module')
-
-class ModuleAssetPackAdmin(admin.ModelAdmin):
-	list_display = ('id', 'source', 'basepath', 'created')
-	raw_id_fields = ('assets',)
-	readonly_fields = ('source','basepath','total_hash','assets','paths','extra')
 
 class ModuleAssetAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'content_hash', 'created')
@@ -333,7 +329,6 @@ admin.site.register(AppSource, AppSourceAdmin)
 admin.site.register(AppInstance, AppInstanceAdmin)
 admin.site.register(Module, ModuleAdmin)
 admin.site.register(ModuleQuestion, ModuleQuestionAdmin)
-admin.site.register(ModuleAssetPack, ModuleAssetPackAdmin)
 admin.site.register(ModuleAsset, ModuleAssetAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(TaskAnswer, TaskAnswerAdmin)
