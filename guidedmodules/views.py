@@ -818,8 +818,7 @@ def upgrade_app(request):
     if not appinst.has_upgrade_priv(request.user):
         return HttpResponseForbidden()
 
-    from .module_sources import AppImportUpdateMode, ValidationError, IncompatibleUpdate
-    from .module_sources import ModuleDefinitionError
+    from .app_loading import load_app_into_database, AppImportUpdateMode, ModuleDefinitionError, IncompatibleUpdate
     with appinst.source.open() as store:
             # Load app.
             try:
@@ -837,8 +836,8 @@ def upgrade_app(request):
 
             # Import.
             try:
-                app.import_into_database(mode, appinst)
-            except (ModuleDefinitionError, ValidationError, IncompatibleUpdate) as e:
+                load_app_into_database(app, mode, appinst)
+            except (ModuleDefinitionError, IncompatibleUpdate) as e:
                 return JsonResponse({ "status": "error", "message": str(e) })
 
     # Since ModuleQuestions may have changed...

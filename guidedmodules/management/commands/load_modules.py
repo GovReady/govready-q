@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 from guidedmodules.models import AppSource, AppInstance
-from guidedmodules.module_sources import AppImportUpdateMode, IncompatibleUpdate
+from guidedmodules.app_loading import AppImportUpdateMode, IncompatibleUpdate, load_app_into_database
 
 class Command(BaseCommand):
     help = 'Updates the system modules from the YAML specifications in AppSources.'
@@ -19,7 +19,8 @@ class Command(BaseCommand):
 
                 # Try to update the existing app.
                 try:
-                    appinst = app.import_into_database(
+                    appinst = load_app_into_database(
+                        app,
                         update_appinst=oldappinst,
                         update_mode=AppImportUpdateMode.CompatibleUpdate if oldappinst else AppImportUpdateMode.CreateInstance)
                 except IncompatibleUpdate as e:
@@ -27,7 +28,7 @@ class Command(BaseCommand):
                     # a new AppInstance and mark the old one as no longer the system_app.
                     # Only one can be the system_app.
                     print(app, e)
-                    appinst = app.import_into_database()
+                    appinst = load_app_into_database(app)
                     oldappinst.system_app = None # the correct value here is None, not False, to avoid unique constraint violation
                     oldappinst.save()
 
