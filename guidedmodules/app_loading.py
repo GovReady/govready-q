@@ -188,7 +188,7 @@ def create_module(app, appinst, spec):
     m.source = app.store.source
     m.app = appinst
     m.module_name = spec['id']
-    print("Creating", m.app, m.module_name, file=sys.stderr)
+    #print("Creating", m.app, m.module_name, file=sys.stderr)
     update_module(m, spec, False)
     return m
 
@@ -221,7 +221,8 @@ def update_module(m, spec, log_status):
     # not yet in use).
     for q in m.questions.all():
         if q not in qs:
-            print("Deleting", repr(q), file=sys.stderr)
+            if log_status:
+                print("Deleting", repr(q), file=sys.stderr)
             try:
                 q.delete()
             except ProtectedError:
