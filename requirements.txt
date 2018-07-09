@@ -316,8 +316,8 @@ urllib3==1.23 \
     --hash=sha256:a68ac5e15e76e7e5dd2b8f94007233e01effe3e50e8daddf69acfd81cb686baf \
     --hash=sha256:b5725a0bd4ba422ab0e66e89e030c806576753ea3ee08554382c14e685d117b5 \
     # via requests
-uwsgi==2.0.17 \
-    --hash=sha256:3dc2e9b48db92b67bfec1badec0d3fdcc0771316486c5efa3217569da3528bf2
+uwsgi==2.0.17.1 \
+    --hash=sha256:d2318235c74665a60021a4fc7770e9c2756f9fc07de7b8c22805efe85b5ab277
 webencodings==0.5.1 \
     --hash=sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78 \
     --hash=sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923 \
