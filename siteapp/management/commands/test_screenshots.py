@@ -2,7 +2,8 @@
 # for creating test artifacts and documentation.
 #
 # A throw-away test database is used so that this command cannot see any existing
-# user data and database changes are not persistent.
+# user data and database changes are not persistent. However, it would not be
+# advisable to run this command on a production system.
 #
 # Examples:
 #
@@ -60,7 +61,8 @@ class Command(BaseCommand):
         if options['path']:
             self.init_screenshots(options)
 
-        # Switch to the throw-away database.
+        # Switch to the throw-away test database so no database records
+        # we create in this command are persistent.
         from django.test.utils import setup_databases, teardown_databases
         dbinfo = setup_databases(True, False)
 
@@ -84,7 +86,10 @@ class Command(BaseCommand):
             if getattr(self, 'write_pdf_filename', None):
                 self.write_pdf()
         finally:
+            # Clean up the throw-away test database.
             teardown_databases(dbinfo, 1)
+
+            # Close selenium.
             self.stop_headless_browser()
 
     # STARTUP/SHUTDOWN UTILITY FUNCTIONS

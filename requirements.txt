@@ -302,6 +302,8 @@ stevedore==1.28.0 \
     --hash=sha256:e3d96b2c4e882ec0c1ff95eaebf7b575a779fd0ccb4c741b9832bed410d58b3d \
     --hash=sha256:f1c7518e7b160336040fee272174f1f7b29a46febb3632502a8f2055f973d60b \
     # via bandit
+termcolor==1.1.0 \
+    --hash=sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b
 typing==3.6.4 \
     --hash=sha256:3a887b021a77b292e151afb75323dea88a7bc1b3dfa92176cff8e44c8b68bddf \
     --hash=sha256:b2c689d54e1144bbcfd191b0832980a21c2dbcf7b5ff7a66248a60c90e951eb8 \
