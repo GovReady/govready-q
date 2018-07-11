@@ -74,11 +74,12 @@ class Command(BaseCommand):
             data = rtyaml.load(open(fn))
 
             # Start the app.
-            project = self.start_app(data.get("app"))
+            basedir = os.path.dirname(fn)
+            project = self.start_app(data.get("app"), basedir)
 
             if project: # no error
                 # Fill in the answers.
-                self.set_answers(project.root_task, data.get("questions", []))
+                self.set_answers(project.root_task, data.get("questions", []), basedir)
 
                 # Generate outputs.
                 self.save_outputs(project, outdir)
@@ -95,7 +96,7 @@ class Command(BaseCommand):
     def str_task(self, task):
         return "<#{}: {}>".format(task.id, task.title)
 
-    def start_app(self, app):
+    def start_app(self, app, basedir):
         # Validate app info. It can be specified either as a string path
         # to a local copy of an app, or as a Python dict holding 'source'
         # and 'name' keys, where 'source' is the AppSource connection spec.
@@ -116,7 +117,7 @@ class Command(BaseCommand):
                 # If given as a string, take the last directory name as the
                 # app name and the preceding directories as the AppSource
                 # connection path.
-                spec = { "type": "local", "path": os.path.dirname(app) }
+                spec = { "type": "local", "path": os.path.join(basedir, os.path.dirname(app)) }
                 appname = os.path.basename(app)
             else:
                 # Otherwise the 'source' and 'name' keys hold the source and app info.
@@ -156,7 +157,7 @@ class Command(BaseCommand):
 
         return project
 
-    def set_answers(self, task, answers):
+    def set_answers(self, task, answers, basedir):
         # Fill in the answers for this task using the JSON data in answers,
         # which is a list of dicts that have "id" holding the question ID
         # and other fields. We call set_answer for all questions, even if
@@ -177,14 +178,14 @@ class Command(BaseCommand):
         try:
             not_answered = []
             for question in questions:
-                if not self.set_answer(task, question, answers.get(question.key)):
+                if not self.set_answer(task, question, answers.get(question.key), basedir):
                     not_answered.append(question.key)
             if not_answered:
                 self.log("WARN", "No answers were given for {} in {}.".format(", ".join(not_answered), self.str_task(task)))
         finally:
             self.indent -= 1
 
-    def set_answer(self, task, question, answer):
+    def set_answer(self, task, question, answer, basedir):
         # Set the answer to the question for the given task.
 
         if question.spec["type"] == "module" and question.answer_type_module is not None:
@@ -197,7 +198,7 @@ class Command(BaseCommand):
             sub_task = task.get_or_create_subtask(self.dummy_user, question)
             # self.log("OK", "Answered {} with {}.".format(question.key, sub_task))
             if answer is not None:
-                self.set_answers(sub_task, answer.get("questions", []))
+                self.set_answers(sub_task, answer.get("questions", []), basedir)
                 return True
             return False
 
@@ -228,7 +229,7 @@ class Command(BaseCommand):
                 else:
                     # Start the app. The app to start is specified in the 'app' key.
                     if not isinstance(answer, dict): raise ValueError("invalid data type")
-                    project = self.start_app(answer.get("app"))
+                    project = self.start_app(answer.get("app"), basedir)
 
                     if project is None:
                         return False # error
@@ -255,7 +256,7 @@ class Command(BaseCommand):
 
                 # Set answers of sub-task.
                 for subtask, subtask_answers in zip(subtasks, answers):
-                    self.set_answers(subtask, subtask_answers.get("questions", []))
+                    self.set_answers(subtask, subtask_answers.get("questions", []), basedir)
 
                 return True
 
