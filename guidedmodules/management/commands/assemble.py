@@ -117,7 +117,10 @@ class Command(BaseCommand):
                 # If given as a string, take the last directory name as the
                 # app name and the preceding directories as the AppSource
                 # connection path.
-                spec = { "type": "local", "path": os.path.join(basedir, os.path.dirname(app)) }
+                spec = {
+                    "type": "local",
+                    "path": os.path.normpath(os.path.join(basedir, os.path.dirname(app))),
+                }
                 appname = os.path.basename(app)
             else:
                 # Otherwise the 'source' and 'name' keys hold the source and app info.
