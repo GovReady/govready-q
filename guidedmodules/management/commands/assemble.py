@@ -59,9 +59,23 @@ class Command(BaseCommand):
         dbinfo = setup_databases(True, False)
 
         try:
+            # Open the end-user data file.
+            data = rtyaml.load(open(fn))
+
+            # Read the customized organization name, which substitutes in for
+            # {{organization}} in templates..
+            organization_name = "<Organization Name>"
+            if isinstance(data.get("organization"), dict) \
+              and isinstance(data["organization"].get("name"), str):
+                organization_name = data["organization"]["name"]
+
             # Create stub data structures that are required to do module logic
-            # but that have no end-user-visible presence.
-            self.dummy_org = Organization.objects.create(subdomain=get_random_string(12))
+            # but that have mostly no end-user-visible presence. The only thing
+            # visible here is the organization's name, which gets substituted
+            # in {{organization}} variables in document templates.
+            self.dummy_org = Organization.objects.create(
+                name=organization_name,
+                subdomain=get_random_string(12))
             self.dummy_user = User.objects.create(username=get_random_string(12))
 
             # Cache app sources and app instances as we load app data into the
@@ -69,9 +83,6 @@ class Command(BaseCommand):
             # reuse the existing instances in the database.
             self.app_sources = { }
             self.app_instances = { }
-
-            # Open the end-user data file.
-            data = rtyaml.load(open(fn))
 
             # Start the app.
             basedir = os.path.dirname(fn)
@@ -117,7 +128,10 @@ class Command(BaseCommand):
                 # If given as a string, take the last directory name as the
                 # app name and the preceding directories as the AppSource
                 # connection path.
-                spec = { "type": "local", "path": os.path.join(basedir, os.path.dirname(app)) }
+                spec = {
+                    "type": "local",
+                    "path": os.path.normpath(os.path.join(basedir, os.path.dirname(app))),
+                }
                 appname = os.path.basename(app)
             else:
                 # Otherwise the 'source' and 'name' keys hold the source and app info.
@@ -285,7 +299,7 @@ class Command(BaseCommand):
     def generate_task_outputs(self, task, path):
         # Generate this task's output documents.
         for i, doc in enumerate(task.render_output_documents()):
-            self.save_output_document(i, doc, path)
+            self.save_output_document(task, i, doc, path)
 
         self.log("OK", "Wrote documents for " + self.str_task(task) + " to " + path + ".")
 
@@ -298,11 +312,11 @@ class Command(BaseCommand):
         finally:
             self.indent -= 1
 
-    def save_output_document(self, i, doc, path):
+    def save_output_document(self, task, i, doc, path):
         os.makedirs(path, exist_ok=True)
-        key = doc["id"] if ("id" in doc) else "{:05d}".format(i)
-        for ext, format in (("html", "html"), ("md", "markdown")):
-            if format in doc:
-                fn = os.path.join(path, key + "." + ext)
-                with open(fn, "w") as f:
-                    f.write(doc[format])
+        for download_format in ("html", "markdown", "docx"):
+            blob, filename, mime_type = task.download_output_document(i, download_format)
+            fn = os.path.join(path, filename)
+            with open(fn, "wb") as f:
+                f.write(blob)
+
