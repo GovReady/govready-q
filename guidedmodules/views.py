@@ -657,81 +657,14 @@ def download_answer_file(request, task, answered, context, q, history_id):
 def download_module_output(request, task, answered, context, question, document_id, download_format):
     if document_id in (None, ""):
         raise Http404()
-
-    # Find the document with the named id.
-    for doc in task.render_output_documents(answered, use_data_urls=True):
-        if doc.get("id") == document_id:
-            break
-    else:
+    try:
+        blob, filename, mime_type= task.download_output_document(document_id, download_format, answers=answered)
+    except ValueError:
         raise Http404()
 
-    pandoc_opts = {
-        "plain": ("plain", "txt", "text/plain"),
-        "markdown": ("markdown_github", "md", "text/plain"),
-        "docx": ("docx", "docx", "application/octet-stream"),
-        "odt": ("odt", "odt", "application/octet-stream"),
-    }
-
-    if download_format == "markdown" and doc["format"] == "markdown":
-        # When a Markdown output is requested for a template that is
-        # authored in markdown, use its markdown output format. Otherwise
-        # use pandoc below.
-        return HttpResponse(doc["markdown"], content_type="text/plain")
-
-    elif download_format == "html":
-        # Return the raw HTML.
-        return HttpResponse(doc["html"], content_type="text/html")
-
-    elif download_format == "pdf":
-        # Convert the HTML to a PDF using wkhtmltopdf.
-        
-        # Mark the encoding explicitly, to match the html.encode() argument below.
-        html = doc["html"]
-        html = '<meta charset="UTF-8" />' + html
-
-        import subprocess # nosec
-        cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
-               "-q", # else errors go to stdout
-               "--disable-javascript",
-               "--encoding", "UTF-8",
-               "-s", "Letter", # page size
-               "-", "-"]
-        with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
-            stdout, stderr = proc.communicate(
-                  html.encode("utf8"),
-                  timeout=10)
-            if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
-
-        resp = HttpResponse(stdout, "application/pdf")
-        resp['Content-Disposition'] = 'inline; filename=' + document_id + ".pdf"
-        return resp
-
-    elif download_format in pandoc_opts:
-        # These are pandoc output formats. 
-        # odt and some other formats cannot pipe to stdout, so we always
-        # generate a temporary file.
-        pandoc_format, file_extension, mime_type = pandoc_opts[download_format]
-        import tempfile, os.path, subprocess # nosec
-        with tempfile.TemporaryDirectory() as tempdir:
-            # convert from HTML to something else, writing to a temporary file
-            outfn = os.path.join(tempdir, document_id + "." + file_extension)
-            with subprocess.Popen(
-                ["/usr/bin/pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
-                stdin=subprocess.PIPE
-                ) as proc:
-                proc.communicate(
-                    doc["html"].encode("utf8"),
-                    timeout=10)
-                if proc.returncode != 0: raise subprocess.CalledProcessError(0, '')
-
-            # send the temporary file to the response
-            with open(outfn, "rb") as f:
-                resp = HttpResponse(f.read(), mime_type)
-                resp['Content-Disposition'] = 'inline; filename=' + document_id + "." + file_extension
-                return resp
-
-    return HttpResponse("Invalid download format.")
-
+    resp = HttpResponse(blob, mime_type)
+    resp['Content-Disposition'] = 'inline; filename=' + filename
+    return resp
 
 @login_required
 def instrumentation_record_interaction(request):

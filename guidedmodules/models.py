@@ -1013,6 +1013,103 @@ class Task(models.Model):
             answers = self.get_answers()
         return answers.render_output(use_data_urls=use_data_urls)
 
+    def download_output_document(self, document_id, download_format, answers=None):
+        # Map output format to:
+        # 1) pandoc format name
+        # 2) typical file extension
+        # 3) MIME type
+        format_opts = {
+            # these two don't use pandoc
+            "html": (None, "html", "text/html"),
+            "pdf": (None, "pdf", "application/pdf"),
+
+            # the rest use pandoc
+            "plain": ("plain", "txt", "text/plain"),
+            "markdown": ("markdown_github", "md", "text/plain"),
+            "docx": ("docx", "docx", "application/octet-stream"),
+            "odt": ("odt", "odt", "application/octet-stream"),
+        }
+
+        if download_format not in format_opts:
+            raise ValueError("Invalid download format.")
+
+        pandoc_format, file_extension, mime_type = format_opts[download_format]
+
+        # Lazy-render the output documents. Use data: URLs so all
+        # assets are embedded.
+        documents = self.render_output_documents(answers=answers, use_data_urls=True)
+
+        # Find the document with the named id, if id is a string, or
+        # by index if id is an integer.
+        for i, doc in enumerate(documents):
+            if isinstance(document_id, str) and doc.get("id") == document_id:
+                break
+            if isinstance(document_id, int) and i == document_id:
+                break
+        else:
+            raise ValueError("Invalid document_id.")
+
+        # Construct a suggested filename.
+
+        if isinstance(document_id, int):
+            document_id = "{:05d}".format(document_id)
+        filename = document_id + "." + file_extension
+
+        if download_format == "markdown" and doc["format"] == "markdown":
+            # When Markdown output is requested for a template that is
+            # authored in markdown, we can render directly to markdown.
+            blob = doc["markdown"].encode("utf8")
+
+        elif download_format == "html":
+            # When HTML output is requested, render to HTML.
+            blob = doc["html"].encode("utf8")
+
+        elif download_format == "pdf":
+            # Render to HTML and convert to PDF using wkhtmltopdf.
+            
+            # Mark the encoding explicitly, to match the html.encode() argument below.
+            html = doc["html"]
+            html = '<meta charset="UTF-8" />' + html
+
+            import subprocess # nosec
+            cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
+                   "-q", # else errors go to stdout
+                   "--disable-javascript",
+                   "--encoding", "UTF-8",
+                   "-s", "Letter", # page size
+                   "-", "-"]
+            with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+                stdout, stderr = proc.communicate(
+                      html.encode("utf8"),
+                      timeout=10)
+                if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
+
+            blob = stdout
+
+        else:
+            # Render to HTML and convert using pandoc.
+
+            # odt and some other formats cannot pipe to stdout, so we always
+            # generate a temporary file.
+            import tempfile, os.path, subprocess # nosec
+            with tempfile.TemporaryDirectory() as tempdir:
+                # convert from HTML to something else, writing to a temporary file
+                outfn = os.path.join(tempdir, filename)
+                with subprocess.Popen(
+                    ["/usr/bin/pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+                    stdin=subprocess.PIPE
+                    ) as proc:
+                    proc.communicate(
+                        doc["html"].encode("utf8"),
+                        timeout=10)
+                    if proc.returncode != 0: raise subprocess.CalledProcessError(0, '')
+
+                # return the content of the temporary file
+                with open(outfn, "rb") as f:
+                    blob = f.read()
+
+        return blob, filename, mime_type
+
     def render_snippet(self):
         snippet = self.module.spec.get("snippet")
         if not snippet: return None

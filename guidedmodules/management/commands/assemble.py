@@ -288,7 +288,7 @@ class Command(BaseCommand):
     def generate_task_outputs(self, task, path):
         # Generate this task's output documents.
         for i, doc in enumerate(task.render_output_documents()):
-            self.save_output_document(i, doc, path)
+            self.save_output_document(task, i, doc, path)
 
         self.log("OK", "Wrote documents for " + self.str_task(task) + " to " + path + ".")
 
@@ -301,11 +301,11 @@ class Command(BaseCommand):
         finally:
             self.indent -= 1
 
-    def save_output_document(self, i, doc, path):
+    def save_output_document(self, task, i, doc, path):
         os.makedirs(path, exist_ok=True)
-        key = doc["id"] if ("id" in doc) else "{:05d}".format(i)
-        for ext, format in (("html", "html"), ("md", "markdown")):
-            if format in doc:
-                fn = os.path.join(path, key + "." + ext)
-                with open(fn, "w") as f:
-                    f.write(doc[format])
+        for download_format in ("html", "markdown", "docx"):
+            blob, filename, mime_type = task.download_output_document(i, download_format)
+            fn = os.path.join(path, filename)
+            with open(fn, "wb") as f:
+                f.write(blob)
+
