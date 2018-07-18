@@ -59,9 +59,23 @@ class Command(BaseCommand):
         dbinfo = setup_databases(True, False)
 
         try:
+            # Open the end-user data file.
+            data = rtyaml.load(open(fn))
+
+            # Read the customized organization name, which substitutes in for
+            # {{organization}} in templates..
+            organization_name = "<Organization Name>"
+            if isinstance(data.get("organization"), dict) \
+              and isinstance(data["organization"].get("name"), str):
+                organization_name = data["organization"]["name"]
+
             # Create stub data structures that are required to do module logic
-            # but that have no end-user-visible presence.
-            self.dummy_org = Organization.objects.create(subdomain=get_random_string(12))
+            # but that have mostly no end-user-visible presence. The only thing
+            # visible here is the organization's name, which gets substituted
+            # in {{organization}} variables in document templates.
+            self.dummy_org = Organization.objects.create(
+                name=organization_name,
+                subdomain=get_random_string(12))
             self.dummy_user = User.objects.create(username=get_random_string(12))
 
             # Cache app sources and app instances as we load app data into the
@@ -69,9 +83,6 @@ class Command(BaseCommand):
             # reuse the existing instances in the database.
             self.app_sources = { }
             self.app_instances = { }
-
-            # Open the end-user data file.
-            data = rtyaml.load(open(fn))
 
             # Start the app.
             basedir = os.path.dirname(fn)
