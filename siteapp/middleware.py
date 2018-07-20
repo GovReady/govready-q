@@ -15,8 +15,16 @@ class ContentSecurityPolicyMiddleware:
     def __init__(self, next_middleware):
         self.next_middleware = next_middleware
     def __call__(self, request):
+        # Some of the exceptions that we need:
+        # * we load some media, like the user's profile picture in the header, from a URL at the landing domain even if the user is on an organization domain
+        # * we embed images from user answers and module static assets using data: URLs in many cases to avoid having to perform many separate requests each needing to re-check authorization
+        # * we might be using inline scripts in some of our modules' output documents
+        # * we're definitely using inline scripts and CSS throughout our templates, but that could be refactored
         response = self.next_middleware(request)
-        response['Content-Security-Policy'] = "default-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+        response['Content-Security-Policy'] = \
+            "default-src 'self' data: {}; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'".format(
+                settings.LANDING_DOMAIN
+            )
         return response
 
 class OrganizationSubdomainMiddleware:
