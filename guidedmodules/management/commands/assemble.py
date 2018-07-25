@@ -285,23 +285,15 @@ class Command(BaseCommand):
         if questions.count() == 0:
             return # don't emit anything more if no questions
 
-        self.log("INFO", "Answering {}...".format(task))
+        self.log("INFO", "Answering {}...".format(self.str_task(task)))
         self.indent += 1
         try:
-            not_answered = []
+            # Answer questions. Proceed through all questions even if they
+            # are not given by the user in the YAML file because we 'start'
+            # unstarted modules whether or not the user has any answers in
+            # them.
             for question in questions:
-                # If --add-blank-answers is specified on the command line,
-                # add a blank answer record to the YAML for any unanswered
-                # question so the user has an easy spot to provide an answer.
-                if options["add_blank_answers"] and question.key not in answermap \
-                    and question.spec["type"] not in ("module", "module-set", "raw"):
-                    ans = collections.OrderedDict()
-                    ans["id"] = question.key
-                    ans["answer"] = None
-                    answers.append(ans)
-                    answermap[question.key] = ans
-
-                # Helper function for --startapps.
+                # Helper function for --add-blank-answers --startapps.
                 def add_new_answer(new_answer_value):
                     ans = collections.OrderedDict()
                     ans["id"] = question.key
@@ -310,13 +302,10 @@ class Command(BaseCommand):
                     return ans
 
                 # Set an answer from the input YAML file.
-                if not self.set_answer(
+                self.set_answer(
                     task, question, answermap.get(question.key),
                     add_new_answer,
-                    basedir, options):
-                    not_answered.append(question.key)
-            if not_answered:
-                self.log("WARN", "No answers were given for {} in {}.".format(", ".join(not_answered), self.str_task(task)))
+                    basedir, options)
         finally:
             self.indent -= 1
 
@@ -330,36 +319,72 @@ class Command(BaseCommand):
             # *start* the sub-task with the module answer type, even if we
             # don't answer any of its questions, because it may be
             # a question-less module that only provides output documents.
+            # And because we use get_or_create_subtask, it doesn't matter
+            # if this question was imputed.
             sub_task = task.get_or_create_subtask(self.dummy_user, question)
             # self.log("OK", "Answered {} with {}.".format(question.key, sub_task))
             if answer is None and options["add_blank_answers"]:
                 answer = update_answer_func({ "questions": [] })
             if answer is not None:
                 self.set_answers(sub_task, answer.setdefault("questions", []), basedir, options)
-                return True
-            return False
+            return
 
-        # If the question isn't answered and --startapps is given on the
-        # command-line, then choose an app automatically for module-type
-        # questions with protocols.
-        if answer is None and options["startapps"] and question.spec["type"] == "module" \
-            and question.answer_type_module is None and question.spec.get("protocol"):
-            # Look for an app that can be used to answer this question.
-            from siteapp.views import app_satifies_interface
-            for app in options["startapps"]:
-                if app_satifies_interface(app["catalog_info"], question.spec.get("protocol")):
-                    # We found one. Set the answer to be the path to the app,
-                    # adjusted to be relative to the location of the assemble
-                    # YAML file.
-                    self.log("INFO", "Choosing app {} for {} (from --startapps).".format(app["app"], question.key))
-                    answer = update_answer_func({
-                        "app": os.path.relpath(app["app"], basedir)
-                    })
-                    break
+        # Check if the question is answerable by computing the imputed
+        # answers to this task so far. If the question is not answerable,
+        # issue a warning if the user tried to answer it in the input
+        # file, and then move on.
+        if question not in task.get_answers().with_extended_info().can_answer:
+            if answer is not None:
+                self.log("WARN", "The answer for {} in {} will be ignored because this question's answer is imputed from other values.".format(
+                    question.key,
+                    self.str_task(task)))
+            return
 
-        # If the question isn't answered, leave it alone.
+        # If the question isn't answered...
         if answer is None:
-            return False
+            # If --add-blank-answers is specified on the command line,
+            # add a blank answer record to the YAML for any unanswered
+            # question so the user has an easy spot to provide an answer.
+            # Does not apply to interstitial questions which have no
+            # meaningful answers and module/module-set questions which
+            # we either handled above or can't handle this way.
+            if options["add_blank_answers"] \
+                  and question.spec["type"] not in ("module", "module-set", "raw"):
+                update_answer_func({ "answer": None })
+                return
+
+            # If --startapps is given on the command-line, then choose an
+            # app automatically for module-type questions with protocols
+            # and keep going to save the choice below.
+            elif options["startapps"] and question.spec["type"] == "module" \
+                  and question.answer_type_module is None and question.spec.get("protocol"):
+                # Look for an app that can be used to answer this question.
+                from siteapp.views import app_satifies_interface
+                for app in options["startapps"]:
+                    if app_satifies_interface(app["catalog_info"], question.spec.get("protocol")):
+                        # We found one. Set the answer to be the path to the app,
+                        # adjusted to be relative to the location of the assemble
+                        # YAML file.
+                        self.log("INFO", "Choosing app {} for {} (from --startapps).".format(app["app"], question.key))
+                        answer = update_answer_func({
+                            "app": os.path.relpath(app["app"], basedir)
+                        })
+                        break
+
+                if answer is None:
+                    # If no app was available, abort.
+                    self.log("WARN", "No app was available to answer {} in {}.".format(
+                        question.key,
+                        self.str_task(task)))
+                    return
+
+            else:
+                # If the question isn't answered, and we aren't initializing it using
+                # one of the above options, warn and leave it alone.
+                self.log("WARN", "No answer was provided for {} in {}.".format(
+                    question.key,
+                    self.str_task(task)))
+                return
 
         # Set an answer to the question.
 
@@ -377,17 +402,25 @@ class Command(BaseCommand):
             
             # Start the app(s).
             subtasks = []
-            for answer in answers:
+            for i, answer in enumerate(answers):
                 if question.answer_type_module is not None:
                     # Start the sub-task.
                     subtasks.append(task.get_or_create_subtask(self.dummy_user, question))
                 else:
                     # Start the app. The app to start is specified in the 'app' key.
-                    if not isinstance(answer, dict): raise ValueError("invalid data type")
+                    if not isinstance(answer, dict):
+                        self.log("ERROR", "Invalid data type of answer for {} element {} in {}, got {}.".format(
+                            question.key,
+                            i,
+                            self.str_task(task),
+                            repr(answer)
+                            ))
+                        return
+
                     project = self.start_app(answer.get("app"), basedir)
 
                     if project is None:
-                        return False # error
+                        return # error
 
                     # Validate that the protocols match.
                     unimplemented_protocols = set(question.spec.get("protocol", [])) - set(project.root_task.module.spec.get("protocol", []))
@@ -398,7 +431,7 @@ class Command(BaseCommand):
                             ", ".join(sorted(unimplemented_protocols)),
                             question.key
                         ))
-                        return False
+                        return
 
                     # Keep the root Task to be an answer to the question.
                     subtasks.append(project.root_task)
@@ -413,7 +446,7 @@ class Command(BaseCommand):
                 for subtask, subtask_answers in zip(subtasks, answers):
                     self.set_answers(subtask, subtask_answers.setdefault("questions", []), basedir, options)
 
-                return True
+                return
 
 
         else:
@@ -429,15 +462,15 @@ class Command(BaseCommand):
                     value = validator.validate(question, value)
                 except ValueError as e:
                     self.log("ERROR", "Answering {}: {}".format(question.key, e))
-                    return False
+                    return
 
             # Save the value.
             if taskans.save_answer(value, [], None, self.dummy_user, "api"):
                 self.log("OK", "Answered {} with {}.".format(question.key, repr(value)))
-                return True
+                return
 
             # No change, somehow.
-            return False
+            return
 
     def save_outputs(self, project, outdir):
         self.generate_task_outputs(project.root_task, outdir)
