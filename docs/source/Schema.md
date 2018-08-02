@@ -123,15 +123,31 @@ Projects can provide sets of exemplar answers for use in test scripts. e.g.:
 Documents
 ---------
 
-Documents occur as `introduction` and `output` documents of Modules as well as Question prompts. A document appears as:
+Documents occur as `introduction` and `output` documents of Modules, and a restricted form of documents also occurs in Question prompts (see Questions below). A document appearing in the output documents list is given as:
 
+	output:
+	  - id: mydoc
+	    title: Document 1
+	    format: markdown
+	    template: |
+	      Hello!
+
+The `id` and `title` fields are generally optional and are used for output documents only. An `id` is required to make the document downloadable. The fields also have special uses in projects (see above). The `format` field is described below.
+
+The document can also be stored in a separate file by replacing the document data in the module YAML file with a filename and placing the document properties and template in the named file, as in:
+
+	# module.yaml
+	output:
+	  - mydoc.md
+
+	# mydoc.md
 	id: mydoc
 	title: Document 1
 	format: markdown
-	template: |
-      Hello!
+	...
+	Hello!
 
-The `id` and `title` fields are generally optional. An `id` is required to make the document downloadable. The fields also have special uses in projects (see above).
+When using a separate file, the document properties (`id`, `title`, and `format`) are given in a YAML block at the top of the file. A line containig just three dots signifies the end of the YAML block, separating it from the document template. The document template follows.
 
 ### Document Format
 

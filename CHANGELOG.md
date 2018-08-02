@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+In Development
+--------------
+
+App authoring changes:
+
+* Output document templates can now be stored in separate files.
+
 v0.8.2 (July 20, 2018)
 ----------------------
 
