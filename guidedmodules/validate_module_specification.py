@@ -5,6 +5,8 @@
 from collections import OrderedDict
 import re
 
+import rtyaml
+
 from guidedmodules.module_logic import render_content
 
 class ValidationError(ValueError):
@@ -14,28 +16,20 @@ class ValidationError(ValueError):
     def __str__(self):
         return self.context + ": " + self.message
 
-def validate_module(spec, is_authoring_tool=False):
+def validate_module(spec, app, is_authoring_tool=False):
     # The module must have a title.
     for field in ("title",):
         if field not in spec:
             raise ValidationError("module specification", "Missing '%s' field." % field)
 
     # Validate that the introduction and output documents are renderable.
+    # If they refer to external files, slurp in the content of those files.
     if "introduction" in spec:
-        if not isinstance(spec["introduction"], dict):
-            raise ValidationError("module introduction", "Must be a dictionary, not a %s." % type(spec["introduction"]).__name__)
-        try:
-            render_content(spec["introduction"], None, "PARSE_ONLY", "(introduction)")
-        except ValueError as e:
-            raise ValidationError("module introduction", "Invalid template: " + str(e))
-
+        spec["introduction"] = validate_document(spec["introduction"], "module introduction", app)
     if not isinstance(spec.get("output", []), list):
         raise ValidationError("module output", "Must be a list, not a %s." % type(spec.get("output")).__name__)
     for i, doc in enumerate(spec.get("output", [])):
-        try:
-            render_content(doc, None, "PARSE_ONLY", "(output document)")
-        except ValueError as e:
-            raise ValidationError("output document #%d" % (i+1), "Invalid template: %s" % str(e))
+        spec["output"][i] = validate_document(spec["output"][i], "output document #{}".format(i+1), app)
 
     # 'introduction' fields are an alias for an interstitial
     # question that comes before all other questions, and since
@@ -72,6 +66,64 @@ def validate_module(spec, is_authoring_tool=False):
         spec["questions"][i] = validate_question(spec, spec["questions"][i])
 
     return spec
+
+
+def validate_document(doc, error_message_name, app):
+    # The document must be either a string which points to another
+    # file holding the document, or a dictionary. But the string
+    # form isn't available if we're validating a new spec submitted
+    # by the authoring tool since we don't have the app virtual
+    # filesystem at that point.
+    if app:
+        if not isinstance(doc, (str, dict)):
+            raise ValidationError(error_message_name, "Must be a file name or dictionary, not a %s." % type(doc).__name__)
+    else:
+        if not isinstance(doc, dict):
+            raise ValidationError(error_message_name, "Must be a dictionary, not a %s." % type(doc).__name__)
+
+    # If it's a string, slurp in the document from an external file.
+    # The document begins with YAML dictionary terminated by a line
+    # containing three dots. The subsequent content is stored in
+    # the dictionary's 'template' field. The file name is stored
+    # in the 'filename' field so that we can re-generate the original
+    # filesystem layout in Module::serialize_to_disk.
+    if isinstance(doc, str):
+        error_message_name += " ({})".format(doc)
+
+        # Read the external file.
+        blob = app.read_file(doc)
+
+        # Split the file on the first ocurrence of three dots. This
+        # is YAML's standard end-of-stream marker. But PyYAML doesn't
+        # have a way to read just up to the "...", so we handle that
+        # ourselves.
+        sep = "\n...\n"
+        if sep not in blob:
+            raise ValidationError(error_message_name, "File does not contain a line with just '...'.")
+        data, template = blob.split(sep, 1)
+
+        # Parse the YAML above the "...".
+        data = rtyaml.load(data)
+
+        # Trim the template so that it looks good if the revised
+        # module spec is serialized to YAML.
+        template = template.rstrip() + "\n"
+
+        # Store the filename and template in it.
+        data['filename'] = doc
+        data['template'] = template
+        doc = data
+
+    # Check that the template is valid.
+    try:
+        render_content(doc, None, "PARSE_ONLY", "(document template)")
+    except KeyError as e:
+        raise ValidationError(error_message_name, "Missing field: %s" % str(e))
+    except ValueError as e:
+        raise ValidationError(error_message_name, "Invalid template: %s" % str(e))
+
+    return doc
+
 
 def validate_question(mspec, spec):
     if not spec.get("id"):
@@ -183,6 +235,7 @@ def validate_question(mspec, spec):
                 invalid_rule("Impute condition value %s is an invalid Jinja2 template: %s." % (repr(rule["value"]), str(e)))
     
     return spec
+
 
 def resolve_relative_module_id(within_module, module_id):
     # Module IDs specified in the YAML are relative to the directory in which

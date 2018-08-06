@@ -114,13 +114,15 @@ def load_module_into_database(app, appinst, module_id, available_modules, proces
     spec["id"] = module_id
 
     # Validate and normalize the module specification.
-
     try:
-        spec = validate_module(spec)
+        spec = validate_module(spec, app)
     except ModuleValidationError as e:
         raise ValidationError(spec['id'], e.context, e.message)
 
-    # Recursively update any modules this module references.
+    # Recursively update any modules this module references
+    # because references to those modules are stored in the
+    # database using a foreign key, so we need to that those
+    # records in place first.
     dependencies = { }
     for m1 in get_module_spec_dependencies(spec):
         mdb = load_module_into_database(app, appinst, m1, available_modules, processed_modules, dependency_path + [spec["id"]], update_mode)

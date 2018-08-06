@@ -1051,8 +1051,15 @@ class Task(models.Model):
 
         # Construct a suggested filename.
 
-        if isinstance(document_id, int):
+        if isinstance(doc.get("id"), str):
+            # Use the document's "id" as the base of the filename.
+            document_id = doc["id"]
+        elif isinstance(document_id, int):
+            # The document doesn't have an "id", so we must have
+            # just looked it up by index.
             document_id = "{:05d}".format(document_id)
+        else:
+            raise Exception() # can't occur
         filename = document_id + "." + file_extension
 
         if download_format == "markdown" and doc["format"] == "markdown":

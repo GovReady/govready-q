@@ -968,7 +968,7 @@ def authoring_edit_module(request, task):
 
         # Validate.
         from .validate_module_specification import validate_module
-        spec = validate_module(spec, is_authoring_tool=True)
+        spec = validate_module(spec, None, is_authoring_tool=True)
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
 

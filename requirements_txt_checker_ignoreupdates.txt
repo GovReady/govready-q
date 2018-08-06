@@ -2,3 +2,4 @@ pipenv==11.10.4
 setuptools==40.0.0
 wheel==0.31.1
 django-notifications-hq==1.5.0
+Django==2.1

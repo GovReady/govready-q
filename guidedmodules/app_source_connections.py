@@ -167,7 +167,7 @@ class PyFsAppSourceConnection(AppSourceConnection):
             self.root.close()
 
     def __repr__(self):
-        return "<AppSourceConnection {src}>".format(src=self.source.get_description())
+        return "<AppSourceConnection {src}>".format(src=self.source.get_description() if self.source else "<no AppSource>")
 
     def load_catalog_file(self):
         # Load catalog.yaml.
@@ -318,6 +318,10 @@ class PyFsApp(App):
                 # Recursively walk directories.
                 for module in self.iter_modules(path+[entry.name]):
                     yield module
+
+    def read_file(self, path):
+        with self.fs.open(path) as f:
+            return f.read()
 
     def get_assets(self):
         if "assets" in self.fs.listdir(''):
