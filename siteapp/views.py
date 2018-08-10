@@ -110,7 +110,7 @@ def project_list(request):
 
     return render(request, "projects.html", {
         "lifecycles": lifecycles,
-        "is_lonely_admin": request.user.can_see_org_settings and not request.organization.get_who_can_read().exclude(id=request.user.id).exists(),
+        "can_invite_to_org": request.user.can_see_org_settings,
         "send_invitation": Invitation.form_context_dict(request.user, request.organization.get_organization_project(), [request.user]),
     })
 
