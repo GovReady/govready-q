@@ -4,12 +4,6 @@ from django.core.wsgi import get_wsgi_application
 
 django_application = get_wsgi_application()
 
-# When running inside a Cloud Foundry container, serve
-# static files using the whitenoise Django app.
-if os.getenv('VCAP_APPLICATION'):
-    from whitenoise.django import DjangoWhiteNoise
-    django_application = DjangoWhiteNoise(django_application)
-
 # WSGI redirect logic from
 # https://github.com/GrahamDumpleton/mod_wsgi/issues/86
 def application_redirect(environ, start_response, http_host):
