@@ -8,6 +8,19 @@
 # cannot see any existing user data and database changes are
 # not persistent. However, it would not be advisable to run
 # this command on a production system.
+#
+# Usage:
+#
+# Start by creating an 'empty' YAML file for a given app.
+# ./manage.py assemble --init path/to/app assemble.yaml
+#
+# Then assemble the app's output documents to an output
+# directory:
+# mkdir outdir
+# ./manage.py assemble assemble.yaml outdir
+#
+# Start component apps automatically:
+# ./manage.py assemble --startapps assemble.yaml
 
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
@@ -17,6 +30,7 @@ from siteapp.models import User, Organization, Project
 from guidedmodules.models import AppSource, Task, TaskAnswer
 from guidedmodules.module_logic import ModuleAnswers
 
+import collections
 import os
 import os.path
 import rtyaml
@@ -27,6 +41,46 @@ LOG_COLORS = { "INFO": "white", "OK": "green", "WARN": "yellow", "ERROR": "red" 
 LOG_SYMBOLS = { "INFO": " ", "OK": "🗸", "WARN": "!", "ERROR": "✗" }
 LOG_NAMES = { "WARN": "warning", "ERROR": "error" }
 
+# this is now `rtyaml.edit` but it hasn't been released yet
+class EditYAMLFileInPlace:
+    def __init__(self, fn_or_stream, default=None):
+        self.fn_or_stream = fn_or_stream
+        self.default = default
+    def __enter__(self):
+        if isinstance(self.fn_or_stream, str):
+            # Open the named file.
+            try:
+                self.stream = open(self.fn_or_stream, "r+")
+            except FileNotFoundError:
+                if not isinstance(self.default, (list, dict)):
+                    # If there is no default and the file
+                    # does not exist, re-raise the exception.
+                    raise
+                else:
+                    # Create a new file holding the default,
+                    # then seek back to the beginning so
+                    # we can read it below.
+                    self.stream = open(self.fn_or_stream, "w+")
+                    rtyaml.dump(self.default, self.stream)
+                    self.stream.seek(0)
+
+            self.close_on_exit = True
+        else:
+            # Use the given stream.
+            self.stream = self.fn_or_stream
+        # Parse stream and return data.
+        self.data = rtyaml.load(self.stream)
+        return self.data
+    def __exit__(self, *exception):
+        # Truncate stream and write new data.
+        self.stream.seek(0);
+        self.stream.truncate()
+        rtyaml.dump(self.data, self.stream)
+        # Close stream if we opened it.
+        if getattr(self, "close_on_exit", False):
+            self.stream.close()
+
+
 class Command(BaseCommand):
     help = 'Starts compliance apps using a YAML driver file that specifies apps and data.'
 
@@ -35,11 +89,41 @@ class Command(BaseCommand):
         self.logcounts = { }
 
     def add_arguments(self, parser):
+        parser.add_argument('--init', metavar="path/to/app", type=str, help="Creates a new assemble input YAML file for the app specified by the given path.")
+        parser.add_argument('--startapps', metavar="path/to/apps1,path/to/apps2;...", type=str, help="Starts component apps using apps in the given paths.")
+        parser.add_argument('--add-blank-answers', action='store_true', help="Adds unanswered questions to the YAML file.")
         parser.add_argument('data.yaml', type=str)
-        parser.add_argument('outdir', type=str)
+        parser.add_argument('outdir', type=str, nargs="?")
 
     def handle(self, *args, **options):
-        self.StartApps(options['data.yaml'], options["outdir"])
+        fn = options['data.yaml']
+        basedir = os.path.dirname(fn)
+
+        # Pre-process command-line arguments.
+        self.load_startapps_catalog(options)
+
+        # Open the end-user data file in a manner that we can.
+        # update it. If --init is used, then instantiate a
+        # new file for a new app.
+        default = None
+        if options["init"]:
+            # If --init is given, allow creating a new file.
+            default = { }
+        with EditYAMLFileInPlace(fn, default=default) as data:
+            if not isinstance(data, dict):
+                raise ValueError("File does not contain a YAML mapping.")
+
+            # If --init is given, it holds a path to an app.
+            # Construct a new YAML file with an empty organization
+            # block and an app pointing to the given app.
+            if options["init"]:
+                if data:
+                    raise ValueError("--init cannot be used if file is not empty.")
+                data["organization"] = { "name": None }
+                data["app"] = os.path.relpath(options["init"], basedir) # compute path relative to the output file, not the current working directory
+            
+            # Run the file.
+            self.AssembleApp(data, basedir, options)
 
     # Show colored log output and count the number of warnings and errors.
     def log(self, level, message):
@@ -48,7 +132,23 @@ class Command(BaseCommand):
         print((" "*self.indent) + termcolor.colored(symbol, color), message)
         self.logcounts[level] = self.logcounts.get(level, 0) + 1
 
-    def StartApps(self, fn, outdir):
+    def load_startapps_catalog(self, options):
+        # --startapps is a comma-separate list of paths holding apps.
+        if options["startapps"]:
+            from guidedmodules.app_source_connections import AppSourceConnection
+            paths = options["startapps"].split(",")
+            options["startapps"] = []
+            for path in paths:
+                self.log("INFO", "Scanning apps in " + path + "...")
+                with AppSourceConnection.create(None, { "type": "local", "path": path }) as conn:
+                    for app in conn.list_apps():
+                        options["startapps"].append({
+                            "app": os.path.join(path, app.name),
+                            "catalog_info": app.get_catalog_info(),
+                        })
+
+
+    def AssembleApp(self, data, basedir, options):
         # Fixup Django settings. Turn DEBUG off. This might speed up
         # program execution if e.g. database queries are not logged.
         settings.DEBUG = False
@@ -59,9 +159,6 @@ class Command(BaseCommand):
         dbinfo = setup_databases(True, False)
 
         try:
-            # Open the end-user data file.
-            data = rtyaml.load(open(fn))
-
             # Read the customized organization name, which substitutes in for
             # {{organization}} in templates..
             organization_name = "<Organization Name>"
@@ -85,15 +182,15 @@ class Command(BaseCommand):
             self.app_instances = { }
 
             # Start the app.
-            basedir = os.path.dirname(fn)
             project = self.start_app(data.get("app"), basedir)
 
             if project: # no error
                 # Fill in the answers.
-                self.set_answers(project.root_task, data.get("questions", []), basedir)
+                self.set_answers(project.root_task, data.setdefault("questions", []), basedir, options)
 
-                # Generate outputs.
-                self.save_outputs(project, outdir)
+                # Generate outputs if outdir was given on the command line.
+                if options["outdir"]:
+                    self.save_outputs(project, options["outdir"])
         finally:
             # Clean up the throw-away test database.
             teardown_databases(dbinfo, 1)
@@ -171,16 +268,17 @@ class Command(BaseCommand):
 
         return project
 
-    def set_answers(self, task, answers, basedir):
+    def set_answers(self, task, answers, basedir, options):
         # Fill in the answers for this task using the JSON data in answers,
         # which is a list of dicts that have "id" holding the question ID
         # and other fields. We call set_answer for all questions, even if
         # there is no user-provided answer, because some module-type questions
         # without protocols should be answered with a sub-Task anyway (see below).
 
-        # Map the answers to a dict.
         if not isinstance(answers, list): raise ValueError("invalid data type")
-        answers = { answer["id"]: answer for answer in answers
+
+        # Map the answers to a dict.
+        answermap = { answer["id"]: answer for answer in answers
                     if isinstance(answer, dict) and "id" in answer }
 
         questions = task.module.questions.order_by('definition_order')
@@ -192,14 +290,37 @@ class Command(BaseCommand):
         try:
             not_answered = []
             for question in questions:
-                if not self.set_answer(task, question, answers.get(question.key), basedir):
+                # If --add-blank-answers is specified on the command line,
+                # add a blank answer record to the YAML for any unanswered
+                # question so the user has an easy spot to provide an answer.
+                if options["add_blank_answers"] and question.key not in answermap \
+                    and question.spec["type"] not in ("module", "module-set", "raw"):
+                    ans = collections.OrderedDict()
+                    ans["id"] = question.key
+                    ans["answer"] = None
+                    answers.append(ans)
+                    answermap[question.key] = ans
+
+                # Helper function for --startapps.
+                def add_new_answer(new_answer_value):
+                    ans = collections.OrderedDict()
+                    ans["id"] = question.key
+                    ans.update(new_answer_value)
+                    answers.append(ans)
+                    return ans
+
+                # Set an answer from the input YAML file.
+                if not self.set_answer(
+                    task, question, answermap.get(question.key),
+                    add_new_answer,
+                    basedir, options):
                     not_answered.append(question.key)
             if not_answered:
                 self.log("WARN", "No answers were given for {} in {}.".format(", ".join(not_answered), self.str_task(task)))
         finally:
             self.indent -= 1
 
-    def set_answer(self, task, question, answer, basedir):
+    def set_answer(self, task, question, answer, update_answer_func, basedir, options):
         # Set the answer to the question for the given task.
 
         if question.spec["type"] == "module" and question.answer_type_module is not None:
@@ -211,10 +332,30 @@ class Command(BaseCommand):
             # a question-less module that only provides output documents.
             sub_task = task.get_or_create_subtask(self.dummy_user, question)
             # self.log("OK", "Answered {} with {}.".format(question.key, sub_task))
+            if answer is None and options["add_blank_answers"]:
+                answer = update_answer_func({ "questions": [] })
             if answer is not None:
-                self.set_answers(sub_task, answer.get("questions", []), basedir)
+                self.set_answers(sub_task, answer.setdefault("questions", []), basedir, options)
                 return True
             return False
+
+        # If the question isn't answered and --startapps is given on the
+        # command-line, then choose an app automatically for module-type
+        # questions with protocols.
+        if answer is None and options["startapps"] and question.spec["type"] == "module" \
+            and question.answer_type_module is None and question.spec.get("protocol"):
+            # Look for an app that can be used to answer this question.
+            from siteapp.views import app_satifies_interface
+            for app in options["startapps"]:
+                if app_satifies_interface(app["catalog_info"], question.spec.get("protocol")):
+                    # We found one. Set the answer to be the path to the app,
+                    # adjusted to be relative to the location of the assemble
+                    # YAML file.
+                    self.log("INFO", "Choosing app {} for {} (from --startapps).".format(app["app"], question.key))
+                    answer = update_answer_func({
+                        "app": os.path.relpath(app["app"], basedir)
+                    })
+                    break
 
         # If the question isn't answered, leave it alone.
         if answer is None:
@@ -232,7 +373,7 @@ class Command(BaseCommand):
             if question.spec["type"] == "module":
                 answers = [answer]
             else:
-                answers = answer.get("answers", [])
+                answers = answer.setdefault("answers", [])
             
             # Start the app(s).
             subtasks = []
@@ -270,20 +411,25 @@ class Command(BaseCommand):
 
                 # Set answers of sub-task.
                 for subtask, subtask_answers in zip(subtasks, answers):
-                    self.set_answers(subtask, subtask_answers.get("questions", []), basedir)
+                    self.set_answers(subtask, subtask_answers.setdefault("questions", []), basedir, options)
 
                 return True
 
 
         else:
             # This is a regular question type with YAML data holding the answer value.
-            # Validate the value.
-            from guidedmodules.answer_validation import validator
-            try:
-                value = validator.validate(question, answer["answer"])
-            except ValueError as e:
-                self.log("ERROR", "Answering {}: {}".format(question.key, e))
-                return False
+            # Validate the value, unless the value is null.
+            value = answer["answer"]
+            if value is None:
+                # Null answers are always acceptable.
+                pass
+            else:
+                from guidedmodules.answer_validation import validator
+                try:
+                    value = validator.validate(question, value)
+                except ValueError as e:
+                    self.log("ERROR", "Answering {}: {}".format(question.key, e))
+                    return False
 
             # Save the value.
             if taskans.save_answer(value, [], None, self.dummy_user, "api"):
