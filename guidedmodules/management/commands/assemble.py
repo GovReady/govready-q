@@ -91,6 +91,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--init', metavar="path/to/app", type=str, help="Creates a new assemble input YAML file for the app specified by the given path.")
         parser.add_argument('--startapps', metavar="path/to/apps1,path/to/apps2;...", type=str, help="Starts component apps using apps in the given paths.")
+        parser.add_argument('--add-blank-answers', action='store_true', help="Adds unanswered questions to the YAML file.")
         parser.add_argument('data.yaml', type=str)
         parser.add_argument('outdir', type=str, nargs="?")
 
@@ -289,6 +290,17 @@ class Command(BaseCommand):
         try:
             not_answered = []
             for question in questions:
+                # If --add-blank-answers is specified on the command line,
+                # add a blank answer record to the YAML for any unanswered
+                # question so the user has an easy spot to provide an answer.
+                if options["add_blank_answers"] and question.key not in answermap \
+                    and question.spec["type"] not in ("module", "module-set", "raw"):
+                    ans = collections.OrderedDict()
+                    ans["id"] = question.key
+                    ans["answer"] = None
+                    answers.append(ans)
+                    answermap[question.key] = ans
+
                 # Helper function for --startapps.
                 def add_new_answer(new_answer_value):
                     ans = collections.OrderedDict()
@@ -320,6 +332,8 @@ class Command(BaseCommand):
             # a question-less module that only provides output documents.
             sub_task = task.get_or_create_subtask(self.dummy_user, question)
             # self.log("OK", "Answered {} with {}.".format(question.key, sub_task))
+            if answer is None and options["add_blank_answers"]:
+                answer = update_answer_func({ "questions": [] })
             if answer is not None:
                 self.set_answers(sub_task, answer.setdefault("questions", []), basedir, options)
                 return True
