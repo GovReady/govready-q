@@ -404,13 +404,18 @@ class Command(BaseCommand):
 
         else:
             # This is a regular question type with YAML data holding the answer value.
-            # Validate the value.
-            from guidedmodules.answer_validation import validator
-            try:
-                value = validator.validate(question, answer["answer"])
-            except ValueError as e:
-                self.log("ERROR", "Answering {}: {}".format(question.key, e))
-                return False
+            # Validate the value, unless the value is null.
+            value = answer["answer"]
+            if value is None:
+                # Null answers are always acceptable.
+                pass
+            else:
+                from guidedmodules.answer_validation import validator
+                try:
+                    value = validator.validate(question, value)
+                except ValueError as e:
+                    self.log("ERROR", "Answering {}: {}".format(question.key, e))
+                    return False
 
             # Save the value.
             if taskans.save_answer(value, [], None, self.dummy_user, "api"):
