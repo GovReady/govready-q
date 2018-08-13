@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^_get_task_timetamp$', guidedmodules.views.get_task_timetamp, name="task_get_timestamp"),
     url(r'^_instrumentation_record_interaction$', guidedmodules.views.instrumentation_record_interaction, name="task_instrumentation_record_interaction"),
     url(r'^_start_discussion', guidedmodules.views.start_a_discussion, name="start_a_discussion"),
+    url(r'^_update_reviewed_state$', guidedmodules.views.update_reviewed_state),
     url(r'^analytics$', guidedmodules.views.analytics, name="guidedmodules_analytics"),
     url(r'^_authoring_tool/new-question$', guidedmodules.views.authoring_new_question),
     url(r'^_authoring_tool/edit-question$', guidedmodules.views.authoring_edit_question),

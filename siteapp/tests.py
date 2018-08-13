@@ -324,7 +324,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(.5) # wait for page to load
 
         # - Now at the what is your name page?
-        self.fill_field("#inputctrl", "John Doe")
+        self.fill_field(".inputctrl", "John Doe")
         self.click_element("#save-button")
         var_sleep(.5) # wait for page to load
 
@@ -350,7 +350,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Text question.
         self.assertRegex(self.browser.title, "Next Question: The Question")
-        self.fill_field("#inputctrl", "This is some text.")
+        self.fill_field(".inputctrl", "This is some text.")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -548,7 +548,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # text
         self.assertRegex(self.browser.title, "Next Question: text")
-        self.fill_field("#inputctrl", "This is some text.")
+        self.fill_field(".inputctrl", "This is some text.")
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_text", "q_text"], "This is some text.")
@@ -561,7 +561,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # password-type question input (this is not a user password)
         self.assertRegex(self.browser.title, "Next Question: password")
-        self.fill_field("#inputctrl", "th1s1z@p@ssw0rd!")
+        self.fill_field(".inputctrl", "th1s1z@p@ssw0rd!")
         self.click_element("#save-button")
         var_sleep(1)
         self._test_api_get(["question_types_text", "q_password"], "th1s1z@p@ssw0rd!")
@@ -570,7 +570,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: email-address")
 
         # test a bad address
-        self.fill_field("#inputctrl", "a@a")
+        self.fill_field(".inputctrl", "a@a")
         self.click_element("#save-button")
         var_sleep(.5)
         self.assertInNodeText("is not valid.", "#global_modal p") # make sure we get a stern message.
@@ -579,7 +579,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # test a good address
         val = "test+%s@q.govready.com" % get_random_string(8)
-        self.clear_and_fill_field("#inputctrl", val)
+        self.clear_and_fill_field(".inputctrl", val)
         self.click_element("#save-button")
         var_sleep(1.5)
         self._test_api_get(["question_types_text", "q_email_address"], val)
@@ -588,21 +588,21 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: url")
 
         # test a bad address
-        self.clear_and_fill_field("#inputctrl", "example.x")
+        self.clear_and_fill_field(".inputctrl", "example.x")
         self.click_element("#save-button")
         # This is caught by the browser itself, so we don't have to dismiss anything.
         # Make sure we haven't moved past the url page.
         self.assertRegex(self.browser.title, "Next Question: url")
 
         # test a good address
-        self.clear_and_fill_field("#inputctrl", "https://q.govready.com")
+        self.clear_and_fill_field(".inputctrl", "https://q.govready.com")
         self.click_element("#save-button")
         var_sleep(1.5)
         self._test_api_get(["question_types_text", "q_url"], "https://q.govready.com")
 
         # longtext
         self.assertRegex(self.browser.title, "Next Question: longtext")
-        self.fill_field("#inputctrl .ql-editor", "This is a paragraph.\n\nThis is another paragraph.")
+        self.fill_field(".inputctrl .ql-editor", "This is a paragraph.\n\nThis is another paragraph.")
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_text", "q_longtext"], 'This is a paragraph\\.\r\n\r\n\r\n\r\nThis is another paragraph\\.')
@@ -619,18 +619,18 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: date")
 
         # test a bad date
-        self.select_option("select[name='value_year']", "2016")
-        self.select_option("select[name='value_month']", "2")
-        self.select_option("select[name='value_day']", "31")
+        self.select_option("select.value_year", "2016")
+        self.select_option("select.value_month", "2")
+        self.select_option("select.value_day", "31")
         self.click_element("#save-button")
         var_sleep(.5)
         self.assertInNodeText("day is out of range for month", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
 
         # test a good date
-        self.select_option("select[name='value_year']", "2016")
-        self.select_option("select[name='value_month']", "8")
-        self.select_option("select[name='value_day']", "22")
+        self.select_option("select.value_year", "2016")
+        self.select_option("select.value_month", "8")
+        self.select_option("select.value_day", "22")
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_text", "q_date"], "2016-08-22")
@@ -653,7 +653,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # choice
         self.assertRegex(self.browser.title, "Next Question: choice")
-        self.click_element('#question input[name="value"][value="choice2"]')
+        self.click_element('.question input[value="choice2"]')
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_choice", "q_choice"], "choice2")
@@ -661,7 +661,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # yesno
         self.assertRegex(self.browser.title, "Next Question: yesno")
-        self.click_element('#question input[name="value"][value="yes"]')
+        self.click_element('.question input[value="yes"]')
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_choice", "q_yesno"], "yes")
@@ -669,8 +669,8 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # multiple-choice
         self.assertRegex(self.browser.title, "Next Question: multiple-choice")
-        self.click_element('#question input[name="value"][value="choice1"]')
-        self.click_element('#question input[name="value"][value="choice3"]')
+        self.click_element('.question input[value="choice1"]')
+        self.click_element('.question input[value="choice3"]')
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_choice", "q_multiple_choice"], ["choice1", "choice3"])
@@ -694,7 +694,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: integer")
 
         # Test a non-integer.
-        self.clear_and_fill_field("#inputctrl", "1.01")
+        self.clear_and_fill_field(".inputctrl", "1.01")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -702,7 +702,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a string.
-        self.clear_and_fill_field("#inputctrl", "asdf")
+        self.clear_and_fill_field(".inputctrl", "asdf")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -712,7 +712,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # Test a good integer.
-        self.clear_and_fill_field("#inputctrl", "5000")
+        self.clear_and_fill_field(".inputctrl", "5000")
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_numeric", "q_integer"], 5000)
@@ -721,7 +721,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: integer min/max")
 
         # Test a too-small number
-        self.clear_and_fill_field("#inputctrl", "0")
+        self.clear_and_fill_field(".inputctrl", "0")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -729,7 +729,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a too-large number
-        self.clear_and_fill_field("#inputctrl", "27")
+        self.clear_and_fill_field(".inputctrl", "27")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -737,7 +737,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a non-integer.
-        self.clear_and_fill_field("#inputctrl", "1.01")
+        self.clear_and_fill_field(".inputctrl", "1.01")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -747,7 +747,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # Test a good integer.
-        self.clear_and_fill_field("#inputctrl", "3")
+        self.clear_and_fill_field(".inputctrl", "3")
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_numeric", "q_integer_minmax"], 3)
@@ -759,7 +759,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: integer min/max big")
 
         # Test a too-small number
-        self.clear_and_fill_field("#inputctrl", "0")
+        self.clear_and_fill_field(".inputctrl", "0")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -767,7 +767,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a too-large number
-        self.clear_and_fill_field("#inputctrl", "15000")
+        self.clear_and_fill_field(".inputctrl", "15000")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -775,7 +775,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a non-integer.
-        self.clear_and_fill_field("#inputctrl", "1.01")
+        self.clear_and_fill_field(".inputctrl", "1.01")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -783,7 +783,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a good integer that has a comma in it.
-        self.clear_and_fill_field("#inputctrl", "1,234")
+        self.clear_and_fill_field(".inputctrl", "1,234")
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_numeric", "q_integer_minmax_big"], 1234)
@@ -792,7 +792,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: real")
 
         # Test a string.
-        self.clear_and_fill_field("#inputctrl", "asdf")
+        self.clear_and_fill_field(".inputctrl", "asdf")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -801,7 +801,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: real")
 
         # Test a real number.
-        self.clear_and_fill_field("#inputctrl", "1.050")
+        self.clear_and_fill_field(".inputctrl", "1.050")
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_numeric", "q_real"], 1.050)
@@ -810,7 +810,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: real min/max")
 
         # Test a number that's too small.
-        self.clear_and_fill_field("#inputctrl", "0.01")
+        self.clear_and_fill_field(".inputctrl", "0.01")
         self.click_element("#save-button")
         var_sleep(.5)
         # var_sleep(60)
@@ -818,7 +818,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a number that's too large.
-        self.clear_and_fill_field("#inputctrl", "1000")
+        self.clear_and_fill_field(".inputctrl", "1000")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -826,7 +826,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#global_modal button") # dismiss the warning.
 
         # Test a real number.
-        self.clear_and_fill_field("#inputctrl", "23.051")
+        self.clear_and_fill_field(".inputctrl", "23.051")
         self.click_element("#save-button")
         var_sleep(.5)
         self._test_api_get(["question_types_numeric", "q_real_minmax"], 23.051)
@@ -854,7 +854,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             'fixtures',
             'testimage.png'
         )
-        self.fill_field("#inputctrl", testFilePath)
+        self.fill_field(".inputctrl", testFilePath)
 
         self.click_element("#save-button")
         var_sleep(1)
@@ -901,7 +901,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             self.click_element("#save-button")
             var_sleep(.5)
             self.assertRegex(self.browser.title, "Next Question: The Question")
-            self.fill_field("#inputctrl", answer_text)
+            self.fill_field(".inputctrl", answer_text)
             self.click_element("#save-button")
             var_sleep(.5)
             self.assertRegex(self.browser.title, "^A Simple Module - ")
@@ -919,7 +919,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             var_sleep(.5)
         change_answer()
         self.assertRegex(self.browser.title, "Next Question: module")
-        self.click_element('#question input[name="value"][value="__new"]')
+        self.click_element('.question input[value="__new"]')
         self.click_element("#save-button")
         var_sleep(.5)
         do_submodule("My second answer.")
@@ -928,7 +928,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # Go back and change the answer to the first one again.
         change_answer()
         self.assertRegex(self.browser.title, "Next Question: module")
-        self.click_element('#question input[name="value"][value="%d"]' % task_id)
+        self.click_element('.question input[value="%d"]' % task_id)
         self.click_element("#save-button")
         var_sleep(.5)
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")

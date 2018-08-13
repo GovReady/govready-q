@@ -574,7 +574,7 @@ class Command(BaseCommand):
             self.screenshot("revised-question")
 
             # Edit using in-browser tool.
-            self.click_with_screenshot("#show_question_authoring_tool", "click_authoring_tool")
+            self.click_with_screenshot(".show_question_authoring_tool", "click_authoring_tool")
             self.screenshot("question-authoring-tool")
             self.click_element("#question_authoring_tool button[data-dismiss=\"modal\"]") # clear modal
 

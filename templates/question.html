@@ -3,15 +3,13 @@
 {% load q %}
 
 {% block title %}
-Next Question: {{q.spec.title}} | {{task.title}}
+Next Question: {% for q in questions %}{{q.question.spec.title}}{% if not forloop.last %}, {% endif %}{% endfor %} | {{task.title}}
 {% endblock %}
 
 {% block head %}
 
 <link href="{% static "vendor/emojione/emojione-sprite-24.min.css" %}" rel="stylesheet">
-{% if q.spec.type == "longtext" %}
-  <link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
-{% endif %}
+<link href="{% static "vendor/quill/quill.snow.css" %}" rel="stylesheet">
 
 {{block.super}}
 
@@ -27,63 +25,62 @@ h1 {
   font-weight: bold;
 }
 
+h2 {
+  margin: 3px 0 12px 0;
+  font-size: 18px;
+}
+
 .form-control {
   font-size: 14pt;
   height: 34pt;
 }
 
-#question {
+.question {
   font-size: 14pt;
 }
-  #question form.disabled label {
+  .question form.disabled label {
     color: #777;
     cursor: not-allowed;
   }
 
-#question-prompt blockquote {
+.question-prompt blockquote {
   font-size: inherit;
 }
 
 /* since prompts will likely use Markdown ##'s to delimit sections,
     which we render as h3 because we demote all levels, re-adjust
     styles */
-#question-prompt h3 {
+.question-prompt h3 {
   font-size: 110%;
   font-weight: bold;
 }
 
-{% if q.spec.type == "module" %}
-#question .radio label {
+.question.type-module .radio label {
   margin: .25em 0;
 }
-{% endif %}
 
-{% if q.spec.type == "interstitial" %}
-  #question img {
+  .question.type-interstitial img {
     display: block; /* so that horizontal auto margin centers */
     margin: 30px auto;
   }
-{% endif %}
 
-{% if q.spec.type == "longtext" %}
-#question .ql-container {
+.question.type-longtext .ql-container {
   font-size: 14pt !important; /* override default quill style */
 }
-#question .ql-container p {
+.question.type-longtext .ql-container p {
   margin-bottom: .75em;
 }
-  #question .ql-container p:last-child {
+  .question.type-longtext .ql-container p:last-child {
     margin-bottom: 0;
   }
-{% endif %}
 
 label .onhover { display: none; }
 label:hover .onhover { display: inline; }
 
-#confidence-buttons {
-  margin: 25px 0;
+.confidence-buttons {
+  margin: 0 0 30px 0;
 }
-    #confidence-buttons button {
+    .confidence-buttons button {
         border: 1px solid rgba(255,255,255,0); /* same width as .active but no color */
         border-radius: 4px;
         padding: 6px 6px 4px 4px;
@@ -92,17 +89,17 @@ label:hover .onhover { display: inline; }
         opacity: .6;
         margin-right: .5em;
     }
-        #confidence-buttons button img {
+        .confidence-buttons button img {
             height: 1.25em;
             margin-right: .25em;
         }
-        #confidence-buttons button.active {
+        .confidence-buttons button.active {
             border: 1px solid #AAA;
             color: black;
             background: #EEE;
             opacity: 1;
         }
-        #confidence-buttons:hover button {
+        .confidence-buttons:hover button {
             border: 1px solid #AAA;
             opacity: 1;
         }
@@ -110,8 +107,6 @@ label:hover .onhover { display: inline; }
 #action-buttons {
   margin: 25px 0;
 }
-
-#reference-text-wrapper *:first-child { margin-top: 0; }
 
 #discussion {
   margin-top: 1em;
@@ -146,409 +141,53 @@ label:hover .onhover { display: inline; }
       </div>
     {% endif %}
 
-    <h1>{{title|safe}}</h1>
+    <form id="questionsform" {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
 
-    <div id="question">
-        <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
-            <input type="hidden" name="question" value="{{q.id}}">
-            <input type="hidden" name="method" value="save">
-            <input type="hidden" name="skipped_reason" value="">
-            <input type="hidden" name="unsure" value="">
+    <input type="hidden" name="method" value="save">
 
-            <div id="question-prompt">
-              {{prompt|safe}}
-            </div>
+    {% if questions.0.question.spec.group %}
+    <h1>{{questions.0.question.spec.group.title}}</h1>
+    {% endif %}
 
-            {# ADDITIONAL INFORMATION BELOW THE PROMPT #}
+    {% for q in questions %}
+      {% include "question-widget.html" %}
+    {% endfor %}
 
-            {% if example_answers %}
-              <div id="example-answers" class="expandable" style="margin: 35px 0; font-size: 80%; border-left: 2px solid #CCC; padding-left: 8px;">
-                <div class="expandy" style="max-height: 4.25em; overflow: hidden;">
-                  <div>
-                    {% for ex in example_answers %}
-                      <div> 
-                        <div><small style="color: #666;">Example{% if example_answers|length > 1 %} {{forloop.counter}}{% endif %}</small></div>
-                        {{ex|safe}}
-                      </div>
-                    {% endfor %}
-                  </div>
-                </div>
-                <div class="toggler"
-                     style="text-align: right; font-style: italic; font-size: 90%;">
-                  <a
-                     href="#more"
-                     onclick="$(this).parents('.expandable').find('.expandy').data('original-height', $(this).parents('.expandable').find('.expandy').height()); $(this).parents('.expandable').find('.expandy').animate({ minHeight: $(this).parents('.expandable').find('.expandy>div').outerHeight() + $(this).parents('.expandable').find('.toggler').outerHeight() }); $(this).parents('.expandable').find('a[href=&quot;#more&quot;]').hide(); $(this).parents('.expandable').find('a[href=&quot;#less&quot;]').show(); return false;">Show more</a>
-                  <a href="#less"
-                     style="display: none;"
-                     onclick="$(this).parents('.expandable').find('.expandy').animate({ minHeight: $(this).parents('.expandable').find('.expandy').data('original-height') }); $(this).parents('.expandable').find('a[href=&quot;#less&quot;]').hide(); $(this).parents('.expandable').find('a[href=&quot;#more&quot;]').show(); return false;">Show less</a>
-                </div>
-              </div>
-            {% endif %}
+    {% if write_priv %}
+          <div id="action-buttons" class="clearfix">
 
-            {% if reference_text %}
-              <p style="font-size: 80%; color: #666;">
-                <a href="#" onclick="$(this).hide(); $('#reference-text').slideDown(); return false;">
-                  Additional information...
-                </a>
-              </p>
-              <div id="reference-text" style="display: none; font-size: 80%;" class="well">
-                <p><b><small>Additional Information</small></b></p>
-                {{reference_text|safe}}
-              </div>
-            {% endif %}
-
-            {# THE QUESTION FORM WIDGETS #}
-
-            {% if q.spec.type == "text" or q.spec.type == "email-address" or q.spec.type == "url" %}
-              <div class="form-group">
-                <input
-                  id="inputctrl"
-                  name="value"
-                  class="form-control"
-                  {% if q.spec.type == "email-address" %}
-                  type="email"
-                  {% elif q.spec.type == "url" %}
-                  type="url"
-                  {% else %}
-                  type="text"
-                  {% endif %}
-                  placeholder="{{placeholder_answer}}"
-                  {% if answer %}
-                    value="{{answer}}"
-                  {% elif default_answer %}
-                    value="{{default_answer}}"
-                  {% endif %}>
-                <p class="help-block">
-                  {% if q.spec.help %}
-                    {{q.spec.help}}
-                  {% elif q.spec.type == "email-address" %}
-                    Enter an email address.
-                  {% elif q.spec.type == "url" %}
-                    Paste a web address.
-                  {% endif %}
-                </p>
-              </div>
-
-            {% elif q.spec.type == "password" %}
-              <div class="form-group">
-                <input name="value" type="password" class="form-control" id="inputctrl" placeholder="password">
-                {# we don't provide the old value as a default to protect secrets #}
-                <p class="help-block">{{q.spec.help}}</p>
-              </div>
-
-            {% elif q.spec.type == "longtext" %}
-              <div class="form-group">
-                <div id="inputctrl">
-                  <div style="display: none"> {# dont flicker content before widget is added #}
-                    {% if answer %}{{answer|safe}}
-                    {% elif default_answer %}{{default_answer|safe}}{% endif %}
-                  </div>
-                </div>
-                <div id="inputctrl-quill-toolbar">
-                  <span class="ql-formats">
-                    <select class="ql-header">
-                      <option value="1"></option>
-                      <option value="2"></option>
-                      <option value="3"></option>
-                      <option selected></option>
-                    </select>
-                  </span>
-                  <span class="ql-formats">
-                    <button class="ql-bold"></button>
-                    <button class="ql-italic"></button>
-                    <button class="ql-link"></button>
-                    <button class="ql-code"></button>
-                  </span>
-                  <span class="ql-formats">
-                    <button class="ql-blockquote"></button>
-                    <button class="ql-list" value="bullet"></button>
-                    <button class="ql-list" value="ordered"></button>
-                    <button class="ql-code-block"></button>
-                  </span>
-                  <span class="ql-formats">
-                    <button class="ql-clean"></button>
-                  </span>
-                </div>
-                <p class="help-block">{{q.spec.help}}</p>
-              </div>
-
-            {% elif q.spec.type == "date" %}
-              {# The HTML5 date input type is only properly supported on Chrome, so we don't use it yet. Other browsers just show a text box, and we expect YYYY-MM-DD format, which is hard for users to enter manually. #}
-              <div class="form-group">
-                <select name="value_month" class="form-control" style="width: auto; display: inline-block;">
-                  <option value="" disabled="1">(month)</option>
-                  {% for month_str, value in date_l8n.months %}
-                  <option value="{{value}}">{{month_str}}</option>
-                  {% endfor %}
-                </select>
-
-                <select name="value_day" class="form-control" style="width: auto; display: inline-block;">
-                  <option value="" disabled="1">(day)</option>
-                  {% for value in date_l8n.days %}
-                  <option value="{{value}}">{{value}}</option>
-                  {% endfor %}
-                </select>
-
-                <select name="value_year" class="form-control" style="width: auto; display: inline-block;">
-                  <option value="" disabled="1">(year)</option>
-                  {% for value in date_l8n.years %}
-                  <option value="{{value}}">{{value}}</option>
-                  {% endfor %}
-                </select>
-
-                <input name="value" type="hidden"> {# filled in by script, actual value submitted #}
-                <p class="help-block">{{q.spec.help}}</p>
-              </div>
-
-            {% elif q.spec.type == "choice" %}
-              <div style="margin: 1em 0 1.5em 0">
-              {% for choice in q.spec.choices %}
-              <div class="radio">
-                <label>
-                  <input name="value" value="{{choice.key}}" type="radio" {% if answer == choice.key %}checked{% endif %}> {{choice.text}}
-                  <p class="help-block">{{choice.help}}</p>
-                </label>
-              </div>
-              {% endfor %}
-              </div>
-
-            {% elif q.spec.type == "yesno" %}
-              <div style="margin: 1em 0 1.5em 0">
-              <div class="radio">
-                <label>
-                  <input name="value" value="no"  type="radio" {% if answer == "no" %}checked{% endif %}> No
-                </label>
-              </div>
-              <div class="radio">
-                <label>
-                  <input name="value" value="yes" type="radio" {% if answer == "yes" %}checked{% endif %}> Yes
-                </label>
-              </div>
-              <p class="help-block">{{q.spec.help}}</p>
-              </div>
-
-            {% elif q.spec.type == "multiple-choice" %}
-              <div style="margin: 1em 0 1.5em 0">
-              {% for choice in q.spec.choices %}
-              <div class="checkbox">
-                <label>
-                  <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer %}checked{% endif %}> {{choice.text}}
-                  <p class="help-block">{{choice.help}}</p>
-                </label>
-              </div>
-              {% endfor %}
-
-              {% if q.spec.min > 0 and q.spec.min == q.spec.max %}
-                  <p class="help-block">You must choose exactly {{q.spec.min}} option{{q.spec.min|pluralize}}.</p>
-              {% elif q.spec.min > 0 %}
-                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} option{{q.spec.min|pluralize}}.</p>
-              {% elif q.spec.max %}
-                  <p class="help-block">You may choose at most {{q.spec.max}} option{{q.spec.max|pluralize}}.</p>
-              {% endif %}
-              </div>
-
-            {% elif q.spec.type == "integer" or q.spec.type == "real" %}
-              <div class="form-group">
-                {% comment %}
-                  The HTML5 number input is a bit confusing in how it handles periods and commas.
-                  Browsers seem to currently only support a period or comma as a decimal separator,
-                  depending on the lang attribute on the input or HTML. They do not allow 
-                  thousands-commas. But we should let users type that in.
-                {% endcomment %}
-                {% if q.spec.min > -1000 and q.spec.max < 1000 %}
-                  {# the range doesn't admit thousands, so we don't need to worry about thousands-commmas #}
-                  <input name="value" type="number" {% if q.spec.type == "integer" %}step="1"{% else %}step="any"{% endif %} class="form-control" id="inputctrl" placeholder="{{placeholder_answer}}" {% if answer %}value="{{answer}}"{% endif %}>
+            {# Buttons to save or skip this question #}
+            <div class="pull-left">
+              <button id="save-button"
+                type="submit" class="btn btn-success"
+                onclick="$('form input[name=method]').val('save')">
+                {% if q.question.spec.type == "interstitial" %}
+                  Got it
+                {% elif not request.GET.q %}
+                  {# user is proceeding through the questions in order #}
+                  Next
                 {% else %}
-                  {# to let users enter thousands-commas by using a plain text field #}
-                  <input name="value" type="text" pattern="[0-9,\.]+" class="form-control" id="inputctrl" placeholder="{{placeholder_answer}}" {% if answer %}value="{{answer}}"{% endif %}>
+                  {# user is visiting a specific question #}
+                  Update
                 {% endif %}
-                <p class="help-block">{{q.spec.help}}</p>
-                {% if q.spec.min|default_if_none:"NONE" != "NONE" and q.spec.max|default_if_none:"NONE" != "NONE" %}
-                    <p class="help-block">Enter a number from {{q.spec.min}} to {{q.spec.max}}.</p>
-                {% elif q.spec.min|default_if_none:"NONE" != "NONE" %}
-                    <p class="help-block">Enter a number at least {{q.spec.min}}.</p>
-                {% elif q.spec.max|default_if_none:"NONE" != "NONE" %}
-                    <p class="help-block">Enter a number at most {{q.spec.max}}.</p>
-                {% endif %}
-              </div>
+                &raquo;
+              </button>
 
-            {% elif q.spec.type == "file" %}
-              {# When there is an existing answer, the UI shows a thumbnail of it. If the user doesn't choose a new file, the existing value is kept. #}
-              {% if answer %}
-              <div style="margin: 1em 0">
-                <p>The following file is uploaded:</p>
-                {{answer_rendered|safe}}
-                <p>Select a new file if you would like to replace it:</p>
-              </div>
-              {% endif %}
-
-              <div class="form-group">
-                <input name="value" type="file" id="inputctrl" class="form-control"
-                  style="width: auto; border:  none; padding: 0; display: inline-block"/>
-                <input type="reset" value="x" style="font-size: 14px;">
-                <p class="help-block">{{q.spec.help}}</p>
-              </div>
-
-
-            {% elif q.spec.type == "module" and answer_tasks|length == 0 %}
-              {# The user must choose or start a module, but there is nothing to choose from, so show a simplified interface. #}
-
-              <p>You will next begin the module {{answer_module.title}}.</p>
-
-              {# must be a radio so the client-side validation passes, but we hide it #}
-              <input type="radio" name="value" value="__new" checked style="display: none"/>
-
-            {% elif q.spec.type == "module" %}
-              {% with current_answer=answer_obj.answered_by_task.first %}
-
-              {% for m in answer_tasks %}
-                <div class="radio">
-                  <label>
-                    <input name="value" value="{{m.id}}" type="radio" {% if m == current_answer %}checked{% endif %}>
-                      {% with m.title as title %}
-                      {{title}}
-                      <div class="small" style="color: #666">
-                        {% if m == current_answer %}
-                          <strong>Current Answer</strong>.
-                        {% endif %}
-
-                        {% if m.project != task.project and m.project.title != title %}
-                        {{ m.project.title }}.
-                        {% endif %}
-                        
-                        {% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}}.
-
-                        <a href="{{m.get_absolute_url}}" class="onhover" style="color: #999; margin-left: 3px; font-size: 90%;"><span class="glyphicon glyphicon-pencil"> </span></a>
-                      </div>
-                      {% endwith %}
-                  </label>
-                </div>
-              {% endfor %}
-
-              <div class="radio" style="margin-bottom: 1.5em">
-                <label>
-                  <input name="value" value="__new" type="radio">
-                  {% if current_answer %}
-                    Start over and create
-                  {% else %}
-                    Create
-                  {% endif %}
-                  a new {{answer_module.title}}
-                </label>
-              </div>
-
-              <p class="help-block">{{q.spec.help}}</p>
-              {% endwith %}
-
-            {% elif q.spec.type == "interstitial" %}
-              {# no other content but an empty value #}
-              <input type="hidden" name="value" value=""/>
-
-            {% else %}
-              <p class="text-danger">QUESTION TYPE NOT IMPLEMENTED: {{q.spec.type}}</p>
-
-            {% endif %}
-
-            {% if not is_answerable %}
-                <p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
-
-            {% elif write_priv %}
-
-              {% if q.spec.type != "interstitial" %}
-                {# Interstitial questions do not offer these options because the user is just acknowledging the page and not providing an answer. #}
-                <div id="confidence-buttons">
-                    <button id="no-idea-button" type=button {# type=button prevents button from causing form submit #}>
-                        <span class="emoji" data-sprite="people" data-code="1f937-2642" data-name="man shrugging"></span>
-                        I don&rsquo;t know
-                    </button>
-                    <button id="not-applicable-button" type=button>
-                        <span class="emoji" data-sprite="people" data-code="1f64b" data-name="person raising hand"></span>
-                        It doesn&rsquo;t apply
-                    </button>
-                    <button id="not-now-button" type=button>
-                        <span class="emoji" data-sprite="objects" data-code="1f4cd" data-name="round_pushpin"></span>
-                        I&rsquo;ll come back
-                    </button>
-                    <button id="not-sure-button" type=button>
-                        <span class="emoji"  data-sprite="people" data-code="1f914" data-name="thinking face"></span>
-                        Not sure
-                    </button>
-
-                    {# Meta-options like starting a discussion or changing the editor of this question. Interstitial questions do not offer these and individuals here as a discussion guest dont get it either. #}
-                    {% if not is_discussion_guest and q.spec.type != "interstitial" %}
-                      {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
-                        <button id="start-a-discussion" onclick="start_a_discussion();" type=button data-toggleable=false>
-                            {# if you can see this page, you can start a conversation #}
-                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss
-                        </button>
-                      {% endif %}
-                      {% if task.can_transfer_owner and write_priv %}
-                        <button id="transfer-editorship" onclick="invite_to_transfer_editor();" type=button data-toggleable=false>
-                            <span class="glyphicon glyphicon-user" style="color: #A65;"></span> Assign
-                        </button>
-                      {% endif %}
-                    {% endif %}
-
-                </div>
-              {% endif %}
-
-              <div id="action-buttons" class="clearfix">
-
-                {# Buttons to save or skip this question #}
-                <div class="pull-left">
-                  <button id="save-button"
-                    type="submit" class="btn btn-success"
-                    onclick="$('#question > form input[name=method]').val('save')">
-                    {% if q.spec.type == "interstitial" %}
-                      Got it
-                    {% elif not request.GET.q %}
-                      {# user is proceeding through the questions in order #}
-                      Next
-                    {% else %}
-                      {# user is visiting a specific question #}
-                      Update
-                    {% endif %}
+              {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
+              {% if answer_obj and DEBUG %}
+                <button id="clear-button"
+                  type="submit" class="btn btn-default"
+                  onclick="$('form input[name=method]').val('clear')">
+                    Mark as Unanswered
                     &raquo;
                   </button>
+              {% endif %}
+            </div> {# /.pull-left #}
 
-                  {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
-                  {% if answer_obj and DEBUG %}
-                    <button id="clear-button"
-                      type="submit" class="btn btn-default"
-                      onclick="$('#question > form input[name=method]').val('clear')">
-                        Mark as Unanswered
-                        &raquo;
-                      </button>
-                  {% endif %}
-                </div> {# /.pull-left #}
+          </div> <!-- /action-buttons -->
+    {% endif %}
 
-              </div> <!-- /action-buttons -->
-
-            {% if answer_obj and can_review %}
-              <select style="display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this)">
-                {% for key, label in review_choices %}
-                  <option value="{{key}}" {% if answer_obj.reviewed == key %}selected{% endif %}>
-                    {{label}}
-                  </option>
-                {% endfor %}
-              </select>
-            {% endif %}
-
-          {% else %} {# write_priv #}
-            {# User does not have write permission so cannot answer the question, start a discussion, or change the editor. But we instead still want to show the review state. #}
-
-            {% if answer_obj %}
-              {% for key, label in review_choices %}
-                {% if answer_obj.reviewed == key %}
-                  <p style="margin-top: 1em; font-size: 85%; color: #666">This question&rsquo;s review status is {{label}}.</p>
-                {% endif %}
-              {% endfor %}
-            {% endif %}
-
-          {% endif %} {# write_priv #}
-        </form>
-
-    </div> <!-- /question -->
+    </form>
 
     {% include "discussion/discussion.html" %}
 
@@ -573,16 +212,6 @@ label:hover .onhover { display: inline; }
         {% endif %}
         </ul>
     </div> <!-- /question-history-context -->
-
-    {% if authoring_tool_enabled %}
-    <div style="margin: 2em 0; font-size: 90%;">
-      <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-pencil"></span>
-        Authoring Tool
-      </a>
-    </div>
-    {% endif %}
-
   </div>
 
 </div> <!-- /row -->
@@ -598,405 +227,251 @@ label:hover .onhover { display: inline; }
 
 {% include "task-question-debug-links.html" %}
 
-{% if q.spec.type == "longtext" %}
-  <script src="{% static "vendor/quill/quill.min.js" %}"></script>
-  <script src="{% static "js/quill_commonmark.js" %}"></script>
-{% endif %}
+<script src="{% static "vendor/quill/quill.min.js" %}"></script>
+<script src="{% static "js/quill_commonmark.js" %}"></script>
 
 <script>
 $(function() {
-    var form = $("#question > form");
+  var form = $("form#questionsform");
 
-    // CONTROL INITIALIZATION
+  {% include "question-widget-classes.js" %}
 
-    {% if q.spec.type == "longtext" %}
-      window.inputctrl_quill = CommonMarkQuill("#inputctrl", {
-        "modules": {
-          "toolbar": {
-            "container": "#inputctrl-quill-toolbar",
-          }
-        }
-      });
-    {% endif %}
 
-    // DEFAULT VALUE
-
-    {% if q.spec.type == "date" %}
-      {% if answer %}
-        {# If there is a current answer, set it into the date drop-downs. #}
-        var date = [parseInt({{answer|slice:"0:4"|json}}), parseInt({{answer|slice:"5:7"|json}}), parseInt({{answer|slice:"8:10"|json}})];
-      {% else %}
-        {# Set the default to the current date in local time. #}
-        var d = new Date();
-        var date = [d.getFullYear(), d.getMonth()+1, d.getDate()];
-      {% endif %}
-      $("#question select[name='value_year']").val(date[0]);
-      $("#question select[name='value_month']").val(date[1]);
-      $("#question select[name='value_day']").val(date[2]);
-    {% endif %}
-
-    // DISCUSSION
-
-    {% if discussion %}
+    {% if questions.0.discussion %}
     {# a discussion already exists, so show it #}
     start_a_discussion(true); // is idempotent
     {% elif history %}
     show_static_history({{history|json}});
     {% endif %}
 
+    // CONTROL INITIALIZATION
+
+    var question_widgets = {};
+
+    function initialize_widget(key, spec, current_answer, skipped_reason, unsure, is_answerable, first) {
+      var qdiv = $("#question-" + key);
+      var widget_class = widgets[spec.type];
+      var widget_instance = widget_class.initialize(
+        key,
+        qdiv.find(".widget"),
+        spec,
+        current_answer);
+      var widget = {
+        focus: function() { widget_class.focus(widget_instance); },
+        validate_answer: function() { return widget_class.validate_answer(widget_instance, spec, current_answer); },
+        value: function() { return widget_class.value(widget_instance); },
+        on_input_changed: function(handler) { return widget_class.on_input_changed(widget_instance, handler); },
+        disable_input_controls: function(disabled) { return widget_class.disable_input_controls(widget_instance, disabled); },
+        user_has_entered_clearable_answer: function() { return widget_class.user_has_entered_clearable_answer(widget_instance); },
+      };
+
+      {% if write_priv %}
+        {# If the first control is editable, give it focus. #}
+        if (first)
+          widget.focus();
+
+        {# If the question was skipped, set the right skip button state. #}
+        if (skipped_reason) {
+          if (skipped_reason == "dont-know")
+            qdiv.find('no-idea-button').addClass('active');
+          else if (skipped_reason == "doesnt-apply")
+            qdiv.find('.not-applicable-button').addClass('active');
+          else
+            qdiv.find('.not-now-button').addClass('active');
+          widget.disable_input_controls(true);
+        }
+
+        if (unsure)
+          qdiv.find('.not-sure-button').addClass('active');
+
+        qdiv.find('.confidence-buttons .emoji').each(function() {
+            $(this)
+              .addClass("emojione-24-" + $(this).attr('data-sprite'))
+              .addClass("_" + $(this).attr('data-code'));
+          });
+        qdiv.find('.confidence-buttons button:not([data-toggleable=false])')
+          .click(function() {
+            // Don't Know, Doesn't Apply, and Not Now
+            // are mutually exclusive with the user
+            // also providing an answer. If they typed
+            // anything into a text field, or any field
+            // that is resettable (e.g. radios aren't)
+            // then show a message and stop.
+            if (($(this).hasClass("no-idea-button")
+                  || $(this).hasClass("not-applicable-button")
+                  || $(this).hasClass("not-now-button"))
+                && widget.user_has_entered_clearable_answer()) {
+              show_modal_error(
+                "",
+                "Please clear your answer before selecting "
+                + "“" + $(this).text().replace(/^\s+|\s+$/g, '') + ".” "
+                + "Click “Not sure” to save an answer you will return to later.")
+              return;
+            }
+
+            $(this).toggleClass('active');
+            if ($(this).hasClass('active')) {
+                // Don't Know, Doesn't Apply, and Not Now
+                // are mutually exclusive.
+                if ( $(this).hasClass("no-idea-button")
+                  || $(this).hasClass("not-applicable-button")
+                  || $(this).hasClass("not-now-button")) {
+                    qdiv
+                      .find('.no-idea-button, .not-applicable-button, .not-now-button, .not-sure-button')
+                      .removeClass('active');
+                    $(this).addClass('active');
+                  }
+            }
+
+            // Controls are disabled when Don't Know, Doesn't Apply, or Not Now
+            // are selected.
+            widget.disable_input_controls(qdiv.find('.no-idea-button').hasClass('active') || qdiv.find('.not-applicable-button').hasClass('active') || qdiv.find('.not-now-button').hasClass('active'));
+            update_save_button_enabled();
+          });
+
+          if (!is_answerable)
+            widget.disable_input_controls(true);
+      {% else %}
+        {# If the control is not editable, make it disabled. #}
+        widget.disable_input_controls(true);
+      {% endif %}
+
+      question_widgets[key] = widget;
+    }
+
+    {% for q in questions %}
+    initialize_widget(
+      "{{q.question.key|escapejs}}",
+      {{q.question.spec|json}},
+      {% if q.spec.type == "date" %}{{q.answer|json}}{% elif answer_obj %}true{% else %}false{% endif %},
+      {{q.answer_obj.skipped_reason|json}},
+      {{q.answer_obj.unsure|json}},
+      {{q.is_answerable|json}},
+      {{forloop.first|json}});
+    {% endfor %}
+
     // BUTTON STATE
 
     function update_save_button_enabled() {
-      // The save button is enabled just when the input is valid
+      // The save button is enabled just when the inputs are valid
       // and Don't Know, Doesn't Apply, Not Now aren't active (if they
       // are, the answer inputs aren't used).
-      var ok = (typeof validate_answer()) == "undefined";
-      if ($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active') || $('#not-now-button').hasClass('active'))
-        ok = true;
+      var ok = true;
+      {% for q in questions %}
+      if (typeof question_widgets["{{q.question.key|escapejs}}"].validate_answer() != "undefined"
+        && $("#question-{{q.question.key|escapejs}}").find('.no-idea-button, .not-applicable-button, .not-now-button').filter('.active').length == 0)
+        ok = false;
+      {% endfor %}
       $('#save-button').prop('disabled', !ok);
     }
 
-    on_input_changed(update_save_button_enabled); // register event handler
     update_save_button_enabled(); // run initially
 
-    // INSTRUMENTATION
+    // register event handlers
+    {% for q in questions %}
+    question_widgets["{{q.question.key|escapejs}}"].on_input_changed(update_save_button_enabled);
+    question_widgets["{{q.question.key|escapejs}}"].on_input_changed(record_interaction);
+    {% endfor %}
 
-    // register event handler
-    on_input_changed(record_interaction);
 
-    // VALIDATION
+  // SUBMIT
 
-    {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
-    
-    function validate_answer() {
-        var val = $('#inputctrl').val();
-        if (/^ *$/.exec(val))
-            return "You must enter something."
-        return undefined;
-    }
-    function on_input_changed(handler) {
-      $('#inputctrl').change(handler);
-      $('#inputctrl').on('keyup', handler);
-    }
-    function disable_input_controls(disabled) {
-      $('#inputctrl').prop('disabled', disabled);
-    }
-    function user_has_entered_clearable_answer() {
-      // any non-whitespace character
-      return /\S/.test($('#inputctrl').val());
-    }
+  form.on("submit", function() {
+    // Assemble the form submission data. We could assign key-value pairs
+    // to an object to submit to jQuery.ajax but file uploads require that
+    // we use a FormData object. (And the rich text editor requires that we
+    // call a function to get its value, btw, so just querying input elements
+    // won't work either.)
+    var data = new FormData();
 
-    {% elif q.spec.type == "longtext" %}
+    // List all of the questions we're saving.
+    var questions = [{% for q in questions %}{{q.question.id}}{% if not forloop.last %},{% endif %}{% endfor %}];
+    data.append("questions", questions.join(","));
 
-    function validate_answer() {
-        var val = window.inputctrl_quill.getContentsAsCommonMark();
-        if (/^ *$/.exec(val))
-            return "You must enter something."
-        return undefined;
-    }
-    function on_input_changed(handler) {
-      window.inputctrl_quill.on('text-change', function(delta, oldDelta, source) {
-        if (source == 'user')
-          handler();
-      });
-    }
-    function disable_input_controls(disabled) {
-      window.inputctrl_quill.enable(!disabled);
-    }
-    function user_has_entered_clearable_answer() {
-      // any non-whitespace character
-      var val = window.inputctrl_quill.getContentsAsCommonMark();
-      return /\S/.test(val);
-    }
-
-    {% elif q.spec.type == "date" %}
-
-    function validate_answer() {
-      // Copy the values of the selects into the hidden submission field in YYYY-MM-DD format.
-      function zeropad(value, length) { value = ""+value; while (value.length < length) value = "0" + value; return value; }
-      $("#question input[name='value']").val(
-        zeropad($("#question select[name='value_year']").val(), 4)
-        + "-" +
-        zeropad($("#question select[name='value_month']").val(), 2)
-        + "-" +
-        zeropad($("#question select[name='value_day']").val(), 2)
-      );
-
-      // The value is always valid, unless the user chooses February 31st,
-      // but we'll let the server handle that.
-      return undefined;
-    }
-    function on_input_changed(handler) {
-      $('#question select').change(handler);
-    }
-    function disable_input_controls(disabled) {
-      $("#question select").prop('disabled', disabled);
-    }
-    function user_has_entered_clearable_answer() {
-      // there's no UI to clear their answer
-      return false;
-    }
-
-    {% elif q.spec.type == "choice" or q.spec.type == "yesno" or q.spec.type == "module" %}
-
-    function validate_answer() {
-        var val = $('#question input[type="radio"]:checked').val();
-        if (!val)
-            return "You must make a selection."
-        return undefined;
-    }
-    function on_input_changed(handler) {
-      form.find('input').click(handler);
-    }
-    function disable_input_controls(disabled) {
-      $("#question input[type=\"radio\"]").prop('disabled', disabled);
-    }
-    function user_has_entered_clearable_answer() {
-      // there's no UI to clear their answer
-      return false;
-    }
-
-    {% elif q.spec.type == "multiple-choice" %}
-
-    function validate_answer() {
-        // Collect the checked values.
-        var vals = [];
-        form.find('input[type="checkbox"]:checked').each(function() {
-            vals.push($(this).val());
-        });
-        if (vals.length < {{q.spec.min}})
-            return "You must choose at least {{q.spec.min}} options.";
-        {% if q.spec.max %}
-        if (vals.length > {{q.spec.max}})
-            return "You must choose at most {{q.spec.max}} options.";
-        {% endif %}
-        return undefined;
-    }
-    function on_input_changed(handler) {
-      form.find('input').click(handler);
-    }
-    function disable_input_controls(disabled) {
-      $("#question input[type=\"checkbox\"]").prop('disabled', disabled);
-    }
-    function user_has_entered_clearable_answer() {
-      return form.find('input[type="checkbox"]:checked').length > 0;
-    }
-
-    {% elif q.spec.type == "file" %}
-
-    function validate_answer() {
-      {% if answer %}
-      // There is an existing uploaded file. If the user doesn't
-      // choose a new file, then Submit just keeps the old value.
-      return undefined;
-      {% endif %}
-      var ctrl = $('#inputctrl')[0];
-      if (ctrl.files.length == 0)
-        return "Select a file to upload.";
-      return undefined;
-    }
-    function on_input_changed(handler) {
-      // Add the handler to the file input control.
-      $('#inputctrl').change(handler);
-
-      // Add the handler to the reset button, but it has to be
-      // run after this event is finished to occur after the
-      // form state is reset.
-      form.find('input[type=reset]').click(function() { setTimeout(handler, 0); });
-    }
-    function disable_input_controls(disabled) {
-      $("#inputctrl").prop('disabled', disabled);
-    }
-    function user_has_entered_clearable_answer() {
-      var ctrl = $('#inputctrl')[0];
-      return (ctrl.files.length > 0);
-    }
-
-    {% else %}
-
-    // other question types are considered always valid
-    function validate_answer() { }
-    function on_input_changed(handler) { }
-    function disable_input_controls(disabled) { }
-    function user_has_entered_clearable_answer() { return false; }
-
-    {% endif %}
-
-    // DEFAULT STATE
-
-    function disable_form(disabled) {
-      form.toggleClass('disabled', disabled);
-      disable_input_controls(disabled);
-    }
-
-    {% if write_priv %}
-      {# If the control is editable, give it focus. #}
-      $('#inputctrl').focus();
-      {% if q.spec.type == "longtext" %}
-        window.inputctrl_quill.focus();
-      {% endif %}
-
-      {# If the question was skipped, set the right skip button state. #}
-      {% if answer_obj.skipped_reason %}
-        {% if answer_obj.skipped_reason == "dont-know" %}
-          $('#no-idea-button').addClass('active');
-        {% elif answer_obj.skipped_reason == "doesnt-apply" %}
-          $('#not-applicable-button').addClass('active');
-        {% else %}
-          $('#not-now-button').addClass('active');
-        {% endif %}
-        disable_form(true);
-      {% endif %}
-
-      {% if answer_obj.unsure %}
-        $('#not-sure-button').addClass('active');
-      {% endif %}
-
-      update_save_button_enabled();
-
-    {% else %}
-      {# If the control is not editable, make it disabled. #}
-      disable_form(true);
-    {% endif %}
-
-    // SKIP / CONFIDENCE LEVEL BUTTONS
-
-    $('#confidence-buttons .emoji').each(function() {
-        $(this)
-          .addClass("emojione-24-" + $(this).attr('data-sprite'))
-          .addClass("_" + $(this).attr('data-code'));
-      });
-    $('#confidence-buttons button:not([data-toggleable=false])')
-      .click(function() {
-        // Don't Know, Doesn't Apply, and Not Now
-        // are mutually exclusive with the user
-        // also providing an answer. If they typed
-        // anything into a text field, or any field
-        // that is resettable (e.g. radios aren't)
-        // then show a message and stop.
-        if (($(this).attr('id') == "no-idea-button"
-              || $(this).attr('id') == "not-applicable-button"
-              || $(this).attr('id') == "not-now-button")
-            && user_has_entered_clearable_answer()) {
-          show_modal_error(
-            "",
-            "Please clear your answer before selecting "
-            + "“" + $(this).text().replace(/^\s+|\s+$/g, '') + ".” "
-            + "Click “Not sure” to save an answer you will return to later.")
-          return;
-        }
-
-        $(this).toggleClass('active');
-        if ($(this).hasClass('active')) {
-            // Don't Know, Doesn't Apply, and Not Now
-            // are mutually exclusive.
-            if ( $(this).attr('id') == "no-idea-button"
-              || $(this).attr('id') == "not-applicable-button"
-              || $(this).attr('id') == "not-now-button")
-                $('#no-idea-button, #not-applicable-button, #not-now-button, #not-sure-button')
-                  .filter(":not([id=" + $(this).attr('id') + "])")
-                  .removeClass('active');
-        }
-
-        // Controls are disabled when Don't Know, Doesn't Apply, or Not Now
-        // are selected.
-        disable_form($('#no-idea-button').hasClass('active') || $('#not-applicable-button').hasClass('active') || $('#not-now-button').hasClass('active'));
-        update_save_button_enabled();
-      });
-
-    // SUBMIT
-
-    form.on("submit", function() {
-        // Which submit button was pressed? In normal usage there is
-        // only a Save button. When debugging, we have a Mark as Cleared
-        // button that resets a question to a state of not even having
-        // ever been answered.
-        var method = form.find('input[name=method]').val();
-        if (method == "save") {
-          if ($('#no-idea-button').hasClass('active')) {
-            // Skipping this question because the user doesn't know
-            // the answer.
-            form.find('input[name=method]').val('skip');
-            form.find('input[name=skipped_reason]').val('dont-know');
-          
-          } else if ($('#not-applicable-button').hasClass('active')) {
-            // Skipping this question because the question doesn't
-            // apply to the user's circumstances.
-            form.find('input[name=method]').val('skip');
-            form.find('input[name=skipped_reason]').val('doesnt-apply');
-
-          } else if ($('#not-now-button').hasClass('active')) {
-            // Skipping this question because the user wants to come
-            // back later.
-            form.find('input[name=method]').val('skip');
-            form.find('input[name=skipped_reason]').val('come-back');
-
-          } else {
-            // Saving the answer. Run client-side validation, and block
-            // submit form if not valid.
-              var problem = validate_answer();
-              if (problem) {
-                  alert(problem);
-                  return false;
-              }
+    // Which submit button was pressed? In normal usage there is
+    // only a Save button. When debugging, we have a Mark as Cleared
+    // button that resets a question to a state of not even having
+    // ever been answered.
+    if (form.find('input[name=method]').val() == "clear") {
+      data.append("method", "clear");
+      ajax_with_indicator({
+          url: "{{task.get_absolute_url|escapejs}}/_save",
+          method: "POST",
+          data: data,
+          indicator_parent: $('#question'),
+          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+          success: function(res) {
+            window.location = res.redirect;
           }
+      });
+      return false;
+    }
+
+    data.append("method", "save");
+
+    function submit_question(id, key, title) {
+      // Save skipped reason and unsure flag.
+      var qdiv = $("#question-" + key);
+      if (qdiv.find('.no-idea-button').hasClass('active')) {
+        data.append("q" + id + "_skipped_reason", 'dont-know');
+      } else if (qdiv.find('.not-applicable-button').hasClass('active')) {
+        data.append("q" + id + "_skipped_reason", 'doesnt-apply');
+      } else if (qdiv.find('.not-now-button').hasClass('active')) {
+        data.append("q" + id + "_skipped_reason", 'come-back');
+      } else {
+        // Double check that everything is valid.
+        var problem = question_widgets[key].validate_answer();
+        if (problem) {
+          alert(tile + ": " + problem);
+          return false;
         }
 
-        // Set the unsure flag.
-        form.find('input[name=unsure]').val($('#not-sure-button').hasClass('active')
-            ? "yes" : "");
+        var value = question_widgets[key].value();
+        if (!Array.isArray(value))
+          data.append("q" + id + "_value", value);
+        else
+          value.forEach(function(item) {
+            data.append("q" + id + "_value", item);
+          })
+      }
 
-        // Assemble the form submission data.
-        //
-        // While this would normally work:
-        //
-        // var data = form.serialize();
-        //
-        // it does not handle file uploads or the rich text editor.
-        // For file uploads we must use a FormData object. We could assemble
-        // the FormData instance by hand:
-        //
-        // var form_fields = form.serializeArray();
-        // for (var i in form_fields)
-        //  data.append(form_fields[i].name, form_fields[i].value);
-        // ...and for a file field...
-        // data.append('value', $('#inputctrl')[0].files[0]);
-        //
-        // But there's a constructor that does this for us:
-        var data = new FormData(form[0]);
+      // Set the unsure flag.
+      data.append("q" + id + "_unsure",
+        qdiv.find('.not-sure-button').hasClass('active') ? "yes" : "");
 
-        {% if q.spec.type == "longtext" %}
-        // Add the rich text.
-        data.append("value", window.inputctrl_quill.getContentsAsCommonMark());
-        {% endif %}
+      return true;
+    }
 
-        ajax_with_indicator({
-            url: "{{task.get_absolute_url|escapejs}}/_save",
-            method: "POST",
-            data: data,
-            indicator_parent: $('#question'),
-            keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
-            success: function(res) {
-              window.location = res.redirect;
-            }
-        });
+    {% for q in questions %}
+    if (!submit_question({{q.question.id}}, "{{q.question.key|escapejs}}", "{{q.question.spec.title|escapejs}}"))
+      return false;
+    {% endfor %}
 
-        // don't do an actual <form> submit
-        return false;
+    ajax_with_indicator({
+        url: "{{task.get_absolute_url|escapejs}}/_save",
+        method: "POST",
+        data: data,
+        indicator_parent: $('#questionsform'),
+        keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+        success: function(res) {
+          window.location = res.redirect;
+        }
     });
+
+    // don't do an actual <form> submit
+    return false;
+  });
 })
 
-{% if answer_obj and can_review %}
-function update_review_status(elem) {
+{% if can_review %}
+function update_review_status(elem, answerid) {
   var reviewed = $(elem).val();
   $(elem).blur();
   ajax_with_indicator({
-      url: "{{task.get_absolute_url|escapejs}}/_save",
+      url: "/tasks/_update_reviewed_state",
       method: "POST",
       data: {
-        question: "{{q.id|escapejs}}",
-        answer: {{answer_obj.id}},
-        method: "review",
+        answer: answerid,
         reviewed: reviewed
       }
   });
@@ -1009,7 +484,7 @@ function start_a_discussion(is_page_load) {
         method: "POST",
         data: {
             task: {{task.id}},
-            question: "{{q.id|escapejs}}"
+            question: "{{questions.0.question.id|escapejs}}"
         },
         success: function(res) {
           // load the discussion
@@ -1056,7 +531,7 @@ function record_interaction() {
     method: "POST",
     data: {
       task: {{task.id}},
-      question: {{q.id}}
+      question: {{questions.0.question.id}}
     }
   })
   sent_first_interaction = true;
@@ -1073,13 +548,17 @@ $(function() {
     task: {{task.id}},
     module: {{task.module.spec|json}},
     questions: {
+      {% for question in questions %}
+      {% with q=question.question %}
       {{q.key}}: {
         spec: {{q.spec|json}},
         choices: "{{q.choices_as_csv|escapejs}}",
         answer_type_module_id: {% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}
-      }
+      }{% if not forloop.last %},{% endif %}
+      {% endwith %}
+      {% endfor %}
     },
-    answer_type_modules: [{% for m in q.module.get_referenceable_modules %}
+    answer_type_modules: [{% for m in get_referenceable_modules %}
       { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
       {% endfor %}],
     autocomplete_questions: { {% for q in q.module.get_questions %}

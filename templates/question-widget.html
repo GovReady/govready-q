@@ -1,0 +1,378 @@
+<div id="question-{{q.question.key}}"
+  class="question type-{{q.question.spec.type}}"
+  >
+  {% if authoring_tool_enabled %}
+  <div style="margin: 2em 0; font-size: 90%;">
+    <a class="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
+      <span class="glyphicon glyphicon-pencil"></span>
+      Authoring Tool
+    </a>
+  </div>
+  {% endif %}
+
+  {% if not q.question.spec.group %}
+    <h1>{{q.title|safe}}</h1>
+  {% else %}
+    <h2>{{q.title|safe}}</h2>
+  {% endif %}
+
+  <div class="question-prompt">
+    {{q.prompt|safe}}
+  </div>
+
+  {# ADDITIONAL INFORMATION BELOW THE PROMPT #}
+
+  {% if q.example_answers %}
+    <div class="expandable" style="margin: 35px 0; font-size: 80%; border-left: 2px solid #CCC; padding-left: 8px;">
+      <div class="expandy" style="max-height: 4.25em; overflow: hidden;">
+        <div>
+          {% for ex in q.example_answers %}
+            <div> 
+              <div><small style="color: #666;">Example{% if q.example_answers|length > 1 %} {{forloop.counter}}{% endif %}</small></div>
+              {{ex|safe}}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="toggler"
+           style="text-align: right; font-style: italic; font-size: 90%;">
+        <a
+           href="#more"
+           onclick="$(this).parents('.expandable').find('.expandy').data('original-height', $(this).parents('.expandable').find('.expandy').height()); $(this).parents('.expandable').find('.expandy').animate({ minHeight: $(this).parents('.expandable').find('.expandy>div').outerHeight() + $(this).parents('.expandable').find('.toggler').outerHeight() }); $(this).parents('.expandable').find('a[href=&quot;#more&quot;]').hide(); $(this).parents('.expandable').find('a[href=&quot;#less&quot;]').show(); return false;">Show more</a>
+        <a href="#less"
+           style="display: none;"
+           onclick="$(this).parents('.expandable').find('.expandy').animate({ minHeight: $(this).parents('.expandable').find('.expandy').data('original-height') }); $(this).parents('.expandable').find('a[href=&quot;#less&quot;]').hide(); $(this).parents('.expandable').find('a[href=&quot;#more&quot;]').show(); return false;">Show less</a>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if q.reference_text %}
+    <p style="font-size: 80%; color: #666;">
+      <a href="#" onclick="$(this).hide(); $('#reference-text').slideDown(); return false;">
+        Additional information...
+      </a>
+    </p>
+    <div style="display: none; font-size: 80%;" class="well">
+      <p><b><small>Additional Information</small></b></p>
+      {{q.reference_text|safe}}
+    </div>
+  {% endif %}
+
+  {# THE QUESTION FORM WIDGETS #}
+
+  <div class="widget">
+  {% if q.question.spec.type == "text" or q.question.spec.type == "email-address" or q.question.spec.type == "url" %}
+    <div class="form-group">
+      <input
+        class="inputctrl form-control"
+        {% if q.question.spec.type == "email-address" %}
+        type="email"
+        {% elif q.question.spec.type == "url" %}
+        type="url"
+        {% else %}
+        type="text"
+        {% endif %}
+        placeholder="{{q.placeholder_answer}}"
+        {% if q.answer %}
+          value="{{q.answer}}"
+        {% elif q.default_answer %}
+          value="{{q.default_answer}}"
+        {% endif %}>
+      <p class="help-block">
+        {% if q.question.spec.help %}
+          {{q.question.spec.help}}
+        {% elif q.question.spec.type == "email-address" %}
+          Enter an email address.
+        {% elif q.question.spec.type == "url" %}
+          Paste a web address.
+        {% endif %}
+      </p>
+    </div>
+
+  {% elif q.question.spec.type == "password" %}
+    <div class="form-group">
+      <input type="password" class="inputctrl form-control" placeholder="password">
+      {# we don't provide the old value as a default to protect secrets #}
+      <p class="help-block">{{q.question.spec.help}}</p>
+    </div>
+
+  {% elif q.question.spec.type == "longtext" %}
+    <div class="form-group">
+      <div class="inputctrl">
+        <div style="display: none"> {# dont flicker content before widget is added #}
+          {% if q.answer %}{{q.answer|safe}}
+          {% elif q.default_answer %}{{q.default_answer|safe}}{% endif %}
+        </div>
+      </div>
+      <div id="inputctrl-quill-toolbar-{{q.question.key}}">
+        <span class="ql-formats">
+          <select class="ql-header">
+            <option value="1"></option>
+            <option value="2"></option>
+            <option value="3"></option>
+            <option selected></option>
+          </select>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-bold"></button>
+          <button class="ql-italic"></button>
+          <button class="ql-link"></button>
+          <button class="ql-code"></button>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-blockquote"></button>
+          <button class="ql-list" value="bullet"></button>
+          <button class="ql-list" value="ordered"></button>
+          <button class="ql-code-block"></button>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-clean"></button>
+        </span>
+      </div>
+      <p class="help-block">{{q.question.spec.help}}</p>
+    </div>
+
+  {% elif q.question.spec.type == "date" %}
+    {# The HTML5 date input type is only properly supported on Chrome, so we don't use it yet. Other browsers just show a text box, and we expect YYYY-MM-DD format, which is hard for users to enter manually. #}
+    <div class="form-group">
+      <select class="form-control value_month" style="width: auto; display: inline-block;">
+        <option value="" disabled="1">(month)</option>
+        {% for month_str, value in date_l8n.months %}
+        <option value="{{value}}">{{month_str}}</option>
+        {% endfor %}
+      </select>
+
+      <select class="form-control value_day" style="width: auto; display: inline-block;">
+        <option value="" disabled="1">(day)</option>
+        {% for value in date_l8n.days %}
+        <option value="{{value}}">{{value}}</option>
+        {% endfor %}
+      </select>
+
+      <select class="form-control value_year" style="width: auto; display: inline-block;">
+        <option value="" disabled="1">(year)</option>
+        {% for value in date_l8n.years %}
+        <option value="{{value}}">{{value}}</option>
+        {% endfor %}
+      </select>
+
+      <p class="help-block">{{q.question.spec.help}}</p>
+    </div>
+
+  {% elif q.question.spec.type == "choice" %}
+    <div style="margin: 1em 0">
+    {% for choice in q.question.spec.choices %}
+    <div class="radio">
+      <label>
+        <input name="question-{{q.question.key}}-choice" value="{{choice.key}}" type="radio" {% if q.answer == choice.key %}checked{% endif %}> {{choice.text}}
+        <p class="help-block">{{choice.help}}</p>
+      </label>
+    </div>
+    {% endfor %}
+    </div>
+
+  {% elif q.question.spec.type == "yesno" %}
+    <div style="margin: 1em 0 1.5em 0">
+    <div class="radio">
+      <label>
+        <input name="question-{{q.question.key}}-choice" value="no" type="radio" {% if q.answer == "no" %}checked{% endif %}> No
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+        <input name="question-{{q.question.key}}-choice" value="yes" type="radio" {% if q.answer == "yes" %}checked{% endif %}> Yes
+      </label>
+    </div>
+    <p class="help-block">{{q.question.spec.help}}</p>
+    </div>
+
+  {% elif q.question.spec.type == "multiple-choice" %}
+    <div style="margin: 1em 0 1.5em 0">
+    {% for choice in q.question.spec.choices %}
+    <div class="checkbox">
+      <label>
+        <input name="question-{{q.question.key}}-choice" value="{{choice.key}}" type="checkbox" {% if choice.key in q.answer %}checked{% endif %}> {{choice.text}}
+        <p class="help-block">{{choice.help}}</p>
+      </label>
+    </div>
+    {% endfor %}
+
+    {% if q.question.spec.min > 0 and q.question.spec.min == q.question.spec.max %}
+        <p class="help-block">You must choose exactly {{q.question.spec.min}} option{{q.question.spec.min|pluralize}}.</p>
+    {% elif q.question.spec.min > 0 %}
+        <p class="help-block">You must choose at least {{q.question.spec.min}} {% if q.question.spec.max %}and at most {{q.question.spec.max}}{% endif %} option{{q.question.spec.min|pluralize}}.</p>
+    {% elif q.question.spec.max %}
+        <p class="help-block">You may choose at most {{q.question.spec.max}} option{{q.question.spec.max|pluralize}}.</p>
+    {% endif %}
+    </div>
+
+  {% elif q.question.spec.type == "integer" or q.question.spec.type == "real" %}
+    <div class="form-group">
+      {% comment %}
+        The HTML5 number input is a bit confusing in how it handles periods and commas.
+        Browsers seem to currently only support a period or comma as a decimal separator,
+        depending on the lang attribute on the input or HTML. They do not allow 
+        thousands-commas. But we should let users type that in.
+      {% endcomment %}
+      {% if q.question.spec.min > -1000 and q.question.spec.max < 1000 %}
+        {# the range doesn't admit thousands, so we don't need to worry about thousands-commmas #}
+        <input type="number" {% if q.question.spec.type == "integer" %}step="1"{% else %}step="any"{% endif %} class="inputctrl form-control" placeholder="{{q.placeholder_answer}}" {% if q.answer %}value="{{q.answer}}"{% endif %}>
+      {% else %}
+        {# to let users enter thousands-commas by using a plain text field #}
+        <input type="text" pattern="[0-9,\.]+" class="inputctrl form-control" placeholder="{{q.placeholder_answer}}" {% if q.answer %}value="{{q.answer}}"{% endif %}>
+      {% endif %}
+      <p class="help-block">{{q.question.spec.help}}</p>
+      {% if q.question.spec.min|default_if_none:"NONE" != "NONE" and q.question.spec.max|default_if_none:"NONE" != "NONE" %}
+          <p class="help-block">Enter a number from {{q.question.spec.min}} to {{q.question.spec.max}}.</p>
+      {% elif q.question.spec.min|default_if_none:"NONE" != "NONE" %}
+          <p class="help-block">Enter a number at least {{q.question.spec.min}}.</p>
+      {% elif q.question.spec.max|default_if_none:"NONE" != "NONE" %}
+          <p class="help-block">Enter a number at most {{q.question.spec.max}}.</p>
+      {% endif %}
+    </div>
+
+  {% elif q.question.spec.type == "file" %}
+    {# When there is an existing answer, the UI shows a thumbnail of it. If the user doesn't choose a new file, the existing value is kept. #}
+    {% if q.answer %}
+    <div style="margin: 1em 0">
+      <p>The following file is uploaded:</p>
+      {{q.answer_rendered|safe}}
+      <p>Select a new file if you would like to replace it:</p>
+    </div>
+    {% endif %}
+
+    <div class="form-group">
+      <input type="file" class="inputctrl form-control"
+        style="width: auto; border:  none; padding: 0; display: inline-block"/>
+      {# <input type="reset" value="x" style="font-size: 14px;"> don't reset whole form #}
+      <p class="help-block">{{q.question.spec.help}}</p>
+    </div>
+
+
+  {% elif q.question.spec.type == "module" and q.answer_tasks|length == 0 %}
+    {# The user must choose or start a module, but there is nothing to choose from, so show a simplified interface. #}
+
+    <p>You will next begin the module {{q.answer_module.title}}.</p>
+
+    {# must be a radio so the client-side validation passes, but we hide it #}
+    <input name="question-{{q.question.key}}-choice" type="radio" value="__new" checked style="display: none"/>
+
+  {% elif q.question.spec.type == "module" %}
+    {% with current_answer=q.answer_obj.answered_by_task.first %}
+
+    {% for m in q.answer_tasks %}
+      <div class="radio">
+        <label>
+          <input name="question-{{q.question.key}}-choice" value="{{m.id}}" type="radio" {% if m == q.current_answer %}checked{% endif %}>
+            {% with m.title as title %}
+            {{title}}
+            <div class="small" style="color: #666">
+              {% if m == q.current_answer %}
+                <strong>Current Answer</strong>.
+              {% endif %}
+
+              {% if m.project != task.project and m.project.title != title %}
+              {{ m.project.title }}.
+              {% endif %}
+              
+              {% if q.answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}}.
+
+              <a href="{{m.get_absolute_url}}" class="onhover" style="color: #999; margin-left: 3px; font-size: 90%;"><span class="glyphicon glyphicon-pencil"> </span></a>
+            </div>
+            {% endwith %}
+        </label>
+      </div>
+    {% endfor %}
+
+    <div class="radio" style="margin-bottom: 1.5em">
+      <label>
+        <input name="question-{{q.question.key}}-choice" value="__new" type="radio">
+        {% if q.current_answer %}
+          Start over and create
+        {% else %}
+          Create
+        {% endif %}
+        a new {{q.answer_module.title}}
+      </label>
+    </div>
+
+    <p class="help-block">{{q.question.spec.help}}</p>
+    {% endwith %}
+
+  {% elif q.question.spec.type == "interstitial" %}
+    {# no other content but an empty value #}
+    <input type="hidden" value=""/>
+
+  {% else %}
+    <p class="text-danger">QUESTION TYPE NOT IMPLEMENTED: {{q.question.spec.type}}</p>
+
+  {% endif %}
+  </div>
+
+  {# Interstitial questions do not offer these options because the user is just acknowledging the page and not providing an answer. #}
+  {% if q.question.spec.type != "interstitial" %}
+
+    {% if not q.is_answerable %}
+        <p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
+
+    {% elif write_priv %}
+      <div class="confidence-buttons">
+          <button class="no-idea-button" type=button {# type=button prevents button from causing form submit #}>
+              <span class="emoji" data-sprite="people" data-code="1f937-2642" data-name="man shrugging"></span>
+              I don&rsquo;t know
+          </button>
+          <button class="not-applicable-button" type=button>
+              <span class="emoji" data-sprite="people" data-code="1f64b" data-name="person raising hand"></span>
+              It doesn&rsquo;t apply
+          </button>
+          <button class="not-now-button" type=button>
+              <span class="emoji" data-sprite="objects" data-code="1f4cd" data-name="round_pushpin"></span>
+              I&rsquo;ll come back
+          </button>
+          <button class="not-sure-button" type=button>
+              <span class="emoji"  data-sprite="people" data-code="1f914" data-name="thinking face"></span>
+              Not sure
+          </button>
+
+          {# Meta-options like starting a discussion or changing the editor of this question. Interstitial questions do not offer these and individuals here as a discussion guest dont get it either. #}
+          {% if not is_discussion_guest and q.question.spec.type != "interstitial" and questions|length == 1 %}
+            {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
+              <button id="start-a-discussion" onclick="start_a_discussion();" type=button data-toggleable=false>
+                  {# if you can see this page, you can start a conversation #}
+                  <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss
+              </button>
+            {% endif %}
+            {% if task.can_transfer_owner and write_priv %}
+              <button id="transfer-editorship" onclick="invite_to_transfer_editor();" type=button data-toggleable=false>
+                  <span class="glyphicon glyphicon-user" style="color: #A65;"></span> Assign
+              </button>
+            {% endif %}
+          {% endif %}
+
+          {% if q.answer_obj and can_review %}
+            <select style="display: inline-block; margin-left: 1em; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this, '{{q.answer_obj.id}}')">
+              {% for key, label in review_choices %}
+                <option value="{{key}}" {% if q.answer_obj.reviewed == key %}selected{% endif %}>
+                  {{label}}
+                </option>
+              {% endfor %}
+            </select>
+          {% endif %}
+
+      </div>
+
+    {% else %} {# write_priv #}
+      {# User does not have write permission so cannot answer the question, start a discussion, or change the editor. But we instead still want to show the review state. #}
+
+      {% if q.answer_obj %}
+        {% for key, label in review_choices %}
+          {% if q.answer_obj.reviewed == key %}
+            <p style="margin-top: 1em; font-size: 85%; color: #666">This question&rsquo;s review status is {{label}}.</p>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+    {% endif %} {# write_priv #}
+
+  {% endif %} {# not interstitial #}
+</div> <!-- /question -->

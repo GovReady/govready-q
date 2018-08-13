@@ -408,6 +408,33 @@ If `image->max-size` is given, then the image will be resized prior to being sav
 
 In document templates and impute conditions, the value of these questions is a Python dict (JSON object) containing `url` (a download URL) and `size` (in bytes) fields.
 
+#### `group`
+
+The `group` question type is used to group questions together that should be shown on a single form:
+
+	- id: group1
+	  type: group
+	  title: Your Favorite Animal
+	  questions:
+	  - id: animal_name
+	    title: Your Favorite Animal
+	    prompt: What's your favorite animal?
+	    type: text
+	    placeholder: enter a type of animal
+	    help: Examples: dog, cat, turtle, lion
+	  - id: animal_image
+	    title: Image
+	    prompt: Upload an image of your favorite animal.
+	    type: file
+	    file-type: image
+	    image:
+	      max-size:
+	        width: 60
+	        height: 60
+
+In document templates and impute conditions, the questions are used in the same manner as if they were not included in a group. Although the group has an ID, the group cannot be accessed from templates or impute conditions.
+
+
 #### `module`, `module-set`
 
 These question type prompt the user to select another completed module as the answer to the question. The `module-id` field specifies the ID of another module specification. The `module` question type allows for a single other module to answer the question. The `module-set` question type allows for zero or more other modules to answer the question.

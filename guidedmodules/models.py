@@ -1514,7 +1514,7 @@ class TaskAnswer(models.Model):
             return True
         return False
 
-    def get_history(self):
+    def get_history(self, is_singleton_question=False):
         from discussion.models import reldate
 
         history = []
@@ -1527,6 +1527,7 @@ class TaskAnswer(models.Model):
         for i, answer in enumerate(self.answer_history.order_by('id')):
             if answer.cleared:
                 vp = "cleared the answer"
+                if not is_singleton_question: vp += " to " + self.question.spec['title']
                 is_cleared = True
             elif answer.is_skipped():
                 vp = "skipped the question"
@@ -1534,21 +1535,31 @@ class TaskAnswer(models.Model):
                     vp += " ({})".format(answer.get_skipped_reason_display())
                 if answer.skipped_reason != "dont-know" and answer.unsure:
                     vp += " (unsure)"
+                if not is_singleton_question: vp += " " + self.question.spec['title']
                 is_cleared = False
             elif is_cleared:
                 if self.question.spec["type"] == "interstitial":
                     # answer doesn't make sense here
-                    vp = "acknowledged this page"
+                    vp = "acknowledged "
+                    if is_singleton_question:
+                        vp += "this page"
+                    else:
+                        vp += self.question.spec['title']
                 else:
-                    vp = "answered the question"
+                    vp = "answered "
                     if answer.unsure:
                         vp += " (unsure)"
+                    if is_singleton_question:
+                        vp += "the question"
+                    else:
+                        vp += self.question.spec['title']
                 is_cleared = False
             else:
                 vp = "changed the answer"
                 if answer.unsure:
                     vp += " (unsure)"
                 is_cleared = False
+                if not is_singleton_question: vp += " to " + self.question.spec['title']
 
             # get a dict with information about the user
             who = answer.answered_by.render_context_dict(self.task.project.organization)

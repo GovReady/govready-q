@@ -59,11 +59,13 @@ def validate_module(spec, app, is_authoring_tool=False):
         else:
             raise ValidationError("module specification", "protocol must be a string or a list of strings (not %s)." % repr(spec["protocol"]))
 
-    # Validate the questions.
+    # Validate the questions. Update spec["questions"] with the
+    # re-written question data.
     if not isinstance(spec.get("questions"), (type(None), list)):
         raise ValidationError("module questions", "Invalid data type of value for 'questions'.")
-    for i, q in enumerate(spec.get("questions", [])):
-        spec["questions"][i] = validate_question(spec, spec["questions"][i])
+    spec["questions"] = sum(
+        [validate_question(spec, q) for q in spec.get("questions", [])],
+        [])
 
     return spec
 
@@ -125,7 +127,7 @@ def validate_document(doc, error_message_name, app):
     return doc
 
 
-def validate_question(mspec, spec):
+def validate_question(mspec, spec, is_top_level=True):
     if not spec.get("id"):
         raise ValidationError("module questions", "A question is missing an id.")
 
@@ -134,6 +136,30 @@ def validate_question(mspec, spec):
 
     # clone dict before updating
     spec = OrderedDict(spec)
+
+    # If the question type is "group", then this question contains an array of questions.
+    # Return the inner quetions but attach the group metadata to each question.
+    if spec.get("type") == "group" and is_top_level:
+        if not isinstance(spec.get("questions"), list):
+            invalid("The 'questions' must be an array.")
+
+        # Pull out the inner questions.
+        inner_questions = spec["questions"]
+        del spec["questions"]
+
+        # Valiate each. Pass is_top_level=False because groups cannot
+        # be inside of groups.
+        inner_questions = sum(
+            [validate_question(mspec, q, is_top_level=False) for q in inner_questions],
+            [])
+
+        # Attach group information to each inner question.
+        for q in inner_questions:
+            q["group"] = spec
+
+        # Return a list of the inner questions.
+        return inner_questions
+
 
     # Since question IDs become Jinja2 identifiers, they must be valid
     # Jinaj2 identifiers. http://jinja.pocoo.org/docs/2.9/api/#notes-on-identifiers
@@ -234,7 +260,8 @@ def validate_question(mspec, spec):
             except Exception as e:
                 invalid_rule("Impute condition value %s is an invalid Jinja2 template: %s." % (repr(rule["value"]), str(e)))
     
-    return spec
+    # Return the single question wrapped in a list.
+    return [spec]
 
 
 def resolve_relative_module_id(within_module, module_id):

@@ -158,9 +158,8 @@ def task_view(view_func):
 
     return inner_func
 
-
 @task_view
-def next_question(request, task, answered, *unused_args):
+def next_question(request, task, answered, context, *unused_args):
     import urllib.parse
     previous = ("?" + urllib.parse.urlencode({ "previous": request.GET["previous"]})) \
         if "previous" in request.GET else ""
@@ -185,13 +184,37 @@ def save_answer(request, task, answered, context, __):
         return HttpResponseForbidden()
 
     # normal redirect - reload the page
-    redirect_to = task.get_absolute_url() + "?previous=nquestion"
+    redirect_to = [ task.get_absolute_url() + "?previous=nquestion" ]
 
-    # validate question
-    q = task.module.questions.get(id=request.POST.get("question"))
+    for questionid in request.POST.get("questions", "").split(","):
+        q = task.module.questions.get(id=questionid)
+        try:
+            save_answer_for(
+                task,
+                q,
+                request.POST.get("method"),
+                request.POST.get("q{}_skipped_reason".format(questionid)) or None,
+                bool(request.POST.get("q{}_unsure".format(questionid))),
+                request.POST.getlist("q{}_value".format(questionid)),
+                request.FILES.get("q{}_value".format(questionid)),
+                request.user,
+                redirect_to)
+        except ValueError as e:
+            # client side validation should have picked this up
+            return JsonResponse({
+                "status": "error",
+                "message": q.spec['title'] + ": " + str(e) })
 
+    # Form a JSON response to the AJAX request and indicate the
+    # URL to redirect to, to load the next question.
+    response = JsonResponse({ "status": "ok", "redirect": redirect_to[0] })
+
+    # Return the response.
+    return response
+
+def save_answer_for(task, q, method, skipped_reason, unsure, value, file, user, redirect_to):
     # validate and parse value
-    if request.POST.get("method") == "clear":
+    if method == "clear":
         # Clear means that the question returns to an unanswered state.
         # This method is only offered during debugging to make it easier
         # to test the application's behavior when questions are unanswered.
@@ -200,62 +223,39 @@ def save_answer(request, task, answered, context, __):
         skipped_reason = None
         unsure = False
     
-    elif request.POST.get("method") == "skip":
+    elif skipped_reason:
         # The question is being skipped, i.e. answered with a null value,
         # because the user doesn't know the answer, it doesn't apply to
         # the user's circumstances, or they want to return to it later.
         value = None
         cleared = False
-        skipped_reason = request.POST.get("skipped_reason") or None
-        unsure = bool(request.POST.get("unsure"))
 
-    elif request.POST.get("method") == "save":
+    else:
         # load the answer from the HTTP request
         if q.spec["type"] == "file":
             # File uploads come through request.FILES.
-            value = request.FILES.get("value")
+            value = file
 
             # We allow the user to preserve the existing uploaded value
             # for a question by submitting nothing. (The proper way to
             # clear it is to use Skip.) If the user submits nothing,
             # just return immediately.
             if value is None:
-                return JsonResponse({ "status": "ok", "redirect": redirect_to })
+                return
 
         else:
             # All other values come in as string fields. Because
             # multiple-choice comes as a multi-value field, we get
             # the value as a list. question_input_parser will handle
             # turning it into a single string for other question types.
-            value = request.POST.getlist("value")
+            pass
 
-        # parse & validate
-        try:
-            value = answer_validation.question_input_parser.parse(q, value)
-            value = answer_validation.validator.validate(q, value)
-        except ValueError as e:
-            # client side validation should have picked this up
-            return JsonResponse({ "status": "error", "message": str(e) })
+        # parse & validate --- these raise ValueError on error
+        value = answer_validation.question_input_parser.parse(q, value)
+        value = answer_validation.validator.validate(q, value)
 
         cleared = False
         skipped_reason = None
-        unsure = bool(request.POST.get("unsure"))
-
-    elif request.POST.get("method") == "review":
-        # Update the reviewed flag on the answer.
-        if not task.has_review_priv(request.user):
-            return JsonResponse({ "status": "error", "message": "You are not an organization reviewer." })
-        ta = TaskAnswer.objects.filter(task=task, question=q).first()
-        if ta:
-            ans = ta.get_current_answer()
-            if ans and not ans.cleared and ans.id == int(request.POST["answer"]):
-                ans.reviewed = int(request.POST["reviewed"])
-                ans.save(update_fields=["reviewed"])
-                return JsonResponse({ "status": "ok" })
-        return JsonResponse({ "status": "error", "message": "Invalid question." })
-
-    else:
-        raise ValueError("invalid 'method' parameter %s" + request.POST.get("method", "<not set>"))
 
     # save answer - get the TaskAnswer instance first
     question, _ = TaskAnswer.objects.get_or_create(
@@ -270,12 +270,12 @@ def save_answer(request, task, answered, context, __):
             # Create a new task, and we'll redirect to it immediately.
             t = Task.create(
                 parent_task_answer=question, # for instrumentation only, doesn't go into Task instance
-                editor=request.user,
+                editor=user,
                 project=task.project,
                 module=q.answer_type_module)
 
             answered_by_tasks = [t]
-            redirect_to = t.get_absolute_url() + "?previous=parent"
+            redirect_to[0] = t.get_absolute_url() + "?previous=parent"
 
         elif value == None:
             # User is skipping this question.
@@ -290,7 +290,7 @@ def save_answer(request, task, answered, context, __):
                 for item in value.split(',')
                 ]
             for t in answered_by_tasks:
-                if t.module != q.answer_type_module or not t.has_read_priv(request.user):
+                if t.module != q.answer_type_module or not t.has_read_priv(user):
                     raise ValueError("invalid task ID")
             if q.spec["type"] == "module" and len(answered_by_tasks) != 1:
                 raise ValueError("did not provide exactly one task ID")
@@ -311,18 +311,18 @@ def save_answer(request, task, answered, context, __):
     # Create a new TaskAnswerHistory record, if the answer is actually changing.
     if cleared:
         # Clear the answer.
-        question.clear_answer(request.user)
+        question.clear_answer(user)
         instrumentation_event_type = "clear"
     else:
         # Save the answer.
         had_answer = question.has_answer()
         if question.save_answer(
             value, answered_by_tasks, answered_by_file,
-            request.user, "web",
+            user, "web",
             skipped_reason=skipped_reason, unsure=unsure):
 
             # The answer was changed (not just saved as a new answer).
-            if request.POST.get("method") == "skip":
+            if skipped_reason:
                 instrumentation_event_type = "skip"
             elif had_answer:
                 instrumentation_event_type = "change"
@@ -336,14 +336,14 @@ def save_answer(request, task, answered, context, __):
     # How long was it since the question was initially viewed? That gives us
     # how long it took to answer the question.
     i_task_question_view = InstrumentationEvent.objects\
-        .filter(user=request.user, event_type="task-question-show", task=task, question=q)\
+        .filter(user=user, event_type="task-question-show", task=task, question=q)\
         .order_by('event_time')\
         .first()
     i_event_value = (timezone.now() - i_task_question_view.event_time).total_seconds() \
         if i_task_question_view else None
     # Save.
     InstrumentationEvent.objects.create(
-        user=request.user,
+        user=user,
         event_type="task-question-" + instrumentation_event_type,
         event_value=i_event_value,
         module=task.module,
@@ -356,24 +356,44 @@ def save_answer(request, task, answered, context, __):
         }
     )
 
-    # Form a JSON response to the AJAX request and indicate the
-    # URL to redirect to, to load the next question.
-    response = JsonResponse({ "status": "ok", "redirect": redirect_to })
+@login_required
+def update_reviewed_state(request):
+    if request.method != "POST":
+        return HttpResponseForbidden()
 
-    # Return the response.
-    return response
+    # Get the Task, TaskAnswer, and TaskAnswerHistory record,
+    # starting with the TaskAnswerHistory record.
+    ans = TaskAnswerHistory.objects\
+        .filter(id=int(request.POST["answer"]))\
+        .select_related("taskanswer", "taskanswer__task")\
+        .first()
+    if not ans:
+        return HttpResponseForbidden()
 
+    # Check state.
+    if ans.taskanswer.task.deleted_at or ans.cleared or ans.taskanswer.get_current_answer() != ans:
+        return HttpResponseForbidden()
+
+    # Check permission.
+    if not ans.taskanswer.task.has_review_priv(request.user):
+        return HttpResponseForbidden()
+
+    # Update.
+    ans.reviewed = int(request.POST["reviewed"])
+    ans.save(update_fields=["reviewed"])
+    return JsonResponse({ "status": "ok" })
 
 @task_view
 def show_question(request, task, answered, context, q):
-    # If this question cannot currently be answered (i.e. dependencies are unmet),
-    # then redirect away from this page. If the user is allowed to use the authoring
-    # tool, then allow seeing this question so they can edit all questions.
-    authoring_tool_enabled = task.module.is_authoring_tool_enabled(request.user)
-    is_answerable = (((q not in answered.unanswered) or (q in answered.can_answer)) and (q.key not in answered.was_imputed))
-    if not is_answerable and not authoring_tool_enabled:
-        return HttpResponseRedirect(task.get_absolute_url())
+    # This view is for a URL to a question. But we'll actually show all of the questions
+    # in q's group --- if it is in a group.
+    qq = [q]
+    if q.spec.get('group'):
+        qq = [q1 for q1 in task.module.questions.all() if q1.spec.get("group", {}).get("id") == q.spec["group"]["id"]]
 
+    return show_questions(request, task, answered, context, qq)
+
+def show_question_get_context(request, task, answered, context, q):
     # Is there a TaskAnswer for this yet?
     taskq = TaskAnswer.objects.filter(task=task, question=q).first()
 
@@ -382,6 +402,7 @@ def show_question(request, task, answered, context, q):
     # Is there an answer already? (If this question isn't answerable, i.e. if we're
     # only here because the user is using the authoring tool, then there is no
     # real answer to load.)
+    is_answerable = (((q not in answered.unanswered) or (q in answered.can_answer)) and (q.key not in answered.was_imputed))
     answer = None
     if taskq and is_answerable:
         answer = taskq.get_current_answer()
@@ -511,28 +532,46 @@ def show_question(request, task, answered, context, q):
         "text" if q.spec["type"] != "longtext" else "html",
         demote_headings=False)
 
-    context.update({
-        "q": q,
+    return {
+        "question": q,
         "title": title,
         "prompt": prompt,
         "placeholder_answer": render_markdown_field("placeholder", "text") or "", # Render Jinja2 template but don't turn Markdown into HTML.
         "example_answers": [render_markdown_value(ex.get("example", ""), "html", "example {}".format(i+1)) for i, ex in enumerate(q.spec.get("examples", []))],
         "reference_text": render_markdown_field("reference_text", "html"),
         "history": taskq.get_history() if taskq else None,
+        "is_answerable": is_answerable,
         "answer_obj": answer,
         "answer": existing_answer,
         "answer_rendered": answer_rendered,
         "default_answer": default_answer,
-        "can_review": task.has_review_priv(request.user),
-        "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
-        "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
-        "show_discussion_members_count": True,
-
         "answer_module": answer_module,
         "answer_tasks": answer_tasks,
         "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
+        "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
+    }
 
-        "context": module_logic.get_question_context(answered, q),
+def show_questions(request, task, answered, context, qq):
+    from functools import reduce
+
+    # Get the context dict for each question.
+    questions = [ show_question_get_context(request, task, answered, context, q) for q in qq ]
+
+    # Get the merged histories of all of the questions.
+    history = sum((q["history"] or [] for q in questions), [])
+    history.sort(key = lambda x : x['date_posix'])
+
+    authoring_tool_enabled = task.module.is_authoring_tool_enabled(request.user)
+
+    context.update({
+        "questions": questions,
+
+        "can_review": task.has_review_priv(request.user),
+        "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
+        "show_discussion_members_count": True,
+
+        "context": module_logic.get_question_context(answered, qq),
+        "history": history,
 
         # Helpers for showing date month, day, year dropdowns, with
         # localized strings and integer values. Default selections
@@ -550,8 +589,9 @@ def show_question(request, task, answered, context, q):
                 for y in reversed(range(timezone.now().year-100, timezone.now().year+101))],
         },
 
-        "is_answerable": is_answerable, # only false if authoring tool is enabled, otherwise this page is not renderable
         "authoring_tool_enabled": authoring_tool_enabled,
+
+        "get_referenceable_modules": reduce((lambda x, y : x | y), ({ q.module.get_referenceable_modules() } for q in qq)),
     })
     return render(request, "question.html", context)
 

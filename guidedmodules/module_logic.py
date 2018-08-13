@@ -214,8 +214,8 @@ def evaluate_module_state(current_answers, parent_context=None):
     return ret
 
 
-def get_question_context(answers, question):
-    # What is the context of questions around the given question to show
+def get_question_context(answers, questions):
+    # What is the context of questions around the given questions to show
     # the user their progress through the questions?
     answers.as_dict() # force lazy-load
     context = []
@@ -234,7 +234,7 @@ def get_question_context(answers, question):
 
             "skipped": (answer_obj is not None and answer_value is None) and (q.spec["type"] != "interstitial"),
             "answered": answer_obj is not None,
-            "is_this_question": (question is not None) and (q.key == question.key),
+            "is_this_question": (q in questions),
         })
 
     return context
