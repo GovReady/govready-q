@@ -215,36 +215,15 @@ def evaluate_module_state(current_answers, parent_context=None):
 
 
 def get_question_context(answers, question):
-    # What is the context of questions around the given question so show
+    # What is the context of questions around the given question to show
     # the user their progress through the questions?
-
-    # Create an object to lazy-render values, since we only use it on
-    # the module-finished page and not to display context on question
-    # pages.
-    from guidedmodules.module_logic import TemplateContext, RenderedAnswer, HtmlAnswerRenderer
-    class LazyRenderedAnswer:
-        def __init__(self, q, is_answered, answer_obj, answer_value):
-            self.q = q
-            self.is_answered = is_answered
-            self.answer_obj = answer_obj
-            self.answer_value = answer_value
-        def __call__(self):
-            if not self.is_answered:
-                return "<i>not answered</i>"
-            if self.q.spec["type"] == "interstitial":
-                return "<i>seen</i>"
-            if self.answer_value is None:
-                return "<i>skipped</i>"
-            if not hasattr(LazyRenderedAnswer, 'tc'):
-                LazyRenderedAnswer.tc = TemplateContext(answers, HtmlAnswerRenderer(show_metadata=False))
-            return RenderedAnswer(answers.task, self.q, self.answer_obj, self.answer_value, LazyRenderedAnswer.tc).__html__()
-
     answers.as_dict() # force lazy-load
     context = []
     for q, is_answered, answer_obj, answer_value in answers.answertuples.values():
-        # Sometimes we want to skip imputed questions, but for the sake
-        # of the authoring tool we need to keep imputed questions so
-        # the user can navigate to them.
+        # Don't show imputed answers.
+        if is_answered and answer_obj is None:
+            continue
+            
         context.append({
             "key": q.key,
             "title": q.spec['title'],
@@ -253,12 +232,9 @@ def get_question_context(answers, question):
             # Any question that has been answered or can be answered next can be linked to,
             "can_link": (answer_obj or q in answers.can_answer),
 
-            "imputed": is_answered and answer_obj is None,
             "skipped": (answer_obj is not None and answer_value is None) and (q.spec["type"] != "interstitial"),
             "answered": answer_obj is not None,
-            "reviewed": answer_obj.reviewed if answer_obj is not None else None,
             "is_this_question": (question is not None) and (q.key == question.key),
-            "value": LazyRenderedAnswer(q, is_answered, answer_obj, answer_value),
         })
 
     return context

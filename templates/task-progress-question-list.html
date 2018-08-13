@@ -1,5 +1,4 @@
 {% for q in context %}
-{% if not q.imputed %}
   <li id="link-to-question-{{q.key}}" class="{% if q.is_this_question %}this{% else %}other{% endif %}">
     {% if not q.is_this_question and q.can_link %}<a href="{{q.link}}?previous={{previous|urlencode}}">{% endif %}
 
@@ -12,5 +11,4 @@
 
     {% if not q.is_this_question and q.can_link %}</a>{% endif %}
   </li>
-{% endif %}
 {% endfor %}

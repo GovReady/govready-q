@@ -512,7 +512,6 @@ def show_question(request, task, answered, context, q):
         demote_headings=False)
 
     context.update({
-        "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
         "title": title,
         "prompt": prompt,
