@@ -162,7 +162,8 @@ class User(AbstractUser):
         # Because of invitations, profile photos are not protected by
         # authorization. But to prevent user enumeration and to bust
         # caches when photos change, we include in the URL some
-        # information about the internal data of the profile photo
+        # information about the internal data of the profile photo,
+        # which is checked in views_landing.py's user_profile_photo().
         # Also since profile photos are per-Organization we have to
         # include which org this User instance is localized to.
 
@@ -174,16 +175,19 @@ class User(AbstractUser):
         except:
             return None
 
-        # We've got the content.
-        import hashlib
-        sha1 = hashlib.sha1()
-        sha1.update(pic['content_dataurl'].encode("ascii"))
-        fnhash = sha1.hexdigest()
-
+        # We've got the content. Make a fingerprint.
+        import pyhash, base64
+        payload = pic['content_dataurl']
+        fingerprint = base64.urlsafe_b64encode(
+                        pyhash.spooky_128()(
+                            payload
+                        )
+                        .to_bytes(128//8, byteorder='little')
+                      ).decode('ascii').rstrip("=")
         return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s/%s" % (
             self.id,
             self.user_settings_task.project.organization.subdomain,
-            fnhash
+            fingerprint
         )
 
     def render_context_dict(self, req_organization):
@@ -216,12 +220,11 @@ class User(AbstractUser):
 
     random_colors = ('#5cb85c', '#337ab7', '#AFB', '#ABF', '#FAB', '#FBA', '#BAF', '#BFA')
     def get_avatar_fallback_css(self):
-        # Compute a hash over the user ID and username to generate
-        # a stable random number.
-        import hashlib
-        digest = hashlib.sha1()
-        digest.update(("%d|%s|" % (self.id, self.username)).encode("utf8"))
-        digest = digest.digest()
+        # Compute a non-cryptographic hash over the user ID and username to generate
+        # a stable set of random bytes to use to select CSS styles.
+        import pyhash
+        payload = "%d|%s|" % (self.id, self.username)
+        digest = pyhash.spooky_128()(payload).to_bytes(128//8, byteorder='big')
 
         # Choose two colors at random using the bytes of the digest.
         color1 = User.random_colors[digest[0] % len(User.random_colors)]
