@@ -28,8 +28,9 @@ class DiscussionTests(SeleniumTest):
 
         # Create a default user that is a member of the organization.
 
+        self.user_pw = get_random_string(4)
         self.user = User.objects.create(username="me")
-        self.user.set_password("1234")
+        self.user.set_password(self.user_pw)
         self.user.save()
 
         # Create the Organization.
@@ -41,13 +42,13 @@ class DiscussionTests(SeleniumTest):
         # Within this test, we only generate URLs for the organization subdomain.
         return super().url("testorg", path)
 
-    def _login(self, username="me", password="1234"):
+    def _login(self):
         # Fill in the login form and submit.
         self.browser.get(self.url("/"))
 
         self.assertRegex(self.browser.title, "Home")
-        self.fill_field("#id_login", username)
-        self.fill_field("#id_password", password)
+        self.fill_field("#id_login", self.user.username)
+        self.fill_field("#id_password", self.user_pw)
         self.click_element("form button.primaryAction")
 
     def _new_project(self):
@@ -63,36 +64,6 @@ class DiscussionTests(SeleniumTest):
 
         # Start the task.
         self.click_element('#question-simple_module')
-
-    def _accept_invitation(self, email):
-        # Assumes an invitation email was sent.
-
-        # Extract the URL in the email and visit it.
-        invitation_body = self.pop_email().body
-        invitation_url_pattern = re.escape(self.url("/invitation/")) + r"\S+"
-        self.assertRegex(invitation_body, invitation_url_pattern)
-        m = re.search(invitation_url_pattern, invitation_body)
-        self.browser.get(m.group(0))
-
-        # Since we're not logged in, we hit the invitation splash page.
-        self.click_element('#button-sign-in')
-        var_sleep(.5) # wait for page to load
-
-        # We're at the sign-in page. Go to the create account page
-        # and register. Use a random username so that we submit something
-        # unique, since a test may create multiple users.
-        self.assertRegex(self.browser.title, "Sign In")
-        self.click_element("p a") # This isn't a very good targetting of the "sign up" link.
-        var_sleep(.5) # wait for page to load
-        self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(6))
-        self.fill_field("#id_email", email)
-        self.fill_field("#id_password1", "1234")
-        self.fill_field("#id_password2", "1234")
-        self.click_element("form.signup button") # This isn't a very good targetting of the "sign up" link.
-        var_sleep(.5) # wait for next page to load
-
-        # Test that an allauth confirmation email was sent.
-        self.assertIn("Please confirm your email address at GovReady Q by following this link", self.pop_email().body)
 
     def test_discussion(self):
 
