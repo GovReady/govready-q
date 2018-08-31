@@ -1,12 +1,27 @@
 GovReady-Q Release Notes
 ========================
 
-In Development
---------------
+v0.8.3 (August 30, 2018)
+------------------------
+
+Application changes:
+
+* "Invite Colleague" on the home page now is always displayed instead of being hidden in some cases.
+* The "Related Controls" button on project pages is back now as "Documents."
 
 App authoring changes:
 
-* Output document templates can now be stored in separate files.
+* Output document templates can now be stored in separate files rather than all output document templates being stored in the module YAML file.
+
+Other changes:
+
+* A new command-line tool called "assemble" is available that instantiates an entire project from a YAML file of app selections and question answers and generates/saves output documents to files on disk.
+
+Developer changes:
+
+* Non-cryptographic hash functions replace cryptographic hash functions in places where a cryptographic hash function is not necessary and might be excessively slow.
+* Other minor fixes.
+* Upgraded some dependencies.
 
 v0.8.2 (July 20, 2018)
 ----------------------

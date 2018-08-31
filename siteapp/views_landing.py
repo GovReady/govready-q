@@ -132,12 +132,11 @@ def user_profile_photo(request, user_id, org_subdomain, hash):
     if not photo: raise Http404()
     if not photo.answered_by_file.name: raise Http404()
 
-    # Check that the hash in the URL matches. See User.get_profile_picture_absolute_url.
-    import hashlib
-    sha1 = hashlib.sha1()
-    sha1.update(photo.get_value().get("content_dataurl").encode("ascii"))
-    fnhash = sha1.hexdigest()
-    if hash != fnhash: raise Http404()
+    # Check that the fingerprint in the URL matches. See User.get_profile_picture_absolute_url.
+    user.localize_to_org(org)
+    path_with_fingerprint = user.get_profile_picture_absolute_url()
+    if not path_with_fingerprint.endswith(request.path):
+        raise Http404()
 
     # Get the dbstorage.models.StoredFile instance which holds
     # an auto-detected mime type.
