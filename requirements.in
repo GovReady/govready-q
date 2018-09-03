@@ -8,14 +8,14 @@ Jinja2 # BSD License
 
 # Less Common Python Packages
 html5lib # MIT License
-CommonMark # BSD License
+commonmark # BSD License
 graphviz # MIT License
 fs # BSD License
 PyGithub # LGPL License
 GitPython # BSD License
 Pygments==2.2.0 # BSD License
 termcolor # MIT License
-pyhash # Apache License 2.0
+xxhash # BSD License
 
 # Common Django Packages
 Django<2.1 # BSD License

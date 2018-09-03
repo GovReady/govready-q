@@ -176,14 +176,11 @@ class User(AbstractUser):
             return None
 
         # We've got the content. Make a fingerprint.
-        import pyhash, base64
+        import xxhash, base64
         payload = pic['content_dataurl']
         fingerprint = base64.urlsafe_b64encode(
-                        pyhash.spooky_128()(
-                            payload
-                        )
-                        .to_bytes(128//8, byteorder='little')
-                      ).decode('ascii').rstrip("=")
+                        xxhash.xxh64(payload).digest()
+                       ).decode('ascii').rstrip("=")
         return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s/%s" % (
             self.id,
             self.user_settings_task.project.organization.subdomain,
@@ -222,9 +219,9 @@ class User(AbstractUser):
     def get_avatar_fallback_css(self):
         # Compute a non-cryptographic hash over the user ID and username to generate
         # a stable set of random bytes to use to select CSS styles.
-        import pyhash
+        import xxhash
         payload = "%d|%s|" % (self.id, self.username)
-        digest = pyhash.spooky_128()(payload).to_bytes(128//8, byteorder='big')
+        digest = xxhash.xxh64(payload).digest()
 
         # Choose two colors at random using the bytes of the digest.
         color1 = User.random_colors[digest[0] % len(User.random_colors)]
