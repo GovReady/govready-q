@@ -59,11 +59,11 @@ class AppSource(models.Model):
             return "github.com/%s" % self.spec.get("repo")
 
     def make_cache_stale_key(self):
-        import pyhash, json
+        import xxhash, json
         payload = b""
         payload += json.dumps(self.spec).encode("utf8")
         payload += self.updated.isoformat().encode("ascii")
-        return str(pyhash.spooky_128()(payload))
+        return xxhash.xxh64(payload).hexdigest()
 
     def open(self):
         # Return an AppSourceConnection instance for this source.

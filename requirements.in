@@ -15,7 +15,7 @@ PyGithub # LGPL License
 GitPython # BSD License
 Pygments==2.2.0 # BSD License
 termcolor # MIT License
-pyhash # Apache License 2.0
+xxhash # BSD License
 
 # Common Django Packages
 Django<2.1 # BSD License
