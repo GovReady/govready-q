@@ -329,7 +329,7 @@ def render_content(content, answers, output_format, source, additional_context={
             # https://github.com/rtfd/CommonMark-py/blob/master/CommonMark/common.py#L71
             # to not %-encode our special codes. Unfortunately urllib.parse.quote's
             # "safe" argument does not handle non-ASCII characters.
-            from CommonMark import inlines
+            from commonmark import inlines
             def urlencode_special(uri):
                 import urllib.parse
                 return "".join(

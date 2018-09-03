@@ -8,7 +8,7 @@ Jinja2 # BSD License
 
 # Less Common Python Packages
 html5lib # MIT License
-CommonMark # BSD License
+commonmark # BSD License
 graphviz # MIT License
 fs # BSD License
 PyGithub # LGPL License
