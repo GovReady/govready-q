@@ -2,18 +2,18 @@
 
 ## Why GovReady-Q?
 
-<!-- Compliance is a huge value add for organizations because it scales trust. "Certified" means tested and approved.When pace and scale of an activity reaches a certain critical point, increases, quality assurance by individuals must be replaced with compliance regimes   on  risk/reward themselves  risk assessment with compliance regimes... 
+<!-- Compliance is a huge value-add for organizations because it scales trust. "Certified" means tested and approved. When pace and scale of an activity reaches a certain critical point, increases, quality assurance by individuals must be replaced with compliance regimes on risk/reward themselves risk assessment with compliance regimes... 
 
-For too many organizations, compliance has become the main bottleneck---the primary constraint---on the pace of innovation. Their staff experience assesments, documentation, and audits as exasperating invisible work holding back their ability to deliver new value.
+For too many organizations, compliance has become the main bottleneck---the primary constraint---on the pace of innovation. Their staff experiences assessments, documentation, and audits as exasperating, invisible work holding back their ability to deliver new value.
 -->
 
 Everything about developing and deploying software is accelerating...except for compliance. Why? Because:
 
 * maintaining written documentation is too slow,
 * pondering how jargon-laden control guidance applies is too hard,
-* there's little reuse and no compliance documentation supply chain.
+* there's little reuse, and no compliance documentation supply chain.
 
-To stop needing months to authorize systems that deploy in minutes, assessments and authorizations need to be assembled from vetted, pre-fabricated components sourced from the same software supply chain we assemble applications.
+To stop needing months to authorize systems that deploy in minutes, assessments and authorizations need to be assembled from vetted, pre-fabricated components sourced from the same software supply chain with which we assemble applications.
 
 ## How GovReady-Q Accelerates Compliance
 
@@ -77,9 +77,9 @@ There's nothing to install. [Q.GovReady.com](https://q.govready.com) is the host
 .. ATTENTION::
    We will help you get up and running during the current Beta phase of the project while we make getting started easier.
 
-The hosted version is an excellent solution if have one project/system you are trying to get through NIST SP 800-53 or NIST SP 800-171 compliance, or you are have just trying to pull together a few specific compliance documents like your Privacy Policy or Rules of Behaivor. The hosted service operated by GovReady&reg; PBC, the company behind GovReady-Q Compliance Server.
+The hosted version is an excellent solution if have one project/system you are trying to get through NIST SP 800-53 or NIST SP 800-171 compliance, or you are have just trying to pull together a few specific compliance documents like your Privacy Policy or Rules of Behavior. The hosted service is operated by GovReady® PBC, the company behind GovReady-Q Compliance Server.
 
-If you have questions about if hosted version, email <a href="mailto:info@govready.com">info@govready.com</a>.
+If you have questions about the hosted version, email <a href="mailto:info@govready.com">info@govready.com</a>.
 
 ## Downloading GovReady-Q
 
@@ -148,4 +148,4 @@ This repository is licensed under the [GNU GPL v3](https://github.com/GovReady/g
 
 ## About GovReady PBC
 
-GovReady® PBC is Public Benefit Corporation whose mission is to lower the cost of innovation in digital services to citizens. GovReady’s innovative self-service IT compliance tool GovReady-Q was developed as part of a R&D contract to automate and lower the cost of cyber security compliance from the Department of Homeland Security, Science and Technology Directorate, Cyber Security Division. GovReady PBC is based in the greater Washingtong, DC metro area.
+GovReady® PBC is a Public Benefit Corporation whose mission is to lower the cost of innovation in digital services to citizens. GovReady’s innovative self-service IT compliance tool GovReady-Q was developed as part of an R&D contract to automate and lower the cost of cyber security compliance from the Department of Homeland Security, Science and Technology Directorate, Cyber Security Division. GovReady PBC is based in the greater Washington, DC metro area.
