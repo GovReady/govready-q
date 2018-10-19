@@ -8,6 +8,7 @@ siteapp/static/vendor
 cache/
 vm/.vagrant/
 .gitconfig
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
