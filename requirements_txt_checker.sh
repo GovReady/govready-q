@@ -26,19 +26,13 @@ cat requirements.txt \
 # Compare the requirements.txt in the repository to the one found by
 # generating it from requirements.in.
 if ! diff -B -u $FN $FN2; then
-	rm $FN $FN2
 	echo
-	echo "requirements.txt is not in sync. Run requirements_txt_updater.sh."
-	exit 1
+	echo "requirements.txt is not in sync with requirements.in. Some packages may have updates available. Run requirements_txt_updater.sh."
+else
+	echo "requirements.txt is in sync with requirements.in."
 fi
-rm $FN $FN2
-echo "requirements.txt is in sync with requirements.in."
-echo
 
-# Check packages for known vulnerabilities using pyup.io.
-# Script exits on error.
-safety check --bare -r requirements.txt
-echo "No known vulnerabilities in Python dependencies."
+rm $FN $FN2
 echo
 
 # Check installed packages for anything outdated. Unfortunately
@@ -63,14 +57,10 @@ if [ -f requirements_txt_checker_ignoreupdates.txt ]; then
 fi
 
 if [ $(cat $FN | wc -l) -gt 2 ]; then
-	echo
 	echo "Some packages are out of date:"
 	echo
 	cat $FN
-	rm $FN
-	exit 1
 else
-	echo
 	echo "All packages are up to date with latest upstream versions."
 fi
 rm $FN

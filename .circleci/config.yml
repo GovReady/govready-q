@@ -35,9 +35,16 @@ jobs:
     # Run tests.
 
     # Install packages necesary for requirements_txt_checker.sh,
-    # and then run it.
-    - run: pip3 install --user -U pip-tools safety
-    - run: ./requirements_txt_checker.sh
+    # and then run it and store output as an artifact.
+    - run: pip3 install --user -U pip-tools
+    - run: ./requirements_txt_checker.sh > requirements.txt.status.txt
+    - store_artifacts:
+        path: requirements.txt.status.txt
+
+    # Install packages necesary for to check packages for known
+    # vulnerabilities using pyup.io, and run the check.
+    - run: pip3 install --user -U safety
+    - run: safety check --bare -r requirements.txt
 
     # Run static code analysis using 'bandit'.
     # Disable warning-like tests:
