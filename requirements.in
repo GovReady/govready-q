@@ -1,5 +1,6 @@
-# This is our master file of requirements. Use update_packages.sh
-# to generate the requirements.txt file that is used in production.
+# This is our master file of requirements. Use ./requirements_txt_updater.sh
+# to generate the requirements.txt file that is used in deployments to install
+# Python libraries.
 
 # Common Python Packages
 python-dateutil # Simplified BSD License
