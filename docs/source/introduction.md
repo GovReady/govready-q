@@ -77,9 +77,70 @@ There's nothing to install. [Q.GovReady.com](https://q.govready.com) is the host
 .. ATTENTION::
    We will help you get up and running during the current Beta phase of the project while we make getting started easier.
 
-The hosted version is an excellent solution if have one project/system you are trying to get through NIST SP 800-53 or NIST SP 800-171 compliance, or you are have just trying to pull together a few specific compliance documents like your Privacy Policy or Rules of Behavior. The hosted service is operated by GovReady® PBC, the company behind GovReady-Q Compliance Server.
+The hosted version is an excellent solution if have one project/system you are trying to get through NIST SP 800-53 or NIST SP 800-171 compliance, or you are have just trying to pull together a few specific compliance documents like your Privacy Policy or Rules of Behavior. The hosted service is operated by GovReady PBC, the company behind GovReady-Q Compliance Server.
 
 If you have questions about the hosted version, email <a href="mailto:info@govready.com">info@govready.com</a>.
+
+## System Requirements for GovReady-Q
+
+If you prefer, you can download and install GovReady-Q on your own servers or servers under your control.
+
+GovReady-Q is a Python 3, Django 2.0 application with a relational database back-end. GovReady-Q is compatible with operating systems and components generally supported by Django 2.0 and Python 3.
+
+GovReady-Q has been successfully deployed on multiple Linux distros (RHEL 7, CentOS 7, Ubuntu 14 & 16), as a Docker container, as Docker container in AWS Elastic Container Service, as a Docker container on OpenShift, and as a Vagrant virtual machine.
+
+We've tried to make GovReady-Q installation straightforward and complete. Our documentation includes configuring the Python uWSGI environment, installing and running testing tools, adding sources for compliance security plan apps, and setting up your admin account and initial organization.
+
+#### Hardware Requirements
+
+| Minimum Hardware |
+| --- |
+| Single server to host both multi-tenant GovReady-Q application and Database |
+| Linux-compatible hardware |
+| 2GB RAM |
+| 10 GB storage (for database) |
+
+| Recommended Hardware |
+| --- |
+| 2 servers: 1 for multi-tenant GovReady-Q application; 1 for Database Server |
+| Linux-compatible hardware (64 bit architecture; FIPS-140-2 validated cryptographic module) |
+| 8GB RAM for each server |
+| 100 GB storage (for database server) |
+
+#### Software Requirements
+
+| Required Software Packages (partial list) |
+| --- |
+| (GovReady-Q application) |
+| Python 3.x |
+| Django 2.x |
+| Jinja 2.x |
+| uwsgi 2.x |
+| unzip |
+| graphviz |
+| pandoc |
+| Wkhtmltopdf |
+| Git 2.x |
+| supervisor |
+
+| Supported Databases |
+| --- |
+| Postgres 9.4 (psycopg2 2.7.5 adapter) |
+| Mysql 7.6 and higher (mysqlclient 1.3.12 adapter) |
+| SQLite 3.x |
+
+| Recommended Database |
+| --- |
+| Postgres 9.4 (psycopg2 2.7.5 adapter) |
+
+| SMTP Mail Server (for sending email notifications and receiving comments via email) |
+| --- |
+| Any SMTP mail server (MTA) supporting STARTTLS connections. |
+
+For a more detailed list of software dependencies and requirements see:
+* https://github.com/GovReady/govready-q/blob/master/requirements.in
+* https://github.com/GovReady/govready-q/blob/master/requirements.txt
+* https://github.com/GovReady/govready-q/blob/master/Vagrantfile
 
 ## Downloading GovReady-Q
 
@@ -148,4 +209,4 @@ This repository is licensed under the [GNU GPL v3](https://github.com/GovReady/g
 
 ## About GovReady PBC
 
-GovReady® PBC is a Public Benefit Corporation whose mission is to lower the cost of innovation in digital services to citizens. GovReady’s innovative self-service IT compliance tool GovReady-Q was developed as part of an R&D contract to automate and lower the cost of cyber security compliance from the Department of Homeland Security, Science and Technology Directorate, Cyber Security Division. GovReady PBC is based in the greater Washington, DC metro area.
+GovReady PBC is a Public Benefit Corporation whose mission is to lower the cost of innovation in digital services to citizens. GovReady’s innovative self-service IT compliance tool GovReady-Q was developed as part of an R&D contract to automate and lower the cost of cyber security compliance from the Department of Homeland Security, Science and Technology Directorate, Cyber Security Division. GovReady PBC is based in the greater Washington, DC metro area.
