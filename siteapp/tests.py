@@ -605,14 +605,14 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.fill_field("#inputctrl .ql-editor", "This is a paragraph.\n\nThis is another paragraph.")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get(["question_types_text", "q_longtext"], 'This is a paragraph\\.\r\n\r\n\r\n\r\nThis is another paragraph\\.')
+        self._test_api_get(["question_types_text", "q_longtext"], 'This is a paragraph\\.\n\n\n\nThis is another paragraph\\.')
         self._test_api_get(["question_types_text", "q_longtext.html"], "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>")
 
         # longtext w/ default
         self.assertRegex(self.browser.title, "Next Question: longtext_with_default")
         self.click_element("#save-button")
         var_sleep(.5)
-        self._test_api_get(["question_types_text", "q_longtext_with_default"], "Peaches are sweet\\.\r\n\r\nThat\\'s why I write two paragraphs about peaches\\.")
+        self._test_api_get(["question_types_text", "q_longtext_with_default"], "Peaches are sweet\\.\n\nThat\\'s why I write two paragraphs about peaches\\.")
         self._test_api_get(["question_types_text", "q_longtext_with_default.html"], "<p>Peaches are sweet.</p>\n<p>That's why I write two paragraphs about peaches.</p>")
 
         # date
