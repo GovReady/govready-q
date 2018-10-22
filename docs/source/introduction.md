@@ -77,7 +77,7 @@ There's nothing to install. [Q.GovReady.com](https://q.govready.com) is the host
 .. ATTENTION::
    We will help you get up and running during the current Beta phase of the project while we make getting started easier.
 
-The hosted version is an excellent solution if have one project/system you are trying to get through NIST SP 800-53 or NIST SP 800-171 compliance, or you are have just trying to pull together a few specific compliance documents like your Privacy Policy or Rules of Behavior. The hosted service is operated by GovReady® PBC, the company behind GovReady-Q Compliance Server.
+The hosted version is an excellent solution if have one project/system you are trying to get through NIST SP 800-53 or NIST SP 800-171 compliance, or you are have just trying to pull together a few specific compliance documents like your Privacy Policy or Rules of Behavior. The hosted service is operated by GovReady PBC, the company behind GovReady-Q Compliance Server.
 
 If you have questions about the hosted version, email <a href="mailto:info@govready.com">info@govready.com</a>.
 
@@ -148,4 +148,4 @@ This repository is licensed under the [GNU GPL v3](https://github.com/GovReady/g
 
 ## About GovReady PBC
 
-GovReady® PBC is a Public Benefit Corporation whose mission is to lower the cost of innovation in digital services to citizens. GovReady’s innovative self-service IT compliance tool GovReady-Q was developed as part of an R&D contract to automate and lower the cost of cyber security compliance from the Department of Homeland Security, Science and Technology Directorate, Cyber Security Division. GovReady PBC is based in the greater Washington, DC metro area.
+GovReady PBC is a Public Benefit Corporation whose mission is to lower the cost of innovation in digital services to citizens. GovReady’s innovative self-service IT compliance tool GovReady-Q was developed as part of an R&D contract to automate and lower the cost of cyber security compliance from the Department of Homeland Security, Science and Technology Directorate, Cyber Security Division. GovReady PBC is based in the greater Washington, DC metro area.
