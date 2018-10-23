@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v0.8.3 (August 30, 2018)
-------------------------
+v0.8.4 (October 23, 2018)
+-------------------------
 
 Application changes:
 
@@ -16,6 +16,8 @@ App authoring changes:
 Other changes:
 
 * A new command-line tool called "assemble" is available that instantiates an entire project from a YAML file of app selections and question answers and generates/saves output documents to files on disk.
+* Add system minimum and recommended software requirements to documentation.
+* Version 0.8.3 skipped.
 
 Developer changes:
 
