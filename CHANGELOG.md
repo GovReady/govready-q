@@ -4,18 +4,6 @@ GovReady-Q Release Notes
 v0.8.4 (October 23, 2018)
 -------------------------
 
-Other changes:
-
-* Add system minimum and recommended software requirements to documentation.
-
-Developer changes:
-
-* Non-cryptographic hash functions now handled by xxhash library.
-* Improvements to command-line assemble tool.
-
-v0.8.3 (August 30, 2018)
-------------------------
-
 Application changes:
 
 * "Invite Colleague" on the home page now is always displayed instead of being hidden in some cases.
@@ -28,10 +16,14 @@ App authoring changes:
 Other changes:
 
 * A new command-line tool called "assemble" is available that instantiates an entire project from a YAML file of app selections and question answers and generates/saves output documents to files on disk.
+* Add system minimum and recommended software requirements to documentation.
+* Version 0.8.3 skipped.
 
 Developer changes:
 
 * Non-cryptographic hash functions replace cryptographic hash functions in places where a cryptographic hash function is not necessary and might be excessively slow.
+* Non-cryptographic hash functions now handled by xxhash library.
+* Improvements to command-line assemble tool.
 * Other minor fixes.
 * Upgraded some dependencies.
 
