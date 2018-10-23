@@ -1,6 +1,18 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.4 (October 23, 2018)
+-------------------------
+
+Other changes:
+
+* Add system minimum and recommended software requirements to documentation.
+
+Developer changes:
+
+* Non-cryptographic hash functions now handled by xxhash library.
+* Improvements to command-line assemble tool.
+
 v0.8.3 (August 30, 2018)
 ------------------------
 
