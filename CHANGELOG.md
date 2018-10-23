@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+In Development
+--------------
+
+Developer changes:
+
+* Add a new VERSION file to source code control that stores the current version of the software, plus a commit hash for public releases, so that nightly builds don't fail because of a missing VERSION file. Add build tests to ensure the VERSION file matches the top release in CHANGELOG.md and ends with "+devel" if and only if this is a development release.
+
 v0.8.4 (October 23, 2018)
 -------------------------
 

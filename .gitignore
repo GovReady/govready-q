@@ -84,7 +84,6 @@ modules/oirmfo
 siteapp/staticfiles
 vendor
 .kitchen
-VERSION
 
 # Emacs
 *~
