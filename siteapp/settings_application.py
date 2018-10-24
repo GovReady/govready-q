@@ -63,18 +63,16 @@ MAILGUN_API_KEY = environment.get('mailgun_api_key', '') # for the incoming mail
 
 VALIDATE_EMAIL_DELIVERABILITY = True
  
-# Get the version of this software.
-import os.path
-if os.path.exists("VERSION"):
-    # Get the version from the VERSION file which has two lines.
-    # The first line is a version string for display. The second
-    # line is the git commit hash that the build was based on.
-    with open("VERSION") as f:
-        APP_VERSION_STRING = f.readline().strip()
-        APP_VERSION_COMMIT = f.readline().strip()
-else:
-    # If there is no VERSION file, query the git working directory.
+# Get the version of this software from the VERSION file which has up to two lines.
+# The first line is a version string for display. The second line is the git commit
+# hash that the build was based on. If the second line isn't present, we use git to
+# get the hash of current HEAD, plus a marker if there are local modifications.
+with open("VERSION") as f:
+    APP_VERSION_STRING = f.readline().strip()
+    APP_VERSION_COMMIT = f.readline().strip()
+if not APP_VERSION_COMMIT and os.path.exists(".git"):
     import subprocess # nosec
-    APP_VERSION_STRING = subprocess.check_output(["/usr/bin/git", "describe", "--tags", "--always"]).strip().decode("ascii")
     APP_VERSION_COMMIT = subprocess.check_output(["/usr/bin/git", "rev-parse", "HEAD"]).strip().decode("ascii")
-
+    if subprocess.run(["/usr/bin/git", "diff-index", "--quiet", "HEAD", "--"]):
+        # see https://stackoverflow.com/questions/3878624/how-do-i-programmatically-determine-if-there-are-uncommitted-changes
+        APP_VERSION_COMMIT += "-dirty"

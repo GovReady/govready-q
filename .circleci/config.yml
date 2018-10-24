@@ -14,6 +14,11 @@ jobs:
     # Get source code.
     - checkout
 
+    # Check that the VERSION file has exactly one line and that it contains the
+    # version of the most recent release listed in the CHANGELOG, plus "+devel"
+    # if there are unreleased changes in the CHANGELOG.
+    - run: python3 .circleci/check_version_file.py
+
     # Install dependencies.
     - run: sudo apt update && sudo apt install -y git curl unzip locales libmagic1 graphviz pandoc xvfb wkhtmltopdf
     - run: sudo sed -i "s/^[# ]*en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen && sudo /usr/sbin/locale-gen # Install the U.S. locale (see `apt install locales` above), which we reference explicitly in Q for formatting and parsing numbers. Usually only needed on slim builds of Debian images.

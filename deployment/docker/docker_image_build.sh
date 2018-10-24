@@ -26,16 +26,12 @@ fi
 # that starts with "v".
 VERSION_TAG_PATTERN="v*"
 if VERSION=$(git describe --tags --exact-match --match $VERSION_TAG_PATTERN 2> /dev/null); then
-	# Validate that the tag is a PEP440 "public version number",
-	# which is in the form N(.N)*[{a|b|rc}N][.postN][.devN].
-	python3 - "$VERSION" <<EOF;
-import sys
-from pkg_resources import parse_version
-v = parse_version(sys.argv[1])
-if not hasattr(v, 'local') or v.local:
-	print("ERROR: The version number {} is not a PEP440-compliant public version number.".format(repr(sys.argv[1])))
-	sys.exit(1)
-EOF
+	# The tag must match the first line of the VERSION file.
+	VERSION2=$(cat VERSION | head -1)
+	if [[ "$VERSION" != "$VERSION2" ]]; then
+		echo "ERROR: The version tag $VERSION does not match the version $VERSION2 stored in the VERSION file."
+		exit 1
+	fi
 
 	# Check that the tag has a CHANGELOG entry.
 	if ! grep "^$VERSION " CHANGELOG.md > /dev/null; then
@@ -91,7 +87,6 @@ echo
 
 # Build the image.
 docker image build --tag govready/govready-q:$VERSION .
-rm -f VERSION # it's for Docker only
 
 # Show push commands.
 echo
