@@ -17,8 +17,15 @@ jobs:
     # Install dependencies.
     - run: sudo apt update && sudo apt install -y git curl unzip locales libmagic1 graphviz pandoc xvfb wkhtmltopdf
     - run: sudo sed -i "s/^[# ]*en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen && sudo /usr/sbin/locale-gen # Install the U.S. locale (see `apt install locales` above), which we reference explicitly in Q for formatting and parsing numbers. Usually only needed on slim builds of Debian images.
-    - run: pip install --user -r requirements.txt
-    - run: ./fetch-vendor-resources.sh
+    - run:
+        name: |
+            [NIST SP 800-53 Rev 4 -- CM-2] Baseline packages are installed using pip, which reads the
+            requirements.txt file for a list of packages to install. Additionally, the script
+            fetch-vendor-resources.sh lists other external software packages needed by the program.
+            In both cases, package versions are pinned using version numbers and package hashes.
+        command: |
+            pip install --user -r requirements.txt
+            ./fetch-vendor-resources.sh
 
     # This is adapted from https://github.com/circleci/circleci-images/blob/master/shared/images/Dockerfile-browsers.template
     # but it still says chromium crashes when launched from selenium tests. Maybe because chromium
