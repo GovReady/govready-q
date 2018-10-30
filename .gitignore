@@ -85,6 +85,10 @@ siteapp/staticfiles
 vendor
 .kitchen
 
+# Terraform
+**/.terraform/*
+*.tfstate*
+
 # Emacs
 *~
 \#*\#
