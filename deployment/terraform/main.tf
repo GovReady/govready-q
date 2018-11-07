@@ -1,11 +1,11 @@
 provider "aws" {
-  region = "us-east-2"
+  region = "${var.aws_region}"
 }
 
-resource "aws_instance" "example" {
-  key_name = "terraform-us-east-2"
-  ami= "ami-9c0638f9" # CentOS Linux 7 x86_64 HVM EBS ENA 1805_01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-77ec9308.4
-  instance_type = "t2.nano" # nano for testing Terraform script; larger to actually run GovReady-Q
+resource "aws_instance" "govready-q" {
+  key_name = "${lookup(var.aws_key_name, var.aws_region)}"
+  ami = "${lookup(var.aws_amis, var.aws_region)}"
+  instance_type = "${var.aws_instance_type}"
 
   provisioner "remote-exec" {
     inline = [
@@ -24,7 +24,7 @@ resource "aws_instance" "example" {
     connection {
       type = "ssh"
       user = "centos"
-      private_key = "${file("/root/.ssh/terraform-us-east-2.pem")}"
+      private_key = "${file(var.private_key_path)}"
     }
   }
 }

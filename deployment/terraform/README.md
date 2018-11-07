@@ -6,7 +6,7 @@ This is the beginning of a Terraform-driven deployment of GovReady-Q, starting w
 
 Later versions will evolve, to include database server, bastion server, possibly failover configurations, and either streamlined installation via an install script (reducing the number of `remote-exec` commands required) or application installation via a configuration management tool rather than Terraform.
 
-As the Terraform file gets larger, other enhancements may include abstraction of hard-coded values to a `.tfvars` file, modularization of Terraform files, use of remote (shared) state storage, etc.
+As the Terraform file gets larger, other enhancements may include modularization of Terraform files, use of remote (shared) state storage, etc.
 
 ## Running Terraform
 
@@ -23,15 +23,20 @@ export TERRAFORM_IMAGE=hashicorp/terraform:0.11.0
 export TERRAFORM_CMD="docker run -ti --rm -w /app -v ${HOME}/.aws:/root/.aws -v ${HOME}/.ssh:/root/.ssh -v `pwd`:/app  $TERRAFORM_IMAGE"
 ```
 
-### Configure `govready-q.tf`
+### Server Authentication
 
-In later versions, configuration will be abstracted/parameterized out of the Terraform file.  But for now, do this setup by hand in `govready-q.tf` and AWS:
+For this example, we use a pre-created key pair for the `ssh` connection, which has already been created in or uploaded to AWS.  The path to the local private key is specified explicitly, and no `ssh` agent is required.
 
-* choose an AWS region (`us-east-2` in the example)
+### Configure `variables.tf`
+
+Configure AWS and make appropriate edits in `variables.tf`:
+
 * make an AWS key pair (`terraform-us-east-2` in the example)
+* choose an instance type
+* choose an AWS region (`us-east-2` in the example)
 * look up the correct AMI (e.g., official CentOS 7)
 * choose the instance type
-* set up the VPC and security group appropriately
+* set up the VPC and security group appropriately in AWS (later versions of this example may configure those via Terraform)
 
 You'll see that the AWS credentials and private key are pointed to by volume mounts in `${TERRAFORM_CMD}`; make sure you have your secret files in the correct directories.  Remember that you can use [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html) in your AWS configuration and credential files.
 
