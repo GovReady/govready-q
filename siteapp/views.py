@@ -1291,63 +1291,56 @@ def accept_invitation_do_accept(request, inv):
         messages.add_message(request, messages.ERROR, 'The invitation you wanted to accept has expired.')
         return HttpResponseRedirect("/")
 
-    # Get the user logged into an account.
-    
-    matched_user = None # inv.to_user \
-       # or User.objects.filter(email=inv.to_email).exclude(id=inv.from_user.id).first()
-    
-    if request.user.is_authenticated and request.GET.get("accept-auth") == "1":
-        # The user is logged in and the "auth" flag is set, so let the user
-        # continue under this account. This code path occurs when the user
-        # first reaches this view but is not authenticated as the user that
-        # was invited. We then send them to create an account or log in.
-        # The "next" URL on that login screen adds "auth=1", so that when
-        # we come back here, we just accept whatever account they created
-        # or logged in to. The meaning of "auth" is the User's desire to
-        # continue with their existing credentials. We don't go through
-        # this path on the first run because the user may not want to
+    # See if the user is ready to accept the invitation.
+    if request.user.is_authenticated and request.GET.get("accept-invitation") == "1":
+        # When the user first reaches this view they may already be logged
+        # into Q but we want to force them to prove their credentials when
+        # they accept the invitation. The user may not want to
         # accept the invitation under an account they happened to be logged
-        # in as.
+        # in as. So accept-invitation is initialy not set and we hit the else condition
+        # where we show the invitation acceptance page.
+        #
+        # We then send them to create an account or log in.
+        # The "next" URL on that login screen adds "accept-invitation=1", so that when
+        # we come back here, we just accept whatever account they created
+        # or logged in to.
         pass
 
-    elif matched_user and request.user == matched_user:
-        # If the invitation was to a user account, and the user is already logged
-        # in to it, then we're all set. Or if the invitation was sent to an email
-        # address already associated with a User account and the user is logged
-        # into that account, then we're all set.
-        pass
+    # elif inv.to_user and request.user == inv.to_user:
+    #     # If the invitation was to a user account, and the user is already logged
+    #     # in to it, then we're all set.
+    #     pass
 
-    elif matched_user:
-        # If the invitation was to a user account or to an email address that has
-        # an account, but the user wasn't already logged in under that account,
-        # then since the user on this request has just demonstrated ownership of
-        # that user's email address, we can log them in immediately.
-        matched_user = authenticate(user_object=matched_user)
-        if not matched_user.is_active:
-            messages.add_message(request, messages.ERROR, 'Your account has been deactivated.')
-            return HttpResponseRedirect("/")
-        if request.user.is_authenticated:
-            # The user was logged into a different account before. Log them out
-            # of that account and then log them into the account in the invitation.
-            logout(request) # setting a message after logout but before login should keep the message in the session
-            messages.add_message(request, messages.INFO, 'You have been logged in as %s.' % matched_user)
-        login(request, matched_user)
+    # elif inv.to_user:
+    #     # If the invitation was to a user account but the user wasn't already logged
+    #     # in under that account, then since the user on this request has just demonstrated
+    #     # ownership of that user's email address, we can log them in immediately.
+    #     matched_user = authenticate(user_object=inv.to_user)
+    #     if not matched_user.is_active:
+    #         messages.add_message(request, messages.ERROR, 'Your account has been deactivated.')
+    #         return HttpResponseRedirect("/")
+    #     if request.user.is_authenticated:
+    #         # The user was logged into a different account before. Log them out
+    #         # of that account and then log them into the account in the invitation.
+    #         logout(request) # setting a message after logout but before login should keep the message in the session
+    #         messages.add_message(request, messages.INFO, 'You have been logged in as %s.' % matched_user)
+    #     login(request, matched_user)
 
     else:
-        # The invitation was sent to an email address that does not have a matching
-        # User account (if it did, we would have logged the user in immediately because
-        # they just confirmed ownership of the address). Ask the user to log in or sign up,
-        # redirecting back to this page after with "auth=1" so that we skip the matched
-        # user check and accept whatever account the user just logged into or created.
-        #
-        # In the event the user was already logged into an account that didn't match the
-        # invitation email address, log them out now.
+        # Ask the user to log in or sign up, redirecting back to this page after with
+        # "accept-invitation=1" so that we know the user is ready to accept the invitation
+        # under the account they are logged in as.
+
+        # In the event the user was already logged into an account,
+        # then log them out now --- we make them log in again or sign
+        # up next.
         from urllib.parse import urlencode
         logout(request)
         inv.from_user.localize_to_org(request.organization)
+
         return render(request, "invitation.html", {
             "inv": inv,
-            "next": urlencode({ "next": request.path + "?accept-auth=1", }),
+            "next": urlencode({ "next": request.path + "?accept-invitation=1", }),
         })
 
     # The user is now logged in and able to accept the invitation.
