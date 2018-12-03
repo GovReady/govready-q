@@ -62,6 +62,24 @@ GOVREADY_CMS_API_AUTH = environment.get('govready_cms_api_auth')
 MAILGUN_API_KEY = environment.get('mailgun_api_key', '') # for the incoming mail route
 
 VALIDATE_EMAIL_DELIVERABILITY = True
+
+if environment.get("trust-user-authentication-headers"):
+    # When this is set, the 'username' and 'email' keys hold HTTP header
+    # names which control user authentication. Standard authentication
+    # is disabled. Instead, user login is handled by a proxy server running
+    # in front of Q. These headers are always expected to be set and trusted
+    # when this setting is enabled. Per the Django Documentation (https://docs.djangoproject.com/en/dev/howto/auth-remote-user/),
+    # you must be sure that your front-end web server does not permit an
+    # end-user to submit a spoofed header value for these headers *as well
+    # as* other headers that normalize to the same key as seen by Django.
+    # Because regular authentication is disabled, before setting this setting
+    # you should ensure you'll be able to log in with the proxy using the
+    # username of an admin account that is already registered.
+    MIDDLEWARE += ['siteapp.middleware.ProxyHeaderUserAuthenticationMiddleware'] # must be after AuthenticationMiddleware
+    AUTHENTICATION_BACKENDS = ['siteapp.middleware.ProxyHeaderUserAuthenticationBackend',
+                               'siteapp.models.DirectLoginBackend']
+    PROXY_HEADER_AUTHENTICATION_HEADERS = environment["trust-user-authentication-headers"]
+    print("Trusting authentication headers:", PROXY_HEADER_AUTHENTICATION_HEADERS)
  
 # Get the version of this software from the VERSION file which has up to two lines.
 # The first line is a version string for display. The second line is the git commit

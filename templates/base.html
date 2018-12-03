@@ -67,9 +67,9 @@
           </ul>
           {% endcomment %}
           <ul class="nav navbar-nav navbar-right">
-            {% if request.user.is_authenticated %}
+            {# On some special pages like the homepage and login page, we allow users who are not members of the organization to view the page so that they may log in. When enterprise SSO is used, the user might even be logged in in this state. But if they are not a part of the organization, we can't show these links and we don't have profile information for the user so we can't query for that either. #}
+            {% if request.user.is_authenticated and request.user.localized_to %}
             <li class="dropdown">
-
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                 MENU
                 <span class="caret"></span>
@@ -102,7 +102,7 @@
                 <li><a href="{{user.user_settings_task_create_if_doesnt_exist.get_absolute_url}}" id="user-menu-account-settings">Account Settings</a></li>
                 <li><a href="/api-keys">Your API Keys</a></li>
                 <li role="separator" class="divider"></li>
-                <li><a href="{% url "account_logout" %}">Log Out</a></li>
+                <li><a href="/accounts/logout/">Log Out</a></li>
               </ul>
             </li>
 
@@ -141,7 +141,20 @@
               </ul>
             </li>
 
-            {% else %}
+            {% elif request.user.is_authenticated %}
+              {# The user is logged in but is not a member of the organization so we can't query for profile information. #}
+
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="user-menu-dropdown">
+                  {{request.user}}
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a href="/accounts/logout/">Log Out</a></li>
+                </ul>
+              </li>
+
+            {% elif LOGIN_ENABLED %}
             <li><a href="{% url "account_login" %}">Log In</a></li>
             {% endif %}
           </ul>          

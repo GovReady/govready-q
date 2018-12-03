@@ -87,6 +87,12 @@ if [ ! -z "${BRANDING-}" ]; then
 	set_env_setting branding "$BRANDING"
 fi
 
+# Enterprise login settings.
+if [ ! -z "${PROXY_AUTHENTICATION_USER_HEADER-}" ]; then
+	set_env_setting '["trust-user-authentication-headers"].username' "$PROXY_AUTHENTICATION_USER_HEADER"
+	set_env_setting '["trust-user-authentication-headers"].email' "$PROXY_AUTHENTICATION_EMAIL_HEADER"
+fi
+
 # Write out the settings that indicate where we think the site is running at.
 echo "Starting at ${ADDRESS} with HTTPS ${HTTPS-false}."
 

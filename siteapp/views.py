@@ -17,9 +17,12 @@ from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch i
 from .notifications_helpers import *
 
 def homepage(request):
-    if request.user.is_authenticated:
+    # If the user is logged in and has read access to the organization
+    # they're looking at, then redirect them to the projects page.
+    if hasattr(request.user, 'localized_to') and request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
 
+    # Otherwise, show a login form.
     from allauth.account.forms import LoginForm
     return render(request, "index.html", {
         "login_form": LoginForm,
@@ -1330,13 +1333,14 @@ def accept_invitation_do_accept(request, inv):
         # Ask the user to log in or sign up, redirecting back to this page after with
         # "accept-invitation=1" so that we know the user is ready to accept the invitation
         # under the account they are logged in as.
-
-        # In the event the user was already logged into an account,
-        # then log them out now --- we make them log in again or sign
-        # up next.
         from urllib.parse import urlencode
-        logout(request)
-        inv.from_user.localize_to_org(request.organization)
+
+        # In the event the user was already logged into an account, and if username/password
+        # logins are enabled, then log them out now --- we make them log in again or sign
+        # up next.
+        username_pw_logins_emailed = ('django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS)
+        if username_pw_logins_emailed:
+            logout(request)
 
         return render(request, "invitation.html", {
             "inv": inv,
