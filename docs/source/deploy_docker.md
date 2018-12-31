@@ -57,7 +57,7 @@ Notes:
 
 Advanced container options can be set with command-line arguments to our container run script:
 
-	./docker_container_run.sh ...additional arguments here...
+	./docker_container_run.sh ...GovReady-Q arguments... -- ...Docker arguments...
 
 ### Changing the hostname and port
 
@@ -70,7 +70,7 @@ instead of `localhost` will result in an error).
 
 You may change the hostname and port of the GovReady-Q server using:
 
-	--address q.mydomain.com:80
+	./docker_container_run.sh --address q.mydomain.com:80
 
 If the Docker container is behind a proxy, then `--address` specifies the public address
 that end-users will use to access GovReady-Q. This may differ from the address and port that the container is accessed at on your organization's network, which is set using `--bind`.
@@ -84,7 +84,7 @@ The default value of `--bind` is `127.0.0.1` and the port from `--address`, or `
 `--address` isn't given. If the host machine is behind a proxy, use `--bind` to control the
 network interface and port that Docker will forward to the GovReady-Q container.
 
-	--bind 10.0.0.5:6543
+	./docker_container_run.sh --bind 10.0.0.5:6543
 
 ### Persistent database
 
@@ -97,7 +97,7 @@ for connecting to a persistent database.
 
 You can use a Sqlite file stored on the host machine:
 
-	--sqlitedb /path/to/govready-q-database.sqlite
+	./docker_container_run.sh --sqlitedb /path/to/govready-q-database.sqlite
 
 You must specify an absolute path. The path is mounted using a Docker bind mount into the container filesytem.
 
@@ -125,7 +125,7 @@ server.
 
 Start the GovReady-Q container with the argument:
 
-	--dburl postgres://$DBUSER:$DBPASSWORD@$DBHOST/$DBDATABASE
+	./docker_container_run.sh --dburl postgres://$DBUSER:$DBPASSWORD@$DBHOST/$DBDATABASE
 
 where `$DBHOST` is the hostname of the database server, `$DBDATABASE` is the name of the database, and `$DBUSER` and `$DBPASSWORD` are the credentials for the database.
 
@@ -137,15 +137,17 @@ GovReady-Q sends outbound emails for notifications about invitations and discuss
 It also receives inbound emails --- replies to dicussion notifications can be used to
 post discussion comments by email.
 
-To configure outbound email, add:
+To configure outbound email, use:
 
-	--email-host smtp.company.org --email-port 587 --email-user ... --email-pw ... --email-domain q.company.org
+	./docker_container_run.sh --email-host smtp.company.org --email-port 587 --email-user ... --email-pw ... --email-domain q.company.org
 
 `--email-domain` sets the hostname used in the email address of outbound email. The other arguments set the SMTP relay server details.
 
 Some of GovReady-Q's outbound emails can be replied to. When a user replies to a notification of a discussion comment, the reply's body is post as a new comment on the discussion. Currently we only support an incoming notification hook from Mailgun, and it is not yet configurable for the docker deployment. TODO
 
 ### Container management and other options
+
+Other options that can be passed on the command-line are:
 
 Use `--name NAME` to specify an alternate name for the container. The default is `govready-q`.
 
@@ -154,6 +156,10 @@ the new one, if an existing container of the same name exists. This simply runs
 `docker container rm -f NAME`.
 
 Add `--debug` to start GovReady-Q in DEBUG mode, which enables nicer error messages. Do not use in production.
+
+You can additionally pass parameters to the `docker container run` command by separating the [Docker parameters](https://docs.docker.com/engine/reference/run/) from the GovReady-Q parameters with `--`, such as:
+
+	./docker_container_run.sh --address q.mydomain.com:80 -- -e VAR=VALUE
 
 ### Developing compliance apps
 
@@ -288,6 +294,8 @@ The following environment variables are used to configure the container when lau
 `MAILGUN_API_KEY` - An API key for Mailgun which is used to validate incoming webhook requests from Mailgun when an incoming email is received, when Mailgun is configured to handle incoming mail. (Default: None)
 
 `BRANDING` (downstream packaging only): You may override the templates and stylesheets that are used for GovReady-Q's branding by setting this environment variable to the name of an installed Django app Python module (i.e. created using `manage.py startapp`) that holds templates and static files. No such app is provided in the GovReady-Q published Docker image, so this variable can only be used by downstream image maintainers.
+
+`PROXY_AUTHENTICATION_USER_HEADER` and `PROXY_AUTHENTICATION_EMAIL_HEADER`: GovReady-Q can be deployed behind a reverse proxy that authenticates users and passes the authenticated user's username and email address in HTTP headers. These environment variables correspond to the settings documented in [Enterprise Login](Environment.html#proxy-authentication-sever).
 
 ## Building and publishing the Docker image for GovReady-Q maintainers
 

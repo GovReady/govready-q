@@ -68,6 +68,7 @@ Home
 
           {% endif %}
 
+          {% if LOGIN_ENABLED %}
           <form class="login" method="POST" action="{% url 'account_login' %}">
             {% csrf_token %}
             {% bootstrap_form login_form %}
@@ -75,6 +76,7 @@ Home
             <p><button type="submit" class="primaryAction btn btn-success">{% trans "Sign In" %}</button></p>
             <div><a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a></div>
           </form>
+          {% endif %}
         </div>
 		</div>
 

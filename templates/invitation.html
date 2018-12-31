@@ -32,15 +32,20 @@ h1 { margin-top: 0; }
    <div id="focus-area-wrapper">
       <h1><b>{{inv.from_user}}</b> invited you <b>{{inv.purpose}}</b> on <b>GovReady Q</b></h1>
 
-      <div style="margin: 2em 0">
+      <div style="margin-top: 2em;">
         <p>On {{inv.created|date}} {{inv.from_user}} emailed:</p>
         <blockquote>{{inv.text}}</blockquote>
-        
-        <p>To accept this invitation, log in or sign up:</p>
       </div>
+        
+      {% if LOGIN_ENABLED %}
+      <p style="margin: 2em 0">To accept this invitation, log in or sign up:</p>
 
       <a id="button-sign-in" class="btn btn-success" href="{% url 'account_login' %}?{{next}}">I am an existing GovReady Q user &raquo;</a>
       <a id="button-sign-up" class="btn btn-success" href="{% url 'account_signup' %}?{{next}}">I am new to GovReady Q &raquo;</a>
+
+      {% else %}
+      <a id="button-accept" class="btn btn-success" href="?accept-invitation=1">Accept Invitation</a>      
+      {% endif %}
     </div>
   </div>
 </div>

@@ -17,6 +17,11 @@ from .models import User, Organization
 def homepage(request):
     # Main landing page.
 
+    if settings.SINGLE_ORGANIZATION_KEY:
+        raise ValueError("view is not valid when this instance is single-organization")
+    if 'django.contrib.auth.backends.ModelBackend' not in settings.AUTHENTICATION_BACKENDS:
+        raise ValueError("view is not valid when logins are handled by enterprise authentication")
+
     from allauth.account.forms import SignupForm, LoginForm
 
     class NewOrgForm(forms.ModelForm):
