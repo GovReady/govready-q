@@ -458,9 +458,9 @@ def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
         text = re.sub("(?<=\()attachment:(\d+)(?=\))", get_attachment_url, text)
 
     # Render to HTML as if CommonMark.
-    import CommonMark
-    parsed = CommonMark.Parser().parse(text)
-    text = CommonMark.HtmlRenderer({ "safe": True }).render(parsed)
+    import commonmark
+    parsed = commonmark.Parser().parse(text)
+    text = commonmark.HtmlRenderer({ "safe": True }).render(parsed)
 
     if unwrap_p:
         # If it's a single paragraph, unwrap it.

@@ -26,11 +26,12 @@ colour==0.1.5 \
     --hash=sha256:33f6db9d564fadc16e59921a56999b79571160ce09916303d35346dddc17978c \
     --hash=sha256:af20120fefd2afede8b001fbef2ea9da70ad7d49fafdb6489025dae8745c3aee \
     # via mondrianish
-commonmark==0.8.0 \
-    --hash=sha256:5ef7643594cf9e30de151e82bca2e5b6aeef76644fa4e45ca5609932a3d33774 \
-    --hash=sha256:96a35cbc43a0e358355729f1e6ff4c1c3eb367b89c3db3d60dc631d47ec40ccf
-commonmarkextensions==0.0.4 \
-    --hash=sha256:e00a596094d7484f0e805d91f6efa00172f1f008cfadc0038221607513d4f733
+commonmark==0.8.1 \
+    --hash=sha256:9f6dda7876b2bb88dd784440166f4bc8e56cb2b2551264051123bacb0b6c1d8a \
+    --hash=sha256:abcbc854e0eae5deaf52ae5e328501b78b4a0758bf98ac8bb792fce993006084
+commonmarkextensions==0.0.5 \
+    --hash=sha256:35cb6f5fc42f7f36834371c857bc34e29599ff329438bd715f3081c6b8ec0fbb \
+    --hash=sha256:be1fe5562a81051fd3e06e23cd2300bd4506ac0041d91189508e1627fd5cd846
 coverage==4.5.1 \
     --hash=sha256:03481e81d558d30d230bc12999e3edffe392d244349a90f4ef9b88425fac74ba \
     --hash=sha256:0b136648de27201056c1869a6c0d4e23f464750fd9a9ba9750b8336a244429ed \

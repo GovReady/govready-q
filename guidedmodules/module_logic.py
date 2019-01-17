@@ -348,7 +348,7 @@ def render_content(content, answers, output_format, source, additional_context={
             template_body = re.sub(r"{%[\w\W]*?%}|{{.*?}}", replace, template_body)
 
             # Use our CommonMark Tables parser & renderer.
-            from CommonMarkExtensions.tables import \
+            from commonmark_extensions.tables import \
                 ParserWithTables as CommonMarkParser, \
                 RendererWithTables as CommonMarkHtmlRenderer
 
@@ -648,7 +648,7 @@ class HtmlAnswerRenderer:
             # when we say <not answerd>.
             if value.startswith("<"): value = "\\" + value
 
-            from CommonMarkExtensions.tables import \
+            from commonmark_extensions.tables import \
                 ParserWithTables as CommonMarkParser, \
                 RendererWithTables as CommonMarkHtmlRenderer
             parsed = CommonMarkParser().parse(value)

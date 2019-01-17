@@ -40,9 +40,9 @@ def render_markdown_instead_of_escaping(parser, token):
 				# line breaks will be ignored when it is placed within
 				# HTML, render the Markdown to HTML. Turn on safe mode
 				# since the content can't be trusted.
-				import CommonMark
-				return CommonMark.HtmlRenderer({ "safe": True })\
-					.render(CommonMark.Parser().parse(md))
+				import commonmark
+				return commonmark.HtmlRenderer({ "safe": True })\
+					.render(commonmark.Parser().parse(md))
 	try:
 		tag_name, variable_name = token.split_contents()
 	except ValueError:
