@@ -525,8 +525,7 @@ class Command(BaseCommand):
             # that opens a YAML file, returns the parsed value,
             # and then on exit writes the modified YAML value back
             # to the file.
-            from guidedmodules.management.commands.compliance_app import EditYAMLFileInPlace
-            class EditAppFile(EditYAMLFileInPlace):
+            class EditAppFile(rtyaml.edit):
                 def __init__(self, fn):
                     super().__init__(os.path.join(appsrcpath, app_name, fn))
 
