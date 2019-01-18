@@ -5,7 +5,7 @@ version: 2
 jobs:
   build:
     docker:
-    - image: circleci/python:3.5-jessie-browsers # matches Python version in Ubuntu 16.04 in deployment, python:3.5-slim works but not with selenium
+    - image: circleci/python:3.6-jessie-browsers # matches Python version in Ubuntu 16.04 in deployment, python:3.5-slim works but not with selenium
 
     steps:
     # Add .local/bin to PATH for utilities install by `pip install --user`.

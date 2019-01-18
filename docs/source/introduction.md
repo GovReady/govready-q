@@ -85,7 +85,7 @@ If you have questions about the hosted version, email <a href="mailto:info@govre
 
 If you prefer, you can download and install GovReady-Q on your own servers or servers under your control.
 
-GovReady-Q is a Python 3, Django 2.0 application with a relational database back-end. GovReady-Q is compatible with operating systems and components generally supported by Django 2.0 and Python 3.
+GovReady-Q is a Python 3.6, Django 2.0 application with a relational database back-end. GovReady-Q is compatible with operating systems and components generally supported by Django 2.0 and Python 3.6.
 
 GovReady-Q has been successfully deployed on multiple Linux distros (RHEL 7, CentOS 7, Ubuntu 14 & 16), as a Docker container, as Docker container in AWS Elastic Container Service, as a Docker container on OpenShift, and as a Vagrant virtual machine.
 
@@ -112,7 +112,7 @@ We've tried to make GovReady-Q installation straightforward and complete. Our do
 | Required Software Packages (partial list) |
 | --- |
 | (GovReady-Q application) |
-| Python 3.x |
+| Python 3.6 |
 | Django 2.x |
 | Jinja 2.x |
 | uwsgi 2.x |
