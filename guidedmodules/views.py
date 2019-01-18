@@ -482,7 +482,7 @@ def show_question(request, task, answered, context, q):
         # render the value as HTML.
         if existing_answer and q.spec["type"] == "longtext":
             import commonmark
-            existing_answer = commonmark.HtmlRenderer().render(commonmark.Parser().parse(existing_answer))
+            existing_answer = commonmark.HtmlRenderer({ "safe": True }).render(commonmark.Parser().parse(existing_answer))
 
     # For file-type questions that have been answered, render the existing
     # answer so that we don't need redundant logic for showing a thumbnail
