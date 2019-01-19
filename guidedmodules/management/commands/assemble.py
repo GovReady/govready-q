@@ -41,46 +41,6 @@ LOG_COLORS = { "INFO": "white", "OK": "green", "WARN": "yellow", "ERROR": "red" 
 LOG_SYMBOLS = { "INFO": " ", "OK": "🗸", "WARN": "!", "ERROR": "✗" }
 LOG_NAMES = { "WARN": "warning", "ERROR": "error" }
 
-# this is now `rtyaml.edit` but it hasn't been released yet
-class EditYAMLFileInPlace:
-    def __init__(self, fn_or_stream, default=None):
-        self.fn_or_stream = fn_or_stream
-        self.default = default
-    def __enter__(self):
-        if isinstance(self.fn_or_stream, str):
-            # Open the named file.
-            try:
-                self.stream = open(self.fn_or_stream, "r+")
-            except FileNotFoundError:
-                if not isinstance(self.default, (list, dict)):
-                    # If there is no default and the file
-                    # does not exist, re-raise the exception.
-                    raise
-                else:
-                    # Create a new file holding the default,
-                    # then seek back to the beginning so
-                    # we can read it below.
-                    self.stream = open(self.fn_or_stream, "w+")
-                    rtyaml.dump(self.default, self.stream)
-                    self.stream.seek(0)
-
-            self.close_on_exit = True
-        else:
-            # Use the given stream.
-            self.stream = self.fn_or_stream
-        # Parse stream and return data.
-        self.data = rtyaml.load(self.stream)
-        return self.data
-    def __exit__(self, *exception):
-        # Truncate stream and write new data.
-        self.stream.seek(0);
-        self.stream.truncate()
-        rtyaml.dump(self.data, self.stream)
-        # Close stream if we opened it.
-        if getattr(self, "close_on_exit", False):
-            self.stream.close()
-
-
 class Command(BaseCommand):
     help = 'Starts compliance apps using a YAML driver file that specifies apps and data.'
 
@@ -109,7 +69,7 @@ class Command(BaseCommand):
         if options["init"]:
             # If --init is given, allow creating a new file.
             default = { }
-        with EditYAMLFileInPlace(fn, default=default) as data:
+        with rtyaml.edit(fn, default=default) as data:
             if not isinstance(data, dict):
                 raise ValueError("File does not contain a YAML mapping.")
 

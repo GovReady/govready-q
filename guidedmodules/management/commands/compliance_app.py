@@ -72,7 +72,7 @@ class Command(BaseCommand):
             shutil.copytree(os.path.join(guidedmodules_path, "stub_app"), path, copy_function=shutil.copy)
 
             # Edit the app title.
-            with EditYAMLFileInPlace(os.path.join(path, "app.yaml")) as app:
+            with rtyaml.edit(os.path.join(path, "app.yaml")) as app:
                 app['title'] = options["appname"]
 
             # Create a unique icon for the app and delete the existing app icon
@@ -85,20 +85,3 @@ class Command(BaseCommand):
 
             # Which AppSource is used?
             print("Created new app in AppSource", appsrc, "at", path)
-
-# Utility class to create a with-block object
-# that opens a YAML file, returns the parsed value,
-# and then on exit writes the modified YAML value back
-# to the file.
-class EditYAMLFileInPlace:
-    def __init__(self, fn):
-        self.fn = fn
-    def __enter__(self):
-        self.f = open(self.fn, "r+")
-        self.app = rtyaml.load(self.f)
-        return self.app
-    def __exit__(self, *exception):
-        self.f.seek(0);
-        self.f.truncate()
-        rtyaml.dump(self.app, self.f)
-        self.f.close()
