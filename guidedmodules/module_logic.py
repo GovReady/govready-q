@@ -127,11 +127,10 @@ def evaluate_module_state(current_answers, parent_context=None):
 
     # Visitor function.
     def walker(q, state, deps):
-        # If any of the dependencies don't have answers yet, or if it's been
-        # skipped but it's a non-skippable dependency, then this question
+        # If any of the dependencies don't have answers yet, then this question
         # cannot be processed yet.
-        for qq, skippable in deps.items():
-            if qq.key not in state or (not skippable and state[qq.key][3] is None):
+        for qq in deps:
+            if qq.key not in state:
                 unanswered.add(q)
                 answertuples[q.key] = (q, False, None, None)
                 return { }
@@ -770,14 +769,14 @@ def get_all_question_dependencies(module):
 
     # Compute all of the dependencies of all of the questions.
     dependencies = {
-        q: get_question_dependencies_with_skippable_flag(q, get_from_question_id=all_questions)
+        q: get_question_dependencies(q, get_from_question_id=all_questions)
         for q in all_questions.values()
     }
 
     # Find the questions that are at the root of the dependency tree.
     is_dependency_of_something = set()
     for deps in dependencies.values():
-        is_dependency_of_something |= set(deps.keys())
+        is_dependency_of_something |= deps
     root_questions = { q for q in dependencies if q not in is_dependency_of_something }
 
     ret = (dependencies, root_questions)
@@ -790,14 +789,6 @@ def get_all_question_dependencies(module):
 
 def get_question_dependencies(question, get_from_question_id=None):
     return set(edge[1] for edge in get_question_dependencies_with_type(question, get_from_question_id))
-
-def get_question_dependencies_with_skippable_flag(question, get_from_question_id=None):
-    edges = get_question_dependencies_with_type(question, get_from_question_id=get_from_question_id)
-    # skippable if the question is not used in an impute condition
-    return {
-        q: "impute-condition" not in set(edge_type for (edge_type, q1) in edges if q1 == q)
-        for q in set(q0 for (edge_type, q0) in edges)
-    }
 
 def get_question_dependencies_with_type(question, get_from_question_id=None):
     if get_from_question_id is None:
