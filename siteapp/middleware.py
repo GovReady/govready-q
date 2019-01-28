@@ -81,11 +81,18 @@ class OrganizationSubdomainMiddleware:
 
         elif request.path.startswith("/api/") and settings.SINGLE_ORGANIZATION_KEY:
             # This is an API interaction. In multi-org configurations, the API
-            # is served from the landing domain (and would be handled by this blocks
+            # is served from the landing domain (and would be handled by this block's
             # first if conditional). In single-org configurations the URLconfs are 
             # merged, that is OK becasue we then check the user 
             # auth on even the landing pages. We have to skip that because API
             # auth is handled by the view.
+            return None # continue with normal request processing
+
+        elif request.path.startswith("/admin/") and settings.SINGLE_ORGANIZATION_KEY:
+            # In multi-org configurations, the Django admin is served from the landing domain
+            # (and would be handled by this block's first if conditional). In single-org
+            # configurations the URLconfs are merged. We can skip our authorization logic
+            # for this pages because Django will handle it.
             return None # continue with normal request processing
 
         # Is this a request for an organization subdomain?
@@ -154,7 +161,10 @@ class OrganizationSubdomainMiddleware:
             from django.contrib.auth import logout
             from django.contrib import messages
             logout(request)
-            messages.add_message(request, messages.ERROR, 'You are not a member of this organization.')
+            if settings.SINGLE_ORGANIZATION_KEY:
+                messages.add_message(request, messages.ERROR, 'You have not been granted access to this site.')
+            else:
+                messages.add_message(request, messages.ERROR, 'You are not a member of this organization.')
 
         # The user isn't authenticated to see inside the organization subdomain, but
         # we have to allow them to log in, sign up, and reset their password (both
