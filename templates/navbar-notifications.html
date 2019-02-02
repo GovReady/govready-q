@@ -1,0 +1,37 @@
+{% load notifications_tags %}
+{% load notification_helpers %}
+
+{% notifications_unread as unread_count %}
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="badge">{{ unread_count }}</span> <span class="caret"></span></a>
+  <ul class="dropdown-menu">
+    <li>
+        <div style="display: block; padding: 3px 20px; clear: both; font-weight: 400; line-height: 1.42857143; white-space: nowrap;"> {# copied bootstrap's .dropdown-menu>li>a styles so we can have an drop-down entry that isn't a link #}
+            <div style="font-size: 90%; text-align: right; color: #444;">
+                {% if request.user.notifications.all.count > 0 %}
+                    <a href="/user/notifications">View All</a>
+                    {% if unread_count > 0 %}
+                    |
+                    <a href="#"
+                       onclick="$(this).parents('.dropdown').find('.badge').text('0'); return mark_notifications_read({ upto_id: {{request.user.notifications.all.0.id}} })">Mark All Read</a>
+                    {% endif %}
+                {% else %}
+                    No notifications.
+                {% endif %}
+            </div>
+        </div>
+    </li>
+
+    {% for n in request.user.notifications.all|slice:":5" %}
+      <li class="notification {% if n.unread %}unread{% endif %}" data-notification-id="{{n.id}}">
+        {# the link has an onclick handler that cancels the click, runs ajax to mark the notification as read, and then on the ajax callback redirects to the target url #}
+        <a
+            href="{% if n.target and not n.target.supress_link_from_notifications %}{{n.target|get_notification_link:n}}{% else %}javascript:false;{% endif %}"
+            onclick="return mark_notifications_read({ id: {{n.id}} }{% if n.target and not n.target.supress_link_from_notifications %}, function() { window.location = '{{n.target|get_notification_link:n|escapejs}}'; }{% endif %})">
+            <span>{{ n.actor }} {{ n.verb }} {% if n.target %}{{ n.target }}{% endif %}</span>
+            {{ n.timesince }} ago
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</li>

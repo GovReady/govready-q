@@ -12,11 +12,13 @@ Deployment changes:
 
 * GovReady-Q can now be deployed behind an enterprise reverse proxy authentication server that sends login information in HTTP headers.
 * Python 3.6+ is now required.
+* Documentation was added for creating a custom Docker image that adds organization branding to the site.
 
 Developer changes:
 
 * Add a new VERSION file to source code control that stores the current version of the software, plus a commit hash for public releases, so that nightly builds don't fail because of a missing VERSION file. Add build tests to ensure the VERSION file matches the top release in CHANGELOG.md and ends with "+devel" if and only if this is a development release.
 * The application was not working on macOS in version v0.8.4 because of a bug in commonmark 0.8.0.
+* Some of the templates were split out into multiple files to make it easier to override them for custom branding.
 * Upgraded some dependencies.
 
 v0.8.4 (October 23, 2018)
