@@ -53,4 +53,8 @@ In a second console, start GovReady-Q:
 
 In the default configuration, the proxy server is listening at http://localhost:8000 and forwards to the backend GovReady-Q server listening on port 8001. GovReady-Q is configured in `local/environment.json` to know what its public URL is, and the default `http://localhost:8000` will correctly match this setup.
 
+You can also try starting up GovReady-Q using our docker image:
+
+	deployment/docker/docker_container_run.sh --relaunch --bind 8001 -- -e PROXY_AUTHENTICATION_USER_HEADER=IAM-Username -e PROXY_AUTHENTICATION_EMAIL_HEADER=IAM-Email
+
 ---

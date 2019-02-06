@@ -1,7 +1,4 @@
 {% load static %}
-{% load notifications_tags %}
-{% load q %}
-{% load notification_helpers %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -23,6 +20,7 @@
         <link rel="stylesheet" href="{% static "css/govready-q.css" %}">
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
         <script defer src="{% static "vendor/fontawesome.js" %}"></script>
+        {% include "head.html" %}
 
         {% block head %}{% endblock %}
 
@@ -35,132 +33,7 @@
     <!--[if lt IE 8]><p>Internet Explorer version 8 or any modern web browser is required to use this website, sorry.<![endif]-->
     <!--[if gt IE 7]><!-->
 
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-target" aria-expanded="false">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/" style="color: #EEE; font-weight: bold;">
-              <img alt="GovReady Q logo" src="{% static "img/brand/navbar-logo.png" %}" width="110px;" style="float: left; margin: -2px 20px;">
-              {% if request.organization  %}
-                {% with logo=request.organization.get_logo %}
-                  {% if logo %}
-                    <img src="{{logo.url}}" height="30" alt="Organization Logo" style="float: left; margin: -5px 5px;">
-                  {% else %}
-                    <span class="glyphicon glyphicon-globe"></span>
-                  {% endif %}
-                {% endwith %}
-                <span style="margin-left: .5em;">{{request.organization.name}}</span>
-              {% else %}
-                {{request.get_host}}
-              {% endif %}
-          </a>
-        </div>
-        <div id="navbar-collapse-target" class="collapse navbar-collapse">
-          {% comment %}
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="/">System Catalog</a></li>
-          </ul>
-          {% endcomment %}
-          <ul class="nav navbar-nav navbar-right">
-            {# On some special pages like the homepage and login page, we allow users who are not members of the organization to view the page so that they may log in. When enterprise SSO is used, the user might even be logged in in this state. But if they are not a part of the organization, we can't show these links and we don't have profile information for the user so we can't query for that either. #}
-            {% if request.user.is_authenticated and request.user.localized_to %}
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                MENU
-                <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a href="/projects">Projects</a></li>
-                <li><a href="/store">Compliance Apps</a></li>
-                {% if user.can_see_org_settings or user.is_staff %}
-                  <li role="separator" class="divider"></li>
-                  <li><a href="/settings">Settings</a></li>
-                {% endif %}
-                {% if user.is_staff %}
-                  <li><a href="{% url "guidedmodules_analytics" %}">Analytics</a></li>
-                {% endif %}
-              </ul>
-            </li>
-
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="user-menu-dropdown">
-                {% with url=request.user.get_profile_picture_absolute_url %}
-                  {% if url %}
-                    <img src="{{url}}" height="30" alt="Profile Picture"
-                      style="margin: -5px 5px;">
-                  {% endif %}
-                {% endwith %}
-                {{request.user}}
-                <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a href="{{user.user_settings_task_create_if_doesnt_exist.get_absolute_url}}" id="user-menu-account-settings">Account Settings</a></li>
-                <li><a href="/api-keys">Your API Keys</a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="/accounts/logout/">Log Out</a></li>
-              </ul>
-            </li>
-
-            {% notifications_unread as unread_count %}
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="badge">{{ unread_count }}</span> <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li>
-                    <div style="display: block; padding: 3px 20px; clear: both; font-weight: 400; line-height: 1.42857143; white-space: nowrap;"> {# copied bootstrap's .dropdown-menu>li>a styles so we can have an drop-down entry that isn't a link #}
-                        <div style="font-size: 90%; text-align: right; color: #444;">
-                            {% if request.user.notifications.all.count > 0 %}
-                                <a href="/user/notifications">View All</a>
-                                {% if unread_count > 0 %}
-                                |
-                                <a href="#"
-                                   onclick="$(this).parents('.dropdown').find('.badge').text('0'); return mark_notifications_read({ upto_id: {{request.user.notifications.all.0.id}} })">Mark All Read</a>
-                                {% endif %}
-                            {% else %}
-                                No notifications.
-                            {% endif %}
-                        </div>
-                    </div>
-                </li>
-
-                {% for n in request.user.notifications.all|slice:":5" %}
-                  <li class="notification {% if n.unread %}unread{% endif %}" data-notification-id="{{n.id}}">
-                    {# the link has an onclick handler that cancels the click, runs ajax to mark the notification as read, and then on the ajax callback redirects to the target url #}
-                    <a
-                        href="{% if n.target and not n.target.supress_link_from_notifications %}{{n.target|get_notification_link:n}}{% else %}javascript:false;{% endif %}"
-                        onclick="return mark_notifications_read({ id: {{n.id}} }{% if n.target and not n.target.supress_link_from_notifications %}, function() { window.location = '{{n.target|get_notification_link:n|escapejs}}'; }{% endif %})">
-                        <span>{{ n.actor }} {{ n.verb }} {% if n.target %}{{ n.target }}{% endif %}</span>
-                        {{ n.timesince }} ago
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
-            </li>
-
-            {% elif request.user.is_authenticated %}
-              {# The user is logged in but is not a member of the organization so we can't query for profile information. #}
-
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="user-menu-dropdown">
-                  {{request.user}}
-                  <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu">
-                  <li><a href="/accounts/logout/">Log Out</a></li>
-                </ul>
-              </li>
-
-            {% elif LOGIN_ENABLED %}
-            <li><a href="{% url "account_login" %}">Log In</a></li>
-            {% endif %}
-          </ul>          
-        </div><!-- /.navbar-collapse -->
-      </div><!-- /.container-fluid -->
-    </nav>
+    {% include "navbar.html" %}
 
     {% block contextbar %}
     <div id="context-bar">
