@@ -34,6 +34,8 @@ else:
 		"host": "localhost:8000",
 		"https": False,
 	}
+
+	# Show the defaults.
 	print("Create a %s file! It should contain something like this:" % local("environment.json"))
 	print(json.dumps(environment, sort_keys=True, indent=2))
 
