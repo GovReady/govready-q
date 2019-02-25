@@ -297,32 +297,6 @@ The following environment variables are used to configure the container when lau
 
 `PROXY_AUTHENTICATION_USER_HEADER` and `PROXY_AUTHENTICATION_EMAIL_HEADER`: GovReady-Q can be deployed behind a reverse proxy that authenticates users and passes the authenticated user's username and email address in HTTP headers. These environment variables correspond to the settings documented in [Enterprise Login](Environment.html#proxy-authentication-sever).
 
-## Building and publishing the Docker image for GovReady-Q maintainers
-
-You may build the Docker image locally from the current source code rather than obtaining it from the Docker Hub. Prior to building the image:
-
-* Ensure that you have no uncommitted source code changes.
-* Tag your HEAD commit in the format `v1.2.3-rc0`.
-* If you are a GovReady-Q maintainer, push the tag to Github.
-
-In the root directory of this repository, build the Docker image:
-
-	deployment/docker/docker_image_build.sh
-
-If you are a GovReady-Q maintainer, you can then push the image to hub.docker.com:
-
-	docker login
-	# respond to prompts with credentials
-	docker image push govready/govready-q
-
-Or to an AWS Elastic Container Registry:
-
-	aws ecr get-login --region us-east-1
-	docker login -u AWS -p ... # copy from output of last line, but remove '-e none'
-	REGISTRYURI=...dkr.ecr...amazonaws.com/name
-	docker tag govready/govready-q:latest $REGISTRYURI:latest
-	docker push $REGISTRYURI:latest
-
 ## Running tests
 
 GovReady-Q's unit tests can be run within the Docker container. After building the image:
