@@ -314,31 +314,3 @@ The functional tests run a headless Chromium web browser session and we have not
 	python3.6 manage.py test
 	...
 	selenium.common.exceptions.WebDriverException: Message: unknown error: Chrome failed to start: exited abnormally
-
-## Deployment the Docker container on Amazon Web Services Elastic Container Service with AWS Fargate
-
-### Preparation
-
-* In the AWS VPC console, use the Start VPC Wizard to create a new "VPC with a Single Public Subnet". After creating it, go to the Subnets tab and find the subnet and rename it to, e.g., GovReady-Q Production Public Subnet 1. Check which Availability Zone it uses. Then add a second Subnet in the same VPC. Use similar settings as the first subnet but a) choose a different Availability Zone because an Elastic Load Balancer requires operating two zones and b) modify the IPv4 CIDR block because it must be different (if the first subnet used 10.0.0.0/24, you can use 10.0.1.0/24 here). Then edit the new Subnet's Route Table to use the same Route Table as the first Subnet, and delete the new subnet's previous-and-now-unused route table.
-* In the AWS EC2 console, create a Security Group in the new VPC for the Load Balancer and any other public-facing systems. Enable inbound HTTP and HTTPS traffic.
-* Create a new Load Balancer using the Application Load Balancer type. Select internet-facing. Add a listener on HTTPS (port 80) and/or HTTPS (port 443). Use the VPC just created and the Security Group for public facting systems. Create a dummy target group if you have to --- we won't use this --- and skip registering targets.
-* Edit the VPC's default Security Group, which we'll use for all non-public-facing systems, to permit all inbound traffic from the new public facing security group.
-* In AWS RDS, create a Postgres database instance. For simplicity, use `govready_q` as the root username and database name. Choose the VPC created above, one of the Availability Zones tied to VPC's two subnets, and the default VPC security group.
-
-### In AWS ECS
-
-* Create a new Task Definition using the Fargate launch type. Leave the task role blank. The task size is up to you.
-* Add a container with image `govready/govready-q` to use a GovReady image on the Docker Hub. (If using an AWS Elastic Container Registry, specify an image like `...dkr.ecr...amazonaws.com/repository-name:latest`. After creating the ECS Task Definition, go back to ECR and add the "Pull only actions" permission for the Task Definition's role, which is probably `ecsTaskExecutionRole`.)
-* Add a port mapping for port 8000 (there source and destination ports here at the same).
-* Set the environment variables as appropriate for your deployment (see above). Set the `HOST` environment variable to match the public DNS name of the load balancer. Set `DBURL` to use the RDS database using e.g. `postgresql://govready_q:password@...rds.amazonaws.com/govready_q?sslmode=require`.
-* Leave `Auto-configure CloudWatch Logs` on so that the container's console output is available in CloudWatch.
-* Save the Task Definition.
-* Create a Cluster using the "Networking only (powered by AWS Fargate)" template. Don't create a VPC (you already did that).
-* Create a Service in the new Cluster. Set launch type to Fargate. Choose the Task Defintion.
-* Choose the same VPC that was created above, the subnet the RDS database is in, and the VPC's default security group. Auto-assign public IP must be Enabled so that it can have routing to the Internet. Choose the Application Load Balancer created early. Click to add the Task Definition's container to the load balancer for each of HTTP and HTTPS as appropriate (all ports the load balancer is listening on --- if using HTTPS, GovReady-Q will issue redirects from HTTP to HTTPS), and set the Path Pattern to `/*` and Evaluation Order to 1 for each.
-* Enable service discovery.
-* Go to the EC2 console and in Target Groups find the Target Group that was created by ECS. Edit its Health Checks. Set the health check to the path `/health-check` and add status codes `400,404` to the acceptable status codes because at this time Load Balancer status checks will not send a valid HTTP Host: header and Django will reject the request with a 400 response code, and if that were fixed the `/health-check` page isn't yet implemented.
-
-### Post deployment steps
-
-* If using HTTPS, import a certificate into AWS Certificate Manager and apply it to the Load Balancer.
