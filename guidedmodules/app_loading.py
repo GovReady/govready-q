@@ -1,5 +1,5 @@
 ###########################################################
-# Import Apps into the AppInstance, Module, ModuleQuestion,
+# Import Apps into the AppVersion, Module, ModuleQuestion,
 # and ModuleAsset Django ORM models.
 ###########################################################
 
@@ -11,7 +11,7 @@ from collections import OrderedDict
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 
-from .models import AppSource, AppInstance, ModuleAsset, \
+from .models import AppSource, AppVersion, ModuleAsset, \
                     Module, ModuleQuestion, Task, \
                     extract_catalog_metadata
 
@@ -49,9 +49,9 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
     # be processed recursively.
     available_modules = dict(app.get_modules())
 
-    # Create an AppInstance to add new Modules into, unless update_appinst is given.
+    # Create an AppVersion to add new Modules into, unless update_appinst is given.
     if update_appinst is None:
-        appinst = AppInstance.objects.create(
+        appinst = AppVersion.objects.create(
             source=app.store.source,
             appname=app.name,
             catalog_metadata={},
@@ -76,7 +76,7 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
     load_module_assets_into_database(app, appinst)
 
     # If there's an 'app' module, move the app catalog information
-    # to the AppInstance.
+    # to the AppVersion.
     if 'app' in processed_modules:
         extract_catalog_metadata(processed_modules['app'])
         appinst.save()

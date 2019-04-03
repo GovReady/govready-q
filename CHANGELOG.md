@@ -6,6 +6,7 @@ In Development
 
 Developer changes:
 
+* The AppInstance model/database table was renamed to AppVersion to better reflect the meaning of the model.
 * Upgraded some dependencies.
 
 v0.8.5 (February 9, 2019)
