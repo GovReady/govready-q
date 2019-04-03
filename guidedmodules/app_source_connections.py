@@ -68,12 +68,44 @@ class App(object):
     def __repr__(self):
         return "<App {name} in {store}>".format(name=self.name, store=self.store)
 
-    def get_catalog_info(self):
-        raise Exception("Not implemented!")
     def get_modules(self):
         raise Exception("Not implemented!")
     def get_assets(self):
         raise Exception("Not implemented!")
+
+    def get_new_version_number(self):
+        # Check if the version of this app is different from
+        # the versions already in the database.
+        try:
+            app = read_yaml_file(self.read_file("app.yaml"))
+            version_number = app["catalog"]["version"]
+        except:
+          return None
+
+        # If the version number is in the database, there's
+        # nothing new to load.
+        from guidedmodules.models import AppVersion
+        if AppVersion.objects\
+            .filter(source=self.store.source,
+                    appname=self.name,
+                    version_number=version_number)\
+            .exists():
+            return None
+
+        # If it's new, return the version number.
+        return version_number
+
+    def get_appversions(self, show_in_catalog=True):
+        # Return the AppVerions in the database for this app
+        # that are included in the compliance apps catalog.
+        from guidedmodules.models import AppVersion
+        return AppVersion.objects\
+            .filter(source=self.store.source, appname=self.name, show_in_catalog=show_in_catalog)\
+            .order_by('created')
+    def get_hidden_appversions(self):
+        # Return the AppVersions that are in the database but
+        # are not shown in the compliance apps catalog.
+        return self.get_appversions(show_in_catalog=False)
 
 
 ### IMPLEMENTATIONS ###
@@ -214,17 +246,6 @@ class PyFsAppSourceConnection(AppSourceConnection):
             name,
             self.root.opendir(name))
 
-    def get_app_catalog_info(self, app):
-        ret = {
-            # All apps from a filesystem-based store require no credentials
-            # to get their contents because... we already got their contents.
-            "authz": "none",
-
-            # Add a 'published' key that comes from the catalog.yaml file.
-            "published": self.catalog["apps"].get(app.name),
-        }
-        return ret
-
 class PyFsApp(App):
     """An App whose modules and assets are stored in a directory
        layout rooted at a PyFilesystem2 file system."""
@@ -232,57 +253,6 @@ class PyFsApp(App):
     def __init__(self, store, name, fs):
         super().__init__(store, name)
         self.fs = fs
-
-    def get_catalog_info(self):
-        # Load the app.yaml file and return its catalog information.
-        with self.fs.open("app.yaml") as f:
-            err_str = "%s/app.yaml" % self.fs.desc('')
-            try:
-                yaml = read_yaml_file(f)
-            except AppSourceConnectionError as e:
-                raise AppSourceConnectionError("There was an error loading the module at %s: %s" % (
-                    err_str,
-                    str(e)))
-
-        # Construct catalog info.
-        ret = { }
-
-        # Start with the catalog information and protocol stored in the app.yaml.
-        ret["title"] = yaml["title"]
-        ret.update(yaml.get("catalog", {}))
-        if "protocol" in yaml: ret["protocol"] = yaml["protocol"]
-
-        # Load an optional README.md which provides the app's long description.
-        try:
-            # Read the README.md.
-            with self.fs.open("README.md") as f:
-                readme = f.read()
-
-            # Strip any initial heading that has the app name itself, since
-            # that is expected to not be included in the long description.
-            # Check both CommonMark heading formats.
-            readme = re.sub(r"^\s*#+ *" + re.escape(ret["title"]) + r"\s*", "", readme)
-            readme = re.sub(r"^\s*" + re.escape(ret["title"]) + r"\s*[-=]+\s*", "", readme)
-
-            ret.setdefault("description", {})["long"] = readme
-        except fs.errors.ResourceNotFound:
-            pass
-
-        # Override with source-specified catalog information.
-        ret.update(self.store.get_app_catalog_info(self))
-
-        # Set non-overridable fields.
-        ret.update({
-            "name": self.name,
-        })
-        if "icon" in yaml:
-            try:
-                with self.fs.open("assets/" + yaml["icon"], "rb") as f:
-                    ret["app-icon"] = f.read()
-            except fs.errors.ResourceNotFound:
-                pass
-
-        return ret
 
     def get_modules(self):
         # Return a generator over parsed YAML data for modules.

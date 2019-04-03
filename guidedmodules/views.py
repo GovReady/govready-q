@@ -739,8 +739,14 @@ def authoring_tool_auth(f):
 @login_required
 @transaction.atomic
 def upgrade_app(request):
-    # Upgrade an AppVersion by reloading all of its Modules from the
-    # app's current definition in its AppSource.
+    # Upgrade an AppVersion in place by reloading all of its Modules from the
+    # app's current definition in its AppSource. This should mainly be used
+    # for compliance app authors during the app authoring process. All projects
+    # that are using the AppVersion will be affected.
+    #
+    # TODO: We should have a different sort of upgrade when instead of updating
+    # an AppVersion in-place, we simply re-link this Project to a newer AppVersion
+    # already in the database.
 
     # Check that the user is permitted to do so.
     if request.method != "POST":
