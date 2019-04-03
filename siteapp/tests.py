@@ -152,6 +152,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Load the Q modules from the fixtures directory.
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
+        
         AppSource.objects.all().delete()
         AppSource.objects.get_or_create(
               # this one exists on first db load because it's created by
@@ -166,6 +167,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
                 }
             }
         )
+        load_modules().handle() # load system modules
+
         AppSource.objects.create(
             slug="project",
             spec={ # contains a test project
@@ -173,8 +176,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
                 "path": "fixtures/modules/other",
             },
             trust_assets=True
-        )
-        load_modules().handle()
+        )\
+            .add_app_to_catalog("simple_project")
 
         # Create a default user that is a member of the organization.
         # Log the user into the test client, which is used for API
@@ -245,13 +248,13 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.fill_field("#id_password", password or self.user.clear_password)
         self.click_element("form button.primaryAction")
 
-    def _new_project(self, module_key="project/simple_project"):
+    def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
-        self.click_element(".app[data-app='%s'] .view-app" % module_key)
+        self.click_element(".app[data-app='project/simple_project'] .view-app")
         self.click_element("#start-project")
         # last two lines could also be replaced with:
-        #self.click_element(".app[data-app='%s'] .start-app" % module_key)
+        #self.click_element(".app[data-app='project/simple_project'] .start-app")
         var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 

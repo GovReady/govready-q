@@ -79,8 +79,28 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
     # to the AppVersion.
     if 'app' in processed_modules:
         extract_catalog_metadata(processed_modules['app'])
-        appinst.save()
         processed_modules['app'].save()
+
+    # If there's a README.md file, overwrite the app catalog description.
+    import fs.errors
+    try:
+        # Read the README.md.
+        readme = app.read_file("README.md")
+
+        # Strip any initial heading that has the app name itself, since
+        # that is expected to not be included in the long description.
+        # Check both CommonMark heading formats.
+        readme = re.sub(r"^\s*#+ *" + re.escape(ret["title"]) + r"\s*", "", readme)
+        readme = re.sub(r"^\s*" + re.escape(ret["title"]) + r"\s*[-=]+\s*", "", readme)
+
+        appinst.catalog_metadata\
+            .setdefault("description", {})["long"] = readme
+    except fs.errors.ResourceNotFound:
+        pass
+
+    # Update appinst. It may have been modified by extract_catalog_metadata
+    # and by the loading of a README.md file.
+    appinst.save()
 
     return appinst
 

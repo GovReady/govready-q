@@ -17,14 +17,15 @@ class DiscussionTests(SeleniumTest):
         # modules as well as a test project.
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
+        load_modules().handle() # load system modules
         AppSource.objects.create(
             slug="fixture",
             spec={
                 "type": "local",
                 "path": "fixtures/modules/other",
             }
-        )
-        load_modules().handle()
+        )\
+        	.add_app_to_catalog("simple_project")
 
         # Create a default user that is a member of the organization.
 

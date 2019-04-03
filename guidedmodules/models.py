@@ -20,8 +20,6 @@ class AppSource(models.Model):
     available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
     available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this AppSource.")
 
-    approved_apps = JSONField(blank=True, help_text="Information about apps whitelisted or blacklisted for display in the catalog from this source.")
-
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
@@ -70,6 +68,20 @@ class AppSource(models.Model):
         from .app_source_connections import AppSourceConnection
         return AppSourceConnection.create(self, self.spec)
 
+    def get_available_apps(self):
+        with self.open() as src:
+            for app in src.list_apps():
+                yield app
+
+    def add_app_to_catalog(self, appname):
+        from .app_loading import load_app_into_database
+        with self.open() as conn:
+            app = conn.get_app(appname)
+            appver = load_app_into_database(app)
+            appver.show_in_catalog = True
+            appver.save()
+        return appver
+
 class AppVersion(models.Model):
     source = models.ForeignKey(AppSource, related_name="appversions", on_delete=models.CASCADE, help_text="The source repository where this AppVersion came from.")
     appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppSource.")
@@ -85,6 +97,8 @@ class AppVersion(models.Model):
     asset_files = models.ManyToManyField('guidedmodules.ModuleAsset', help_text="The assets linked to this pack.")
     asset_paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
+
+    show_in_catalog = models.BooleanField(default=False, help_text='Whether to show this AppVersion in the compliane app catalog, which allows users to start the app.')
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -102,6 +116,12 @@ class AppVersion(models.Model):
         # For debugging.
         return "<AppVersion [%d] %s from %s>" % (self.id, self.appname, self.source)
 
+    def get_version_display(self):
+        v = self.version_number or self.created.isoformat()
+        if self.version_name:
+            v += " (" + self.version_name + ")"
+        return v
+
     def get_asset(self, asset_path):
         if asset_path not in self.asset_paths:
             raise ValueError("{} is not an asset in {}.".format(asset_path, self))
@@ -118,23 +138,13 @@ class AppVersion(models.Model):
     def has_upgrade_priv(self, user):
         # Does a user have permission to ugprade the Modules in this AppVersion?
         # Yes if the user is an admin of all the Projects that the Tasks that use
-        # the Modules are in. In practice, that's just the one Project that was
-        # created when this AppVersion was created.
+        # the Modules are in. In practice, that's just during app authoring when
+        # the author is testing changes.
         #
         # In the database, we allow AppVersions to be shared across many Projects.
-        # The system AppVersion which holds e.g. the user profile module *is*
+        # (The system AppVersion which holds e.g. the user profile module is
         # shared across many user projects, but that AppVersion is blacklisted
-        # from upgrades below. But in other cases there's an implicit constraint
-        # that Projects and AppVersions are one-to-one because when we "start"
-        # an app **we always create an AppVersion and a Project as a pair.**
-        #
-        # In an abundance of caution, the permission check is coded to not make
-        # that assuption that there is just one Project tied to this AppVersion,
-        # so we check that the user is an admin to all relevant Projects. We would
-        # not want to upgrade an AppVersion associated with a Task that the user
-        # does not have administrative rights to. If in the future the implicit
-        # constraint is removed, we would need to be more precise about what is
-        # upgrade since we would not want to upgrade all Projects at once necessarily.
+        # from upgrades below.) 
         if self.system_app: return False
         projects = Task.objects.filter(module__app=self).values_list("project", flat=True).distinct()
         if len(projects) == 0:
@@ -144,6 +154,19 @@ class AppVersion(models.Model):
             if user not in Project.objects.get(id=project).get_admins():
                 return False
         return True
+
+    @staticmethod
+    def get_startable_apps(organization):
+        # Load all of the startable AppVersions. An AppVersion is startable
+        # if its show_in_catalog field is True and its AppSource is available
+        # to the organization the request is for, which is true if the AppSoure
+        # is available to all organizations or the organization has been whitelisted.
+        from django.db.models import Q
+        return AppVersion.objects\
+            .filter(show_in_catalog=True)\
+            .filter(source__is_system_source=False)\
+            .filter(Q(source__available_to_all=True) | Q(source__available_to_orgs=organization))
+    
 
 def extract_catalog_metadata(app_module, migration=None):
     # Note that this function is used in migration 0044 and so
