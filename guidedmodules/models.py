@@ -70,13 +70,13 @@ class AppSource(models.Model):
         from .app_source_connections import AppSourceConnection
         return AppSourceConnection.create(self, self.spec)
 
-class AppInstance(models.Model):
-    source = models.ForeignKey(AppSource, related_name="appinstances", on_delete=models.CASCADE, help_text="The source of this AppInstance.")
+class AppVersion(models.Model):
+    source = models.ForeignKey(AppSource, related_name="appversions", on_delete=models.CASCADE, help_text="The source repository where this AppVersion came from.")
     appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppSource.")
 
         # the field below is a NullBooleanField because the unique constraint doesn't kick in
         # for NULLs but does for False/True, and we want the constraint to apply only for True.
-    system_app = models.NullBooleanField(default=None, help_text="Set to True for AppInstances that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
+    system_app = models.NullBooleanField(default=None, help_text="Set to True for AppVersions that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
 
     catalog_metadata = JSONField(blank=True, help_text="The catalog metadata that was stored in the 'app' module.")
     version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
@@ -100,7 +100,7 @@ class AppInstance(models.Model):
 
     def __repr__(self):
         # For debugging.
-        return "<AppInstance [%d] %s from %s>" % (self.id, self.appname, self.source)
+        return "<AppVersion [%d] %s from %s>" % (self.id, self.appname, self.source)
 
     def get_asset(self, asset_path):
         if asset_path not in self.asset_paths:
@@ -116,29 +116,29 @@ class AppInstance(models.Model):
             and user.has_perm('guidedmodules.change_module'))
 
     def has_upgrade_priv(self, user):
-        # Does a user have permission to ugprade the Modules in this AppInstance?
+        # Does a user have permission to ugprade the Modules in this AppVersion?
         # Yes if the user is an admin of all the Projects that the Tasks that use
         # the Modules are in. In practice, that's just the one Project that was
-        # created when this AppInstance was created.
+        # created when this AppVersion was created.
         #
-        # In the database, we allow AppInstances to be shared across many Projects.
-        # The system AppInstance which holds e.g. the user profile module *is*
-        # shared across many user projects, but that AppInstance is blacklisted
+        # In the database, we allow AppVersions to be shared across many Projects.
+        # The system AppVersion which holds e.g. the user profile module *is*
+        # shared across many user projects, but that AppVersion is blacklisted
         # from upgrades below. But in other cases there's an implicit constraint
-        # that Projects and AppInstances are one-to-one because when we "start"
-        # an app **we always create an AppInstance and a Project as a pair.**
+        # that Projects and AppVersions are one-to-one because when we "start"
+        # an app **we always create an AppVersion and a Project as a pair.**
         #
         # In an abundance of caution, the permission check is coded to not make
-        # that assuption that there is just one Project tied to this AppInstance,
+        # that assuption that there is just one Project tied to this AppVersion,
         # so we check that the user is an admin to all relevant Projects. We would
-        # not want to upgrade an AppInstance associated with a Task that the user
+        # not want to upgrade an AppVersion associated with a Task that the user
         # does not have administrative rights to. If in the future the implicit
         # constraint is removed, we would need to be more precise about what is
         # upgrade since we would not want to upgrade all Projects at once necessarily.
         if self.system_app: return False
         projects = Task.objects.filter(module__app=self).values_list("project", flat=True).distinct()
         if len(projects) == 0:
-            # This AppInstance doesn't appear to be in use! Well, lock it down.
+            # This AppVersion doesn't appear to be in use! Well, lock it down.
             return False
         for project in projects:
             if user not in Project.objects.get(id=project).get_admins():
@@ -208,9 +208,9 @@ def recombine_catalog_metadata(app_module):
 
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
-    app = models.ForeignKey(AppInstance, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppInstance that this Module is a part of. Null for legacy Modules created before we had this field.")
+    app = models.ForeignKey(AppVersion, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppVersion that this Module is a part of. Null for legacy Modules created before we had this field.")
 
-    module_name = models.SlugField(max_length=200, help_text="A slug-like identifier for the Module that is unique within the AppInstance app.")
+    module_name = models.SlugField(max_length=200, help_text="A slug-like identifier for the Module that is unique within the AppVersion app.")
 
     superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="This field is no longer used. When a Module is superseded by a new version, this points to the newer version.")
 
@@ -351,8 +351,8 @@ class Module(models.Model):
     def get_referenceable_modules(self):
         # Return the modules that can be referenced by this
         # one in YAML as an answer type. That's any Module
-        # defined in the same AppInstance that isn't "type: project".
-        if self.app is None: return # legacy Module not associated with an AppInstance
+        # defined in the same AppVersion that isn't "type: project".
+        if self.app is None: return # legacy Module not associated with an AppVersion
         for m in self.app.modules.all():
             if m.spec.get("type") == "project": continue
             yield m

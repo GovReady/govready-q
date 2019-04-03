@@ -3,7 +3,7 @@ from django import forms
 from django.utils.html import escape as escape_html
 
 from .models import \
-	AppSource, AppInstance, Module, ModuleQuestion, ModuleAsset, \
+	AppSource, AppVersion, Module, ModuleQuestion, ModuleAsset, \
 	Task, TaskAnswer, TaskAnswerHistory, \
 	InstrumentationEvent
 
@@ -270,7 +270,7 @@ class AppSourceAdmin(admin.ModelAdmin):
 		if obj.is_system_source: flags.append("SYSTEM")
 		return ", ".join(flags)
 
-class AppInstanceAdmin(admin.ModelAdmin):
+class AppVersionAdmin(admin.ModelAdmin):
 	list_display = ('appname', 'version_number', 'version_name', 'source', 'system_app')
 	list_filter = ('source', 'system_app')
 	raw_id_fields = ('source', 'asset_files',)
@@ -326,7 +326,7 @@ class InstrumentationEventAdmin(admin.ModelAdmin):
 	readonly_fields = ('event_time', 'event_type', 'event_value', 'user', 'module', 'question', 'task', 'answer')
 
 admin.site.register(AppSource, AppSourceAdmin)
-admin.site.register(AppInstance, AppInstanceAdmin)
+admin.site.register(AppVersion, AppVersionAdmin)
 admin.site.register(Module, ModuleAdmin)
 admin.site.register(ModuleQuestion, ModuleQuestionAdmin)
 admin.site.register(ModuleAsset, ModuleAssetAdmin)

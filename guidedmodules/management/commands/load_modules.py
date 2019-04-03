@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
-from guidedmodules.models import AppSource, AppInstance
+from guidedmodules.models import AppSource, AppVersion
 from guidedmodules.app_loading import AppImportUpdateMode, IncompatibleUpdate, load_app_into_database
 
 class Command(BaseCommand):
@@ -15,7 +15,7 @@ class Command(BaseCommand):
             for app in store.list_apps():
                 # Update an existing instance of the app if the changes are compatible
                 # with the existing data model.
-                oldappinst = AppInstance.objects.filter(source=app.store.source, appname=app.name, system_app=True).first()
+                oldappinst = AppVersion.objects.filter(source=app.store.source, appname=app.name, system_app=True).first()
 
                 # Try to update the existing app.
                 try:
@@ -25,7 +25,7 @@ class Command(BaseCommand):
                         update_mode=AppImportUpdateMode.CompatibleUpdate if oldappinst else AppImportUpdateMode.CreateInstance)
                 except IncompatibleUpdate as e:
                     # App was changed in an incompatible way, so fall back to creating
-                    # a new AppInstance and mark the old one as no longer the system_app.
+                    # a new AppVersion and mark the old one as no longer the system_app.
                     # Only one can be the system_app.
                     print(app, e)
                     appinst = load_app_into_database(app)

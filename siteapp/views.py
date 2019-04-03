@@ -453,8 +453,8 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
                     raise ValueError("Invalid access.")
 
                 # 4) Import. Use the module named "app".
-                appinst = load_app_into_database(app)
-                module = appinst.modules.get(module_name="app")
+                appver = load_app_into_database(app)
+                module = appver.modules.get(module_name="app")
 
         else:
             # Create a stub Module -- we'll download the app later. This
