@@ -25,12 +25,13 @@ class SeleniumTest(StaticLiveServerTestCase):
         from django.conf import settings
         settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
-        # Override ALLOWED_HOSTS, SITE_ROOT_URL, and ORGANIZATION_PARENT_DOMAIN
+        # Override ALLOWED_HOSTS, SITE_ROOT_URL, ORGANIZATION_PARENT_DOMAIN, etc.
         # because they may not be set or set properly in the local environment's
         # non-test settings for the URL assigned by the LiveServerTestCase server.
         settings.ALLOWED_HOSTS = ['.localhost', 'testserver']
         settings.SITE_ROOT_URL = cls.live_server_url
         settings.ORGANIZATION_PARENT_DOMAIN = 'orgs.localhost'
+        settings.SINGLE_ORGANIZATION_KEY = None
 
         # In order for these tests to succeed when not connected to the
         # Internet, disable email deliverability checks which query DNS.
