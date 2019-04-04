@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+In Development
+--------------
+
+Developer changes:
+
+* Upgraded some dependencies.
+
 v0.8.5 (February 9, 2019)
 -------------------------
 
