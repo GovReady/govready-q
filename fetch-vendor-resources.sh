@@ -170,11 +170,11 @@ download \
 rm -f /tmp/google-font-download
 # generated with: $SHACMD $VENDOR/{google-fonts.css,Hind*,Lato*}
 $SHACMD_CHECK << EOF
-96cc2e2d6040d182998e530ceb1a01ecffbc2aab6f0125d205f82cc742818dd0  siteapp/static/vendor/google-fonts.css
-f0609555ad20470e30de0ba32d026f0b27098ea74c84edd811e21998943510f6  siteapp/static/vendor/Hind_400.woff
-af6e56a25aae4ec8eaa3aac31a8a73c0d1aaa4c4dd6afbee4f1c996474fcd789  siteapp/static/vendor/Hind_400.woff2
-53beffe7dff224394b4f0e1f681ba3a64591c63e882720071863b4f5b8572bdf  siteapp/static/vendor/Hind_700.woff
-f43a318a03ccb1c5f135ceca9ca3209f2acdc98ade18500dec807b6b1703e68f  siteapp/static/vendor/Hind_700.woff2
-2a6deb3135f92894e02fc63f6faa395e639fd44bfb3e7664608746715cd21bb7  siteapp/static/vendor/Lato_900.woff
-abde463ef27458713d91e9be883fdd389298ef57411b601cab5f66db609c508d  siteapp/static/vendor/Lato_900.woff2
+d36dbb50dcb3932ce7e3a0271d29eb6d95b82efd6ba08044f2570d9e337f5a88  siteapp/static/vendor/google-fonts.css
+6375a7ecbb77ba42e2de22c99aab9fea1fea125d6d857512360a3a555ff74161  siteapp/static/vendor/Hind_400.woff
+d7a3280717b1f82f46bee459863720a03de43b16dc8097ba1b133440e5fe0edc  siteapp/static/vendor/Hind_400.woff2
+a3ef4f13a191d01ecca06b8b997a666b28d4c614d6de256753fa9f4fbe15b726  siteapp/static/vendor/Hind_700.woff
+e2f1a473a1649fe316dbddc5cf8f45c525d62b8373d1be395272864c0cf1e60f  siteapp/static/vendor/Hind_700.woff2
+7831e273f41fef8485564286f3578d2847754db375befdb48b8ce37e1e1f3a57  siteapp/static/vendor/Lato_900.woff
+7d4243c8e973ec0cfc707904891ae4e3efc03dbc8923acb9755f9a35c92269a6  siteapp/static/vendor/Lato_900.woff2
 EOF
