@@ -50,6 +50,7 @@ class DiscussionTests(SeleniumTest):
         self.fill_field("#id_login", self.user.username)
         self.fill_field("#id_password", self.user_pw)
         self.click_element("form button.primaryAction")
+        self.assertRegex(self.browser.title, "Your Compliance Projects")
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
