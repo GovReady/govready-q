@@ -71,7 +71,12 @@ class AppSource(models.Model):
     def get_available_apps(self):
         with self.open() as src:
             for app in src.list_apps():
-                yield app
+                yield {
+                    "name": app.name,
+                    "new_version_number": app.get_new_version_number(),
+                    "versions_in_catalog": app.get_appversions(),
+                    "hidden_versions": app.get_hidden_appversions(),
+                }
 
     def add_app_to_catalog(self, appname):
         from .app_loading import load_app_into_database

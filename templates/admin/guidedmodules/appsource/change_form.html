@@ -20,17 +20,15 @@
             <tr>
                 <td>{{app.name}}</td>
                 <td>
-                    {% with v=app.get_new_version_number %}
-                        {% if v %}
-                            {{v}}
-                            [<a href="../../import-app/{{original.id}}/{{app.name}}">Add</a>]
-                        {% else %}
-                            -
-                        {% endif %}
-                    {% endwith %}
+                    {% if app.new_version_number %}
+                        {{app.new_version_number}}
+                        [<a href="../../import-app/{{original.id}}/{{app.name}}">Add</a>]
+                    {% else %}
+                        -
+                    {% endif %}
                 </td>
                 <td>
-                    {% for appver in app.get_appversions %}
+                    {% for appver in app.versions_in_catalog %}
                         <a href="/admin/guidedmodules/appversion/{{appver.id}}/">
                             {{appver.get_version_display}}
                         </a>
@@ -40,7 +38,7 @@
                     {% endfor %}
                 </td>
                 <td>
-                    {% for appver in app.get_hidden_appversions %}
+                    {% for appver in app.hidden_versions %}
                         <a href="/admin/guidedmodules/appversion/{{appver.id}}/">
                             {{appver.get_version_display}}
                         </a>
