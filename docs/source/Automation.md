@@ -58,7 +58,7 @@ Every call to the API requires an API key. Each user has three API keys listed o
 
 * The read-write API key gives external tools the ability to see and make changes to anything the associated user can see and make changes to on Q. 
 
-* The write-only API key gives external tools the ability to make changes to anything the associated user can make changes to on Q but does not include the abiliy to see any data values stored in Q. The write-only key is useful in situations where the external tool needs to be able to upload data but does not need to read existing data values.
+* The write-only API key gives external tools the ability to make changes to anything the associated user can make changes to on Q but does not include the ability to see any data values stored in Q. The write-only key is useful in situations where the external tool needs to be able to upload data but does not need to read existing data values.
 
 ### Getting data from the app using the GET API
 

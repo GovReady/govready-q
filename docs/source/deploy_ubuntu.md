@@ -2,7 +2,7 @@
 
 This document provides some basic guidance on setting up GovReady-Q on an Ubuntu 16.04 server with Nginx. These commands should be run from the root directory of the GovReady-Q code repository.
 
-Update system packages and install packages helpful for GovReay-Q:
+Update system packages and install packages helpful for GovReady-Q:
 
 	apt-get update && apt-get upgrade -y
 

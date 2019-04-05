@@ -80,7 +80,7 @@ Open any page in your locally running GovReady-Q and you should see that the bac
 
 ## Keeping your templates up to date
 
-With each new released verison of GovReady-Q, there is the possibility that the stock templates have changed. Some changes may require you to re-engineer your template overrides to preserve functionality.
+With each new released version of GovReady-Q, there is the possibility that the stock templates have changed. Some changes may require you to re-engineer your template overrides to preserve functionality.
 
 ## Creating a custom Docker image
 
@@ -108,7 +108,7 @@ RUN mkdir branding
 COPY . branding
 ```
 
-Finally, you'll need some commands to adjust permissions, to activate the branding package when GovReady-Q starts, and to prepare teh static assets to be served. The complete Dockerfile should look like this:
+Finally, you'll need some commands to adjust permissions, to activate the branding package when GovReady-Q starts, and to prepare the static assets to be served. The complete Dockerfile should look like this:
 
 ```Dockerfile
 # Build an image on top of the stock GovReady-Q image.

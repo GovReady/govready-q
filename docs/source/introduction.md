@@ -146,7 +146,7 @@ For a more detailed list of software dependencies and requirements see:
 
 The following diagram depicts a generic, high-level system architecture GovReady-Q deployment including external ports and protocols. Architectures vary depending on redundancy requirements, use of containers, etc.
 
-![System architecure of a generic GovReady-Q deployment](assets/govready-q_system_architecture.png)
+![System architecture of a generic GovReady-Q deployment](assets/govready-q_system_architecture.png)
 
 
 ## Downloading GovReady-Q

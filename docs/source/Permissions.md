@@ -14,7 +14,7 @@ GovReady-Q tracks the following major entities
 * Membership - associating individual users with organizations and systems
 * Tasks/Modules - coherent grouping of questions and educational content
 * Questions/Answers - specific snippet of content within a Task
-* Templates - drives automatic generation of artifacts, supporting variable subsitution
+* Templates - drives automatic generation of artifacts, supporting variable substitution
 
 Users
 -----
@@ -120,7 +120,7 @@ A Task has an editor, which is the User who has primary responsibility for compl
 A User has both *read* and *write* access to a Task if any of the following are true:
 
 * They are the editor of the Task.
-* They are a _member_ or _adminstrator_ of the Project that the Task belongs to.
+* They are a _member_ or _administrator_ of the Project that the Task belongs to.
 
 A User with *read* access can see the Task on the page for the Project that it belongs to and can see all of its questions, answers, and outputs and can start a Discussion on questions.
 

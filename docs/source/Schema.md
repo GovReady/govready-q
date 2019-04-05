@@ -147,7 +147,7 @@ The document can also be stored in a separate file by replacing the document dat
 	...
 	Hello!
 
-When using a separate file, the document properties (`id`, `title`, and `format`) are given in a YAML block at the top of the file. A line containig just three dots signifies the end of the YAML block, separating it from the document template. The document template follows.
+When using a separate file, the document properties (`id`, `title`, and `format`) are given in a YAML block at the top of the file. A line containing just three dots signifies the end of the YAML block, separating it from the document template. The document template follows.
 
 ### Document Format
 
@@ -473,7 +473,7 @@ This question type should be avoided if one of the other question types specifie
 
 ### Imputing Answers
 
-The answer to one question may provide the answer to another. In such cases, the latter question is said to have an imputed value and the user is not asked to answer the question. To imput a value, specify on the question whose value is being imputed:
+The answer to one question may provide the answer to another. In such cases, the latter question is said to have an imputed value and the user is not asked to answer the question. To impute a value, specify on the question whose value is being imputed:
 
     impute:
       - condition: q1 == 'no'
@@ -510,7 +510,7 @@ In both conditions and `expression`-type values, as well as in documents, the va
 * `project.question_id`, `project.question_id.subquestion_id`, etc. to access questions within the project
 * `organization`, which gives the organization name
 
-We also have a funtion to retreive the URL of a module's static assets, e.g.:
+We also have a function to retrieve the URL of a module's static assets, e.g.:
 
 	<script src="{{static_asset_path_for('myscript.js')}}"></script>
 
