@@ -82,7 +82,7 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
         processed_modules['app'].save()
 
     # If there's a README.md file, overwrite the app catalog description.
-    import fs.errors
+    import re, fs.errors
     try:
         # Read the README.md.
         readme = app.read_file("README.md")
