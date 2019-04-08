@@ -90,8 +90,8 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
         # Strip any initial heading that has the app name itself, since
         # that is expected to not be included in the long description.
         # Check both CommonMark heading formats.
-        readme = re.sub(r"^\s*#+ *" + re.escape(ret["title"]) + r"\s*", "", readme)
-        readme = re.sub(r"^\s*" + re.escape(ret["title"]) + r"\s*[-=]+\s*", "", readme)
+        readme = re.sub(r"^\s*#+ *" + re.escape(appinst.catalog_metadata["title"]) + r"\s*", "", readme)
+        readme = re.sub(r"^\s*" + re.escape(appinst.catalog_metadata["title"]) + r"\s*[-=]+\s*", "", readme)
 
         appinst.catalog_metadata\
             .setdefault("description", {})["long"] = readme
