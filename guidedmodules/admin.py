@@ -212,7 +212,8 @@ class AppSourceAdmin(admin.ModelAdmin):
 		try:
 			appver = appsource.add_app_to_catalog(appname)
 		except Exception as e:
-			return HttpResponse(str(e), status=400)
+			raise
+      # return HttpResponse(str(e), status=400)
 
 		from django.contrib import messages
 		messages.add_message(request, messages.INFO, 'Compliance app added into the catalog.')
