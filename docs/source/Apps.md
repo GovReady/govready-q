@@ -128,7 +128,7 @@ The below screenshot of the `AppSource` module in the Django admin interfaces sh
 
 ![Screenshot of AppSource from GovReady-Q Django admin interface](assets/appsources.png)
 
-The `AppSource` module also contains fields to indicate to which subdomains of the deployment the source's apps are avaiable.
+The `AppSource` module also contains fields to indicate to which subdomains of the deployment the source's apps are available.
 
 ### App Source virtual filesystem layout
 

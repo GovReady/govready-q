@@ -11,7 +11,7 @@ Information gathering is at the heart of GovReady-Q's `guidedmodules` data model
 
 The tables are described is additional detail below and their relationships are summarized in the following diagram:
 
-![Guildedmodules data model (not all tables represented)](assets/govready-q-guidedmodules-erd.png)
+![Guidedmodules data model (not all tables represented)](assets/govready-q-guidedmodules-erd.png)
 
 <!-- The image above was generated with:
 
@@ -22,7 +22,7 @@ The tables are described is additional detail below and their relationships are 
 Compliance Apps (Questions, Business Logic, and Templates)
 ----------------------------------------------------------
 
-The smallest unit of a compliance app is a `Question`. Questions come in different types, such as text, number, and date ([full list](Schema.html)). Questions are grouped into questionnaires called `Modules`. And Modules are grouped into `AppInstances`, which are the versions of a compliance app that are loaded into the GovReady-Q database. AppInstances are loaded from AppSources, which define how to load compliance apps from remote sources such as GitHub or an on-premesis enterprise source control system.
+The smallest unit of a compliance app is a `Question`. Questions come in different types, such as text, number, and date ([full list](Schema.html)). Questions are grouped into questionnaires called `Modules`. And Modules are grouped into `AppInstances`, which are the versions of a compliance app that are loaded into the GovReady-Q database. AppInstances are loaded from AppSources, which define how to load compliance apps from remote sources such as GitHub or an on-premise enterprise source control system.
 
 `AppInstances`, `Modules`, and `Questions` define the structure of a compliance app but do not store any user-submitted content. Separating structure from content is a common pattern in application design and is motivated by several GovReady-Q goals:
 
@@ -31,11 +31,11 @@ The smallest unit of a compliance app is a `Question`. Questions come in differe
 * One type of Question allows the user to choose a complete set of answers to another Module, which allows question answers (i.e. user data) to be accessed from the business logic and templates of not only the Modules the Questions are defined in but also from other Modules and even other compliance apps.
 * Compliance apps are versioned and apps that have been started by users can be updated in non-destructive ways, preserving answered questionnaires over the course of years,
 
-GovReady-Q administrators will configure GovReady-Q with an `AppSource` record for each source of compliance apps that will be made available to GovReady-Q users. Each AppSource has a "slug," which is its unique name on the GovReady-Q installation. An AppSource also defines a remote location --- such as a GitHub repository, local directory, or on-premis git server --- to query for compliance apps, which will be listed in the app catalog. A typical GovReady-Q installation might have one AppSource providing compliance apps published by GovReady PBC and a second AppSource for providing compliance apps defined by the organization. Each AppSource defines the remote location as well as local permissions such as which compliance apps in the store to make available to GovReady-Q users and, in a multi-tenant setup, which site Organizations can see the compliance apps from the AppSource. See [App Sources](AppSources.html) for more information.
+GovReady-Q administrators will configure GovReady-Q with an `AppSource` record for each source of compliance apps that will be made available to GovReady-Q users. Each AppSource has a "slug," which is its unique name on the GovReady-Q installation. An AppSource also defines a remote location --- such as a GitHub repository, local directory, or on-premise git server --- to query for compliance apps, which will be listed in the app catalog. A typical GovReady-Q installation might have one AppSource providing compliance apps published by GovReady PBC and a second AppSource for providing compliance apps defined by the organization. Each AppSource defines the remote location as well as local permissions such as which compliance apps in the store to make available to GovReady-Q users and, in a multi-tenant setup, which site Organizations can see the compliance apps from the AppSource. See [App Sources](AppSources.html) for more information.
 
 Each time a compliance app is started by a user, an `AppSource` is queried for the latest version of the selected compliance app and an `AppInstance` is created that holds the complete set of questions, business logic, and templates defined in that version of the compliance app. Therefore there will be a separate AppInstance in the database for every version of every compliance app being used by GovReady-Q users.
 
-Each AppInstance links back to the AppSource it was created from (the "source" field) and holds the name it was given (the "appname" field). Each AppInstance brings along with it the `Modules` and `Questions` defined in that version of the compliance app. In other words, Modules and Questions are specific to a AppInstancex. Therefore if two versions of a compliane app are present in the database, a question that exists in both versions of the app is represented as two Question records --- one for each version of the app. Similarly, there will be (at least) two Modules, one for each version of the app.
+Each AppInstance links back to the AppSource it was created from (the "source" field) and holds the name it was given (the "appname" field). Each AppInstance brings along with it the `Modules` and `Questions` defined in that version of the compliance app. In other words, Modules and Questions are specific to a AppInstancex. Therefore if two versions of a compliance app are present in the database, a question that exists in both versions of the app is represented as two Question records --- one for each version of the app. Similarly, there will be (at least) two Modules, one for each version of the app.
 
 All compliance apps have at least two `Modules`. The first module, whose "module_name" identifier is always `app`, defines the layout of the starting page of a compliance app, which can list one or more `Modules` to complete:
 
@@ -108,7 +108,7 @@ Database Query Examples
 
 *Scenario: Unix File Server App contains a text-type question named "Hostname". Many users have finished answering all of the questions in the app. However, our reviewers have only approved some of the answers so far. I want to write an SQL query to return all approved answers to the "Hostname" question.*
 
-In this section, we will build up an SQL query to extract the data identified in the scenario. The query will be built progressively over the next several sections to explain the rationale behind the GovReady-Q data model. Some of GovReady-Q's design choices --- including separating the defintions of compliance apps from user-submitted data, as well as recording an immutable history of user answers --- are reflected in the SQL queries below. The complete SQL query is shown at the end.
+In this section, we will build up an SQL query to extract the data identified in the scenario. The query will be built progressively over the next several sections to explain the rationale behind the GovReady-Q data model. Some of GovReady-Q's design choices --- including separating the definitions of compliance apps from user-submitted data, as well as recording an immutable history of user answers --- are reflected in the SQL queries below. The complete SQL query is shown at the end.
 
 You may prefer to use the GovReady-Q API instead of writing a low-level database query, but this example is illustrative for understanding GovReady-Q's data model no matter which method you use to query the data.
 
