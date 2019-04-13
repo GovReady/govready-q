@@ -25,7 +25,11 @@ def make_secret_key():
 	return get_random_string(50, 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)')
 
 if os.path.exists(local("environment.json")):
-	environment = json.load(open(local("environment.json")))
+        try:
+                environment = json.load(open(local("environment.json")))
+        except json.decoder.JSONDecodeError as e:
+                print("%s is not in JSON format" % local("environment.json"))
+                exit(1)
 else:
 	# Make some defaults and show the user.
 	environment = {
