@@ -7,6 +7,7 @@ In Development
 Developer changes:
 
 * Upgraded some dependencies.
+* Split off MySQL-related modules into a separate requirements file for pip. This means that `mysql-config` is no longer required for installing Q without MySQL.
 
 v0.8.5 (February 9, 2019)
 -------------------------

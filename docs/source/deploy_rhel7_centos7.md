@@ -55,6 +55,10 @@ Then switch to the govready-q user and install Q:
     git checkout {choose the tag for the current released version}
     pip3 install --user -r requirements.txt
     ./fetch-vendor-resources.sh
+
+    # if you intend to use optional configurations, such as the MySQL adapter, you
+    # may need to run additional `pip3 install` commands, such as:
+    # pip3 install -r requirements_mysql.txt
     
 ### Test Q with a Local Database
 
