@@ -9,31 +9,37 @@ set -euf -o pipefail # abort script on error
 # You will need the latest pip-tools and pyup.io's safety tool:
 # pip3 install -U pip-tools safety
 
-# Flatten out all of the dependencies of our dependencies to
-# a temporary file.
-FN=$(tempfile)
-pip-compile --generate-hashes --output-file $FN --no-header --no-annotate requirements.in > /dev/null
+function run_checks() {
+	FILE_BASE=$1
 
-# The reverse-dependency metadata doesn't seem to be entirely
-# accurate and changes nondeterministically? We omit it above
-# with --no-annotate and remove it from a copy of our requirements.txt
-# file before comparing.
-FN2=$(tempfile)
-cat requirements.txt \
-	| python3 -c "import sys, re; print(re.sub(r'[\s\\\\]+# via .*', '', sys.stdin.read()));" \
-	> $FN2
+	# Flatten out all of the dependencies of our dependencies to
+	# a temporary file.
+	FN=$(tempfile)
+	pip-compile --generate-hashes --output-file $FN --no-header --no-annotate ${FILE_BASE}.in > /dev/null
 
-# Compare the requirements.txt in the repository to the one found by
-# generating it from requirements.in.
-if ! diff -B -u $FN $FN2; then
+	# The reverse-dependency metadata doesn't seem to be entirely
+	# accurate and changes nondeterministically? We omit it above
+	# with --no-annotate and remove it from a copy of our requirements.txt
+	# file before comparing.
+	FN2=$(tempfile)
+	cat ${FILE_BASE}.txt \
+		| python3 -c "import sys, re; print(re.sub(r'[\s\\\\]+# via .*', '', sys.stdin.read()));" \
+		> $FN2
+
+	# Compare the requirements.txt in the repository to the one found by
+	# generating it from requirements.in.
+	if ! diff -B -u $FN $FN2; then
+		echo
+		echo "${FILE_BASE}.txt is not in sync with ${FILE_BASE}.in. Some packages may have updates available. Run requirements_txt_updater.sh."
+	else
+		echo "${FILE_BASE}.txt is in sync with ${FILE_BASE}.in."
+	fi
+
+	rm $FN $FN2
 	echo
-	echo "requirements.txt is not in sync with requirements.in. Some packages may have updates available. Run requirements_txt_updater.sh."
-else
-	echo "requirements.txt is in sync with requirements.in."
-fi
+}
 
-rm $FN $FN2
-echo
+run_checks requirements
 
 # Check installed packages for anything outdated. Unfortunately
 # this scans *installed* packages, so it assumes you are working

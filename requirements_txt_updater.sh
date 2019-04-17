@@ -16,18 +16,23 @@ set -euf -o pipefail # abort script on error
 # Install the latest pip-tools and pyup.io's safety tool.
 pip3 install -U pip-tools safety
 
-# Flatten out all of the dependencies of our dependencies to
-# requirements.txt.
-#
-# Specify --upgrade to ignore the package versions already listed
-# in requirements.txt and find the latest version of any packages
-# that are not pinned in requirements.in or by any of our dependecies.
-# (This is necessary for requirements_txt_checker.sh, which will
-# generate a requirements.txt file from scratch, and any unpinned
-# packages will be pinned to the latest upstream version, and if we
-# don't do the same here, the files won't match and the check will fail.)
-pip-compile --generate-hashes --upgrade --output-file requirements.txt --no-header requirements.in
+function run_update() {
+	FILE_BASE=$1
 
-# Check packages for known vulnerabilities.
-safety check -r requirements.txt
+	# Flatten out all of the dependencies of our dependencies to
+	# requirements.txt.
+	#
+	# Specify --upgrade to ignore the package versions already listed
+	# in requirements.txt and find the latest version of any packages
+	# that are not pinned in requirements.in or by any of our dependecies.
+	# (This is necessary for requirements_txt_checker.sh, which will
+	# generate a requirements.txt file from scratch, and any unpinned
+	# packages will be pinned to the latest upstream version, and if we
+	# don't do the same here, the files won't match and the check will fail.)
+	pip-compile --generate-hashes --upgrade --output-file ${FILE_BASE}.txt --no-header ${FILE_BASE}.in
 
+	# Check packages for known vulnerabilities.
+	safety check -r ${FILE_BASE}.txt
+}
+
+run_update requirements
