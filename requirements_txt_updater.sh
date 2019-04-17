@@ -36,3 +36,4 @@ function run_update() {
 }
 
 run_update requirements
+run_update requirements_mysql

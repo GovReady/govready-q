@@ -40,6 +40,7 @@ function run_checks() {
 }
 
 run_checks requirements
+run_checks requirements_mysql
 
 # Check installed packages for anything outdated. Unfortunately
 # this scans *installed* packages, so it assumes you are working
