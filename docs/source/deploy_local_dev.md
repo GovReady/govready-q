@@ -5,7 +5,7 @@ Installing GovReady-Q Compliance Server on Workstations for Development
 
 The easiest way to get started with GovReady-Q is to launch Q through Docker.
 
-See [Deploying GovReady-Q with Docker](deploy_docker.md).
+See [Deploying GovReady-Q with Docker](deploy_docker.html).
 
 
 ## Installing source code on workstations to contribute

@@ -198,7 +198,7 @@ And if necessary open the web ports:
 	firewall-cmd --zone=public --add-port=443/tcp --permanent
 	firewall-cmd --reload
 
-GovReady-Q should now be running and accessible at your domain name. Follow the instructions in the [main README.md](../../README.md) for creating your first organization.
+GovReady-Q should now be running and accessible at your domain name. Follow the instructions in the [main README.md](https://github.com/GovReady/govready-q/blob/master/README.md) for creating your first organization.
 
 ## Creating the First User
 
