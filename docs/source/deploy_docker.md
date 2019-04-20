@@ -99,9 +99,9 @@ You can use a Sqlite file stored on the host machine:
 
 	./docker_container_run.sh --sqlitedb /path/to/govready-q-database.sqlite
 
-You must specify an absolute path. The path is mounted using a Docker bind mount into the container filesytem.
+You must specify an absolute path. The path is mounted using a Docker bind mount into the container filesystem.
 
-The file must be readable & writable by the container process, which is running as user 1000/group 1000. Although the container is running as a user isolated from the host environment, filesystem permissions for mounted files are based on comparing the raw user/group IDs of the file's owner/group on the host to the raw user/group ID of the process running in the container. Consider granting user 1000 read/write permission to the database using ACLs:
+The file must be readable and writable by the container process, which is running as user 1000/group 1000. Although the container is running as a user isolated from the host environment, filesystem permissions for mounted files are based on comparing the raw user/group IDs of the file's owner/group on the host to the raw user/group ID of the process running in the container. Consider granting user 1000 read/write permission to the database using ACLs:
 
 	setfacl -m u:1000:rw /path/to/govready-q-database.sqlite
 
@@ -134,7 +134,7 @@ You can also use a MySQL or MariaDB server using the syntax `mysql://USER:PASSWO
 ### Configuring email
 
 GovReady-Q sends outbound emails for notifications about invitations and discussions.
-It also receives inbound emails --- replies to dicussion notifications can be used to
+It also receives inbound emails --- replies to discussion notifications can be used to
 post discussion comments by email.
 
 To configure outbound email, use:
@@ -244,9 +244,9 @@ See the [uWSGI](http://uwsgi-docs.readthedocs.io/) application server JSON proce
 
 Periodically there will be a new release of GovReady-Q as an new image on the Docker Hub. Updating is easy by re-running the same commands again.
 
-1) There may be an update to `docker_container_run.sh`. Since this script is not a part of the Docker image, you will need to get it again from this Github repository.
+1) There may be an update to `docker_container_run.sh`. Since this script is not a part of the Docker image, you will need to get it again from this GitHub repository.
 
-2) You should be using a persistent database as described above. When using a persistent database, it is safe to detroy the `govready-q` Docker container and start a new one to deploy an update.
+2) You should be using a persistent database as described above. When using a persistent database, it is safe to destroy the `govready-q` Docker container and start a new one to deploy an update.
 
 3) Use the same arguments to `docker_container_run.sh` as when you started the container the last time, but add `--relaunch` to kill the previous container --- you cannot have two containers with the same name or two containers listening on the same port. (You can change the name and port, as described above, if you would like to keep the old container running.)
 

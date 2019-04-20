@@ -37,7 +37,7 @@ As of this writing, we are looking at two main paths for running Q in a Cloud Se
 
 Pivotal's implementation of Cloud Foundry as a service is PWS: Pivotal Web Services.  In this doc PWS refers to this platform, and CF or Foundry refers to any implementation of Cloud Foundry.
 
-This doc, as of July 2016, is focussed on operationalizing Q for PWS.
+This doc, as of July 2016, is focused on operationalizing Q for PWS.
 
 **AWS**
 

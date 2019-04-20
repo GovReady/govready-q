@@ -1,6 +1,6 @@
 # Compliance App Authoring Tutorial
 
-This is a step-by-step guide to creating compliance apps using the Docker version of the GovReady-Q Commpliance Server.
+This is a step-by-step guide to creating compliance apps using the Docker version of the GovReady-Q Compliance Server.
 
 In this guide you will learn how to:
 
@@ -16,7 +16,7 @@ In this guide you will learn how to:
 
 GovReady-Q compliance apps are generally developed in an off-line development environment, usually on the app developer's macOS or Linux workstation --- any environment that can run Docker. In this environment, the compliance app data files will be stored in a local directory. This guide assumes the use of a local workstation for development and discusses production deployment at the end.
 
-(Once the apps are ready to be published to the rest of the organization, the apps can be uploaded to a git repository, such as Github or an on-premis equivalent. The production instance of GovReady-Q will typically read compliance apps from the git repository directly and not from a local disk.)
+(Once the apps are ready to be published to the rest of the organization, the apps can be uploaded to a git repository, such as GitHub or an on-premise equivalent. The production instance of GovReady-Q will typically read compliance apps from the git repository directly and not from a local disk.)
 
 On the development workstation, create a folder to hold GovReady's install script, the GovReady-Q database (in development, Sqlite is used), and the compliance apps that you will be authoring. The folder can be anywhere:
 
@@ -40,7 +40,7 @@ Next download GovReady's [docker\_container\_run.sh](docker_container_run.sh) sc
 `docker_container_run.sh` supports a variety of [advanced configuration settings](README.md#advanced-configuration) via command line parameters. The ones we care about for developing compliance apps are:
 
 * `--sqlitedb /path/to/govready-q-database.sqlite`, which sets an absolute path to a Sqlite database that holds all persistent information across container runs
-* `--appsdevdir /path/to/apps`, which sets an absolute path to the directoy in which app YAML files will be developed
+* `--appsdevdir /path/to/apps`, which sets an absolute path to the directory in which app YAML files will be developed
 * `--relaunch`, which removes any existing `govready-q` Docker container if one is running
 
 Download and start GovReady-Q:
@@ -101,7 +101,7 @@ In this section we'll create our first compliance app. The app will appear in th
 
 ![Compliance apps catalog](assets/appcatalog.png)
 
-Let's create our first commpliance app! Use the command below:
+Let's create our first compliance app! Use the command below:
 
 	docker container exec -it govready-q ./manage.py compliance_app host myfirstapp
 
@@ -310,13 +310,13 @@ Copy the public key in the newly generated file `repo_deploy_key.pub` into the d
 
 As with local development, the production system's compliance app catalog may be cached. To see new apps, restart the production instance of GovReady-Q.
 
-See [App Sources](AppSources.html) for more information about how to configure your production instance of GovReady-Q to load apps from local filesystem directories, git repositories (including on-prem git repositories), or Github.
+See [App Sources](AppSources.html) for more information about how to configure your production instance of GovReady-Q to load apps from local filesystem directories, git repositories (including on-prem git repositories), or GitHub.
 
 ### Advanced setups for development with a repository of apps
 
 In this guide we have used the `--appsdevdir` command to specify a location in which app YAML files and assets are stored. In a small setup, all apps could be stored in a subdirectory of the location given to `--appsdevdir`. But you may want to separate apps into different folders, such as if they are divided between folders in a single git repository or across multiple git repositories, then a more advanced configuration of GovReady-Q is necessary.
 
-Imagine the following directory structure where two Github repositories are cloned into two separate local directories within `apps`, and each has a `compliance_apps` directory holding its apps:
+Imagine the following directory structure where two GitHub repositories are cloned into two separate local directories within `apps`, and each has a `compliance_apps` directory holding its apps:
 
 	.
 	├── apps (`--appsdevdir` directory)
