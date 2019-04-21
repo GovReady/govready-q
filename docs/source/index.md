@@ -15,10 +15,10 @@ The code is open source, and [available on GitHub](The code is open source, and 
    :caption: Contents:
 
    introduction.md
-   Automation.md
-   Authoring.md
    Deploy.md
    Permissions.md
+   Authoring.md
+   Automation.md
    DataDesign.md
    Test.md
    
