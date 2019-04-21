@@ -23,7 +23,6 @@ RUN \
 	unzip git2u jq nmap-ncat \
 	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
 	supervisor \
-	mysql-devel \
 	&& yum clean all && rm -rf /var/cache/yum
 
 # Copy in the Python module requirements and install them.
