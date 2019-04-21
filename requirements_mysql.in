@@ -1,0 +1,5 @@
+# This is our master file of MySQL requirements. Use ./requirements_txt_updater.sh
+# to generate the requirements_mysql.txt file that is used in deployments to install
+# Python libraries.
+
+mysqlclient # GPL

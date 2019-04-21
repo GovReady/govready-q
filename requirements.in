@@ -40,7 +40,6 @@ commonmarkextensions # BSD 3
 # Only needed in common production deployment configurations
 uwsgi # GPL2
 psycopg2-binary # LGPL
-mysqlclient # GPL
 rfc5424-logging-handler # BSD License
 
 # Development & testing only

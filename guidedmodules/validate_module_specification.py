@@ -210,6 +210,7 @@ def validate_question(mspec, spec):
             raise ValidationError(mspec['id'] + " question %s, impute condition %d" % (spec['id'], i+1), msg)
 
         # Check that the condition is a string, and that it's a valid Jinja2 expression.
+        # The condition can be omitted (it means "always true").
         from jinja2.sandbox import SandboxedEnvironment
         env = SandboxedEnvironment()
         if "condition" in rule:
@@ -221,8 +222,12 @@ def validate_question(mspec, spec):
                 invalid_rule("Impute condition %s is an invalid Jinja2 expression: %s." % (repr(rule["condition"]), str(e)))
 
         # Check that the value is valid. If the value-mode is raw, which
-        # is the default, then any Python/YAML value is valid. We only
-        # check expression values.
+        # is the default, then any Python/YAML value is valid --- but it
+        # most be present. The "expression" mode requires a valid Jinja2
+        # expression, which we can check. The "template" mode requires
+        # a valid Jinaja2 template.
+        if "value" not in rule:
+            invalid_rule("Impute condition value is missing.")
         if rule.get("value-mode") == "expression":
             try:
                 env.compile_expression(rule["value"])

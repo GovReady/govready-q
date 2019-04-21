@@ -12,8 +12,7 @@ Update system packages and install packages helpful for GovReady-Q:
 		python3-yaml \
 		nginx uwsgi-plugin-python3 supervisor \
 		memcached \
-		graphviz \
-		libmysqlclient-dev
+		graphviz
 
 Configure nginx to use nginx.conf in this directory:
 

@@ -25,6 +25,10 @@ First, run the following commands to set up your local development environment:
 	# Install dependencies.
 	pip3 install -r requirements.txt
 	./fetch-vendor-resources.sh
+
+	# if you intend to use optional configurations, such as the MySQL adapter, you
+	# may need to run additional `pip3 install` commands, such as:
+	# pip3 install -r requirements_mysql.txt
 	
 	# Set up the database (sqlite3 will be used until you configure another database).
 	python3 manage.py migrate
