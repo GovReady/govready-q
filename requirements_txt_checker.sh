@@ -18,25 +18,28 @@ function run_checks() {
 
 	# Flatten out all of the dependencies of our dependencies to
 	# a temporary file.
-	FN=$(tempfile)
+	FN=$(mktemp)
+	echo "Flattening transitive dependencies of '$FILE_BASE.txt' to a temporary file '$FN'"
 	pip-compile --generate-hashes --output-file $FN --no-header --no-annotate ${FILE_BASE}.in > /dev/null
 
 	# The reverse-dependency metadata doesn't seem to be entirely
 	# accurate and changes nondeterministically? We omit it above
 	# with --no-annotate and remove it from a copy of our requirements.txt
 	# file before comparing.
-	FN2=$(tempfile)
+	FN2=$(mktemp)
+	echo "Clean up of temporary requirements file for comparisons"
 	cat ${FILE_BASE}.txt \
 		| python3 -c "import sys, re; print(re.sub(r'[\s\\\\]+# via .*', '', sys.stdin.read()));" \
 		> $FN2
 
 	# Compare the requirements.txt in the repository to the one found by
 	# generating it from requirements.in.
+	echo "Comparing '$FILE_BASE.txt' to temporary generated version from '$FILE_BASE.in'"
 	if ! diff -B -u $FN $FN2; then
 		echo
-		echo "${FILE_BASE}.txt is not in sync with ${FILE_BASE}.in. Some packages may have updates available. Run requirements_txt_updater.sh."
+		echo "'${FILE_BASE}.txt' is not in sync with '${FILE_BASE}.in'. Some packages may have updates available. Run requirements_txt_updater.sh."
 	else
-		echo "${FILE_BASE}.txt is in sync with ${FILE_BASE}.in."
+		echo "'${FILE_BASE}.txt' is in sync with '${FILE_BASE}.in'."
 	fi
 
 	rm $FN $FN2
