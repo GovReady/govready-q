@@ -1,6 +1,6 @@
 # Deploying GovReady-Q with Docker
 
-#### GovReady-Q on Docker Hub
+## GovReady-Q on Docker Hub
 
 | Container                 | Where                                                                                                           |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------|
