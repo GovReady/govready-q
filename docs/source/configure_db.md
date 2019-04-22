@@ -1,12 +1,16 @@
 # Setting up a Database for Production Workloads
 
-## Setting Up the Postgres Database Server
+The preferred production database for Q is PostgreSQL, but MySQL/MariaDB is also supported.
 
-This deployment script uses PostgreSQL but other database servers may be used.
+SQLite is supported in development environments, but not recommended for production use.
+
+## Setting Up Postgres
+
+These instructions assume a separate database server and web server.
 
 ### On the database server
 
-On the database server, install Postgres:
+On the database server, install Postgres. If using RHEL, CentOS, or similar:
 	
 	yum install postgresql-server postgresql-contrib
 	postgresql-setup initdb
