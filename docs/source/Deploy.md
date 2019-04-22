@@ -8,6 +8,7 @@ Deploying GovReady-Q
    requirements.md
    deploy_docker.md
    deploy_locally.md
+   configure_db.md
    Environment.md
    enterprise_sso.md
    CustomBranding.md
