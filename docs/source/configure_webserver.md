@@ -44,6 +44,22 @@ And if necessary open the web ports:
 
 GovReady-Q should now be running and accessible at your domain name. Follow the instructions in the [main README.md](https://github.com/GovReady/govready-q/blob/master/README.md) for creating your first organization.
 
+### Setting up an HTTPS Certificate
+
+The instructions above created a self-signed certificate to get the website up and running. To use Let's Encrypt to automatically provision a real certificate, install and run `certbot`:
+
+	yum install -y python-certbot-apache
+	certbot --apache -d webserver.hostname.com
+	# and follow the prompts
+
+Then set it to automatically renew certificates as needed:
+
+	# edit root's crontab
+	crontab -e
+
+	# insert at end:
+	30 2 * * * /usr/bin/certbot renew >> /var/log/le-renew.log
+
 ## Setting up Nginx
 
 Configure nginx to use nginx.conf in the govready-q directory:

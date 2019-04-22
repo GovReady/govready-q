@@ -115,22 +115,6 @@ which will serve just the Organization instance whose subdomain field is "main",
 
 You should now be able to log into GovReady-Q using the user created in this section.
 
-## Setting up an HTTPS Certificate
-
-The instructions above created a self-signed certificate to get the website up and running. To use Let's Encrypt to automatically provision a real certificate, install and run `certbot`:
-
-	yum install -y python-certbot-apache
-	certbot --apache -d webserver.hostname.com
-	# and follow the prompts
-
-Then set it to automatically renew certificates as needed:
-
-	# edit root's crontab
-	crontab -e
-
-	# insert at end:
-	30 2 * * * /usr/bin/certbot renew >> /var/log/le-renew.log
-
 ## Other Configuration Settings
 
 Set up email by adding to `local/environment.json`:
