@@ -44,3 +44,17 @@ And if necessary open the web ports:
 
 GovReady-Q should now be running and accessible at your domain name. Follow the instructions in the [main README.md](https://github.com/GovReady/govready-q/blob/master/README.md) for creating your first organization.
 
+## Setting up Nginx
+
+Configure nginx to use nginx.conf in the govready-q directory:
+
+	# Turn off nginx's default website.
+	rm -f /etc/nginx/sites-enabled/default
+
+	# Put in our nginx site config.
+	ln -sf /home/govready-q/govready-q/deployment/ubuntu/nginx.conf /etc/nginx/sites-enabled/yourdomain.com
+
+	service nginx restart
+
+The nginx conf file assumes a certificate chain and private key are present at `/etc/ssl/local/ssl_certificate.crt/key`.
+
