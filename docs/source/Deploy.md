@@ -9,6 +9,7 @@ Deploying GovReady-Q
    deploy_docker.md
    deploy_locally.md
    configure_db.md
+   configure_webserver.md
    Environment.md
    enterprise_sso.md
    CustomBranding.md
