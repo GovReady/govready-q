@@ -51,7 +51,7 @@ Notes:
 
 * The Q database is only persisted within the container by default. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container.
 * The Q instance cannot send email or receive comment replies until it is configured to use a transactional mail provider like Mailgun -- see below.
-* This image can run either in debug mode or non-debug mode. The default seeting is `DEBUG=false`, which is the recommended setting for a public website.
+* The Q instance is configured to non-debug mode (Django `DEBUG=false`), which is the recommended setting for a public website. The instance can be set to debug mode at runtime -- see below.
 
 ## Advanced configuration of GovReady-Q inside Docker
 
