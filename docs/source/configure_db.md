@@ -6,7 +6,7 @@ SQLite is supported in development environments, but not recommended for product
 
 ## Setting Up Postgres
 
-These instructions assume a separate database server and web server.
+These instructions assume a separate database server and webapp server.
 
 ### On the database server
 
@@ -23,7 +23,7 @@ and enable remote connections by binding to all interfaces:
 
     listen_addresses = '*'
 
-Enable remote connections to the database *only* from the web server and *only* encrypted with TLS by editing `/var/lib/pgsql/data/pg_hba.conf` and adding the line (replacing the hostname with the hostname of the Q web server):
+Enable remote connections to the database *only* from the webapp server and *only* encrypted with TLS by editing `/var/lib/pgsql/data/pg_hba.conf` and adding the line (replacing the hostname with the hostname of the Q webapp server):
 
     hostssl all all webserver.hostname.com md5
     
@@ -33,10 +33,10 @@ Generate a self-signed certificate (replace `db.govready-q.internal` with the da
     chmod 600 /var/lib/pgsql/data/server.{key,crt}
     chown postgres.postgres /var/lib/pgsql/data/server.{key,crt}
 
-Copy the certificate to the web server so that the web server can make trusted connections to the database server:
+Copy the certificate to the webapp server so that the webapp server can make trusted connections to the database server:
 
     cat /var/lib/pgsql/data/server.crt
-    # place on web server at /home/govready-q/pgsql.crt
+    # place on webapp server at /home/govready-q/pgsql.crt
     
 Then restart the database:
 
@@ -56,9 +56,9 @@ And if necessary, open the Postgres port:
 	firewall-cmd --zone=public --add-port=5432/tcp --permanent
 	firewall-cmd --reload
 
-### On the web server
+### On the webapp server
     
-On the web server, now check that secure connections can be made:
+On the webapp server, now check that secure connections can be made:
 
     psql "postgresql://govready_q@dbserver.hostname.com/govready_q?sslmode=verify-full&sslrootcert=/home/govready-q/pgsql.crt"
 
