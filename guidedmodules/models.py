@@ -559,10 +559,12 @@ class Task(models.Model):
 
     def get_static_asset_image_data_url(self, asset_path, max_image_size):
         if asset_path not in self.module.app.asset_paths:
+            # TODO: figure out if second {} is needed below.
             print("ERROR: '" + "{} {}".format(self.project) + "' - asset_path '" + asset_path + "'' is not in module.app.asset_paths")
             return "/error/image/asset_path[" + asset_path + "]/not-in-module.app.asset_paths"
         if self.module.app is None or asset_path not in self.module.app.asset_paths:
             # This path is not an asset.
+            # TODO: figure out if second {} is needed below.
             print("ERROR: '" + "{} {}".format(self.project) + "' - asset_path '" + asset_path + "'' is not an asset")
             return "/error/image/asset_path[" + asset_path + "]/path-is-not-an-asset."
         with self.module.app.get_asset(asset_path) as f:
@@ -570,6 +572,7 @@ class Task(models.Model):
                 return image_to_dataurl(f, max_image_size)
             except:
                 # image processing error
+                # TODO: figure out if second {} is needed below.
                 print("ERROR: '" + "{} {}".format(self.project) + "' - asset_path '" + asset_path + "'' has invalid image data.")
                 return "/error/image/asset_path[" + asset_path + "]/image-processing-error."
 
