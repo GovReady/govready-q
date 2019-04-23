@@ -31,13 +31,13 @@ Deploy GovReady-Q source code:
 
     # Install required software.
     #
-    # Note that python34-devel and mysql-devel are needed to compile & install
+    # Note that python36-devel and mysql-devel are needed to compile & install
     # the mysqlclient Python package. But mysql-devl has an installation conflict
     # with IUS. Adding --disablerepo=ius fixes it.
     #
     # gcc is needed to build the uWSGI Python package.
     sudo yum install --disablerepo=ius \
-        unzip gcc python34-pip python34-devel \
+        unzip gcc python36-pip python36-devel \
         graphviz \
         pandoc xorg-x11-server-Xvfb wkhtmltopdf \
         postgresql mysql-devel
