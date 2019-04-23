@@ -16,7 +16,7 @@ Update system packages and install packages helpful for GovReady-Q:
 
 Install dependencies:
 
-	pip3 install -r requirements.txt
+	pip3 install --user -r requirements.txt
 	./fetch-vendor-resources.sh
 
 Configure GovReady-Q by creating a file in `local/environment.json` with the following content:

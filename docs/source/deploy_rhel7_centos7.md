@@ -58,7 +58,7 @@ Then switch to the govready-q user and install Q:
 
     # if you intend to use optional configurations, such as the MySQL adapter, you
     # may need to run additional `pip3 install` commands, such as:
-    # pip3 install -r requirements_mysql.txt
+    # pip3 install --user -r requirements_mysql.txt
     
 ### Test Q with a Local Database
 

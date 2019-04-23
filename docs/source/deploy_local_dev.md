@@ -16,12 +16,12 @@ First, run the following commands to set up your local development environment:
 	cd govready-q
 	
 	# Install dependencies.
-	pip3 install -r requirements.txt
+	pip3 install --user -r requirements.txt
 	./fetch-vendor-resources.sh
 
 	# if you intend to use optional configurations, such as the MySQL adapter, you
 	# may need to run additional `pip3 install` commands, such as:
-	# pip3 install -r requirements_mysql.txt
+	# pip3 install --user -r requirements_mysql.txt
 	
 	# Set up the database (sqlite3 will be used until you configure another database).
 	python3 manage.py migrate
@@ -74,7 +74,7 @@ You will probably want to try the invite feature at some point. The debug server
 To update the source code from this repository you can `git pull`. You then may need to re-run some of the setup commands:
 
 	git pull
-	pip3 install -r requirements.txt
+	pip3 install --user -r requirements.txt
 	./fetch-vendor-resources.sh
 	python3 manage.py migrate
 	python3 manage.py load_modules
