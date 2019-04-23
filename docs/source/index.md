@@ -15,10 +15,10 @@ The code is open source, and [available on GitHub](https://github.com/GovReady/g
    :caption: Contents:
 
    introduction.md
-   Automation.md
-   Authoring.md
    Deploy.md
    Permissions.md
+   Authoring.md
+   Automation.md
    DataDesign.md
    Test.md
    
