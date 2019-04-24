@@ -7,7 +7,7 @@ Deploying GovReady-Q
 
    requirements.md
    deploy_docker.md
-   deploy_locally.md
+   deploy_host_os.md
    configure_db.md
    configure_webserver.md
    Environment.md
