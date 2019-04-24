@@ -1,4 +1,4 @@
-# Installing GovReady-Q Locally
+# Installing GovReady-Q on the Host OS
 
 .. toctree::
    :maxdepth: 2
