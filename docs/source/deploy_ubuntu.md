@@ -14,21 +14,9 @@ Update system packages and install packages helpful for GovReady-Q:
 		memcached \
 		graphviz
 
-Configure nginx to use nginx.conf in this directory:
-
-	# Turn off nginx's default website.
-	rm -f /etc/nginx/sites-enabled/default
-
-	# Put in our nginx site config.
-	ln -sf `pwd`/deployment/ubuntu/nginx.conf /etc/nginx/sites-enabled/yourdomain.com
-
-	service nginx restart
-
-The nginx conf file assumes a certificate chain and private key are present at `/etc/ssl/local/ssl_certificate.crt/key`.
-
 Install dependencies:
 
-	pip3 install -r requirements.txt
+	pip3 install --user -r requirements.txt
 	./fetch-vendor-resources.sh
 
 Configure GovReady-Q by creating a file in `local/environment.json` with the following content:
@@ -61,3 +49,6 @@ Set up supervisor to run the uwsgi daemon:
 	ln -sf `pwd`/deployment/ubuntu/supervisor.conf /etc/supervisor/conf.d/q.govready.com.conf
 	service supervisor restart
 
+## Setting up a Webserver
+
+It's recommended to run a dedicated webserver software, such as Apache or Nginx, as a reverse proxy in front of the Q application (running through uWSGI). To read how to do this, see [instructions on setting up Q with a reverse proxy webserver](configure_webserver.html).
