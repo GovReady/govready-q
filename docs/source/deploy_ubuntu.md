@@ -49,6 +49,8 @@ Set up supervisor to run the uwsgi daemon:
 	ln -sf `pwd`/deployment/ubuntu/supervisor.conf /etc/supervisor/conf.d/q.govready.com.conf
 	service supervisor restart
 
-## Setting up a Webserver
+## Next steps (Production or Development configuration)
 
-It's recommended to run a dedicated webserver software, such as Apache or Nginx, as a reverse proxy in front of the Q application (running through uWSGI). To read how to do this, see [instructions on setting up Q with a reverse proxy webserver](configure_webserver.html).
+If you're deploying GovReady-Q to a production environment, see the [Production deployment steps](deploy_prod.html).
+
+If you're deploying GovReady-Q for development or evaluation purposes, [Development deployment steps](deploy_local_dev.html) may be useful for you.
