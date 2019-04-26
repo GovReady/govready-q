@@ -465,10 +465,6 @@ label:hover .onhover { display: inline; }
                         <span class="emoji" data-sprite="people" data-code="1f64b" data-name="person raising hand"></span>
                         It doesn&rsquo;t apply
                     </button>
-                    <button id="not-sure-button" type=button>
-                        <span class="emoji"  data-sprite="people" data-code="1f914" data-name="thinking face"></span>
-                        Not sure
-                    </button>
 
                     {# Meta-options like starting a discussion or changing the editor of this question. Interstitial questions do not offer these and individuals here as a discussion guest dont get it either. #}
                     {% if not is_discussion_guest and q.spec.type != "interstitial" %}
@@ -844,10 +840,6 @@ $(function() {
         disable_form(true);
       {% endif %}
 
-      {% if answer_obj.unsure %}
-        $('#not-sure-button').addClass('active');
-      {% endif %}
-
       update_save_button_enabled();
 
     {% else %}
@@ -927,11 +919,7 @@ $(function() {
               }
           }
         }
-
-        // Set the unsure flag.
-        form.find('input[name=unsure]').val($('#not-sure-button').hasClass('active')
-            ? "yes" : "");
-
+        
         // Assemble the form submission data.
         //
         // While this would normally work:
