@@ -122,6 +122,9 @@ h3.question-group-title {
   font-style: italic;
   font-size: 85%;
 }
+#project-members .action {
+  font-size: 85%;
+}
 
 .authoring-tool-hidden {
   display: none; /* hidden by default */
@@ -480,6 +483,15 @@ h3.question-group-title {
                         {{authz.user_details.name}}
                       </span>
                       <span class="role">{{authz.role}}</span>
+                      {% if is_admin %} {# user loading page is an admin #}
+	                      {% if authz.is_member %} {# user in the list is an explicit member of the project (e.g. not a discussion guest) #}
+		                      {% if not authz.is_admin %}
+			                      <span class="action">(<a href="#" onclick="make_admin(true, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make admin</a>)</span>
+			                  {% elif user != request.user %}
+			                      <span class="action">(<a href="#" onclick="make_admin(false, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make regular member</a>)</span>
+		                      {% endif %}
+		                  {% endif %}
+                      {% endif %}
                     </div>
                   {% endfor %}
                 </div>
@@ -663,6 +675,34 @@ function delete_project() {
       });
     }
   )
+}
+
+function make_admin(is_admin, user_id, user_name) {
+  show_modal_confirm(
+    (is_admin ? "Make Project Administrator" : "Revoke Administrator Privilege"),
+    "Do you want to "
+		+ (is_admin ? "make" : "revoke the administrator privilege from")
+		+ " "
+		+ user_name
+		+ (is_admin ? " an administrator" : "")
+		+ " for this project?",
+    (is_admin ? "Make Admin" : "Revoke Privilege"),
+    function() {
+      ajax_with_indicator({
+       url: '{% url "make_revoke_project_admin" project.id %}',
+       method: "POST",
+       data: {
+       	 user: user_id,
+       	 is_admin: is_admin ? "true" : false
+       },
+       success: function(res) {
+         // reload page to show changes in UI
+         window.location.reload();
+       }
+      });
+    }
+  )
+  return false;
 }
 </script>
 

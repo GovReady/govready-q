@@ -1017,6 +1017,19 @@ def delete_project(request, project):
     return JsonResponse({ "status": "ok", "redirect": redirect })
 
 @project_admin_login_post_required
+def make_revoke_project_admin(request, project):
+    # Make a user an admin of a project or revoke that privilege.
+    mbr = ProjectMembership.objects\
+        .filter(
+            project=project,
+            user__id=request.POST.get("user"))\
+        .first()
+    if mbr:
+        mbr.is_admin = (request.POST.get("is_admin") == "true")
+        mbr.save()
+    return JsonResponse({ "status": "ok" })
+
+@project_admin_login_post_required
 def export_project(request, project):
     from urllib.parse import quote
     data = project.export_json(include_metadata=True, include_file_content=True)
