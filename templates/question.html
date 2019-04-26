@@ -457,14 +457,18 @@ label:hover .onhover { display: inline; }
               {% if q.spec.type != "interstitial" %}
                 {# Interstitial questions do not offer these options because the user is just acknowledging the page and not providing an answer. #}
                 <div id="confidence-buttons">
+                    {% if not hidden_button_ids or "no-idea" not in hidden_button_ids %}
                     <button id="no-idea-button" type=button {# type=button prevents button from causing form submit #}>
                         <span class="emoji" data-sprite="people" data-code="1f937-2642" data-name="man shrugging"></span>
                         I don&rsquo;t know
                     </button>
+                    {% endif %}
+                    {% if not hidden_button_ids or "not-applicable" not in hidden_button_ids %}
                     <button id="not-applicable-button" type=button>
                         <span class="emoji" data-sprite="people" data-code="1f64b" data-name="person raising hand"></span>
                         It doesn&rsquo;t apply
                     </button>
+                    {% endif %}
 
                     {# Meta-options like starting a discussion or changing the editor of this question. Interstitial questions do not offer these and individuals here as a discussion guest dont get it either. #}
                     {% if not is_discussion_guest and q.spec.type != "interstitial" %}

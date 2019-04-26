@@ -552,6 +552,7 @@ def show_question(request, task, answered, context, q):
         "answer": existing_answer,
         "answer_rendered": answer_rendered,
         "default_answer": default_answer,
+        "hidden_button_ids": q.module.app.modules.get(module_name="app").spec.get("hidden-buttons", []),
         "can_review": task.has_review_priv(request.user),
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
         "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
