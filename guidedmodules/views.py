@@ -519,7 +519,7 @@ def show_question(request, task, answered, context, q):
     if taskq and taskq.question.spec["type"] == "file" and answer:
         from .module_logic import TemplateContext, RenderedAnswer, HtmlAnswerRenderer
         tc = TemplateContext(answered, HtmlAnswerRenderer(show_metadata=False))
-        ra = RenderedAnswer(task, taskq.question, answer, existing_answer, tc)
+        ra = RenderedAnswer(task, taskq.question, True, answer, existing_answer, tc)
         answer_rendered = ra.__html__()
 
     # What's the title/h1 of the page and the rest of the prompt? Render the

@@ -236,7 +236,7 @@ def get_question_context(answers, question):
                 return "<i>skipped</i>"
             if not hasattr(LazyRenderedAnswer, 'tc'):
                 LazyRenderedAnswer.tc = TemplateContext(answers, HtmlAnswerRenderer(show_metadata=False))
-            return RenderedAnswer(answers.task, self.q, self.answer_obj, self.answer_value, LazyRenderedAnswer.tc).__html__()
+            return RenderedAnswer(answers.task, self.q, self.is_answered, self.answer_obj, self.answer_value, LazyRenderedAnswer.tc).__html__()
 
     answers.as_dict() # force lazy-load
     context = []
@@ -951,7 +951,7 @@ class ModuleAnswers(object):
             else:
                 # Use the template rendering system to produce a human-readable
                 # HTML rendering of the value.
-                value_display = RenderedAnswer(self.task, q, a, value, tc)
+                value_display = RenderedAnswer(self.task, q, is_answered, a, value, tc)
                 
                 # For question types whose primary value is machine-readable,
                 # show a nice display form if possible using the .text attribute,
@@ -1107,8 +1107,8 @@ class TemplateContext(Mapping):
         if question:
             # The question might or might not be answered. If not, its value is None.
             self.module_answers.as_dict() # trigger lazy-loading
-            answerobj, answervalue = self.module_answers.answertuples.get(item, (None, None, None, None))[2:4]
-            return RenderedAnswer(self.module_answers.task, question, answerobj, answervalue, self)
+            _, is_answered, answerobj, answervalue = self.module_answers.answertuples.get(item, (None, None, None, None))
+            return RenderedAnswer(self.module_answers.task, question, is_answered, answerobj, answervalue, self)
 
         # The context also provides the project and organization that the Task belongs to,
         # and other task attributes, assuming the keys are not overridden by question IDs.
@@ -1147,7 +1147,7 @@ class TemplateContext(Mapping):
             for question, is_answered, answerobj, answervalue in self.module_answers.answertuples.values():
                 ret.append((
                     question.spec,
-                    RenderedAnswer(self.module_answers.task, question, answerobj, answervalue, self)
+                    RenderedAnswer(self.module_answers.task, question, is_answered, answerobj, answervalue, self)
                 ))
             return ret
 
@@ -1270,9 +1270,10 @@ class RenderedOrganization(TemplateContext):
         return self.escapefunc(None, None, None, None, self.as_raw_value())
 
 class RenderedAnswer:
-    def __init__(self, task, question, answerobj, answer, parent_context):
+    def __init__(self, task, question, is_answered, answerobj, answer, parent_context):
         self.task = task
         self.question = question
+        self.is_answered = is_answered
         self.answerobj = answerobj
         self.answer = answer
         self.parent_context = parent_context
@@ -1281,18 +1282,26 @@ class RenderedAnswer:
         self.cached_tc = None
 
     def __html__(self):
-        # How the template renders a question variable used plainly, i.e. {{q0}}.
+        # This method name is a Jinja2 convention. See http://jinja.pocoo.org/docs/2.10/api/#jinja2.Markup.
+        # Jinja2 calls this method to get the string to put into the template when this value
+        # appears in template in a {{variable}} directive.
+        #
+        # So this method returns how the templates render a question's answer when used as in e.g. {{q0}}.
+
         if self.answer is None:
+            # Render a non-answer answer.
             if self.parent_context.is_computing_title:
                 # When computing an instance-name title,
                 # raise an exception (caught higher up) if
                 # an unanswered question is rendered.
                 raise ValueError("Attempt to render unanswered question {}.".format(self.question.key))
             value = "<%s>" % self.question.spec['title']
+        
         elif self.question_type == "multiple-choice":
             # Render multiple-choice as a comma+space-separated list
             # of the choice keys.
             value = ", ".join(self.answer)
+        
         elif self.question_type == "file":
             # Pass something to the escapefunc that HTML rendering can
             # recognize as a file but non-HTML rendering sees as a string.
@@ -1302,6 +1311,7 @@ class RenderedAnswer:
                 def __str__(self):
                     return "<uploaded file: " + self.file_data['url'] + ">"
             value = FileValueWrapper(self.answer)
+        
         elif self.question_type in ("module", "module-set"):
             ans = self.answer # ModuleAnswers or list of ModuleAnswers
             if self.question_type == "module": ans = [ans] # make it a lsit
@@ -1314,6 +1324,7 @@ class RenderedAnswer:
                     # Get the computed title.
                     return task.title
             value = ", ".join(get_title(a.task) for a in ans)
+
         else:
             # For all other question types, just call Python str().
             value = str(self.answer)
@@ -1409,6 +1420,62 @@ class RenderedAnswer:
             ]
         raise AttributeError
 
+    @property
+    def not_yet_answered(self):
+        return not self.is_answered
+
+    @property
+    def imputed(self):
+        # The answer was imputed if it's considered 'answered'
+        # but there is no TaskAnswerHistory record in the database
+        # for it, which means the user didn't provide the answer.
+        return self.is_answered and (self.answerobj is None)
+
+    @property
+    def skipped(self):
+        # The question has a null answer either because it was imputed null
+        # or the user skipped it.
+        return self.is_answered and (self.answer is None) 
+
+    @property
+    def skipped_by_user(self):
+        # The question has a null answer but it wasn't imputed null.
+        return self.is_answered and (self.answerobj is not None) and (self.answer is None)
+
+    @property
+    def answered(self):
+        # This question has an answer, either because it was imputed or it was
+        # answered by the user, but not if it was imputed null or answered null
+        # because those are skipped states above.
+        return self.is_answered and (self.answer is not None)
+
+    @property
+    def skipped_reason(self):
+        if self.answerobj is None:
+            return self.answerobj
+        return self.answerobj.skipped_reason
+
+    @property
+    def unsure(self):
+        # If the question was answered by a user, return its unsure flag.
+        if not self.answerobj:
+            return None
+        return self.answerobj.unsure
+    
+    @property
+    def date_answered(self):
+        # If the question was answered by a user, return its unsure flag.
+        if not self.answerobj:
+            return None
+        return self.answerobj.created
+
+    @property
+    def reviewed_state(self):
+        # If the question was answered by a user, return its unsure flag.
+        if not self.answerobj:
+            return None
+        return self.answerobj.reviewed
+
     def __bool__(self):
         # How the template converts a question variable to
         # a boolean within an expression (i.e. within an if).
@@ -1446,6 +1513,7 @@ class RenderedAnswer:
                             "prompt": self.question.spec['prompt'],
                             "choices": self.question.spec["choices"],
                         }),
+                    self.is_answered,
                     self.answerobj,
                     ans, self.parent_context)
                 for ans in self.answer)
