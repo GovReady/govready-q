@@ -1723,8 +1723,12 @@ class TaskAnswer(models.Model):
 
     # required to attach a Discussion to it
     def get_discussion_autocompletes(self, discussion):
+        # Get a list of all users who can be @-mentioned. It includes the discussion
+        # participants (i.e. people working on the same project and disussion guests)
+        # plus anyone in the same organization.
         organization = self.task.project.organization
-        mentionable_users = discussion.get_all_participants()
+        mentionable_users = set(discussion.get_all_participants()) \
+                          | set(User.objects.filter(projectmembership__project__organization=self.task.project.organization).distinct())
         User.localize_users_to_org(organization, mentionable_users)
         return {
             # @-mention participants in the discussion and other
