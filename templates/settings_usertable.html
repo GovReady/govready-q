@@ -22,9 +22,9 @@
         {{user.name}}
       </td>
       <td>
-      {% if listid %}
+        {% if user != request.user or listid != "org-admins" %} {# cant remove your own org admin priv #}
         <span class="glyphicon glyphicon-trash" style="cursor: pointer; color: #FAA;" title="remove user" onclick="org_user_list_remove('{{listid|escapejs}}', {{user.id}}, '{{user.name_and_email|escapejs}}');"></span>
-      {% endif %}
+        {% endif %}
       </td>
       <td>
       {% if can_visit_user_in_django_admin %}
@@ -39,9 +39,7 @@
 </table>
 {% endif %}
 
-{% if listid %}
 <p>
   <input id="{{listid}}-select-user" type="text" class="form-control" style="width: 20em; display: inline-block; height: 30px" placeholder="name, username, or email">
   <button id="{{listid}}-select-user-submit" class="btn btn-primary btn-sm" disabled onclick="org_user_list_add(this)"><span class="glyphicon glyphicon-plus"></span> Add User to {{listname}}</button>
 </p>
-{% endif %}

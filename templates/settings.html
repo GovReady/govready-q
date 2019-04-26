@@ -13,9 +13,9 @@ GovReady-Q Setup
 
   <h2>Administrators</h2>
 
-  <p>There {% if org_admins|length == 1 %}is{% else %}are{% endif %} {{org_admins|length}} administrator{{org_admins|length|pluralize}} in this organization that can change settings.</p>
+  <p>There {% if org_admins|length == 1 %}is{% else %}are{% endif %} {{org_admins|length}} administrator{{org_admins|length|pluralize}} that can change this organization&rsquo;s settings.</p>
 
-  {% include "settings_usertable.html" with users=org_admins %}
+  {% include "settings_usertable.html" with users=org_admins listid="org-admins" listname="Organization Admins" %}
 
   {# Edit organization name, help squad, reviewers. #}
   {% if can_edit_org_settings %}
@@ -83,7 +83,7 @@ GovReady-Q Setup
 <script>
   $(function() {
     // Initialize the autocompletes.
-    $('#help-squad-select-user, #reviewers-select-user').each(function() {
+    $('#org-admins-select-user, #help-squad-select-user, #reviewers-select-user').each(function() {
       var input = $(this);
       var submit_btn = $('#' + input.attr('id') + "-submit");
       var textcomplete = new Textcomplete(new Textcomplete.editors.Textarea(this));
@@ -133,6 +133,7 @@ GovReady-Q Setup
 
   function org_user_list_remove(list_id, user_id, user_name) {
     var prompts = {
+      "org-admins": "Remove " + user_name + " from the organization's administrators?",
       "help-squad": "Remove " + user_name + " from the organization's help squad?",
       "reviewers": "Remove " + user_name + " from the organization's reviewers?",
     }
