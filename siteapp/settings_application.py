@@ -61,7 +61,7 @@ DEBUG_TOOLBAR_CONFIG = {
 # our landing page domain. Also allow all subdomains of the organization
 # parent domain.
 LANDING_DOMAIN = environment["host"]
-ORGANIZATION_PARENT_DOMAIN = environment.get('organization-parent-domain', 'localhost')
+ORGANIZATION_PARENT_DOMAIN = environment.get('organization-parent-domain', LANDING_DOMAIN)
 ALLOWED_HOSTS += ['.' + ORGANIZATION_PARENT_DOMAIN]
 SINGLE_ORGANIZATION_KEY = environment.get('single-organization')
 REVEAL_ORGS_TO_ANON_USERS = (SINGLE_ORGANIZATION_KEY is not None) or environment.get('organization-seen-anonymously', False)
