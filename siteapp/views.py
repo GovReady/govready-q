@@ -1017,6 +1017,19 @@ def delete_project(request, project):
     return JsonResponse({ "status": "ok", "redirect": redirect })
 
 @project_admin_login_post_required
+def make_revoke_project_admin(request, project):
+    # Make a user an admin of a project or revoke that privilege.
+    mbr = ProjectMembership.objects\
+        .filter(
+            project=project,
+            user__id=request.POST.get("user"))\
+        .first()
+    if mbr:
+        mbr.is_admin = (request.POST.get("is_admin") == "true")
+        mbr.save()
+    return JsonResponse({ "status": "ok" })
+
+@project_admin_login_post_required
 def export_project(request, project):
     from urllib.parse import quote
     data = project.export_json(include_metadata=True, include_file_content=True)
@@ -1432,6 +1445,18 @@ def organization_settings_save(request):
 
     from django.contrib import messages
 
+    if request.POST.get("action") == "remove-from-org-admins":
+        # I don't think organization projects have non-admin members so we
+        # remove the entire ProjectMembership. But maybe we should be
+        # keeping the ProjectMembership record but just making them a non-admin?
+        user = get_object_or_404(User, id=request.POST.get("user"))
+        ProjectMembership.objects.filter(
+            project=request.organization.get_organization_project(),
+            user=user
+        ).delete()
+        messages.add_message(request, messages.INFO, '%s has been removed from the list of organization administrator.' % user)
+        return JsonResponse({ "status": "ok" })
+
     if request.POST.get("action") == "remove-from-help-squad":
         user = get_object_or_404(User, id=request.POST.get("user"))
         request.organization.help_squad.remove(user)
@@ -1442,6 +1467,17 @@ def organization_settings_save(request):
         user = get_object_or_404(User, id=request.POST.get("user"))
         request.organization.reviewers.remove(user)
         messages.add_message(request, messages.INFO, '%s has been removed from the reviewers.' % user)
+        return JsonResponse({ "status": "ok" })
+
+    if request.POST.get("action") == "add-to-org-admins":
+        user = get_object_or_404(User, id=request.POST.get("user"))
+        mbr, _ = ProjectMembership.objects.get_or_create(
+            project=request.organization.get_organization_project(),
+            user=user
+        )
+        mbr.is_admin = True
+        mbr.save()
+        messages.add_message(request, messages.INFO, '%s has been made an organization administrator.' % user)
         return JsonResponse({ "status": "ok" })
 
     if request.POST.get("action") == "add-to-help-squad":
