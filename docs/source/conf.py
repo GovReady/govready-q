@@ -23,15 +23,15 @@ import m2r # Used to convert .md files into .rst files when Sphinx is building d
 # -- Project information -----------------------------------------------------
 
 project = 'GovReady-Q Compliance Server'
-copyright = '2018, GovReady PBC'
-author = 'Josh Tauberer, Greg Elin'
+copyright = '2019, GovReady PBC'
+author = 'Josh Tauberer, Greg Elin, Peter Kaminski, Ethan Kaminski'
 
 github_doc_root = 'https://github.com/GovReady/govready-q/tree/master/docs'
 
 # The short X.Y version
-version = '0.8.2'
+version = '0.8.6'
 # The full version, including alpha/beta/rc tags
-release = '0.8.2-rc2'
+release = '0.8.6'
 
 
 # -- General configuration ---------------------------------------------------

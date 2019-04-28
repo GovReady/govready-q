@@ -4,10 +4,35 @@ GovReady-Q Release Notes
 In Development
 --------------
 
+* Significant performance improvements to the Compliance Apps library and loading Compliance Apps.
+* Documentation explaining how to customize icons displayed with modules.
+
+v0.8.6 (April 28, 2019)
+-----------------------
+
+Application changes:
+
+* Removed "I'll Come Back" and "Unsure" skip buttons that were confusing users. (Data structures retained in database for backward compatability and for possible improved version of indicators.)
+* Organization Administrators can now be added within organization Settings by other Organization Administrators.
+* Project (e.g., Compliance App) administrators can now be added within Apps settings.
+
 Developer changes:
 
-* Upgraded some dependencies.
-* Split off MySQL-related modules into a separate requirements file for pip. This means that `mysql-config` is no longer required for installing Q without MySQL.
+* Expose rich question metadata within output document templates. Documents can now access if question was skipped by user and skip reason, if question was answered or not, if answer imputed and other goodies.
+* Compliance Apps support to hide skip buttons UI elements from displaying on questions.
+* Compliance App authors can now remove the skip buttons from displaying on questions by indicating them hidden in the App's `app.yaml` file.
+
+Documentation changes:
+
+* Clearer system requirements discussion.
+* Fixed a mis-matched heading in documentation that was causing generated hierarchial table of contents to be malformed.
+* Reflowed documentation sections to put deployment instructions earlier and improved structure of deployment instructions.
+* Test documentation now includes examples for running individual test Classes and methods.
+
+Deployment changes:
+
+* Split off MySQL-related libraries into a separate pip requirements file so `mysql-config` library would only be required when installing Q with MySQL.
+* Upgraded  dependencies.
 
 v0.8.5 (February 9, 2019)
 -------------------------

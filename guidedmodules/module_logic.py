@@ -1464,14 +1464,14 @@ class RenderedAnswer:
     
     @property
     def date_answered(self):
-        # If the question was answered by a user, return its unsure flag.
+        # Date question was answered.
         if not self.answerobj:
             return None
         return self.answerobj.created
 
     @property
     def reviewed_state(self):
-        # If the question was answered by a user, return its unsure flag.
+        # Question reviewed value.
         if not self.answerobj:
             return None
         return self.answerobj.reviewed

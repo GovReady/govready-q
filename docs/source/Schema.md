@@ -197,6 +197,27 @@ All document formats are evaluated as [Jinja2 templates](http://jinja.pocoo.org/
 
 Output documents and question prompts have access to the user's answers to questions in question variables. The introduction document does not because questions have not yet been answered.
 
+### Document Templating
+
+All document formats are evaluated as [Jinja2 templates](http://jinja.pocoo.org/docs/dev/templates/). That means within your document you can embed special tags that are replaced prior to the document being displayed to the user:
+
+* `{{ question_id }}` will be replaced with the user's answer to the question whose `id` is `question_id`. For choice-type questions, the value is replaced by the choice `key`. Use `{{ question_id.text }}` to get display text. See the question types documentation below for details.
+* `{% if question_id == 'value' %}....{% endif %}` is a conditional block. The contents inside the block (`....`) will be included in the output if the condition is true. In this example, the contents inside the block will be included in the output if the user's answer to `question_id` is `value`.
+
+Output documents and question prompts have access to the user's answers to questions in question variables. (The introduction document does not have access to the user's answers because questions have not yet been answered.)
+
+The following information is also available within the output template for each question as of version `v0.8.6`:
+
+* `{{ question_id.not_yet_answered }}` Question has not yet been answered.
+* `{{ question_id.answered }}`Question has an answer either by user or was imputed, but not imputed `null` or answered `null`.
+* `{{ question_id.imputed }}` Question considered "answered" but no TaskAnswerHistory record exists in the database for question meaning a user didn't provide the answer.
+* `{{ question_id.skipped }}` Question has a null answer either because imputed `null` or the user skipped it.
+* `{{ question_id.skipped_by_user }}` Question has a `null` answer because used a skip button (e.g., question wasn't imputed `null`).
+* `{{ question_id.skipped_reason }}` Question's indicated reason for skipping (e.g. "I don't know" or "It doesn't apply")
+* `{{ question_id.unsure }}` If question was answered by a user, its unsure flag. (NOTE: Purpose of this flag was to allow users to indicate uncertainty in the answer. Due to usability issues however, this feature is currently hidden.)
+* `{{ question_id.date_answered }}` Question answered date.
+* `{{ question_id.reviewed_state }}` Question reviewed value.
+
 All documents also have access to the project title as `{{project}}`.
 
 ### Project Documents
