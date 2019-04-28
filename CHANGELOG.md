@@ -1,12 +1,6 @@
 GovReady-Q Release Notes
 ========================
 
-In Development
---------------
-
-* Significant performance improvements to the Compliance Apps library and loading Compliance Apps.
-* Documentation explaining how to customize icons displayed with modules.
-
 v0.8.6 (April 28, 2019)
 -----------------------
 
