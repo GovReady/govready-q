@@ -11,71 +11,65 @@ GovReady-Q Setup
 {% block body %}
   <h1>Settings</h1>
 
-  <h2>Administrators</h2>
+  {% if is_django_staff %}
+  <p class="small">You are a Django Administrator. You have extra permissions on this page and can visit the <a href="{{django_admin_url}}">Django Admin homepage</a>.</p>
+  {% endif %}
 
-  <p>There {% if org_admins|length == 1 %}is{% else %}are{% endif %} {{org_admins|length}} administrator{{org_admins|length|pluralize}} that can change this organization&rsquo;s settings.</p>
+  <h2 style="margin-top: 2em;">Organization Administrators</h2>
+
+  <p class="small help-block">There {%if org_admins|length == 1 %}is{% else %}are{% endif %} {{org_admins|length}} Organization Administrator{{org_admins|length|pluralize}} with permissions to manage organization settings and team membership.</p>
 
   {% include "settings_usertable.html" with users=org_admins listid="org-admins" listname="Organization Admins" %}
 
   {# Edit organization name, help squad, reviewers. #}
   {% if can_edit_org_settings %}
-    <hr>
+  <h2 style="margin-top: 3em;">Discussion Help Squad</h2>
 
-    <h2>Help Squad</h2>
+  <p class="small help-block">There {%if help_squad|length == 1 %}is{% else %}are{% endif %} {{help_squad|length}} user{{help_squad|length|pluralize}} on the Discussion Help Squad automatically receiving all discussion comments.</p>
 
-    <p>There {% if help_squad|length == 1 %}is{% else %}are{% endif %} {{help_squad|length}} user{{help_squad|length|pluralize}} designated to help others by automatically receiving all discussion comments.</p>
+  {% include "settings_usertable.html" with users=help_squad listid="help-squad" listname="Help Squad" %}
 
-    {% include "settings_usertable.html" with users=help_squad listid="help-squad" listname="Help Squad" %}
+  <h2 style="margin-top: 3em;">Reviewers</h2>
 
-    <hr>
+  <p class="small help-block">There {%if reviewers|length == 1 %}is{% else %}are{% endif %} {{reviewers|length}} user{{reviewers|length|pluralize}} with permissions to change the "review" status of answers.</p>
 
-    <h2>Reviewers</h2>
-
-    <p>There {% if reviewers|length == 1 %}is{% else %}are{% endif %} {{reviewers|length}} user{{reviewers|length|pluralize}} who can change the “review” status of answers.</p>
-
-    {% include "settings_usertable.html" with users=reviewers listid="reviewers" listname="Reviewers" %}
+  {% include "settings_usertable.html" with users=reviewers listid="reviewers" listname="Reviewers" %}
 
   {% endif %}
-
 
   {# Link to the 'organization project' which is a Task that has questions about the organization. #}
   {% if can_see_org_settings %}
-    <hr>
+  <h2 style="margin-top: 3em;">Organization Profile</h2>
 
-    <h2>Organization Profile</h2>
-
-    <p>
-      <a href="{{request.organization.get_organization_project.get_absolute_url}}">
-        {% if can_edit_org_settings %}
-         Edit
-        {% else %}
-         View
-        {% endif %}
-        Organiztion Profile &raquo;
-      </a>
-    </p>
+  <p>
+    <a href="{{request.organization.get_organization_project.get_absolute_url}}">
+      {% if can_edit_org_settings %}
+       Edit
+      {% else %}
+       View
+      {% endif %}
+      Organization Profile &raquo;
+    </a>
+  </p>
   {% endif %}
-
 
   {# Link to the Django Admin if the user is permitted to go there. #}
   {% if is_django_staff %}
-    <hr>
+  <h2 style="margin-top: 3em;">Database Records Administration</h2>
 
-    <h2>Database Records Administration</h2>
+  <p>
+    <a href="{{django_admin_url}}">
+      Django Admin homepage &raquo;
+    </a>
+  </p>
 
-    <p>
-      <a href="{{django_admin_url}}">
-        Django Admin homepage &raquo;
-      </a>
-    </p>
-
-    {% if can_visit_org_in_django_admin %}
-    <p>
-      <a href="{{django_admin_url}}/siteapp/organization/{{request.organization.id}}">
-        Django Admin for this Organization &raquo;
-      </a>
-    </p>
-    {% endif %}
+  {% if can_visit_org_in_django_admin %}
+  <p>
+    <a href="{{django_admin_url}}/siteapp/organization/{{request.organization.id}}">
+      Django Admin for this Organization &raquo;
+    </a>
+  </p>
+  {% endif %}
   {% endif %}
 {% endblock %}
 

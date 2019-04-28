@@ -197,6 +197,24 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Grant the user permission to change the review state of answers.
         self.org.reviewers.add(self.user)
 
+        # create a second user
+        self.user2 = User.objects.create(
+            username="me2",
+            email="test+user2@q.govready.com")
+        self.user2.clear_password = get_random_string(16)
+        self.user2.set_password(self.user2.clear_password)
+        self.user2.save()
+        self.user2.reset_api_keys()
+        self.client.login(username=self.user2.username, password=self.user2.clear_password)
+
+        # Grant second user membership in the organization
+        # from https://github.com/GovReady/govready-q/blob/master/siteapp/admin.py#L41
+        from siteapp.models import ProjectMembership
+        mb, isnew = ProjectMembership.objects.get_or_create(
+            user=self.user2,
+            project=self.org.get_organization_project(),
+            )
+
     def client_get(self, *args, domain=None, **kwargs):
         # Wrap the Django test client's get/post functions that sets the HTTP
         # Host: header so that the request gets to the organization site.
@@ -933,3 +951,56 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 
+class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
+
+    def test_homepage(self):
+        self.browser.get(self.url("/"))
+        self.assertRegex(self.browser.title, "GovReady Q")
+        var_sleep(0.5)
+
+    def test_settings_page(self):
+        # test navigating to settings page not logged in
+        self.browser.get(self.url("/settings"))
+        self.assertRegex(self.browser.title, "GovReady Q")
+        self.assertNotRegex(self.browser.title, "GovReady Setup")
+        var_sleep(0.5)
+
+        # login as user without admin privileges and test settings page unreachable
+        self._login(self.user2.username, self.user2.clear_password)
+        self.browser.get(self.url("/projects"))
+        print("*** USER2 logged in ***")
+        var_sleep(1)
+
+        self.browser.get(self.url("/settings"))
+        var_sleep(1)
+        self.assertRegex(self.browser.title, "GovReady-Q Setup")
+
+        # logout
+        self.browser.get(self.url("/accounts/logout/"))
+
+        # login as user with admin privileges access settings page
+        self._login()
+        self.browser.get(self.url("/settings"))
+        self.assertRegex(self.browser.title, "GovReady-Q Setup")
+        var_sleep(1)
+
+        print("self.user is '{}'".format(self.user))
+        print("self.user.username is '{}'".format(self.user.username))
+        # print("self.user.clear_password is '{}'".format(self.user.clear_password))
+        print("self.user2.username is '{}'".format(self.user2.username))
+
+        # SAMPLE NAVIGATING AND TESTING
+        # text
+        # self.assertRegex(self.browser.title, "Next Question: text")
+        # self.fill_field("#inputctrl", "This is some text.")
+        # self.click_element("#save-button")
+        # var_sleep(.5)
+        # self._test_api_get(["question_types_text", "q_text"], "This is some text.")
+
+        # # text w/ default
+        # self.assertRegex(self.browser.title, "Next Question: text_with_default")
+        # self.click_element("#save-button")
+        # var_sleep(.5)
+        # self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
+        # # email-address
+        # self.assertRegex(self.browser.title, "Next Question: email-address")
