@@ -9,6 +9,7 @@ Application changes:
 * Removed "I'll Come Back" and "Unsure" skip buttons that were confusing users. (Data structures retained in database for backward compatability and for possible improved version of indicators.)
 * Organization Administrators can now be added within organization Settings by other Organization Administrators.
 * Project (e.g., Compliance App) administrators can now be added within Apps settings.
+* @ mention any user within discussion regardless of organization or project member instead of @ mentioning only users within the project.
 
 Developer changes:
 
