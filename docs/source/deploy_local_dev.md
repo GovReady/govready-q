@@ -1,33 +1,17 @@
-Installing GovReady-Q Compliance Server on Workstations for Development
+Installing GovReady-Q for Development or Contributing
 =======================================================================
 
-## Installing source code on workstations to contribute
+This page provides instructions on how to install and run GovReady-Q in a mode suitable for making and testing changes to the software (i.e., in a Dev environment).
 
-You can also install this repository on your workstation to contribute to improving GovReady-Q's functionality.
+## Initial Prep & Installation
 
-First, run the following commands to set up your local development environment:
+Begin by installing Q and its dependencies. This can be done either [on the host OS](deploy_host_os.html), or as a [Docker container](deploy_docker.html). For development purposes, installing on the host OS is currently the recommended approach.
 
-	# Install Python 3, pip, and other system packages appropriately for your
-	# environment. The commands below demonstrate how to do this on Ubuntu 16.04:
-	sudo apt-get install python3-pip unzip pandoc xvfb wkhtmltopdf
-	
-	# Clone this repository.
-	git clone https://github.com/GovReady/govready-q
-	cd govready-q
-	
-	# Install dependencies.
-	pip3 install --user -r requirements.txt
-	./fetch-vendor-resources.sh
+When installing to the host OS, there are instructions for several operating systems, such as [yum-based Linux distributions](deploy_rhel7_centos7.html) and [apt-based Linux distributions](deploy_ubuntu.html). On other [Unix-based operating systems](deploy_generic_unix.html) (including macOS), GovReady-Q can generally be installed successfully, although some troubleshooting may be neccessary if we do not have instructions for your OS/distro. On Windows, only Docker containers are currently supported.
 
-	# if you intend to use optional configurations, such as the MySQL adapter, you
-	# may need to run additional `pip3 install` commands, such as:
-	# pip3 install --user -r requirements_mysql.txt
-	
-	# Set up the database (sqlite3 will be used until you configure another database).
-	python3 manage.py migrate
-	python3 manage.py load_modules
+## Check Installation
 
-Then create your admin account and an initial organization:
+Once GovReady-Q is installed, create your admin account and an initial organization, if you have not already done so:
 
 	python3 manage.py first_run
 
