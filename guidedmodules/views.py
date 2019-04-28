@@ -366,6 +366,34 @@ def save_answer(request, task, answered, context, __):
 
 @task_view
 def show_question(request, task, answered, context, q):
+    # Let's talk about where the data is for this question. The 'q'
+    # argument is a ModuleQuestion instance. The YAML data associated
+    # with this question (like id, type, prompt, etc.) are stored in
+    #   q.spec
+    # which is a Python dict holding the exact same information as
+    # in the part of the YAML file for this question.
+    #
+    # q.module points to the Module it is contained in (i.e. the YAML file
+    # it is contained in). q.module is a Module instance, and the
+    # YAML data associated with that Module (id, output documents, etc)
+    # is stored in
+    #  q.module.spec
+    # which is a Python dict holding the exact same information as in
+    # the module YAML file on disk *except* for the questions array,
+    # because that data is stored in the ModuleQuestions instances.
+    #
+    # q.module.app points to the AppVersion instance for the compliance
+    # app that contains the module that contains the question. The
+    # AppVersion stores the app.yaml data in two places. One place is
+    #   q.module.app.catalog_metadata
+    # which is a Python dict that holds the YAML data found in the
+    # "catalog" key in the app.yaml file.
+    #
+    # The other data in app.yaml is used to define the Module named
+    # "app" within the compliance app. Therefore it is found in
+    #   q.module.app.modules.get(module_name="app").spec
+    # which is a Python dict similar to q.module.spec.
+
     # If this question cannot currently be answered (i.e. dependencies are unmet),
     # then redirect away from this page. If the user is allowed to use the authoring
     # tool, then allow seeing this question so they can edit all questions.
@@ -491,7 +519,7 @@ def show_question(request, task, answered, context, q):
     if taskq and taskq.question.spec["type"] == "file" and answer:
         from .module_logic import TemplateContext, RenderedAnswer, HtmlAnswerRenderer
         tc = TemplateContext(answered, HtmlAnswerRenderer(show_metadata=False))
-        ra = RenderedAnswer(task, taskq.question, answer, existing_answer, tc)
+        ra = RenderedAnswer(task, taskq.question, True, answer, existing_answer, tc)
         answer_rendered = ra.__html__()
 
     # What's the title/h1 of the page and the rest of the prompt? Render the
@@ -524,6 +552,7 @@ def show_question(request, task, answered, context, q):
         "answer": existing_answer,
         "answer_rendered": answer_rendered,
         "default_answer": default_answer,
+        "hidden_button_ids": q.module.app.modules.get(module_name="app").spec.get("hidden-buttons", []),
         "can_review": task.has_review_priv(request.user),
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
         "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,

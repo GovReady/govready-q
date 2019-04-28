@@ -28,16 +28,16 @@ The below diagram depicts an exploded view of the relationships between a top le
 Each app is defined by a set of YAML files and asset files stored in the following directory structure:
 
     app_name
-	├── README.md
-	├── app.yaml
-	├── assets
-	│   ├── app.png
-	│   ├── image_one.yaml
-	│   ├── image_two.yaml
-	│   └── ...
-	├── module_one.yaml
-	├── module_two.yaml
-	└── ...
+    ├── README.md
+    ├── app.yaml
+    ├── assets
+    │   ├── app.png
+    │   ├── image_one.yaml
+    │   ├── image_two.yaml
+    │   └── ...
+    ├── module_one.yaml
+    ├── module_two.yaml
+    └── ...
 
 By convention, each app is required to have `app.yaml` file which holds metadata for displaying the app in the compliance apps catalog, such as its title and description, and an `assets/app.png` graphic which displays as the app's icon. `app.yaml` also holds the top-level module questions which define the layout of the app's main screen once it is started by the user. The contents of `README.md` are also displayed in the apps catalog.
 
@@ -64,7 +64,7 @@ The `app.yaml` file looks like this:
 	icon: app.png # refers to file in app's assets directory
 	protocol: # for inner apps only
 	- globally_unique_protocol_name
-
+	
 	catalog:
 	  categories:
 	    - Category Name
@@ -81,7 +81,7 @@ The `app.yaml` file looks like this:
 	    long: |
 	      Long description of the app here only if README.md is
 	      not present.
-
+	
 	      It can be multiple paragraphs and is Markdown.
 	  recommended_for:
 	    - key_short: Org
@@ -90,7 +90,7 @@ The `app.yaml` file looks like this:
 	      value: Drupal
 	    - key_short: Role
 	      value: Dev
-
+	
 	questions:
 	  - id: item1
 	    title: Do A Thing
@@ -99,7 +99,7 @@ The `app.yaml` file looks like this:
 	    tab: TabName
 	    group: GroupName
 	  ... more questions here ...
-
+	
 	output:
 	  - tab: TabName
 	    format: markdown
@@ -109,6 +109,34 @@ The `app.yaml` file looks like this:
 The questions in the app YAML file can only be of type `module` and `module-set`. The questions can specify a `module-id` to refer to another module within the same app or a `protocol` to allow the user to choose any app that has a matching `protocol` value set at the top level of the YAML file. See [Modules, Questions, and Documents](Schema.html) for details on these question types.
 
 A `module` YAML structure is identical to `app.yaml` structure but without the catalog details section.
+
+### Hide Question Skip Buttons
+
+As of version 0.8.6, the "I don't know" and "It doesn't apply" skip question buttons can be hidden from users.
+
+We recommend you never use this feature.
+
+This featured was added to support exactly one use case in which skipping questions in a complex, legacy questionnaire assessment hid dozens of other questions from users. Having people start a discussion when stuck was deemed to be a better user experience than users learning after submission that dozens of questions still needed to be answered. (The legacy questionaire assessment consisted of hundreds of  questions and was too difficult to rewrite at the time.)
+
+GovReady-Q is all about creating a great experience for your users to _love_ easily and quickly answering as few questions as possible to _generate_ the information organizational processes need. Our experience shows users love the option to skip questions. Skipped questions empower users to move fast, capture what they can, and iteratively complete work. That gets you information sooner rather than later and reduces cycle time. Skipped questions also provides you with instant feedback. Frequently skipped questions indicate stumped users and the need to rethink the question, or use multiple questions (including interstitials) to better guide users.
+
+GovReady-Q intentionality does not include functionality to mark questions "required." Required questions made sense when communication was expensive and we snail mailed forms to massive bureacracies who had little ability to interact with us. In today's world of instant communication, required questions are for lazy organizations still willing to shift the burden of their work onto others instead of continously improving processes. Required questions (beyond name and ID) communicate to today's online users, "I won't engage with you until you give me everything I need to make my job easier for me." We've all experienced the frustration of not understanding what is being asked of us, not knowing whom to ask for help, or knowing the question asked does not apply. This frustration turns galling and Kafkaesque when the party demanding compliance confounds our ability to comply. The fundamental unfairness starts your users hating and avoiding you and your stupid process.
+
+So if you really, really need to hide the skip buttons to make the experience easier for your users and you promise to rethink your questions, add a `hidden-buttons` array key to the `app.yaml` file and list the skip buttons to hide. The example snippet below hides just the "I don't know button".
+
+	id: app
+	title: My App
+	type: project
+	icon: app.png # refers to file in app's assets directory
+	protocol: # for inner apps only
+	- globally_unique_protocol_name
+	hidden-buttons:
+	- no-idea
+
+The possible YAML array values for the buttons are `no-idea` ("I have no idea"), `not-applicable` ("It doesn't apply"), `not-now-button` ("I'll come back"), and `not-sure-button` ("Unsure").
+
+NOTE: As of version 0.8.6, the "I'll come back" and "Unsure" functionality been removed from the UI for all cases because of poor user experience but are preserved for legacy data and potential future use with a better UI.
+
 
 ## Top Level Apps
 
