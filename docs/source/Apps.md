@@ -110,19 +110,19 @@ The questions in the app YAML file can only be of type `module` and `module-set`
 
 A `module` YAML structure is identical to `app.yaml` structure but without the catalog details section.
 
-### Hide Question Skip Buttons
+### Hide "Question Skip" Buttons
 
-As of version 0.8.6, the "I don't know" and "It doesn't apply" skip question buttons can be hidden from users.
+As of version 0.8.6, the "I don't know" and "It doesn't apply" buttons to skip questions can be hidden from users.
 
 We recommend you never use this feature.
 
-This featured was added to support the use case of legacy, complex questionnaire assessments that cannot be changed easily and it is better to have users get stuck and start a discussion than to have users later learn skipping a question caused them to miss many other questions.
+This feature was added to support the use case of complex, legacy questionnaire assessments that (1) cannot be changed easily and (2) provide a better user experience when users get stuck and start a discussion instead of later learning that skipping a question caused them to miss many other questions.
 
-Some background is useful. GovReady-Q was designed for users to _love_ easily and quickly answering as few questions as possible to _generate_ the information organizational processes need. Users love the option to skip questions. Skipped questions empower users to move fast, answer what they can, and iteratively complete work. That gets information to you quickly and reduces cycle time. Skipped questions also provides instant feedback a user doesn't have information readily available. Frequently skipped questions indicate stumped users and the need to rethink the question or use multiple questions and interstitials to better guide users.
+Some background is useful. GovReady-Q was designed for users to _love_ easily and quickly answering as few questions as possible to _generate_ the information that organizational processes need. Users love the option to skip questions. Skipped questions empower users to move fast, answer what they can, and iteratively complete work. That gets information to you quickly and reduces cycle time. Skipped questions also provide instant feedback that a user doesn't have information readily available. Frequently skipped questions indicate stumped users, and the need to rethink the question or use multiple questions and interstitials to better guide users.
 
 We've all experienced the frustration of not understanding what is being asked of us, not knowing whom to ask for help, or knowing the question asked does not apply. This frustration turns galling and Kafkaesque when the party demanding compliance confounds our ability to comply.
 
-Fight or flight reaction kick-in when users feel trapped. Users start to avoid your process or combat it. They can (unfairly) transfer their frustration onto your role, or worse, onto you. Instead of pulling your colleagues into your process, they feel you are pushing them away.
+Fight-or-flight response kicks in when users feel trapped. Users start to avoid your process or combat it. They can (unfairly) transfer their frustration onto your role, or worse, onto you. Instead of helping to pull your colleagues into your process, they feel you are pushing them away.
 
 So if you really, _really_ need to hide the skip buttons to make the experience easier for your users, add a `hidden-buttons` array key to the `app.yaml` file and list the skip buttons to hide. The example snippet below hides just the "I don't know button".
 
