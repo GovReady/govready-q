@@ -13,8 +13,10 @@ if "Legacy" in type(v).__name__:
 	print("ERROR: The version number {} is not a PEP440-compliant version number.".format(repr(VERSION)))
 	sys.exit(1)
 
-# The version number should match the most recent release
-# listed in the CHANGELOG, possibly with "+devel".
+# The version number from file `VERSION` should match the first (e.g., most recent)
+# release listed at top of file `CHANGELOG.md`, possibly with "+devel".
+# Any change information coming before version information indicates
+# version and changelog are not synchronized
 DEVEL_BUILD = False
 with open("CHANGELOG.md") as f:
 	for line in f:
@@ -37,5 +39,5 @@ if not DEVEL_BUILD and v.local:
 	sys.exit(1)
 
 if DEVEL_BUILD and v.local != "devel":
-	print("ERROR: The version number {} should end with +devel to signal that this is a development build.".format(repr(VERSION)))
+	print("ERROR: CHANGELOG has content before a version heading while VERSION file does not include '+devel'. For version releases, VERSION should not include '+devel' and no information should come before the version heading in CHANGELOG. Alternatively, the version number {} should end with +devel to signal that this is a development build.".format(repr(VERSION)))
 	sys.exit(1)
