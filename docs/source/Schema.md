@@ -195,15 +195,6 @@ All document formats are evaluated as [Jinja2 templates](http://jinja.pocoo.org/
 * `{{ question_id }}` will be replaced with the user's answer to the question whose `id` is `question_id`. For choice-type questions, the value is replaced by the choice `key`. Use `{{ question_id.text }}` to get display text. See the question types documentation below for details.
 * `{% if question_id == 'value' %}....{% endif %}` is a conditional block. The contents inside the block (`....`) will be included in the output if the condition is true. In this example, the contents inside the block will be included in the output if the user's answer to `question_id` is `value`.
 
-Output documents and question prompts have access to the user's answers to questions in question variables. The introduction document does not because questions have not yet been answered.
-
-### Document Templating
-
-All document formats are evaluated as [Jinja2 templates](http://jinja.pocoo.org/docs/dev/templates/). That means within your document you can embed special tags that are replaced prior to the document being displayed to the user:
-
-* `{{ question_id }}` will be replaced with the user's answer to the question whose `id` is `question_id`. For choice-type questions, the value is replaced by the choice `key`. Use `{{ question_id.text }}` to get display text. See the question types documentation below for details.
-* `{% if question_id == 'value' %}....{% endif %}` is a conditional block. The contents inside the block (`....`) will be included in the output if the condition is true. In this example, the contents inside the block will be included in the output if the user's answer to `question_id` is `value`.
-
 Output documents and question prompts have access to the user's answers to questions in question variables. (The introduction document does not have access to the user's answers because questions have not yet been answered.)
 
 The following information is also available within the output template for each question as of version `v0.8.6`:
