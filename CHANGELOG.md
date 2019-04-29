@@ -14,7 +14,6 @@ Application changes:
 Developer changes:
 
 * Expose rich question metadata within output document templates. Documents can now access if question was skipped by user and skip reason, if question was answered or not, if answer imputed and other goodies.
-* Compliance Apps support to hide skip buttons UI elements from displaying on questions.
 * Compliance App authors can now remove the skip buttons from displaying on questions by indicating them hidden in the App's `app.yaml` file.
 
 Documentation changes:
