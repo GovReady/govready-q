@@ -57,11 +57,12 @@ DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK,
 }
 
-# ALLWOED_HOSTS is set based on environment['host'], which gives us
+# ALLOWED_HOSTS is set based on environment['host'], which gives us
 # our landing page domain. Also allow all subdomains of the organization
 # parent domain.
 LANDING_DOMAIN = environment["host"]
-ORGANIZATION_PARENT_DOMAIN = environment.get('organization-parent-domain', LANDING_DOMAIN)
+# Set organization domain if defined, or to LANDING_DOMAIN with port information stripped
+ORGANIZATION_PARENT_DOMAIN = environment.get('organization-parent-domain', LANDING_DOMAIN.split(':')[0])
 ALLOWED_HOSTS += ['.' + ORGANIZATION_PARENT_DOMAIN]
 SINGLE_ORGANIZATION_KEY = environment.get('single-organization')
 REVEAL_ORGS_TO_ANON_USERS = (SINGLE_ORGANIZATION_KEY is not None) or environment.get('organization-seen-anonymously', False)

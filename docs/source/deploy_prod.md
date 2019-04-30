@@ -23,6 +23,16 @@ Create a file named `local/environment.json` (ensure it is not world-readable) t
 
 Because of host header checking, to test the site again using `python3 manage.py runserver` you will need to visit it using `webserver.hostname.com` and not `localhost`. (Be sure to replace `webserver.hostname.com` with your hostname.)
 
+### Remember to Define Your `host1` and `organization-parent-domain`
+
+The **DisallowedHost...Invalid HTTP_HOST header...You may need to add '<your domain name>' to ALLOWED_HOSTS** is a common error received when first trying to get GovReady-Q running on a server at a specific domain. The error indicates the domain you are trying to visit is not white listed in Django's special `ALLOWED_HOST` variable.
+
+For security, Django requires white listing your server's domain(s) in the `ALLOWED_HOST` variable. Ordinarily this is hardcoded into the `settings.py` file. GovReady-Q allows the `ALLOWED_HOST` to be set by a combination of the `host` and `organization-parent-domain` environment settings so the values can be passed at runtime.
+
+* `host` must be defined, or GovReady-Q will default value to `localhost`
+* `organization-parent-domain` should be defined, or GovReady-Q will default value to same as `host`
+* Beginning `organization-parent-domain` value with a `.` tells Django to respond to any subdomain (e.g., `.mydomain.com` will respond to `info.mydomain.com` and `www.mydomain.com`)
+
 ## Setting up the Database Server
 
 For production deployment, it is recommended to use dedicated database software, rather than SQLite.
