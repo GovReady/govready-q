@@ -35,13 +35,16 @@ else:
 	environment = {
 		"secret-key": make_secret_key(),
 		"debug": True,
-		"host": "localhost:8000",
 		"https": False,
+		"host": "localhost:8000",
+		"organization-parent-domain": "localhost"
 	}
 
 	# Show the defaults.
-	print("Create a %s file! It should contain something like this:" % local("environment.json"))
+	print("\nCouldn't find `local/environment.json` file. Generating default environment params.")
+	print("Please create a '%s' file containing something like this:" % local("environment.json"))
 	print(json.dumps(environment, sort_keys=True, indent=2))
+	print()
 
 # DJANGO SETTINGS #
 ###################
@@ -53,7 +56,7 @@ SECRET_KEY = environment.get("secret-key") or make_secret_key()
 DEBUG = bool(environment.get("debug"))
 ADMINS = environment.get("admins") or []
 
-# Set ALLOWED_HOSTS from the host environment. If it has a port, strip it.
+# Set Django's ALLOWED_HOSTS parameter from the host environment. If it has a port, strip it.
 # The port is used in SITE_ROOT_URL must must be removed from ALLOWED_HOSTS.
 ALLOWED_HOSTS = [environment["host"].split(':')[0]]
 
