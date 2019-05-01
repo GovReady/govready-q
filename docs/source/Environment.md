@@ -1,6 +1,8 @@
 ## Environment Settings
 
-### top-level keys
+### Available Configuration Settings
+
+The following top-level keys are available in `local/environment.json`:
 
 - `admins`
 - `branding`: used for [custom branding](Custombranding.html)
@@ -8,11 +10,11 @@
 - `debug`: should be `false` or absent in production environments. If set to `true`, turns on certain debug/development settings.
 - `email` <!-- this seems to be a multi-level key -->
 - `govready_cms_api_auth`
-- `host`: this is the domain name (HTTP `Host` header) used for root-level GovReady-Q pages. See also `organization-parent-domain`, which is used to construct organization subdomains (and which has a different default value!).
+- `host`: this is the domain name (HTTP `Host` header) used for root-level GovReady-Q pages. See also `organization-parent-domain`, which is used to construct organization subdomains (if using a different base domain).
 - `https`
 - `mailgun_api_key`
 - `memcached`
-- `organization-parent-domain`: this is the domain name (HTTP `Host` header) suffix used for organization-specific GovReady-Q pages. The default value is `localhost:80`, regardless of the value supplied for `host` - if you have set the `host` key, and intend to use organization subdomains, you will almost certainly want to set `organization-parent-domain` as well.
+- `organization-parent-domain`: this is the domain name (HTTP `Host` header) suffix used for organization-specific GovReady-Q pages.
 - `organization-seen-anonymously`
 - `secret-key`
 - `single-organization`
