@@ -46,6 +46,23 @@ else:
 	print(json.dumps(environment, sort_keys=True, indent=2))
 	print()
 
+	# If we're in an interactive session, prompt the user if they'd like to write out these defaults
+	from sys import stdin
+	if stdin.isatty():
+		# should be safe to omit any mention of prod vs. dev environments, because that
+		# `localhost:8000` would need to be edited anyhow
+		print("Would you like to create this file automatically, with the above content? (Y/N)")
+		answer = input("> ")
+		if answer[0].upper() == 'Y':
+			print("Creating `local/environment.json` file with default values")
+			fh = open(local("environment.json"), 'w')
+			fh.write(json.dumps(environment, sort_keys=True, indent=2))
+			fh.close()
+		else:
+			print("Skipping creation of `local/environment.json` file.")
+			print("You are advised to create this file manually")
+		print()
+
 # DJANGO SETTINGS #
 ###################
 
