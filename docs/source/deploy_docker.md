@@ -44,7 +44,7 @@ If the site does not come up, check the container logs for an error message:
 	
 	docker container logs govready-q
 
-The Q database is only persisted within the container by default. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container.
+The GovReady-Q default SQLite database is only persisted within the container by default. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the data will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container. 
 
 The default Govready-Q instance cannot send email or receive comment replies until it is configured to use a transactional mail provider like Mailgun -- see below.
 
