@@ -8,52 +8,55 @@
 | Nightly Build on Docker   | [https://hub.docker.com/r/govready/govready-q-nightly/](https://hub.docker.com/r/govready/govready-q-nightly/)  |
 
 
-## Running the Docker container
+## Quickstart for GovReady-Q on Docker
 
 Make sure you first [install Docker](https://docs.docker.com/engine/installation/) and, if appropriate, [grant non-root users access to run Docker containers](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
 
-Start the container in the background:
+Start and run the container in the background (e.g. detached):
 
+	# Run the docker container in detached mode
 	docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
+
+	# Create admin account and organization data
+	docker container exec -it govready-q first_run
+
+	# Stop, start container
+	docker container stop govready-q
+	docker container start govready-q
+
+	# View logs - useful if site does not appear
+	docker container logs govready-q
+
+	# To destroy the container and all user data entered into Q
+	docker container rm -f govready-q
+
+Visit your GovReady-Q site in your web browser at:
+
+	http://localhost:8000/
+
+### Quickstart Notes and Common Issues
+
+Your GovReady-Q site will not load immediately, as GovReady-Q initializes your database for the first time. Wait for the site to become available.
+
+Because of HTTP Host header checking, you must use `localhost` to access the site, or another hostname if configured using the `--address` option documented below.
+
+If the site does not come up, check the container logs for an error message:
+	
+	docker container logs govready-q
+
+By default, the Q database is only persisted within the container. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed. See the _Persistent database_ section below for connecting to a persistent database outside of the container.
+
+The default Govready-Q instance cannot send email or receive comment replies until it is configured to use a transactional mail provider like Mailgun -- see below.
+
+The default Govready-Q instance is configured to non-debug mode (Django `DEBUG=false`), which is the recommended setting for a public website. The instance can be set to debug mode at runtime -- see below.
+
+## Advanced configuration of GovReady-Q inside Docker
 
 For more complex setups, using our run script instead will be easier:
 
 	wget https://raw.githubusercontent.com/GovReady/govready-q/master/deployment/docker/docker_container_run.sh
 	chmod +x docker_container_run.sh
 	./docker_container_run.sh
-
-Visit your GovReady-Q site in your web browser at:
-
-	http://localhost:8000/
-
-It may not load at first as it initializes your database for the first time. Wait for the site to become available.
-Because of HTTP Host header checking, you must use `localhost` to access the site or another hostname if configured
-using the `--address` option documented below.
-
-If the site does not come up, check the container logs for an error message:
-	
-	docker container logs govready-q
-
-With the container started and the database initialized, run our first-run script to create a Django database superuser and set up your first organization:
-
-	docker container exec -it govready-q first_run
-
-To pause and restart the container without destroying its data:
-
-	docker container stop govready-q
-	docker container start govready-q
-
-To destroy the container and all user data entered into Q:
-
-	docker container rm -f govready-q
-
-Notes:
-
-* The Q database is only persisted within the container by default. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container.
-* The Q instance cannot send email or receive comment replies until it is configured to use a transactional mail provider like Mailgun -- see below.
-* The Q instance is configured to non-debug mode (Django `DEBUG=false`), which is the recommended setting for a public website. The instance can be set to debug mode at runtime -- see below.
-
-## Advanced configuration of GovReady-Q inside Docker
 
 Advanced container options can be set with command-line arguments to our container run script:
 
