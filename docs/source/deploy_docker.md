@@ -12,9 +12,9 @@
 
 Make sure you first [install Docker](https://docs.docker.com/engine/installation/) and, if appropriate, [grant non-root users access to run Docker containers](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
 
-Start and running container in the background (e.g. detached):
+Start and run the container in the background (e.g. detached):
 
-	# Run the docker container detached mode
+	# Run the docker container in detached mode
 	docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
 
 	# Create admin account and organization data
@@ -36,15 +36,15 @@ Visit your GovReady-Q site in your web browser at:
 
 ### Quickstart Notes and Common Issues
 
-Your GovReady-Q site may not load immediately while GovReady-Q initializes your database for the first time. Wait for the site to become available.
+Your GovReady-Q site will not load immediately, as GovReady-Q initializes your database for the first time. Wait for the site to become available.
 
-Because of HTTP Host header checking, you must use `localhost` to access the site or another hostname if configured using the `--address` option documented below.
+Because of HTTP Host header checking, you must use `localhost` to access the site, or another hostname if configured using the `--address` option documented below.
 
 If the site does not come up, check the container logs for an error message:
 	
 	docker container logs govready-q
 
-The Q database is only persisted within the container by default. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container.
+By default, the Q database is only persisted within the container. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed. See the _Persistent database_ section below for connecting to a persistent database outside of the container.
 
 The default Govready-Q instance cannot send email or receive comment replies until it is configured to use a transactional mail provider like Mailgun -- see below.
 
