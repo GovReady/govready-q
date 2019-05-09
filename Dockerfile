@@ -23,12 +23,14 @@ RUN \
 	unzip git2u jq nmap-ncat \
 	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
 	supervisor \
+	mysql-devel \
 	&& yum clean all && rm -rf /var/cache/yum
 
 # Copy in the Python module requirements and install them.
 # Manually install database drivers which aren't in our requirements
 # file because they're not commonly used in development.
 COPY requirements.txt ./
+COPY requirements_mysql.txt ./
 RUN pip3.6 install --no-cache-dir -r requirements.txt
 RUN pip3.6 install --no-cache-dir -r requirements_mysql.txt
 
