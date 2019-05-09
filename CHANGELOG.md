@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+
+v0.8.6.1 (May 08, 2019)
+-----------------------
+
+Deployment changes:
+
+* [Fix] Modified Dockerfile to build MySQL-related libraries into Docker deployment so container would support using MySQL databases out of the box.
+
 v0.8.6 (April 29, 2019)
 -----------------------
 
