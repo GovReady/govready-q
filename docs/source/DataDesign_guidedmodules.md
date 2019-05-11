@@ -35,11 +35,7 @@ GovReady-Q administrators will configure GovReady-Q with an `AppSource` record f
 
 Each time a compliance app is started by a user, an `AppSource` is queried for the latest version of the selected compliance app and an `AppVersion` is created that holds the complete set of questions, business logic, and templates defined in that version of the compliance app. Therefore there will be a separate AppVersion in the database for every version of every compliance app being used by GovReady-Q users.
 
-<<<<<<< HEAD
-Each AppInstance links back to the AppSource it was created from (the "source" field) and holds the name it was given (the "appname" field). Each AppInstance brings along with it the `Modules` and `Questions` defined in that version of the compliance app. In other words, Modules and Questions are specific to a AppInstancex. Therefore if two versions of a compliance app are present in the database, a question that exists in both versions of the app is represented as two Question records --- one for each version of the app. Similarly, there will be (at least) two Modules, one for each version of the app.
-=======
 Each AppVersion links back to the AppSource it was created from (the "source" field) and holds the name it was given (the "appname" field). Each AppVersion brings along with it the `Modules` and `Questions` defined in that version of the compliance app. In other words, Modules and Questions are specific to a AppVersion. Therefore if two versions of a compliane app are present in the database, a question that exists in both versions of the app is represented as two Question records --- one for each version of the app. Similarly, there will be (at least) two Modules, one for each version of the app.
->>>>>>> rename AppInstance to AppVersion to better reflect that this isn't a started instance of an app but a particular version of an app as fetched from a source
 
 All compliance apps have at least two `Modules`. The first module, whose "module_name" identifier is always `app`, defines the layout of the starting page of a compliance app, which can list one or more `Modules` to complete:
 
