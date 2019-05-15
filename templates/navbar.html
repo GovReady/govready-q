@@ -27,8 +27,8 @@
     </div>
     <div id="navbar-collapse-target" class="collapse navbar-collapse">
       <ul class="nav navbar-nav navbar-right">
-        {# On some special pages like the homepage and login page, we allow users who are not members of the organization to view the page so that they may log in. When enterprise SSO is used, the user might even be logged in in this state. But if they are not a part of the organization, we can't show these links and we don't have profile information for the user so we can't query for that either. #}
-        {% if request.user.is_authenticated and request.user.localized_to %}
+        {# On some special pages like the homepage and login page, we allow users who are not members of the organization to view the page so that they may log in. When enterprise SSO is used, the user might even be logged in in this state. But if they are not a part of the organization, we can't show these links. #}
+        {% if request.user.is_authenticated and request.user.can_see_organization %}
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
               MENU
@@ -46,7 +46,9 @@
               {% endif %}
             </ul>
           </li>
+        {% endif %}
 
+        {% if request.user.is_authenticated %}
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="user-menu-dropdown">
               {% with url=request.user.get_profile_picture_absolute_url %}
@@ -67,19 +69,6 @@
           </li>
 
           {% include "navbar-notifications.html" %}
-
-        {% elif request.user.is_authenticated %}
-          {# The user is logged in but is not a member of the organization so we can't query for profile information. #}
-
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="user-menu-dropdown">
-              {{request.user}}
-              <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a href="/accounts/logout/">Log Out</a></li>
-            </ul>
-          </li>
 
         {% elif LOGIN_ENABLED %}
           <li><a href="{% url "account_login" %}">Log In</a></li>

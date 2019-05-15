@@ -92,23 +92,6 @@ class OrganizationAdmin(admin.ModelAdmin):
                 mb.is_admin = True
                 mb.save()
 
-                # Copy forward profile info from the last time the user
-                # entered any profile info.
-                prev_profile = Project.objects\
-                    .filter(
-                        is_account_project=True,
-                        members__user=user,
-                        )\
-                    .exclude(organization=org)\
-                    .order_by('-created')\
-                    .first()
-                if prev_profile:
-                    prev_profile_task = prev_profile.root_task.get_or_create_subtask(user, "account_settings")
-                    if prev_profile_task.get_answers().as_dict(): # not empty
-                        prev_profile_json = prev_profile.export_json()
-                        new_profile = user.get_account_project_(org)
-                        new_profile.import_json(prev_profile_json, user, "web", lambda msg : print(msg))
-
     add_me_as_admin.short_description = "Add me as an administrator to the organization"
     populate_test_organization.short_description = "Populate with the test users"
 

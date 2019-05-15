@@ -955,13 +955,13 @@ class Task(models.Model):
         from siteapp.models import Invitation
         invs = Invitation.get_for(self).filter(organization=org, from_user=user)
         for inv in invs:
-            inv.from_user.localize_to_org(org)
+            inv.from_user.preload_profile()
         return invs
 
     def get_source_invitation(self, user, org):
         inv = self.invitation_history.filter(accepted_user=user).order_by('-created').first()
         if inv:
-            inv.from_user.localize_to_org(org)
+            inv.from_user.preload_profile()
         return inv
 
     # NOTIFICATION TARGET HELEPRS
@@ -1584,7 +1584,7 @@ class TaskAnswer(models.Model):
                 is_cleared = False
 
             # get a dict with information about the user
-            who = answer.answered_by.render_context_dict(self.task.project.organization)
+            who = answer.answered_by.render_context_dict()
 
             history.append({
                 "type": "event",
@@ -1757,7 +1757,7 @@ class TaskAnswer(models.Model):
         organization = self.task.project.organization
         mentionable_users = set(discussion.get_all_participants()) \
                           | set(User.objects.filter(projectmembership__project__organization=self.task.project.organization).distinct())
-        User.localize_users_to_org(organization, mentionable_users)
+        User.preload_profiles(mentionable_users)
         return {
             # @-mention participants in the discussion and other
             # users in mentionable_users.
@@ -1765,7 +1765,7 @@ class TaskAnswer(models.Model):
                 {
                     "user_id": user.id,
                     "tag": user.username,
-                    "display": user.render_context_dict(organization)["name"],
+                    "display": user.render_context_dict()["name"],
                 }
                 for user in mentionable_users
             ],

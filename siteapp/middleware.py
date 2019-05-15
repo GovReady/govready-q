@@ -115,9 +115,10 @@ class OrganizationSubdomainMiddleware:
                     # Set the Organiation on the request object.
                     request.organization = org
 
-                    # Pre-load the user's settings task if the user is logged in,
-                    # so that we have global access to it.
-                    request.user.localize_to_org(request.organization)
+                    # Pre-load the user's settings task if the user is logged in.
+                    request.user.can_see_organization = True
+                    request.user.can_see_org_settings = (request.user in org.get_organization_project().get_members())
+                    request.user.preload_profile()
 
                     # Continue with normal request processing.
                     return None

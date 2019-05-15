@@ -120,15 +120,14 @@ def org_welcome_page(request, org_slug):
         "org": org,
     })    
 
-def user_profile_photo(request, user_id, org_subdomain, hash):
+def user_profile_photo(request, user_id, hash):
     # Get the User's profile photo for the specified organization.
     # To prevent enumeration of User info, we expect a hash value
     # in the URL that we compare against the User's current photo.
     # Raises 404 on any request that doesn't work out to prevent
     # enumeration of Organization subdomains too.
     user = get_object_or_404(User, id=user_id)
-    org = get_object_or_404(Organization, subdomain=org_subdomain)
-    prj = user.get_account_project(org)
+    prj = user.get_account_project()
     try:
         account_settings = prj.root_task.get_or_create_subtask(user, "account_settings", create=False)
         photo = account_settings.get_answers().get("picture")
@@ -138,7 +137,7 @@ def user_profile_photo(request, user_id, org_subdomain, hash):
     if not photo.answered_by_file.name: raise Http404()
 
     # Check that the fingerprint in the URL matches. See User.get_profile_picture_absolute_url.
-    user.localize_to_org(org)
+    user.preload_profile()
     path_with_fingerprint = user.get_profile_picture_absolute_url()
     if not path_with_fingerprint.endswith(request.path):
         raise Http404()

@@ -19,7 +19,7 @@ from .notifications_helpers import *
 def homepage(request):
     # If the user is logged in and has read access to the organization
     # they're looking at, then redirect them to the projects page.
-    if hasattr(request.user, 'localized_to') and request.user.is_authenticated:
+    if request.user.is_authenticated and getattr(request.user, 'can_see_organization', False):
         return HttpResponseRedirect("/projects")
 
     # Otherwise, show a login form.
@@ -1195,7 +1195,7 @@ def accept_invitation(request, code=None):
     # The invitation has been accepted by a logged in user.
 
     # Some invitations create an interstitial before redirecting.
-    inv.from_user.localize_to_org(request.organization)
+    inv.from_user.preload_profile()
     try:
         interstitial = inv.target.get_invitation_interstitial(inv)
     except AttributeError: # inv.target may not have get_invitation_interstitial method
@@ -1328,31 +1328,29 @@ def accept_invitation_do_accept(request, inv):
 def organization_settings(request):
     # Authorization. Different users can see different things on
     # this page.
-    can_see_org_settings = request.user.can_see_org_settings
     org_admins = request.organization.get_organization_project().get_admins()
     can_edit_org_settings = request.user in org_admins
     is_django_staff = request.user.is_staff
 
     # If the user doesn't have permission to see anything on this
     # page, give an appropriate HTTP response.
-    if not can_see_org_settings and not can_edit_org_settings and not is_django_staff:
+    if not request.user.can_see_org_settings and not can_edit_org_settings and not is_django_staff:
         return HttpResponseForbidden()
 
-    def localize_and_sort_users(users):
+    def preload_profiles(users):
         users = list(users)
-        User.localize_users_to_org(request.organization, users, sort=True)
+        User.preload_profiles(users, sort=True)
         return users
 
     return render(request, "settings.html", {
-        "can_see_org_settings": can_see_org_settings,
         "can_edit_org_settings": can_edit_org_settings,
         "is_django_staff": is_django_staff,
         "can_visit_org_in_django_admin": is_django_staff and request.user.has_perm("organization_change"),
         "can_visit_user_in_django_admin": is_django_staff and request.user.has_perm("user_change"),
         "django_admin_url": settings.SITE_ROOT_URL + "/admin",
-        "org_admins": localize_and_sort_users(org_admins),
-        "help_squad": localize_and_sort_users(request.organization.help_squad.all()),
-        "reviewers": localize_and_sort_users(request.organization.reviewers.all()),
+        "org_admins": preload_profiles(org_admins),
+        "help_squad": preload_profiles(request.organization.help_squad.all()),
+        "reviewers": preload_profiles(request.organization.reviewers.all()),
     })
 
 @login_required
@@ -1414,12 +1412,12 @@ def organization_settings_save(request):
     if request.POST.get("action") == "search-users":
         # TODO: Filter in a database query or else cache the result of get_who_can_read.
         users = list(request.organization.get_who_can_read())
-        User.localize_users_to_org(request.organization, users, sort=True)
+        User.preload_profiles(users, sort=True)
         users = [user for user in users
             if request.POST.get("query", "").lower().strip() in user.name_and_email().lower()
         ]
         users = users[:20] # limit
-        return JsonResponse({ "users": [user.render_context_dict(request.organization) for user in users] })
+        return JsonResponse({ "users": [user.render_context_dict() for user in users] })
 
     return JsonResponse({ "status": "error", "message": str(request.POST) })
 

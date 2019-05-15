@@ -58,8 +58,8 @@ class Command(BaseCommand):
         organization = getattr(notif.target, 'organization', None)
         if not organization: return
 
-        # Let the actor render appropriate for the org.
-        notif.actor.localize_to_org(organization)
+        # Let the actor render appropriately.
+        notif.actor.preload_profile()
 
         # If the target supports receiving email replies (like replying to an email
         # about a discussion), then store a secret in the notif.data dictionary so

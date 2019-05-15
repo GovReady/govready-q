@@ -12,7 +12,7 @@ urlpatterns = [
     url(r"^$", views_landing.homepage),
     url(r"^welcome/(?P<org_slug>.*)$", views_landing.org_welcome_page),
     url(r'^api/v1/organizations/(?P<org_slug>.*)/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
-    url(r'^media/users/(\d+)/photo/(\w+)/(\w+)', views_landing.user_profile_photo),
+    url(r'^media/users/(\d+)/photo/(\w+)', views_landing.user_profile_photo),
 
     # static pages that also exist on the organization domains
     url(r"^(privacy|terms-of-service)$", views_orgsubdomain.shared_static_pages),

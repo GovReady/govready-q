@@ -46,21 +46,15 @@ class User(AbstractUser):
             return "Anonymous User Without Email Address"
 
     @staticmethod
-    def localize_users_to_org(org, users, sort=False):
-        # Set cached state for when the users are viewed from a particular Organization.
+    def preload_profiles(users, sort=False):
         # For each user, set:
         # * user_settings_task, which holds the account project's settings Task, if created
         # * user_settings_dict, which holds that Task's current answers as a dict, if the Task was created
-        # * can_see_org_settings, which holds whether the user is in the org's organization project
-
-        org_members = org.get_organization_project().get_members()
-        if len(users) > 1: org_members = set(org_members) # pre-load
 
         # Get the account projects of all of the users in batch.
         account_project_root_tasks = { }
         for pm in ProjectMembership.objects.filter(
             user__in=users,
-            project__organization=org,
             project__is_account_project=True)\
             .select_related("project", "project__root_task", "project__root_task__module"):
             account_project_root_tasks[pm.user] = pm.project.root_task
@@ -92,47 +86,44 @@ class User(AbstractUser):
 
         # Set attributes on each user instance.
         for user in users:
-            user.localized_to = org
             user.user_settings_task = account_project_settings.get(account_project_root_tasks.get(user))
             user.user_settings_task_answers = settings.get(user.user_settings_task, None)
-            user.can_see_org_settings = (user in org_members)
 
         # Apply a standard sort.
         if sort:
             users.sort(key = lambda user : user.name_and_email())
 
-    def localize_to_org(self, org):
-        # Prep this user's cached state when viewed from a particular Organization.
-        User.localize_users_to_org(org, [self])
+    def preload_profile(self):
+        # Prep this user's cached state.
+        User.preload_profiles([self])
 
     def user_settings_task_create_if_doesnt_exist(self):
         # If a task is set, return it.
         if getattr(self, 'user_settings_task', None):
             return self.user_settings_task
 
-        # Otherwise, create it for the localized organization.
-        return self.get_settings_task(self.localized_to)
+        # Otherwise, create it.
+        return self.get_settings_task()
 
     def _get_setting(self, key):
         if getattr(self, 'user_settings_task_answers', None):
             return self.user_settings_task_answers.get(key)
         return None
 
-    def get_account_project(self, org):
+    def get_account_project(self):
         p = getattr(self, "_account_project", None)
         if p is None:
-            p = self.get_account_project_(org)
+            p = self.get_account_project_()
             self._account_project = p
         return p
 
     @transaction.atomic
-    def get_account_project_(self, org):
+    def get_account_project_(self):
         # TODO: There's a race condition here.
 
         # Get an existing account project.
         pm = ProjectMembership.objects.filter(
             user=self,
-            project__organization=org,
             project__is_account_project=True)\
             .select_related("project", "project__root_task", "project__root_task__module")\
             .first()
@@ -141,7 +132,6 @@ class User(AbstractUser):
 
         # Create a new one.
         p = Project.objects.create(
-            organization=org,
             is_account_project=True,
         )
         ProjectMembership.objects.create(
@@ -154,8 +144,8 @@ class User(AbstractUser):
         return p
 
     @transaction.atomic
-    def get_settings_task(self, org):
-        p = self.get_account_project(org)
+    def get_settings_task(self):
+        p = self.get_account_project()
         return p.root_task.get_or_create_subtask(self, "account_settings")
 
     def get_profile_picture_absolute_url(self):
@@ -164,8 +154,6 @@ class User(AbstractUser):
         # caches when photos change, we include in the URL some
         # information about the internal data of the profile photo,
         # which is checked in views_landing.py's user_profile_photo().
-        # Also since profile photos are per-Organization we have to
-        # include which org this User instance is localized to.
 
         # Get the current profile photo.
         try:
@@ -181,19 +169,17 @@ class User(AbstractUser):
         fingerprint = base64.urlsafe_b64encode(
                         xxhash.xxh64(payload).digest()
                        ).decode('ascii').rstrip("=")
-        return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s/%s" % (
+        return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s" % (
             self.id,
-            self.user_settings_task.project.organization.subdomain,
             fingerprint
         )
 
-    def render_context_dict(self, req_organization):
+    def render_context_dict(self):
         # Get the user's account settings task's answers as a dict.
-        organization = req_organization if isinstance(req_organization, Organization) else req_organization.organization
-        if getattr(self, 'user_settings_task', None) and self.user_settings_task.project.organization == organization:
+        if getattr(self, 'user_settings_task', None):
             profile = dict(self.user_settings_task_answers)
         else:
-            profile = self.get_settings_task(organization).get_answers().as_dict()
+            profile = self.get_settings_task().get_answers().as_dict()
 
         # Add some information.
         profile.update({
@@ -439,10 +425,10 @@ class Folder(models.Model):
 class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
 
-    organization = models.ForeignKey(Organization, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this project belongs to.")
+    organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
-    is_account_project = models.BooleanField(default=False, help_text="Each User has one Project per Organization for account Tasks.")
+    is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
 
         # the root_task has to be nullable because the Task itself has a non-null
         # field that refers back to this Project, and one must be NULL until the
@@ -545,7 +531,7 @@ class Project(models.Model):
 
         # Add text labels to describe user and authz.
         for user, info in participants.items():
-            info["user_details"] = user.render_context_dict(self.organization)
+            info["user_details"] = user.render_context_dict()
             descr = []
             if info["is_admin"]:
                 descr.append("admin")
