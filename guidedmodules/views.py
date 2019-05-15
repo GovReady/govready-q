@@ -16,7 +16,7 @@ from siteapp.models import User, Invitation, Project, ProjectMembership
 @login_required
 def new_task(request):
     # Create a new task by answering a module question of a project rook task.
-    project = get_object_or_404(Project, id=request.POST["project"], organization=request.organization)
+    project = get_object_or_404(Project, id=request.POST["project"])
 
     # Can the user create a task within this project?
     if not project.can_start_task(request.user):
@@ -35,7 +35,7 @@ def new_task(request):
 @login_required
 def download_module_asset(request, taskid, taskslug, asset_path):
     # Get the Task and check that the user has read permission.
-    task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
+    task = get_object_or_404(Task, id=taskid)
     if not task.has_read_priv(request.user): raise Http404()
 
     # Check that this path is one of app's assets.
@@ -83,7 +83,7 @@ def task_view(view_func):
     @login_required
     def inner_func(request, taskid, taskslug, pagepath, question_key, *args):
         # Get the Task.
-        task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
+        task = get_object_or_404(Task, id=taskid)
 
         # If this task is actually a project root, redirect away from here.
         # Only do this for GET requests since POST requests can be API-like things.
@@ -149,7 +149,7 @@ def task_view(view_func):
             "is_admin": request.user in task.project.get_admins(),
             "send_invitation": Invitation.form_context_dict(request.user, task.project, [task.editor]),
             "open_invitations": task.get_open_invitations(request.user, request.organization),
-            "source_invitation": task.get_source_invitation(request.user, request.organization),
+            "source_invitation": task.get_source_invitation(request.user),
             "previous_page_type": request.GET.get("previous"),
         }
 
@@ -702,7 +702,7 @@ def instrumentation_record_interaction(request):
 
     # Get event variables.
     
-    task = get_object_or_404(Task, id=request.POST["task"], project__organization=request.organization)
+    task = get_object_or_404(Task, id=request.POST["task"])
     if not task.has_read_priv(request.user):
         return HttpResponseForbidden()
 
@@ -754,7 +754,7 @@ def authoring_tool_auth(f):
 
         # Get the task and question and check permissions.
 
-        task = get_object_or_404(Task, id=request.POST["task"], project__organization=request.organization)
+        task = get_object_or_404(Task, id=request.POST["task"])
         if not task.has_write_priv(request.user):
             return HttpResponseForbidden()
         if not task.module.is_authoring_tool_enabled(request.user):
@@ -1046,7 +1046,7 @@ def delete_task(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    task = get_object_or_404(Task, id=request.POST["id"], project__organization=request.organization)
+    task = get_object_or_404(Task, id=request.POST["id"])
     if not task.has_delete_priv(request.user):
         return HttpResponseForbidden()
 
@@ -1084,7 +1084,7 @@ def get_task_timetamp(request):
     # Check access.
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
-    task = get_object_or_404(Task, id=request.POST["id"], project__organization=request.organization)
+    task = get_object_or_404(Task, id=request.POST["id"])
     if not task.has_read_priv(request.user):
         return HttpResponseForbidden()
 

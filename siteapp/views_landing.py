@@ -158,7 +158,7 @@ def user_profile_photo(request, user_id, hash):
 from .notifications_helpers import notification_reply_email_hook
 
 @csrf_exempt
-def project_api(request, org_slug, project_id):
+def project_api(request, project_id):
     from collections import OrderedDict
 
     # Get user from API key.
@@ -175,8 +175,7 @@ def project_api(request, org_slug, project_id):
         return JsonResponse(OrderedDict([("status", "error"), ("error", "A valid API key was not present in the Authorization header.")]), json_dumps_params={ "indent": 2 }, status=403)
 
     # Get project and check authorization.
-    organization = get_object_or_404(Organization, subdomain=org_slug)
-    project = get_object_or_404(Project, id=project_id, organization=organization)
+    project = get_object_or_404(Project, id=project_id)
     if not project.has_read_priv(user):
         return JsonResponse(OrderedDict([("status", "error"), ("error", "The user associated with the API key does not have read perission on the project.")]), json_dumps_params={ "indent": 2 }, status=403)
 

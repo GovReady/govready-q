@@ -523,7 +523,7 @@ class Project(models.Model):
             participants[pm.user]["is_admin"] = pm.is_admin
         for task in Task.objects.filter(project=self).select_related("editor"):
             participants[task.editor]["editor_of"].append(task)
-        discussions = Discussion.get_for_all(self.organization, TaskAnswer.objects.filter(task__project=self, task__deleted_at=None))\
+        discussions = Discussion.get_for_all(TaskAnswer.objects.filter(task__project=self, task__deleted_at=None))\
             .prefetch_related("guests")
         for d in discussions:
             for user in d.guests.all():

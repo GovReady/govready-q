@@ -44,7 +44,7 @@ API
 
     <pre>curl \
       --header "Authorization: <i>your-api-key</i>" \
-      {{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+      {{SITE_ROOT_URL}}/api/v1/projects/{{project.id}}/answers</pre>
 
 
     <!-- -->
@@ -75,7 +75,7 @@ API
     <pre>curl \
       --header "Authorization: <i>your-api-key</i>" \
       {% for key, value in sample_post_keyvalue %}-F "{{key}}={% if value != "<binary file content>" %}{{value}}{% else %}@filename.ext{% endif %}" \
-      {% endfor %}{{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+      {% endfor %}{{SITE_ROOT_URL}}/api/v1/projects/{{project.id}}/answers</pre>
 
     <p>(<code>curl</code>&rsquo;s <code>-d</code> option can be used in place of <code>-F</code> if none of the fields are file uploads.)
 
@@ -117,7 +117,7 @@ API
       --header "Authorization: <i>your-api-key</i>" \
       -XPOST --data @data.json \
       --header "Content-Type: application/json" \
-      {{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+      {{SITE_ROOT_URL}}/api/v1/projects/{{project.id}}/answers</pre>
 
     <h2>Data Schema</h2>
 

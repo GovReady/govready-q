@@ -419,7 +419,7 @@ def start_app(appver, organization, user, folder, task, q):
 def project_read_required(f):
     @login_required
     def g(request, project_id, project_url_suffix):
-        project = get_object_or_404(Project, id=project_id, organization=request.organization)
+        project = get_object_or_404(Project, id=project_id)
 
         # Check authorization.
         if not project.has_read_priv(request.user):
@@ -887,7 +887,7 @@ def project_admin_login_post_required(f):
     # Wrap the function to do authorization and change arguments.
     def g(request, project_id, *args):
         # Get project, check authorization.
-        project = get_object_or_404(Project, id=project_id, organization=request.organization)
+        project = get_object_or_404(Project, id=project_id)
         if request.user not in project.get_admins():
             return HttpResponseForbidden()
 
@@ -1095,7 +1095,7 @@ def send_invitation(request):
 
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
-        from_project = Project.objects.filter(id=request.POST["project"], organization=request.organization, members__user=request.user).first()
+        from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -1113,7 +1113,7 @@ def send_invitation(request):
             }
 
         elif request.POST.get("into_task_editorship"):
-            target = Task.objects.get(id=request.POST["into_task_editorship"], project__organization=request.organization)
+            target = Task.objects.get(id=request.POST["into_task_editorship"])
             if not target.has_write_priv(request.user):
                 return HttpResponseForbidden()
             if from_project and target.project != from_project:
@@ -1128,7 +1128,7 @@ def send_invitation(request):
             }
 
         elif "into_discussion" in request.POST:
-            target = get_object_or_404(Discussion, id=request.POST["into_discussion"], organization=request.organization)
+            target = get_object_or_404(Discussion, id=request.POST["into_discussion"])
             if not target.can_invite_guests(request.user):
                 return HttpResponseForbidden()
             target_info = {
@@ -1175,7 +1175,7 @@ def send_invitation(request):
 
 @login_required
 def cancel_invitation(request):
-    inv = get_object_or_404(Invitation, id=request.POST['id'], organization=request.organization, from_user=request.user)
+    inv = get_object_or_404(Invitation, id=request.POST['id'], from_user=request.user)
     inv.revoked_at = timezone.now()
     inv.save(update_fields=['revoked_at'])
     return JsonResponse({ "status": "ok" })
@@ -1186,7 +1186,7 @@ def accept_invitation(request, code=None):
     # of the Organization whose subdomain they are visiting.
 
     assert code.strip() != ""
-    inv = get_object_or_404(Invitation, organization=request.organization, email_invitation_code=code)
+    inv = get_object_or_404(Invitation, email_invitation_code=code)
 
     response = accept_invitation_do_accept(request, inv)
     if isinstance(response, HttpResponse):

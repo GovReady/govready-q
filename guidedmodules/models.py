@@ -958,7 +958,7 @@ class Task(models.Model):
             inv.from_user.preload_profile()
         return invs
 
-    def get_source_invitation(self, user, org):
+    def get_source_invitation(self, user):
         inv = self.invitation_history.filter(accepted_user=user).order_by('-created').first()
         if inv:
             inv.from_user.preload_profile()
