@@ -39,15 +39,7 @@ On your first run, you'll be prompted to copy some JSON data into a file at `loc
 
 This file is important for persisting login sessions, and you can provide other Q settings in this file.
 
-## Create an organization
-
-Q is designed for the enterprise, so all end-user interactions with Q are on segregated subdomains called "organizations". You must set up the first organization.
-
-Visit [http://localhost:8000/admin](http://localhost:8000/admin) and sign in with the administrative account that you created above. Then on the left side of the page, click Organizations. An organization named `main` will be shown (it was created by the `first_run` script above).
-
-Each organization is accessed on its own subdomain. The `main` organization will be at `http://main.localhost:8000`. We recommend using Google Chrome at this point. Other browsers will not be able to resolve organization subdomains on `localhost` unless you add a hostname record [to your hosts file](https://support.rackspace.com/how-to/modify-your-hosts-file/), e.g. `127.0.0.1 main.localhost`. If you want to change the subdomain, do so now. Then click Save and Continue Editing at the bottom of the page.
-
-Click View On Site at the top of the page to go to the organization's landing page at http://main.localhost:8000. Then log in with your credentials again.
+Visit [http://localhost:8000/admin](http://localhost:8000/admin) and sign in with the administrative account that you created above.
 
 ## Invitations on local systems
 

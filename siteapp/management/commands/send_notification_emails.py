@@ -87,7 +87,7 @@ class Command(BaseCommand):
             [notif.recipient.email],
             {
                 "notification": notif,
-                "url": organization.get_url(url),
+                "url": settings.SITE_ROOT_URL + url,
                 "whatreplydoes": what_reply_does,
             },
             headers={

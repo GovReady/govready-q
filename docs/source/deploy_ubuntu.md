@@ -25,8 +25,6 @@ Configure GovReady-Q by creating a file in `local/environment.json` with the fol
 	  "debug": false,
 	  "admins": [["Name", "email@domain.com"], ...],
 	  "host": "q.<yourdomain>.com",
-	  "organization-parent-domain": "<yourdomain>.com",
-	  "organization-seen-anonymously": false,
 	  "https": true,
 	  "secret-key": "something random here",
 	  "static": "/home/user/public_html"

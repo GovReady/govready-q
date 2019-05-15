@@ -17,36 +17,31 @@ from .models import User, Organization
 def homepage(request):
     # Main landing page.
 
-    if settings.SINGLE_ORGANIZATION_KEY:
-        raise ValueError("view is not valid when this instance is single-organization")
-    if 'django.contrib.auth.backends.ModelBackend' not in settings.AUTHENTICATION_BACKENDS:
-        raise ValueError("view is not valid when logins are handled by enterprise authentication")
-
     from allauth.account.forms import SignupForm, LoginForm
 
     class NewOrgForm(forms.ModelForm):
         class Meta:
             model = Organization
-            fields = ['name', 'subdomain']
+            fields = ['name', 'slug']
             labels = {
                 "name": "Organization Name",
-                "subdomain": "Pick a web address",
+                "slug": "Pick a web address",
             }
             help_texts = {
                 "name": "",
-                "subdomain": "Must be all lowercase and can contain letters, digits, and dashes.",
+                "slug": "Must be all lowercase and can contain letters, digits, and dashes.",
             }
             widgets = {
-                "subdomain": forms.TextInput(attrs={"placeholder": "orgname", "addon_after": "." + settings.ORGANIZATION_PARENT_DOMAIN})
+                "slug": forms.TextInput(attrs={"placeholder": "orgname"})
             }
-        def clean_subdomain(self):
+        def clean_slug(self):
             # Not sure why the field validator isn't being run by the ModelForm.
             import re
             from .models import subdomain_regex
             from django.forms import ValidationError
-            if not re.match(subdomain_regex, self.cleaned_data['subdomain']):
+            if not re.match(subdomain_regex, self.cleaned_data['slug']):
                 raise ValidationError("The organization address must contain only lowercase letters, digits, and dashes and cannot start or end with a dash.")
-            return self.cleaned_data['subdomain']
+            return self.cleaned_data['slug']
 
     signup_form = SignupForm()
     neworg_form = NewOrgForm()
@@ -81,7 +76,6 @@ def homepage(request):
                 from django.core.mail import mail_admins
                 def subvars(s):
                     return s.format(
-                        org_subdomain=org.subdomain,
                         org_name=org.name,
                         org_link=settings.SITE_ROOT_URL + "/admin/siteapp/organization/{}/change".format(org.id),
                         username=user.username,
@@ -90,9 +84,9 @@ def homepage(request):
                     )
                 mail_admins(
                     subvars("New organization: {org_name} (created by {email})"),
-                    subvars("A new organization has been registered!\n\nOrganization\n------------\nName: {org_name}\nSubdomain: {org_subdomain}\nAdmin: {org_link}\n\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}\nOrganization: {org_name}\nAdmin: {user_link}"))
+                    subvars("A new organization has been registered!\n\nOrganization\n------------\nName: {org_name}\nAdmin: {org_link}\n\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}\nOrganization: {org_name}\nAdmin: {user_link}"))
 
-                return HttpResponseRedirect("/welcome/" + org.subdomain)
+                return HttpResponseRedirect("/welcome/" + org.slug)
 
     elif request.POST.get("action") == "login":
         login_form = LoginForm(request.POST, request=request)
@@ -105,8 +99,7 @@ def homepage(request):
         logout(request)
         return HttpResponseRedirect('/') # reload
 
-    return render(request, "landing.html", {
-        "domain": settings.ORGANIZATION_PARENT_DOMAIN,
+    return render(request, "index.html", {
         "signup_form": signup_form,
         "neworg_form": neworg_form,
         "login_form": login_form,
@@ -114,11 +107,10 @@ def homepage(request):
     })
 
 def org_welcome_page(request, org_slug):
-    org = get_object_or_404(Organization, subdomain=org_slug)
+    org = get_object_or_404(Organization, slug=org_slug)
     return render(request, "neworgwelcome.html", {
-        "domain": settings.ORGANIZATION_PARENT_DOMAIN,
         "org": org,
-    })    
+    })
 
 def user_profile_photo(request, user_id, hash):
     # Get the User's profile photo for the specified organization.

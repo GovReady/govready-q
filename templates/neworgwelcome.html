@@ -1,4 +1,4 @@
-{% extends "base-landing.html" %}
+{% extends "base.html" %}
 
 {% block title %}
 Welcome to GovReady Q - {{org.name}}
@@ -14,13 +14,6 @@ Welcome to GovReady Q - {{org.name}}
     <div class="container">
         <div class="well">
             <p>Welcome to GovReady-Q, {{org.name}}!</p>
-            <p>To access your organization&rsquo;s site, please visit:</p>
-            <p><a href="{{org.get_url}}">{{org.get_url}}</a></p>
-            {% if request.user.is_authenticated %}
-            <p>Once you get there you will need to log in again with your username {{request.user.username}} and your {{domain}} account password.</p>
-            {% else %}
-            <p>Once you get there you will need to log in again with your {{domain}} account username and password.</p>
-            {% endif %}
         </div>
     </div>
 

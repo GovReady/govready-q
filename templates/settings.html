@@ -38,7 +38,6 @@ GovReady-Q Setup
   {% endif %}
 
   {# Link to the 'organization project' which is a Task that has questions about the organization. #}
-  {% if request.user.can_see_org_settings %}
   <h2 style="margin-top: 3em;">Organization Profile</h2>
 
   <p>
@@ -51,7 +50,6 @@ GovReady-Q Setup
       Organization Profile &raquo;
     </a>
   </p>
-  {% endif %}
 
   {# Link to the Django Admin if the user is permitted to go there. #}
   {% if is_django_staff %}

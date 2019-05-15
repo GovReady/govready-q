@@ -10,25 +10,13 @@
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="/" style="color: #EEE; font-weight: bold;">
-          <img alt="GovReady Q logo" src="{% static "img/brand/navbar-logo.png" %}" width="110px;" style="float: left; margin: -2px 20px;">
-          {% if request.organization  %}
-            {% with logo=request.organization.get_logo %}
-              {% if logo %}
-                <img src="{{logo.url}}" height="30" alt="Organization Logo" style="float: left; margin: -5px 5px;">
-              {% else %}
-                <span class="glyphicon glyphicon-globe"></span>
-              {% endif %}
-            {% endwith %}
-            <span style="margin-left: .5em;">{{request.organization.name}}</span>
-          {% else %}
-            {{request.get_host}}
-          {% endif %}
+          <img alt="GovReady Q logo" src="{% static "img/brand/navbar-logo.png" %}"
+          width="110px;" style="margin: -2px 20px;">
       </a>
     </div>
     <div id="navbar-collapse-target" class="collapse navbar-collapse">
       <ul class="nav navbar-nav navbar-right">
-        {# On some special pages like the homepage and login page, we allow users who are not members of the organization to view the page so that they may log in. When enterprise SSO is used, the user might even be logged in in this state. But if they are not a part of the organization, we can't show these links. #}
-        {% if request.user.is_authenticated and request.user.can_see_organization %}
+        {% if request.user.is_authenticated %}
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
               MENU
@@ -37,7 +25,7 @@
             <ul class="dropdown-menu">
               <li><a href="/projects">Projects</a></li>
               <li><a href="/store">Compliance Apps</a></li>
-              {% if user.can_see_org_settings or user.is_staff %}
+              {% if user.can_see_any_org_settings or user.is_staff %}
                 <li role="separator" class="divider"></li>
                 <li><a href="/settings">Settings</a></li>
               {% endif %}

@@ -5,13 +5,22 @@ from django.conf import settings
 admin.autodiscover()
 
 import siteapp.views as views
+import siteapp.views_landing as views_landing
 from .good_settings_helpers import signup_wrapper
 
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
-
-    # static pages that also exist on the landing domain
     url(r"^(privacy|terms-of-service)$", views.shared_static_pages),
+
+    url(r"^welcome/(?P<org_slug>.*)$", views_landing.org_welcome_page),
+    url(r'^api/v1/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
+    url(r'^media/users/(\d+)/photo/(\w+)', views_landing.user_profile_photo),
+
+    # incoming email hook for responses to notifications
+    url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
+
+    # Django admin site
+    url(r'^admin/', admin.site.urls),
 
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
@@ -68,10 +77,3 @@ if settings.DEBUG: # also in urls_landing
     urlpatterns += [
         url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
     ]
-
-if settings.SINGLE_ORGANIZATION_KEY:
-    # If we're operating in single-organization mode, then non-org URLs must be made available
-    # here because the landing domain is not used. The homepage at / is hidden by the
-    # projects page defined above.
-    from .urls_landing import urlpatterns as urls_landing_urlpatterns
-    urlpatterns += urls_landing_urlpatterns

@@ -78,13 +78,6 @@ Your Compliance Projects
 
 {% block body %}
 
-{% comment %}
-{% if request.user.can_see_org_settings and not request.organization.get_organization_project.root_task.is_finished %}
-  <h2>Complete your organization profile</h2>
-  <p>Fill out your <a href="{{request.organization.get_organization_project.get_absolute_url}}">your organization&rsquo;s profile</a>.</p>
-{% endif %}
-{% endcomment %}
-
 <div style="margin-top: 15px">
 <div style="float: right; margin: 0 0.5em 0em 5em;">
   <a id="new-system" href="/store?protocol=govready.com/apps/compliance/2018/information-technology-system" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system </a>
@@ -178,21 +171,5 @@ $(function() {
     html: true
   });
 })
-
-{% if can_invite_to_org %}
-function show_invite_to_org() {
-  show_invite_modal(
-    'Invite To {{request.organization.name|escapejs}}',
-    'Invite a colleague to join your organization on GovReady-Q.',
-    {{send_invitation|json}},
-    'Please join me on GovReady-Q to work on compliance for {{request.organization.name|escapejs}}.',
-    {
-      project: {{request.organization.get_organization_project.id}},
-      add_to_team: "1"
-    },
-    function() { }
-  );
-}
-{% endif %}
 </script>
 {% endblock %}

@@ -37,7 +37,6 @@ else:
 		"debug": True,
 		"https": False,
 		"host": "localhost:8000",
-		"organization-parent-domain": "localhost"
 	}
 
 	# Show the defaults.

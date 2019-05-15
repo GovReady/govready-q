@@ -22,7 +22,7 @@ class UserAdmin(contribauthadmin.UserAdmin):
     pass
 
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('subdomain', 'name')
+    list_display = ('slug', 'name')
     filter_horizontal = ('help_squad', 'reviewers')
 
     def save_model(self, request, obj, form, change):

@@ -36,21 +36,17 @@ class DiscussionTests(SeleniumTest):
 
         # Create the Organization.
 
-        org = Organization.create(name="Our Organization", subdomain="testorg",
+        org = Organization.create(name="Our Organization", slug="testorg",
             admin_user=self.user)
-
-    def url(self, path):
-        # Within this test, we only generate URLs for the organization subdomain.
-        return super().url("testorg", path)
 
     def _login(self):
         # Fill in the login form and submit.
         self.browser.get(self.url("/"))
 
-        self.assertRegex(self.browser.title, "Home")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
         self.fill_field("#id_login", self.user.username)
         self.fill_field("#id_password", self.user_pw)
-        self.click_element("form button.primaryAction")
+        self.click_element("form#login_form button[type=submit]")
         self.assertRegex(self.browser.title, "Your Compliance Projects")
 
     def _new_project(self):

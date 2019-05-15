@@ -18,14 +18,14 @@ GovReady-Q can be deployed on a Windows platform through the use of our Docker c
 
 | Minimum Hardware |
 | --- |
-| Single server to host both multi-tenant GovReady-Q application and Database |
+| Single server to host both the GovReady-Q application and Database |
 | Linux-compatible hardware |
 | 2GB RAM |
 | 10 GB storage (for database) |
 
 | Recommended Hardware |
 | --- |
-| 2 servers: 1 for multi-tenant GovReady-Q application; 1 for Database Server |
+| 2 servers: 1 for the GovReady-Q application; 1 for Database Server |
 | Linux-compatible hardware (64 bit architecture; FIPS-140-2 validated cryptographic module) |
 | 8GB RAM for each server |
 | 100 GB storage (for database server) |

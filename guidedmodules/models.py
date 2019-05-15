@@ -820,11 +820,10 @@ class Task(models.Model):
     # AUTHZ
 
     @staticmethod
-    def get_all_tasks_readable_by(user, org, recursive=False):
+    def get_all_tasks_readable_by(user, recursive=False):
         # Symmetric with get_access_level == "READ". See that for the basic logic.
         tasks = Task.objects.filter(
             models.Q(editor=user) | models.Q(project__members__user=user),
-            project__organization=org,
             deleted_at=None,
             ).distinct()
 
@@ -894,6 +893,9 @@ class Task(models.Model):
         return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE"
 
     def has_review_priv(self, user):
+        if self.project.organization is None:
+            # account projects are not in any organization
+            return False
         return user in self.project.organization.reviewers.all()
 
     def has_delete_priv(self, user):
@@ -949,11 +951,11 @@ class Task(models.Model):
 
     # MISC
 
-    def get_open_invitations(self, user, org):
+    def get_open_invitations(self, user):
         # Return the open Invitations for transferring task ownership
         # elsewhere, sent from the user.
         from siteapp.models import Invitation
-        invs = Invitation.get_for(self).filter(organization=org, from_user=user)
+        invs = Invitation.get_for(self).filter(from_user=user)
         for inv in invs:
             inv.from_user.preload_profile()
         return invs
@@ -1920,7 +1922,8 @@ class TaskAnswerHistory(models.Model):
 
             # Make it an absolute URL so that when we expose it through
             # the API it makes sense.
-            url = self.taskanswer.task.project.organization.get_url(url)
+            from urllib.parse import urljoin
+            url = urljoin(settings.SITE_ROOT_URL, url)
 
             # Convert it to a data URL so that it can be rendered in exported documents.
             content_dataurl = None

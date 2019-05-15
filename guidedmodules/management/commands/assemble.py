@@ -132,7 +132,7 @@ class Command(BaseCommand):
             # in {{organization}} variables in document templates.
             self.dummy_org = Organization.objects.create(
                 name=organization_name,
-                subdomain=get_random_string(12))
+                slug=get_random_string(12))
             self.dummy_user = User.objects.create(username=get_random_string(12))
 
             # Cache app sources and app instances as we load app data into the

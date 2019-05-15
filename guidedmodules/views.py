@@ -107,7 +107,7 @@ def task_view(view_func):
             # to the show-question page only, where we know which question is
             # being asked from the URL.
             if taskans:
-                d = Discussion.get_for(request.organization, taskans)
+                d = Discussion.get_for(task.project.organization, taskans)
                 if d and d.is_participant(request.user):
                     return True
             return False
@@ -148,7 +148,7 @@ def task_view(view_func):
             "write_priv": task.has_write_priv(request.user),
             "is_admin": request.user in task.project.get_admins(),
             "send_invitation": Invitation.form_context_dict(request.user, task.project, [task.editor]),
-            "open_invitations": task.get_open_invitations(request.user, request.organization),
+            "open_invitations": task.get_open_invitations(request.user),
             "source_invitation": task.get_source_invitation(request.user),
             "previous_page_type": request.GET.get("previous"),
         }
@@ -425,7 +425,7 @@ def show_question(request, task, answered, context, q):
     if answer_module:
         # The user can choose from any Task instances they have read permission on
         # and that are of the correct Module type.
-        answer_tasks = Task.get_all_tasks_readable_by(request.user, request.organization, recursive=True)\
+        answer_tasks = Task.get_all_tasks_readable_by(request.user, recursive=True)\
             .filter(module=answer_module)
 
         # Annotate the instances with whether the user also has write permission.
@@ -555,7 +555,7 @@ def show_question(request, task, answered, context, q):
         "hidden_button_ids": q.module.app.modules.get(module_name="app").spec.get("hidden-buttons", []),
         "can_review": task.has_review_priv(request.user),
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
-        "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
+        "discussion": Discussion.get_for(taskq.task.project.organization, taskq) if taskq else None,
         "show_discussion_members_count": True,
 
         "answer_module": answer_module,
@@ -1176,14 +1176,14 @@ def start_a_discussion(request):
         # Get the TaskAnswer for this task. It may not exist yet.
         tq, isnew = TaskAnswer.objects.get_or_create(**tq_filter)
 
-    discussion = Discussion.get_for(request.organization, tq)
+    discussion = Discussion.get_for(task.project.organization, tq)
     if not discussion:
         # Validate user can create discussion.
         if not task.has_read_priv(request.user):
             return JsonResponse({ "status": "error", "message": "You do not have permission!" })
 
         # Get the Discussion.
-        discussion = Discussion.get_for(request.organization, tq, create=True)
+        discussion = Discussion.get_for(task.project.organization, tq, create=True)
 
     return JsonResponse(discussion.render_context_dict(request.user))
 
@@ -1201,11 +1201,6 @@ def analytics(request):
         qs = InstrumentationEvent.objects\
             .filter(event_type=opt["event_type"])\
             .values(opt["field"])
-
-        # When we look at the analytics page in an organization domain,
-        # we only pull instrumentation for projects within that organization.
-        if hasattr(request, "organization"):
-            qs = qs.filter(project__organization=request.organization)
 
         overall = qs.aggregate(
                 avg_value=Avg('event_value'),
@@ -1239,7 +1234,6 @@ def analytics(request):
         return opt
 
     return render(request, "analytics.html", {
-        "base_template": "base.html" if hasattr(request, "organization") else "base-landing.html",
         "tables": [
             compute_table({
                 "event_type": "task-done",
