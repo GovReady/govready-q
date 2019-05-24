@@ -1,3 +1,15 @@
+# This module defines a SeleniumTest class that is used here and in
+# the discussion app to run Selenium and Chrome-based functional/integration
+# testing.
+#
+# Selenium requires that 'chromedriver' be on the system PATH. The
+# Ubuntu package chromium-chromedriver installs Chromium and
+# chromedriver. But if you also have Google Chrome installed, it
+# picks up Google Chrome which might be of an incompatible version.
+# So we hard-code the Chromium binary using options.binary_location="/usr/bin/chromium-browser".
+# If paths differ on your system, you may need to set the PATH system
+# environment variable and the options.binary_location field below.
+
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
@@ -5,6 +17,7 @@ from django.utils.crypto import get_random_string
 from unittest import skip
 
 import os
+import os.path
 import re
 
 def var_sleep(duration):
@@ -43,9 +56,9 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Start a headless browser.
         import selenium.webdriver
         from selenium.webdriver.chrome.options import Options as ChromeOptions
-        os.environ['PATH'] += ":/usr/lib/chromium-browser" # 'chromedriver' executable needs to be in PATH (for newer Ubuntu)
-        os.environ['PATH'] += ":/usr/lib/chromium" # 'chromedriver' executable needs to be in PATH (for Debian 8)
         options = selenium.webdriver.ChromeOptions()
+        if os.path.exists("/usr/bin/chromium-browser"):
+            options.binary_location = "/usr/bin/chromium-browser"
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
             options.add_argument("start-maximized") # too small screens make clicking some things difficult
