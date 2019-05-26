@@ -24,16 +24,16 @@ def homepage(request):
             model = Organization
             fields = ['name', 'slug']
             labels = {
-                "name": "Organization Name",
-                "slug": "Pick a web address",
+                "slug": "Your personal group will be:",
             }
             help_texts = {
-                "name": "",
-                "slug": "Must be all lowercase and can contain letters, digits, and dashes.",
+                "slug": "Only lowercase letters, digits, and dashes.",
             }
             widgets = {
-                "slug": forms.TextInput(attrs={"placeholder": "orgname"})
+                "name": forms.HiddenInput(),
+                "slug": forms.TextInput(attrs={"placeholder": "username"})
             }
+
         def clean_slug(self):
             # Not sure why the field validator isn't being run by the ModelForm.
             import re
@@ -86,7 +86,7 @@ def homepage(request):
                     subvars("New organization: {org_name} (created by {email})"),
                     subvars("A new organization has been registered!\n\nOrganization\n------------\nName: {org_name}\nAdmin: {org_link}\n\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}\nOrganization: {org_name}\nAdmin: {user_link}"))
 
-                return HttpResponseRedirect("/welcome/" + org.slug)
+                return HttpResponseRedirect("/projects")
 
     elif request.POST.get("action") == "login":
         login_form = LoginForm(request.POST, request=request)
@@ -106,12 +106,16 @@ def homepage(request):
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })
 
-def org_welcome_page(request, org_slug):
+def org_group_projects(request, org_slug):
+    """Get projects belonging to group"""
     org = get_object_or_404(Organization, slug=org_slug)
-    return render(request, "neworgwelcome.html", {
+    projects = org.get_projects()
+    return render(request, "org_groups/org_group.html", {
         "org": org,
+        "projects": projects,
     })
 
+@login_required
 def user_profile_photo(request, user_id, hash):
     # Get the User's profile photo for the specified organization.
     # To prevent enumeration of User info, we expect a hash value
@@ -146,6 +150,67 @@ def user_profile_photo(request, user_id, hash):
     resp = HttpResponse(photo.answered_by_file, content_type=mime_type)
     resp['Content-Disposition'] = 'inline; filename=' + user.username + "_" + os.path.basename(photo.answered_by_file.name)
     return resp
+
+# TODO: Make groups available to all after managing group membership
+@login_required
+def org_groups(request):
+    """List org groups"""
+
+    return render(request, "org_groups/org_groups.html", {
+        "org_groups": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
+    })
+
+@login_required
+def new_org_group(request):
+    # Create new organization group
+
+    class NewOrgForm(forms.ModelForm):
+        class Meta:
+            model = Organization
+            fields = ['name', 'slug']
+            labels = {
+                "name": "Group name",
+                "slug": "Group \"slug\" to appear in URLs",
+            }
+            help_texts = {
+                "name": "An organizational group for you teams assessments.",
+                "slug": "Only lowercase letters, digits, and dashes.",
+            }
+            widgets = {
+                "name": forms.TextInput(attrs={"placeholder": "Privacy Office"}),
+                "slug": forms.TextInput(attrs={"placeholder": "privacy"})
+            }
+
+        def clean_slug(self):
+            # Not sure why the field validator isn't being run by the ModelForm.
+            import re
+            from .models import subdomain_regex
+            from django.forms import ValidationError
+            if not re.match(subdomain_regex, self.cleaned_data['slug']):
+                raise ValidationError("The organization address must contain only lowercase letters, digits, and dashes and cannot start or end with a dash.")
+            return self.cleaned_data['slug']
+
+    neworg_form = NewOrgForm()
+
+    if request.POST.get("action") == "neworg":
+        # signup_form = SignupForm(request.POST)
+        neworg_form = NewOrgForm(request.POST)
+        if request.user.is_authenticated and neworg_form.is_valid():
+            # Perform new org group creation, then redirect
+            # to that org group.
+            with transaction.atomic():
+                if not request.user.is_authenticated:
+                    # TODO Log message that usunloged in user tried to create a group
+                    return HttpResponseRedirect("/")
+                else:
+                    user = request.user
+                org = Organization.create(admin_user=user, **neworg_form.cleaned_data)
+                return HttpResponseRedirect("/" + org.slug + "/projects")
+
+    return render(request, "org_groups/new_org_group.html", {
+        "neworg_form": neworg_form,
+        # "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
+    })
 
 from .notifications_helpers import notification_reply_email_hook
 

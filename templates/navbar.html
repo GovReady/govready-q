@@ -14,27 +14,29 @@
           width="110px;" style="margin: -2px 20px;">
       </a>
     </div>
+
+    <div>
+      {% if request.user.is_authenticated %}
+      <ul class="nav navbar-nav navbar-left" style="color: white;">
+        <li><a href="/projects" id="menu-projects">Projects</a></li>
+        <li>&nbsp;&nbsp;&nbsp;&nbsp;</li>
+        <li><a href="/groups" id="menu-groups">Groups</a></li>
+      </ul>
+      {% endif %}
+    </div>
+
     <div id="navbar-collapse-target" class="collapse navbar-collapse">
       <ul class="nav navbar-nav navbar-right">
-        {% if request.user.is_authenticated %}
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-              MENU
-              <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a href="/projects">Projects</a></li>
-              <li><a href="/store">Compliance Apps</a></li>
-              {% if user.can_see_any_org_settings or user.is_staff %}
-                <li role="separator" class="divider"></li>
-                <li><a href="/settings">Settings</a></li>
-              {% endif %}
-              {% if user.is_staff %}
-                <li><a href="{% url "guidedmodules_analytics" %}">Analytics</a></li>
-              {% endif %}
-            </ul>
-          </li>
+
+        {% if user.is_staff %}
+          <li><a href="{% url "guidedmodules_analytics" %}"><span class="glyphicon glyphicon-dashboard" aria-label="Analytics" tooltip="Analytics"></span></a></li>
         {% endif %}
+        {# if user.can_see_any_org_settings or user.is_staff #}
+        {% if user.is_staff %}
+        <li><a href="/settings" id="menu-settings"><span class="glyphicon glyphicon-cog" aria-label="Settings" tooltip="Settings"></span></a></li>
+        {% endif %}
+
+        {% include "navbar-notifications.html" %}
 
         {% if request.user.is_authenticated %}
           <li class="dropdown">
@@ -55,8 +57,6 @@
               <li><a href="/accounts/logout/">Log Out</a></li>
             </ul>
           </li>
-
-          {% include "navbar-notifications.html" %}
 
         {% elif LOGIN_ENABLED %}
           <li><a href="{% url "account_login" %}">Log In</a></li>

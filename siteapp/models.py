@@ -23,12 +23,11 @@ class User(AbstractUser):
     # Methods
 
     def __str__(self):
-        name = self._get_setting("name")
-        if name: # question might be skipped
-            return name
-
+        # name = self._get_setting("name")
+        # if name: # question might be skipped
+        #     return name
         # User has not entered their name.
-        return self.email or "Anonymous User"
+        return self.username or "Anonymous User"
 
     def name(self):
         return self._get_setting("name")
@@ -268,6 +267,9 @@ class Organization(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return "/%s/projects" % (self.slug)
+
     def get_who_can_read(self):
         # A user can see an Organization if:
         # * they have read permission on any Project within the Organization
@@ -297,6 +299,13 @@ class Organization(models.Model):
             | Organization.objects.filter(projects__tasks__editor=user)
             | Organization.objects.filter(discussions__guests=user)
             ).order_by("name", "created").distinct()
+
+    def get_projects(self):
+        # return Projects.objects.filter()
+        return Project.objects.filter(organization=self)
+
+    def get_members(self):
+        return User.objects.filter(projectmembership__project=self)
 
     def get_organization_project(self):
         prj, isnew = Project.objects.get_or_create(organization=self, is_organization_project=True)
@@ -443,7 +452,7 @@ class Project(models.Model):
         else:
             parts.append(self.title)
         return " / ".join(parts)
-        
+
     def get_members(self):
         return User.objects.filter(projectmembership__project=self)
 
@@ -841,7 +850,6 @@ class Project(models.Model):
         return urllib.parse.urljoin(settings.SITE_ROOT_URL,
             "/api/v1//projects/{id}/answers".format(id=self.id))
 
-
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE, help_text="The Project this is defining membership for.")
     user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="The user that is a member of the Project.")
@@ -974,4 +982,3 @@ class Invitation(models.Model):
 
     def get_redirect_url(self):
         return self.target.get_invitation_redirect_url(self)
-

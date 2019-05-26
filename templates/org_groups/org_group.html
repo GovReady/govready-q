@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}
+Welcome to GovReady Q - {{org.name}}
+{% endblock %}
+
+{% block head %}
+<style>
+.project-image {
+  width: 20px;
+  float: left;
+  margin: 4px 0 5px 8px;
+}
+
+.project-text {
+}
+
+.project-text h4 {
+  margin: 0;
+  font-weight: bold;
+  font-size: inherit;
+}
+
+.project-text > * {
+  margin: .5em 0 0 0;
+  font-size: 13px;
+}
+
+</style>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+% block body-wide %
+{% block body %}
+
+<div style="margin-top: 30px">
+
+<div class="container">
+
+<div style="float: right; margin: 0 0.5em 0em 5em;">
+  <a id="new-project" href="/store" class="btn btn-success">Start a project</a>
+  {% if can_invite_to_org %}
+  <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
+  {% endif %}
+</div>
+
+<h2 class="">{{ org.name }}</h2>
+<small style="color: #888;">Group ID: {{ org.id }}</small>
+
+{% if projects|length > 0 %}
+<p>You have access to {{ projects|length }} project{{ projects|pluralize }}</p>
+{% endif %}
+
+<div class="container">
+{% for project in projects %}
+<div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+  <div class="col-md-6">
+    {% if project.root_task.get_app_icon_url %}
+      <a href="{{project.get_absolute_url}}" class="project-image">
+        <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive">
+      </a>
+    {% else %}
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endif %}
+    &nbsp;&nbsp;&nbsp;
+    <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
+  </div>
+
+  <div class="col-md-3">&nbsp;</div>
+
+  <div class="col-md-1">
+    <small style="color: #888;">(ID: {{project.id}})</small>
+  </div>
+
+  <div class="col-md-2">
+      <small style="color: #888;">
+      <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
+      Updated {{project.root_task.updated|naturaltime}}
+      <!-- Started: {{project.created|naturaltime}} -->
+    </small>
+  </div>
+
+</div>
+
+{% endfor %}
+
+{% if projects|length < 2 %}
+<div class="container">
+  <div class="row" style="margin-top: 60px;">
+    <div class="col-md-2"></div>
+    <div class="col-md-5">
+      <h2>A group is a collection of projects.</h2>
+
+      <p>Think of a group like a folder for your projects.</p>
+
+      <p>The owner of the group can manage group members.</p>
+    </div>
+    <div class="col-md-3">
+        <div class="glyphicon glyphicon-folder-open" style="font-size: 8em; color: rgb(160, 210, 160);"></div>
+    </div>
+    <div class="col-md-2"></div>
+  </div>
+</div>
+{% endif %}
+
+    {{ block.super }} 
+{% endblock %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock %}

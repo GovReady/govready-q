@@ -186,7 +186,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         from siteapp.models import User, ProjectMembership
         self.user = User.objects.create(
             username="me",
-            email="test+user@q.govready.com")
+            email="test+user@q.govready.com",
+            is_staff=True
+        )
         self.user.clear_password = get_random_string(16)
         self.user.set_password(self.user.clear_password)
         self.user.save()
@@ -232,6 +234,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # with other credentials.
         self.browser.get(self.url("/"))
         self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
+        self.click_element("li#tab-signin")
         self.fill_field("#id_login", username or self.user.username)
         self.fill_field("#id_password", password or self.user.clear_password)
         self.click_element("form#login_form button[type=submit]")
@@ -961,9 +964,8 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         self.browser.get(self.url("/projects"))
         var_sleep(1)
 
-        self.browser.get(self.url("/settings"))
-        var_sleep(1)
-        self.assertRegex(self.browser.title, "GovReady-Q Setup")
+        response = self.client.get('/settings')
+        self.assertEqual(response.status_code, 403)
 
         # logout
         self.browser.get(self.url("/accounts/logout/"))

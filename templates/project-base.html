@@ -21,12 +21,16 @@
 
 h1 {
   margin: 0;
-  font-size: 50px;
+  font-size: 32px;
 }
 
 div.subtitle {
   margin: .2em 0 .75em 0;
   font-weight: bold;
+}
+
+.breadcrumb {
+  font-size: .8em;
 }
 </style>
 {% endblock %}
@@ -35,6 +39,11 @@ div.subtitle {
   <li>
     <a href="/">
       <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
+    </a>
+  </li>
+  <li>
+    <a href="{{project.organization.get_absolute_url}}">
+      {{project.organization.name}}
     </a>
   </li>
   {% for parent_project in project.get_parent_projects %}
@@ -50,9 +59,6 @@ div.subtitle {
       {{project.title}}
     </a>
     </li>
-  <li class="active">
-    {{page_title}}
-  </li>
 {% endblock %}
 
 {% block body %}
@@ -77,7 +83,8 @@ div.subtitle {
       {% endif %}
 
       {% with project.title as title %}
-      <h1>
+      <h1 id="project-title">
+        {{project.organization.name}} / 
         {{title}}
         {% block title_suffix_text %}
         {% endblock %}

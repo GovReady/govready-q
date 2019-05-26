@@ -12,7 +12,6 @@ urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
     url(r"^(privacy|terms-of-service)$", views.shared_static_pages),
 
-    url(r"^welcome/(?P<org_slug>.*)$", views_landing.org_welcome_page),
     url(r'^api/v1/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
     url(r'^media/users/(\d+)/photo/(\w+)', views_landing.user_profile_photo),
 
@@ -43,6 +42,11 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/upgrade)$', views.project_upgrade_app), # must be last because regex matches some previous URLs
+
+    # org groups
+    url(r'^groups$', views_landing.org_groups),
+    url(r'^groups/new$', views_landing.new_org_group),
+    url(r"^(?P<org_slug>.*)/projects$", views_landing.org_group_projects),
 
     # api
     url(r'^api-keys$', views.show_api_keys, name="show_api_keys"),

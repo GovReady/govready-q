@@ -32,7 +32,7 @@ def assign_project_lifecycle_stage(projects):
     lifecycle_stages = [
         {
             "id": "none",
-            "label": "General Assessments",
+            "label": "Projects",
             "stage_col_width": { "xs-12" }, # "col_" + this => Bootstrap 3 column class
             "stages": [
                 { "id": "none", "label": "", "subhead": "" },
@@ -109,6 +109,7 @@ def project_list(request):
 
     return render(request, "projects.html", {
         "lifecycles": lifecycles,
+        "projects": projects,
     })
 
 def get_compliance_apps_catalog_for_user(user):
@@ -579,10 +580,10 @@ def project(request, project):
     else:
         # number of columns must divide 12 evenly
         columns = [
-            { "title": "Backlog" },
-            { "title": "Selected" },
+            { "title": "To Do" },
             { "title": "In Progress" },
-            { "title": "Completed" },
+            { "title": "Submitted" },
+            { "title": "Approved" },
         ]
         for column in columns:
             column["questions"] = []
@@ -592,9 +593,9 @@ def project(request, project):
                 col = 0
                 question["hide_icon"] = True
             elif question["task"].is_finished():
-                col = 3
-            elif question["task"].is_started():
                 col = 2
+            elif question["task"].is_started():
+                col = 1
             else:
                 col = 1
             columns[col]["questions"].append(question)
@@ -642,7 +643,6 @@ def project(request, project):
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
-        "page_title": "Components",
         "project": project,
 
         "is_admin": request.user in project.get_admins(),
@@ -1350,14 +1350,20 @@ def accept_invitation_do_accept(request, inv):
 def organization_settings(request):
     # Authorization. Different users can see different things on
     # this page.
+    # This is the settings page for the overall install. There is no specific organization
+    # except the entire organization
     can_see_org_settings = True
-    org_admins = request.organization.get_organization_project().get_admins()
-    can_edit_org_settings = request.user in org_admins
+    # TODO org_admins needs to be selected a different way
+    # This approach leverages Django's permission model for admin screens
+    org_admins = User.objects.filter(is_staff=True)
+    # TODO better selection of who can edit
+    # can_edit_org_settings = request.user in org_admins
+    can_edit_org_settings = request.user.is_staff
     is_django_staff = request.user.is_staff
 
     # If the user doesn't have permission to see anything on this
     # page, give an appropriate HTTP response.
-    if not can_see_org_settings and not can_edit_org_settings and not is_django_staff:
+    if not is_django_staff:
         return HttpResponseForbidden()
 
     def preload_profiles(users):
@@ -1372,8 +1378,11 @@ def organization_settings(request):
         "can_visit_user_in_django_admin": is_django_staff and request.user.has_perm("user_change"),
         "django_admin_url": settings.SITE_ROOT_URL + "/admin",
         "org_admins": preload_profiles(org_admins),
-        "help_squad": preload_profiles(request.organization.help_squad.all()),
-        "reviewers": preload_profiles(request.organization.reviewers.all()),
+        # TODO better pulling of teams
+        # "help_squad": preload_profiles(request.organization.help_squad.all()),
+        # "reviewers": preload_profiles(request.organization.reviewers.all()),
+        "help_squad": preload_profiles(User.objects.all()),
+        "reviewers": preload_profiles(User.objects.all()),
     })
 
 @login_required

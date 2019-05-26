@@ -42,8 +42,8 @@ class DiscussionTests(SeleniumTest):
     def _login(self):
         # Fill in the login form and submit.
         self.browser.get(self.url("/"))
-
         self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
+        self.click_element("li#tab-signin")
         self.fill_field("#id_login", self.user.username)
         self.fill_field("#id_password", self.user_pw)
         self.click_element("form#login_form button[type=submit]")
