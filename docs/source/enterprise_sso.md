@@ -12,12 +12,12 @@ GovReady-Q can be deployed behind a reverse proxy that authenticates users and p
 
 To activate reverse proxy authentication, add the header names used by the proxy to your `local/environment.json`, e.g.:
 
-  {
-    "trust-user-authentication-headers": {
-      "username": "X-Authenticated-User-Username",
-      "email": "X-Authenticated-User-Email"
-    },
-  }
+    {
+      "trust-user-authentication-headers": {
+        "username": "X-Authenticated-User-Username",
+        "email": "X-Authenticated-User-Email"
+      },
+    }
 
 The proxy server must be configured to proxy to GovReady-Q's private address. But the `host` and `https` settings in GovReady-Q's `local/environment.json` file must reflect the host and protocol used in the URL the *end user* uses to access GovReady-Q. They do *not* need to match the address that the proxy server uses to reach the GovReady-Q server.
 

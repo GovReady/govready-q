@@ -1,40 +1,50 @@
-# Deploying GovReady-Q with Docker
-
-## GovReady-Q on Docker Hub
+# Deploying with Docker
 
 | Container                 | Where                                                                                                           |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------|
 | Current Release on Docker | [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/)                  |
 | Nightly Build on Docker   | [https://hub.docker.com/r/govready/govready-q-nightly/](https://hub.docker.com/r/govready/govready-q-nightly/)  |
 
+## Quickstart
 
-## Quickstart for GovReady-Q on Docker
+.. container:: content-tabs
 
-Make sure you first [install Docker](https://docs.docker.com/engine/installation/) and, if appropriate, [grant non-root users access to run Docker containers](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
+    .. tab-container:: docker
+        :title: Docker
 
-Start and run the container in the background (e.g. detached):
+        .. rubric:: Installing with Docker
 
-	# Run the docker container in detached mode
-	docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
+        Make sure you first [install Docker](https://docs.docker.com/engine/installation/) and, if appropriate, [grant non-root users access to run Docker containers](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
 
-	# Create admin account and organization data
-	docker container exec -it govready-q first_run
+        .. rubric:: Start
 
-	# Stop, start container
-	docker container stop govready-q
-	docker container start govready-q
+        .. code-block:: bash
 
-	# View logs - useful if site does not appear
-	docker container logs govready-q
+            # Run the docker container in detached mode
+            docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
 
-	# To destroy the container and all user data entered into Q
-	docker container rm -f govready-q
+            # Create admin account and organization data
+            docker container exec -it govready-q first_run
 
-Visit your GovReady-Q site in your web browser at:
+            # Stop, start container
+            docker container stop govready-q
+            docker container start govready-q
 
-	http://localhost:8000/
+            # View logs - useful if site does not appear
+            docker container logs govready-q
 
-### Quickstart Notes and Common Issues
+            # To destroy the container and all user data entered into Q
+            docker container rm -f govready-q
+
+
+        Visit your GovReady-Q site in your web browser at:
+
+            http://localhost:8000/
+
+
+## Additional Details
+
+### Notes and Common Issues
 
 Your GovReady-Q site will not load immediately, as GovReady-Q initializes your database for the first time. Wait for the site to become available.
 
@@ -50,7 +60,7 @@ The default Govready-Q instance cannot send email or receive comment replies unt
 
 The default Govready-Q instance is configured to non-debug mode (Django `DEBUG=false`), which is the recommended setting for a public website. The instance can be set to debug mode at runtime -- see below.
 
-## Advanced configuration of GovReady-Q inside Docker
+### Advanced configuration of GovReady-Q inside Docker
 
 For more complex setups, using our run script instead will be easier:
 
@@ -62,9 +72,9 @@ Advanced container options can be set with command-line arguments to our contain
 
 	./docker_container_run.sh ...GovReady-Q arguments... -- ...Docker arguments...
 
-### Changing the hostname and port
+#### Changing the hostname and port
 
-#### The public address (as users see it)
+##### The public address (as users see it)
 
 The container will run at `localhost:8000` by default, it will only be accessible from the
 host machine, and because of HTTP Host header checking you must visit GovReady-Q using the
@@ -80,7 +90,7 @@ that end-users will use to access GovReady-Q. This may differ from the address a
 
 Add `--https` if end users will access GovReady-Q with https: URLs. This must be done through a proxy that accepts HTTPS connections and passes the requests using HTTP to the Docker container. See the `HTTPS` environment variable, below.
 
-#### The address that the container is bound to
+##### The address that the container is bound to
 
 Use `--bind IP:PORT` to control how the listening socket is created on the host machine.
 The default value of `--bind` is `127.0.0.1` and the port from `--address`, or `127.0.0.1:8000` if
@@ -164,7 +174,7 @@ You can additionally pass parameters to the `docker container run` command by se
 
 	./docker_container_run.sh --address q.mydomain.com:80 -- -e VAR=VALUE
 
-### Developing compliance apps
+### Adding and developing compliance apps
 
 If you are using the Docker image to develop your own compliance apps, then
 you will need to bind-mount a directory on your (host) system as a directory
@@ -206,10 +216,6 @@ to force the app catalog cache to be cleared by restarting the container:
 
 	docker container restart govready-q
 
-## Production deployment of the Docker container
-
-The GovReady-Q container runs several processes, including an HTTP/application server and a background process for sending notification emails.
-
 ### Console and logs
 
 The container's console, which can be accessed with
@@ -225,6 +231,10 @@ Additional log files are stored in /var/log within the container. These files co
 `tail_logs` takes the same arguments as Unix `tail`. For instance, add `-n 1000` to see the most recent 1,000 log lines, or add `-f` to continue to output the logs as the log files grow.
 
 The log files can also be accessed by mounting `/var/log` with a Docker bind-mount or as a volume (and that's the only way to see the logs if `docker container exec` cannot be used in your environment).
+
+### Production deployment of the Docker container
+
+The GovReady-Q container runs several processes, including an HTTP/application server and a background process for sending notification emails.
 
 ### Secure deployments
 
@@ -243,7 +253,7 @@ See the [uWSGI](http://uwsgi-docs.readthedocs.io/) application server JSON proce
 
 	docker container exec govready-q uwsgi_stats
 
-## Updating to a new release of GovReady-Q
+### Updating to a new release of GovReady-Q
 
 Periodically there will be a new release of GovReady-Q as an new image on the Docker Hub. Updating is easy by re-running the same commands again.
 
@@ -266,7 +276,7 @@ For example:
 	./docker_container_run.sh --relaunch [your same command-line arguments]
 
 
-## Environment variables for launching the container without our run script
+### Environment variables for launching the container without our run script
 
 The following environment variables are used to configure the container when launching GovReady-Q using `docker run` or a container service (i.e., not when using our `docker_container_run.sh` helper script).
 
@@ -300,7 +310,7 @@ The following environment variables are used to configure the container when lau
 
 `PROXY_AUTHENTICATION_USER_HEADER` and `PROXY_AUTHENTICATION_EMAIL_HEADER`: GovReady-Q can be deployed behind a reverse proxy that authenticates users and passes the authenticated user's username and email address in HTTP headers. These environment variables correspond to the settings documented in [Enterprise Login](Environment.html#proxy-authentication-sever).
 
-## Running tests
+### Running tests
 
 GovReady-Q's unit tests can be run within the Docker container. After building the image:
 
@@ -311,7 +321,7 @@ Or once a Docker container running GovReady-Q is started (and named `govready-q`
 	docker container exec -it govready-q bash
 	python3.6 manage.py test guidedmodules
 
-The functional tests run a headless Chromium web browser session and we have not yet figured out how to get this to work in our Docker container. Chromium's process isolation capabilities seem to require special system privileges (i.e. `docker run --privileged --cap-add SYS_ADMIN`) or Chromium command-line flags (`--no-sandbox --disable-gpu`).
+The functional tests run a headless Chromium web browser session. We welcome assistance figuring out how to get this to work in our Docker container. Chromium's process isolation capabilities seem to require special system privileges (i.e. `docker run --privileged --cap-add SYS_ADMIN`) or Chromium command-line flags (`--no-sandbox --disable-gpu`).
 
 	yum install -y chromium chromedriver
 	python3.6 manage.py test
