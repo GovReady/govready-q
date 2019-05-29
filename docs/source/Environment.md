@@ -45,12 +45,12 @@ GovReady-Q supports Enterprise Login via IAM (Identity and Access Management). I
 
 To activate reverse proxy authentication, add the header names used by the proxy to your `local/environment.json`, e.g.:
 
-  {
-    "trust-user-authentication-headers": {
-      "username": "X-Authenticated-User-Username",
-      "email": "X-Authenticated-User-Email"
-    },
-  }
+    {
+	    "trust-user-authentication-headers": {
+	      "username": "X-Authenticated-User-Username",
+	      "email": "X-Authenticated-User-Email"
+	    },
+    }
 
 
 GovReady-Q must be run at a private address that cannot be accessed except through the proxy server. The proxy server must be configured to proxy to GovReady-Q's private address. See [Enterprise Single-Sign On / Login](enterprise_sso.html) for additional details.

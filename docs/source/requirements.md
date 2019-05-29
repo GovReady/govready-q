@@ -1,36 +1,8 @@
-## System Requirements for GovReady-Q
+## System Requirements
 
-GovReady-Q is a Python 3.6, Django 2.0 application with a relational database back-end. GovReady-Q is compatible with operating systems and components generally supported by Django 2.0 and Python 3.6.
+GovReady-Q is a Python 3.6 and higher, Django 2.x application with a relational database back-end. 
 
-GovReady-Q has been successfully deployed on multiple Linux distros (RHEL 7, CentOS 7, Ubuntu 14 & 16), as a Docker container, as Docker container in AWS Elastic Container Service, as a Docker container on OpenShift, and as a Vagrant virtual machine.
-
-We've tried to make GovReady-Q installation straightforward and complete. Our documentation includes configuring the Python uWSGI environment, installing and running testing tools, adding sources for compliance security plan apps, and setting up your admin account and initial organization.
-
-### Development Deployments
-
-GovReady-Q can be deployed on a modern, single Linux/Unix/MacOS workstation (or laptop) for development and exploration.
-
-GovReady-Q can be deployed on a Windows platform through the use of our Docker container.
-
-### Production Deployments
-
-#### Hardware Requirements
-
-| Minimum Hardware |
-| --- |
-| Single server to host both multi-tenant GovReady-Q application and Database |
-| Linux-compatible hardware |
-| 2GB RAM |
-| 10 GB storage (for database) |
-
-| Recommended Hardware |
-| --- |
-| 2 servers: 1 for multi-tenant GovReady-Q application; 1 for Database Server |
-| Linux-compatible hardware (64 bit architecture; FIPS-140-2 validated cryptographic module) |
-| 8GB RAM for each server |
-| 100 GB storage (for database server) |
-
-#### Software Requirements
+### Software Requirements
 
 | Required Software Packages (partial list) |
 | --- |
@@ -66,3 +38,19 @@ For a more detailed list of software dependencies and requirements see:
 * https://github.com/GovReady/govready-q/blob/master/requirements_mysql.in
 * https://github.com/GovReady/govready-q/blob/master/requirements_mysql.txt
 * https://github.com/GovReady/govready-q/blob/master/Vagrantfile
+
+### Hardware Requirements
+
+| Minimum Hardware |
+| --- |
+| Single server to host both multi-tenant GovReady-Q application and Database |
+| Linux-compatible hardware |
+| 2GB RAM |
+| 10 GB storage (for database) |
+
+| Recommended Hardware |
+| --- |
+| 2 servers: 1 for multi-tenant GovReady-Q application; 1 for Database Server |
+| Linux-compatible hardware (64 bit architecture; FIPS-140-2 validated cryptographic module) |
+| 8GB RAM for each server |
+| 100 GB storage (for database server) |
