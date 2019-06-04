@@ -51,6 +51,7 @@ fpdf2 # LGPLv3+
 
 # Documentation only
 m2r # MIT License
+sphinxcontrib-contentui # MIT License
 
 # Temporarily pinned.
 
