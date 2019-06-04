@@ -11,7 +11,7 @@
 
         GovReady-Q can only be installed on Windows using Docker.
 
-        Make sure you first [install Docker](https://docs.docker.com/engine/installation/) and, if appropriate, [grant non-root users access to run Docker containers](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
+        Make sure you first install Docker (https://docs.docker.com/docker-for-windows/install/).
 
         .. rubric:: Start
 

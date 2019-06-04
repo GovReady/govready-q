@@ -9,7 +9,7 @@ The Markdown source files for the documentation are stored in the `source` subdi
 
 To test documentation locally, install Sphinx, the theme, and the Markdown-to-reStructuredText converter:
 
-	pip install sphinx sphinx_rtd_theme m2r
+	pip install sphinx sphinx_rtd_theme m2r sphinxcontrib-contentui
 
 The build the documentation:
 

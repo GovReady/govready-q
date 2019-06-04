@@ -69,7 +69,7 @@ body {
 
 Then override the `head.html` template. GovReady-Q's base for `head.html` is empty --- its purpose is only to allow you to add to the `<head>` element. So create a new file at `sample_branding/templates/head.html` and put in it:
 
-```html
+```jinja
 {% load static %}
 <link rel="stylesheet" href="{% static "custom.css" %}">
 ```

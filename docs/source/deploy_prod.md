@@ -6,7 +6,7 @@ To verify that this is the case, run the following command, and check whether Go
 
 	cd /home/govready-q/govready-q/ && python3 manage.py runserver
 
-If GovReady-Q is installed successfully, proceed with the rest of these configuration instructions. If it doesn't, see [OS-specific install instructions](deploy_host_os.html).
+If GovReady-Q is installed successfully, proceed with the rest of these configuration instructions. If it doesn't, see [OS-specific install instructions](deploy_all.html).
 
 ## Set basic configuration variables
 

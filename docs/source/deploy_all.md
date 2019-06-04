@@ -1,5 +1,7 @@
 # Installing GovReady-Q
 
+Click one of the tab belows to see quickstart for indicated platform.
+
 .. container:: content-tabs
 
     .. tab-container:: docker
@@ -38,24 +40,27 @@
         :title: macOS
 
         .. rubric:: Installing on macOS
-        
-        GovReady-Q calls requires Python 3.6 or higher to run and several Linux packages to provide full functionality.
+
+        GovReady-Q calls requires Python 3.6 or higher to run and several Unix packages to provide full functionality. Install the Homebrew package manager (https://brew.sh) to easily install Unix packages on macOS. Homebrew will install all packages in your userspace and not change native macOS Python or other libraries.
+
+        .. code-block:: bash
+
+            # install Homebrew package manager
+            /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+        Now install Python3 and the required Unix packages.
 
         .. code-block:: bash
 
             # install dependencies using brew
             brew install python3
-            # other packages: unzip, graphviz, pandoc,
-            # xorg-x11-server-Xvfb wkhtmltopdf \
 
-            # optional install gcc to build the uWSGI Python package.
-            # Needed on macOS?
-
-            # optional insall of postgress and/or mysql
-            # brew install instructions
+            # install other packages: 
+            brew install unzip graphviz pandoc selenium-server-standalone
+            brew cask install wkhtmltopdf
 
         .. rubric:: Installing GovReady-Q
-        
+
         Clone GovReady-Q source code and install.
 
         .. code-block:: bash
@@ -122,7 +127,6 @@
 
         GovReady-Q calls out to `git` to fetch apps from git repositories, but that requires git version 2 or later because of the use of the GIT_SSH_COMMAND environment variable. RHEL stock git is version 1. Switch it to version 2+ by using the IUS package:
 
-
         .. code-block:: bash
 
             # if necessary, remove any git currently installed
@@ -131,7 +135,7 @@
             yum install git2u
 
         .. rubric:: Installing GovReady-Q
-        
+
         Clone GovReady-Q source code and install.
 
         .. code-block:: bash
@@ -246,7 +250,7 @@
 
         GovReady-Q can only be installed on Windows using Docker.
 
-        Make sure you first [install Docker](https://docs.docker.com/engine/installation/) and, if appropriate, [grant non-root users access to run Docker containers](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
+        Make sure you first install Docker (https://docs.docker.com/docker-for-windows/install/).
 
         .. rubric:: Start
 

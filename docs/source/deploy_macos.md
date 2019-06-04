@@ -8,21 +8,24 @@
         :title: macOS
 
         .. rubric:: Installing on macOS
-        
-        GovReady-Q calls requires Python 3.6 or higher to run and several Linux packages to provide full functionality.
+
+        GovReady-Q calls requires Python 3.6 or higher to run and several Unix packages to provide full functionality. Install the Homebrew package manager (https://brew.sh) to easily install Unix packages on macOS. Homebrew will install all packages in your userspace and not change native macOS Python or other libraries.
+
+        .. code-block:: bash
+
+            # install Homebrew package manager
+            /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+        Now install Python3 and the required Unix packages.
 
         .. code-block:: bash
 
             # install dependencies using brew
             brew install python3
-            # other packages: unzip, graphviz, pandoc,
-            # xorg-x11-server-Xvfb wkhtmltopdf \
 
-            # optional install gcc to build the uWSGI Python package.
-            # Needed on macOS?
-
-            # optional insall of postgress and/or mysql
-            # brew install instructions
+            # install other packages:
+            brew install unzip graphviz pandoc selenium-server-standalone
+            brew cask install wkhtmltopdf
 
         .. rubric:: Installing GovReady-Q
         
