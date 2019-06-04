@@ -5,7 +5,7 @@ Deploying GovReady-Q
    :maxdepth: 1
 
    requirements.md
-   deploy_host_os.md
+   deploy_all.md
    deploy_prod.md
    deploy_local_dev.md
    configure_db.md
