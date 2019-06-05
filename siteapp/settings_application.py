@@ -13,6 +13,8 @@ INSTALLED_APPS += [
     'siteapp',
     'guidedmodules',
     'discussion',
+
+    'testmocking',
 ]
 
 
