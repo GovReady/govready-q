@@ -12,15 +12,15 @@
 
 Make sure you first [install Docker](https://docs.docker.com/engine/installation/) and, if appropriate, [grant non-root users access to run Docker containers](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
 
-Start and running container in the background (e.g. detached):
+Start and run container in the background (i.e. detached):
 
-	# Run the docker container detached mode
+	# Run the docker container in detached mode
 	docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
 
 	# Create admin account and organization data
 	docker container exec -it govready-q first_run
 
-	# Stop, start container
+	# Stop, start container (when needed)
 	docker container stop govready-q
 	docker container start govready-q
 
@@ -44,7 +44,7 @@ If the site does not come up, check the container logs for an error message:
 	
 	docker container logs govready-q
 
-The GovReady-Q default SQLite database is only persisted within the container by default. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the data will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container. 
+The GovReady-Q default SQLite database is ordinarily only active within the container lifetime. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the data will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container for production data. 
 
 The default Govready-Q instance cannot send email or receive comment replies until it is configured to use a transactional mail provider like Mailgun -- see below.
 
