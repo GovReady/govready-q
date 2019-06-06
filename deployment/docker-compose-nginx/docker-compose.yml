@@ -1,0 +1,20 @@
+version: '3'
+networks:
+  q_network:
+    driver: bridge
+services:
+  govready-q:
+    image: govready/govready-q
+    environment:
+      - HOST=GovReady
+      - PORT=8000
+      - HTTPS=false
+      - DBURL=
+    networks:
+      - q_network
+  nginx:
+    build: ./nginx
+    ports:
+      - "8080:80"
+    networks:
+      - q_network
