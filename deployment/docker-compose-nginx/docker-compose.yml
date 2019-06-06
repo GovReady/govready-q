@@ -6,15 +6,16 @@ services:
   govready-q:
     image: govready/govready-q
     environment:
-      - HOST=GovReady
+      - HOST=test.example.com
       - PORT=8000
-      - HTTPS=false
+      - HTTPS=true
       - DBURL=
     networks:
       - q_network
   nginx:
     build: ./nginx
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
     networks:
       - q_network
