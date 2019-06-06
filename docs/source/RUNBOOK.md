@@ -33,7 +33,7 @@ and possibly don't have access to Internet resources.
 
 As of this writing, we are looking at two main paths for running Q in a Cloud Service Provider:
 
-**Pivotal Web Services (PWS)***
+**Pivotal Web Services (PWS)**
 
 Pivotal's implementation of Cloud Foundry as a service is PWS: Pivotal Web Services.  In this doc PWS refers to this platform, and CF or Foundry refers to any implementation of Cloud Foundry.
 
@@ -49,7 +49,7 @@ Writing an AWS runbook is a secondary goal to having a solid platform in PWS
 
 Cloud Foundry is designed for frequent release with the `cf push` API command. The `Makefile` with this app demonstrates how to stage prerequisite resources and push those to the new instances running the applications.
 
-**ToDo**:
+**ToDo**
 
 - [ ] Harden scripted release process for repeatability
 - [ ] Acceptance and Production releases should only occur from a centralized location (see CI/CD below)
@@ -251,7 +251,7 @@ PWS provides SSL for hosted domains: https://docs.run.pivotal.io/marketplace/piv
 
 Should we desire CDN integration, see https://docs.run.pivotal.io/marketplace/integrations/cloudflare/index.html
 
-**ToDo**:
+**ToDo**
 
 - [ ] Enable HTTPS for https://qq.govready.com DNS test once that's complete
 - [ ] Document process (or add tooling) for additional apps.
@@ -260,7 +260,7 @@ Should we desire CDN integration, see https://docs.run.pivotal.io/marketplace/in
 
 It seems that GSA/18f has done [due diligence for the CF UAA](https://github.com/opencontrol/cf-compliance/blob/master/UAA/component.yaml) Looks good.
 
-**ToDo**:
+**ToDo**
 - [ ] Set up root account and share with Greg
 - [ ] Add Josh and Peter and Greg as users
 - [ ] Document user deactivation

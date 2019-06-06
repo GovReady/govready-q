@@ -11,7 +11,7 @@ The code is open source, and [available on GitHub](https://github.com/GovReady/g
    GovReady-Q is in Beta. Suggested for DevSecOps early adopters needing Compliance-as-Code.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    introduction.md

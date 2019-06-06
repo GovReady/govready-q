@@ -1,4 +1,4 @@
-# What You Most Need to Know About GovReady-Q
+# About GovReady-Q
 
 ## Why GovReady-Q?
 
