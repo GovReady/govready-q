@@ -4,12 +4,22 @@
 * Add "left" or "right" in modal parent div, after class="modal".
 *******************************/
 
+
+/* remove modal shadow */
+div.modal-content{
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    -o-box-shadow: none;
+    box-shadow: none;
+    border: 1px solid rgb(220, 220, 220);
+}
+
 .modal.left .modal-dialog,
   .modal.right .modal-dialog {
     position: fixed;
     margin: auto;
     width: 440px;
-    height: 100%;
+    height: calc(100% - 53px);
     -webkit-transform: translate3d(0%, 0, 0);
         -ms-transform: translate3d(0%, 0, 0);
          -o-transform: translate3d(0%, 0, 0);
@@ -43,10 +53,11 @@
 /*Right*/
   .modal.right.fade .modal-dialog {
     right: -320px;
-    -webkit-transition: opacity 0.2s linear, right 0.2s ease-out;
-       -moz-transition: opacity 0.2s linear, right 0.2s ease-out;
-         -o-transition: opacity 0.2s linear, right 0.2s ease-out;
-            transition: opacity 0.2s linear, right 0.2s ease-out;
+    top:53px;
+    -webkit-transition: opacity 0.0s linear, right 0.0s ease-out;
+       -moz-transition: opacity 0.0s linear, right 0.0s ease-out;
+         -o-transition: opacity 0.0s linear, right 0.0s ease-out;
+            transition: opacity 0.0s linear, right 0.0s ease-out;
   }
 
   .modal.right.fade.in .modal-dialog {
@@ -75,7 +86,7 @@ label {
 }
 </style>
 
-<div id="module_authoring_tool" class="modal" tabindex="-1" role="dialog" aria-labelledby="module_authoring_tool_title" aria-hidden="true" data-keyboard="false">
+<div id="module_authoring_tool" class="modal right fade" tabindex="-1" role="dialog" aria-labelledby="module_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -111,7 +122,7 @@ label {
   </div>
 </div>
 
-<div id="question_authoring_tool" class="modal right fade" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true" data-keyboard="false" style="right: -55%;">
+<div id="question_authoring_tool" class="modal right fade" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false" style="right: -55%;">
   <div class="modal-dialog modal-md">
     <div class="modal-content">
       <form class="form-horizontal" onsubmit="return false;">

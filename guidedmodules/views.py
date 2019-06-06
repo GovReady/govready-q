@@ -845,7 +845,7 @@ def authoring_new_question(request, task):
             "id": key,
             "type": "module",
             "title": "New Question Title",
-            "protocol": "choose-a-module-or-enter-a-protocol-id",
+            "protocol": ["choose-a-module-or-enter-a-protocol-id"],
         }
 
     # Make a new question instance.
