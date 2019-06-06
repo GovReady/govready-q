@@ -26,7 +26,7 @@
             # Create admin account and organization data
             docker container exec -it govready-q first_run
 
-            # Stop, start container
+            # Stop, start container (when needed)
             docker container stop govready-q
             docker container start govready-q
 
@@ -54,7 +54,7 @@ If the site does not come up, check the container logs for an error message:
 	
 	docker container logs govready-q
 
-By default, the Q database is only persisted within the container. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the Q data will be destroyed. See the _Persistent database_ section below for connecting to a persistent database outside of the container.
+The GovReady-Q default SQLite database created within a Docker container exists only for the duration of the container's lifetime. The database will persist between `docker container stop`/`docker container start` commands, but when the container is removed from Docker (i.e. using `docker container rm`) the database will be destroyed. See the _Persistent database_ section below for connecting to a database outside of the container for production data. 
 
 The default Govready-Q instance cannot send email or receive comment replies until it is configured to use a transactional mail provider like Mailgun -- see below.
 
