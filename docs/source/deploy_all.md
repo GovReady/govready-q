@@ -21,7 +21,7 @@ Click one of the tab belows to see quickstart for indicated platform.
             # Create admin account and organization data
             docker container exec -it govready-q first_run
 
-            # Stop, start container
+            # Stop, start container (when needed)
             docker container stop govready-q
             docker container start govready-q
 
