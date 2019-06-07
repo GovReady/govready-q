@@ -16,5 +16,5 @@ class Command(BaseCommand):
     help = 'Clear all data created for mock purposes'
 
     def handle(self, *args, **options):
-        delete_objects(User)
         delete_objects(Organization)
+        delete_objects(User)
