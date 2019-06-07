@@ -23,9 +23,9 @@ def get_name(count, separator=' '):
     wordlist = get_wordlist()
     return separator.join([name.title() for name in sample(wordlist, count)])
 
-def create_user(username=None, password=None):
+def create_user(username=None, password=None, pw_hash=None):
     if username == None:
-        username = get_name(2, '_').lower()
+        username = get_name(3, '_').lower()
     if password == None:
         password = get_random_string(16)
 
@@ -34,8 +34,11 @@ def create_user(username=None, password=None):
             username=username,
             email=("testuser_%s@govready.com" % username),
         )
-        u.clear_password = password
-        u.set_password(u.clear_password)
+        if pw_hash:
+            u.password = pw_hash
+        else:
+            u.clear_password = password
+            u.set_password(u.clear_password)
         u.save()
         file.write(str(u.id))
         file.write("\n")
@@ -43,8 +46,8 @@ def create_user(username=None, password=None):
 
 def create_organization(name=None, admin=None, help_squad=[], reviewers=[]):
     if name == None:
-        name = get_name(1).upper()
-    subdomain = name.lower()
+        name = get_name(2).upper()
+    subdomain = name.replace(' ', '-').lower()
 
     with open(_getpath(Organization), 'a+') as file:
         org = Organization.create(
