@@ -10,10 +10,11 @@ from django.conf import settings
 from guidedmodules.models import AppSource, Module
 from siteapp.models import User, Organization
 
-from testmocking.data_management import delete_users
+from testmocking.data_management import delete_objects
 
 class Command(BaseCommand):
     help = 'Clear all data created for mock purposes'
 
     def handle(self, *args, **options):
-        delete_users()
+        delete_objects(User)
+        delete_objects(Organization)
