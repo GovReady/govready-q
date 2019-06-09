@@ -1,6 +1,11 @@
 GovReady-Q Release Notes
 ========================
 
+v0.8.6.2+devel
+--------------
+* The AppInstance model/database table was renamed to AppVersion to better reflect the meaning of the model.
+* Upgraded some dependencies.
+
 
 v0.8.6.1 (May 08, 2019)
 -----------------------

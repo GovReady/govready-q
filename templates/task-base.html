@@ -42,6 +42,10 @@
 .help-block {
   font-size: .85em;
 }
+
+.breadcrumb {
+  font-size: .8em;
+}
 </style>
 {% endblock %}
 
@@ -59,6 +63,11 @@
   <li>
     <a href="/">
       <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
+    </a>
+  </li>
+  <li>
+    <a href="{{task.project.organization.get_absolute_url}}">
+      {{task.project.organization.name}}
     </a>
   </li>
   {% for parent_project in task.project.get_parent_projects %}

@@ -2,6 +2,7 @@
 
 GovReady-Q is a Python 3.6 and higher, Django 2.x application with a relational database back-end. 
 
+<<<<<<< HEAD
 ### Software Requirements
 
 | Required Software Packages (partial list) |

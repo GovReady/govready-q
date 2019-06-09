@@ -1,88 +1,110 @@
 {% extends "base.html" %}
-
-{# for allauth login #}
 {% load bootstrap3 %}
-{% load i18n %}
-{% load account %}
 
 {% block title %}
-Home
-{% endblock %}
-
-{% block contextbar %}
-  {# kill it on this page #}
+Welcome to Compliance Automation
 {% endblock %}
 
 {% block body-wide %}
 
-<div class="jumbotron">
-  <div class="container">
-
-    <div class="row" style="border:0px solid black;max-width: 1024px;margin:40px auto;margin-bottom:80px;">
-      {% with picture=request.organization.get_logo %}
-        {% if picture %}
-          <div class="col-md-2" style="border: 0px solid black;">
-            <img src="{{picture.url}}" class="img-responsive" alt="Profile Picture" style="">
-          </div>
-          <div class="col-md-10"  style="text-align: center; border: 0px solid black;">
-        {% else %}
-          <div class="col-md-12">
-        {% endif %}
-      {% endwith %}
-        <h1 style="margin-top:0px;">
-          {{request.organization}}
-          <div class="small">powered by GovReady Q</div>
-        </h1>
-        <p><b>Open source compliance software for everyone to innovate securely</b></p>
-      </div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-7" style="margin: 40px 0px 30px 0px;">
+      <h1>GovReady-Q</h1>
+      <p>A better way to assess and support compliance</p>
+      <ul>
+        <li><a href="https://govready-q.readthedocs.io/en/latest/introduction.html#why-govready-q">Why GovReady-Q?</a></li>
+        <li><a href="https://github.com/govready/govready-q">GovReady-Q on GitHub</a></li>
+        <li><a href="https://govready-q.readthedocs.org">Technical documentation</a></li>
+      </ul>
+      <p>By signing up for and by signing in to this service you accept our:</p>
+      <ul>
+        <li><a href="/privacy">Privacy Policy</a></li>
+        <li><a href="/terms-of-service">Terms of Service</a></li>
+      </ul>
     </div>
+    <div class="col-md-5" style="margin: 40px 0px 30px 0px;">
+      <!-- Nav tabs -->
+      <ul class="nav nav-tabs" role="tablist">
+         <li id="tab-register" role="presentation" {% if request.POST.action|escapejs != 'login' %}class="active"{% endif %}><a href="#register" aria-controls="register" role="tab" data-toggle="tab">Register</a></li>
+         <li id="tab-signin" role="presentation" {% if request.POST.action|escapejs == 'login' %}class="active"{% endif %}><a href="#signin" aria-controls="signin" role="tab" data-toggle="tab">Sign in</a></li>
+      </ul>
 
-
-  <div class="row" style="margin-top: 2em">
-    <div class="col-md-6">
-			<p>Stop suffering and start answering simple questions with your teammates. We'll help you identify security risks, learn compliance controls, and prepare required documents.</p>
-    </div>
-
-
-
-		<div class="col-md-6">
-        <div style="border: 1px solid #DDD; padding: 1em; background-color: white;">
-          <h3 style="margin-top: 0; font-weight: bold;">{% trans "Sign In" %}</h3>
-
-          {% if socialaccount.providers  %}
-          <p>{% blocktrans with site.name as site_name %}Please sign in with one
-          of your existing third party accounts. Or, <a href="{{ signup_url }}">sign up</a> 
-          for a {{site_name}} account and sign in below:{% endblocktrans %}</p>
-
-          <div class="socialaccount_ballot">
-
-            <ul class="socialaccount_providers">
-              {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane {% if request.POST.action|escapejs == 'login' %}active{% endif %}" id="signin">
+          <div class="well">
+            {% if not request.user.is_authenticated %}
+            <a name="signin"></a>
+            <form id="login_form" method="post">
+              {% csrf_token %}
+              <input type=hidden name=action value=login>
+              {% bootstrap_form login_form %}
+              <p><button type="submit" class="btn btn-success">Sign in &raquo;</button></p>
+            </form>
+            {% else %}
+            <h2 style="margin-top: 0;">Your organizations</h2>
+            {% if member_of_orgs %}
+            <p>You are a member of the following organizations:</p>
+            <ul style="padding-left: 1.33em">
+              {% for org in member_of_orgs %}
+                <li>{{org}}</li>
+              {% endfor %}
             </ul>
-
-            <div class="login-or">{% trans 'or' %}</div>
-
+            <p>Once you go to your organization&rsquo;s homepage, you will need to log in again.</p>
+            {% else %}
+            <p>You are not a member of any organizations.</p>
+            {% endif %}
+            <form method="post">
+              {% csrf_token %}
+              <input type=hidden name=action value=logout>
+              <p>Logged in as {{request.user}}. Not you? <a href="#" onclick="$(this).parents('form').submit(); return false  ;">    Log out</a>.</p>
+            </form>
+            {% endif %}
           </div>
-
-          {% include "socialaccount/snippets/login_extra.html" %}
-
-          {% endif %}
-
-          {% if LOGIN_ENABLED %}
-          <form class="login" method="POST" action="{% url 'account_login' %}">
-            {% csrf_token %}
-            {% bootstrap_form login_form %}
-            <input type="hidden" name="next" value="{{request.GET.next}}" />
-            <p><button type="submit" class="primaryAction btn btn-success">{% trans "Sign In" %}</button></p>
-            <div><a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a></div>
-          </form>
-          {% endif %}
         </div>
-		</div>
-
-	</div>
+        <div role="tabpanel" class="tab-pane {% if request.POST.action|escapejs != 'login' %}active{% endif %}" id="register">
+          <div class="well">
+            <form method="post">
+              {% csrf_token %}
+              <input type=hidden name=action value=neworg>
+              {% if not request.user.is_authenticated %}
+                {% bootstrap_form signup_form %}
+              {% endif %}
+              {% bootstrap_form neworg_form %}
+              <p><button type="submit" class="btn btn-success">Next &raquo;</button></p>
+            </form>
+          </div>
+        </div>
+      </div><!-- /Tab panes -->
+    </div>
   </div>
 </div>
 
-	{{ block.super }} 
+  {{ block.super }} 
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+// Copy any changes in username to username's default group slug
+$('#id_username').on('keyup', function() {
+  var slug = $(this).val();
+  slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
+  $('#id_name').val(slug);
+  $('#id_slug').val(slug);
+})
+// And if typing changes default group slug, force changes back into username
+$('#id_slug').on('keyup', function() {
+  var slug = $(this).val();
+  slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
+  $('#id_name').val(slug);
+  $('#id_username').val(slug);
+})
+
+{% if request.method == "POST" %}
+
+smooth_scroll_to($('input[name=action][value={{request.POST.action|escapejs}}]').parent('form'));
+{% endif %}
+</script>
 {% endblock %}

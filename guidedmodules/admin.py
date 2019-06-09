@@ -218,7 +218,7 @@ class AppSourceAdmin(admin.ModelAdmin):
 		from django.contrib import messages
 		messages.add_message(request, messages.INFO, 'Compliance app added into the catalog.')
 		
-		return HttpResponseRedirect("/admin/guidedmodules/appversion/{}/change".format(appver.id))
+		return HttpResponseRedirect("/admin/guidedmodules/appsource/{}/change".format(appsourceid))
 
 class AppVersionAdmin(admin.ModelAdmin):
 	list_display = ('appname', 'version_number', 'version_name', 'source', 'show_in_catalog', 'system_app')

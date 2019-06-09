@@ -1,12 +1,9 @@
 {% extends "base.html" %}
 {% load q %}
+{% load humanize %}
 
 {% block title %}
 Your Compliance Projects
-{% endblock %}
-
-{% block breadcrumbs %}
-<li class="active">Your Compliance Projects</li>
 {% endblock %}
 
 {% block head %}
@@ -17,9 +14,11 @@ Your Compliance Projects
 .lifecycle {
   margin-bottom: 30px;
 }
+
 .lifecycle h2 {
   margin: 0 0 1em 0;
 }
+
 .lifecycle .stage {
   margin: 0 -10px;
   padding: 10px;
@@ -28,48 +27,70 @@ Your Compliance Projects
   max-width: 530px; /* so individual cards don't stretch across whole page */
   box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
 }
-  .lifecycle .stage h3 {
-    color: black;
-    margin: 5px 0 0 0;
-    text-align: center;
-  }
-  .lifecycle .stage .stage-subhead {
-    text-align: center;
-    margin-bottom: 15px;
-  }
 
-  .project {
-    background-color: white;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 3px;
-    border-bottom: 1px solid rgb(204, 204, 204);
-  }
-    .project-image {
-      width: 30px;
-      float: right;
-      margin: 4px 0 5px 8px;
-    }
-    .project-text {
-    }
-    .project-text h4 {
-      margin: 0;
-      font-weight: bold;
-      font-size: inherit;
-    }
-    .project-text > * {
-      margin: .5em 0 0 0;
-      font-size: 13px;
-    }
+.lifecycle .stage h3 {
+  color: black;
+  margin: 5px 0 0 0;
+  text-align: center;
+}
 
-  h1.mini {
-    font-size: 16px;
-    font-family: Hind, sands-serif;
-    line-height: 22px;
-    color: rgba(51, 51, 51);
-    padding: 0px 0px 0px 0px;
-    margin: 0px 0px 0px 0px;
-  }
+.lifecycle .stage .stage-subhead {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.project {
+  background-color: white;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 3px;
+  border-bottom: 1px solid rgb(204, 204, 204);
+}
+
+.project-image {
+  width: 20px;
+  float: left;
+  margin: 4px 0 5px 8px;
+}
+
+.project-text {
+}
+
+.project-text h4 {
+  margin: 0;
+  font-weight: bold;
+  font-size: inherit;
+}
+
+.project-text > * {
+  margin: .5em 0 0 0;
+  font-size: 13px;
+}
+
+h1.mini {
+  font-size: 16px;
+  font-family: Hind, sands-serif;
+  line-height: 22px;
+  color: rgba(51, 51, 51);
+  padding: 0px 0px 0px 0px;
+  margin: 0px 0px 0px 0px;
+}
+
+.luna-box {
+  border: 1px solid rgb(210, 210, 210);
+  height: 160px;
+  margin-top: 30px;
+  font-size: .8em;
+  border-radius: 4px;
+  padding: 20px 20px 0px 0px;
+}
+
+.luna-box div.glyphicon {
+  font-size:3em;
+  color: rgb(160, 210, 160);
+  margin:30px 0px 0px 40px;
+}
+
 </style>
 {% endblock %}
 
@@ -78,121 +99,122 @@ Your Compliance Projects
 
 {% block body %}
 
-{% comment %}
-{% if request.user.can_see_org_settings and not request.organization.get_organization_project.root_task.is_finished %}
-  <h2>Complete your organization profile</h2>
-  <p>Fill out your <a href="{{request.organization.get_organization_project.get_absolute_url}}">your organization&rsquo;s profile</a>.</p>
-{% endif %}
-{% endcomment %}
+<div style="margin-top: 30px">
 
-<div style="margin-top: 15px">
+<div class="container">
+
 <div style="float: right; margin: 0 0.5em 0em 5em;">
-  <a id="new-system" href="/store?protocol=govready.com/apps/compliance/2018/information-technology-system" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system </a>
-  <a id="new-project" href="/store" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add other app </a>
+  <!-- <a id="new-system" href="/store?protocol=govready.com/apps/compliance/2018/information-technology-system" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system </a> -->
+  <a id="new-project" href="/store" class="btn btn-success">Start a project</a>
   {% if can_invite_to_org %}
   <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
   {% endif %}
 </div>
 
-<h1 class="mini"><span class="glyphicon glyphicon-home" style="margin-right: .25em"></span> Assessments</h1>
+{% if projects|length > 0 %}
+<h2 class="">Projects</h2>
+{% else %}
+<h2>Welcome to GovReady-Q</h2>
+
+<p>Assess, test, and authorize together</p>
+{% endif %}
+
+{% if projects|length > 0 %}
+<p>You have access to {{ projects|length }} project{{ projects|pluralize }}</p>
+{% endif %}
+
+<div class="container">
+{% for project in projects %}
+<div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+  <div class="col-md-6">
+    {% if project.root_task.get_app_icon_url %}
+      <a href="{{project.get_absolute_url}}" class="project-image">
+        <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive">
+      </a>
+    {% else %}
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endif %}
+    &nbsp;&nbsp;&nbsp;
+    <a href="{{project.get_absolute_url}}" style="color: black;">{{project.organization}} / {{project.title}}</a>
+  </div>
+
+  <div class="col-md-2">&nbsp;</div>
+
+  <div class="col-md-1">&nbsp;</div>
+  <div class="col-md-1"><small style="color: #888;">ID: {{project.id}}</small></div>
+
+  <div class="col-md-2" style="text-align: right;">
+      <small style="color: #888;">
+      <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
+      Updated {{project.root_task.updated|naturaltime}}
+      <!-- Started: {{project.created|naturaltime}} -->
+    </small>
+  </div>
 </div>
 
-{% for lifecycle in lifecycles %}
-  <div class="clearfix"></div>
-  <div class="lifecycle">
-    <h2>{{lifecycle.label}}</h2>
-    <div class="row">
-      {% for stage in lifecycle.stages %}
-        <div class="{% for w in lifecycle.stage_col_width %}col-{{w}} {% endfor %}">
-          <div class="stage">
-            {% if stage.label %}
-              <h3>{{stage.label}}</h3>
-            {% endif %}
-            {% if stage.subhead %}
-              <div class="stage-subhead">{{stage.subhead}}</div>
-            {% endif %}
-
-            {% for project in stage.projects %}
-              <div class="project" data-project-id="{{project.id}}">
-                {% if project.root_task.get_app_icon_url %}
-                  <a href="{{project.get_absolute_url}}" class="project-image">
-                    <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive">
-                  </a>
-                {% endif %}
-
-                <div class="project-text">
-                  <h4>
-                    <a href="{{project.get_absolute_url}}">
-                      {{project.title}}
-                    </a>
-
-                    {# how many open tasks for the user? #}
-                    {% with project.open_tasks|length as count %}
-                      {% if count > 0 %}
-                        <span class="label label-primary">{{count}}</span>
-                      {% endif %}
-                    {% endwith %}
-                  </h4>
-
-                  {# what kind of project is this #}
-                  {% if project.root_task.module.title != project.title %}
-                    <p>
-                      {{project.root_task.module.title}}
-                    </p>
-                  {% endif %}
-
-                  {% with snippet=project.render_snippet %}
-                    {% if snippet %}
-                      <div>
-                        {{project.render_snippet|safe}}
-                      </div>
-                    {% endif %}
-                  {% endwith %}
-
-                  <div>
-                    <span
-                      class="glyphicon glyphicon-info-sign"
-                      style="color: #995; cursor: pointer;"
-                      data-toggle="popover" title="{{project.root_task.module.spec.title}}" data-content="App version: {{project.root_task.module.spec.catalog.version|force_escape}}<br>Started: {{project.created|date}}<br> Updated: {{project.root_task.updated|date}}"
-                    ></span>
-                  </div>
-                </div>
-
-                <div class="clearfix"></div>
-              </div> <!-- /project -->
-            {% endfor %}
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  </div>
 {% endfor %}
+
+
+<!-- Display grid of options -->
+  <div class="row">
+
+    <div class="col-md-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon glyphicon-list-alt"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="/store">Start a project</a></h3>
+          <p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon glyphicon-folder-open"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="/groups/new">Create a group</a></h3>
+          <p>Groups are a way to organize and manage related projects.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-heart-empty"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="">Fall in love with assessments</a></h3>
+          <p>Assessing, learning, and improving is one of the most powerful things about being  human.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-duplicate"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="https://govready-q.readthedocs.org">Learn more about GovReady-Q</a></h3>
+          <p>Checkout our documentation to learn how to take full advantage of GovReady-Q.
+          </p>
+        </div>
+      </div>
+    </div>
+</div>
+
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-$(function() {
-  // activate popovers
-  $('.project-text *[data-toggle=popover]').popover({
-    html: true
-  });
-})
-
-{% if can_invite_to_org %}
-function show_invite_to_org() {
-  show_invite_modal(
-    'Invite To {{request.organization.name|escapejs}}',
-    'Invite a colleague to join your organization on GovReady-Q.',
-    {{send_invitation|json}},
-    'Please join me on GovReady-Q to work on compliance for {{request.organization.name|escapejs}}.',
-    {
-      project: {{request.organization.get_organization_project.id}},
-      add_to_team: "1"
-    },
-    function() { }
-  );
-}
-{% endif %}
 </script>
 {% endblock %}

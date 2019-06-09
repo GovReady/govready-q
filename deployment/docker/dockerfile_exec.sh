@@ -60,16 +60,6 @@ function set_env_setting {
 	rm -f /tmp/new-environment.json
 }
 
-# Add Q settings.
-if [ -z "${ORGANIZATION_PARENT_DOMAIN-}" ]; then
-	# Not multi-tenant with "main" as the subdomain of the
-	# default organization.
-	set_env_setting '["single-organization"]' main
-else
-	# Multi-tenant.
-	set_env_setting '["organization-parent-domain"]' "$ORGANIZATION_PARENT_DOMAIN"
-fi
-
 # Add email parameters.
 if [ ! -z "${EMAIL_HOST-}" ]; then
 	set_env_setting email.host "$EMAIL_HOST"

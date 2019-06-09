@@ -1,3 +1,15 @@
+# This module defines a SeleniumTest class that is used here and in
+# the discussion app to run Selenium and Chrome-based functional/integration
+# testing.
+#
+# Selenium requires that 'chromedriver' be on the system PATH. The
+# Ubuntu package chromium-chromedriver installs Chromium and
+# chromedriver. But if you also have Google Chrome installed, it
+# picks up Google Chrome which might be of an incompatible version.
+# So we hard-code the Chromium binary using options.binary_location="/usr/bin/chromium-browser".
+# If paths differ on your system, you may need to set the PATH system
+# environment variable and the options.binary_location field below.
+
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
@@ -5,6 +17,7 @@ from django.utils.crypto import get_random_string
 from unittest import skip
 
 import os
+import os.path
 import re
 
 def var_sleep(duration):
@@ -25,13 +38,11 @@ class SeleniumTest(StaticLiveServerTestCase):
         from django.conf import settings
         settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
-        # Override ALLOWED_HOSTS, SITE_ROOT_URL, ORGANIZATION_PARENT_DOMAIN, etc.
+        # Override ALLOWED_HOSTS, SITE_ROOT_URL, etc.
         # because they may not be set or set properly in the local environment's
         # non-test settings for the URL assigned by the LiveServerTestCase server.
-        settings.ALLOWED_HOSTS = ['.localhost', 'testserver']
+        settings.ALLOWED_HOSTS = ['localhost', 'testserver']
         settings.SITE_ROOT_URL = cls.live_server_url
-        settings.ORGANIZATION_PARENT_DOMAIN = 'orgs.localhost'
-        settings.SINGLE_ORGANIZATION_KEY = None
 
         # In order for these tests to succeed when not connected to the
         # Internet, disable email deliverability checks which query DNS.
@@ -43,9 +54,9 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Start a headless browser.
         import selenium.webdriver
         from selenium.webdriver.chrome.options import Options as ChromeOptions
-        os.environ['PATH'] += ":/usr/lib/chromium-browser" # 'chromedriver' executable needs to be in PATH (for newer Ubuntu)
-        os.environ['PATH'] += ":/usr/lib/chromium" # 'chromedriver' executable needs to be in PATH (for Debian 8)
         options = selenium.webdriver.ChromeOptions()
+        if os.path.exists("/usr/bin/chromium-browser"):
+            options.binary_location = "/usr/bin/chromium-browser"
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
             options.add_argument("start-maximized") # too small screens make clicking some things difficult
@@ -67,22 +78,15 @@ class SeleniumTest(StaticLiveServerTestCase):
         # clear the browser's cookies before each test
         self.browser.delete_all_cookies()
 
-    def navigateToPage(self, subdomain, path):
-        self.browser.get(self.url(subdomain, path))
+    def navigateToPage(self, path):
+        self.browser.get(self.url(path))
 
-    def url(self, subdomain, path):
+    def url(self, path):
         # Construct a URL to the desired page. Use self.live_server_url
         # (set by StaticLiveServerTestCase) to determine the scheme, hostname,
-        # and port the test server is running on. Add the subdomain (if not None)
-        # and path.
+        # and port the test server is running on. Add the path.
         import urllib.parse
-        s = urllib.parse.urlsplit(self.live_server_url)
-        scheme, host = (s[0], s[1])
-        if subdomain:
-            port = '' if (':' not in host) else (':'+host.split(':')[1])
-            host = subdomain + '.' + settings.ORGANIZATION_PARENT_DOMAIN + port
-        base_url = urllib.parse.urlunsplit((scheme, host, '', '', ''))
-        return urllib.parse.urljoin(base_url, path)
+        return urllib.parse.urljoin(self.live_server_url, path)
 
     def clear_field(self, css_selector):
         self.browser.find_element_by_css_selector(css_selector).clear()
@@ -136,13 +140,9 @@ class SeleniumTest(StaticLiveServerTestCase):
 #####################################################################
 
 class LandingSiteFunctionalTests(SeleniumTest):
-    def url(self, path):
-        # Within this test, we only generate URLs for the landing site.
-        return super().url(None, path)
-
     def test_homepage(self):
         self.browser.get(self.url("/"))
-        self.assertRegex(self.browser.title, "GovReady Q")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
 
 class OrganizationSiteFunctionalTests(SeleniumTest):
 
@@ -186,7 +186,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         from siteapp.models import User, ProjectMembership
         self.user = User.objects.create(
             username="me",
-            email="test+user@q.govready.com")
+            email="test+user@q.govready.com",
+            is_staff=True
+        )
         self.user.clear_password = get_random_string(16)
         self.user.set_password(self.user.clear_password)
         self.user.save()
@@ -195,7 +197,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # Create the Organization.
         from siteapp.models import Organization
-        self.org = Organization.create(name="Our Organization", subdomain="testorg",
+        self.org = Organization.create(name="Our Organization", slug="testorg",
             admin_user=self.user)
 
         # Grant the user permission to change the review state of answers.
@@ -219,34 +221,23 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             project=self.org.get_organization_project(),
             )
 
-    def client_get(self, *args, domain=None, **kwargs):
-        # Wrap the Django test client's get/post functions that sets the HTTP
-        # Host: header so that the request gets to the organization site.
-        assert domain in ("LANDING", "ORG")
-        if domain == "LANDING":
-            host = settings.LANDING_DOMAIN
-        else:
-            host = self.org.subdomain + "." + settings.ORGANIZATION_PARENT_DOMAIN
+    def client_get(self, *args, **kwargs):
         resp = self.client.get(
             *args,
-            **kwargs,
-            HTTP_HOST=host)
+            **kwargs)
         self.assertEqual(resp.status_code, 200, msg=repr(resp))
         return resp # .content.decode("utf8")
-
-    def url(self, path):
-        # Within this test, we only generate URLs for the organization subdomain.
-        return super().url(self.org.subdomain, path)
 
     def _login(self, username=None, password=None):
         # Fill in the login form and submit. Use self.user's credentials
         # unless they are overridden in the arguments to test failed logins
         # with other credentials.
         self.browser.get(self.url("/"))
-        self.assertRegex(self.browser.title, "Home")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
+        self.click_element("li#tab-signin")
         self.fill_field("#id_login", username or self.user.username)
         self.fill_field("#id_password", password or self.user.clear_password)
-        self.click_element("form button.primaryAction")
+        self.click_element("form#login_form button[type=submit]")
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
@@ -311,16 +302,16 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
     def test_homepage(self):
         self.browser.get(self.url("/"))
-        self.assertRegex(self.browser.title, "GovReady Q")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
 
     def test_login(self):
         # Test that a wrong password doesn't log us in.
         self._login(password=get_random_string(4))
-        self.assertInNodeText("The username and/or password you specified are not correct.", "form.login .alert-danger")
+        self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
         # Test that a wrong username doesn't log us in.
         self._login(username="notme")
-        self.assertInNodeText("The username and/or password you specified are not correct.", "form.login .alert-danger")
+        self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
         # Log in as a new user, log out, then log in a second time.
         # We should only get the account settings questions on the
@@ -480,7 +471,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Move past the introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(.5) # wait for page to reload
+        var_sleep(.8) # wait for page to reload
 
         # We're now on the first actual question.
         # Start a team conversation.
@@ -545,8 +536,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def _test_api_get(self, path, expected_value):
         resp = self.client_get(
-                "/api/v1/organizations/" + self.org.subdomain + "/projects/" + str(self.current_projet.id) + "/answers",
-                domain="LANDING",
+                "/api/v1/projects/" + str(self.current_projet.id) + "/answers",
                 HTTP_AUTHORIZATION=self.user.api_key_rw)
         resp = resp.json()
         self.assertTrue(isinstance(resp, dict))
@@ -959,25 +949,23 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
     def test_homepage(self):
         self.browser.get(self.url("/"))
-        self.assertRegex(self.browser.title, "GovReady Q")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
         var_sleep(0.5)
 
     def test_settings_page(self):
         # test navigating to settings page not logged in
         self.browser.get(self.url("/settings"))
-        self.assertRegex(self.browser.title, "GovReady Q")
+        self.assertRegex(self.browser.title, "GovReady-Q")
         self.assertNotRegex(self.browser.title, "GovReady Setup")
         var_sleep(0.5)
 
         # login as user without admin privileges and test settings page unreachable
         self._login(self.user2.username, self.user2.clear_password)
         self.browser.get(self.url("/projects"))
-        print("*** USER2 logged in ***")
         var_sleep(1)
 
-        self.browser.get(self.url("/settings"))
-        var_sleep(1)
-        self.assertRegex(self.browser.title, "GovReady-Q Setup")
+        response = self.client.get('/settings')
+        self.assertEqual(response.status_code, 403)
 
         # logout
         self.browser.get(self.url("/accounts/logout/"))

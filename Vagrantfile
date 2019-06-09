@@ -49,7 +49,6 @@ Vagrant.configure(2) do |config|
           | jq '.["debug"]=false' \
           | jq '.["https"]=false' \
           | jq '.["host"]="192.168.150.150:3031"' \
-          | jq '.["single-organization"]="main"' \
           | jq '.["static"]="/tmp/public_html_static"' \
           > local/environment.json
     fi

@@ -5,13 +5,21 @@ from django.conf import settings
 admin.autodiscover()
 
 import siteapp.views as views
+import siteapp.views_landing as views_landing
 from .good_settings_helpers import signup_wrapper
 
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
-
-    # static pages that also exist on the landing domain
     url(r"^(privacy|terms-of-service)$", views.shared_static_pages),
+
+    url(r'^api/v1/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
+    url(r'^media/users/(\d+)/photo/(\w+)', views_landing.user_profile_photo),
+
+    # incoming email hook for responses to notifications
+    url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
+
+    # Django admin site
+    url(r'^admin/', admin.site.urls),
 
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
@@ -34,6 +42,11 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/upgrade)$', views.project_upgrade_app), # must be last because regex matches some previous URLs
+
+    # org groups
+    url(r'^groups$', views_landing.org_groups),
+    url(r'^groups/new$', views_landing.new_org_group),
+    url(r"^(?P<org_slug>.*)/projects$", views_landing.org_group_projects),
 
     # api
     url(r'^api-keys$', views.show_api_keys, name="show_api_keys"),
@@ -68,10 +81,3 @@ if settings.DEBUG: # also in urls_landing
     urlpatterns += [
         url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
     ]
-
-if settings.SINGLE_ORGANIZATION_KEY:
-    # If we're operating in single-organization mode, then non-org URLs must be made available
-    # here because the landing domain is not used. The homepage at / is hidden by the
-    # projects page defined above.
-    from .urls_landing import urlpatterns as urls_landing_urlpatterns
-    urlpatterns += urls_landing_urlpatterns

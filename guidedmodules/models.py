@@ -820,11 +820,10 @@ class Task(models.Model):
     # AUTHZ
 
     @staticmethod
-    def get_all_tasks_readable_by(user, org, recursive=False):
+    def get_all_tasks_readable_by(user, recursive=False):
         # Symmetric with get_access_level == "READ". See that for the basic logic.
         tasks = Task.objects.filter(
             models.Q(editor=user) | models.Q(project__members__user=user),
-            project__organization=org,
             deleted_at=None,
             ).distinct()
 
@@ -894,6 +893,9 @@ class Task(models.Model):
         return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE"
 
     def has_review_priv(self, user):
+        if self.project.organization is None:
+            # account projects are not in any organization
+            return False
         return user in self.project.organization.reviewers.all()
 
     def has_delete_priv(self, user):
@@ -949,19 +951,19 @@ class Task(models.Model):
 
     # MISC
 
-    def get_open_invitations(self, user, org):
+    def get_open_invitations(self, user):
         # Return the open Invitations for transferring task ownership
         # elsewhere, sent from the user.
         from siteapp.models import Invitation
-        invs = Invitation.get_for(self).filter(organization=org, from_user=user)
+        invs = Invitation.get_for(self).filter(from_user=user)
         for inv in invs:
-            inv.from_user.localize_to_org(org)
+            inv.from_user.preload_profile()
         return invs
 
-    def get_source_invitation(self, user, org):
+    def get_source_invitation(self, user):
         inv = self.invitation_history.filter(accepted_user=user).order_by('-created').first()
         if inv:
-            inv.from_user.localize_to_org(org)
+            inv.from_user.preload_profile()
         return inv
 
     # NOTIFICATION TARGET HELEPRS
@@ -1584,7 +1586,7 @@ class TaskAnswer(models.Model):
                 is_cleared = False
 
             # get a dict with information about the user
-            who = answer.answered_by.render_context_dict(self.task.project.organization)
+            who = answer.answered_by.render_context_dict()
 
             history.append({
                 "type": "event",
@@ -1757,7 +1759,7 @@ class TaskAnswer(models.Model):
         organization = self.task.project.organization
         mentionable_users = set(discussion.get_all_participants()) \
                           | set(User.objects.filter(projectmembership__project__organization=self.task.project.organization).distinct())
-        User.localize_users_to_org(organization, mentionable_users)
+        User.preload_profiles(mentionable_users)
         return {
             # @-mention participants in the discussion and other
             # users in mentionable_users.
@@ -1765,7 +1767,7 @@ class TaskAnswer(models.Model):
                 {
                     "user_id": user.id,
                     "tag": user.username,
-                    "display": user.render_context_dict(organization)["name"],
+                    "display": user.render_context_dict()["name"],
                 }
                 for user in mentionable_users
             ],
@@ -1920,7 +1922,8 @@ class TaskAnswerHistory(models.Model):
 
             # Make it an absolute URL so that when we expose it through
             # the API it makes sense.
-            url = self.taskanswer.task.project.organization.get_url(url)
+            from urllib.parse import urljoin
+            url = urljoin(settings.SITE_ROOT_URL, url)
 
             # Convert it to a data URL so that it can be rendered in exported documents.
             content_dataurl = None

@@ -66,7 +66,7 @@ class Command(BaseCommand):
         user = User.objects.filter(is_superuser=True).get()
 
         # Create the first organization.
-        if not Organization.objects.filter(subdomain="main").exists():
+        if not Organization.objects.filter(slug="main").exists():
             if not options['non_interactive']:
                 print("Let's create your Q organization.")
                 name = Organization._meta.get_field("name")
@@ -75,9 +75,9 @@ class Command(BaseCommand):
                 name = get_input(name, "Organization Name: ", "Test Organization")
             else:
                 name = "The Secure Company"
-            org = Organization.create(name=name, subdomain="main", admin_user=user)
+            org = Organization.create(name=name, slug="main", admin_user=user)
         else:
-            org = Organization.objects.get(subdomain="main")
+            org = Organization.objects.get(slug="main")
 
         # Add the user to the org's help squad and reviewers lists.
         if user not in org.help_squad.all(): org.help_squad.add(user)

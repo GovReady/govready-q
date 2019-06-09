@@ -15,11 +15,13 @@ GovReady-Q Setup
   <p class="small">You are a Django Administrator. You have extra permissions on this page and can visit the <a href="{{django_admin_url}}">Django Admin homepage</a>.</p>
   {% endif %}
 
+  {% if can_edit_org_settings %}
   <h2 style="margin-top: 2em;">Organization Administrators</h2>
 
   <p class="small help-block">There {%if org_admins|length == 1 %}is{% else %}are{% endif %} {{org_admins|length}} Organization Administrator{{org_admins|length|pluralize}} with permissions to manage organization settings and team membership.</p>
 
   {% include "settings_usertable.html" with users=org_admins listid="org-admins" listname="Organization Admins" %}
+  {% endif %}
 
   {# Edit organization name, help squad, reviewers. #}
   {% if can_edit_org_settings %}
@@ -35,22 +37,6 @@ GovReady-Q Setup
 
   {% include "settings_usertable.html" with users=reviewers listid="reviewers" listname="Reviewers" %}
 
-  {% endif %}
-
-  {# Link to the 'organization project' which is a Task that has questions about the organization. #}
-  {% if can_see_org_settings %}
-  <h2 style="margin-top: 3em;">Organization Profile</h2>
-
-  <p>
-    <a href="{{request.organization.get_organization_project.get_absolute_url}}">
-      {% if can_edit_org_settings %}
-       Edit
-      {% else %}
-       View
-      {% endif %}
-      Organization Profile &raquo;
-    </a>
-  </p>
   {% endif %}
 
   {# Link to the Django Admin if the user is permitted to go there. #}

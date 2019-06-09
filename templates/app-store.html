@@ -175,12 +175,20 @@ h2 {
               <span class="glyphicon glyphicon-info-sign"> </span>
               Info
           </a>
+
+          {# If the user can only start the app in a single organization context, we can offer a quick start button. #}
+          {% if app.organizations|length == 1 %}
           <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
             {% csrf_token %}
+            {% with app.organizations|first as first_org %}
+              <input type="hidden" name="organization" value="{{first_org.slug}}">
+            {% endwith %}
             <button type="submit" class="btn btn-success btn-sm start-app">
               Add ►
             </button>
           </form>
+          {% endif %}
+
           </div>
         </td>
 

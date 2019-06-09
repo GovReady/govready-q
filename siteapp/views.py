@@ -17,16 +17,12 @@ from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch i
 from .notifications_helpers import *
 
 def homepage(request):
-    # If the user is logged in and has read access to the organization
-    # they're looking at, then redirect them to the projects page.
-    if hasattr(request.user, 'localized_to') and request.user.is_authenticated:
+    # If the user is logged in, then redirect them to the projects page.
+    if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
 
-    # Otherwise, show a login form.
-    from allauth.account.forms import LoginForm
-    return render(request, "index.html", {
-        "login_form": LoginForm,
-    })
+    from .views_landing import homepage
+    return homepage(request)
 
 
 def assign_project_lifecycle_stage(projects):
@@ -36,7 +32,7 @@ def assign_project_lifecycle_stage(projects):
     lifecycle_stages = [
         {
             "id": "none",
-            "label": "General Assessments",
+            "label": "Projects",
             "stage_col_width": { "xs-12" }, # "col_" + this => Bootstrap 3 column class
             "stages": [
                 { "id": "none", "label": "", "subhead": "" },
@@ -87,7 +83,7 @@ def project_list(request):
     # Get all of the projects that the user can see *and* that are in a folder,
     # which indicates it is top-level.
     projects = Project.get_projects_with_read_priv(
-        request.user, request.organization,
+        request.user,
         excludes={ "contained_in_folders": None })
 
     # Sort the projects by their creation date. The projects
@@ -113,9 +109,31 @@ def project_list(request):
 
     return render(request, "projects.html", {
         "lifecycles": lifecycles,
-        "can_invite_to_org": request.user.can_see_org_settings,
-        "send_invitation": Invitation.form_context_dict(request.user, request.organization.get_organization_project(), [request.user]),
+        "projects": projects,
     })
+
+def get_compliance_apps_catalog_for_user(user):
+    # Each organization that the user is in sees a different set of compliance
+    # apps. Since a user may be a member of multiple organizations, merge the
+    # catalogs across all of the organizations they are a member of, but
+    # remember which organizations generated which apps.
+    from siteapp.models import Organization
+    catalog = { }
+    for org in Organization.get_all_readable_by(user):
+        apps = get_compliance_apps_catalog(org)
+        for app in apps:
+            # Add to merged catalog.
+            catalog.setdefault(app['key'], app)
+
+            # Merge organization list.
+            catalog[app["key"]]["organizations"].add(org)
+
+    # Turn the organization sets into a list because the templates use |first.
+    catalog = catalog.values()
+    for app in catalog:
+        app["organizations"] = sorted(app["organizations"], key = lambda org : org.name)
+
+    return catalog
 
 
 def get_compliance_apps_catalog(organization):
@@ -142,13 +160,13 @@ def get_compliance_apps_catalog(organization):
     # Collect catalog display metadata for each app from the most recent version
     # of each app.
     apps = [
-        render_app_catalog_entry(appvers[0], appvers)
+        render_app_catalog_entry(appvers[0], appvers, organization)
         for appvers in apps
     ]
 
     return apps
 
-def render_app_catalog_entry(appversion, appversions):
+def render_app_catalog_entry(appversion, appversions, organization):
     from guidedmodules.module_logic import render_content
     from guidedmodules.models import image_to_dataurl
 
@@ -212,6 +230,9 @@ def render_app_catalog_entry(appversion, appversions):
 
         # versions that can be started
         "versions": appversions,
+
+        # organizations that can launch this app
+        "organizations": { organization },
 
         # placeholder for future logic
         "authz": "none",
@@ -277,7 +298,7 @@ def apps_catalog(request):
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
-    catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog(request.organization), request)
+    catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
 
     # Group by category from catalog metadata.
     from collections import defaultdict
@@ -312,7 +333,7 @@ def apps_catalog_item(request, source_slug, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
     from guidedmodules.models import AppSource
-    catalog, _ = filter_app_catalog(get_compliance_apps_catalog(request.organization), request)
+    catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
     for app_catalog_info in catalog:
         if app_catalog_info["key"] == source_slug + "/" + app_name:
             # We found it.
@@ -325,6 +346,14 @@ def apps_catalog_item(request, source_slug, app_name):
     if request.method == "POST":
         # Start the app.
 
+        # Get the organization context to start it within.
+        for organization in app_catalog_info["organizations"]:
+            if organization.slug == request.POST.get("organization"):
+                break # found it
+        else:
+            # Did not find a match.
+            raise ValueError("Organization does not permit starting this app.")
+
         if not request.GET.get("q"):
             # Since we no longer ask what folder to put the new Project into,
             # create a default Folder instance for all started apps that aren't
@@ -332,12 +361,12 @@ def apps_catalog_item(request, source_slug, app_name):
             # how we know to display it in the project_list view.
             default_folder_name = "Started Apps"
             folder = Folder.objects.filter(
-                organization=request.organization,
+                organization=organization,
                 admin_users=request.user,
                 title=default_folder_name,
             ).first()
             if not folder:
-                folder = Folder.objects.create(organization=request.organization, title=default_folder_name)
+                folder = Folder.objects.create(organization=organization, title=default_folder_name)
                 folder.admin_users.add(request.user)
 
             # This app is going into a folder. It does not answer a task question.
@@ -359,7 +388,7 @@ def apps_catalog_item(request, source_slug, app_name):
         # Start the app.
         from guidedmodules.app_loading import ModuleDefinitionError
         try:
-            project = start_app(appver, request.organization, request.user, folder, task, q)
+            project = start_app(appver, organization, request.user, folder, task, q)
         except ModuleDefinitionError as e:
             error = str(e)
         else:
@@ -419,7 +448,7 @@ def start_app(appver, organization, user, folder, task, q):
 def project_read_required(f):
     @login_required
     def g(request, project_id, project_url_suffix):
-        project = get_object_or_404(Project, id=project_id, organization=request.organization)
+        project = get_object_or_404(Project, id=project_id)
 
         # Check authorization.
         if not project.has_read_priv(request.user):
@@ -551,10 +580,10 @@ def project(request, project):
     else:
         # number of columns must divide 12 evenly
         columns = [
-            { "title": "Backlog" },
-            { "title": "Selected" },
+            { "title": "To Do" },
             { "title": "In Progress" },
-            { "title": "Completed" },
+            { "title": "Submitted" },
+            { "title": "Approved" },
         ]
         for column in columns:
             column["questions"] = []
@@ -564,9 +593,9 @@ def project(request, project):
                 col = 0
                 question["hide_icon"] = True
             elif question["task"].is_finished():
-                col = 3
-            elif question["task"].is_started():
                 col = 2
+            elif question["task"].is_started():
+                col = 1
             else:
                 col = 1
             columns[col]["questions"].append(question)
@@ -614,7 +643,6 @@ def project(request, project):
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
-        "page_title": "Components",
         "project": project,
 
         "is_admin": request.user in project.get_admins(),
@@ -876,7 +904,7 @@ def show_api_keys(request):
 def new_folder(request):
     if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
     f = Folder.objects.create(
-        organization=request.organization,
+        organization=organization, # TODO
         title=request.POST.get("title") or "New Folder",
     )
     f.admin_users.add(request.user)
@@ -887,7 +915,7 @@ def project_admin_login_post_required(f):
     # Wrap the function to do authorization and change arguments.
     def g(request, project_id, *args):
         # Get project, check authorization.
-        project = get_object_or_404(Project, id=project_id, organization=request.organization)
+        project = get_object_or_404(Project, id=project_id)
         if request.user not in project.get_admins():
             return HttpResponseForbidden()
 
@@ -981,11 +1009,11 @@ def import_project_data(request, project):
     })
 
 def project_start_apps(request, *args):
-    # Load the Compliance Store catalog of apps.
-    all_apps = get_compliance_apps_catalog(request.organization)
-
     # What questions can be answered with an app?
     def get_questions(project):
+        # Load the Compliance Store catalog of apps.
+        all_apps = get_compliance_apps_catalog(project.organization)
+
         # A question can be answered with an app if it is a module or module-set
         # question with a protocol value and the question has not already been
         # answered (inclding imputed).
@@ -1022,7 +1050,7 @@ def project_start_apps(request, *args):
                     if request.POST[q.key] in startable_apps:
                         app = startable_apps[request.POST[q.key]]
                         try:
-                            start_app(app, request.organization, request.user, None, project.root_task, q)
+                            start_app(app, project.organization, request.user, None, project.root_task, q)
                         except Exception as e:
                             import traceback
                             traceback.print_exc()
@@ -1057,7 +1085,7 @@ def project_upgrade_app(request, project):
     # We're not using the catalog to fetch newer app info - just to
     # show the page title etc.
     error = False
-    for app in get_compliance_apps_catalog(request.organization):
+    for app in get_compliance_apps_catalog_for_user(request.user):
         if app['appsource_id'] == project.root_task.module.app.source.id:
             if app['key'].endswith("/" + project.root_task.module.app.appname):
                 break
@@ -1095,7 +1123,7 @@ def send_invitation(request):
 
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
-        from_project = Project.objects.filter(id=request.POST["project"], organization=request.organization, members__user=request.user).first()
+        from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -1113,7 +1141,7 @@ def send_invitation(request):
             }
 
         elif request.POST.get("into_task_editorship"):
-            target = Task.objects.get(id=request.POST["into_task_editorship"], project__organization=request.organization)
+            target = Task.objects.get(id=request.POST["into_task_editorship"])
             if not target.has_write_priv(request.user):
                 return HttpResponseForbidden()
             if from_project and target.project != from_project:
@@ -1128,7 +1156,7 @@ def send_invitation(request):
             }
 
         elif "into_discussion" in request.POST:
-            target = get_object_or_404(Discussion, id=request.POST["into_discussion"], organization=request.organization)
+            target = get_object_or_404(Discussion, id=request.POST["into_discussion"])
             if not target.can_invite_guests(request.user):
                 return HttpResponseForbidden()
             target_info = {
@@ -1142,8 +1170,6 @@ def send_invitation(request):
             }
 
         inv = Invitation.objects.create(
-            organization=request.organization,
-
             # who is sending the invitation?
             from_user=request.user,
             from_project=from_project,
@@ -1175,18 +1201,14 @@ def send_invitation(request):
 
 @login_required
 def cancel_invitation(request):
-    inv = get_object_or_404(Invitation, id=request.POST['id'], organization=request.organization, from_user=request.user)
+    inv = get_object_or_404(Invitation, id=request.POST['id'], from_user=request.user)
     inv.revoked_at = timezone.now()
     inv.save(update_fields=['revoked_at'])
     return JsonResponse({ "status": "ok" })
 
 def accept_invitation(request, code=None):
-    # This route is handled specially by the siteapp.middleware.OrganizationSubdomainMiddleware that
-    # guards access to the subdomain. The user may not be authenticated and may not be a member
-    # of the Organization whose subdomain they are visiting.
-
     assert code.strip() != ""
-    inv = get_object_or_404(Invitation, organization=request.organization, email_invitation_code=code)
+    inv = get_object_or_404(Invitation, email_invitation_code=code)
 
     response = accept_invitation_do_accept(request, inv)
     if isinstance(response, HttpResponse):
@@ -1195,7 +1217,7 @@ def accept_invitation(request, code=None):
     # The invitation has been accepted by a logged in user.
 
     # Some invitations create an interstitial before redirecting.
-    inv.from_user.localize_to_org(request.organization)
+    inv.from_user.preload_profile()
     try:
         interstitial = inv.target.get_invitation_interstitial(inv)
     except AttributeError: # inv.target may not have get_invitation_interstitial method
@@ -1328,31 +1350,39 @@ def accept_invitation_do_accept(request, inv):
 def organization_settings(request):
     # Authorization. Different users can see different things on
     # this page.
-    can_see_org_settings = request.user.can_see_org_settings
-    org_admins = request.organization.get_organization_project().get_admins()
-    can_edit_org_settings = request.user in org_admins
+    # This is the settings page for the overall install. There is no specific organization
+    # except the entire organization
+    can_see_org_settings = True
+    # TODO org_admins needs to be selected a different way
+    # This approach leverages Django's permission model for admin screens
+    org_admins = User.objects.filter(is_staff=True)
+    # TODO better selection of who can edit
+    # can_edit_org_settings = request.user in org_admins
+    can_edit_org_settings = request.user.is_staff
     is_django_staff = request.user.is_staff
 
     # If the user doesn't have permission to see anything on this
     # page, give an appropriate HTTP response.
-    if not can_see_org_settings and not can_edit_org_settings and not is_django_staff:
+    if not is_django_staff:
         return HttpResponseForbidden()
 
-    def localize_and_sort_users(users):
+    def preload_profiles(users):
         users = list(users)
-        User.localize_users_to_org(request.organization, users, sort=True)
+        User.preload_profiles(users, sort=True)
         return users
 
     return render(request, "settings.html", {
-        "can_see_org_settings": can_see_org_settings,
         "can_edit_org_settings": can_edit_org_settings,
         "is_django_staff": is_django_staff,
         "can_visit_org_in_django_admin": is_django_staff and request.user.has_perm("organization_change"),
         "can_visit_user_in_django_admin": is_django_staff and request.user.has_perm("user_change"),
         "django_admin_url": settings.SITE_ROOT_URL + "/admin",
-        "org_admins": localize_and_sort_users(org_admins),
-        "help_squad": localize_and_sort_users(request.organization.help_squad.all()),
-        "reviewers": localize_and_sort_users(request.organization.reviewers.all()),
+        "org_admins": preload_profiles(org_admins),
+        # TODO better pulling of teams
+        # "help_squad": preload_profiles(request.organization.help_squad.all()),
+        # "reviewers": preload_profiles(request.organization.reviewers.all()),
+        "help_squad": preload_profiles(User.objects.all()),
+        "reviewers": preload_profiles(User.objects.all()),
     })
 
 @login_required
@@ -1414,12 +1444,12 @@ def organization_settings_save(request):
     if request.POST.get("action") == "search-users":
         # TODO: Filter in a database query or else cache the result of get_who_can_read.
         users = list(request.organization.get_who_can_read())
-        User.localize_users_to_org(request.organization, users, sort=True)
+        User.preload_profiles(users, sort=True)
         users = [user for user in users
             if request.POST.get("query", "").lower().strip() in user.name_and_email().lower()
         ]
         users = users[:20] # limit
-        return JsonResponse({ "users": [user.render_context_dict(request.organization) for user in users] })
+        return JsonResponse({ "users": [user.render_context_dict() for user in users] })
 
     return JsonResponse({ "status": "error", "message": str(request.POST) })
 

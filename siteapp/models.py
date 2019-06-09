@@ -23,12 +23,11 @@ class User(AbstractUser):
     # Methods
 
     def __str__(self):
-        name = self._get_setting("name")
-        if name: # question might be skipped
-            return name
-
+        # name = self._get_setting("name")
+        # if name: # question might be skipped
+        #     return name
         # User has not entered their name.
-        return self.email or "Anonymous User"
+        return self.username or "Anonymous User"
 
     def name(self):
         return self._get_setting("name")
@@ -46,21 +45,15 @@ class User(AbstractUser):
             return "Anonymous User Without Email Address"
 
     @staticmethod
-    def localize_users_to_org(org, users, sort=False):
-        # Set cached state for when the users are viewed from a particular Organization.
+    def preload_profiles(users, sort=False):
         # For each user, set:
         # * user_settings_task, which holds the account project's settings Task, if created
         # * user_settings_dict, which holds that Task's current answers as a dict, if the Task was created
-        # * can_see_org_settings, which holds whether the user is in the org's organization project
-
-        org_members = org.get_organization_project().get_members()
-        if len(users) > 1: org_members = set(org_members) # pre-load
 
         # Get the account projects of all of the users in batch.
         account_project_root_tasks = { }
         for pm in ProjectMembership.objects.filter(
             user__in=users,
-            project__organization=org,
             project__is_account_project=True)\
             .select_related("project", "project__root_task", "project__root_task__module"):
             account_project_root_tasks[pm.user] = pm.project.root_task
@@ -92,47 +85,46 @@ class User(AbstractUser):
 
         # Set attributes on each user instance.
         for user in users:
-            user.localized_to = org
             user.user_settings_task = account_project_settings.get(account_project_root_tasks.get(user))
             user.user_settings_task_answers = settings.get(user.user_settings_task, None)
-            user.can_see_org_settings = (user in org_members)
 
         # Apply a standard sort.
         if sort:
             users.sort(key = lambda user : user.name_and_email())
 
-    def localize_to_org(self, org):
-        # Prep this user's cached state when viewed from a particular Organization.
-        User.localize_users_to_org(org, [self])
+    def preload_profile(self):
+        # Prep this user's cached state.
+        User.preload_profiles([self])
 
     def user_settings_task_create_if_doesnt_exist(self):
         # If a task is set, return it.
         if getattr(self, 'user_settings_task', None):
             return self.user_settings_task
 
-        # Otherwise, create it for the localized organization.
-        return self.get_settings_task(self.localized_to)
+        # Otherwise, create it.
+        return self.get_settings_task()
 
     def _get_setting(self, key):
+        if not hasattr(self, 'user_settings_task'):
+            self.preload_profile()
         if getattr(self, 'user_settings_task_answers', None):
             return self.user_settings_task_answers.get(key)
         return None
 
-    def get_account_project(self, org):
+    def get_account_project(self):
         p = getattr(self, "_account_project", None)
         if p is None:
-            p = self.get_account_project_(org)
+            p = self.get_account_project_()
             self._account_project = p
         return p
 
     @transaction.atomic
-    def get_account_project_(self, org):
+    def get_account_project_(self):
         # TODO: There's a race condition here.
 
         # Get an existing account project.
         pm = ProjectMembership.objects.filter(
             user=self,
-            project__organization=org,
             project__is_account_project=True)\
             .select_related("project", "project__root_task", "project__root_task__module")\
             .first()
@@ -141,7 +133,6 @@ class User(AbstractUser):
 
         # Create a new one.
         p = Project.objects.create(
-            organization=org,
             is_account_project=True,
         )
         ProjectMembership.objects.create(
@@ -154,8 +145,8 @@ class User(AbstractUser):
         return p
 
     @transaction.atomic
-    def get_settings_task(self, org):
-        p = self.get_account_project(org)
+    def get_settings_task(self):
+        p = self.get_account_project()
         return p.root_task.get_or_create_subtask(self, "account_settings")
 
     def get_profile_picture_absolute_url(self):
@@ -164,8 +155,6 @@ class User(AbstractUser):
         # caches when photos change, we include in the URL some
         # information about the internal data of the profile photo,
         # which is checked in views_landing.py's user_profile_photo().
-        # Also since profile photos are per-Organization we have to
-        # include which org this User instance is localized to.
 
         # Get the current profile photo.
         try:
@@ -181,19 +170,17 @@ class User(AbstractUser):
         fingerprint = base64.urlsafe_b64encode(
                         xxhash.xxh64(payload).digest()
                        ).decode('ascii').rstrip("=")
-        return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s/%s" % (
+        return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s" % (
             self.id,
-            self.user_settings_task.project.organization.subdomain,
             fingerprint
         )
 
-    def render_context_dict(self, req_organization):
+    def render_context_dict(self):
         # Get the user's account settings task's answers as a dict.
-        organization = req_organization if isinstance(req_organization, Organization) else req_organization.organization
-        if getattr(self, 'user_settings_task', None) and self.user_settings_task.project.organization == organization:
+        if getattr(self, 'user_settings_task', None):
             profile = dict(self.user_settings_task_answers)
         else:
-            profile = self.get_settings_task(organization).get_answers().as_dict()
+            profile = self.get_settings_task().get_answers().as_dict()
 
         # Add some information.
         profile.update({
@@ -251,6 +238,8 @@ class User(AbstractUser):
             "wo": self.api_key_wo,
         }
 
+    def can_see_any_org_settings(self):
+        return ProjectMembership.objects.filter(project__is_organization_project=True).exists()
 
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):
@@ -266,7 +255,7 @@ subdomain_regex = r"^([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])$"
 
 class Organization(models.Model):
     name = models.CharField(max_length=256, help_text="The display name of the Organization.")
-    subdomain = models.CharField(max_length=200, unique=True, help_text="The subdomain of the host site that this Organization's site is served at.", validators=[RegexValidator(regex=subdomain_regex)])
+    slug = models.CharField(max_length=32, unique=True, help_text="A URL-safe abbreviation for the Organization.", validators=[RegexValidator(regex=subdomain_regex)])
 
     help_squad = models.ManyToManyField(User, blank=True, related_name="in_help_squad_of", help_text="Users who are invited to all new discussions in this Organization.")
     reviewers = models.ManyToManyField(User, blank=True, related_name="is_reviewer_of", help_text="Users who are permitted to change the reviewed state of task answers.")
@@ -279,34 +268,7 @@ class Organization(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        # Return a URL with a hostname. That's unusual.
-        return self.get_url()
-
-    def get_url(self, path=''):
-        # Construct the base URL of the root page of the site for this organization.
-        #
-        # If SINGLE_ORGANIZATION_KEY is empty, then this is a multi-org installation
-        # and the Organization's subdomain gets added to the ORGANIZATION_PARENT_DOMAIN.
-        # settings.SITE_ROOT_URL tells us the scheme, host, and port of the main Q landing site.
-        # In testing it's http://localhost:8000, and in production it's https://q.govready.com.
-        # Combine the scheme and port with settings.ORGANIZATION_PARENT_DOMAIN to form the
-        # base URL for this Organization.
-        #
-        # If SINGLE_ORGANIZATION_KEY is not empty, then we are running off of SITE_ROOT_URL
-        # directly.
-        if settings.SINGLE_ORGANIZATION_KEY:
-            return settings.SITE_ROOT_URL + path
-        import urllib.parse
-        s = urllib.parse.urlsplit(settings.SITE_ROOT_URL)
-        scheme, host = (s[0], s[1])
-        port = '' if (':' not in host) else (':'+host.split(':')[1])
-        return urllib.parse.urlunsplit((
-            scheme, # scheme
-            self.subdomain + '.' + settings.ORGANIZATION_PARENT_DOMAIN + port, # host
-            path,
-            '', # query
-            '' # fragment
-            ))
+        return "/%s/projects" % (self.slug)
 
     def get_who_can_read(self):
         # A user can see an Organization if:
@@ -337,6 +299,13 @@ class Organization(models.Model):
             | Organization.objects.filter(projects__tasks__editor=user)
             | Organization.objects.filter(discussions__guests=user)
             ).order_by("name", "created").distinct()
+
+    def get_projects(self):
+        # return Projects.objects.filter()
+        return Project.objects.filter(organization=self)
+
+    def get_members(self):
+        return User.objects.filter(projectmembership__project=self)
 
     def get_organization_project(self):
         prj, isnew = Project.objects.get_or_create(organization=self, is_organization_project=True)
@@ -433,16 +402,16 @@ class Folder(models.Model):
     def get_readable_projects(self, user):
         # Get the projects that are in the folder that the user can see. This also handily
         # sets user_is_admin on the projects.
-        return Project.get_projects_with_read_priv(user, self.organization,
+        return Project.get_projects_with_read_priv(user,
             { "contained_in_folders": self })
 
 class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
 
-    organization = models.ForeignKey(Organization, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this project belongs to.")
+    organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
-    is_account_project = models.BooleanField(default=False, help_text="Each User has one Project per Organization for account Tasks.")
+    is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
 
         # the root_task has to be nullable because the Task itself has a non-null
         # field that refers back to this Project, and one must be NULL until the
@@ -483,7 +452,7 @@ class Project(models.Model):
         else:
             parts.append(self.title)
         return " / ".join(parts)
-        
+
     def get_members(self):
         return User.objects.filter(projectmembership__project=self)
 
@@ -511,7 +480,7 @@ class Project(models.Model):
         from guidedmodules.models import Task
         if ProjectMembership.objects.filter(project=self, user=user).exists():
             return True
-        if Task.get_all_tasks_readable_by(user, self.organization, recursive=True).filter(project=self).exists():
+        if Task.get_all_tasks_readable_by(user, recursive=True).filter(project=self).exists():
             return True
         for d in self.get_discussions_in_project_as_guest(user):
             return True
@@ -537,7 +506,7 @@ class Project(models.Model):
             participants[pm.user]["is_admin"] = pm.is_admin
         for task in Task.objects.filter(project=self).select_related("editor"):
             participants[task.editor]["editor_of"].append(task)
-        discussions = Discussion.get_for_all(self.organization, TaskAnswer.objects.filter(task__project=self, task__deleted_at=None))\
+        discussions = Discussion.get_for_all(TaskAnswer.objects.filter(task__project=self, task__deleted_at=None))\
             .prefetch_related("guests")
         for d in discussions:
             for user in d.guests.all():
@@ -545,7 +514,7 @@ class Project(models.Model):
 
         # Add text labels to describe user and authz.
         for user, info in participants.items():
-            info["user_details"] = user.render_context_dict(self.organization)
+            info["user_details"] = user.render_context_dict()
             descr = []
             if info["is_admin"]:
                 descr.append("admin")
@@ -561,7 +530,7 @@ class Project(models.Model):
         return sorted(participants.items(), key = lambda kv : kv[0].username)
 
     @staticmethod
-    def get_projects_with_read_priv(user, organization, filters={}, excludes={}):
+    def get_projects_with_read_priv(user, filters={}, excludes={}):
         # Gets all projects a user has read priv to, excluding
         # account and organization profile projects, and sorted
         # in reverse chronological order by modified date.
@@ -571,10 +540,9 @@ class Project(models.Model):
         if not user.is_authenticated:
             return projects
 
-        # Add all of the Projects the user is a member of within the Organization
-        # that the user is on the subdomain of.
+        # Add all of the Projects the user is a member of.
         for pm in ProjectMembership.objects\
-            .filter(project__organization=organization, user=user)\
+            .filter(user=user)\
             .filter(**{ "project__"+k: v for k, v in filters.items() })\
             .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
             .select_related('project__root_task__module')\
@@ -587,7 +555,7 @@ class Project(models.Model):
         # Add projects that the user is the editor of a task in, even if
         # the user isn't a team member of that project.
         from guidedmodules.models import Task
-        for task in Task.get_all_tasks_readable_by(user, organization)\
+        for task in Task.get_all_tasks_readable_by(user)\
             .filter(**{ "project__"+k: v for k, v in filters.items() })\
             .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
             .order_by('-created')\
@@ -598,7 +566,7 @@ class Project(models.Model):
         # Add projects that the user is participating in a Discussion in
         # as a guest.
         from discussion.models import Discussion
-        for d in Discussion.objects.filter(organization=organization, guests=user):
+        for d in Discussion.objects.filter(guests=user):
             if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
                 if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
                     if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
@@ -629,7 +597,7 @@ class Project(models.Model):
         from guidedmodules.models import Task
         return [
             task for task in
-            Task.get_all_tasks_readable_by(user, self.organization)
+            Task.get_all_tasks_readable_by(user)
                 .filter(project=self, editor=user) \
                 .order_by('-updated')\
                 .select_related('project')
@@ -878,13 +846,9 @@ class Project(models.Model):
 
     def get_api_url(self):
         # Get the URL to the data API for this Project.
-        return \
-        settings.SITE_ROOT_URL \
-          + "/api/v1/organizations/{org}/projects/{id}/answers".format(
-            org=self.organization.subdomain,
-            id=self.id,
-        )
-
+        import urllib.parse
+        return urllib.parse.urljoin(settings.SITE_ROOT_URL,
+            "/api/v1//projects/{id}/answers".format(id=self.id))
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE, help_text="The Project this is defining membership for.")
@@ -897,8 +861,6 @@ class ProjectMembership(models.Model):
         unique_together = [('project', 'user')]
 
 class Invitation(models.Model):
-    organization = models.ForeignKey(Organization, related_name="invitations", on_delete=models.CASCADE, help_text="The Organization that this Invitation belongs to.")
-
     # who is sending the invitation
     from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The User who sent the invitation.")
     from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The Project within which the invitation exists.")
@@ -982,10 +944,8 @@ class Invitation(models.Model):
         return self.purpose_verb() + " " + self.target.title
 
     def get_acceptance_url(self):
-        # The invitation must be sent using the subdomain of the organization it is
-        # a part of.
         from django.urls import reverse
-        return self.organization.get_url(reverse('accept_invitation', kwargs={'code': self.email_invitation_code}))
+        return settings.SITE_ROOT_URL + reverse('accept_invitation', kwargs={'code': self.email_invitation_code})
 
     def send(self):
         # Send and mark as sent.
@@ -1022,4 +982,3 @@ class Invitation(models.Model):
 
     def get_redirect_url(self):
         return self.target.get_invitation_redirect_url(self)
-

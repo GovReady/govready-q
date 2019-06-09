@@ -36,21 +36,17 @@ class DiscussionTests(SeleniumTest):
 
         # Create the Organization.
 
-        org = Organization.create(name="Our Organization", subdomain="testorg",
+        org = Organization.create(name="Our Organization", slug="testorg",
             admin_user=self.user)
-
-    def url(self, path):
-        # Within this test, we only generate URLs for the organization subdomain.
-        return super().url("testorg", path)
 
     def _login(self):
         # Fill in the login form and submit.
         self.browser.get(self.url("/"))
-
-        self.assertRegex(self.browser.title, "Home")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
+        self.click_element("li#tab-signin")
         self.fill_field("#id_login", self.user.username)
         self.fill_field("#id_password", self.user_pw)
-        self.click_element("form button.primaryAction")
+        self.click_element("form#login_form button[type=submit]")
         self.assertRegex(self.browser.title, "Your Compliance Projects")
 
     def _new_project(self):
@@ -77,7 +73,7 @@ class DiscussionTests(SeleniumTest):
         # Move past the introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(.5) # wait for page to reload
+        var_sleep(.8) # wait for page to reload
 
         # We're now on the first actual question.
         # Start a team conversation.
