@@ -1,0 +1,60 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+{% block after_field_sets %}
+    <h2>Compliance Apps</h2>
+    <div style="margin-bottom: 2em">
+        {% for app in original.get_available_apps %}
+            {% if forloop.first %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Compliance App</th>
+                            <th>New Version Available?</th>
+                            <th>Versions In Catalog</th>
+                            <th>Hidden Versions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            {% endif %}
+
+            <tr>
+                <td>{{app.name}}</td>
+                <td>
+                    {% if app.new_version_number %}
+                        {{app.new_version_number}}
+                        [<a href="../../import-app/{{original.id}}/{{app.name}}">Add</a>]
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% for appver in app.versions_in_catalog %}
+                        <a href="/admin/guidedmodules/appversion/{{appver.id}}/">
+                            {{appver.get_version_display}}
+                        </a>
+                        {% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        -
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for appver in app.hidden_versions %}
+                        <a href="/admin/guidedmodules/appversion/{{appver.id}}/">
+                            {{appver.get_version_display}}
+                        </a>
+                        {% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        -
+                    {% endfor %}
+                </td>
+            </tr>
+
+            {% if forloop.last %}
+                </tbody>
+            </table>
+            {% endif %}
+        {% empty %}
+            <p>There are no compliance apps provided by this source.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

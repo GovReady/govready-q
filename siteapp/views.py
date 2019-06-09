@@ -118,103 +118,104 @@ def project_list(request):
     })
 
 
-def get_compliance_apps_catalog(organization, reset_cache=False):
+def get_compliance_apps_catalog(organization):
     # Load the compliance apps available to the given organization.
-    # Since accessing remote AppSources is an expensive operation,
-    # cache the catalog information.
 
-    from django.core.cache import cache
+    from guidedmodules.models import AppVersion
+    from collections import defaultdict
 
-    from guidedmodules.models import AppSource
+    appvers = AppVersion.get_startable_apps(organization)
 
-    apps = []
+    # Group the AppVersions into apps. An app is a unique source+appname pair.
+    # For each app, one or more versions may be available.
+    apps = defaultdict(lambda : [])
+    for av in appvers:
+        apps[(av.source, av.appname)].append(av)
 
-    # For each AppSource....
-    for appsrc in AppSource.objects.all():
-        # System apps are not listed the compliance apps catalog.
-        if appsrc.is_system_source:
-            continue
+    # Replace each app entry with a list of AppVersions sorted by reverse database
+    # row created date (since we don't necessarily have sortable version numbers).
+    apps = [
+        sorted(appvers, key = lambda av : av.created, reverse=True)
+        for appvers in apps.values()
+    ]
 
-        # If we don't have cached catalog info for this source...
-        # (keyed off of the current state of the AppSource instance)
-        cache_key = "compliance_catalog_source_{}".format(appsrc.id)
-        cache_stale_key = appsrc.make_cache_stale_key()
-        cached_apps = cache.get(cache_key, (None, None))
-        if cached_apps[0] != cache_stale_key or reset_cache:
-            # Connect to the remote app data...
-            with appsrc.open() as appsrc_connection:
-                # Iterate through all of the apps provided by this source.
-                cached_apps = []
-                for app in appsrc_connection.list_apps():
-                    # Render the catalog info for display.
-                    app = render_app_catalog_entry(app)
-                    cached_apps.append(app)
-
-                # Cache the results.
-                cached_apps = (cache_stale_key, cached_apps)
-                cache.set(cache_key, cached_apps)
-
-        # Add the apps in this source to the returned list. But apps
-        # from private sources are only listed if the organization
-        # is white-listed.
-        if not appsrc.available_to_all \
-          and organization not in appsrc.available_to_orgs.all():
-            continue
-
-        # Add the apps from the cached data structure.
-        apps.extend(cached_apps[1])
+    # Collect catalog display metadata for each app from the most recent version
+    # of each app.
+    apps = [
+        render_app_catalog_entry(appvers[0], appvers)
+        for appvers in apps
+    ]
 
     return apps
 
-def render_app_catalog_entry(app):
-            from guidedmodules.module_logic import render_content
+def render_app_catalog_entry(appversion, appversions):
+    from guidedmodules.module_logic import render_content
+    from guidedmodules.models import image_to_dataurl
 
-            # Clone, I guess?
-            catalog_info = dict(app.get_catalog_info())
+    key = "{source}/{name}".format(source=appversion.source.slug, name=appversion.appname)
 
-            catalog_info["appsource_slug"] = app.store.source.slug
-            catalog_info["appsource_id"] = app.store.source.id
-            catalog_info["key"] = "{source}/{name}".format(source=app.store.source.slug, name=app.name)
+    catalog = appversion.catalog_metadata
+    if not isinstance(catalog, dict): catalog = { }
 
-            catalog_info.setdefault("description", {})
+    app_module = appversion.modules.filter(module_name="app").first()
 
-            catalog_info["description"]["short"] = render_content(
+    return {
+        # app identification
+        "appsource_id": appversion.source.id,
+        "key": key,
+
+        # main display fields
+        "title": catalog.get('title') or appversion.appname,
+        "description": { # rendered as markdown
+            "short": render_content(
                 {
-                    "template": catalog_info.get("description", {}).get("short") or "",
+                    "template": catalog.get("description", {}).get("short") or "",
                     "format": "markdown",
                 },
                 None,
                 "html",
-                "%s %s" % (repr(catalog_info["name"]), "short description")
-            )
-
-            catalog_info["description"]["long"] = render_content(
+                "%s %s" % (key, "short description")
+            ),
+            "long": render_content(
                 {
-                    "template": catalog_info.get("description", {}).get("long")
-                        or catalog_info.get("description", {}).get("short")
+                    "template": catalog.get("description", {}).get("long")
+                        or catalog.get("description", {}).get("short")
                         or "",
                     "format": "markdown",
                 },
                 None,
                 "html",
-                "%s %s" % (repr(catalog_info["name"]), "short description")
+                "%s %s" % (key, "short description")
             )
+        },
 
-            catalog_info["search_haystak"] = "".join([
-                app.name,
-                catalog_info["title"],
-                catalog_info.get("vendor", ""),
-                catalog_info["description"]["short"],
-                catalog_info["description"]["long"],
-            ])
+        # catalog page metadata
+        "categories": catalog.get("categories", [catalog.get("category")]),
+        "search_haystak": "".join([ # free text search uses this
+            appversion.appname,
+            catalog.get('title', ""),
+            catalog.get("vendor", ""),
+            catalog.get("description", {}).get("short", ""),
+            catalog.get("description", {}).get("long", ""),
+        ]),
+        "icon": None if "icon" not in catalog
+                    else image_to_dataurl(appversion.get_asset(catalog["icon"]), 128),
+        "protocol": app_module.spec.get("protocol", []) if app_module else [],
+        
+        # catalog detail page metadata
+        "vendor": catalog.get("vendor"),
+        "vendor_url": catalog.get("vendor_url"),
+        "source_url": catalog.get("source_url"),
+        "status": catalog.get("status"),
+        "version": appversion.version_number,
+        "recommended_for": catalog.get("recommended_for", []),
 
-            # Convert the app icon raw bytes data to a data URL.
-            if "app-icon" in catalog_info:
-                from guidedmodules.models import image_to_dataurl
-                catalog_info["app_icon_dataurl"] = image_to_dataurl(catalog_info["app-icon"], 128)
+        # versions that can be started
+        "versions": appversions,
 
-            return catalog_info
-
+        # placeholder for future logic
+        "authz": "none",
+    }
 
 def get_task_question(request):
     # Filter catalog by apps that satisfy the right protocol.
@@ -241,44 +242,13 @@ def app_satifies_interface(app, filter_protocols):
     else:
         raise ValueError(filter_protocols)
 
-    # Get the protocols implemented by the app.
-    if isinstance(app.get("protocol"), str):
-        # Just one - wrap in a set().
-        app_protocols = { app["protocol"] }
-    elif isinstance(app.get("protocol"), list):
-        # It's an array. Unique-ify with a set.
-        app_protocols = set(app["protocol"])
-    else:
-        # no protocol or invalid data type
-        app_protocols = set()
-
     # Check that every protocol required by the question is implemented by the
     # app.
-    return filter_protocols <= set(app_protocols)
+    return filter_protocols <= set(app["protocol"])
 
 
 def filter_app_catalog(catalog, request):
     filter_description = None
-
-    # Filter out unpublished apps.
-    from guidedmodules.models import AppSource
-    approved_apps = { src.id: (src.approved_apps or {}) for src in AppSource.objects.all() }
-    def is_app_available(app):
-        # Query the AppSource for whether this app is considered
-        # published or not.
-        try:
-            published = approved_apps[app["appsource_id"]][app["name"]]
-
-        # Fall back to the app's catalog information.
-        except KeyError:
-            published = app.get("published")
-
-        # Hide if unpublished
-        if published == "unpublished":
-            return False
-        return True
-
-    catalog = filter(is_app_available, catalog)
 
     if request.GET.get("q"):
         # Check if the app satisfies the interface required by a paricular question.
@@ -299,13 +269,6 @@ def filter_app_catalog(catalog, request):
 
 @login_required
 def apps_catalog(request):
-    # A POST from a Django user with permission on AppSources
-    # clears the catalog cache.
-    can_clear_catalog_cache = request.user.has_perm('guidedmodules.appsource_change')
-    if request.method == "POST" and can_clear_catalog_cache:
-        get_compliance_apps_catalog(request.organization, reset_cache=True)
-        return HttpResponseRedirect(request.path)
-
     # We use the querystring to remember which question the user is selecting
     # an app to answer, when starting an app from within a project.
     from urllib.parse import urlencode
@@ -314,20 +277,13 @@ def apps_catalog(request):
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
-    from guidedmodules.app_source_connections import AppSourceConnectionError
-    try:
-        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog(request.organization), request)
-    except (ValueError, AppSourceConnectionError) as e:
-        return render(request, "app-store.html", {
-            "error": e,
-            "apps": [],
-        })        
+    catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog(request.organization), request)
 
     # Group by category from catalog metadata.
     from collections import defaultdict
     catalog_by_category = defaultdict(lambda : { "title": None, "apps": [] })
     for app in catalog:
-        for category in app.get("categories", [app.get("category")]):
+        for category in app["categories"]:
             catalog_by_category[category]["title"] = (category or "Uncategorized")
             catalog_by_category[category]["apps"].append(app)
 
@@ -349,7 +305,6 @@ def apps_catalog(request):
         "apps": catalog_by_category,
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
-        "can_clear_catalog_cache": can_clear_catalog_cache,
     })
 
 @login_required
@@ -398,9 +353,13 @@ def apps_catalog_item(request, source_slug, app_name):
             if not app_satifies_interface(app_catalog_info, q):
                 raise ValueError("Invalid protocol.")
 
+        # Start the most recent version of the app.
+        appver = app_catalog_info["versions"][0]
+
+        # Start the app.
         from guidedmodules.app_loading import ModuleDefinitionError
         try:
-            project = start_app(app_catalog_info, request.organization, request.user, folder, task, q)
+            project = start_app(appver, request.organization, request.user, folder, task, q)
         except ModuleDefinitionError as e:
             error = str(e)
         else:
@@ -419,62 +378,18 @@ def apps_catalog_item(request, source_slug, app_name):
     })
 
 
-def start_app(app_catalog_info, organization, user, folder, task, q):
-    from guidedmodules.models import AppSource
+def start_app(appver, organization, user, folder, task, q):
     from guidedmodules.app_loading import load_app_into_database
-
-    # If the first argument is a string, it's an app id of the
-    # form "source/appname". Get the catalog info.
-    if isinstance(app_catalog_info, str):
-        for app in get_compliance_apps_catalog(organization):
-            if app["key"] == app_catalog_info:
-                # We found it.
-                app_catalog_info = app
-                break
-        else:
-            raise ValueError("{} is not an app in the catalog.".format(app_catalog_info))
 
     # Begin a transaction to create the Module and Task instances for the app.
     with transaction.atomic():
-        module_source = get_object_or_404(AppSource, id=app_catalog_info["appsource_id"])
-
-        # Turn the app catalog entry into an App instance,
-        # and then import it into the database as Module instance.
-        if app_catalog_info["authz"] == "none":
-            # We can instantiate the app immediately.
-            # 1) Get the connection to the AppSource.
-            with module_source.open() as store:
-                # 2) Get the App.
-                app_name = app_catalog_info["key"][len(module_source.slug)+1:]
-                app = store.get_app(app_name)
-
-                # 3) Re-validate that the catalog information is the same.
-                if app.get_catalog_info()["authz"] != "none":
-                    raise ValueError("Invalid access.")
-
-                # 4) Import. Use the module named "app".
-                appinst = load_app_into_database(app)
-                module = appinst.modules.get(module_name="app")
-
-        else:
-            # Create a stub Module -- we'll download the app later. This
-            # is just a placeholder.
-            module = Module()
-            module.source = module_source
-            # TODO module.app = None
-            module.module_name = "app"
-            module.spec = dict(app_catalog_info)
-            module.spec["type"] = "project"
-            module.spec["is_app_stub"] = True
-            module.save()
-
         # Create project.
         project = Project()
         project.organization = organization
 
         # Save and add to folder
         project.save()
-        project.set_root_task(module, user)
+        project.set_root_task(appver.modules.get(module_name="app"), user)
         if folder:
             folder.projects.add(project)
 
@@ -1098,11 +1013,12 @@ def project_start_apps(request, *args):
         @project_admin_login_post_required
         def viewfunc(request, project):
             # Start all of the indiciated apps. Validate that the
-            # chosen app satisfies the protocol.
+            # chosen app satisfies the protocol. For each app,
+            # start the most recent version of the app.
             errored_questions = []
             for q in get_questions(project):
                 if q.key in request.POST:
-                    startable_apps = { app["key"]: app for app in q.startable_apps}
+                    startable_apps = { app["key"]: app["versions"][0] for app in q.startable_apps}
                     if request.POST[q.key] in startable_apps:
                         app = startable_apps[request.POST[q.key]]
                         try:
@@ -1119,7 +1035,7 @@ def project_start_apps(request, *args):
                 message += ", ".join(
                     "{app} ({appname}) for {title} ({key}) ({error})".format(
                         app=app["title"],
-                        appname=app["name"],
+                        appname=app["key"],
                         title=q.spec["title"],
                         key=q.key,
                         error=error,
@@ -1133,17 +1049,20 @@ def project_start_apps(request, *args):
 
 @project_read_required
 def project_upgrade_app(request, project):
-    # Get the app's catalog information.
+    # Upgrade the AppVersion that the project is linked to. The
+    # AppVersion is updated in place, so this updates all projects
+    # using the AppVersion. The work is done in guidedmodules.views.upgrade_app.
+
+    # Get the app's catalog information just for display purposes.
+    # We're not using the catalog to fetch newer app info - just to
+    # show the page title etc.
     error = False
-    try:
-        for app in get_compliance_apps_catalog(request.organization):
-            if app['appsource_id'] == project.root_task.module.app.source.id:
-                if app['name'] == project.root_task.module.app.appname:
-                    break
-        else:
-            error = "App not found in compliance catalog."
-    except Exception as e:
-        error = str(e)
+    for app in get_compliance_apps_catalog(request.organization):
+        if app['appsource_id'] == project.root_task.module.app.source.id:
+            if app['key'].endswith("/" + project.root_task.module.app.appname):
+                break
+    else:
+        error = "App cannot be upgraded because it is no longer in the compliance apps catalog."
 
     # Show information about the app.
     return render(request, "project-upgrade-app.html", {

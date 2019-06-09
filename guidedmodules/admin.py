@@ -3,7 +3,7 @@ from django import forms
 from django.utils.html import escape as escape_html
 
 from .models import \
-	AppSource, AppInstance, Module, ModuleQuestion, ModuleAsset, \
+	AppSource, AppVersion, Module, ModuleQuestion, ModuleAsset, \
 	Task, TaskAnswer, TaskAnswerHistory, \
 	InstrumentationEvent
 
@@ -157,74 +157,6 @@ class AppSourceSpecWidget(forms.Widget):
 
     	return value
 
-class ApprovedAppsList(forms.Widget):
-	def __init__(self, appsource):
-		super().__init__()
-		self.appsource = appsource
-
-	def render(self, name, value, attrs=None):
-		# For some reason we get the JSON value as a string. Unless we override Form.clean(),
-		# and then strangely we get a dict.
-		if isinstance(value, str):
-			import json, collections
-			value = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(value or "{}")
-		if not isinstance(value, dict):
-			value = {}
-
-		# Get all of the apps to list from the AppSource instance, if this
-		# form is associated with an existing AppSource instance.
-		from .app_source_connections import AppSourceConnectionError
-		applist = []
-		seen_apps = set()
-		if self.appsource:
-			try:
-				with self.appsource.open() as conn:
-					for app in conn.list_apps():
-						applist.append((app.name, app.get_catalog_info()))
-						seen_apps.add(app.name)
-			except AppSourceConnectionError:
-				pass
-
-		# Add in any apps that are no longer in the AppSource but have a
-		# value stored.
-		for appkey in value:
-			if appkey in seen_apps: continue
-			applist.append((appkey, {
-				"title": appkey,
-				"published": None,
-			}))
-
-		# Construct widget.
-		import html
-		widget = "<table><tbody>\n"
-		for appname, appinfo in applist:
-			widget += "<tr>"
-			widget += "<td style='padding: 14px'>"
-			widget += html.escape(appinfo["title"])
-			widget += "</td><td>"
-			widget += forms.Select(choices=[
-			 	("", "{} (Default)".format(
-			 		("Unpublished" if appinfo["published"] == "unpublished" else "Published")
-			 	)),
-			 	("unpublished", "Unpublished"),
-			 	("published", "Published"),
-			 	])\
-				.render(name + "__" + appname, value.get(appname))
-			widget += "</td></tr>\n"
-		widget += "</tobdy></table>\n"
-
-		return widget
-
-	def value_from_datadict(self, data, files, name):
-		from collections import OrderedDict
-		ret = {}
-		for key, value in data.items():
-			if not key.startswith(name + "__"): continue
-			key = key[len(name)+2:]
-			if value == "": continue # reset to default
-			ret[key] = value
-		return ret
-
 class AppSourceAdminForm(forms.ModelForm):
 	class Meta:
 		labels = {
@@ -240,11 +172,6 @@ class AppSourceAdminForm(forms.ModelForm):
 		self.fields['spec'].label = "How is this AppSource accessed?"
 		self.fields['spec'].help_text = None
 
-		# Override the widget for 'approved_apps' to break out the apps
-		# into separate widgets.
-		self.fields['approved_apps'].widget = ApprovedAppsList(kwargs.get("instance"))
-		self.fields['approved_apps'].help_text = None
-
 	def clean(self):
 		# Do form field valudation.
 		super(AppSourceAdminForm, self).clean()
@@ -259,7 +186,7 @@ class AppSourceAdminForm(forms.ModelForm):
 
 
 class AppSourceAdmin(admin.ModelAdmin):
-	form = AppSourceAdminForm # customize spec and approved_apps widgets
+	form = AppSourceAdminForm # customize spec widget
 	list_display = ('slug', 'source', 'flags')
 	filter_horizontal = ('available_to_orgs',)
 	readonly_fields = ('is_system_source',)
@@ -269,12 +196,35 @@ class AppSourceAdmin(admin.ModelAdmin):
 		flags = []
 		if obj.is_system_source: flags.append("SYSTEM")
 		return ", ".join(flags)
+	def get_urls(self):
+		from django.urls import path
+		return [
+			path(r'import-app/<int:appsourceid>/<str:appname>', self.admin_site.admin_view(self.import_app_view)),
+		] + super().get_urls()
+	def import_app_view(self, request, appsourceid, appname):
+		# Import the given app into the database and mark it
+		# as available in the catalog.
+		from django.shortcuts import get_object_or_404
+		from django.http import HttpResponse, HttpResponseRedirect
 
-class AppInstanceAdmin(admin.ModelAdmin):
-	list_display = ('appname', 'version_number', 'version_name', 'source', 'system_app')
-	list_filter = ('source', 'system_app')
+		# Load the app.
+		appsource = get_object_or_404(AppSource, id=appsourceid)
+		try:
+			appver = appsource.add_app_to_catalog(appname)
+		except Exception as e:
+			raise
+      # return HttpResponse(str(e), status=400)
+
+		from django.contrib import messages
+		messages.add_message(request, messages.INFO, 'Compliance app added into the catalog.')
+		
+		return HttpResponseRedirect("/admin/guidedmodules/appversion/{}/change".format(appver.id))
+
+class AppVersionAdmin(admin.ModelAdmin):
+	list_display = ('appname', 'version_number', 'version_name', 'source', 'show_in_catalog', 'system_app')
+	list_filter = ('source', 'show_in_catalog', 'system_app')
 	raw_id_fields = ('source', 'asset_files',)
-	readonly_fields = ('asset_files','asset_paths')
+	readonly_fields = ('asset_files','asset_paths', 'system_app')
 
 class ModuleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'app_', 'module_name', 'created')
@@ -326,7 +276,7 @@ class InstrumentationEventAdmin(admin.ModelAdmin):
 	readonly_fields = ('event_time', 'event_type', 'event_value', 'user', 'module', 'question', 'task', 'answer')
 
 admin.site.register(AppSource, AppSourceAdmin)
-admin.site.register(AppInstance, AppInstanceAdmin)
+admin.site.register(AppVersion, AppVersionAdmin)
 admin.site.register(Module, ModuleAdmin)
 admin.site.register(ModuleQuestion, ModuleQuestionAdmin)
 admin.site.register(ModuleAsset, ModuleAssetAdmin)

@@ -19,6 +19,10 @@ Application changes:
 * Project (e.g., Compliance App) administrators can now be added within Apps settings.
 * @ mention any user within discussion regardless of organization or project member instead of @ mentioning only users within the project.
 
+Application changes:
+
+* The compliance apps catalog is now read from compliance apps cached in the database rather than querying local and remote AppSources each time the catalog is loaded or an app is started. A new field is added to the AppVersion (formerly AppInstance) model in the database for whether it should be included in the compliance apps catalog. The AppSource admin's approved apps list table is replaced with a new table showing which compliance apps from the source are already in the compliance apps catalog (or hidden from the catalog but in the database) and which which can be added.
+
 Developer changes:
 
 * Expose rich question metadata within output document templates. Documents can now access if question was skipped by user and skip reason, if question was answered or not, if answer imputed and other goodies.
@@ -35,6 +39,8 @@ Deployment changes:
 
 * Split off MySQL-related libraries into a separate pip requirements file so `mysql-config` library would only be required when installing Q with MySQL.
 * Upgraded  dependencies.
+* The AppInstance model/database table was renamed to AppVersion to better reflect the meaning of the model.
+* Upgraded some dependencies.
 
 v0.8.5 (February 9, 2019)
 -------------------------

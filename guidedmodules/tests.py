@@ -16,7 +16,7 @@ class TestCaseWithFixtureData(TestCase):
         settings.VALIDATE_EMAIL_DELIVERABILITY = False
 
         # Load modules from the fixtures directory.
-        from .models import AppSource, AppInstance
+        from .models import AppSource, AppVersion
         from .management.commands.load_modules import Command as load_modules
         from .app_source_connections import MultiplexedAppSourceConnection
         src = AppSource.objects.create(
@@ -29,7 +29,7 @@ class TestCaseWithFixtureData(TestCase):
         with MultiplexedAppSourceConnection(ms for ms in AppSource.objects.all()) as store:
             for app in store.list_apps():
                 load_app_into_database(app)
-        self.fixture_app = AppInstance.objects.get(source=src, appname="simple_project")
+        self.fixture_app = AppVersion.objects.get(source=src, appname="simple_project")
 
         # Create a dummy organization, project, and user.
         self.user = User.objects.create(username="unit.test")
