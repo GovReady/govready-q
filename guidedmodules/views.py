@@ -110,6 +110,14 @@ def task_view(view_func):
                 d = Discussion.get_for(task.project.organization, taskans)
                 if d and d.is_participant(request.user):
                     return True
+
+            # Yes in the special case of user accessing the avatar of another user
+            # TODO: Re-evaluate this code block after implementing a more traditional
+            #       user profile model instead of using a Q module for a persons profile.
+            #       see https://github.com/GovReady/govready-q/issues/632
+            if question_key == "picture":
+                return True
+
             return False
         if not read_priv():
             return HttpResponseForbidden()
@@ -630,7 +638,6 @@ def task_finished(request, task, answered, context, *unused_args):
         "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),
     })
     return render(request, "module-finished.html", context)
-
 
 @task_view
 def download_answer_file(request, task, answered, context, q, history_id):
