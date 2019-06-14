@@ -1,5 +1,7 @@
 # Version 0.9.0
 
+## What's New in 0.9.0
+
 Release 0.9.0 (coming July 2019) is a minor release improving
 the user experience and performance.
 
@@ -337,11 +339,117 @@ Click one of the tab belows to see quickstart for indicated platform.
 
             http://localhost:8000/
 
-## Adding and Managing AppSources in 0.9.0
+<<<<<<< HEAD
+## Adding and Managing "Compliance Apps" in 0.9.0
 
-Release 0.9.0 reads the compliance apps catalog from the database rather than going to remote repositories and rescanning the local file system each time. The app catalog cache is removed since the page loads much faster.
+### Overview
 
-Release 0.9.0 loads the YAML files into the database when the App Source is first defined. See [App Sources](AppSources.html) for more information about how to configure your instance of GovReady-Q to load apps from local filesystem directories, git repositories (including on-prem git repositories), or GitHub.
+GovReady-Q must be configured by an administrator to load compliance apps (e.g., assessments and questionnaires) from one or more sources, which can be local directories or remote git repositories. Full administrative privileges are assigned to original user account created when executing `python manage.py fisrt_run` during installation.
+
+App Sources are configured in the Django admin at the URL `/admin` on your GovReady-Q domain under `App Sources`:
+
+![App Sources list](assets/appsources_list.png)
+
+Each App Source points GovReady-Q to a directory or repository of compliance apps.
+
+![Example App Source](assets/appsource_git_https.png)
+
+### App Source Slug
+
+The first App Source field is the Slug. The Slug is a short name you assign to the App Source to distinguish it from other App Sources. The Slug is used to form URLs in GovReady-Q's compliance apps catalog, so it may only contain letters, numbers, dashes, underscores, and other URL path-safe characters.
+
+### App Source Type
+
+There are four types of App Sources: local directories, remote git repositories using HTTP which are typically public repositories, remote git repositories using SSH which typically use SSH deploy keys for access, and remote GitHub repositories using a GitHub username and password for access.
+
+#### Local Directory
+
+The Local Directory source type directs GovReady-Q to load compliance apps from a directory on the same machine GovReady-Q is running on. (When deploying with Docker, that's on the container filesystem unless a path has been mounted to a volume or to the host machine.)
+
+In the `Path` field, enter the path to a local directory containing compliance apps. This path is expected to contain a sub-directory for each compliance app contained in this source. For instance, if you have this directory layout:
+
+    .
+    └── home
+        └── user
+            └── compliance_apps
+                ├── myfirstapp
+                │   └── app.yaml
+                └── mysecondapp
+                    └── app.yaml
+
+then your Path would be `/home/user/compliance_apps`.
+
+The path can be absolute or relative to the path in which GovReady-Q is installed.
+
+#### Git Repository over HTTPS
+
+The Git Repository over HTTPS source type is for git repositories, such as on GitHub or GitLab, that can be cloned using an HTTPS URL. These repositories are typically public, or in an enterprise environment public within your organization's network.
+
+Paste the HTTPS git clone URL --- such as https://github.com/GovReady/govready-apps-dev --- into the URL field. Here's what that looks like:
+
+![App Source for a public git repository](assets/appsource_git_https.png)
+
+The other fields can be left blank.
+
+The `Path` field optionally specifies a sub-directory within the repository in which the compliance apps are stored if they are not stored in the root of the repository. For instance if the repository has a directory layout similar to:
+
+    .
+    └── github.com/organization/repository
+        └── apps
+            ├── myfirstapp
+            │   └── app.yaml
+            └── mysecondapp
+                └── app.yaml
+
+then set the `Path` field to `apps`.
+
+If the compliance apps are not in the repository's default branch (i.e. something other than the typical `master` default branch), then set the `Branch` field to the name of the branch to read the compliance apps from.
+
+You can use HTTPS to access private repositories by placing your username and password or [personal access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/) into the URL, such as:
+
+    https://username:password@github.com/GovReady/govready-apps-dev
+
+Since this requires user credentials, it should be avoided for production deployments in favor of using Git Repository over SSH (see below).
+
+#### Git Repository over SSH
+
+If your git repository is private and accessible using an SSH URL (which typically looks like git@github.com:organization/repository.git) and an SSH public/private keypair, such as with GitHub or GitLab deploy keys, then use the Git Repository over SSH source type.
+
+Create a new SSH key for your GovReady-Q instance to be used as a deploy key:
+
+    ssh-keygen -q -t rsa -b 2048 -N "" -C "_your-repo-name_-deployment-key" -f ./repo_deploy_key
+
+Your GovReady-Q instance will hold the private key half of the newly generated keypair, and your source code control system will hold the public key.
+
+Back in the Django admin, set the Source Type to Git Repository over SSH. Paste the git clone SSH URL into the URL field. Then open the newly generated file `repo_deploy_key` and paste its contents into the SSH Key field. Here's what that looks like:
+
+![App Source for a private git repository](assets/appsource_git_ssh.png)
+
+The other fields can be left blank. `Path` and `Branch` can be set the same as with the Git Repository over HTTPS source type (see above).
+
+Copy the public key in the newly generated file `repo_deploy_key.pub` into the deploy keys section of your source code repository. Here is what that looks like on GitHub:
+
+![Adding a deploy key to GitHub](assets/github_deploy_key_add.png)
+
+Make the key read only by leaving "Allow write access" field unchecked and click `Add the key` to save the key.
+
+#### GitHub Repository using the GitHub API
+
+This source type can be used to access private GitHub repositories using a GitHub username and password or a username and [personal access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
+
+Set the `Repository` field to the organization name and repository name, separated by a slash, as in the repository's URL following `github.com/`. In `Other Parameters`, paste a small YAML-formatted document holding a GitHub username and password or username and personal access token, formatted as follows:
+
+    auth:
+      user: 'myusername'
+      pw: 'mypassword'
+
+The other fields can be left blank. `Branch` can be set the same as with the Git Repository over HTTPS source type (see above).
+
+Since this source type requires user credentials, it should be avoided for production deployments in favor of using Git Repository over SSH.
+
+### Compliance Apps
+
+Compliance Apps are the actual assessments and questionnaires, the "data packs", that drive GovReady-Q.
 
 The AppSource admin now lists all of the apps provided by the source and has links to import new app versions into the database and to see the app versions already in the database by version number. When the App Source is defined, additional options appear on the database App Source admin page to selectively add individual projects and assessments from the App Source repository to the be published on GovReady-Q. Any time the individual admin page for an App Source is viewed, the App Source is rescanned and new versions of the apps are displayed to be selectively added to be available to users on GovReady-Q.
 
