@@ -3,13 +3,13 @@
 Release 0.9.0 (coming July 2019) is a minor release improving
 the user experience and performance.
 
-* Faster loading and launching of Asssessments/questionnaires
+* Faster loading and launching of Assessments/questionnaires
 * Simplified install with no subdomains to worry about
 * Replaces subdomain multi-tenancy with simplified "Groups" model
 * Improved authoring screens
 * Helpful new start page
 
-Release 0.9.0 removes multi-tenancy and serves all pages from the on the same domain. In earlier versions, requests to GovReady-Q came in on subdomains and the subdomain determined which Organization in the database the request would be associated with and individuals had to re-login across subdomains. Multitenancy increased install complexity and we were not seeing use of the multitenancy feature. Deployment is now simpler.
+Release 0.9.0 removes multi-tenancy and serves all pages from the on the same domain. In earlier versions, requests to GovReady-Q came in on subdomains and the subdomain determined which Organization in the database the request would be associated with and individuals had to re-login across subdomains. Multi-tenancy increased install complexity and we were not seeing use of the multi-tenancy feature. Deployment is now simpler.
 
 This release's compliance apps catalog now reads from the database rather than going to remote repositories The app catalog cache is removed since the page loads much faster. Release 0.9.0 begins to replace the "compliance app" terminology with the plain language "projects" and "assessment" terminology in the end user pages.
 
@@ -17,7 +17,7 @@ This release also introduces a "Group" feature to organize and manage related pr
 
 For a complete list of changes see the [0.9.0.rc branch CHANGELOG](https://github.com/GovReady/govready-q/blob/0.9.0.rc/CHANGELOG.md).
 
-Release 0.9.0 progress can be found on the `0.9.0.rc-xxx` branches. For the convience of this documentation and building Docker containers, the branch `0.9.0.rc` has also been created.
+Release 0.9.0 progress can be found on the `0.9.0.rc-xxx` branches. For the convenience of this documentation and building Docker containers, the branch `0.9.0.rc` has also been created.
 
 ## Release Date
 
@@ -34,8 +34,8 @@ If you are installing from source code:
 
 If you are installing using Docker:
 1. Make sure you pull the [0.9.0-rc container](https://cloud.docker.com/u/govready/repository/docker/govready/govready-q-0.9.0.rc).
-2. If you are using environmental parameters to connect the Docker deployment to a persistent database, GovReady-Q will automatically run the database migrations on start up.
-3. Release 0.9.0 will ingore the subdomain related environmental parameters that are no longer needed. We recommend updating your environmental parameters to remove these parameters.
+2. If you are using environment variables to connect the Docker deployment to a persistent database, GovReady-Q will automatically run the database migrations on start up.
+3. Release 0.9.0 will ignore the subdomain-related environment variables that are no longer needed. We recommend updating your environment variables to remove them.
 
 ## Installing 0.9.0
 
@@ -63,7 +63,7 @@ Click one of the tab belows to see quickstart for indicated platform.
             docker container run --name govready-q --detach -p 8000:8000 govready/govready-q-0.9.0.rc
 
             # Create admin account and organization data if setting up a new database
-            # Skip if you have passing environmental variables to connect to a persistent database
+            # Skip if you pass environment variables to connect to a persistent database
             docker container exec -it govready-q first_run
 
             # Stop, start container (when needed)
@@ -134,7 +134,7 @@ Click one of the tab belows to see quickstart for indicated platform.
             python3 manage.py load_modules
 
             # create superuser with initial account if setting up a new database
-            # skip if you have passing environmental variables to connect to a persistent database
+            # skip if you pass environment variables to connect to a persistent database
             python3 manage.py first_run
 
         .. rubric:: Start GovReady-Q
@@ -213,7 +213,7 @@ Click one of the tab belows to see quickstart for indicated platform.
             python3 manage.py load_modules
 
             # create superuser with initial account
-            # skip if you have passing environmental variables to connect to a persistent database
+            # skip if you pass environment variables to connect to a persistent database
             python3 manage.py first_run
 
             python3 manage.py first_run
@@ -288,7 +288,7 @@ Click one of the tab belows to see quickstart for indicated platform.
             python3 manage.py load_modules
 
             # create superuser with initial account
-            # skip if you have passing environmental variables to connect to a persistent database
+            # skip if you pass environment variables to connect to a persistent database
             python3 manage.py first_run
 
         .. rubric:: Start GovReady-Q
@@ -319,7 +319,7 @@ Click one of the tab belows to see quickstart for indicated platform.
             docker container run --name govready-q --detach -p 8000:8000 govready/govready-q-0.9.0.rc
 
             # Create admin account and organization data
-            # Skip if you have passing environmental variables to connect to a persistent database
+            # Skip if you pass environment variables to connect to a persistent database
             docker container exec -it govready-q first_run
 
             # Stop, start container
