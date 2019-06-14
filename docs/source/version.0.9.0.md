@@ -339,6 +339,7 @@ Click one of the tab belows to see quickstart for indicated platform.
 
             http://localhost:8000/
 
+<<<<<<< HEAD
 ## Adding and Managing "Compliance Apps" in 0.9.0
 
 ### Overview
