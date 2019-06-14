@@ -4,7 +4,7 @@ GovReady-Q Release Notes
 v0.9.0.rc.002+devel
 -------------------
 
-MAJOR version upgrade with braking database changes.
+MINOR version upgrade with braking database changes.
 
 Backup your database before running these migrations.
 
@@ -17,7 +17,7 @@ This is our most exciting release of GovReady-Q!
 * Streamlined new register,login page!
 * Beautiful and helpful new start page!
 
-NOTE: Running the migrations to update the database will perform significant changes to your data that will prevent rolling back the data migrations.
+NOTE: Running the migrations to update the database will perform changes that will prevent rolling back the data migrations.
 
 WIP CHECKLIST
 
