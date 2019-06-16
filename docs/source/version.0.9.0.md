@@ -45,7 +45,6 @@ Release 0.9.0 simplifies the installation of GovReady-Q by removing the need to 
 
 The installation of assessments (aka "Compliance Apps") requires an extra step in 0.9.0 but greatly improves user experience.
 
-
 Click one of the tab belows to see quickstart for indicated platform.
 
 .. container:: content-tabs
@@ -339,7 +338,6 @@ Click one of the tab belows to see quickstart for indicated platform.
 
             http://localhost:8000/
 
-<<<<<<< HEAD
 ## Adding and Managing "Compliance Apps" in 0.9.0
 
 ### Overview
