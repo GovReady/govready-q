@@ -24,7 +24,7 @@
             brew install python3
 
             # install other packages:
-            brew install unzip graphviz pandoc selenium-server-standalone
+            brew install unzip graphviz pandoc selenium-server-standalone magic libmagic
             brew cask install wkhtmltopdf
 
         .. rubric:: Installing GovReady-Q
@@ -61,7 +61,7 @@
         .. code-block:: bash
 
             # run the server
-            python3 manage.py migrate
+            python3 manage.py runserver
 
         Visit your GovReady-Q site in your web browser at:
 
