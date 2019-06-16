@@ -11,9 +11,9 @@ the user experience and performance.
 * Improved authoring screens
 * Helpful new start page
 
-Release 0.9.0 removes multi-tenancy and serves all pages from the on the same domain. In earlier versions, requests to GovReady-Q came in on subdomains and the subdomain determined which Organization in the database the request would be associated with and individuals had to re-login across subdomains. Multi-tenancy increased install complexity and we were not seeing use of the multi-tenancy feature. Deployment is now simpler.
+Release 0.9.0 removes multi-tenancy and serves all pages from the same domain. In the earlier multi-tenancy versions, requests to GovReady-Q came in on subdomains: the subdomain determined which organization to associate with the request, and individuals had to re-login across subdomains. Little value was being realized by actual users for the subdomain-based multi-tenancy. Removing subdomain-based multi-tenancy reduces technical debt simplifies deployment.
 
-This release's compliance apps catalog now reads from the database rather than going to remote repositories The app catalog cache is removed since the page loads much faster. Release 0.9.0 begins to replace the "compliance app" terminology with the plain language "projects" and "assessment" terminology in the end user pages.
+This release's compliance apps catalog now reads from the database rather than constantly rescanning remote repositories and the file system. The app catalog cache is removed since the page loads much faster. Release 0.9.0 begins to replace the "compliance app" terminology with the plain language "projects" and "assessment" terminology in end user pages.
 
 This release also introduces a "Group" feature to organize and manage related projects.
 
