@@ -11,15 +11,15 @@ the user experience and performance.
 * Improved authoring screens
 * Helpful new start page
 
-Release 0.9.0 removes multi-tenancy and serves all pages from the on the same domain. In earlier versions, requests to GovReady-Q came in on subdomains and the subdomain determined which Organization in the database the request would be associated with and individuals had to re-login across subdomains. Multi-tenancy increased install complexity and we were not seeing use of the multi-tenancy feature. Deployment is now simpler.
+Release 0.9.0 removes multi-tenancy and serves all pages from the same domain. In the earlier multi-tenancy versions, requests to GovReady-Q came in on subdomains: the subdomain determined which organization to associate with the request, and individuals had to re-login across subdomains. Little value was being realized by actual users for the subdomain-based multi-tenancy. Removing subdomain-based multi-tenancy reduces technical debt simplifies deployment.
 
-This release's compliance apps catalog now reads from the database rather than going to remote repositories The app catalog cache is removed since the page loads much faster. Release 0.9.0 begins to replace the "compliance app" terminology with the plain language "projects" and "assessment" terminology in the end user pages.
+This release's compliance apps catalog now reads from the database rather than constantly rescanning remote repositories and the file system. The app catalog cache is removed since the page loads much faster. Release 0.9.0 begins to replace the "compliance app" terminology with the plain language "projects" and "assessment" terminology in end user pages.
 
 This release also introduces a "Group" feature to organize and manage related projects.
 
-For a complete list of changes see the [0.9.0.rc branch CHANGELOG](https://github.com/GovReady/govready-q/blob/0.9.0.rc/CHANGELOG.md).
+For a complete list of changes see the [0.9.0.dev branch CHANGELOG](https://github.com/GovReady/govready-q/blob/0.9.0.dev/CHANGELOG.md).
 
-Release 0.9.0 progress can be found on the `0.9.0.rc-xxx` branches. For the convenience of this documentation and building Docker containers, the branch `0.9.0.rc` has also been created.
+Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branches.
 
 ## Release Date
 
@@ -30,12 +30,12 @@ The target release date 0.9.0 is July 2019.
 **Backup your database before upgrading to 0.9.0. Release 0.9.0 performs database changes that makes rolling back difficult.**
 
 If you are installing from source code:
-1. Pull and use the [0.9.0-rc branch](https://github.com/GovReady/govready-q/tree/0.9.0.rc).
+1. Pull and use the [0.9.0.dev branch](https://github.com/GovReady/govready-q/tree/0.9.0.dev).
 2. Tell Django to run the database migrations (e.g., `python manage.py migrate`).
 3. We recommend updating to your `local/environment.json` file to address release 0.9.0's removal of the need to manage subdomain-based multi-tenancy.
 
 If you are installing using Docker:
-1. Make sure you pull the [0.9.0-rc container](https://cloud.docker.com/u/govready/repository/docker/govready/govready-q-0.9.0.rc).
+1. Make sure you pull the [0.9.0.dev container](https://cloud.docker.com/u/govready/repository/docker/govready/govready-q-0.9.0.dev).
 2. If you are using environment variables to connect the Docker deployment to a persistent database, GovReady-Q will automatically run the database migrations on start up.
 3. Release 0.9.0 will ignore the subdomain-related environment variables that are no longer needed. We recommend updating your environment variables to remove them.
 
@@ -44,7 +44,6 @@ If you are installing using Docker:
 Release 0.9.0 simplifies the installation of GovReady-Q by removing the need to manage subdomain-based multi-tenancy.
 
 The installation of assessments (aka "Compliance Apps") requires an extra step in 0.9.0 but greatly improves user experience.
-
 
 Click one of the tab belows to see quickstart for indicated platform.
 
@@ -62,7 +61,7 @@ Click one of the tab belows to see quickstart for indicated platform.
         .. code-block:: bash
 
             # Run the docker container in detached mode
-            docker container run --name govready-q --detach -p 8000:8000 govready/govready-q-0.9.0.rc
+            docker container run --name govready-q --detach -p 8000:8000 govready/govready-q-0.9.0.dev
 
             # Create admin account and organization data if setting up a new database
             # Skip if you pass environment variables to connect to a persistent database
@@ -116,8 +115,8 @@ Click one of the tab belows to see quickstart for indicated platform.
             git clone https://github.com/govready/govready-q
             cd govready-q
 
-            # checkout the 0.9.0.rc (or desired 0.9.0.rc-0xx branch)
-            git checkout 0.9.0.rc
+            # checkout the 0.9.0.dev (or desired 0.9.0.rc-0xx branch)
+            git checkout 0.9.0.dev
 
             # install Python 3 packages
             pip3 install --user -r requirements.txt
@@ -195,8 +194,8 @@ Click one of the tab belows to see quickstart for indicated platform.
             git clone https://github.com/govready/govready-q
             cd govready-q
 
-            # checkout the 0.9.0.rc (or desired 0.9.0.rc-0xx branch)
-            git checkout 0.9.0.rc
+            # checkout the 0.9.0.dev (or desired 0.9.0.rc-0xx branch)
+            git checkout 0.9.0.dev
 
             # install Python 3 packages
             pip3 install --user -r requirements.txt
@@ -270,8 +269,8 @@ Click one of the tab belows to see quickstart for indicated platform.
             git clone https://github.com/govready/govready-q
             cd govready-q
 
-            # checkout the 0.9.0.rc (or desired 0.9.0.rc-0xx branch)
-            git checkout 0.9.0.rc
+            # checkout the 0.9.0.dev (or desired 0.9.0.rc-0xx branch)
+            git checkout 0.9.0.dev
 
             # install Python 3 packages
             pip3 install --user -r requirements.txt
@@ -318,7 +317,7 @@ Click one of the tab belows to see quickstart for indicated platform.
         .. code-block:: bash
 
             # Run the docker container in detached mode
-            docker container run --name govready-q --detach -p 8000:8000 govready/govready-q-0.9.0.rc
+            docker container run --name govready-q --detach -p 8000:8000 govready/govready-q-0.9.0.dev
 
             # Create admin account and organization data
             # Skip if you pass environment variables to connect to a persistent database
@@ -339,7 +338,6 @@ Click one of the tab belows to see quickstart for indicated platform.
 
             http://localhost:8000/
 
-<<<<<<< HEAD
 ## Adding and Managing "Compliance Apps" in 0.9.0
 
 ### Overview
