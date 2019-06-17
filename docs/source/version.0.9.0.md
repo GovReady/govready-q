@@ -65,6 +65,7 @@ Click one of the tab belows to see quickstart for indicated platform.
             # mkdir -p /codedata/code/govready-q-files
 
             # Run the docker container in detached mode
+
             docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
             -e EMAIL_HOST= -e EMAIL_PORT= -e EMAIL_USER= -e EMAIL_PW= -e EMAIL_DOMAIN= \
