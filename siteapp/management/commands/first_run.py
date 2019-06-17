@@ -68,13 +68,13 @@ class Command(BaseCommand):
         # Create the first organization.
         if not Organization.objects.filter(slug="main").exists():
             if not options['non_interactive']:
-                print("Let's create your Q organization.")
+                print("Let's create your organization.")
                 name = Organization._meta.get_field("name")
                 get_input = createsuperuser.Command().get_input_data
                 
-                name = get_input(name, "Organization Name: ", "Test Organization")
+                name = get_input(name, "Organization name: ", "My Organization")
             else:
-                name = "The Secure Company"
+                name = "The Secure Organization"
             org = Organization.create(name=name, slug="main", admin_user=user)
         else:
             org = Organization.objects.get(slug="main")
@@ -82,3 +82,8 @@ class Command(BaseCommand):
         # Add the user to the org's help squad and reviewers lists.
         if user not in org.help_squad.all(): org.help_squad.add(user)
         if user not in org.reviewers.all(): org.reviewers.add(user)
+
+        # Provide feedback to user
+        print("Your Superuser account is set up!")
+        print("You can now login into GovReady-Q...")
+
