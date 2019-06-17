@@ -34,6 +34,7 @@ If you have questions about if hosted version, email <a href="mailto:info@govrea
 | Downloading               | Where                                                                                                           |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------|
 | Current release on Docker | [https://hub.docker.com/r/govready/govready-q/](https://hub.docker.com/r/govready/govready-q/)                  |
+| Release 0.9.0.dev on Docker | [https://hub.docker.com/r/govready/govready-0.9.0.dev/](https://hub.docker.com/r/govready/govready-q-0.9.0.dev/)                  |
 | Nightly Build on Docker   | [https://hub.docker.com/r/govready/govready-q-nightly/](https://hub.docker.com/r/govready/govready-q-nightly/)  |
 | Clone the GitHub repo     | [https://github.com/govready/govready-q](https://github.com/govready/govready-q)                                |
 
