@@ -15,8 +15,8 @@ done
 # this script to exit.
 #
 # Also: Add built-in AppSources that has an entry for the GovReady
-# sample apps and an entry for loading apps from /mnt/apps which
-# the user starting the container may want to bind-mount to a
+# sample apps and an entry for loading apps from /usr/src/app/q-files
+# which the user starting the container may want to bind-mount to a
 # directory on the host for building their own apps. That directory
 # must exist and is created in dockerfile_exec.sh.
 python3.6 manage.py first_run

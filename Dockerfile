@@ -55,6 +55,7 @@ COPY modules ./modules
 COPY siteapp ./siteapp
 COPY templates ./templates
 COPY fixtures ./fixtures
+COPY q-files ./q-files
 COPY manage.py .
 
 # Flatten static files. Create a local/environment.json file that
@@ -86,11 +87,6 @@ COPY deployment/docker/dockerfile_exec.sh .
 COPY deployment/docker/first_run.sh /usr/local/bin/first_run
 COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
 COPY deployment/docker/tail_logs.sh /usr/local/bin/tail_logs
-
-# This directory must be present for the AppSource created by our
-# first_run script. The directory only has something in it if
-# the container is launched with --mount.
-RUN mkdir -p /mnt/apps
 
 # Create a non-root user and group for the application to run as to guard against
 # run-time modification of the system and application.

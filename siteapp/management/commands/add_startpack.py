@@ -40,25 +40,43 @@ class Command(BaseCommand):
                     "spec": { "type": "local", "path": "/mnt/apps" }
                 }
             )
-        appsource = AppSource.objects.get_or_create(
-            slug="govready-q-files-startpack",
-            defaults={
-                "spec": { "type": "git", "url": "https://github.com/GovReady/govready-q-files-startpack.git", "branch": "master", "path": "apps"}
-            }
-        )
 
-        # Load the AppSource we created
-        created_appsource = get_object_or_404(AppSource, slug="govready-q-files-startpack")
-
+        # Second, for 0.9.x startpack
+        qfiles_path = open(os.path.join(os.path.dirname(__file__), 'q-files', 'vendors', 'govready', 'govready-q-files-startpack', 'q-files'))
+        if os.path.exists(qfiles_path):
+            # For 0.9.x+.
+            AppSource.objects.get_or_create(
+                slug="govready-q-files-startpack",
+                defaults={
+                    "spec": { "type": "local", "path": qfiles_path }
+                }
+            )
         # Load the AppSource's assessments (apps) we want
         # We will do some hard-coding here temporarily
+        created_appsource = get_object_or_404(AppSource, slug="govready-q-files-startpack")
         appname = "System-Description-Demo"
         print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
-
         try:
             appver = created_appsource.add_app_to_catalog(appname)
         except Exception as e:
             raise
+
+        # # Third, for 0.9.x startpack
+        # appsource = AppSource.objects.get_or_create(
+        #     slug="govready-q-files-startpack-git",
+        #     defaults={
+        #         "spec": { "type": "git", "url": "https://github.com/GovReady/govready-q-files-startpack.git", "branch": "master", "path": "apps"}
+        #     }
+        # )
+        # # Load the AppSource's assessments (apps) we want
+        # # We will do some hard-coding here temporarily
+        # created_appsource = get_object_or_404(AppSource, slug="govready-q-files-startpack-git")
+        # appname = "System-Description-Demo"
+        # print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
+        # try:
+        #     appver = created_appsource.add_app_to_catalog(appname)
+        # except Exception as e:
+        #     raise
 
         # Provide feedback to user
         print("A set of starter assessments have been added to your GovReady-Q.")

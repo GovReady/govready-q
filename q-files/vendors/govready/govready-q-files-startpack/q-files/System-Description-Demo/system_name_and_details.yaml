@@ -1,0 +1,127 @@
+id: system_name_and_details
+title: System Name and Details
+introduction:
+  format: markdown
+  template: "An official name makes your information technology system easier to track
+    in documents and databases.\r\n\r\nLet's document the names of your system and
+    some basic system information."
+questions:
+- id: system_name
+  title: System name
+  prompt: |
+    What is the preferred official name of the system?
+  type: text
+- id: system_nickname_exists
+  title: System abbreviation exists
+  prompt: |
+    Does {{system_name}} have a nickname or acronym?
+
+    Organizations often use a nickname or acronym to refer to an information system.
+  type: yesno
+- id: system_nickname
+  title: System abbreviation
+  prompt: |
+    What is the preferred nickname or acronym for {{system_name}}?
+  type: text
+  impute:
+  - condition: system_nickname_exists == 'no'
+    value: ~
+- id: central_registry_exists
+  title: Does organization use a central registry?
+  prompt: |
+    Does {{organization}} use a central registry to give IT systems unique IDs?
+
+    Some organizations have a central registry which provides IT systems with unique identifiers.
+  type: yesno
+  help: If you do not know the answer, you can skip and answer this later.
+- id: system_id
+  title: System ID from central registry
+  prompt: |
+    What is the unique ID for your IT system {{system_name}} in {{organization}}'s central registry?
+  type: text
+  impute:
+  - condition: central_registry_exists == 'no'
+    value: ~
+- id: system_name_done_interstitial
+  title: System name complete
+  prompt: |
+    Thanks! You've now documented the system name.
+
+    - Official Name: **{{system_name}}**
+    - Nickname: **{{system_nickname}}**
+    - {{organization}} ID: **{{system_id}}**
+
+    Now let's document the type of system.
+  type: interstitial
+- id: what_kind_of_system
+  title: System type
+  prompt: What kind of information technology system is this?
+  type: choice
+  choices:
+  - key: application
+    text: Application
+    help: Any type of end-user facing software application including websites.
+  - key: service
+    text: General Service
+    help: Any type of network or infrastructure component (e.g., storage system).
+- id: what_kind_of_application
+  title: Application type
+  prompt: What kind of application is it?
+  type: choice
+  choices:
+  - key: desktop
+    text: Desktop Software
+  - key: mobile
+    text: Mobile Application
+  - key: web
+    text: Web Site
+  - key: server
+    text: Server Software
+  impute:
+  - condition: what_kind_of_system != 'application'
+    value: ~
+- id: desktop_operating_system
+  title: Desktop Applicaton Operating System
+  prompt: Which operating systems will the desktop application run on?
+  type: multiple-choice
+  choices:
+  - key: mswindows
+    text: Microsoft Windows
+    help: Includes Microsoft Surface and other Microsoft mobile devices.
+  - key: macos
+    text: Apple macOS / Macintosh OS X
+  - key: linux
+    text: Unix/Linux
+  impute:
+  - condition: what_kind_of_application != 'desktop'
+    value: ~
+  min: 0
+  max: ~
+- id: mobile_operating_system
+  title: Mobile Applicaton Operating System
+  prompt: Which operating systems will the mobile application run on?
+  type: multiple-choice
+  choices:
+  - key: ios
+    text: iOS
+    help: iPhone, iPad.
+  - key: android
+    text: Android
+    help: Android-based phones and devices.
+  - key: windows-mobile
+    text: Windows mobile
+    help: Windows based mobile devices other than Surface.
+  - key: other
+    text: Other
+  impute:
+  - condition: what_kind_of_application != 'mobile'
+    value: ~
+  min: 0
+  max: ~
+- id: launch_date
+  title: Launch date
+  prompt: |
+    When do you expect to launch {{system_name}} to users, or when was it launched?
+
+    If the system was already launched, enter the date the system went live.
+  type: date

@@ -359,7 +359,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1.5)
 
         # Text question.
         self.assertRegex(self.browser.title, "Next Question: The Question")
