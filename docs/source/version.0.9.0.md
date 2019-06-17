@@ -60,11 +60,18 @@ Click one of the tab belows to see quickstart for indicated platform.
 
         .. code-block:: bash
 
+            # Create a local directory for authoring Q assessment files
+            mkdir -p /path/to/govready-q-files
+            # mkdir -p /codedata/code/govready-q-files
+
             # Run the docker container in detached mode
-            docker container run --name govready-q --detach -p 8000:8000 govready/govready-q-0.9.0.dev
+            docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
+            -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
+            -e EMAIL_HOST= -e EMAIL_PORT= -e EMAIL_USER= -e EMAIL_PW= -e EMAIL_DOMAIN= \
+            --mount type=bind,src=/codedata/code/govready-q-files,dst=/usr/src/app/q-files \
+            govready/govready-q-0.9.0.dev
 
             # Create admin account and organization data if setting up a new database
-            # Skip if you pass environment variables to connect to a persistent database
             docker container exec -it govready-q first_run
 
             # Stop, start container (when needed)
@@ -77,10 +84,25 @@ Click one of the tab belows to see quickstart for indicated platform.
             # To destroy the container and all user data entered into Q
             docker container rm -f govready-q
 
-
         Visit your GovReady-Q site in your web browser at:
 
             http://localhost:8000/
+
+        Alternatively, we offer a shell script that helps launch GovReady-Q.
+        Do the following to download the shell script and launch GovReady-Q docker container.
+
+        .. code-block:: bash
+
+            cd /path/to/working/dir
+
+            # Get the docker_container_run.sh shell script
+            wget https://raw.githubusercontent.com/GovReady/govready-q/master/deployment/docker/docker_container_run.sh
+
+            # Make it executable
+            chmod +x docker_container_run.sh
+
+            ./docker_container_run.sh --name govready-q --relaunch --debug -v --appsdevdir /codedata/code/govready-q-files --image govready/govready-q-0.9.0.dev
+
 
     .. tab-container:: macos
         :title: macOS
@@ -342,7 +364,7 @@ Click one of the tab belows to see quickstart for indicated platform.
 
 ### Overview
 
-GovReady-Q must be configured by an administrator to load compliance apps (e.g., assessments and questionnaires) from one or more sources, which can be local directories or remote git repositories. Full administrative privileges are assigned to original user account created when executing `python manage.py fisrt_run` during installation.
+GovReady-Q must be configured by an administrator to load compliance apps (e.g., assessments and questionnaires) from one or more sources, which can be local directories or remote git repositories. Full administrative privileges are assigned to original user account created when executing `python manage.py first_run` during installation.
 
 App Sources are configured in the Django admin at the URL `/admin` on your GovReady-Q domain under `App Sources`:
 
