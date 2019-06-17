@@ -55,7 +55,7 @@ COPY modules ./modules
 COPY siteapp ./siteapp
 COPY templates ./templates
 COPY fixtures ./fixtures
-COPY q-files ./q-files
+COPY q-files ./siteapp/management/commands/q-files
 COPY manage.py .
 
 # Flatten static files. Create a local/environment.json file that
