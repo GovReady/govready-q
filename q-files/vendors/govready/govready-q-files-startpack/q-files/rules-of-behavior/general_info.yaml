@@ -169,7 +169,7 @@ questions:
     Describe in a sentence where your organization {% if exists == 'yes' %}maintains{% else %}will maintain{% endif %} the Rules of Behavior {{source_repo.text}} for editing
   examples:
   - example: |
-      The Rules and Behavior authoritative {{source_repo.text}} is maintained on the Security Team's file share at '/path/to/rob_file_v.docx'.
+      The authoritative Rules and Behavior document is maintained on the Security Team's file share at '/path/to/rob_file_v.docx'.
   type: longtext
 
 - id: role_owner

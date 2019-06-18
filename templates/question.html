@@ -304,7 +304,7 @@ label:hover .onhover { display: inline; }
               <div style="margin: 1em 0 1.5em 0">
               {% for choice in q.spec.choices %}
               <div class="radio">
-                <label>
+                <label style="text-align: left;">
                   <input name="value" value="{{choice.key}}" type="radio" {% if answer == choice.key %}checked{% endif %}> {{choice.text}}
                   <p class="help-block">{{choice.help}}</p>
                 </label>
