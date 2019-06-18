@@ -95,7 +95,7 @@ Click one of the tab belows to see quickstart for indicated platform.
             docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
             -e EMAIL_HOST= -e EMAIL_PORT= -e EMAIL_USER= -e EMAIL_PW= -e EMAIL_DOMAIN= \
-            --mount type=bind,src=.,dst=/mnt/q-files-host \
+            --mount type=bind,source="$(pwd)",target=/mnt/q-files-host \
             govready/govready-q-0.9.0.dev
 
         Alternatively, we offer a shell script that helps launch GovReady-Q.

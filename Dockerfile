@@ -91,7 +91,7 @@ COPY deployment/docker/tail_logs.sh /usr/local/bin/tail_logs
 # This directory must be present for the AppSource created by our
 # first_run script. The directory only has something in it if
 # the container is launched with --mount.
-# --mount type=bind,src=/codedata/code/govready-q-files,dst=/mnt/q-files-host
+# --mount type=bind,source="$(pwd)",dst=/mnt/q-files-host
 RUN mkdir -p /mnt/q-files-host
 
 # Create a non-root user and group for the application to run as to guard against
