@@ -1,0 +1,43 @@
+id: poc_details
+title: POC Details
+
+questions:
+
+- id: intro
+  title: Introduction
+  prompt: |
+    In this section, let's collect some details on the project or program manager point of contact.
+  type: interstitial
+
+- id: poc_name
+  title: Project or Program Manager
+  prompt: |
+    Name of project or program manager:
+  type: text
+
+- id: poc_office
+  title: Office
+  prompt: |
+    Office in which the project or program manager is based:
+  type: text
+
+- id: poc_title
+  title: Title
+  prompt: |
+    Title of project or program manager:
+  type: text
+
+- id: poc_phone
+  title: Phone
+  prompt: |
+    Phone of project or program manager:
+  type: text
+
+- id: poc_email
+  title: Email
+  prompt: |
+    Email of project or program manager:
+  type: email-address
+
+output:
+- templates/poc_details.md

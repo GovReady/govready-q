@@ -1,10 +1,22 @@
 id: app
-title: Basic System Profile
+title: (Demo) Basic System Profile
 type: project
-version: 1.0.1
+version: 1.0.3
 icon: app.png
 protocol:
 - govready.com/apps/compliance/2018/basic-system-description
+catalog:
+  category: System Information
+  description:
+    long: |
+      Gather system name, descriptions and other basic details of your information system.
+    short: |
+      Prepare a re-usable, basic system descriptions
+  source_url: https://github.com/GovReady/govready-q-files-starterpack/apps/Basic-System-Description
+  status: Operational
+  vendor: GovReady PBC
+  vendor_url: http://www.govready.com
+  version: 1.0.3
 interstitial:
   format: markdown
   template: |
@@ -30,6 +42,27 @@ invitation_to_task_interstitial:
     We'll tell {{invitation.from_user}} you're getting started.
 export_button_label: Export System Description and Control Information
 
+questions:
+
+- id: system_basics
+  title: Document official system name and type
+  type: module
+  module-id: system_name_and_details
+  tab: System Profile
+  group: System Description
+- id: system_basics_technical
+  title: Document basic technical details
+  type: module
+  module-id: system_basics_technical
+  tab: System Profile
+  group: System Description
+- id: system_description
+  title: Prepare re-usable system descriptions
+  type: module
+  module-id: system_description
+  tab: System Profile
+  group: System Description
+
 output:
 - id: system_profile
   tab: System Profile
@@ -52,36 +85,3 @@ output:
   format: markdown
   template: |
     {{project.system_basics.system_nickname}}
-catalog:
-  category: Technology Components
-  description:
-    long: |
-      Gather system name, descriptions and other basic details of your information system.
-    short: |
-      Prepare a re-usable, basic system descriptions
-  source_url: https://github.com/GovReady/govready-q-files-starterpack/apps/Basic-System-Description
-  status: Operational
-  vendor: GovReady PBC
-  vendor_url: http://www.govready.com
-  version: 1.0.1
-
-questions:
-
-- id: system_basics
-  title: Document official system name and type
-  type: module
-  module-id: system_name_and_details
-  tab: System Profile
-  group: System Description
-- id: system_basics_technical
-  title: Document basic technical details
-  type: module
-  module-id: system_basics_technical
-  tab: System Profile
-  group: System Description
-- id: system_description
-  title: Prepare re-usable system descriptions
-  type: module
-  module-id: system_description
-  tab: System Profile
-  group: System Description

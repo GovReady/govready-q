@@ -1,0 +1,12 @@
+id: screenshots_docs
+title: Screenshots and Documents
+
+questions:
+
+- id: q1
+  title: 1. Purpose of the Information Collection or Form
+  prompt: |
+    Purpose of the Information Collection or Form 
+
+    The next few questions will ask about the purpose of the information collection or form.
+  type: interstitial

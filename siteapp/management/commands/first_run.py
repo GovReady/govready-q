@@ -1,4 +1,4 @@
-import sys
+fimport sys
 import os.path
 
 from django.core.management import call_command
@@ -53,12 +53,12 @@ class Command(BaseCommand):
             # Load the AppSource's assessments (apps) we want
             # We will do some hard-coding here temporarily
             created_appsource = AppSource.objects.get(slug="govready-q-files-startpack")
-            appname = "System-Description-Demo"
-            print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
-            try:
-                appver = created_appsource.add_app_to_catalog(appname)
-            except Exception as e:
-                raise
+            for appname in ["System-Description-Demo", "PTA-Demo"]
+                print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
+                try:
+                    appver = created_appsource.add_app_to_catalog(appname)
+                except Exception as e:
+                    raise
 
         # Third, for 0.9.x startpack
         AppSource.objects.get_or_create(
