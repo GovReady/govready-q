@@ -1,4 +1,4 @@
-fimport sys
+import sys
 import os.path
 
 from django.core.management import call_command
