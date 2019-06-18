@@ -348,6 +348,17 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Your Compliance Projects")
         self.assertNodeNotVisible('#please-complete-account-settings')
 
+    def test_static_pages(self):
+        self.browser.get(self.url("/privacy"))
+        self.assertRegex(self.browser.title, "Privacy Policy")
+        var_sleep(0.5)
+        self.browser.get(self.url("/terms-of-service"))
+        self.assertRegex(self.browser.title, "Terms of Service")
+        var_sleep(0.5)
+        self.browser.get(self.url("/love-assessments"))
+        self.assertRegex(self.browser.title, "Love Assessments")
+        var_sleep(0.5)
+
     def test_simple_module(self):
         # Log in and create a new project and start its task.
         self._login()

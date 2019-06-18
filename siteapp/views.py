@@ -1462,8 +1462,7 @@ def shared_static_pages(request, page):
 
     return render(request,
         page + ".html", {
-        "base_template": "base-landing.html" if not hasattr(request, "organization")
-                         else "base.html",
+        "base_template": "base.html",
         "SITE_ROOT_URL": request.build_absolute_uri("/"),
         "password_hash_method": password_hash_method,
     })

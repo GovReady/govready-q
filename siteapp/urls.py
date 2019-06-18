@@ -10,7 +10,7 @@ from .good_settings_helpers import signup_wrapper
 
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
-    url(r"^(privacy|terms-of-service)$", views.shared_static_pages),
+    url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages),
 
     url(r'^api/v1/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
     url(r'^media/users/(\d+)/photo/(\w+)', views_landing.user_profile_photo),
