@@ -328,10 +328,10 @@ label:hover .onhover { display: inline; }
               </div>
 
             {% elif q.spec.type == "multiple-choice" %}
-              <div style="margin: 1em 0 1.5em 0">
+              <div style="margin: 1em 0 1.5em 0;">
               {% for choice in q.spec.choices %}
               <div class="checkbox">
-                <label>
+                <label style="text-align: left;">
                   <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer %}checked{% endif %}> {{choice.text}}
                   <p class="help-block">{{choice.help}}</p>
                 </label>
