@@ -30,12 +30,12 @@ class Command(BaseCommand):
             sys.exit(1)
 
         # Create AppSources that we want.
-        if os.path.exists("/mnt/apps"):
+        if os.path.exists("/mnt/q-files-host"):
             # For our docker image.
             AppSource.objects.get_or_create(
                 slug="host",
                 defaults={
-                    "spec": { "type": "local", "path": "/mnt/apps" }
+                    "spec": { "type": "local", "path": "/mnt/q-files-host" }
                 }
             )
         # Second, for 0.9.x startpack
@@ -50,15 +50,15 @@ class Command(BaseCommand):
                     "spec": { "type": "local", "path": qfiles_path }
                 }
             )
-        # Load the AppSource's assessments (apps) we want
-        # We will do some hard-coding here temporarily
-        created_appsource = get_object_or_404(AppSource, slug="govready-q-files-startpack")
-        appname = "System-Description-Demo"
-        print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
-        try:
-            appver = created_appsource.add_app_to_catalog(appname)
-        except Exception as e:
-            raise
+            # Load the AppSource's assessments (apps) we want
+            # We will do some hard-coding here temporarily
+            created_appsource = AppSource.objects.get(slug="govready-q-files-startpack")
+            appname = "System-Description-Demo"
+            print("Adding appname '{}' from AppSource '{}' to catalog.".format(appname, created_appsource))
+            try:
+                appver = created_appsource.add_app_to_catalog(appname)
+            except Exception as e:
+                raise
 
         # Third, for 0.9.x startpack
         AppSource.objects.get_or_create(
