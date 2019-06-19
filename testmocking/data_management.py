@@ -75,13 +75,14 @@ def delete_objects(model):
     with open(_getpath(model), 'w') as file:
         file.write('');
 
-def answer_randomly(task, overwrite=False):
+def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
     current_answers = [x for x in task.get_current_answer_records()]
     for question in task.module.questions.order_by('definition_order'):
-        if 'impute' in question.spec:
+        if (halt_impute or skip_impute) and 'impute' in question.spec:
             print("'impute' handling not yet implemented, skipping " + question.key)
-            #continue
-            break
+            if halt_impute:
+                break
+            continue
 
         if not overwrite:
             has_answer = len([x for x in current_answers if x[1] and x[0].key == question.key]) > 0
@@ -95,8 +96,11 @@ def answer_randomly(task, overwrite=False):
             answer = sample(['yes', 'no'],1)[0]
         if type == 'text':
             answer = get_random_string(20)
-        if type == 'choice':
+        if type == 'choice' or type == 'multiple-choice':
             answer = sample(question.spec['choices'], 1)[0]['key']
+        if type == 'multiple-choice':
+            # TODO make this handle a random number of choices, rather than just 1 choice each time
+            answer = [x['key'] for x in sample(question.spec['choices'], 1)]
         
         if not answer:
             print("Cannot answer question of type '" + type + "'")
@@ -120,3 +124,11 @@ def answer_randomly(task, overwrite=False):
         else:
             print("No change?")
             break
+
+
+import requests
+import parsel
+def login(username, password, domain):
+    session = requests.Session()
+    response = session.get(domain)
+    return parsel.Selector(text=response.text)

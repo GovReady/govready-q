@@ -13,11 +13,15 @@ from siteapp.models import User, Organization
 from testmocking.data_management import answer_randomly
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Automatically answers questions in a "Task" (form section, roughly?)'
 
     def add_arguments(self, parser):
-        parser.add_argument('--id', type=int, required=True)
+        parser.add_argument('--id', type=int, required=True, help="the ID of the task you want to answer")
+        parser.add_argument('--impute', choices=['halt', 'skip', 'answer'], default='halt', help="specify 'halt' (the default) to abort on the first non-handled imputed question, 'skip' to ignore it and answer future questions, or 'answer' to answer it despite possibly being imputed")
 
     def handle(self, *args, **options):
         task = Task.objects.filter(id=options['id'])[0]
-        answer_randomly(task)
+
+        halt_impute = (options['impute'] == 'halt')
+        skip_impute = (options['impute'] == 'skip')
+        answer_randomly(task, halt_impute=halt_impute, skip_impute=skip_impute)

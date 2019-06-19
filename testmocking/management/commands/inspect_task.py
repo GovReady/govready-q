@@ -13,11 +13,11 @@ from siteapp.models import User, Organization
 from testmocking.data_management import answer_randomly
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Shows some development information on a Task, by ID'
 
     def add_arguments(self, parser):
         parser.add_argument('--id', type=int, required=True)
-        parser.add_argument('--spacer', action="store_true")
+        parser.add_argument('--spacer', action="store_true", help="Add a blank line after certain portions of the output")
 
     def handle(self, *args, **options):
         task = Task.objects.filter(id=options['id'])[0]
