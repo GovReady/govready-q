@@ -38,5 +38,5 @@ class Command(BaseCommand):
             help_squad = sample(users, 5)
             reviewers = sample(users, 5)
             org = create_organization(admin=admin, help_squad=help_squad, reviewers=reviewers)
-            print("Admin: " + admin.username)
+            print("Admin for " + org.name + ": " + admin.username)
 
