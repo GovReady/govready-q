@@ -45,6 +45,8 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
         .. code-block:: bash
 
             # Run the govready-q-0.9.0.dev docker container in detached mode
+            # Note this is a multi-line command
+            # This command uses port 8000, please make sure this port is free before running 
             docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
             govready/govready-q-0.9.0.dev
