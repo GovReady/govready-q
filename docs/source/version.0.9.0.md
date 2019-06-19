@@ -44,25 +44,25 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
 
         .. code-block:: bash
 
-            # Run the govready-q-0.9.0.dev docker container in detached mode
+            # Run the govready-q-0.9.0 docker container in detached mode
             # Note this is a multi-line command
             # This command uses port 8000, please make sure this port is free before running 
-            docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
+            docker container run --detach --name govready-q-0.9.0 -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
-            govready/govready-q-0.9.0.dev
+            govready/govready-q-0.9.0
 
             # Create admin account and organization data if setting up a new database
-            docker container exec -it govready-q first_run
+            docker container exec -it govready-q-0.9.0 first_run
 
             # Stop, start container (when needed)
-            docker container stop govready-q
-            docker container start govready-q
+            docker container stop govready-q-0.9.0
+            docker container start govready-q-0.9.0
 
             # View logs - useful if site does not appear
-            docker container logs govready-q
+            docker container logs govready-q-0.9.0
 
             # To destroy the container and all user data entered into Q
-            docker container rm -f govready-q
+            docker container rm -f govready-q-0.9.0
 
         Visit your GovReady-Q site in your web browser at:
 
@@ -78,20 +78,20 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
             mkdir govready-q-workspace
             cd govready-q-workspace
 
-            # Run the govready-q-0.9.0.dev docker container in detached mode
+            # Run the govready-q-0.9.0 docker container in detached mode
             # mounting your present working directory.
             # Additional parameters for configuring email also shown.
-            docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
+            docker container run --detach --name govready-q-0.9.0 -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
             -e EMAIL_HOST= -e EMAIL_PORT= -e EMAIL_USER= -e EMAIL_PW= -e EMAIL_DOMAIN= \
             --mount type=bind,source="$(pwd)",target=/mnt/q-files-host \
-            govready/govready-q-0.9.0.dev
+            govready/govready-q-0.9.0
 
             # Create admin account and organization data if setting up a new database
-            docker container exec -it govready-q first_run
+            docker container exec -it govready-q-0.9.0 first_run
 
             # To destroy the container and all user data entered into Q
-            docker container rm -f govready-q
+            docker container rm -f govready-q-0.9.0
 
         Alternatively, we offer a shell script that helps launch GovReady-Q.
         Do the following to download the shell script and launch GovReady-Q docker container.
@@ -106,7 +106,7 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
             # Make it executable
             chmod +x docker_container_run.sh
 
-            ./docker_container_run.sh --name govready-q --relaunch --debug -v --appsdevdir /codedata/code/govready-q-files --image govready/govready-q-0.9.0.dev
+            ./docker_container_run.sh --name govready-q-0.9.0 --relaunch --debug -v --appsdevdir /codedata/code/govready-q-files --image govready/govready-q-0.9.0
 
     .. tab-container:: macos
         :title: macOS
@@ -338,23 +338,23 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
 
         .. code-block:: bash
 
-            # Run the govready-q-0.9.0.dev docker container in detached mode
-            docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
+            # Run the govready-q-0.9.0 docker container in detached mode
+            docker container run --detach --name govready-q-0.9.0 -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
-            govready/govready-q-0.9.0.dev
+            govready/govready-q-0.9.0
 
             # Create admin account and organization data if setting up a new database
-            docker container exec -it govready-q first_run
+            docker container exec -it govready-q-0.9.0 first_run
 
             # Stop, start container (when needed)
-            docker container stop govready-q
-            docker container start govready-q
+            docker container stop govready-q-0.9.0
+            docker container start govready-q-0.9.0
 
             # View logs - useful if site does not appear
-            docker container logs govready-q
+            docker container logs govready-q-0.9.0
 
             # To destroy the container and all user data entered into Q
-            docker container rm -f govready-q
+            docker container rm -f govready-q-0.9.0
 
         Visit your GovReady-Q site in your web browser at:
 
@@ -370,20 +370,20 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
             mkdir govready-q-workspace
             cd govready-q-workspace
 
-            # Run the govready-q-0.9.0.dev docker container in detached mode
+            # Run the govready-q-0.9.0 docker container in detached mode
             # mounting your present working directory.
             # Additional parameters for configuring email also shown.
-            docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
+            docker container run --detach --name govready-q-0.9.0 -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
             -e EMAIL_HOST= -e EMAIL_PORT= -e EMAIL_USER= -e EMAIL_PW= -e EMAIL_DOMAIN= \
             --mount type=bind,source="$(pwd)",target=/mnt/q-files-host \
-            govready/govready-q-0.9.0.dev
+            govready/govready-q-0.9.0
 
             # Create admin account and organization data if setting up a new database
-            docker container exec -it govready-q first_run
+            docker container exec -it govready-q-0.9.0 first_run
 
             # To destroy the container and all user data entered into Q
-            docker container rm -f govready-q
+            docker container rm -f govready-q-0.9.0
 
         Alternatively, we offer a shell script that helps launch GovReady-Q.
         Do the following to download the shell script and launch GovReady-Q docker container.
@@ -398,7 +398,7 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
             # Make it executable
             chmod +x docker_container_run.sh
 
-            ./docker_container_run.sh --name govready-q --relaunch --debug -v --appsdevdir /codedata/code/govready-q-files --image govready/govready-q-0.9.0.dev
+            ./docker_container_run.sh --name govready-q-0.9.0 --relaunch --debug -v --appsdevdir /codedata/code/govready-q-files --image govready/govready-q-0.9.0
 
 
 ## Upgrading to 0.9.0 from 0.8.x
@@ -411,7 +411,7 @@ If you are installing from source code:
 3. We recommend updating to your `local/environment.json` file to address release 0.9.0's removal of the need to manage subdomain-based multi-tenancy.
 
 If you are installing using Docker:
-1. Make sure you pull the [0.9.0.dev container](https://cloud.docker.com/u/govready/repository/docker/govready/govready-q-0.9.0.dev).
+1. Make sure you pull the [0.9.0 container](https://cloud.docker.com/u/govready/repository/docker/govready/govready-q-0.9.0).
 2. If you are using environment variables to connect the Docker deployment to a persistent database, GovReady-Q will automatically run the database migrations on start up.
 3. Release 0.9.0 will ignore the subdomain-related environment variables that are no longer needed. We recommend updating your environment variables to remove them.
 
