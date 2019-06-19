@@ -60,11 +60,7 @@ Click one of the tab belows to see quickstart for indicated platform.
 
         .. code-block:: bash
 
-            # Create a local directory for authoring Q assessment files
-            mkdir -p /path/to/govready-q-files
-            # mkdir -p /codedata/code/govready-q-files
-
-            # Run the docker container in detached mode
+            # Run the govready-q-0.9.0.dev docker container in detached mode
             docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
             govready/govready-q-0.9.0.dev
@@ -87,16 +83,30 @@ Click one of the tab belows to see quickstart for indicated platform.
             http://localhost:8000/
 
         Dockerized GovReady-Q supports additional options. Below is a more complete example
-        parameters available.
+        parameters available, including mounting a local directory to author your own assessments.
 
         .. code-block:: bash
 
-            # Run the docker container in detached mode
+            # Create a local directory for authoring Q assessment files
+            cd ~/
+            mkdir govready-q-workspace
+            cd govready-q-workspace
+
+            # Run the govready-q-0.9.0.dev docker container in detached mode
+            # mounting your present working directory.
+            # Additional parameters for configuring email also shown.
             docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
             -e EMAIL_HOST= -e EMAIL_PORT= -e EMAIL_USER= -e EMAIL_PW= -e EMAIL_DOMAIN= \
             --mount type=bind,source="$(pwd)",target=/mnt/q-files-host \
             govready/govready-q-0.9.0.dev
+
+            # Create admin account and organization data if setting up a new database
+            docker container exec -it govready-q first_run
+
+            # To destroy the container and all user data entered into Q
+            docker container rm -f govready-q
+
 
         Alternatively, we offer a shell script that helps launch GovReady-Q.
         Do the following to download the shell script and launch GovReady-Q docker container.
