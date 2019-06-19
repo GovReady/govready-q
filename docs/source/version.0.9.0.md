@@ -406,12 +406,12 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
 **Backup your database before upgrading to 0.9.0. Release 0.9.0 performs database changes that makes rolling back difficult.**
 
 If you are installing from source code:
-1. Pull and use the [0.9.0.dev branch](https://github.com/GovReady/govready-q/tree/0.9.0).
+1. Pull and use the [0.9.0.dev branch](https://github.com/GovReady/govready-q/tree/0.9.0.dev).
 2. Tell Django to run the database migrations (e.g., `python manage.py migrate`).
 3. We recommend updating to your `local/environment.json` file to address release 0.9.0's removal of the need to manage subdomain-based multi-tenancy.
 
 If you are installing using Docker:
-1. Make sure you pull the [0.9.0.dev container](https://cloud.docker.com/u/govready/repository/docker/govready/govready-q-0.9.0).
+1. Make sure you pull the [0.9.0 container](https://cloud.docker.com/u/govready/repository/docker/govready/govready-q-0.9.0).
 2. If you are using environment variables to connect the Docker deployment to a persistent database, GovReady-Q will automatically run the database migrations on start up.
 3. Release 0.9.0 will ignore the subdomain-related environment variables that are no longer needed. We recommend updating your environment variables to remove them.
 
