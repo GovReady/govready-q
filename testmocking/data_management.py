@@ -3,6 +3,7 @@ from random import sample
 
 from django.utils.crypto import get_random_string
 from siteapp.models import User, Organization
+from guidedmodules.models import Task, TaskAnswer
 
 def get_file_dir():
     return os.path.dirname(os.path.realpath(__file__))
@@ -73,3 +74,49 @@ def delete_objects(model):
     # truncate the file
     with open(_getpath(model), 'w') as file:
         file.write('');
+
+def answer_randomly(task, overwrite=False):
+    current_answers = [x for x in task.get_current_answer_records()]
+    for question in task.module.questions.order_by('definition_order'):
+        if 'impute' in question.spec:
+            print("'impute' handling not yet implemented, skipping " + question.key)
+            #continue
+            break
+
+        if not overwrite:
+            has_answer = len([x for x in current_answers if x[1] and x[0].key == question.key]) > 0
+            if has_answer:
+                print("Already answered " + question.key)
+                continue
+
+        type = question.spec['type']
+        answer = None
+        if type == 'yesno':
+            answer = sample(['yes', 'no'],1)[0]
+        if type == 'text':
+            answer = get_random_string(20)
+        if type == 'choice':
+            answer = sample(question.spec['choices'], 1)[0]['key']
+        
+        if not answer:
+            print("Cannot answer question of type '" + type + "'")
+            continue
+        
+        print(str((question.key, type, answer)))
+        taskans, isnew = TaskAnswer.objects.get_or_create(task=task, question=question)
+
+        from guidedmodules.answer_validation import validator
+        try:
+            value = validator.validate(question, answer)
+        except ValueError as e:
+            print("Answering {}: {}...".format(question.key, e))
+            #return False
+            break
+
+        # Save the value.
+        dummy_user = User.objects.all()[0]
+        if taskans.save_answer(value, [], None, dummy_user, "api"):
+            print("Answered {} with {}...".format(question.key, answer))
+        else:
+            print("No change?")
+            break
