@@ -10,9 +10,9 @@ Docker Compose commands are similar to, but different from, regular Docker comma
 
 ## Set Up A Docker Host
 
-### Workstation 
+### Workstation
 
-[Install Docker](https://docs.docker.com/install/) and Docker Compose on your workstation. 
+[Install Docker](https://docs.docker.com/install/) and Docker Compose on your workstation.
 
 * On Mac and Windows, Docker Compose is included as part of the Docker install.
 * On Linux, after installing Docker, [install Docker Compose](https://docs.docker.com/compose/install/#install-compose). Also, you may want to [grant non-root users access to run Docker containers](https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user).
