@@ -55,6 +55,7 @@ COPY modules ./modules
 COPY siteapp ./siteapp
 COPY templates ./templates
 COPY fixtures ./fixtures
+COPY testmocking ./testmocking
 COPY manage.py .
 
 # Flatten static files. Create a local/environment.json file that
