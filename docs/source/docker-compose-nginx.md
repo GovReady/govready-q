@@ -38,7 +38,7 @@ Any `docker-compose` commands will need the `docker-compose.yml` file to know wh
 
 There are self-signed certs including in the `nginx` directory.  They are copied into the `nginx` container for `nginx` to refer to.
 
-Self-signed certs are sufficient to allow GovReady-Q and nginx to work together with your browser.  However, you will get a security exception notice from your browser, and you will have to approve the "unsafe" exception to proceed.
+Self-signed certs are sufficient to allow GovReady-Q and NGINX to work together with your browser.  However, you will get a security exception notice from your browser, and you will have to approve the "unsafe" exception to proceed.
 
 To use real certs issued against a CA your browser will recognize, you can replace the `cert.pem` and `key.pem` files and issue the `docker-compose build` file, or you can mount a data volume with your certs in it to `/etc/pki/tls/certs/` .
 
