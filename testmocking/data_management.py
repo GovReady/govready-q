@@ -102,7 +102,7 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
             # TODO make this handle a random number of choices, rather than just 1 choice each time
             answer = [x['key'] for x in sample(question.spec['choices'], 1)]
         
-        if not answer:
+        if not answer and type != 'interstitial':
             print("Cannot answer question of type '" + type + "'")
             continue
         
