@@ -1,8 +1,8 @@
-# GovReady-Q and nginx via Docker Compose
+# GovReady-Q and NGINX via Docker Compose
 
 ## Overview
 
-This directory contains configuration files that run two Docker containers, one for GovReady-Q and the other for nginx, as a multi-container app.  nginx is used in a reverse proxy configuration, to handle incoming HTTP and HTTPS requests, which it then passes to GovReady-Q.
+This directory contains configuration files that run two Docker containers, one for GovReady-Q and the other for NGINX, as a multi-container app.  NGINX is used in a reverse proxy configuration, to handle incoming HTTP and HTTPS requests, which it then passes to GovReady-Q.
 
 Use [Docker Compose](https://docs.docker.com/compose/) to manage the multi-container app.
 
@@ -54,7 +54,7 @@ To build the images:
 docker-compose build
 ```
 
-## Run GovReady-Q + nginx Multi-container App
+## Run GovReady-Q + NGINX Multi-container App
 
 To start the containers:
 
@@ -135,7 +135,7 @@ export GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
 
 ```
 
-After setting the variables, continue with the "Run GovReady-Q + nginx Multi-container App" section above.
+After setting the variables, continue with the "Run GovReady-Q + NGINX Multi-container App" section above.
 
 If you don't set enviroment variables, these defaults are used:
 
