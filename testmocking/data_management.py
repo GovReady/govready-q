@@ -1,5 +1,5 @@
 import os
-from random import sample
+from random import sample, randint
 
 from django.utils.crypto import get_random_string
 from siteapp.models import User, Organization
@@ -96,11 +96,13 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
             answer = sample(['yes', 'no'],1)[0]
         if type == 'text':
             answer = get_random_string(20)
-        if type == 'choice' or type == 'multiple-choice':
+        if type == 'choice':
             answer = sample(question.spec['choices'], 1)[0]['key']
         if type == 'multiple-choice':
+            choices = question.spec['choices']
+            amount = randint(question.spec['min'], len(choices))
             # TODO make this handle a random number of choices, rather than just 1 choice each time
-            answer = [x['key'] for x in sample(question.spec['choices'], 1)]
+            answer = [x['key'] for x in sample(choices, amount)]
         
         if not answer and type != 'interstitial':
             print("Cannot answer question of type '" + type + "'")
