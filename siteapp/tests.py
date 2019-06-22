@@ -66,6 +66,14 @@ class SeleniumTest(StaticLiveServerTestCase):
         cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
 
+        # Clean up and quit tests if Q is in SSO mode
+        if getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', None):
+            print("Cannot run tests.")
+            print("Tests will not run when IAM Proxy enabled (e.g., when `local/environment.json` sets `trust-user-authentication-headers` parameter.)")
+            cls.browser.quit()
+            super(SeleniumTest, cls).tearDownClass()
+            exit()
+
     @classmethod
     def tearDownClass(cls):
         # Terminate the selenium browser.
