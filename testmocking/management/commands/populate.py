@@ -21,8 +21,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--password')
         
-        parser.add_argument('--user-count', type=int, default=20)
-        parser.add_argument('--org-count', type=int, default=5)
+        parser.add_argument('--user-count', type=int, default=5)
+        parser.add_argument('--org-count', type=int, default=1)
         parser.add_argument('--print-iter', type=int, default=100)
 
         parser.add_argument('--full', action="store_true", help="Also start and fill out assessments, etc., for each organization")
