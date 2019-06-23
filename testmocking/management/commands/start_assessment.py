@@ -8,7 +8,10 @@ from django.db.utils import OperationalError
 from django.conf import settings
 
 class Command(BaseCommand):
-    help = 'Automatically answers questions in all "Task"s for an org'
+    client = None
+    bad_comps = []
+
+    help = 'Starts one or many assessments for an org'
 
     def add_arguments(self, parser):
         parser.add_argument('--base_url', type=str, required=True, help="")
@@ -17,25 +20,36 @@ class Command(BaseCommand):
         parser.add_argument('--to-completion', action="store_true", help="")
 
     def handle(self, *args, **options):
-        client = WebClient(options['base_url'])
-        client.load('')
-        client.login(options['username'], options['password'])
+        self.client = WebClient(options['base_url'])
+        self.client.load('')
+        self.client.login(options['username'], options['password'])
 
-        comp = sample(client.get_components(), 1)[0]
+        if options['to_completion']:
+            comps = self.client.get_components()
+            repeatable_comp_count = len(self.client.selector.css('.question-title .glyphicon-plus'))
+            print("{} repeatable components".format(repeatable_comp_count))
+            while options['to_completion'] and len(comps) > repeatable_comp_count + len(self.bad_comps):
+                self._do_single()
+                comps = self.client.get_components()
+            print("{} repeatable components, {} non-completable components".format(repeatable_comp_count, len(self.bad_comps)))
+        else:
+            self._do_single()
+
+    def _do_single(self):
+        all = self.client.get_components()
+        comp = sample(all, 1)[0]
+        if len(all) > len(self.bad_comps):
+            while comp in self.bad_comps:
+                comp = sample(all, 1)[0]
         print(comp)
-        client.load('/store?q=' + comp)
-        client.add_comp()
-        client.html_debug("test-command.html")
+        self.client.load('/store?q=' + comp)
+        url_before = self.client.response.url
+        self.client.add_comp()
+        url_after = self.client.response.url
 
-        comps = client.get_components()
-        LEFTOVER = 4 # what we should *really* do is detect how many sections might get left over
-        while options['to_completion'] and len(comps) > LEFTOVER:
-            comp = sample(comps, 1)[0]
-            print(comp)
-            client.load('/store?q=' + comp)
-            client.add_comp()
-            comps = client.get_components()
-
+        if url_before == url_after:
+            self.bad_comps.append(comp)
+            print("Got same URL, marking component {} as non-completable".format(comp))
 
 
 import requests
