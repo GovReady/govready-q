@@ -3,7 +3,7 @@ from random import sample, randint
 
 from django.utils.crypto import get_random_string
 from siteapp.models import User, Organization
-from guidedmodules.models import Task, TaskAnswer
+from guidedmodules.models import Task, TaskAnswer, Module, Project
 
 def get_file_dir():
     return os.path.dirname(os.path.realpath(__file__))
@@ -77,6 +77,10 @@ def delete_objects(model):
 
 def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
     current_answers = [x for x in task.get_current_answer_records()]
+
+    # sooo... sometimes we might have accidentally created a project with no admin. Use the org admin instead.
+    dummy_user = task.project.organization.get_organization_project().get_admins()[0]
+
     for question in task.module.questions.order_by('definition_order'):
         if (halt_impute or skip_impute) and 'impute' in question.spec:
             print("'impute' handling not yet implemented, skipping " + question.key)
@@ -94,15 +98,18 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
         answer = None
         if type == 'yesno':
             answer = sample(['yes', 'no'],1)[0]
-        if type == 'text':
+        elif type == 'text':
             answer = get_random_string(20)
-        if type == 'choice':
+        elif type == 'choice':
             answer = sample(question.spec['choices'], 1)[0]['key']
-        if type == 'multiple-choice':
+        elif type == 'multiple-choice':
             choices = question.spec['choices']
             amount = randint(question.spec['min'], len(choices))
-            # TODO make this handle a random number of choices, rather than just 1 choice each time
             answer = [x['key'] for x in sample(choices, amount)]
+        elif type == 'module' and 'module-id' in question.spec:
+            subtask = task.get_or_create_subtask(dummy_user, question, create=True)
+            print("doing subtask")
+            continue
         
         if not answer and type != 'interstitial':
             print("Cannot answer question of type '" + type + "'")
@@ -120,7 +127,6 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
             break
 
         # Save the value.
-        dummy_user = User.objects.all()[0]
         if taskans.save_answer(value, [], None, dummy_user, "api"):
             print("Answered {} with {}...".format(question.key, answer))
         else:

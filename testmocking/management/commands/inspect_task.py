@@ -24,6 +24,9 @@ class Command(BaseCommand):
 
         for question in task.module.questions.order_by('definition_order'):
             print(self.format_question(question))
+            if question.spec['type'] == 'module':
+                print("{}".format(question.spec))
+                print("")
             
             taskans = TaskAnswer.objects.filter(task=task, question=question).first()
             if taskans:
@@ -35,4 +38,5 @@ class Command(BaseCommand):
         key = question.key
         mod_id = question.module.id
         id = question.id
-        return "[{}] module_{} . {}".format(id, mod_id, key)
+        type = question.spec['type']
+        return "[q #{}] module_{} . {}, type '{}'".format(id, mod_id, key, type)
