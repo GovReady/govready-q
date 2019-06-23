@@ -18,6 +18,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--org', type=str, required=True, help="the subdomain for the organization to target")
         parser.add_argument('--impute', choices=['halt', 'skip', 'answer'], default='halt', help="specify 'halt' (the default) to abort on the first non-handled imputed question, 'skip' to ignore it and answer future questions, or 'answer' to answer it despite possibly being imputed")
+        parser.add_argument('--quiet', action='store_true', help="Reduces verbosity")
 
     def handle(self, *args, **options):
         tasks = [task for task in Task.objects.all() if task.project.organization.subdomain == options['org']] 
@@ -26,5 +27,5 @@ class Command(BaseCommand):
 
             halt_impute = (options['impute'] == 'halt')
             skip_impute = (options['impute'] == 'skip')
-            answer_randomly(task, halt_impute=halt_impute, skip_impute=skip_impute)
+            answer_randomly(task, halt_impute=halt_impute, skip_impute=skip_impute, quiet=options['quiet'])
             print("")

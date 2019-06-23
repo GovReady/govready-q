@@ -76,7 +76,12 @@ def delete_objects(model):
     with open(_getpath(model), 'w') as file:
         file.write('');
 
-def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
+def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, quiet=False):
+    
+    def log(item):
+        if not quiet:
+            print(item)
+
     current_answers = [x for x in task.get_current_answer_records()]
 
     # sooo... sometimes we might have accidentally created a project with no admin. Use the org admin instead.
@@ -84,7 +89,7 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
 
     for question in task.module.questions.order_by('definition_order'):
         if (halt_impute or skip_impute) and 'impute' in question.spec:
-            print("'impute' handling not yet implemented, skipping " + question.key)
+            log("'impute' handling not yet implemented, skipping " + question.key)
             if halt_impute:
                 break
             continue
@@ -92,7 +97,7 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
         if not overwrite:
             has_answer = len([x for x in current_answers if x[1] and x[0].key == question.key]) > 0
             if has_answer:
-                print("Already answered " + question.key)
+                log("Already answered " + question.key)
                 continue
 
         type = question.spec['type']
@@ -109,14 +114,14 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
             answer = [x['key'] for x in sample(choices, amount)]
         elif type == 'module' and 'module-id' in question.spec:
             subtask = task.get_or_create_subtask(dummy_user, question, create=True)
-            print("doing subtask")
+            log("doing subtask")
             continue
         
         if not answer and type != 'interstitial':
             print("Cannot answer question of type '" + type + "'")
             continue
         
-        print(str((question.key, type, answer)))
+        log(str((question.key, type, answer)))
         taskans, isnew = TaskAnswer.objects.get_or_create(task=task, question=question)
 
         from guidedmodules.answer_validation import validator
@@ -129,9 +134,9 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False):
 
         # Save the value.
         if taskans.save_answer(value, [], None, dummy_user, "api"):
-            print("Answered {} with {}...".format(question.key, answer))
+            log("Answered {} with {}...".format(question.key, answer))
         else:
-            print("No change?")
+            log("No change?")
             break
 
 

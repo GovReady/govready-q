@@ -56,10 +56,10 @@ class Command(BaseCommand):
                 call_command('start_assessment', '--to-completion', '--password', options['password'], '--username', admin.username, '--base_url', base_url)
 
                 print('Prepping assessments (tasks, pass #1)...')
-                call_command('answer_all_tasks', '--impute', 'answer', '--org', org.subdomain)
+                call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.subdomain)
 
                 print('Filling assessments (tasks, pass #2)...')
-                call_command('answer_all_tasks', '--impute', 'answer', '--org', org.subdomain)
+                call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.subdomain)
 
                 final_output.append('Finished org {}. Check {} using user:pass {} : {}'.format(org.name, base_url, admin.username, options['password']))
 
