@@ -8,25 +8,25 @@ from guidedmodules.models import Task, TaskAnswer, Module, Project
 def get_file_dir():
     return os.path.dirname(os.path.realpath(__file__))
 
-wordlist = None 
+wordlists = {} 
 def get_wordlist(path="eff_short_wordlist_1.txt"):
-    global wordlist
-    if wordlist == None:
+    global wordlists
+    if not path in wordlists:
         with open(get_file_dir() + "/" + path, 'r') as file:
-            wordlist = [line.split("\t")[-1].rstrip() for line in file.readlines() if line[0] != '#']
-    return wordlist
+            wordlists[path] = [line.split("\t")[-1].rstrip() for line in file.readlines() if line[0] != '#']
+    return wordlists[path]
         
 
 def _getpath(model):
     return get_file_dir() + ("/TMP_%s.idlist" % model._meta.db_table)
 
-def get_name(count, separator=' '):
-    wordlist = get_wordlist()
+def get_name(count, separator=' ', path='eff_short_wordlist_1.txt'):
+    wordlist = get_wordlist(path=path)
     return separator.join([name.title() for name in sample(wordlist, count)])
 
 def create_user(username=None, password=None, pw_hash=None):
     if username == None:
-        username = get_name(3, '_').lower()
+        username = get_name(1, '_', path='names.txt')
     if password == None:
         password = get_random_string(16)
 
@@ -47,7 +47,8 @@ def create_user(username=None, password=None, pw_hash=None):
 
 def create_organization(name=None, admin=None, help_squad=[], reviewers=[]):
     if name == None:
-        name = get_name(2).upper()
+        name = get_name(2)
+        name += " " + get_name(1, path='company_suffixes.txt')
     subdomain = name.replace(' ', '-').lower()
 
     with open(_getpath(Organization), 'a+') as file:
