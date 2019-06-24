@@ -48,6 +48,7 @@ coverage # Apache License 2.0
 selenium # Apache License 2.0
 safety # MIT License
 fpdf2 # LGPLv3+	
+parsel # BSD License
 
 # Documentation only
 m2r # MIT License
