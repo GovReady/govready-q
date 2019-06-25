@@ -26,6 +26,7 @@ class Command(BaseCommand):
         parser.add_argument('--print-iter', type=int, default=100)
 
         parser.add_argument('--full', action="store_true", help="Also start and fill out assessments, etc., for each organization")
+        parser.add_argument('--port', type=str, help="Only needed in --full mode, when running on a non-default port (currently, the port isn't detected from the config file)")
 
     def handle(self, *args, **options):
         users = []
@@ -48,7 +49,10 @@ class Command(BaseCommand):
 
             if options['full']:
                 protocol = settings.ACCOUNT_DEFAULT_HTTP_PROTOCOL
-                base_url = '{}://{}.{}/'.format(protocol, org.subdomain, settings.ORGANIZATION_PARENT_DOMAIN)
+                port = ''
+                if options['port']:
+                    port = ':' + options['port']
+                base_url = '{}://{}.{}{}/'.format(protocol, org.subdomain, settings.ORGANIZATION_PARENT_DOMAIN, port)
                 print("Using base URL: {}".format(base_url))
                 print('Adding system...')
                 call_command('add_system',  '--password', options['password'], '--username', admin.username, '--base_url', base_url)
