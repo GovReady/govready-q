@@ -1,6 +1,7 @@
 import requests
 import parsel
 from random import sample
+import re
 
 class WebClient():
     session = requests.Session()
@@ -11,6 +12,15 @@ class WebClient():
     comp_links = None
 
     def __init__(self, base_url):
+        if base_url.find('localhost') >= 0:
+            match = re.search(r'^http://(?P<host>(\w+\.)*localhost)(?P<port>:\d+)?/$', base_url)
+            if match:
+                host = match['host']
+                port = match['port'] or '' # in case we get None, don't want that junking up our URL
+                base_url = "http://localhost{}/".format(port)
+                self.session.headers.update({"Host": host})
+            else:
+                print("USAGE WARNING -- localhost suspected, but not in the standard format. This might fail.")
         self.base_url = base_url
 
     def _use_page(self, response):
