@@ -25,7 +25,7 @@ class Discussion(models.Model):
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     class Meta:
-      unique_together = (('attached_to_content_type', 'attached_to_object_id'))
+      unique_together = ('attached_to_content_type', 'attached_to_object_id')
 
     @staticmethod
     def get_for(org, object, create=False, must_exist=False):

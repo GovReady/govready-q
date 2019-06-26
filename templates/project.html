@@ -147,43 +147,43 @@ h3.question-group-title {
   <div class="btn-group" role="group" aria-label="action buttons group">
     {% if not project.is_account_project or project.is_deletable %}
       <button class="btn btn-sm btn-default" onclick="$('#project_settings').modal();">
-        <i class="glyphicon glyphicon-cog"></i> Settings</a>
+        <em class="glyphicon glyphicon-cog"></em> Settings</a>
       </button>
     {% endif %}
     {% if send_invitation.can_add_invitee_to_team %}
       <button id="show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
-        <i class="glyphicon glyphicon-user"></i><i class="glyphicon glyphicon-plus"></i>
+        <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
         Invite
       </button>
     {% endif %}
 
     <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
-      <i class="glyphicon glyphicon-list"></i>
+      <em class="glyphicon glyphicon-list"></em>
       Review
     </button>
 
     {% if has_outputs %}
       <button id="related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
-        <i class="glyphicon glyphicon-th"></i>
+        <em class="glyphicon glyphicon-th"></em>
         Documents
       </button>
     {% endif %}
 
     <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
-      <i class="glyphicon glyphicon-sort"></i>
+      <em class="glyphicon glyphicon-sort"></em>
       API Docs
     </button>
 
     {% if can_upgrade_app %}
       <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/upgrade';">
-        <i class="glyphicon glyphicon-download"></i>
+        <em class="glyphicon glyphicon-download"></em>
         Upgrade App
       </button>
     {% endif %}
 
     {% if authoring_tool_enabled %}
       <button id="open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
-        <i class="glyphicon glyphicon-pencil"></i>
+        <em class="glyphicon glyphicon-pencil"></em>
         Authoring Tool
       </button>
     {% endif %}
@@ -346,7 +346,8 @@ h3.question-group-title {
                           {% endif %}
 
                           title="{{q.question.spec.title}}"
-                          class="img-responsive">
+                          class="img-responsive"
+                          alt="App Icon">
                     </div>
                     {% endif %}
 
@@ -418,7 +419,7 @@ h3.question-group-title {
                       {# If the user is a guest participant in a discussion inside this question, link to this discussion. They can't view the task directly. (?) #}
                       {% if q.discussions %}
                       <div>
-                        <div><b>Discussions:</b></div>
+                        <div><strong>Discussions:</strong></div>
                         {% for d in q.discussions %}
                           <div><a href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a></div>
                         {% endfor %}

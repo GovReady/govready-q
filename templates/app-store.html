@@ -126,7 +126,7 @@ h2 {
 
 
 {% if filter_description %}
-<p style="margin-bottom: 30px">These apps can help you with <i>{{filter_description}}</i>.</p>
+<p style="margin-bottom: 30px">These apps can help you with <em>{{filter_description}}</em>.</p>
 {% endif %}
 
 {# since the category links disappear in response to search queries, this should come after the search box so the search box's position doesn't jump around if this element changes size or disappears #}
@@ -194,7 +194,7 @@ h2 {
 
         {% if app.icon %}
         <td class="app-icon" style="padding-top: 1px; padding-right: 12px;">
-          <img src="{{app.icon}}" class="img-responsive"">
+          <img src="{{app.icon}}" class="img-responsive" alt= "App Icon">
         </td>
         {% endif %}
 
