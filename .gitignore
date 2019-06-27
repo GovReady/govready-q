@@ -1,7 +1,9 @@
+# GovReady-Q App
 __pycache__/
 /local
 /modules/local
 siteapp/static/vendor
+apps/
 
 # generated files
 .bash_history
@@ -65,9 +67,6 @@ coverage.xml
 # Django stuff:
 *.log
 
-# Sphinx documentation
-docs/_build/
-
 # PyBuilder
 target/
 
@@ -89,5 +88,7 @@ vendor
 *~
 \#*\#
 
+# Sphinx documentation
+docs/_build/
 # Local Sphinx / Read The Docs files
 docs/build
