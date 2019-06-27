@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0+devel
-------------
+v0.9.0.dev24+devel
+------------------
 
 MINOR version upgrade with braking database changes.
 
@@ -87,6 +87,8 @@ Developer changes:
 * the LANDING_DOMAIN, ORGANIZATION_PARENT_DOMAIN, SINGLE_ORGANIZATION_KEY, and REVEAL_ORGS_TO_ANON_USERS attributes on django.conf.settings are removed
 
 * Fix tests to login with new forms in landing page tabs
+
+* Fix various SonarQube reported issues to use preferred HTML tags for stong and em
 
 Deployment changes:
 
