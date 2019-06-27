@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-0.9.0.dev
----------
+v0.9.0+devel
+------------
 
 MINOR version upgrade with braking database changes.
 
