@@ -1,0 +1,24 @@
+version: '3'
+networks:
+  q_network:
+    driver: bridge
+services:
+  govready-q:
+    image: ${GOVREADY_Q_IMAGENAME-govready/govready-q}
+    environment:
+      - HOST=${GOVREADY_Q_HOST-test.example.com}
+      - PORT=8000
+      - HTTPS=true
+      - DBURL=${GOVREADY_Q_DBURL-}
+    networks:
+      - q_network
+  nginx:
+    build:
+      context: ./nginx
+      args:
+        - HOST=${GOVREADY_Q_HOST-test.example.com}
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - q_network
