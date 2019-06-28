@@ -24,7 +24,7 @@ while [ $# -gt 0 ]; do
     --dm-name)
       DM_NAME="$2"
       shift 2 ;;
-    --aws-regin)
+    --aws-region)
       AWS_REGION="$2"
       shift 2 ;;
     --)
