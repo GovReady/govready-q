@@ -107,7 +107,7 @@ h1.mini {
   <!-- <a id="new-system" href="/store?protocol=govready.com/apps/compliance/2018/information-technology-system" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Add system </a> -->
   <a id="new-project" href="/store" class="btn btn-success">Start a project</a>
   {% if can_invite_to_org %}
-  <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
+  <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><em class="glyphicon glyphicon-send"></em> Invite colleague </a>
   {% endif %}
 </div>
 
@@ -129,7 +129,7 @@ h1.mini {
   <div class="col-md-6">
     {% if project.root_task.get_app_icon_url %}
       <a href="{{project.get_absolute_url}}" class="project-image">
-        <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive">
+        <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive" alt="App Icon">
       </a>
     {% else %}
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

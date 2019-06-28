@@ -25,17 +25,17 @@ h2 { margin-top: 1.5em; }
   {% if error %}
     <p class="text-danger">{{error}}</p>
   {% elif can_upgrade_app %}
-    <p><i>Upgrading this app will update the questions, document templates, and business logic stored in the app to the latest version published by the app&rsquo;s vendor. Your data will not be changed.</i></p>
+    <p><em>Upgrading this app will update the questions, document templates, and business logic stored in the app to the latest version published by the app&rsquo;s vendor. Your data will not be changed.</em></p>
 
     <button id="do-upgrade" class="btn btn-primary" onclick="upgrade_app({{project.root_task.module.app.id}});">
-      <i class="glyphicon glyphicon-download"></i>
+      <em class="glyphicon glyphicon-download"></em>
       Upgrade App
     </button>
     <button class="btn btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}';">
       Cancel
     </button>
   {% else %}
-    <p><i>Only project administrators can upgrade this app.</i></p>
+    <p><em>Only project administrators can upgrade this app.</em></p>
   {% endif %}
 
 
