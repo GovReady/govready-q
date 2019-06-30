@@ -8,13 +8,14 @@ set -euf -o pipefail # abort script on error
 ##########
 
 # Docker machine name
+# The name for the ec2 instance hosting Docker.
+# Set with `--dm-name NAME`. If set to the empty
+# string, no name is used. The default is:
 DM_NAME="govready-q-sandbox"
-AWS_REGION="us-east-1"
 
-# The name for the newly run container. Set with
-# --name NAME. If set to the empty string, no name
-# is used. The default is:
-# NAME=govready-q-0.9.0
+# AWS Region to launch ec2 instance.
+# The default is:
+AWS_REGION="us-east-1"
 
 # Parse command-line arguments
 ##############################
@@ -41,7 +42,7 @@ WARNINGS=0
 
 # Have docker-machine create the ec2 instance to host docker
 docker-machine create --driver amazonec2 --amazonec2-open-port 80 --amazonec2-region $AWS_REGION $DM_NAME
-
+d
 # Let's grab the Host machine's Public and Private IP addresses
 PRIVATE_IP=$(docker-machine inspect -f '{{ .Driver.PrivateIPAddress }}' $DM_NAME)
 echo $PRIVATE_IP
@@ -62,9 +63,8 @@ govready/govready-q-0.9.0
 docker exec -it govready-q-0.9.0 first_run
 
 # Provide some frienly feedback
-echo "Point your browser to http://$PUBLIC_IP"
-
 echo " "
+echo "Point your browser to http://$PUBLIC_IP"
 echo "To stop container run: docker-machine stop $DM_NAME"
-echo "To rm container and hosting ec2 instance run: docker-machine rm $DM_NAME"
+echo "To remove container and hosting ec2 instance run: docker-machine rm $DM_NAME"
 
