@@ -60,9 +60,9 @@ docker-machine ls
 echo "EC2 instance running and active. Proceed with docker-compose commands..."
 
 echo "Setting GOVREADY_Q_HOST=ec-$PUBLIC_IP.compute-1.amazonaws.com"
-GOVREADY_Q_HOST=ec-$PUBLIC_IP.compute-1.amazonaws.com
+export GOVREADY_Q_HOST=ec-$PUBLIC_IP.compute-1.amazonaws.com
 echo "Setting GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0"
-GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
+export GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
 # export GOVREADY_Q_DBURL=postgres://govready_q:my_private_password@grq-002.cog63arfw9bib.us-east-1.rds.amazonaws.com/govready_q
 echo "Set GOVREADY_Q_DBURL to default (blank for SQLITE)"
 
@@ -74,11 +74,11 @@ echo "Set GOVREADY_Q_DBURL to default (blank for SQLITE)"
 # echo "docker-compose up -d"
 
 echo "Build images (on active docker machine)"
-docker-compose build
+#docker-compose build
 
-echo "Run docker-compose up -d"
-echo "Following is run: docker-compose up -d -e GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0 -e GOVREADY_Q_HOST=$GOVREADY_Q_HOST"
-docker-compose up -d -e GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0 -e GOVREADY_Q_HOST=$GOVREADY_Q_HOST
+echo "Following is run: docker-compose up -d"
+#docker-compose up -d
+
 
 # Pull and run GovReady-Q 0.9.0 container making site available on port 80 with no https
 # docker run --detach --name govready-q-0.9.0 -p $PRIVATE_IP:80:8000 \
@@ -90,7 +90,7 @@ docker-compose up -d -e GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0 -e GOVREA
 # docker exec -it govready-q-0.9.0 first_run
 
 # Provide some frienly feedback
-GOVREADY_Q_HOSTecho "Point your browser to http://$GOVREADY_Q_HOST"
+echo "Point your browser to https://$GOVREADY_Q_HOST"
 
 echo " "
 echo "To stop container run: docker-machine stop $DM_NAME"
