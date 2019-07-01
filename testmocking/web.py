@@ -21,6 +21,7 @@ class WebClient():
         self._use_page(self.session.get(self.base_url + path))
 
     def login(self, username, password):
+        self.load("/accounts/login/")
         self.form('.login', {"login": username, "password": password})
 
     def form_fields(self, css):
@@ -73,6 +74,14 @@ class WebClient():
     # this dumps you to the main project page after execution
     def add_comp(self):
         self.form('form[action^="/store"]')
+
+    def start_section_for_proj(self, id):
+        url = [x for x in self.get_projects() if x.startswith('/projects/{}/'.format(id))][0]
+        self.load(url)
+        form = self.selector.css('form.start-task')
+        print(form)
+        self.form_by_ref(form)
+        self.html_debug()
 
     def load_task(self):
         self.load_project()
