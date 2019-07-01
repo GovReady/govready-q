@@ -4,8 +4,6 @@ set -euf -o pipefail # abort script on error
 
 # Defaults
 ##########
-# Defaults
-##########
 
 # Docker machine name
 # The name for the ec2 instance hosting Docker.
