@@ -97,13 +97,17 @@ echo "GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR).
 # as per https://stackoverflow.com/questions/49293967/how-to-pass-environment-variable-to-docker-compose-up
 GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR).amazonaws.com GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0 docker-compose up -d
 
+# Provide some friendly feedback
+echo " "
+echo "GovReady-Q ready. Point your browser to https://$GOVREADY_Q_HOST"
+
 # Configure Superuser account for GovReady-Q
 echo " "
 echo "Load demo assessments and create superuser"
 docker exec -it docker-compose-nginx_govready-q_1 first_run
 
-# Provide some frienly feedback
-echo "Point your browser to https://$GOVREADY_Q_HOST"
+# Provide some friendly feedback again
+echo "Superuser created. Login at https://$GOVREADY_Q_HOST"
 
 echo " "
 echo "To stop container run: docker-machine stop $DM_NAME"
