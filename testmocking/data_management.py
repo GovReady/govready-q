@@ -49,12 +49,12 @@ def create_organization(name=None, admin=None, help_squad=[], reviewers=[]):
     if name == None:
         name = get_name(2)
         name += " " + get_name(1, path='company_suffixes.txt')
-    subdomain = name.replace(' ', '-').lower()
+    slug = name.replace(' ', '-').lower()
 
     with open(_getpath(Organization), 'a+') as file:
         org = Organization.create(
             name=name,
-            subdomain=subdomain,
+            slug=slug,
             admin_user=admin,
         )
         file.write(str(org.id))
