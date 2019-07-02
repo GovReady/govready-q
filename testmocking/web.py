@@ -50,9 +50,7 @@ class WebClient():
 
 
     def add_system(self):
-        # TODO see if this shouldn't be hardcoded
-        self.load("/store?protocol=govready.com/apps/compliance/2018/information-technology-system")
-
+        self.load("/store")
         form = sample(self.selector.css('[action^="/store"]'), 1)[0]
         self.form_by_ref(form)
 
