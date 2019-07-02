@@ -29,4 +29,3 @@ class Command(BaseCommand):
 
 
         self.client.start_section_for_proj(options['project'])
-        print(self.client.response.url)

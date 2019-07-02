@@ -66,22 +66,11 @@ class WebClient():
         self.load(self.get_projects()[-1])
         
 
-    def get_components(self):
-        self.load_project()
-        self.comps_links = self.selector.css('form[method=get][action="/store"]').css('input::attr("value")').getall()
-        return self.comps_links
-
-    # this dumps you to the main project page after execution
-    def add_comp(self):
-        self.form('form[action^="/store"]')
-
     def start_section_for_proj(self, id):
         url = [x for x in self.get_projects() if x.startswith('/projects/{}/'.format(id))][0]
         self.load(url)
         form = self.selector.css('form.start-task')
-        print(form)
         self.form_by_ref(form)
-        self.html_debug()
 
     def load_task(self):
         self.load_project()
@@ -101,8 +90,6 @@ class WebClient():
     def fill_questions(self):
         sel = '.row .form-group .form-control'
         form = self.selector.css(sel)
-            
-            
 
     def html_debug(self, filename="test.html", dir="siteapp/static/"):
         with open(dir + filename, 'w') as file:
