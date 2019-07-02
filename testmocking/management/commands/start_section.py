@@ -21,11 +21,14 @@ class Command(BaseCommand):
         parser.add_argument('--username', type=str, required=True, help="")
         parser.add_argument('--password', type=str, required=True, help="")
         parser.add_argument('--project', type=int, required=True, help="")
-        #parser.add_argument('--to-completion', action="store_true", help="")
+        parser.add_argument('--to-completion', action="store_true", help="")
 
     def handle(self, *args, **options):
         self.client = WebClient(options['base_url'])
         self.client.login(options['username'], options['password'])
 
-
-        self.client.start_section_for_proj(options['project'])
+        count = self.client.start_section_for_proj(options['project'])
+        print("{} sections available at the start".format(count))
+        if options['to_completion']:
+            while count > 1:
+                count = self.client.start_section_for_proj(options['project'])

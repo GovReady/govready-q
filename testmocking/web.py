@@ -67,8 +67,13 @@ class WebClient():
     def start_section_for_proj(self, id):
         url = [x for x in self.get_projects() if x.startswith('/projects/{}/'.format(id))][0]
         self.load(url)
-        form = self.selector.css('form.start-task')
+        all_forms = self.selector.css('form.start-task')
+        if len(all_forms) == 0:
+            return 0
+
+        form = all_forms[0]
         self.form_by_ref(form)
+        return len(all_forms)
 
     def load_task(self):
         self.load_project()
