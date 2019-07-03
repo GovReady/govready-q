@@ -47,21 +47,18 @@ class Command(BaseCommand):
             print("Admin for " + org.name + ": " + admin.username)
 
             if options['full']:
-                protocol = settings.ACCOUNT_DEFAULT_HTTP_PROTOCOL
-                base_url = '{}://{}.{}/'.format(protocol, org.subdomain, settings.ORGANIZATION_PARENT_DOMAIN)
-                print("Using base URL: {}".format(base_url))
                 print('Adding system...')
-                call_command('add_system',  '--password', options['password'], '--username', admin.username, '--base_url', base_url)
+                call_command('add_system',  '--password', options['password'], '--username', admin.username)
                 print('Adding assessments...')
-                call_command('start_assessment', '--to-completion', '--password', options['password'], '--username', admin.username, '--base_url', base_url)
+                call_command('start_section', '--to-completion', '--password', options['password'], '--username', admin.username)
 
                 print('Prepping assessments (tasks, pass #1)...')
-                call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.subdomain)
+                call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.slug)
 
                 print('Filling assessments (tasks, pass #2)...')
-                call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.subdomain)
+                call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.slug)
 
-                final_output.append('Finished org {}. Check {} using user:pass {} : {}'.format(org.name, base_url, admin.username, options['password']))
+                final_output.append('Finished org {}. Login using user:pass {} : {}'.format(org.name, admin.username, options['password']))
 
         for line in final_output:
             print(line)
