@@ -17,14 +17,13 @@ class Command(BaseCommand):
     help = 'Starts one or many sections for a project'
 
     def add_arguments(self, parser):
-        parser.add_argument('--base_url', type=str, required=True, help="")
         parser.add_argument('--username', type=str, required=True, help="")
         parser.add_argument('--password', type=str, required=True, help="")
         parser.add_argument('--project', type=int, required=True, help="")
         parser.add_argument('--to-completion', action="store_true", help="")
 
     def handle(self, *args, **options):
-        self.client = WebClient(options['base_url'])
+        self.client = WebClient(settings.SITE_ROOT_URL)
         self.client.login(options['username'], options['password'])
 
         count = self.client.start_section_for_proj(options['project'])

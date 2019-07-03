@@ -16,12 +16,11 @@ class Command(BaseCommand):
     help = 'Adds a System to an organization'
 
     def add_arguments(self, parser):
-        parser.add_argument('--base_url', type=str, required=True, help="")
         parser.add_argument('--username', type=str, required=True, help="")
         parser.add_argument('--password', type=str, required=True, help="")
 
     def handle(self, *args, **options):
-        self.client = WebClient(options['base_url'])
+        self.client = WebClient(settings.SITE_ROOT_URL)
         self.client.load('')
         self.client.login(options['username'], options['password'])
 

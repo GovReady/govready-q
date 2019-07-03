@@ -12,6 +12,8 @@ class WebClient():
 
     def __init__(self, base_url):
         self.base_url = base_url
+        if not self.base_url.endswith('/'):
+            self.base_url += '/' # probably not strictly standard, but testing thus far has included a trailing '/'
 
     def _use_page(self, response):
         self.response = response
@@ -53,6 +55,8 @@ class WebClient():
         self.load("/store")
         form = sample(self.selector.css('[action^="/store"]'), 1)[0]
         self.form_by_ref(form)
+        print(self.response.url)
+        self.html_debug()
 
     def get_projects(self):
         if not self.projects:
