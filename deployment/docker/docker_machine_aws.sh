@@ -40,7 +40,7 @@ WARNINGS=0
 
 # Have docker-machine create the ec2 instance to host docker
 docker-machine create --driver amazonec2 --amazonec2-open-port 80 --amazonec2-region $AWS_REGION $DM_NAME
-d
+
 # Let's grab the Host machine's Public and Private IP addresses
 PRIVATE_IP=$(docker-machine inspect -f '{{ .Driver.PrivateIPAddress }}' $DM_NAME)
 echo $PRIVATE_IP
