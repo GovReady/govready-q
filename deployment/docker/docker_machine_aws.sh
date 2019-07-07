@@ -15,6 +15,9 @@ DM_NAME="govready-q-sandbox"
 # The default is:
 AWS_REGION="us-east-1"
 
+# Turn on Django DEBUG mode?
+DEBUG=false
+
 # Parse command-line arguments
 ##############################
 
@@ -26,6 +29,11 @@ while [ $# -gt 0 ]; do
     --aws-region)
       AWS_REGION="$2"
       shift 2 ;;
+
+    --debug)
+      DEBUG=true
+      shift 1 ;;
+
     --)
         shift
         break
@@ -38,22 +46,49 @@ done
 
 WARNINGS=0
 
+# Adjust AWS public domain string appropriately for different regions
+# us-east-1 (compute-1.amazonaws.com), us-east-2 (us-east-2.compute.amazonaws.com),
+# us-west-1 (us-west-1.compute.amazonaws.com), etc...
+if [ $AWS_REGION = "us-east-1" ]
+then
+  AWS_REGION_STR="compute-1"
+else
+  AWS_REGION_STR="$AWS_REGION.compute"
+fi
+
 # Have docker-machine create the ec2 instance to host docker
+echo "Running following docker-machine command..."
+echo "docker-machine create --driver amazonec2 --amazonec2-open-port 80 --amazonec2-region $AWS_REGION $DM_NAME"
 docker-machine create --driver amazonec2 --amazonec2-open-port 80 --amazonec2-region $AWS_REGION $DM_NAME
 
 # Let's grab the Host machine's Public and Private IP addresses
-PRIVATE_IP=$(docker-machine inspect -f '{{ .Driver.PrivateIPAddress }}' $DM_NAME)
-echo $PRIVATE_IP
-PUBLIC_IP=$(docker-machine ip $DM_NAME)
-echo $PUBLIC_IP
+export PRIVATE_IP=$(docker-machine inspect -f '{{ .Driver.PrivateIPAddress }}' $DM_NAME)
+echo "Private IP: $PRIVATE_IP"
+export PUBLIC_IP=$(docker-machine ip $DM_NAME)
+echo "Public IP: $PUBLIC_IP"
+# Transpose '.' in IP address to '-' required in AWS Domain name
+echo "AWS address is: ec2-$(echo $PUBLIC_IP | tr . "-").$AWS_REGION_STR.amazonaws.com"
 
 # Make the created docker-machine the active docker-machine for docker commands
 # docker-machine env $DM_NAME
 eval $(docker-machine env $DM_NAME)
 
+# Show current docker machine configuration
+docker-machine ls
+
+echo "EC2 instance running and active. Proceed with docker run commands..."
+
+echo "Setting GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR).amazonaws.com"
+export GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR).amazonaws.com
+echo "Setting GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0"
+export GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
+# export GOVREADY_Q_DBURL=postgres://govready_q:my_private_password@grq-002.cog63arfw9bib.us-east-1.rds.amazonaws.com/govready_q
+echo "Set GOVREADY_Q_DBURL to default (blank for SQLITE)"
+
+echo "Bring containers up using: docker run commands..."
 # Pull and run GovReady-Q 0.9.0 container making site available on port 80 with no https
 docker run --detach --name govready-q-0.9.0 -p $PRIVATE_IP:80:8000 \
--e HTTPS=false -e DBURL= -e DEBUG=true \
+-e HTTPS=false -e DBURL= -e DEBUG=$DEBUG \
 -e HOST=$PUBLIC_IP \
 govready/govready-q-0.9.0
 
@@ -65,4 +100,4 @@ echo " "
 echo "Point your browser to http://$PUBLIC_IP"
 echo "To stop container run: docker-machine stop $DM_NAME"
 echo "To remove container and hosting ec2 instance run: docker-machine rm $DM_NAME"
-
+echo "To make new ec2 instance the active docker-machine run: eval \$(docker-machine env \$DM_NAME)"
