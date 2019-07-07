@@ -1,3 +1,11 @@
+# Build GovReady-Q Docker container
+#
+# Build examples:
+#   docker build --tag govready/govready-q-0.9.0 .
+#
+# Run examples:
+#   docker run -it -d -p 8000:8000 --name govready-q-0.9.0 --rm govready/govready-q-0.9.0
+
 # Build on Docker's official CentOS 7 image.
 FROM centos:7
 
