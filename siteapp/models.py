@@ -1,13 +1,16 @@
-from django.db import models, transaction
-from django.utils import timezone, crypto
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
-
+from django.db import models, transaction
+from django.utils import crypto, timezone
+from guardian.shortcuts import (assign_perm, get_objects_for_user,
+                                get_perms_for_model, get_user_perms,
+                                get_users_with_perms, remove_perm)
 from jsonfield import JSONField
+
 
 class User(AbstractUser):
     # Additional user profile data.
@@ -345,6 +348,52 @@ class Organization(models.Model):
         pm.save()
 
         return org
+
+
+class Portfolio(models.Model):
+    title = models.CharField(max_length=256, help_text="The title of this Portfolio.")
+    description = models.CharField(max_length=512, blank=True, help_text="A description of this Portfolio.")
+    projects = models.ManyToManyField("Project", blank=True, related_name="in_folders", help_text="The Projects that are listed within this Portfolio.")
+
+    class Meta:
+        permissions = (
+            ('view_portfolio', 'View portfolio'),
+            ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission'),
+        )
+
+    @staticmethod
+    def get_all_readable_by(user):
+        return get_objects_for_user(user, 'siteapp.view_portfolio')
+
+    def assign_owner_permissions(self, user):
+        permissions = get_perms_for_model(Portfolio)
+        for perm in permissions:
+            assign_perm(perm.codename, user, self)
+
+    def assign_editor_permissions(self, user):
+        permissions = ['view_portfolio', 'change_portfolio', 'add_portfolio']
+        for perm in permissions:
+            assign_perm(perm, user, self)
+
+    def remove_permissions(self, user):
+        permissions = get_perms_for_model(Portfolio)
+        for perm in permissions:
+            remove_perm(perm.codename, user, self)
+
+    def get_invitation_verb_inf(self, invitation):
+        return "to view"
+
+    def users_with_perms(self):
+        users_with_perms = get_users_with_perms(self, attach_perms=True)
+        users = []
+        for user in users_with_perms:
+            user_perms = (get_user_perms(user, self))
+            owner = True if user_perms.filter(codename='can_grant_portfolio_owner_permission') else False
+            name = user.name() if user.name() else str(user)
+            user = {'name': name, 'id': user.id, 'owner': owner}
+            users.append(user)
+        sorted_users = sorted(users, key=lambda k: (-k['owner'], k['name'].lower()))
+        return sorted_users
 
 class Folder(models.Model):
     """A folder is a collection of Projects."""
@@ -863,8 +912,9 @@ class ProjectMembership(models.Model):
 class Invitation(models.Model):
     # who is sending the invitation
     from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The User who sent the invitation.")
-    from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The Project within which the invitation exists.")
-    
+    from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The Project within which the invitation exists.", blank=True, null=True)
+    from_portfolio = models.ForeignKey(Portfolio, related_name="portfolio_invitations_sent", on_delete=models.CASCADE, help_text="The Portfolio within which the invitation exists.", blank=True, null=True)
+
     # what is the recipient being invited to?
     into_project = models.BooleanField(default=False, help_text="Whether the user being invited is being invited to join from_project.")
     target_content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
@@ -922,6 +972,16 @@ class Invitation(models.Model):
         }
 
     @staticmethod
+    def portfolio_form_context_dict(user, portfolio, exclude_users):
+        from guidedmodules.models import ProjectMembership
+        return {
+            "portfolio_id": portfolio.id,
+            "portfolio_title": portfolio.title,
+            "users": [{ "id": user.id, "name": str(user) }
+                for user in User.objects.all()]
+        }
+
+    @staticmethod
     def get_for(object, open_invitations=True):
         content_type = ContentType.objects.get_for_model(object)
         ret = Invitation.objects.filter(target_content_type=content_type, target_object_id=object.id)
@@ -939,6 +999,9 @@ class Invitation(models.Model):
 
     def is_target_the_project(self):
         return isinstance(self.target, Project)
+
+    def is_target_the_portfolio(self):
+        return isinstance(self.target, Portfolio)
 
     def purpose(self):
         return self.purpose_verb() + " " + self.target.title

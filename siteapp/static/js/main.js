@@ -50,7 +50,7 @@ function show_invite_modal(title, prompt, info, message_default_text, data, call
   if (info.users.length > 0 && !data.add_to_team && !data.into_discussion) {
     // The users list only has project members. They are already in the project/discussion,
     // so it doesn't make sense to list them if we are doing an invite to a project/discussion.
-    s.append($("<option/>").attr('value', '').text('Select team member...'))
+    s.append($("<option/>").attr('value', '').text('Select a user...'))
     info.users.forEach(function(user) {
       s.append($("<option/>").attr('value', user.id).text(user.name))
     })
