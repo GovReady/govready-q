@@ -2,7 +2,7 @@
 
 ## What's New in 0.9.0
 
-Release 0.9.0 (coming July 2019) is a minor release improving
+Release 0.9.0 (coming Summer 2019) is a minor release improving
 the user experience and performance.
 
 * Faster loading and launching of Assessments/questionnaires
@@ -23,7 +23,7 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 
 ## Release Date
 
-The target release date 0.9.0 is July 2019.
+The target release date 0.9.0 is Summer 2019.
 
 ## Upgrading to 0.9.0 from 0.8.x
 
@@ -113,6 +113,42 @@ Click one of the tab belows to see quickstart for indicated platform.
 
             ./docker_container_run.sh --name govready-q --relaunch --debug -v --appsdevdir /codedata/code/govready-q-files --image govready/govready-q-0.9.0.dev
 
+        .. rubric:: Logs for Debugging
+
+        The container's console shows the output of container's start-up commands including database migrations and process startup. The container's console log can be accessed with
+
+        .. code-block:: bash
+
+            docker container logs govready-q-0.9.0
+
+        GovReady-Q application logs can be found in `/var/log` within the container to track status and assist with debugging. These files contain access logs and other program output.
+
+        * `/var/log/application-stderr.log` - GovReady-Q application standard error
+        * `/var/log/application-stdout.log` - GovReady-Q application standard out
+        * `/var/log/notificationemails-stderr.log` - GovReady-Q email notifications standard error
+        * `/var/log/notificationemails-stdout.log` - GovReady-Q email notifications standard error
+        * `/var/log/supervisord.log` - Supervisor daemon
+
+        .. rubric:: Debugging "Internal Server Error" Messages
+
+        A special management command can be used to see the application log files to debug unhandled  "Internal Server Error" (HTTP code 500) messages displayed in the browser to end users 
+
+        .. code-block:: bash
+
+            docker container exec govready-q-0.9.0 tail_logs
+            # Replace "govready-q-0.9.0" with name of your container or use container id
+
+        `tail_logs` takes the same arguments as Unix `tail`. For instance, add `-n 1000` to see the most recent 1,000 log lines, or add `-f` to continue to output the logs as the log files grow.
+
+        .. code-block:: bash
+
+            # most recent 200 lines of logs
+            docker container exec govready-q-0.9.0 tail_logs -n 200
+
+            # real-time display of logs
+            docker container exec govready-q-0.9.0 tail_logs -f
+
+        The log files can also be accessed by mounting `/var/log` with a Docker bind-mount or as a volume (and that's the only way to see the logs if `docker container exec` cannot be used in your environment).
 
     .. tab-container:: macos
         :title: macOS
@@ -374,7 +410,9 @@ Click one of the tab belows to see quickstart for indicated platform.
 
 ### Overview
 
-GovReady-Q must be configured by an administrator to load compliance apps (e.g., assessments and questionnaires) from one or more sources, which can be local directories or remote git repositories. Full administrative privileges are assigned to original user account created when executing `python manage.py first_run` during installation.
+GovReady-Q wll load a small set of example questionnaires as part of the `python manage.py first_run` command during installation.
+
+GovReady-Q must be configured by an administrator to load additional compliance apps (e.g., assessments and questionnaires) from one or more sources, which can be local directories or remote git repositories. Full administrative privileges are assigned to original user account created when executing `python manage.py first_run` during installation.
 
 App Sources are configured in the Django admin at the URL `/admin` on your GovReady-Q domain under `App Sources`:
 
