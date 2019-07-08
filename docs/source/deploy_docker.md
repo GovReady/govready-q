@@ -217,19 +217,34 @@ to force the app catalog cache to be cleared by restarting the container:
 
 	docker container restart govready-q
 
-### Console and logs
+### Logs for Debugging
 
-The container's console, which can be accessed with
+The container's console shows the output of container's start-up commands including database migrations and process startup. The container's console log can be accessed with
 
 	docker container logs govready-q
 
-shows the output of container's start-up commands including database migrations and process startup.
+GovReady-Q application logs can be found in `/var/log` within the container to track status and assist with debugging. These files contain access logs and other program output.
 
-Additional log files are stored in /var/log within the container. These files contain access logs and other program output, including logs for unhandled error messages that appear as 500 Internal Server Error pages to end users. A special management command can be used to see the log files:
+* `/var/log/application-stderr.log` - GovReady-Q application standard error
+* `/var/log/application-stdout.log` - GovReady-Q application standard out
+* `/var/log/notificationemails-stderr.log` - GovReady-Q email notifications standard error
+* `/var/log/notificationemails-stdout.log` - GovReady-Q email notifications standard error
+* `/var/log/supervisord.log` - Supervisor daemon
+
+**Debugging "Internal Server Error" Messages**
+
+A special management command can be used to see the application log files to debug unhandled  "Internal Server Error" (HTTP code 500) messages displayed in the browser to end users 
 
 	docker container exec govready-q tail_logs
+	# Replace "govready-q" with name of your container or use container id
 
 `tail_logs` takes the same arguments as Unix `tail`. For instance, add `-n 1000` to see the most recent 1,000 log lines, or add `-f` to continue to output the logs as the log files grow.
+
+	# most recent 200 lines of logs
+	docker container exec govready-q tail_logs -n 200
+
+	# real-time display of logs
+	docker container exec govready-q tail_logs -f
 
 The log files can also be accessed by mounting `/var/log` with a Docker bind-mount or as a volume (and that's the only way to see the logs if `docker container exec` cannot be used in your environment).
 
