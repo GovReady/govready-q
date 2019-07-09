@@ -20,6 +20,7 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User
+from .forms import PortfolioForm
 from .notifications_helpers import *
 
 
@@ -1147,13 +1148,6 @@ def portfolio_list(request):
 @login_required
 def new_portfolio(request):
     """Form to create new portfolios"""
-
-    class PortfolioForm(ModelForm):
-
-      class Meta:
-        model = Portfolio
-        fields = ['title', 'description']
-
     if request.method == 'POST':
       form = PortfolioForm(request.POST)
       if form.is_valid():

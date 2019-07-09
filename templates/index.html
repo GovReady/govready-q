@@ -67,11 +67,11 @@ Welcome to Compliance Automation
           <div class="well">
             <form method="post">
               {% csrf_token %}
-              <input type=hidden name=action value=neworg>
+              <input type=hidden name=action value=signup>
               {% if not request.user.is_authenticated %}
                 {% bootstrap_form signup_form %}
               {% endif %}
-              {% bootstrap_form neworg_form %}
+              {% bootstrap_form portfolio_form %}
               <p><button type="submit" class="btn btn-success">Next &raquo;</button></p>
             </form>
           </div>
@@ -87,19 +87,19 @@ Welcome to Compliance Automation
 {% block scripts %}
 <script>
 
-// Copy any changes in username to username's default group slug
+// Copy any changes in username to default portfolio title
 $('#id_username').on('keyup', function() {
-  var slug = $(this).val();
-  slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
-  $('#id_name').val(slug);
-  $('#id_slug').val(slug);
+  var title = $(this).val();
+  title = title.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
+  $('#id_name').val(title);
+  $('#id_title').val(title);
 })
-// And if typing changes default group slug, force changes back into username
-$('#id_slug').on('keyup', function() {
-  var slug = $(this).val();
-  slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
-  $('#id_name').val(slug);
-  $('#id_username').val(slug);
+// And if typing changes default portfolio title, force changes back into username
+$('#id_title').on('keyup', function() {
+  var title = $(this).val();
+  title = title.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
+  $('#id_name').val(title);
+  $('#id_username').val(title);
 })
 
 {% if request.method == "POST" %}
