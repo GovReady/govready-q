@@ -1182,11 +1182,12 @@ def portfolio_projects(request, pk):
   """List of projects within a portfolio"""
   portfolio = Portfolio.objects.get(pk=pk)
   projects = portfolio.projects.all()
+  anonymous_user = User.objects.get(username='AnonymousUser')
   return render(request, "portfolios/detail.html", {
       "portfolio": portfolio,
       "projects": projects,
       "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
-      "send_invitation": Invitation.portfolio_form_context_dict(request.user, portfolio, [request.user]),
+      "send_invitation": Invitation.portfolio_form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
       "users_with_perms": portfolio.users_with_perms()
       })
 
