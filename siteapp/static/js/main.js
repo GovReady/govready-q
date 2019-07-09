@@ -57,7 +57,9 @@ function show_invite_modal(title, prompt, info, message_default_text, data, call
   } else {
     m.find('label[for="invite-user-email"] span').remove(); // hide link to hide the email address input and show the dropdown because drop-down is empty
   }
-  s.append($("<option/>").attr('value', '__invite__').text("Invite someone new..."))
+  if (data.project) {
+    s.append($("<option/>").attr('value', '__invite__').text("Invite someone new..."))
+  }
   if (data.user_id) {
     s.val(data.user_id);
     if (s.val() == data.user_id) // valid?
