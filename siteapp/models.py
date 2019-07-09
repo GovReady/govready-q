@@ -978,7 +978,7 @@ class Invitation(models.Model):
             "portfolio_id": portfolio.id,
             "portfolio_title": portfolio.title,
             "users": [{ "id": user.id, "name": str(user) }
-                for user in User.objects.all()]
+                for user in User.objects.exclude(username='AnonymousUser')]
         }
 
     @staticmethod
