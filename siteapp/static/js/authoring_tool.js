@@ -177,7 +177,7 @@ function authoring_tool_download_app() {
     url: "/tasks/_authoring_tool/download-app",
     method: "POST",
     data: data,
-    keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+    keep_indicator_forever: false,
     success: function(res) {
       // Modal can stay up until the redirect finishes.
       // Stay on same page to see new content
