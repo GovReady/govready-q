@@ -197,7 +197,11 @@ label {
           <div class="form-group authoring_q_type_text authoring_q_type_email-address authoring_q_type_url authoring_q_type_longtext">
             <label for="authoring_tool_default" class="col-sm-2 control-label">Default</label>
             <div class="col-sm-10">
+              {% if q.spec.type == "longtext" %}
+              <textarea class="form-control" id="authoring_tool_default" name="default"></textarea>
+              {% else %}
               <input type="text" class="form-control" id="authoring_tool_default" name="default">
+              {% endif %}
               <span class="help-block">Template text provided as a default value. Do not set both a placeholder and a default.</span>
             </div>
           </div>
