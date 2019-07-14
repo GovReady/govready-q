@@ -63,6 +63,7 @@ div.modal-content{
   .modal.right.fade.in .modal-dialog {
     right: 0;
   }
+k
 
 /* ----- MODAL STYLE ----- */
   .modal-content {
@@ -278,7 +279,17 @@ label {
               <span class="help-block">Optional question specification YAML data not defined above.</span>
             </div>
           </div>
+          <div class="form-group">
+            <label for="other" class="col-sm-2 control-label">Other</label>
+            <div class="col-sm-10">
+              <button class="" title="New question" onclick="authoring_tool_new_question({{task.id}}, false); return false;">
+                <span class="glyphicon glyphicon-plus"></span>
+                New question
+              </button>
+            </div>
+          </div>
         </form>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger btn" onclick="authoring_tool_delete_question()">Delete Question</button>
@@ -287,5 +298,35 @@ label {
       </div>
     </div>
     </form>
+  </div>
+</div>
+
+<div id="questionnaire_authoring_tool" class="modal center fade" tabindex="-1" role="dialog" aria-labelledby="questionnaire_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="questionnaire_authoring_tool_title">
+          View Questionnaire Source
+        </h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" onsubmit="return false;">
+          <div class="form-group">
+            <label for="questionnaire_authoring_tool_mspec" class="col-sm-1 control-label">Questionnaire</label>
+            <div class="col-sm-10">&nbsp;</div>
+            <div class="col-sm-12">
+              <textarea class="form-control" id="questionnaire_authoring_tool_mspec" name="spec">{ }</textarea>
+              <span class="help-block">Questionnaire definition in YAML.</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <!-- <button type="button" class="btn btn-danger" onclick="authoring_tool_delete_question()">Delete Question</button> -->
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <!-- <button type="button" class="btn btn-success" onclick="authoring_tool_save_module()">Save Changes</button> -->
+      </div>
+    </div>
   </div>
 </div>

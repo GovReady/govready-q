@@ -391,11 +391,13 @@ class Module(models.Model):
         if self.app != target.app:
             raise ValueError("Cannot reference %s from %s." % (target, self))
         return target.module_name
-    def serialize_to_disk(self):
-        # Write out the in-memory module specification to disk!
-        assert self.source.spec["type"] == "local" and self.source.spec["path"]
+
+    def serialize(self):
+        """Write out the in-memory module specification."""
+
         import os.path
         import rtyaml
+
         spec = OrderedDict(self.spec)
         if self.module_name == "app" and self.app:
             # Add back compliance app catalog information!
@@ -412,10 +414,37 @@ class Module(models.Model):
                 qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
 
             spec["questions"].append(qspec)
-        fn = os.path.join(self.source.spec["path"], self.app.appname, self.module_name + ".yaml")
-        with open(fn, "w") as f:
-            f.write(rtyaml.dump(spec))
 
+        return rtyaml.dump(spec)
+
+    def serialize_to_disk(self):
+        """Write out the in-memory module specification to disk."""
+        if self.source.spec["type"] == "local" and self.source.spec["path"]:
+            import os.path
+            import rtyaml
+            from django.http import HttpResponse, Http404
+
+            spec = OrderedDict(self.spec)
+            if self.module_name == "app" and self.app:
+                # Add back compliance app catalog information!
+                spec['catalog'] = recombine_catalog_metadata(self)
+            spec["questions"] = []
+            for i, q in enumerate(self.questions.order_by('definition_order')):
+                if i == 0 and q.key == "_introduction":
+                    spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
+                    continue
+
+                # Rewrite some fields that get rewritten during module-loading.
+                qspec = OrderedDict(q.spec)
+                if q.answer_type_module:
+                    qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
+                spec["questions"].append(qspec)
+
+            # Write update to disk
+            fn = os.path.join(self.source.spec["path"], self.app.appname, self.module_name + ".yaml")
+            with open(fn, "w") as f:
+                f.write(rtyaml.dump(spec))
+        # TODO Add a message that appears on page that questionnaire has been updated.
 
 class ModuleAsset(models.Model):
     source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of the asset.")

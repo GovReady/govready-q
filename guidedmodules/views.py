@@ -829,6 +829,50 @@ def upgrade_app(request):
     return JsonResponse({ "status": "ok" })
 
 @authoring_tool_auth
+@transaction.atomic
+def authoring_download_app(request, task):
+    question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
+
+    # Download current questionnaire.
+    print("In `authoring_download_app` and attempting to download question/app")
+    try:
+        questionnaire_yaml = question.module.serialize()
+    except Exception as e:
+        return JsonResponse({ "status": "error", "message": "Could not download YAML file: " + str(e) })
+
+    # Clear cache...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
+
+    # ////////////////////
+    # GET DOWNLOAD TO WORK
+    # mime_type = "text/x-yaml"
+    # disposition = "inline"
+    # resp = HttpResponse(questionnaire_yaml, content_type=mime_type)
+    # resp['Content-Disposition'] = disposition + '; filename=' + "q-file.yaml"
+
+    # # Browsers may guess the MIME type if it thinks it is wrong. Prevent
+    # # that so that if we are forcing application/octet-stream, it
+    # # doesn't guess around it and make the content executable.
+    # resp['X-Content-Type-Options'] = 'nosniff'
+
+    # # Browsers may still allow HTML to be rendered in the browser. IE8
+    # # apparently rendered HTML in the context of the domain even when a
+    # # user clicks "Open" in an attachment-disposition response. This
+    # # prevents that. Doesn't seem to affect anything else (like images).
+    # resp['X-Download-Options'] = 'noopen'
+
+    # return resp
+    # ////////////////////
+
+    # Return status. The browser will reload/redirect --- if the question key
+    # changed, this sends the new key.
+    return JsonResponse({ "status": "ok",
+                          "data": questionnaire_yaml,
+                          "redirect": task.get_absolute_url_to_question(question)
+                        })
+
+@authoring_tool_auth
 def authoring_new_question(request, task):
     # Find a new unused question identifier.
     ids_in_use = set(task.module.questions.values_list("key", flat=True))
@@ -882,6 +926,7 @@ def authoring_new_question(request, task):
 @authoring_tool_auth
 @transaction.atomic
 def authoring_edit_question(request, task):
+
     question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
 
     # Delete the question?
