@@ -49,6 +49,7 @@ function init_authoring_tool(state) {
   // done after it's visible.
   $('#question_authoring_tool').on('shown.bs.modal', function() { autosize.update($(this).find('textarea')) });
   $('#module_authoring_tool').on('shown.bs.modal', function() { autosize.update($(this).find('textarea')) });
+  $('#questionnaire_authoring_tool').on('shown.bs.modal', function() { autosize.update($(this).find('textarea')) });
 
   // Init autocompletes for inputs/textareas that are interpreted as templates.
   init_authoring_tool_autocomplete($('#authoring_tool_qprompt'), "template");
@@ -164,6 +165,27 @@ function authoring_tool_add_impute_condition_fields() {
   $('#authoring_tool_impute_conditions').append(n);
   init_authoring_tool_autocomplete($(n.find("input")[0], "expression"));
   return n;
+}
+
+function authoring_tool_download_app() {
+  // console.log(q_authoring_tool_state.questions)
+  // console.log(q_authoring_tool_state.questions.spec)
+  // console.log(Object.getOwnPropertyNames(q_authoring_tool_state.questions)[0]);
+  var data = [{ name: "task", value: q_authoring_tool_state.task }]
+  data.push( { name: "question", value: Object.getOwnPropertyNames(q_authoring_tool_state.questions)[0] } );
+  ajax_with_indicator({
+    url: "/tasks/_authoring_tool/download-app",
+    method: "POST",
+    data: data,
+    keep_indicator_forever: false,
+    success: function(res) {
+      // Modal can stay up until the redirect finishes.
+      // Stay on same page to see new content
+      $('#questionnaire_authoring_tool_mspec').val(res.data);
+      // Show modal.
+      $('#questionnaire_authoring_tool').modal();
+    }
+  });
 }
 
 function authoring_tool_save_question() {

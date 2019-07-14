@@ -574,7 +574,12 @@ label:hover .onhover { display: inline; }
     <div style="margin: 2em 0; font-size: 90%;">
       <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
         <span class="glyphicon glyphicon-pencil"></span>
-        Authoring Tool
+        Authoring tool
+      </a>
+      <br />
+      <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
+        <span class="glyphicon glyphicon-save"></span>
+        View questionnaire YAML
       </a>
     </div>
     {% endif %}
