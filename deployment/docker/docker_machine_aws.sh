@@ -5,6 +5,12 @@ set -euf -o pipefail # abort script on error
 # Defaults
 ##########
 
+# The site's public address as would be entered in a
+# web browser. Set with --address HOST:PORT. The port
+# is optional if 80. The default is:
+HOST=localhost
+PORT=80
+
 # Docker machine name
 # The name for the ec2 instance hosting Docker.
 # Set with `--dm-name NAME`. If set to the empty
@@ -26,8 +32,16 @@ while [ $# -gt 0 ]; do
     --dm-name)
       DM_NAME="$2"
       shift 2 ;;
+
     --aws-region)
       AWS_REGION="$2"
+      shift 2 ;;
+
+    --address)
+      # Split --address on a colon and store in HOST and PORT..
+      IFS=':' read -r -a ADDRESS <<< "$2"
+      HOST=${ADDRESS[0]-localhost}
+      PORT=${ADDRESS[1]-80}
       shift 2 ;;
 
     --debug)
@@ -69,6 +83,17 @@ echo "Public IP: $PUBLIC_IP"
 # Transpose '.' in IP address to '-' required in AWS Domain name
 echo "AWS address is: ec2-$(echo $PUBLIC_IP | tr . "-").$AWS_REGION_STR.amazonaws.com"
 
+# Set HOST
+if [ -z ${ADDRESS+x} ]
+then
+  # ADDRESS is not set, use public IP
+  export HOSTNAME=$PUBLIC_IP
+else
+  export HOSTNAME=$HOST
+fi
+
+echo "HOSTNAME is: $HOSTNAME"
+
 # Make the created docker-machine the active docker-machine for docker commands
 # docker-machine env $DM_NAME
 eval $(docker-machine env $DM_NAME)
@@ -89,15 +114,20 @@ echo "Bring containers up using: docker run commands..."
 # Pull and run GovReady-Q 0.9.0 container making site available on port 80 with no https
 docker run --detach --name govready-q-0.9.0 -p $PRIVATE_IP:80:8000 \
 -e HTTPS=false -e DBURL= -e DEBUG=$DEBUG \
--e HOST=$PUBLIC_IP \
+-e HOST=$HOSTNAME \
 govready/govready-q-0.9.0
 
 # Configure Superuser account for GovReady-Q
 docker exec -it govready-q-0.9.0 first_run
 
-# Provide some frienly feedback
+# Provide some friendly feedback
 echo " "
-echo "Point your browser to http://$PUBLIC_IP"
+echo "AWS address is: ec2-$(echo $PUBLIC_IP | tr . "-").$AWS_REGION_STR.amazonaws.com"
+echo "Private IP: $PRIVATE_IP"
+echo "Public IP: $PUBLIC_IP"
+echo " "
+echo "Point your browser to http://$HOSTNAME"
+echo "Remember to update DNS server..."
 echo "To stop container run: docker-machine stop $DM_NAME"
 echo "To remove container and hosting ec2 instance run: docker-machine rm $DM_NAME"
-echo "To make new ec2 instance the active docker-machine run: eval \$(docker-machine env \$DM_NAME)"
+echo "To make new ec2 instance the active docker-machine run: eval \$(docker-machine env $DM_NAME)"
