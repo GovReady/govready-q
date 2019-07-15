@@ -4,7 +4,7 @@ GovReady-Q Release Notes
 v0.9.0.dev24+devel
 ------------------
 
-MINOR version upgrade with braking database changes.
+Version upgrade with braking database changes.
 
 Backup your database before running these migrations.
 
@@ -50,10 +50,15 @@ The app catalog cache is removed since the page loads much faster.
 * Display username instead of email asddress for user string.
 * Use plane lane language for names of top-level questionnaire stage
     columns: To Do, In Progress, Submitted, Approved.
-* Start to improve authoring tool:
+
+* Better authoring tool:
     - Shift question edit modular dialog from large center screen popup
-      to right-hand thin sidebar and increase readability of form
-    TEMPORARY correction of admin access to get tests to run. MUST FIX
+      to right-hand thin sidebar
+    - Increase readability of edit form
+    - Insert question into questionnaire
+    - Enable editing on questionnaires from all App Sources instead of just "local"
+    - Button to view entire questionnaire source YAML
+    - TEMPORARY correction of admin access to get tests to run. MUST FIX
 
 Developer changes:
 
