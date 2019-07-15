@@ -1,6 +1,18 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.dev30+devel
+------------------
+
+Introduces concept of Portfolios, which replaces both concepts of both Orgnizations and Groups.
+
+Portfolios are used to organize Projects and manage permissions and access.
+
+* When a new user joins GovReady they are automatically added and made owner of their own Portfolio
+* Users can be invited to a Portfolio by Portfolio owners and granted ownership by Portfolio owners
+* Any user can create a portfolio and add projects to the portfolio
+* Projects cannot exist in more than one portfolio
+
 v0.9.0.dev24+devel
 ------------------
 
