@@ -14,6 +14,8 @@ from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
 
+from siteapp.models import Project
+
 from unittest import skip
 
 import os
@@ -223,7 +225,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         # Grant second user membership in the organization
         # from https://github.com/GovReady/govready-q/blob/master/siteapp/admin.py#L41
-        from siteapp.models import ProjectMembership
         mb, isnew = ProjectMembership.objects.get_or_create(
             user=self.user2,
             project=self.org.get_organization_project(),
@@ -259,7 +260,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
         from siteapp.models import Project
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
-        self.current_projet = Project.objects.get(id=m.group(1))
+        self.current_project = Project.objects.get(id=m.group(1))
 
     def _start_task(self):
         # Assumes _new_project() just finished.
@@ -293,11 +294,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Sign In")
         self.click_element("p a") # This isn't a very good targetting of the "sign up" link.
         var_sleep(.5) # wait for page to load
-        self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
-        self.fill_field("#id_email", email)
-        new_test_user_password = get_random_string(16)
-        self.fill_field("#id_password1", new_test_user_password)
-        self.fill_field("#id_password2", new_test_user_password)
+
+        self._fill_in_signup_form(email)
         self.click_element("form.signup button") # This isn't a very good targetting of the "sign up" link.
         var_sleep(.5) # wait for next page to load
 
@@ -307,6 +305,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Test that an allauth confirmation email was sent.
         self.assertIn("Please confirm your email address at GovReady Q by following this link", self.pop_email().body)
+
+    def _fill_in_signup_form(self, email):
+        self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
+        self.fill_field("#id_email", email)
+        new_test_user_password = get_random_string(16)
+        self.fill_field("#id_password1", new_test_user_password)
+        self.fill_field("#id_password2", new_test_user_password)
 
     def test_homepage(self):
         self.browser.get(self.url("/"))
@@ -551,11 +556,24 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
+    def test_portfolios(self):
+        # Log in and create a new project from within a portfolio.
+        self.browser.get(self.url("/"))
+        self.click_element('#tab-register')
+        self._fill_in_signup_form("test+account@q.govready.com")
+        self.click_element("#signup-button")
+        self._new_portfolio_project()
+
+    def _new_portfolio_project(self):
+        self.browser.get(self.url("/portfolios"))
+        self.click_element("#portfolio_1")
+        self.click_element("#new-project")
+
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def _test_api_get(self, path, expected_value):
         resp = self.client_get(
-                "/api/v1/projects/" + str(self.current_projet.id) + "/answers",
+                "/api/v1/projects/" + str(self.current_project.id) + "/answers",
                 HTTP_AUTHORIZATION=self.user.api_key_rw)
         resp = resp.json()
         self.assertTrue(isinstance(resp, dict))
