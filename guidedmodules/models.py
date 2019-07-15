@@ -440,11 +440,12 @@ class Module(models.Model):
             spec["questions"].append(qspec)
         # TODO Add a message that appears on page that questionnaire has been updated.
 
-        # Write update to disk
+        # Write update to disk if source is local and file is writeable
         if self.source.spec["type"] == "local" and self.source.spec["path"]:
             fn = os.path.join(self.source.spec["path"], self.app.appname, self.module_name + ".yaml")
-            with open(fn, "w") as f:
-                f.write(rtyaml.dump(spec))
+            if os.access(fn, os.W_OK):
+                with open(fn, "w") as f:
+                    f.write(rtyaml.dump(spec))
 
 class ModuleAsset(models.Model):
     source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of the asset.")
