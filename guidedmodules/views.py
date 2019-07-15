@@ -908,8 +908,8 @@ def authoring_new_question(request, task):
         )
     question.save()
 
-    # Write to disk. Errors writing should not be suppressed because
-    # saving to disk is a part of the contract of how app editing works.
+    # Write to disk. Write updates to disk if developing on local machine
+    # with local App Source
     try:
         question.module.serialize_to_disk()
     except Exception as e:

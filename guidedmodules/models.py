@@ -137,8 +137,7 @@ class AppVersion(models.Model):
         return rtyaml.dump(self.catalog_metadata)
 
     def is_authoring_tool_enabled(self, user):
-        return (self.source.spec["type"] == "local" # so we can save to disk
-            and user.has_perm('guidedmodules.change_module'))
+        return (user.has_perm('guidedmodules.change_module'))
 
     def has_upgrade_priv(self, user):
         # Does a user have permission to ugprade the Modules in this AppVersion?
@@ -419,32 +418,33 @@ class Module(models.Model):
 
     def serialize_to_disk(self):
         """Write out the in-memory module specification to disk."""
+
+        import os.path
+        import rtyaml
+        from django.http import HttpResponse, Http404
+
+        spec = OrderedDict(self.spec)
+        if self.module_name == "app" and self.app:
+            # Add back compliance app catalog information!
+            spec['catalog'] = recombine_catalog_metadata(self)
+        spec["questions"] = []
+        for i, q in enumerate(self.questions.order_by('definition_order')):
+            if i == 0 and q.key == "_introduction":
+                spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
+                continue
+
+            # Rewrite some fields that get rewritten during module-loading.
+            qspec = OrderedDict(q.spec)
+            if q.answer_type_module:
+                qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
+            spec["questions"].append(qspec)
+        # TODO Add a message that appears on page that questionnaire has been updated.
+
+        # Write update to disk
         if self.source.spec["type"] == "local" and self.source.spec["path"]:
-            import os.path
-            import rtyaml
-            from django.http import HttpResponse, Http404
-
-            spec = OrderedDict(self.spec)
-            if self.module_name == "app" and self.app:
-                # Add back compliance app catalog information!
-                spec['catalog'] = recombine_catalog_metadata(self)
-            spec["questions"] = []
-            for i, q in enumerate(self.questions.order_by('definition_order')):
-                if i == 0 and q.key == "_introduction":
-                    spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
-                    continue
-
-                # Rewrite some fields that get rewritten during module-loading.
-                qspec = OrderedDict(q.spec)
-                if q.answer_type_module:
-                    qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
-                spec["questions"].append(qspec)
-
-            # Write update to disk
             fn = os.path.join(self.source.spec["path"], self.app.appname, self.module_name + ".yaml")
             with open(fn, "w") as f:
                 f.write(rtyaml.dump(spec))
-        # TODO Add a message that appears on page that questionnaire has been updated.
 
 class ModuleAsset(models.Model):
     source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of the asset.")
