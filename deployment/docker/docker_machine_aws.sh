@@ -48,6 +48,18 @@ while [ $# -gt 0 ]; do
       DEBUG=true
       shift 1 ;;
 
+    --help)
+      echo "Starts an instance of GovReady-Q running on AWS via Docker Machine."
+      echo "Usage: "$(basename "$0")" [--help] [--address] [--aws-region] [--debug] [--dm-name]"
+      echo " "
+      echo "where:"
+      echo "  --address     GovReady-Q's public address as would be entered in a web browser. Set with --address HOST:PORT (PORT optional if 80)."
+      echo "  --aws-region  AWS region to launch in, defaults to '$AWS_REGION'."
+      echo "  --debug       Turn on Django DEBUG mode."
+      echo "  --dm-name     The docker-machine name for the Docker host, defaults to '$DM_NAME'."
+      echo "  --help        Show this help text."
+      exit 1 ;;
+
     --)
         shift
         break
