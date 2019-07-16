@@ -1,6 +1,6 @@
 {% if DEBUG %}
-<div class="container" style="color: #999; font-size: 80%; margin-top: 50px">
-<p class="pull-right">
+<div id="question-debug-links" class="" style="color: #999; font-size: 80%; margin-top: 20px">
+<p class="">
   module:
     {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/module/{{m.id}}">{% endif %}
     <span id="debug-module-key">{{m.source.slug}}/{{m.app.appname}}/{{m.module_name}}</span>{% if user.is_staff %}</a>{% endif %}

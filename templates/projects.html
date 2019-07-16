@@ -8,88 +8,88 @@ Your Compliance Projects
 
 {% block head %}
 <style>
-.btn .glyphicon { margin-right: 6px; }
-.btn.btn-success .glyphicon { color: #FFF; }
+  .btn .glyphicon { margin-right: 6px; }
+  .btn.btn-success .glyphicon { color: #FFF; }
 
-.lifecycle {
-  margin-bottom: 30px;
-}
+  .lifecycle {
+    margin-bottom: 30px;
+  }
 
-.lifecycle h2 {
-  margin: 0 0 1em 0;
-}
+  .lifecycle h2 {
+    margin: 0 0 1em 0;
+  }
 
-.lifecycle .stage {
-  margin: 0 -10px;
-  padding: 10px;
-  background-color: rgb(247,247,247);
-  border-radius: 5px;
-  max-width: 530px; /* so individual cards don't stretch across whole page */
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
-}
+  .lifecycle .stage {
+    margin: 0 -10px;
+    padding: 10px;
+    background-color: rgb(247,247,247);
+    border-radius: 5px;
+    max-width: 530px; /* so individual cards don't stretch across whole page */
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
+  }
 
-.lifecycle .stage h3 {
-  color: black;
-  margin: 5px 0 0 0;
-  text-align: center;
-}
+  .lifecycle .stage h3 {
+    color: black;
+    margin: 5px 0 0 0;
+    text-align: center;
+  }
 
-.lifecycle .stage .stage-subhead {
-  text-align: center;
-  margin-bottom: 15px;
-}
+  .lifecycle .stage .stage-subhead {
+    text-align: center;
+    margin-bottom: 15px;
+  }
 
-.project {
-  background-color: white;
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 3px;
-  border-bottom: 1px solid rgb(204, 204, 204);
-}
+  .project {
+    background-color: white;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 3px;
+    border-bottom: 1px solid rgb(204, 204, 204);
+  }
 
-.project-image {
-  width: 20px;
-  float: left;
-  margin: 4px 0 5px 8px;
-}
+  .project-image {
+    width: 20px;
+    float: left;
+    margin: 4px 0 5px 8px;
+  }
 
-.project-text {
-}
+  .project-text {
+  }
 
-.project-text h4 {
-  margin: 0;
-  font-weight: bold;
-  font-size: inherit;
-}
+  .project-text h4 {
+    margin: 0;
+    font-weight: bold;
+    font-size: inherit;
+  }
 
-.project-text > * {
-  margin: .5em 0 0 0;
-  font-size: 13px;
-}
+  .project-text > * {
+    margin: .5em 0 0 0;
+    font-size: 13px;
+  }
 
-h1.mini {
-  font-size: 16px;
-  font-family: Hind, sands-serif;
-  line-height: 22px;
-  color: rgba(51, 51, 51);
-  padding: 0px 0px 0px 0px;
-  margin: 0px 0px 0px 0px;
-}
+  h1.mini {
+    font-size: 16px;
+    font-family: Hind, sands-serif;
+    line-height: 22px;
+    color: rgba(51, 51, 51);
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+  }
 
-.luna-box {
-  border: 1px solid rgb(210, 210, 210);
-  height: 160px;
-  margin-top: 30px;
-  font-size: .8em;
-  border-radius: 4px;
-  padding: 20px 20px 0px 0px;
-}
+  .luna-box {
+    border: 1px solid rgb(210, 210, 210);
+    min-height: 160px;
+    margin-top: 30px;
+    font-size: .8em;
+    border-radius: 4px;
+    padding: 20px 20px 0px 0px;
+  }
 
-.luna-box div.glyphicon {
-  font-size:3em;
-  color: rgb(160, 210, 160);
-  margin:30px 0px 0px 40px;
-}
+  .luna-box div.glyphicon {
+    font-size:3em;
+    color: rgb(160, 210, 160);
+    margin:30px 0px 0px 40px;
+  }
 
 </style>
 {% endblock %}
@@ -126,7 +126,7 @@ h1.mini {
 <div class="container">
 {% for project in projects %}
 <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
-  <div class="col-md-6">
+  <div class="col-sm-1">
     {% if project.root_task.get_app_icon_url %}
       <a href="{{project.get_absolute_url}}" class="project-image">
         <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive" alt="App Icon">
@@ -134,16 +134,15 @@ h1.mini {
     {% else %}
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endif %}
-    &nbsp;&nbsp;&nbsp;
+  </div>
+  <div class="col-xs-10 col-md-5">
     <a href="{{project.get_absolute_url}}" style="color: black;">{{project.organization}} / {{project.title}}</a>
   </div>
 
-  <div class="col-md-2">&nbsp;</div>
+  <div class="col-xs-12 col-sm-3">&nbsp;</div>
+  <div class="col-xs-12 col-sm-1"><small style="color: #888;">ID: {{project.id}}</small></div>
 
-  <div class="col-md-1">&nbsp;</div>
-  <div class="col-md-1"><small style="color: #888;">ID: {{project.id}}</small></div>
-
-  <div class="col-md-2" style="text-align: right;">
+  <div class="col-xs-12 col-md-2" style="text-align: right;">
       <small style="color: #888;">
       <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
       Updated {{project.root_task.updated|naturaltime}}
@@ -158,7 +157,7 @@ h1.mini {
 <!-- Display grid of options -->
   <div class="row">
 
-    <div class="col-md-6">
+    <div class="col-sm-6">
       <div class="luna-box">
         <div class="col-md-3">
           <div class="glyphicon glyphicon glyphicon-list-alt"></div>
@@ -171,7 +170,7 @@ h1.mini {
       </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-sm-6">
       <div class="luna-box">
         <div class="col-md-3">
           <div class="glyphicon glyphicon glyphicon-folder-open"></div>
@@ -184,7 +183,7 @@ h1.mini {
       </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-sm-6">
       <div class="luna-box">
         <div class="col-md-3">
           <div class="glyphicon glyphicon-heart-empty"></div>
@@ -197,7 +196,7 @@ h1.mini {
       </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-sm-6">
       <div class="luna-box">
         <div class="col-md-3">
           <div class="glyphicon glyphicon-duplicate"></div>

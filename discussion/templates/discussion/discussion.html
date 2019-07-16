@@ -5,9 +5,11 @@
 
 <style>
 #discussion-your-comment-tips {
+  margin-top: 4px;
   padding: 2px;
-  font-size: 85%;
+  font-size: 65%;
   color: #555;
+  text-align: right;
 }
   #discussion-your-comment-tips label {
     color: inherit;
@@ -105,6 +107,12 @@
     border: 1px solid #DDE;
     background-color: #EEF;
   }
+
+#preview_comment_toggle {
+  color: #999;
+  font-size: 85%;
+}
+
 </style>
 
 <div id="discussion" style="display: none;">
@@ -126,11 +134,22 @@
 -radius: .25em;"></div>
           </div>
           <div id="discussion-your-comment-tips">
-            <span><b>**bold**</b></span> <span><i>*italic*</i></span> <span>* list</span> <span>[link](http://to)</span> <span># heading.</span>
-            <a href="http://commonmark.org/help/" target="_blank"><span class="glyphicon glyphicon-info-sign" style="margin-right: 3px">
-            </a>
+
             <label for="discussion-attach-file"><span class="glyphicon glyphicon-paperclip" style="margin-right: 3px"></span>Attach a File</label>
             <div style="display: none"><input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" /></div>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span>formatting:</span>
+            &nbsp;
+            <span><b>**bold**</b></span>
+            &nbsp;  
+            <span><em>*italic*</em></span>
+            &nbsp;
+            <span style="border:1px solid #ddd; background-color: #eee; padding: 0px 2px 0px 2px; border-radius: 3px;">[link](http://to)</span>
+            &nbsp;
+            <span># heading.</span>
+            &nbsp;
+            <a href="http://commonmark.org/help/" target="_blank"><span class="glyphicon glyphicon-info-sign" style="margin-right: 3px">
+            </a>
           </div>
         </div>
         <div id="discussion-your-comment-preview-container" style="display: none;">
