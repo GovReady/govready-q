@@ -557,17 +557,31 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
     def test_portfolios(self):
-        # Log in and create a new project from within a portfolio.
+        # Create a new account
         self.browser.get(self.url("/"))
         self.click_element('#tab-register')
         self._fill_in_signup_form("test+account@q.govready.com")
         self.click_element("#signup-button")
-        self._new_portfolio_project()
 
-    def _new_portfolio_project(self):
+        # Go to portfolio page
         self.browser.get(self.url("/portfolios"))
+
+        # Navigate to portfolio created on signup
         self.click_element("#portfolio_1")
+
+        # Create project within portfolio
         self.click_element("#new-project")
+        self.click_element(".app[data-app='project/simple_project'] .view-app")
+        self.click_element("#start-project")
+        # last two lines could also be replaced with:
+        #self.click_element(".app[data-app='project/simple_project'] .start-app")
+        var_sleep(1)
+        self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
+
+        from siteapp.models import Project
+        m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
+        self.current_project = Project.objects.get(id=m.group(1))
+    
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
 

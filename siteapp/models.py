@@ -274,16 +274,7 @@ class Organization(models.Model):
         return "/%s/projects" % (self.slug)
 
     def get_who_can_read(self):
-        # A user can see an Organization if:
-        # * they have read permission on any Project within the Organization
-        # * they are an editor of a Task within a Project within the Organization (but might not otherwise be a Project member)
-        # * they are a guest in any Discussion on TaskQuestion in a Task in a Project in the Organization
-        # The inverse function is below.
-        return (
-               User.objects.filter(projectmembership__project__organization=self)
-             | User.objects.filter(tasks_editor_of__project__organization=self)
-             | User.objects.filter(guest_in_discussions__organization=self)
-             ).distinct()
+        return User.objects.all()
 
     def can_read(self, user):
         # Although we can check it by evaluating:
@@ -297,11 +288,7 @@ class Organization(models.Model):
         # See can_read.
         from guidedmodules.models import Task
         from discussion.models import Discussion
-        return (
-              Organization.objects.filter(projects__members__user=user)
-            | Organization.objects.filter(projects__tasks__editor=user)
-            | Organization.objects.filter(discussions__guests=user)
-            ).order_by("name", "created").distinct()
+        return Organization.objects.all().order_by("name", "created").distinct()
 
     def get_projects(self):
         # return Projects.objects.filter()
