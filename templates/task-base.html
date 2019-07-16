@@ -4,89 +4,103 @@
 
 {% block head %}
 <style>
-{% include "focus-area-styles.css" %}
-#question-history-context {
-  font-size: 0.85em;
-  background-color: rgba(255,255,255,0.2);
-  padding: 8px;
-  max-width: 40vw;
-  border-radius: 10px;
-  border-bottom: 1px solid rgb(204, 204, 204);
-}
+  {% include "focus-area-styles.css" %}
+
+  #author-tools a {
+    color: #666;
+  }
+
+  #question-debug-links {
+    max-width: 450px;
+  }
+
+  #question-history-context, #author-tools, #question-debug-links {
+    font-size: 0.85em;
+    background-color: rgba(255,255,255,0.2);
+    padding: 8px;
+    /*max-width: 40vw;*/
+    border-radius: 10px;
+    border-bottom: 1px solid rgb(204, 204, 204);
+    max-height: 550px;
+    overflow-y:scroll;
+  }
+
   #question-history-context ul {
     list-style-type: none;
     padding: 0;
     color: #666;
     line-height: 128%;
   }
+
   #question-history-context ul li {
     margin-bottom: .25em;
   }
+
   #question-history-context ul li a {
     color: inherit;
   }
+
   #question-history-context ul li.this {
     color: #333;
   }
+
   #question-history-context ul li.other {
   }
-.glyphicon.glyphicon-check {
-  color: #96B;
-}
 
-#page-transition-paragraph p {
-  margin-bottom: 1em;
-  font-style: italic;
-}
+  .glyphicon.glyphicon-check {
+    color: #96B;
+  }
 
-.help-block {
-  font-size: .85em;
-}
+  #page-transition-paragraph p {
+    margin-bottom: 1em;
+    font-style: italic;
+  }
 
-.breadcrumb {
-  font-size: .8em;
-}
+  .help-block {
+    font-size: .85em;
+  }
+
+  .breadcrumb {
+    font-size: .8em;
+  }
 </style>
 {% endblock %}
 
-
 {% block breadcrumbs %}
-  {% if is_admin %}
-  <div class="pull-right">
-    <a href="#" onclick="return delete_task();">
-      <span class="glyphicon glyphicon-trash" style="color: #BBB;"></span>
-    </a>
-  </div>
-  {% endif %}
-
   {% if not task.project.is_account_project %}
   <li>
     <a href="/">
       <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
     </a>
   </li>
-  <li>
+  <li class="hidden-xs">
     <a href="{{task.project.organization.get_absolute_url}}">
       {{task.project.organization.name}}
     </a>
   </li>
   {% for parent_project in task.project.get_parent_projects %}
-    <li>
+    <li class="hidden-xs">
       <a href="{{parent_project.get_absolute_url}}">
         {{parent_project.title}}
       </a>
     </li>
   {% endfor %}
-  <li>
+  <li class="hidden-xs">
     <a href="{{task.project.get_absolute_url}}">
       {{task.project.title}}
     </a>
   </li>
   {% endif %}
-      <!-- <span class="glyphicon glyphicon-th-list" style="margin-right: .25em"></span> -->
   <li class="active">
     {{task.title}}
   </li>
+
+  {% if is_admin %}
+  <div class="pull-right hidden-xs">
+    <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" style="color: #BBB;"></span></a>
+  </div>
+  {% endif %}
+
 {% endblock %}
 
 {% block body %}

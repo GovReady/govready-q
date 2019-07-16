@@ -81,8 +81,9 @@ label .onhover { display: none; }
 label:hover .onhover { display: inline; }
 
 #confidence-buttons {
-  margin: 25px 0;
+  margin: 12px 0 0 0;
 }
+
     #confidence-buttons button {
         border: 1px solid rgba(255,255,255,0); /* same width as .active but no color */
         border-radius: 4px;
@@ -90,25 +91,27 @@ label:hover .onhover { display: inline; }
         font-size: 80%;
         background: none;
         opacity: .6;
-        margin-right: .5em;
     }
+
         #confidence-buttons button img {
             height: 1.25em;
             margin-right: .25em;
         }
+
         #confidence-buttons button.active {
             border: 1px solid #AAA;
             color: black;
             background: #EEE;
             opacity: 1;
         }
-        #confidence-buttons:hover button {
-            border: 1px solid #AAA;
-            opacity: 1;
+
+        #no-idea-button:hover, #not-applicable-button:hover, #start-a-discussion:hover, #transfer-editorship:hover {
+          border: 1px solid #AAA;
+          opacity: 1;
         }
 
 #action-buttons {
-  margin: 25px 0;
+  margin: 12px 0 0 12px;
 }
 
 #reference-text-wrapper *:first-child { margin-top: 0; }
@@ -126,10 +129,7 @@ label:hover .onhover { display: inline; }
 {{block.super}}
 
 <div class="row">
-
-<div class="col-md-9">
-  <div id="focus-area-wrapper">
-
+  <div id="focus-area-wrapper" class="col-sm-8 col-md-9">
     {% if source_invitation %}
       <div style="margin-bottom: 2em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -137,7 +137,6 @@ label:hover .onhover { display: inline; }
             Show Invitation from {{source_invitation.from_user}}
           </a>
         </div>
-        
         <div id="source-invitation" class="alert alert-warning alert-dismissible" {% if task.is_started %}style="display: none"{% endif %} role="alert">
           <button type="button" class="close" aria-label="Close" onclick="$('#source-invitation').hide(); $('#source-invitation-show').show();"><span aria-hidden="true">&times;</span></button>
           <strong>Invitation from {{source_invitation.from_user}}:</strong>
@@ -389,7 +388,6 @@ label:hover .onhover { display: inline; }
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
-
             {% elif q.spec.type == "module" and answer_tasks|length == 0 %}
               {# The user must choose or start a module, but there is nothing to choose from, so show a simplified interface. #}
 
@@ -465,7 +463,7 @@ label:hover .onhover { display: inline; }
                     {% endif %}
                     {% if not hidden_button_ids or "not-applicable" not in hidden_button_ids %}
                     <button id="not-applicable-button" type=button>
-                        <span class="emoji" data-sprite="people" data-code="1f64b" data-name="person raising hand"></span>
+                        <span class="emoji" data-sprite="people" data-code="1f645" data-name="person gesturing no"></span>
                         It doesn&rsquo;t apply
                     </button>
                     {% endif %}
@@ -475,12 +473,12 @@ label:hover .onhover { display: inline; }
                       {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
                         <button id="start-a-discussion" onclick="start_a_discussion();" type=button data-toggleable=false>
                             {# if you can see this page, you can start a conversation #}
-                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss
+                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss 
                         </button>
                       {% endif %}
                       {% if task.can_transfer_owner and write_priv %}
                         <button id="transfer-editorship" onclick="invite_to_transfer_editor();" type=button data-toggleable=false>
-                            <span class="glyphicon glyphicon-user" style="color: #A65;"></span> Assign
+                            <span class="emoji" data-sprite="people" data-code="1f449" data-name="person raising hand"></span> Assign
                         </button>
                       {% endif %}
                     {% endif %}
@@ -517,7 +515,6 @@ label:hover .onhover { display: inline; }
                       </button>
                   {% endif %}
                 </div> {# /.pull-left #}
-
               </div> <!-- /action-buttons -->
 
             {% if answer_obj and can_review %}
@@ -543,17 +540,13 @@ label:hover .onhover { display: inline; }
 
           {% endif %} {# write_priv #}
         </form>
-
     </div> <!-- /question -->
 
     {% include "discussion/discussion.html" %}
+  </div> <!-- /focus-area-wrapper -->
 
-    </div> <!-- /focus-area-wrapper -->
-
-  </div> <!-- /col -->
-
-  <div class="col-md-3">
-    <div id="question-history-context" style="border:0px solid black; max-height: 550px; overflow-y:scroll; padding:4px;">
+  <div class="col-xs-12 col-sm-4 col-md-3">
+    <div id="question-history-context">
         <ul>
         {% if context %}
           <p>Progress:</p>
@@ -571,21 +564,19 @@ label:hover .onhover { display: inline; }
     </div> <!-- /question-history-context -->
 
     {% if authoring_tool_enabled %}
-    <div style="margin: 2em 0; font-size: 90%;">
+    <div id="author-tools" style="margin: 1em 0; font-size: 90%;">
       <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-pencil"></span>
-        Authoring tool
+        <span class="glyphicon glyphicon-pencil" style="color: "></span>
+        Edit
       </a>
-      <br />
+      &nbsp;&nbsp;&nbsp;&nbsp;
       <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-save"></span>
-        View questionnaire YAML
+        <span class="glyphicon glyphicon-eye-open"></span>
+        Source
       </a>
     </div>
     {% endif %}
-
   </div>
-
 </div> <!-- /row -->
 
 {% if authoring_tool_enabled %}
@@ -1012,7 +1003,6 @@ function show_static_history(history) {
       render_event(item)
     });
 }
-
 
 {% if send_invitation %}
 function invite_user_to_discussion() {
