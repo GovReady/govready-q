@@ -621,6 +621,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Remove another member access to portfolio
         self.click_element("#me2_remove_permissions")
         self.assertNotInNodeText("me2", "#portfolio-members")
+        self.assertNodeNotVisible("#portfolio-member-me2")
 
 
 
