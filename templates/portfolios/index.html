@@ -22,7 +22,7 @@ Your Compliance Portfolios
 
     <h2 class="">Portfolios</h2>
     {% if portfolios|length > 0 %}
-    <p>You have access to {{ portfolios|length }} portfolio{{ portfolio|pluralize }}</p>
+    <p>You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</p>
     {% else %}
     <p>You do not have access to any portfolios.</p>
     {% endif %}
