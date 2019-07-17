@@ -120,6 +120,11 @@ class SeleniumTest(StaticLiveServerTestCase):
         e = self.browser.find_element_by_css_selector(css_selector)
         Select(e).select_by_value(value)
 
+    def select_option_by_visible_text(self, css_selector, text):
+        from selenium.webdriver.support.select import Select
+        e = self.browser.find_element_by_css_selector(css_selector)
+        Select(e).select_by_visible_text(text)
+
     def _getNodeText(self, css_selector):
         node_text = self.browser.find_element_by_css_selector(css_selector).text
         node_text = re.sub(r"\s+", " ", node_text) # normalize whitespace
@@ -593,7 +598,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Grant another member access to portfolio
         self.click_element("#grant-portfolio-access")
-        self.select_option('#invite-user-select', '2')
+        self.select_option_by_visible_text('#invite-user-select', 'me')
         self.click_element("#invitation_modal button.btn-submit")
         var_sleep(1)
         self.assertInNodeText("Send Invitation", ".modal-title")
@@ -607,7 +612,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
        # Grant another member access to portfolio
         self.click_element("#grant-portfolio-access")
-        self.select_option('#invite-user-select', '3')
+        self.select_option_by_visible_text('#invite-user-select', 'me2')
         self.click_element("#invitation_modal button.btn-submit")
         var_sleep(1)
         self.click_element("button.btn.btn-default")
