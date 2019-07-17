@@ -94,16 +94,17 @@ Remove contextbar from top of page
       </div>
       {% endif %}
 
-      <div class="container">
+      <div id="portfolio-members" class="container">
         <div class="row" style="margin-top: 60px;">
           <p> <b>Users With Access:</b></p>
           {% for user in users_with_perms %}
+          <div id="portfolio-member-{{user.name}}">
           <p class="inline"> {{user.name}}
             {% if user.owner %}
             (Owner)
           </p>
           {% elif can_invite_to_portfolio %}
-          <form name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">
+          <form id="{{user.name}}_remove_permissions" name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">
             {% csrf_token %}
             <input type="hidden" id="portfolio_id" name="portfolio_id" value={{portfolio.id}}>
             <input type="hidden" id="user_id" name="user_id" value={{user.id}}>
@@ -111,7 +112,7 @@ Remove contextbar from top of page
             <input type="hidden" name="next" value="{{ request.path }}">
             <input type="submit" value="Remove" class="btn btn-sm btn-danger" />
           </form>
-          <form name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">
+          <form id="{{user.name}}_grant_owner_permission" name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">
             {% csrf_token %}
             <input type="hidden" id="portfolio_id" name="portfolio_id" value={{portfolio.id}}>
             <input type="hidden" id="user_id" name="user_id" value={{user.id}}>
@@ -121,6 +122,7 @@ Remove contextbar from top of page
           </form>
           {%endif%}
           </p>
+          </div>
           {% endfor %}
         </div>
       </div>

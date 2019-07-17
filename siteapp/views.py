@@ -1124,17 +1124,18 @@ def project_upgrade_app(request, project):
 
 # PORTFOLIOS
 
-@permission_required_or_403('siteapp.can_grant_portfolio_owner_permission')
 def update_permissions(request):
     permission = request.POST.get('permission')
     portfolio_id = request.POST.get('portfolio_id')
     user_id = request.POST.get('user_id')
     portfolio = Portfolio.objects.get(id=portfolio_id)
     user = User.objects.get(id=user_id)
-    if permission == 'remove_permissions':
-     portfolio.remove_permissions(user)
-    elif permission == 'grant_owner_permission':
-      portfolio.assign_owner_permissions(user)
+    # TODO check if this check on request.user can be moved to decorator
+    if request.user.has_perm('can_grant_portfolio_owner_permission', portfolio):
+      if permission == 'remove_permissions':
+        portfolio.remove_permissions(user)
+      elif permission == 'grant_owner_permission':
+        portfolio.assign_owner_permissions(user)
     next = request.POST.get('next', '/')
     return HttpResponseRedirect(next)
 

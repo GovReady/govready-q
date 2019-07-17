@@ -305,8 +305,11 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Test that an allauth confirmation email was sent.
         self.assertIn("Please confirm your email address at GovReady Q by following this link", self.pop_email().body)
 
-    def _fill_in_signup_form(self, email):
-        self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
+    def _fill_in_signup_form(self, email, username=None):
+        if username:
+            self.fill_field("#id_username", username)
+        else:
+            self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
         self.fill_field("#id_email", email)
         new_test_user_password = get_random_string(16)
         self.fill_field("#id_password1", new_test_user_password)
@@ -559,7 +562,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Create a new account
         self.browser.get(self.url("/"))
         self.click_element('#tab-register')
-        self._fill_in_signup_form("test+account@q.govready.com")
+        self._fill_in_signup_form("test+account@q.govready.com", "portfolio_user")
         self.click_element("#signup-button")
 
         # Go to portfolio page
@@ -586,6 +589,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Your Compliance Portfolios")
         self.click_element("#portfolio_2")
         self.assertRegex(self.browser.title, "Security Projects Portfolio")
+        self.assertInNodeText("portfolio_user (Owner)", "#portfolio-member-portfolio_user")
 
         # Grant another member access to portfolio
         self.click_element("#grant-portfolio-access")
@@ -594,6 +598,25 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(1)
         self.assertInNodeText("Send Invitation", ".modal-title")
         self.assertInNodeText("The invitation has been sent. We will notify you when the invitation has been accepted.", ".modal-body p")
+        self.click_element("button.btn.btn-default")
+        self.assertInNodeText("me", "#portfolio-member-me")
+
+        # Grant another member ownership of portfolio
+        self.click_element("#me_grant_owner_permission")
+        self.assertInNodeText("me (Owner)", "#portfolio-member-me")
+
+       # Grant another member access to portfolio
+        self.click_element("#grant-portfolio-access")
+        self.select_option('#invite-user-select', '3')
+        self.click_element("#invitation_modal button.btn-submit")
+        var_sleep(1)
+        self.click_element("button.btn.btn-default")
+        self.assertInNodeText("me2", "#portfolio-member-me2")
+
+        # Remove another member access to portfolio
+        self.click_element("#me2_remove_permissions")
+        self.assertNotInNodeText("me2", "#portfolio-members")
+
 
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
