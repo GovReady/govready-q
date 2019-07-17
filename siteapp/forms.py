@@ -1,8 +1,19 @@
 from django import forms
 from django.forms import ModelForm
 
-from .models import Portfolio
+from .models import Portfolio, Project
 
+class ProjectForm(ModelForm):
+    class Meta:
+        model = Project
+        fields = ['portfolio']
+        portfolio = forms.ChoiceField(choices = [])
+
+        user1 = forms.ChoiceField(choices = [])
+
+    def __init__(self, user, *args, **kwargs):
+        super(ProjectForm, self).__init__(*args, **kwargs)
+        self.fields['portfolio'].choices = [(x.pk, x.title) for x in Portfolio.get_all_readable_by(user)]
 
 class PortfolioForm(ModelForm):
 

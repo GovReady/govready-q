@@ -20,7 +20,7 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User
-from .forms import PortfolioForm
+from .forms import PortfolioForm, ProjectForm
 from .notifications_helpers import *
 
 
@@ -115,9 +115,11 @@ def project_list(request):
         # Put the project into the lifecycle's appropriate stage.
         project.lifecycle_stage[1].setdefault("projects", []).append(project)
 
+    project_form = ProjectForm(request.user)
     return render(request, "projects.html", {
         "lifecycles": lifecycles,
         "projects": projects,
+        "project_form": project_form,
     })
 
 def get_compliance_apps_catalog_for_user(user):
@@ -305,7 +307,7 @@ def apps_catalog(request):
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
     # Add the portfolio id the user is creating the project from to the args
-    if "portfolio" in request.GET: forward_qsargs["portfolio"] = request.GET["portfolio"]
+    if "portfolio" in request.POST: forward_qsargs["portfolio"] = request.POST["portfolio"][0]
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
