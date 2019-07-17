@@ -340,7 +340,8 @@ class Organization(models.Model):
 class Portfolio(models.Model):
     title = models.CharField(max_length=256, help_text="The title of this Portfolio.")
     description = models.CharField(max_length=512, blank=True, help_text="A description of this Portfolio.")
-    projects = models.ManyToManyField("Project", blank=True, related_name="in_folders", help_text="The Projects that are listed within this Portfolio.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         permissions = (
@@ -443,8 +444,8 @@ class Folder(models.Model):
 
 class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
-
     organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
+    portfolio = models.ForeignKey(Portfolio, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Portfolio that this Project belongs to.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
     is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")

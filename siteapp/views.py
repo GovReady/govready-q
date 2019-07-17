@@ -432,16 +432,13 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         # Create project.
         project = Project()
         project.organization = organization
+        project.portfolio = portfolio
 
         # Save and add to folder
         project.save()
         project.set_root_task(appver.modules.get(module_name="app"), user)
         if folder:
             folder.projects.add(project)
-
-        # Add to portfolio 
-        if portfolio:
-            portfolio.projects.add(project)
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -1176,7 +1173,7 @@ def portfolio_read_required(f):
 def portfolio_projects(request, pk):
   """List of projects within a portfolio"""
   portfolio = Portfolio.objects.get(pk=pk)
-  projects = portfolio.projects.all()
+  projects = Project.objects.filter(portfolio=portfolio)
   anonymous_user = User.objects.get(username='AnonymousUser')
   return render(request, "portfolios/detail.html", {
       "portfolio": portfolio,
