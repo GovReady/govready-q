@@ -85,6 +85,13 @@ else
   AWS_REGION_STR="$AWS_REGION.compute"
 fi
 
+# Set PORT
+if [ -z ${PORT+x} ]
+then
+  # PORT is not set, 443
+  export PORT=443
+fi
+
 # Have docker-machine create the ec2 instance to host docker
 echo "Running: docker-machine create --driver amazonec2 --amazonec2-open-port $PORT --amazonec2-region $AWS_REGION $DM_NAME"
 docker-machine create --driver amazonec2 --amazonec2-open-port $PORT --amazonec2-region $AWS_REGION $DM_NAME
@@ -107,6 +114,7 @@ else
 fi
 
 echo "HOSTNAME is: $HOSTNAME"
+echo "PORT is: $PORT"
 
 # Make the created docker-machine the active docker-machine for docker commands
 # docker-machine env $DM_NAME
@@ -149,7 +157,10 @@ then
 else
   echo "Point your browser to https://$HOSTNAME:$PORT"
 fi
-echo "Remember to update DNS server..."
+if [[ ! "$HOSTNAME" =~ [^A-z-] ]]
+then
+  echo "Remember to update DNS server..."
+fi
 echo "NOTE: If you have not set up a trusted TLS certificate, you will get an invalid certificate, privacy, or security error in your browser."
 echo "In a test environment, you may proceed through the error if you understand the implications of doing so."
 echo " "
