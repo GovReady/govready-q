@@ -564,12 +564,17 @@ label:hover .onhover { display: inline; }
     </div> <!-- /question-history-context -->
 
     {% if authoring_tool_enabled %}
-    <div id="author-tools" style="margin: 1em 0; font-size: 90%;">
+    <div id="author-tools" style="margin: 1em 0; font-size: 80%;">
       <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
         <span class="glyphicon glyphicon-pencil" style="color: "></span>
         Edit
       </a>
-      &nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;
+      <a id="add_new_question" href="#" target="_blank" onclick="authoring_tool_new_question({{task.id}}, false); return false;">
+        <span class="glyphicon glyphicon-plus-sign"></span>
+        New
+      </a>
+      &nbsp;&nbsp;
       <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
         <span class="glyphicon glyphicon-eye-open"></span>
         Source
