@@ -10,7 +10,7 @@ the user experience and performance.
 * Replaces subdomain multi-tenancy with simplified "Portfolios" model
 * Improved authoring screens
 * Helpful new start page
-* Adds and updates to project and portfolio level permissions
+* Adds and updates portfolio level permissions
 
 Release 0.9.0 removes multi-tenancy and serves all pages from the same domain. In the earlier multi-tenancy versions, requests to GovReady-Q came in on subdomains: the subdomain determined which organization to associate with the request, and individuals had to re-login across subdomains. Little value was being realized by actual users for the subdomain-based multi-tenancy. Removing subdomain-based multi-tenancy reduces technical debt simplifies deployment.
 
