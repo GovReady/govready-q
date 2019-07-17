@@ -258,7 +258,6 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
-        from siteapp.models import Project
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
         self.current_project = Project.objects.get(id=m.group(1))
 
@@ -569,19 +568,25 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Navigate to portfolio created on signup
         self.click_element("#portfolio_1")
 
-        # Create project within portfolio
+        # Create new project within portfolio
         self.click_element("#new-project")
         self.click_element(".app[data-app='project/simple_project'] .view-app")
         self.click_element("#start-project")
-        # last two lines could also be replaced with:
-        #self.click_element(".app[data-app='project/simple_project'] .start-app")
-        var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
-        from siteapp.models import Project
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
         self.current_project = Project.objects.get(id=m.group(1))
-    
+
+        # Create new portfolio
+        self.browser.get(self.url("/portfolios"))
+        self.click_element("#new-portfolio")
+        self.fill_field("#id_title", "Security Projects")
+        self.fill_field("#id_description", "Project Description")
+        self.click_element("#create-portfolio-button")
+        self.assertRegex(self.browser.title, "Your Compliance Portfolios")
+        self.click_element("#portfolio_2")
+        self.assertRegex(self.browser.title, "Security Projects Portfolio")
+
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
