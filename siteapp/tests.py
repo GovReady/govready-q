@@ -587,6 +587,14 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element("#portfolio_2")
         self.assertRegex(self.browser.title, "Security Projects Portfolio")
 
+        # Grant another member access to portfolio
+        self.click_element("#grant-portfolio-access")
+        self.select_option('#invite-user-select', '2')
+        self.click_element("#invitation_modal button.btn-submit")
+        var_sleep(1)
+        self.assertInNodeText("Send Invitation", ".modal-title")
+        self.assertInNodeText("The invitation has been sent. We will notify you when the invitation has been accepted.", ".modal-body p")
+
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
