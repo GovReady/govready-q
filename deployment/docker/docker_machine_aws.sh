@@ -130,6 +130,8 @@ docker run --detach --name govready-q-0.9.0 -p $PRIVATE_IP:80:8000 \
 govready/govready-q-0.9.0
 
 # Configure Superuser account for GovReady-Q
+echo " "
+echo "Load demo assessments and create superuser"
 docker exec -it govready-q-0.9.0 first_run
 
 # Provide some friendly feedback

@@ -35,9 +35,34 @@ while [ $# -gt 0 ]; do
     --dm-name)
       DM_NAME="$2"
       shift 2 ;;
+
     --aws-region)
       AWS_REGION="$2"
       shift 2 ;;
+
+    --address)
+      # Split --address on a colon and store in HOST and PORT..
+      IFS=':' read -r -a ADDRESS <<< "$2"
+      HOST=${ADDRESS[0]-localhost}
+      PORT=${ADDRESS[1]-443}
+      shift 2 ;;
+
+    --debug)
+      DEBUG=true
+      shift 1 ;;
+
+    --help)
+      echo "Starts an instance of GovReady-Q+nginx running on AWS via Docker Machine and Docker Compose."
+      echo "Usage: "$(basename "$0")" [--help] [--address] [--aws-region] [--debug] [--dm-name]"
+      echo " "
+      echo "where:"
+      echo "  --address     GovReady-Q's public address as would be entered in a web browser. Set with --address HOST:PORT (PORT optional if 443)."
+      echo "  --aws-region  AWS region to launch in, defaults to '$AWS_REGION'."
+      echo "  --debug       Turn on Django DEBUG mode."
+      echo "  --dm-name     The docker-machine name for the Docker host, defaults to '$DM_NAME'."
+      echo "  --help        Show this help text."
+      exit 1 ;;
+
     --)
         shift
         break
@@ -60,9 +85,16 @@ else
   AWS_REGION_STR="$AWS_REGION.compute"
 fi
 
+# Set PORT
+if [ -z ${PORT+x} ]
+then
+  # PORT is not set, 443
+  export PORT=443
+fi
+
 # Have docker-machine create the ec2 instance to host docker
-echo "Running: docker-machine create --driver amazonec2 --amazonec2-open-port 80 --amazonec2-region $AWS_REGION $DM_NAME"
-docker-machine create --driver amazonec2 --amazonec2-open-port 80 --amazonec2-open-port 443 --amazonec2-region $AWS_REGION $DM_NAME
+echo "Running: docker-machine create --driver amazonec2 --amazonec2-open-port $PORT --amazonec2-region $AWS_REGION $DM_NAME"
+docker-machine create --driver amazonec2 --amazonec2-open-port $PORT --amazonec2-region $AWS_REGION $DM_NAME
 
 # Let's grab the Host machine's Public and Private IP addresses
 export PRIVATE_IP=$(docker-machine inspect -f '{{ .Driver.PrivateIPAddress }}' $DM_NAME)
@@ -71,6 +103,18 @@ export PUBLIC_IP=$(docker-machine ip $DM_NAME)
 echo "Public IP: $PUBLIC_IP"
 # Transpose '.' in IP address to '-' required in AWS Domain name
 echo "AWS address is: ec2-$(echo $PUBLIC_IP | tr . "-").$AWS_REGION_STR.amazonaws.com"
+
+# Set HOST
+if [ -z ${ADDRESS+x} ]
+then
+  # ADDRESS is not set, use public IP
+  export HOSTNAME=$PUBLIC_IP
+else
+  export HOSTNAME=$HOST
+fi
+
+echo "HOSTNAME is: $HOSTNAME"
+echo "PORT is: $PORT"
 
 # Make the created docker-machine the active docker-machine for docker commands
 # docker-machine env $DM_NAME
@@ -92,27 +136,35 @@ echo "Build images (on active docker machine)"
 docker-compose build
 
 echo "Bring containers up using: docker-compose up -d"
-echo "GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR).amazonaws.com GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0 docker-compose up -d"
 # Environmental variables must be pre-pended to docker-compose commands
 # as per https://stackoverflow.com/questions/49293967/how-to-pass-environment-variable-to-docker-compose-up
-GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR).amazonaws.com GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0 docker-compose up -d
-
-# Provide some friendly feedback
-echo " "
-echo "GovReady-Q ready. Point your browser to https://$GOVREADY_Q_HOST"
+GOVREADY_Q_HOST=$HOSTNAME GOVREADY_Q_PORT=$PORT GOVREADY_Q_IMAGENAME=$GOVREADY_Q_IMAGENAME docker-compose up -d
 
 # Configure Superuser account for GovReady-Q
 echo " "
 echo "Load demo assessments and create superuser"
 docker exec -it docker-compose-nginx_govready-q_1 first_run
 
-# Provide some friendly feedback again
-echo "Superuser created. Login at https://$GOVREADY_Q_HOST"
-
+# Provide some friendly feedback
 echo " "
-echo "To stop container run: docker-machine stop $DM_NAME"
-echo "To remove container and hosting ec2 instance run: docker-machine rm $DM_NAME"
-
-# Getting information about ec2 instance from within
-# curl http://169.254.169.254/latest/meta-data/public-ipv4
-# curl http://169.254.169.254/latest/meta-data/public-hostname 2>/dev/null
+echo "AWS address is: ec2-$(echo $PUBLIC_IP | tr . "-").$AWS_REGION_STR.amazonaws.com"
+echo "Private IP: $PRIVATE_IP"
+echo "Public IP: $PUBLIC_IP"
+echo " "
+if [ $PORT = "443" ]
+then
+  echo "Point your browser to https://$HOSTNAME"
+else
+  echo "Point your browser to https://$HOSTNAME:$PORT"
+fi
+if [[ ! "$HOSTNAME" =~ [^A-z-] ]]
+then
+  echo "Remember to update DNS server..."
+fi
+echo "NOTE: If you have not set up a trusted TLS certificate, you will get an invalid certificate, privacy, or security error in your browser."
+echo "In a test environment, you may proceed through the error if you understand the implications of doing so."
+echo " "
+echo "To stop containers run: docker-compose stop"
+echo "To remove containers run: docker-compose down"
+echo "To remove containers and hosting ec2 instance run: docker-machine rm $DM_NAME"
+echo "To make new ec2 instance the active docker-machine run: eval \$(docker-machine env $DM_NAME)"
