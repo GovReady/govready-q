@@ -272,11 +272,10 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.click_element("#select_portfolio_submit")
         var_sleep(2)
 
-        self.click_element(".app[data-app='project/simple_project'] .view-app")
-        self.click_element("#start-project")
-        # last two lines could also be replaced with:
-        #self.click_element(".app[data-app='project/simple_project'] .start-app")
-        var_sleep(1)
+        # Click Add Button
+        self.click_element(".app[data-app='project/simple_project'] .start-app")
+
+        var_sleep(2)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
@@ -594,8 +593,11 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Create new project within portfolio
         self.click_element("#new-project-submit")
-        self.click_element(".app[data-app='project/simple_project'] .view-app")
-        self.click_element("#start-project")
+
+        # Click Add Button
+        self.click_element(".app[data-app='project/simple_project'] .start-app")
+
+        var_sleep(2)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
