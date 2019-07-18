@@ -10,17 +10,18 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 
+import os
+import os.path
+import re
+from unittest import skip
+
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
 
-from siteapp.models import Project
+from siteapp.models import (Organization, Portfolio, Project,
+                            ProjectMembership, User)
 
-from unittest import skip
-
-import os
-import os.path
-import re
 
 def var_sleep(duration):
     '''
@@ -198,7 +199,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log the user into the test client, which is used for API
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
-        from siteapp.models import User, ProjectMembership
+
         self.user = User.objects.create(
             username="me",
             email="test+user@q.govready.com",
@@ -210,8 +211,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user.reset_api_keys()
         self.client.login(username=self.user.username, password=self.user.clear_password)
 
+        # Create a Portfolio and Grant Access
+        portfolio = Portfolio.objects.create(title=self.user.username)
+        portfolio.assign_owner_permissions(self.user)
+
         # Create the Organization.
-        from siteapp.models import Organization
         self.org = Organization.create(name="Our Organization", slug="testorg",
             admin_user=self.user)
 
@@ -256,6 +260,9 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
+        self.select_option_by_visible_text('#id_portfolio', 'me')
+        self.click_element("#select_portfolio_submit")
+        var_sleep(1)
         self.click_element(".app[data-app='project/simple_project'] .view-app")
         self.click_element("#start-project")
         # last two lines could also be replaced with:
