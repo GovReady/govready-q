@@ -33,7 +33,7 @@ Remove contextbar from top of page
       <form id="#new-project" method="post" action="{% url 'store' %}" class="inline">
         {% csrf_token %}
         <input type="hidden" id="portfolio" name="portfolio" value="{{portfolio.id}}">
-        <input type="submit" value="Start a Project" class="btn btn-success" />
+        <input id="new-project-submit" type="submit" value="Start a Project" class="btn btn-success" />
       </form>
       {% if can_invite_to_portfolio %}
       <a href="#" onclick="invite_user_into_portfolio(); return false;" id="grant-portfolio-access" class="btn btn-success"><i

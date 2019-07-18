@@ -109,6 +109,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         self.clear_field(css_selector)
         self.fill_field(css_selector, text)
 
+    def click_element_with_link_text(self, text):
+        elem = self.browser.find_elements_by_link_text(text)
+        elem[0].click()
+
     def click_element(self, css_selector):
         # ensure element is on screen or else it can't be clicked
         # see https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
@@ -581,10 +585,10 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.browser.get(self.url("/portfolios"))
 
         # Navigate to portfolio created on signup
-        self.click_element("#portfolio_1")
+        self.click_element_with_link_text("portfolio-user")
 
         # Create new project within portfolio
-        self.click_element("#new-project")
+        self.click_element("#new-project-submit")
         self.click_element(".app[data-app='project/simple_project'] .view-app")
         self.click_element("#start-project")
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
@@ -599,7 +603,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
         self.assertRegex(self.browser.title, "Your Compliance Portfolios")
-        self.click_element("#portfolio_2")
+        self.click_element_with_link_text("Security Projects")
         self.assertRegex(self.browser.title, "Security Projects Portfolio")
         self.assertInNodeText("portfolio_user (Owner)", "#portfolio-member-portfolio_user")
 

@@ -39,14 +39,14 @@ The profile information can be seen by all other members of the Organization bec
 
 Users marked as `staff` in the Django admin can see Q Analytics.
 
-Organizations
+Portfolios
 -------------
 
-Organizations are used to segment Projects and the data contained within them to create data isolation at a logical level.
+Portfolios are used to segment Projects and the data contained within them to create data isolation at a logical level.
 
-### Membership in the Organization Project
+### Access to Portfolios
 
-Each Organization has a single "organization project" which stores additional metadata about the Organization, akin to a User's profile. This metadata can be seen by all members of the Organization because the values, e.g. an organization avatar, may be rendered on Organization pages that any such User may see. Members of the organization project (which is different from members of the organization itself) may additionally edit the metadata (see Project membership below).
+Each Portfolio begins with an 'owner' creating the portfolio. When any user signs up, a portfolio is automatically created with the title as the users username and assigning ownership to the user. An owner of a portfolio can grant other users access to their porfolio. If a user has access to a portfolio, they will have access to the projects within that portfolio. If an owner of a portfolio removes a users access to a portfolio, they will lose access to the projects within that portfolio.
 
 Folders
 -------
