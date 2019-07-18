@@ -266,9 +266,12 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
+
+        # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
         self.click_element("#select_portfolio_submit")
-        var_sleep(1)
+        var_sleep(2)
+
         self.click_element(".app[data-app='project/simple_project'] .view-app")
         self.click_element("#start-project")
         # last two lines could also be replaced with:

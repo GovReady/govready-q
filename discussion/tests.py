@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils.crypto import get_random_string
 
-from siteapp.models import User, ProjectMembership, Organization
+from siteapp.models import User, ProjectMembership, Organization, Portfolio
 from siteapp.tests import SeleniumTest, var_sleep
 
 from selenium.common.exceptions import NoSuchElementException
@@ -38,6 +38,10 @@ class DiscussionTests(SeleniumTest):
 
         org = Organization.create(name="Our Organization", slug="testorg",
             admin_user=self.user)
+        
+        # Create a Portfolio and Grant Access
+        portfolio = Portfolio.objects.create(title=self.user.username)
+        portfolio.assign_owner_permissions(self.user)
 
     def _login(self):
         # Fill in the login form and submit.
@@ -52,6 +56,12 @@ class DiscussionTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
+
+        # Select Portfolio
+        self.select_option_by_visible_text('#id_portfolio', self.user.username)
+        self.click_element("#select_portfolio_submit")
+        var_sleep(2)
+
         self.click_element(".app[data-app='fixture/simple_project'] .view-app")
         self.click_element("#start-project")
         var_sleep(1)
