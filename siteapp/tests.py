@@ -235,6 +235,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user2.save()
         self.user2.reset_api_keys()
         self.client.login(username=self.user2.username, password=self.user2.clear_password)
+        portfolio = Portfolio.objects.create(title=self.user2.username)
+        portfolio.assign_owner_permissions(self.user2)
 
         # Grant second user membership in the organization
         # from https://github.com/GovReady/govready-q/blob/master/siteapp/admin.py#L41
@@ -264,7 +266,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
-        self.select_option_by_visible_text('#id_portfolio', 'me')
+        self.select_option_by_visible_text('#id_portfolio', self.user.username)
         self.click_element("#select_portfolio_submit")
         var_sleep(1)
         self.click_element(".app[data-app='project/simple_project'] .view-app")
