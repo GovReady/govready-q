@@ -1,7 +1,7 @@
 id: app
 title: (Demo) PTA for Information Collections and Forms
 type: project
-version: 0.6.5
+version: 0.8.1.1
 icon: app.png
 protocol: dos.gov/policy/pta
 catalog:
@@ -9,7 +9,7 @@ catalog:
   vendor: GovReady PBC
   vendor_url: http://www.govready.com
   status: published
-  version: 0.6.5
+  version: 0.8.1.1
   source_url: https://github.com/GovReady/govready-q-starter-assessments
   description:
     short: |
@@ -31,6 +31,11 @@ questions:
   type: module
   module-id: pta_intro
 
+- id: purpose
+  title: Purpose of the Information Collection
+  type: module
+  module-id: purpose
+
 - id: poc_details
   title: POC Details
   type: module
@@ -40,11 +45,6 @@ questions:
   title: Questions
   type: module
   module-id: ic_forms_pta
-
-- id: purpose
-  title: Purpose of the Information Collection
-  type: module
-  module-id: purpose
 
 - id: info_description
   title: Type of Information Collected
