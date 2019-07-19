@@ -72,6 +72,8 @@
                   {{value_html|safe}}
                 </td>
               </tr>
+            {% empty %}
+              <tr><td colspan="3">No questions needed to be answered in this section.</td></tr>
             {% endfor %}
             </tbody>
           </table>
