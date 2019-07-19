@@ -23,12 +23,19 @@ class WebClient():
                 print("USAGE WARNING -- localhost suspected, but not in the standard format. This might fail.")
         self.base_url = base_url
 
+    def _url(self, path):
+        url = self.base_url
+        if len(path) > 0 and path[0] == '/':
+            url = url[0:-1]
+        url += path
+        return url
+
     def _use_page(self, response):
         self.response = response
         self.selector = parsel.Selector(text=response.text)
 
     def load(self, path):
-        self._use_page(self.session.get(self.base_url + path))
+        self._use_page(self.session.get(self._url(path)))
 
     def login(self, username, password):
         self.form('.login', {"login": username, "password": password})
@@ -50,10 +57,10 @@ class WebClient():
         for (key, val) in fields.items():
             base_fields[key] = val
         if 'action' in form.attrib:
-            path = form.attrib['action']
+            url = self._url(form.attrib['action'])
         else:
-            path = self.response.url.replace(self.base_url, '')
-        res = self.session.post(self.base_url + path, base_fields)
+            url = self.base_url
+        res = self.session.post(url, base_fields)
         self._use_page(res)
 
 
