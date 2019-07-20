@@ -1,9 +1,11 @@
 import requests
 import parsel
 from random import sample
+import re
+from django.test import Client
 
 class WebClient():
-    session = requests.Session()
+    session = None
     response = None
     selector = None
     base_url = None
@@ -11,21 +13,26 @@ class WebClient():
     comp_links = None
 
     def __init__(self, base_url):
+        match = re.search(r'^(https?://)?(?P<host>[^:/]+)', base_url)
+        host = match['host']
         self.base_url = base_url
 
+        self.session = Client(HTTP_HOST=host)
+        print("web test client with host <{}>".format(host))
+
     def _url(self, path):
-        url = self.base_url
-        if len(path) > 0 and path[0] == '/':
-            url = url[0:-1]
-        url += path
-        return url
+        # currently a no-op function, but for debug purposes it is useful to be able to change path handling in one spot
+        return path
 
     def _use_page(self, response):
         self.response = response
-        self.selector = parsel.Selector(text=response.text)
+        self.selector = parsel.Selector(text=str(response.content))
 
     def load(self, path):
-        self._use_page(self.session.get(self._url(path)))
+        url = self._url(path)
+        print("GET on: <{}>".format(url))
+        self._use_page(self.session.get(url))
+
 
     def login(self, username, password):
         self.form('.login', {"login": username, "password": password})
@@ -50,6 +57,7 @@ class WebClient():
             url = self._url(form.attrib['action'])
         else:
             url = self.base_url
+        print("POST on: <{}>".format(url))
         res = self.session.post(url, base_fields)
         self._use_page(res)
 
@@ -61,6 +69,8 @@ class WebClient():
 
         form = sample(self.selector.css('[action^="/store"]'), 1)[0]
         self.form_by_ref(form)
+        print(self.response.url)
+        #self.html_debug()
 
     def get_projects(self):
         if not self.projects:
