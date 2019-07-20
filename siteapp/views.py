@@ -582,7 +582,7 @@ def project(request, project):
         columns = [
             { "title": "To Do" },
             { "title": "In Progress" },
-            { "title": "Submitted" },
+            { "title": "Completed" },
             { "title": "Approved" },
         ]
         for column in columns:
