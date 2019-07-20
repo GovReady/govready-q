@@ -99,6 +99,7 @@ Deployment changes:
 
 * Removes multi-tenancy and serves all pages from the on the same domain. Previosuly, requests to Q came in on subdomains and the subdomain determined which Organization in the database the request would be associated with and individuals had to re-login across subdomains. Multitenancy increased install complexity and we were not seeing use of the multitenancy feature. Deployment is now simpler.
 * Added deployment of multi-container GovReady-Q and NGINX via Docker-compose
+* `first_run` reports Superuser previously created.
 
 
 v0.8.6.2+devel

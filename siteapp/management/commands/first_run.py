@@ -84,9 +84,15 @@ class Command(BaseCommand):
                     user.username,
                     password
                 ))
-
-        # Get the admin user - it was just created and should be the only admin user.
-        user = User.objects.filter(is_superuser=True).get()
+            # Get the admin user - it was just created and should be the only admin user.
+            user = User.objects.filter(is_superuser=True).get()
+            
+            # Add the user to the org's help squad and reviewers lists.
+            if user not in org.help_squad.all(): org.help_squad.add(user)
+            if user not in org.reviewers.all(): org.reviewers.add(user)
+        else:
+            # One or more superusers already exist
+            print("\n[WARNING] Superuser(s) already exist. Are you connecting to a persistent database?\n")
 
         # Create the first organization.
         if not Organization.objects.filter(slug="main").exists():
@@ -102,11 +108,6 @@ class Command(BaseCommand):
         else:
             org = Organization.objects.get(slug="main")
 
-        # Add the user to the org's help squad and reviewers lists.
-        if user not in org.help_squad.all(): org.help_squad.add(user)
-        if user not in org.reviewers.all(): org.reviewers.add(user)
-
         # Provide feedback to user
-        print("Your Superuser account is set up!")
         print("You can now login into GovReady-Q...")
 
