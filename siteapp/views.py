@@ -322,10 +322,14 @@ def apps_catalog(request):
             app["title"], # except if two apps differ only in case, sort case-sensitively
         ))
 
+    # If user is superuser, enable creating new apps
+    authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
+    
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
+        "authoring_tool_enabled": authoring_tool_enabled,
     })
 
 @login_required
@@ -582,7 +586,7 @@ def project(request, project):
         columns = [
             { "title": "To Do" },
             { "title": "In Progress" },
-            { "title": "Completed" },
+            { "title": "Submitted" },
             { "title": "Approved" },
         ]
         for column in columns:

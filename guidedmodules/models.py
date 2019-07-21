@@ -69,6 +69,7 @@ class AppSource(models.Model):
         return AppSourceConnection.create(self, self.spec)
 
     def get_available_apps(self):
+        # TODO need to include already loaded apps
         with self.open() as src:
             for app in src.list_apps():
                 yield {

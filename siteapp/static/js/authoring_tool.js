@@ -61,8 +61,8 @@ function init_authoring_tool_autocomplete(elem, expr_type) {
   // expressions.
   var question_keys = window.q_authoring_tool_state.autocomplete_questions;
 
-  var trigger = "";
-  if (expr_type == "template") trigger = "|\{\{";
+  var trigger = "{{";
+  if (expr_type == "template") trigger = "\{\{";
   
   var textcomplete = new Textcomplete(new Textcomplete.editors.Textarea(elem[0]));
   textcomplete.register([{
@@ -84,7 +84,7 @@ function init_authoring_tool_autocomplete(elem, expr_type) {
       node.find(".info").text(question_keys[value]);
       return node.html();
     },
-    replace: function(value, event) { return "$1" + value.replace(/\$/g, "$$$$"); } // must escape any dollar signs in the replacement text, and since we're using replace to do it we need to escape the literal $ twice!
+    replace: function(value, event) { return "$1" + value.replace(/\$/g, "$$$$") + "}}"; } // must escape any dollar signs in the replacement text, and since we're using replace to do it we need to escape the literal $ twice!
   }], {
     style: {
       zIndex: 10000
@@ -179,13 +179,36 @@ function authoring_tool_download_app() {
     data: data,
     keep_indicator_forever: false,
     success: function(res) {
-      // Modal can stay up until the redirect finishes.
       // Stay on same page to see new content
       $('#questionnaire_authoring_tool_mspec').val(res.data);
       // Show modal.
       $('#questionnaire_authoring_tool').modal();
     }
   });
+}
+
+function authoring_tool_download_app_project(task_id, is_project_page) {
+  console.log("calling authoring_tool_download_app_project");
+  console.log("task_id sent: "+task_id);
+  // alert("check console");
+  // console.log(q_authoring_tool_state.questions.spec)
+  // console.log(Object.getOwnPropertyNames(q_authoring_tool_state.questions)[0]);
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/download-app-project",
+      method: "POST",
+      // we may not need to send any data because view understands the task from the decorator
+      // var data = [{ name: "task", value: q_authoring_tool_state.task }]
+      data: { task: task_id },
+      // keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        console.log("success");
+        console.log(res.data);
+        // Stay on same page to see new content
+        $('#questionnaire_authoring_tool_mspec').val(res.data);
+        // Show modal
+        $('#questionnaire_authoring_tool').modal();
+      }
+  })
 }
 
 function authoring_tool_save_question() {
@@ -267,5 +290,26 @@ function authoring_tool_save_module() {
         if (window.location.hash.length > 1)
           window.location.reload(); // if there is a # in the URL, the browser won't actually reload
       }
-  })
+  });
+}
+
+function authoring_tool_create_q_form(argument) {
+  $('#create_q_authoring_tool').modal();
+}
+
+function  authoring_tool_create_q() {
+  var data = $('#create_q_authoring_tool form').serializeArray();
+  console.log("data is: "+JSON.stringify(data));
+  ajax_with_indicator({
+      url: "/tasks/_authoring_tool/create-app-project",
+      method: "POST",
+      data: data,
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        // Modal can stay up until the redirect finishes.
+        window.location = res.redirect;
+        if (window.location.hash.length > 1)
+          window.location.reload(); // if there is a # in the URL, the browser won't actually reload
+      }
+  });
 }

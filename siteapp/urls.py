@@ -28,6 +28,9 @@ urlpatterns = [
     # app store
     url(r'^store$', views.apps_catalog),
     url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
+    # app store
+    url(r'^library$', views.apps_catalog),
+    url(r'^library/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 
     # projects
     url(r"^projects$", views.project_list),

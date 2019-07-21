@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.dev24+devel
+v0.9.0.dev32+devel
 ------------------
 
 Version upgrade with braking database changes.
@@ -24,6 +24,7 @@ WIP CHECKLIST
 - [ ] Updated documentation
 - [ ] Updated tests and test passing
 - [ ] Updated changelog and version number
+- [ ] Author new project files
 
 Application changes:
 
@@ -52,6 +53,7 @@ The app catalog cache is removed since the page loads much faster.
     columns: To Do, In Progress, Submitted, Approved.
 
 * Better authoring tool:
+    - Superusers can create whole new questionnaire files
     - Shift question edit modular dialog from large center screen popup
       to right-hand thin sidebar
     - Increase readability of edit form

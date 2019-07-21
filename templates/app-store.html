@@ -115,10 +115,15 @@ h2 {
       <div class="pull-right" style="margin-bottom: 1em">
         <form class="form-inline" onsubmit="return false;">
           <div class="form-group">
+            {% if authoring_tool_enabled %}
+            <span style="margin: 0 0.5em 0em 0;">
+              <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create New Project</a>
+            </span>
+            {% endif %}
             <label class="sr-only" for="app-search">search apps for</label>
             <div class="input-group">
               <div class="input-group-addon">search</div>
-              <input type="text" class="form-control" id="app-search" placeholder="search apps">
+              <input type="text" class="form-control" id="app-search" placeholder="search projects">
             </div>
           </div>
         </form>
@@ -226,6 +231,10 @@ h2 {
   {% endif %}
 {% endfor %}
 
+{% if authoring_tool_enabled %}
+{# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
+{% include "authoring-tool-modal.html" %}
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -319,4 +328,39 @@ function do_app_search(query) {
 }
 do_app_search(""); // kick it off
 </script>
+
+{% if authoring_tool_enabled %}
+<script src="{% static 'vendor/js-yaml.min.js' %}"></script>
+<script src="{% static 'js/authoring_tool.js' %}"></script>
+<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+<script>
+  $(function() {
+    init_authoring_tool({
+      task: "{{task.id}}",
+      module: "{{task.module.spec}}",
+      questions: {
+        q_key: {
+          spec: "{{q.spec}}",
+          choices: "{{q.choices_as_csv|escapejs}}",
+          answer_type_module_id: "{% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}"
+        }
+      },
+      answer_type_modules: [{% for m in q.module.get_referenceable_modules %}
+        { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+        {% endfor %}],
+      autocomplete_questions: { {% for q in q.module.get_questions %}
+        "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}
+      }
+    });
+  });
+
+  // Auto update "slug" name based on title in Create a Q modal
+  $('#authoring_tool_q_2_title').on('keyup', function() {
+      var slug = $(this).val();
+      slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "_");
+      $('#authoring_tool_q_name').val(slug);
+  });
+</script>
+{% endif %}
+
 {% endblock %}

@@ -774,6 +774,84 @@ def authoring_tool_auth(f):
 
 @login_required
 @transaction.atomic
+def authoring_create_q(request):
+    from guidedmodules.models import AppSource
+
+    import os, os.path, shutil
+    from collections import OrderedDict
+
+    import rtyaml
+
+    # Get the values from submitted form
+    new_q = OrderedDict()
+    for field in (
+        "q_slug", "title", "short_description", "category"):
+        value = request.POST.get(field, "").strip()
+        # Example how we can test values and make changes
+        if value:
+            if field in ("min", "max"):
+                new_q[field] = int(value)
+            elif field == "protocol":
+                # The protocol value is given as a space-separated list of
+                # of protocols.
+                new_q[field] = re.split(r"\s+", value)
+            else:
+                new_q[field] = value
+
+    # Assign Q to the "tmp" App Source
+    # We want to be able to author regardless of environment (e.g., local, server, docker, ...)
+    new_q_appsrc = AppSource.objects.get(slug="tmp")
+
+    # Copy over the stub files and save files
+    # Does path exist?
+    if not new_q_appsrc.spec.get("path"):
+        print("AppSource does not have a local path specified!")
+        return
+
+    # What's the path to the app?
+    path = os.path.join(new_q_appsrc.spec["path"], new_q["q_slug"])
+
+    # Does a Q already exist with directory name?
+    # TODO: Better test, test name in database and path?
+    if os.path.exists(path):
+        print("A project with this slug already exists {}".format(os.path.exists(path)))
+        return
+
+    # Copy stub files.
+    guidedmodules_path = os.path.dirname(__file__)
+
+    # Write temporary file
+    shutil.copytree(os.path.join(guidedmodules_path, "stub_app"), path, copy_function=shutil.copy)
+
+    # Edit the app title.
+    with rtyaml.edit(os.path.join(path, "app.yaml")) as app:
+        app['title'] = new_q["title"]
+        app['catalog']['description']['short'] = new_q['short_description']
+        app['introduction']['template'] = new_q['short_description']
+        app['category'] = new_q['category']
+
+    # Create a unique icon for the app and delete the existing app icon
+    # svg file that we know is in the stub.
+    from mondrianish import generate_image
+    colors = ("#FFF8F0", "#FCAA67", "#7DB7C0", "#932b25", "#498B57")
+    with open(os.path.join(path, "assets", "app.png"), "wb") as f:
+        generate_image("png", (128, 128), 3, colors, f)
+    # Clean up
+    os.unlink(os.path.join(path, "assets", "app.svg"))
+
+    # Publish our new app
+    try:
+        appver = new_q_appsrc.add_app_to_catalog(new_q["q_slug"])
+    except Exception as e:
+        raise
+
+    from django.contrib import messages
+    messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
+
+    return JsonResponse({ "status": "ok", "redirect": "/store" })
+
+@login_required
+@transaction.atomic
 def upgrade_app(request):
     # Upgrade an AppVersion in place by reloading all of its Modules from the
     # app's current definition in its AppSource. This should mainly be used
@@ -870,6 +948,53 @@ def authoring_download_app(request, task):
     return JsonResponse({ "status": "ok",
                           "data": questionnaire_yaml,
                           "redirect": task.get_absolute_url_to_question(question)
+                        })
+
+@authoring_tool_auth
+@transaction.atomic
+def authoring_download_app_project(request, task):
+    # Download a project
+    print("Calling to download task: {}".format(task))
+    # Get project that this Task is a part of
+    project_obj = task.project
+    print("project is {}".format(project_obj))
+
+    # Get module that this task is answering
+    # module_obj = task.module
+    # print("module_obj is {}".format(module_obj))
+    # print("module_obj.spec is {}".format(module_obj.spec))
+    # print("module.serialize: ")
+    # print("{}".format(module_obj.serialize()))
+    # Recreate the yaml of the module (e.g, app-project)
+    print("text {}".format(task.module.serialize()))
+
+    # Download current project_app (.e.g, module) in use.
+    print("In `authoring_download_app_project` and attempting to download project-app")
+    try:
+        module_yaml = task.module.serialize()
+    except Exception as e:
+        return JsonResponse({ "status": "error", "message": "Could not download YAML file: " + str(e) })
+
+    # Do I need something similar?
+    # Clear cache...
+    # from .module_logic import clear_module_question_cache
+    # clear_module_question_cache()
+
+    # As a project app, There also exists:
+    # - asset directory with assets
+    # - state information
+
+    # Get the app (AppVersion) connected to this module
+    # appversion_obj =  module_obj.app
+    # print("appversion_obj is {}".format(appversion_obj))
+    # print("appversion_obj version_name is {}".format(appversion_obj.version_name))
+    # print("appversion_obj version_number is {}".format(appversion_obj.version_number))
+
+    # Download current questionnaire.
+
+    # How do I dump the entire app?
+    return JsonResponse({ "status": "ok",
+                          "data": module_yaml,
                         })
 
 @authoring_tool_auth

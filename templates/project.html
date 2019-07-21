@@ -222,7 +222,8 @@ h3.question-group-title {
         You are in author mode. Authoring tools have been enabled for this module.
       </p></center>
 
-    <center style="font-size: 90%;" class="authoring-tool-hidden"><p>
+    <center style="font-size: 90%;" class="authoring-tool-hidden">
+      <p>
       <a href="#" onclick="show_authoring_tool_module_editor(); return false;" style="margin: 0 1em;">
         <span class="glyphicon glyphicon-pencil"></span>
         Edit App
@@ -232,7 +233,13 @@ h3.question-group-title {
       <span class="glyphicon glyphicon-plus"></span>
       Add Question
       </a>
-    </p></center>
+
+      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
+      <span class="glyphicon glyphicon-download"></span>
+      Download Source
+      </a>
+      </p>
+    </center>
     {% endif %}
 {% endblock %}
 

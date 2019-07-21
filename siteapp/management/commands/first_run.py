@@ -60,13 +60,16 @@ class Command(BaseCommand):
                 except Exception as e:
                     raise
 
-        # Third, for 0.9.x startpack
-        AppSource.objects.get_or_create(
-            slug="samples",
-            defaults={
-                "spec": { "type": "git", "url": "https://github.com/GovReady/govready-sample-apps" }
-            }
-        )
+        # Finally, for authoring
+        # Q currently only works on Unix systems; this is OK bc Window users have to use Docker version locally
+        qfiles_path = "/tmp"
+        if os.path.exists(qfiles_path):
+            AppSource.objects.get_or_create(
+                slug="tmp",
+                defaults={
+                    "spec": { "type": "local", "path": qfiles_path }
+                }
+            )
 
         # Create the first user.
         if not User.objects.filter(is_superuser=True).exists():
@@ -86,10 +89,6 @@ class Command(BaseCommand):
                 ))
             # Get the admin user - it was just created and should be the only admin user.
             user = User.objects.filter(is_superuser=True).get()
-            
-            # Add the user to the org's help squad and reviewers lists.
-            if user not in org.help_squad.all(): org.help_squad.add(user)
-            if user not in org.reviewers.all(): org.reviewers.add(user)
         else:
             # One or more superusers already exist
             print("\n[WARNING] Superuser(s) already exist. Are you connecting to a persistent database?\n")
@@ -107,6 +106,10 @@ class Command(BaseCommand):
             org = Organization.create(name=name, slug="main", admin_user=user)
         else:
             org = Organization.objects.get(slug="main")
+
+        # Add the user to the org's help squad and reviewers lists.
+        if user not in org.help_squad.all(): org.help_squad.add(user)
+        if user not in org.reviewers.all(): org.reviewers.add(user)
 
         # Provide feedback to user
         print("You can now login into GovReady-Q...")
