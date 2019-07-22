@@ -471,7 +471,8 @@ def project_read_required(f):
         project = get_object_or_404(Project, id=project_id)
 
         # Check authorization.
-        if not project.has_read_priv(request.user):
+        has_project_portfolio_permissions = request.user.has_perm('view_portfolio', project.portfolio)
+        if not project.has_read_priv(request.user) and not has_project_portfolio_permissions:
             return HttpResponseForbidden()
 
         # Redirect if slug is not canonical. We do this after checking for
