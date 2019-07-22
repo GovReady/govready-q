@@ -27,11 +27,14 @@ class WebClient():
     def _use_page(self, response):
         self.response = response
         self.selector = parsel.Selector(text=str(response.content))
+        print(str(self.response.content))
+        print(str(self.response.status_code))
+        print(self.response.serialize_headers())
 
     def load(self, path):
         url = self._url(path)
         print("GET on: <{}>".format(url))
-        self._use_page(self.session.get(url))
+        self._use_page(self.session.get(url, follow=True))
 
 
     def login(self, username, password):
@@ -58,15 +61,17 @@ class WebClient():
         else:
             url = self.base_url
         print("POST on: <{}>".format(url))
-        res = self.session.post(url, base_fields)
+        res = self.session.post(url, base_fields, follow=True)
         self._use_page(res)
 
 
 
     def add_system(self):
         # TODO see if this shouldn't be hardcoded
-        self.load("/store?protocol=govready.com/apps/compliance/2018/information-technology-system")
+        self.load("/store")
 
+        print(self.selector.css('body').get())
+        print("testing")
         form = sample(self.selector.css('[action^="/store"]'), 1)[0]
         self.form_by_ref(form)
         print(self.response.url)
