@@ -937,7 +937,8 @@ def project_admin_login_post_required(f):
     def g(request, project_id, *args):
         # Get project, check authorization.
         project = get_object_or_404(Project, id=project_id)
-        if request.user not in project.get_admins():
+        has_owner_project_portfolio_permissions = request.user.has_perm('can_grant_portfolio_owner_permission', project.portfolio)
+        if request.user not in project.get_admins() and not has_owner_project_portfolio_permissions:
             return HttpResponseForbidden()
 
         # Call function with changed argument.
@@ -1167,7 +1168,8 @@ def portfolio_read_required(f):
         portfolio = get_object_or_404(Portfolio, pk=pk)
 
         # Check authorization.
-        if not request.user.has_perm('view_portfolio', portfolio):
+        has_portfolio_permissions = request.user.has_perm('view_portfolio', portfolio)
+        if not has_portfolio_permissions:
             return HttpResponseForbidden()
         return f(request, portfolio.id)
     return g
