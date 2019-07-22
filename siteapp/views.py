@@ -307,7 +307,7 @@ def apps_catalog(request):
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
     # Add the portfolio id the user is creating the project from to the args
-    if "portfolio" in request.POST: forward_qsargs["portfolio"] = request.POST["portfolio"][0]
+    if "portfolio" in request.POST: forward_qsargs["portfolio"] = request.POST["portfolio"]
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
