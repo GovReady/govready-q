@@ -56,21 +56,6 @@ questions:
   type: module
   module-id: info_storage
 
-- id: screenshots_docs
-  title: Screenshots and Documents
-  type: module
-  module-id: screenshots_docs
-
-- id: ptr_component
-  title: Privacy Threshold Review
-  type: module
-  module-id: ptr_component
-
-- id: ptr_agency
-  title: Privacy Threshold Adjudication
-  type: module
-  module-id: ptr_agency
-
 # Artifacts
 - id: pta_form
   title: View PTA Artifact
