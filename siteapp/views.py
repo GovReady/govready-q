@@ -606,7 +606,6 @@ def project(request, project):
                 col = 1
             columns[col]["questions"].append(question)
 
-
     # Assign questions in columns to groups.
     for i, column in enumerate(columns):
         column["groups"] = OrderedDict()
@@ -710,7 +709,6 @@ def project_list_all_answers(request, project):
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
     })
 
-
 @project_read_required
 def project_outputs(request, project):
     # To render fast, combine all of the templates by type and render as
@@ -750,10 +748,11 @@ def project_outputs(request, project):
         for doc in docs:
             anchor = "doc_%d" % len(toc)
             title = doc.get("title") or doc["id"]
-            templates.append(header[format](anchor, title) + doc["template"])
+            # TODO: Can we move the HTML back into the template?
+            templates.append(header[format](anchor, title) + "<div class='doc'>"+doc["template"]+"</div>")
             toc.append((anchor, title))
         template = joiner[format].join(templates)
-        
+
         # Render.
         from guidedmodules.module_logic import render_content
         try:
@@ -773,6 +772,8 @@ def project_outputs(request, project):
         combined_output += "<div>" + content + "</div>\n\n"
 
     return render(request, "project-outputs.html", {
+        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
+        "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "page_title": "Related Controls",
         "project": project,
         "toc": toc,
