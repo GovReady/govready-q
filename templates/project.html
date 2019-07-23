@@ -175,9 +175,9 @@ h3.question-group-title {
     </button>
 
     {% if can_upgrade_app %}
-      <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/upgrade';">
-        <em class="glyphicon glyphicon-download"></em>
-        Upgrade App
+      <button class="btn btn-sm btn-default" onclick="upgrade_app({{project.root_task.module.app.id}});">
+        <em class="glyphicon glyphicon-upload"></em>
+        Upgrade Project
       </button>
     {% endif %}
 
@@ -744,6 +744,27 @@ $(function() {
     autocomplete_questions: { }
   });
 });
+</script>
+<script>
+var upgrade_app_option_force = false; // can only be set to true in dev console
+var upgrade_app_option_confirm = true; // is set to true in dev tools for headless scripting
+function upgrade_app(app_id) {
+  if (upgrade_app_option_confirm
+     && !confirm("WARNING - ADMINISTRATORS ONLY\n\nUpgrading will update all instances tied to this version of '{{project.root_task.title}}' to the questions, document templates, and business logic in '{{project.root_task.title}}' to the latest version available. Your data will not be changed.\n\n Are you sure you want to upgrade?"))
+    return;
+  ajax_with_indicator({
+      url: "/tasks/_upgrade-app",
+      method: "POST",
+      data: {
+        app: app_id,
+        force: upgrade_app_option_force ? "true" : "false"
+      },
+      keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+      success: function(res) {
+        window.location = "{{project.get_absolute_url|escapejs}}";
+      }
+  })
+}
 </script>
 {% endif %}
 {% endblock %}

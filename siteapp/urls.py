@@ -44,7 +44,6 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/list)$', views.project_list_all_answers), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
-    url(r'^projects/(\d+)/(?:[\w\-]+)(/upgrade)$', views.project_upgrade_app), # must be last because regex matches some previous URLs
 
     # org groups
     url(r'^groups$', views_landing.org_groups),
