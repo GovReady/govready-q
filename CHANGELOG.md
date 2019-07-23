@@ -46,6 +46,7 @@ The app catalog cache is removed since the page loads much faster.
 * Create a default org_group slug for user that is username. Test proposed slugs based on username properly report error on name collision with existing org_groups (e.g., a username cannot be created that conflicts with an existing org_group (may want to white list creating of org_groups that are common first names).
 * On login errors make signin tab active on page reload to display the errors.
 * Upgrade assessment no longer requires loading intermediary page; Upgrade routine begins directly with action button.
+* Remove listing in catalog of the fields related to the size of the organization.
 
 * Add group slug to breadcrumbs for projects, tasks and reduce font size of breadcrumbs. Add group slug to display of project name for clarity. Remove "Component" from breadcrumbs.
 * Remove link to legacy organization project in settings page.

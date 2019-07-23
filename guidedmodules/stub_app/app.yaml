@@ -13,13 +13,6 @@ catalog:
   description:
     short: |
       Short description.
-  recommended_for:
-  - key_short: Org
-    value: Small
-  - key_short: Tech
-    value: Sophisticated
-  - key_short: Role
-    value: PM
 introduction:
   format: markdown
   template: |
