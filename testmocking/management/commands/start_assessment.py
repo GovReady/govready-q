@@ -17,15 +17,13 @@ class Command(BaseCommand):
     help = 'Starts one or many assessments for an org'
 
     def add_arguments(self, parser):
-        parser.add_argument('--base_url', type=str, required=True, help="")
+        parser.add_argument('--org', type=str, required=True, help="")
         parser.add_argument('--username', type=str, required=True, help="")
         parser.add_argument('--password', type=str, required=True, help="")
         parser.add_argument('--to-completion', action="store_true", help="")
 
     def handle(self, *args, **options):
-        self.client = WebClient(options['base_url'])
-        self.client.load('')
-        self.client.login(options['username'], options['password'])
+        self.client = WebClient(options['username'], options['org'])
 
         if options['to_completion']:
             comps = self.client.get_components()
