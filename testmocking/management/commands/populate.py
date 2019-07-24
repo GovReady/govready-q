@@ -59,7 +59,7 @@ class Command(BaseCommand):
                 base_url = '{}://{}.{}/'.format(protocol, org.subdomain, settings.ORGANIZATION_PARENT_DOMAIN)
                 print("Using base URL: {}".format(base_url))
                 print('Adding system...')
-                call_command('add_system',  '--password', options['password'], '--username', admin.username, '--base_url', base_url)
+                call_command('add_system',  '--password', options['password'], '--username', admin.username, '--base_url', org.subdomain)
                 print('Adding assessments...')
                 call_command('start_assessment', '--to-completion', '--password', options['password'], '--username', admin.username, '--base_url', base_url)
 

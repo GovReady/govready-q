@@ -2,7 +2,13 @@ import requests
 import parsel
 from random import sample
 import re
+
 from django.test import Client
+
+from django.test import RequestFactory
+from siteapp.urls import urlpatterns
+
+from django.urls.exceptions import Resolver404 as Resolver404
 
 class WebClient():
     session = None
@@ -12,13 +18,12 @@ class WebClient():
     projects = None
     comp_links = None
 
-    def __init__(self, base_url):
-        match = re.search(r'^(https?://)?(?P<host>[^:/]+)', base_url)
-        host = match['host']
-        self.base_url = base_url
+    def __init__(self, user, org):
+        self.user = user
+        self.org = org
 
-        self.session = Client(HTTP_HOST=host)
-        print("web test client with host <{}>".format(host))
+        self.session = RequestFactory()
+        print("web test client with host <{}>".format(org.subdomain))
 
     def _url(self, path):
         # currently a no-op function, but for debug purposes it is useful to be able to change path handling in one spot
@@ -26,18 +31,34 @@ class WebClient():
 
     def _use_page(self, response):
         self.response = response
-        self.selector = parsel.Selector(text=str(response.content))
-        print(str(self.response.content))
+        self.selector = parsel.Selector(text=response.content.decode('utf-8'))
+        print(self.response.content.decode('utf-8'))
         print(str(self.response.status_code))
         print(self.response.serialize_headers())
+        self.html_debug(dir="/tmp/")
+
+    def _resolve(self, req):
+        for url in urlpatterns:
+            try:
+                match = url.resolve(req.path[1:])
+                if match:
+                    print(url)
+                    return match.func(req, *match.args, **match.kwargs)
+            except Resolver404:
+                pass
+        raise Exception("{} not resolved".format(req.path))
 
     def load(self, path):
         url = self._url(path)
         print("GET on: <{}>".format(url))
-        self._use_page(self.session.get(url, follow=True))
+        req = self.session.get(url)
+        req.user = self.user
+        req.organization = self.org
+        self._use_page(self._resolve(req))
 
 
     def login(self, username, password):
+        return
         self.form('.login', {"login": username, "password": password})
 
     def form_fields(self, css):
@@ -61,7 +82,10 @@ class WebClient():
         else:
             url = self.base_url
         print("POST on: <{}>".format(url))
-        res = self.session.post(url, base_fields, follow=True)
+        req = self.session.post(url, base_fields, follow=True)
+        req.user = self.user
+        req.organization = self.org
+        res = self._resolve(req)
         self._use_page(res)
 
 
@@ -119,8 +143,8 @@ class WebClient():
 
     def html_debug(self, filename="test.html", dir="siteapp/static/"):
         with open(dir + filename, 'w') as file:
-            file.write(self.response.text)
-        return self.response.url
+            file.write(self.response.content.decode('utf-8'))
+        #return self.response.url
         
 
 
