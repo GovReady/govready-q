@@ -10,6 +10,8 @@ from siteapp.urls import urlpatterns
 
 from django.urls.exceptions import Resolver404 as Resolver404
 
+from siteapp.models import *
+
 class WebClient():
     session = None
     response = None
@@ -18,12 +20,14 @@ class WebClient():
     projects = None
     comp_links = None
 
-    def __init__(self, user, org):
-        self.user = user
-        self.org = org
+    def __init__(self, username, org_slug):
+        self.user = User.objects.get(username=username)
+        self.org = Organization.objects.get(subdomain=org_slug)
+
+        User.localize_users_to_org(self.org, [self.user])
 
         self.session = RequestFactory()
-        print("web test client with host <{}>".format(org.subdomain))
+        print("web test client with host <{}>".format(self.org.subdomain))
 
     def _url(self, path):
         # currently a no-op function, but for debug purposes it is useful to be able to change path handling in one spot
@@ -32,9 +36,6 @@ class WebClient():
     def _use_page(self, response):
         self.response = response
         self.selector = parsel.Selector(text=response.content.decode('utf-8'))
-        print(self.response.content.decode('utf-8'))
-        print(str(self.response.status_code))
-        print(self.response.serialize_headers())
         self.html_debug(dir="/tmp/")
 
     def _resolve(self, req):
@@ -42,7 +43,6 @@ class WebClient():
             try:
                 match = url.resolve(req.path[1:])
                 if match:
-                    print(url)
                     return match.func(req, *match.args, **match.kwargs)
             except Resolver404:
                 pass
@@ -56,10 +56,6 @@ class WebClient():
         req.organization = self.org
         self._use_page(self._resolve(req))
 
-
-    def login(self, username, password):
-        return
-        self.form('.login', {"login": username, "password": password})
 
     def form_fields(self, css):
         return self.form_fields_by_ref(self.selector.css(css))
@@ -82,7 +78,7 @@ class WebClient():
         else:
             url = self.base_url
         print("POST on: <{}>".format(url))
-        req = self.session.post(url, base_fields, follow=True)
+        req = self.session.post(url, base_fields)
         req.user = self.user
         req.organization = self.org
         res = self._resolve(req)
@@ -94,12 +90,8 @@ class WebClient():
         # TODO see if this shouldn't be hardcoded
         self.load("/store")
 
-        print(self.selector.css('body').get())
-        print("testing")
         form = sample(self.selector.css('[action^="/store"]'), 1)[0]
         self.form_by_ref(form)
-        print(self.response.url)
-        #self.html_debug()
 
     def get_projects(self):
         if not self.projects:
