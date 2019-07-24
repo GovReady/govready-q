@@ -10,6 +10,8 @@ from django.conf import settings
 from random import sample
 from testmocking.web import WebClient
 
+from siteapp.models import *
+
 class Command(BaseCommand):
     client = None
 
@@ -21,8 +23,8 @@ class Command(BaseCommand):
         parser.add_argument('--password', type=str, required=True, help="")
 
     def handle(self, *args, **options):
-        self.client = WebClient(options['base_url'])
-        self.client.load('')
-        self.client.login(options['username'], options['password'])
+        self.client = WebClient(User.objects.get(username=options['username']), Organization.objects.get(subdomain=options['base_url']))
+        #self.client.load('')
+        #self.client.login(options['username'], options['password'])
 
         self.client.add_system()
