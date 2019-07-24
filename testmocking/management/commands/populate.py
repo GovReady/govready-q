@@ -29,14 +29,6 @@ class Command(BaseCommand):
         parser.add_argument('--port', type=str, help="Only needed in --full mode, when running on a non-default port (currently, the port isn't detected from the config file)")
 
     def handle(self, *args, **options):
-        if len(AppSource.objects.filter(slug='dev').all()) == 0:
-            app = AppSource.objects.create(
-                slug="dev",
-                spec={"type":"git","url":"https://github.com/GovReady/govready-apps-dev.git","path":"apps/"},
-                available_to_all=True,
-            )
-
-
         users = []
         pw_hash = None
         final_output = []
