@@ -4,14 +4,16 @@ GovReady-Q Release Notes
 v0.9.0.dev30+devel
 ------------------
 
-Introduces concept of Portfolios, which replaces both concepts of both Orgnizations and Groups.
+Introduces improved permissions model using Django-Guardian and concept of Portfolios, which replaces both concepts of both Orgnizations and Groups.
 
-Portfolios are used to organize Projects and manage permissions and access.
+Portfolios are used to organize Projects and manage extensible permissions and access.
 
 * When a new user joins GovReady they are automatically added and made owner of their own Portfolio
 * Users can be invited to a Portfolio by Portfolio owners and granted ownership by Portfolio owners
 * Any user can create a portfolio and add projects to the portfolio
 * Projects cannot exist in more than one portfolio
+* Permissions can be more easily managed on indivdidual instances of objects
+* New Permissions object primarily applied to portfolios in this release
 
 v0.9.0.dev24+devel
 ------------------
