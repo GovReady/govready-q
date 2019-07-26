@@ -10,15 +10,18 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 
+import os
+import os.path
+import re
+from unittest import skip
+
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
 
-from unittest import skip
+from siteapp.models import (Organization, Portfolio, Project,
+                            ProjectMembership, User)
 
-import os
-import os.path
-import re
 
 def var_sleep(duration):
     '''
@@ -106,6 +109,14 @@ class SeleniumTest(StaticLiveServerTestCase):
         self.clear_field(css_selector)
         self.fill_field(css_selector, text)
 
+    def click_element_with_link_text(self, text):
+        elem = self.browser.find_elements_by_link_text(text)
+        elem[0].click()
+
+    def click_element_with_xpath(self, xpath):
+        elem = self.browser.find_elements_by_xpath(xpath)
+        elem[0].click()
+
     def click_element(self, css_selector):
         # ensure element is on screen or else it can't be clicked
         # see https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
@@ -117,6 +128,11 @@ class SeleniumTest(StaticLiveServerTestCase):
         from selenium.webdriver.support.select import Select
         e = self.browser.find_element_by_css_selector(css_selector)
         Select(e).select_by_value(value)
+
+    def select_option_by_visible_text(self, css_selector, text):
+        from selenium.webdriver.support.select import Select
+        e = self.browser.find_element_by_css_selector(css_selector)
+        Select(e).select_by_visible_text(text)
 
     def _getNodeText(self, css_selector):
         node_text = self.browser.find_element_by_css_selector(css_selector).text
@@ -191,7 +207,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Log the user into the test client, which is used for API
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
-        from siteapp.models import User, ProjectMembership
+
         self.user = User.objects.create(
             username="me",
             email="test+user@q.govready.com",
@@ -203,8 +219,11 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user.reset_api_keys()
         self.client.login(username=self.user.username, password=self.user.clear_password)
 
+        # Create a Portfolio and Grant Access
+        portfolio = Portfolio.objects.create(title=self.user.username)
+        portfolio.assign_owner_permissions(self.user)
+
         # Create the Organization.
-        from siteapp.models import Organization
         self.org = Organization.create(name="Our Organization", slug="testorg",
             admin_user=self.user)
 
@@ -220,10 +239,23 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user2.save()
         self.user2.reset_api_keys()
         self.client.login(username=self.user2.username, password=self.user2.clear_password)
+        portfolio = Portfolio.objects.create(title=self.user2.username)
+        portfolio.assign_owner_permissions(self.user2)
+
+        # create a third user
+        self.user3 = User.objects.create(
+            username="me3",
+            email="test+user3@q.govready.com")
+        self.user3.clear_password = get_random_string(16)
+        self.user3.set_password(self.user2.clear_password)
+        self.user3.save()
+        self.user3.reset_api_keys()
+        self.client.login(username=self.user3.username, password=self.user3.clear_password)
+        portfolio = Portfolio.objects.create(title=self.user3.username)
+        portfolio.assign_owner_permissions(self.user3)
 
         # Grant second user membership in the organization
         # from https://github.com/GovReady/govready-q/blob/master/siteapp/admin.py#L41
-        from siteapp.models import ProjectMembership
         mb, isnew = ProjectMembership.objects.get_or_create(
             user=self.user2,
             project=self.org.get_organization_project(),
@@ -250,16 +282,20 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
     def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
-        self.click_element(".app[data-app='project/simple_project'] .view-app")
-        self.click_element("#start-project")
-        # last two lines could also be replaced with:
-        #self.click_element(".app[data-app='project/simple_project'] .start-app")
-        var_sleep(1)
+
+        # Select Portfolio
+        self.select_option_by_visible_text('#id_portfolio', self.user.username)
+        self.click_element("#select_portfolio_submit")
+        var_sleep(2)
+
+        # Click Add Button
+        self.click_element(".app[data-app='project/simple_project'] .start-app")
+
+        var_sleep(2)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
-        from siteapp.models import Project
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
-        self.current_projet = Project.objects.get(id=m.group(1))
+        self.current_project = Project.objects.get(id=m.group(1))
 
     def _start_task(self):
         # Assumes _new_project() just finished.
@@ -293,11 +329,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Sign In")
         self.click_element("p a") # This isn't a very good targetting of the "sign up" link.
         var_sleep(.5) # wait for page to load
-        self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
-        self.fill_field("#id_email", email)
-        new_test_user_password = get_random_string(16)
-        self.fill_field("#id_password1", new_test_user_password)
-        self.fill_field("#id_password2", new_test_user_password)
+
+        self._fill_in_signup_form(email)
         self.click_element("form.signup button") # This isn't a very good targetting of the "sign up" link.
         var_sleep(.5) # wait for next page to load
 
@@ -307,6 +340,16 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Test that an allauth confirmation email was sent.
         self.assertIn("Please confirm your email address at GovReady Q by following this link", self.pop_email().body)
+
+    def _fill_in_signup_form(self, email, username=None):
+        if username:
+            self.fill_field("#id_username", username)
+        else:
+            self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
+        self.fill_field("#id_email", email)
+        new_test_user_password = get_random_string(16)
+        self.fill_field("#id_password1", new_test_user_password)
+        self.fill_field("#id_password2", new_test_user_password)
 
     def test_homepage(self):
         self.browser.get(self.url("/"))
@@ -551,11 +594,75 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
+    def test_create_portfolios(self):
+        # Create a new account
+        self.browser.get(self.url("/"))
+        self.click_element('#tab-register')
+        self._fill_in_signup_form("test+account@q.govready.com", "portfolio_user")
+        self.click_element("#signup-button")
+
+        # Go to portfolio page
+        self.browser.get(self.url("/portfolios"))
+
+        # Navigate to portfolio created on signup
+        self.click_element_with_link_text("portfolio-user")
+
+    def test_create_portfolio_project(self):
+        # Create new project within portfolio
+        self._login()
+        self._new_project()
+
+        # Create new portfolio
+        self.browser.get(self.url("/portfolios"))
+        self.click_element("#new-portfolio")
+        self.fill_field("#id_title", "Security Projects")
+        self.fill_field("#id_description", "Project Description")
+        self.click_element("#create-portfolio-button")
+        self.assertRegex(self.browser.title, "Your Compliance Portfolios")
+        self.click_element_with_link_text("Security Projects")
+        self.assertRegex(self.browser.title, "Security Projects Portfolio")
+        self.assertInNodeText("{} (Owner)".format(self.user.username), "#portfolio-member-{}".format(self.user.username))
+
+    def test_grant_portfolio_access(self):
+        # Grant another member access to portfolio
+        self._login()
+        self.browser.get(self.url("/portfolios"))
+        self.click_element("#portfolio_{}".format(self.user.username))
+        self.click_element("#grant-portfolio-access")
+        self.select_option_by_visible_text('#invite-user-select', 'me2')
+        self.click_element("#invitation_modal button.btn-submit")
+        var_sleep(1)
+        self.assertInNodeText("Send Invitation", "#global_modal_title")
+        self.assertInNodeText("The invitation has been sent. We will notify you when the invitation has been accepted.", ".modal-body p")
+        self.click_element_with_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]")
+        self.assertInNodeText("me2", "#portfolio-member-me2")
+
+        # Grant another member ownership of portfolio
+        var_sleep(1)
+        self.click_element("#me2_grant_owner_permission")
+        var_sleep(1)
+        self.assertInNodeText("me2 (Owner)", "#portfolio-member-me2")
+
+       # Grant another member access to portfolio
+        self.click_element("#grant-portfolio-access")
+        self.select_option_by_visible_text('#invite-user-select', 'me3')
+        self.click_element("#invitation_modal button.btn-submit")
+        var_sleep(1)
+        self.click_element_with_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]")
+        self.assertInNodeText("me3", "#portfolio-member-me3")
+
+        # Remove another member access to portfolio
+        self.click_element("#me3_remove_permissions")
+        self.assertNotInNodeText("me3", "#portfolio-members")
+        self.assertNodeNotVisible("#portfolio-member-me3")
+
+
+
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def _test_api_get(self, path, expected_value):
         resp = self.client_get(
-                "/api/v1/projects/" + str(self.current_projet.id) + "/answers",
+                "/api/v1/projects/" + str(self.current_project.id) + "/answers",
                 HTTP_AUTHORIZATION=self.user.api_key_rw)
         resp = resp.json()
         self.assertTrue(isinstance(resp, dict))

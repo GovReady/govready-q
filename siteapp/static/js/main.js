@@ -50,14 +50,16 @@ function show_invite_modal(title, prompt, info, message_default_text, data, call
   if (info.users.length > 0 && !data.add_to_team && !data.into_discussion) {
     // The users list only has project members. They are already in the project/discussion,
     // so it doesn't make sense to list them if we are doing an invite to a project/discussion.
-    s.append($("<option/>").attr('value', '').text('Select team member...'))
+    s.append($("<option/>").attr('value', '').text('Select a user...'))
     info.users.forEach(function(user) {
       s.append($("<option/>").attr('value', user.id).text(user.name))
     })
   } else {
     m.find('label[for="invite-user-email"] span').remove(); // hide link to hide the email address input and show the dropdown because drop-down is empty
   }
-  s.append($("<option/>").attr('value', '__invite__').text("Invite someone new..."))
+  if (data.project) {
+    s.append($("<option/>").attr('value', '__invite__').text("Invite someone new..."))
+  }
   if (data.user_id) {
     s.val(data.user_id);
     if (s.val() == data.user_id) // valid?

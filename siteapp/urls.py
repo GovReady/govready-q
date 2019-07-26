@@ -26,7 +26,7 @@ urlpatterns = [
     url(r"^discussion/", include("discussion.urls")),
 
     # app store
-    url(r'^store$', views.apps_catalog),
+    url(r'^store$', views.apps_catalog, name="store"),
     url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 
     # projects
@@ -42,6 +42,12 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/upgrade)$', views.project_upgrade_app), # must be last because regex matches some previous URLs
+
+    # portfolios
+    url(r'^portfolios$', views.portfolio_list),
+    url(r'^portfolios/new$', views.new_portfolio),
+    url(r'^portfolios/(?P<pk>.*)/projects$', views.portfolio_projects),
+    url(r'^portfolio/update_permissions', views.update_permissions, name="update_permissions"),
 
     # org groups
     url(r'^groups$', views_landing.org_groups),

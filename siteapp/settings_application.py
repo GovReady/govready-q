@@ -9,6 +9,7 @@ INSTALLED_APPS += [
     'htmlemailer',
     'notifications',
     'dbstorage',
+    'guardian',
 
     'siteapp',
     'guidedmodules',

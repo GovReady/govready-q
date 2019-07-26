@@ -12,39 +12,16 @@ from django.views.decorators.csrf import csrf_exempt
 from django import forms
 from django.conf import settings
 
-from .models import User, Organization
+from .models import User, Organization, Portfolio
+from .forms import PortfolioSignupForm
 
 def homepage(request):
     # Main landing page.
 
     from allauth.account.forms import SignupForm, LoginForm
 
-    class NewOrgForm(forms.ModelForm):
-        class Meta:
-            model = Organization
-            fields = ['name', 'slug']
-            labels = {
-                "slug": "Your personal group will be:",
-            }
-            help_texts = {
-                "slug": "Only lowercase letters, digits, and dashes.",
-            }
-            widgets = {
-                "name": forms.HiddenInput(),
-                "slug": forms.TextInput(attrs={"placeholder": "username"})
-            }
-
-        def clean_slug(self):
-            # Not sure why the field validator isn't being run by the ModelForm.
-            import re
-            from .models import subdomain_regex
-            from django.forms import ValidationError
-            if not re.match(subdomain_regex, self.cleaned_data['slug']):
-                raise ValidationError("The organization address must contain only lowercase letters, digits, and dashes and cannot start or end with a dash.")
-            return self.cleaned_data['slug']
-
+    portfolio_form = PortfolioSignupForm()
     signup_form = SignupForm()
-    neworg_form = NewOrgForm()
     login_form = LoginForm()
 
     # The allauth forms have 'autofocus' set on their widgets that draw the
@@ -52,10 +29,10 @@ def homepage(request):
     signup_form.fields['username'].widget.attrs.pop("autofocus", None)
     login_form.fields['login'].widget.attrs.pop("autofocus", None)
 
-    if request.POST.get("action") == "neworg":
+    if request.POST.get("action") == "signup":
         signup_form = SignupForm(request.POST)
-        neworg_form = NewOrgForm(request.POST)
-        if (request.user.is_authenticated or signup_form.is_valid()) and neworg_form.is_valid():
+        portfolio_form = PortfolioSignupForm(request.POST)
+        if (request.user.is_authenticated or signup_form.is_valid()) and portfolio_form.is_valid():
             # Perform signup and new org creation, then redirect
             # to that org.
             with transaction.atomic():
@@ -70,21 +47,21 @@ def homepage(request):
                 else:
                     user = request.user
 
-                org = Organization.create(admin_user=user, **neworg_form.cleaned_data)
+                if portfolio_form.is_valid():
+                    portfolio = portfolio_form.save()
+                    portfolio.assign_owner_permissions(request.user)
 
                 # Send a message to site administrators.
                 from django.core.mail import mail_admins
                 def subvars(s):
                     return s.format(
-                        org_name=org.name,
-                        org_link=settings.SITE_ROOT_URL + "/admin/siteapp/organization/{}/change".format(org.id),
+                        portfolio=portfolio.title,
                         username=user.username,
                         email=user.email,
-                        user_link=settings.SITE_ROOT_URL + "/admin/siteapp/user/{}/change".format(user.id),
                     )
                 mail_admins(
-                    subvars("New organization: {org_name} (created by {email})"),
-                    subvars("A new organization has been registered!\n\nOrganization\n------------\nName: {org_name}\nAdmin: {org_link}\n\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}\nOrganization: {org_name}\nAdmin: {user_link}"))
+                    subvars("New portfolio: {portfolio} (created by {email})"),
+                    subvars("A new portfolio has been registered!\n\nPortfolio\n------------\nName: {portfolio}\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}"))
 
                 return HttpResponseRedirect("/projects")
 
@@ -101,7 +78,7 @@ def homepage(request):
 
     return render(request, "index.html", {
         "signup_form": signup_form,
-        "neworg_form": neworg_form,
+        "portfolio_form": portfolio_form,
         "login_form": login_form,
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })

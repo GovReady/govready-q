@@ -27,6 +27,7 @@ django-notifications-hq==1.4 # MIT License
 jsonfield # MIT License
 dj_database_url # BSD License
 whitenoise # MIT License
+django-guardian # MIT License
 
 # Python Packages Developed by GovReady and/or Josh
 mondrianish # CC0

@@ -7,15 +7,16 @@ the user experience and performance.
 
 * Faster loading and launching of Assessments/questionnaires
 * Simplified install with no subdomains to worry about
-* Replaces subdomain multi-tenancy with simplified "Groups" model
+* Replaces subdomain multi-tenancy with simplified "Portfolios" model
 * Improved authoring screens
 * Helpful new start page
+* Adds and updates portfolio level permissions
 
 Release 0.9.0 removes multi-tenancy and serves all pages from the same domain. In the earlier multi-tenancy versions, requests to GovReady-Q came in on subdomains: the subdomain determined which organization to associate with the request, and individuals had to re-login across subdomains. Little value was being realized by actual users for the subdomain-based multi-tenancy. Removing subdomain-based multi-tenancy reduces technical debt simplifies deployment.
 
 This release's compliance apps catalog now reads from the database rather than constantly rescanning remote repositories and the file system. The app catalog cache is removed since the page loads much faster. Release 0.9.0 begins to replace the "compliance app" terminology with the plain language "projects" and "assessment" terminology in end user pages.
 
-This release also introduces a "Group" feature to organize and manage related projects.
+This release also introduces a "Portfolios" feature to organize and manage related projects.
 
 For a complete list of changes see the [0.9.0.dev branch CHANGELOG](https://github.com/GovReady/govready-q/blob/0.9.0.dev/CHANGELOG.md).
 

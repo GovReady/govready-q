@@ -1,20 +1,28 @@
 import random
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
-from django.views.decorators.http import require_http_methods
-from django.urls import reverse
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.forms import ModelForm
+from django.http import (Http404, HttpResponse, HttpResponseForbidden,
+                         HttpResponseNotAllowed, HttpResponseRedirect,
+                         JsonResponse)
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.http import require_http_methods
+from guardian.decorators import permission_required_or_403
 
-from .models import User, Folder, Project, Invitation
-from guidedmodules.models import Module, ModuleQuestion, Task, ProjectMembership
 from discussion.models import Discussion
+from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
+                                  Task)
 
-from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch is loaded
+from .good_settings_helpers import \
+    AllauthAccountAdapter  # ensure monkey-patch is loaded
+from .models import Folder, Invitation, Portfolio, Project, User
+from .forms import PortfolioForm, ProjectForm
 from .notifications_helpers import *
+
 
 def homepage(request):
     # If the user is logged in, then redirect them to the projects page.
@@ -107,9 +115,11 @@ def project_list(request):
         # Put the project into the lifecycle's appropriate stage.
         project.lifecycle_stage[1].setdefault("projects", []).append(project)
 
+    project_form = ProjectForm(request.user)
     return render(request, "projects.html", {
         "lifecycles": lifecycles,
         "projects": projects,
+        "project_form": project_form,
     })
 
 def get_compliance_apps_catalog_for_user(user):
@@ -296,6 +306,9 @@ def apps_catalog(request):
     forward_qsargs = { }
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
+    # Add the portfolio id the user is creating the project from to the args
+    if "portfolio" in request.POST: forward_qsargs["portfolio"] = request.POST["portfolio"]
+
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
     catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
@@ -382,13 +395,19 @@ def apps_catalog_item(request, source_slug, app_name):
             if not app_satifies_interface(app_catalog_info, q):
                 raise ValueError("Invalid protocol.")
 
+        # Get portfolio project should be included in.
+        if request.GET.get("portfolio"):
+          portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+        else:
+          portfolio = None
+
         # Start the most recent version of the app.
         appver = app_catalog_info["versions"][0]
 
         # Start the app.
         from guidedmodules.app_loading import ModuleDefinitionError
         try:
-            project = start_app(appver, organization, request.user, folder, task, q)
+            project = start_app(appver, organization, request.user, folder, task, q, portfolio)
         except ModuleDefinitionError as e:
             error = str(e)
         else:
@@ -407,7 +426,7 @@ def apps_catalog_item(request, source_slug, app_name):
     })
 
 
-def start_app(appver, organization, user, folder, task, q):
+def start_app(appver, organization, user, folder, task, q, portfolio):
     from guidedmodules.app_loading import load_app_into_database
 
     # Begin a transaction to create the Module and Task instances for the app.
@@ -415,6 +434,7 @@ def start_app(appver, organization, user, folder, task, q):
         # Create project.
         project = Project()
         project.organization = organization
+        project.portfolio = portfolio
 
         # Save and add to folder
         project.save()
@@ -451,7 +471,8 @@ def project_read_required(f):
         project = get_object_or_404(Project, id=project_id)
 
         # Check authorization.
-        if not project.has_read_priv(request.user):
+        has_project_portfolio_permissions = request.user.has_perm('view_portfolio', project.portfolio)
+        if not project.has_read_priv(request.user) and not has_project_portfolio_permissions:
             return HttpResponseForbidden()
 
         # Redirect if slug is not canonical. We do this after checking for
@@ -916,7 +937,8 @@ def project_admin_login_post_required(f):
     def g(request, project_id, *args):
         # Get project, check authorization.
         project = get_object_or_404(Project, id=project_id)
-        if request.user not in project.get_admins():
+        has_owner_project_portfolio_permissions = request.user.has_perm('can_grant_portfolio_owner_permission', project.portfolio)
+        if request.user not in project.get_admins() and not has_owner_project_portfolio_permissions:
             return HttpResponseForbidden()
 
         # Call function with changed argument.
@@ -1101,6 +1123,72 @@ def project_upgrade_app(request, project):
         "app": app,
     })
 
+# PORTFOLIOS
+
+def update_permissions(request):
+    permission = request.POST.get('permission')
+    portfolio_id = request.POST.get('portfolio_id')
+    user_id = request.POST.get('user_id')
+    portfolio = Portfolio.objects.get(id=portfolio_id)
+    user = User.objects.get(id=user_id)
+    # TODO check if this check on request.user can be moved to decorator
+    if request.user.has_perm('can_grant_portfolio_owner_permission', portfolio):
+      if permission == 'remove_permissions':
+        portfolio.remove_permissions(user)
+      elif permission == 'grant_owner_permission':
+        portfolio.assign_owner_permissions(user)
+    next = request.POST.get('next', '/')
+    return HttpResponseRedirect(next)
+
+@login_required
+def portfolio_list(request):
+    """List portfolios"""
+    return render(request, "portfolios/index.html", {
+        "portfolios": Portfolio.get_all_readable_by(request.user) if request.user.is_authenticated else None
+    })
+
+@login_required
+def new_portfolio(request):
+    """Form to create new portfolios"""
+    if request.method == 'POST':
+      form = PortfolioForm(request.POST)
+      if form.is_valid():
+        form.save()
+        portfolio = form.instance
+        portfolio.assign_owner_permissions(request.user)
+        return HttpResponseRedirect('/portfolios')
+    else:
+        form = PortfolioForm()
+
+    return render(request, 'portfolios/form.html', {'form': form})
+
+def portfolio_read_required(f):
+    @login_required
+    def g(request, pk):
+        portfolio = get_object_or_404(Portfolio, pk=pk)
+
+        # Check authorization.
+        has_portfolio_permissions = request.user.has_perm('view_portfolio', portfolio)
+        if not has_portfolio_permissions:
+            return HttpResponseForbidden()
+        return f(request, portfolio.id)
+    return g
+
+@portfolio_read_required
+def portfolio_projects(request, pk):
+  """List of projects within a portfolio"""
+  portfolio = Portfolio.objects.get(pk=pk)
+  projects = Project.objects.filter(portfolio=portfolio)
+  anonymous_user = User.objects.get(username='AnonymousUser')
+  project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
+  return render(request, "portfolios/detail.html", {
+      "portfolio": portfolio,
+      "projects": projects,
+      "project_form": project_form,
+      "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
+      "send_invitation": Invitation.portfolio_form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
+      "users_with_perms": portfolio.users_with_perms()
+      })
 
 # INVITATIONS
 
@@ -1121,9 +1209,20 @@ def send_invitation(request):
             # dns.resolver.NoNameservers will result in EmailUndeliverableError.
             email_validator.validate_email(request.POST['user_email'], check_deliverability=settings.VALIDATE_EMAIL_DELIVERABILITY)
 
+        # Get the recipient user
+        to_user = User.objects.get(id=request.POST["user_id"]) if request.POST.get("user_id") else None,
+
+        # Find the Portfolio and grant permissions to the user being invited
+        if request.POST.get("portfolio"):
+          from_portfolio = Portfolio.objects.filter(id=request.POST["portfolio"]).first()
+          to_user = get_object_or_404(User, id=request.POST.get("user_id"))
+          from_portfolio.assign_editor_permissions(to_user)
+          from_project = None
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
-        from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
+        elif request.POST.get("project"):
+          from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
+          from_portfolio = None
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -1162,7 +1261,9 @@ def send_invitation(request):
             target_info = {
                 "what": "invite-guest",
             }
-
+        elif request.POST.get("portfolio"):
+            target = from_portfolio
+            target_info = {}
         else:
             target = from_project
             target_info = {
@@ -1173,6 +1274,7 @@ def send_invitation(request):
             # who is sending the invitation?
             from_user=request.user,
             from_project=from_project,
+            from_portfolio=from_portfolio,
 
             # what is the recipient being invited to? validate that the user is an admin of this project
             # or an editor of the task being reassigned.

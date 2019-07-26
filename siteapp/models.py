@@ -1,13 +1,16 @@
-from django.db import models, transaction
-from django.utils import timezone, crypto
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
-
+from django.db import models, transaction
+from django.utils import crypto, timezone
+from guardian.shortcuts import (assign_perm, get_objects_for_user,
+                                get_perms_for_model, get_user_perms,
+                                get_users_with_perms, remove_perm)
 from jsonfield import JSONField
+
 
 class User(AbstractUser):
     # Additional user profile data.
@@ -271,16 +274,7 @@ class Organization(models.Model):
         return "/%s/projects" % (self.slug)
 
     def get_who_can_read(self):
-        # A user can see an Organization if:
-        # * they have read permission on any Project within the Organization
-        # * they are an editor of a Task within a Project within the Organization (but might not otherwise be a Project member)
-        # * they are a guest in any Discussion on TaskQuestion in a Task in a Project in the Organization
-        # The inverse function is below.
-        return (
-               User.objects.filter(projectmembership__project__organization=self)
-             | User.objects.filter(tasks_editor_of__project__organization=self)
-             | User.objects.filter(guest_in_discussions__organization=self)
-             ).distinct()
+        return User.objects.all()
 
     def can_read(self, user):
         # Although we can check it by evaluating:
@@ -294,11 +288,7 @@ class Organization(models.Model):
         # See can_read.
         from guidedmodules.models import Task
         from discussion.models import Discussion
-        return (
-              Organization.objects.filter(projects__members__user=user)
-            | Organization.objects.filter(projects__tasks__editor=user)
-            | Organization.objects.filter(discussions__guests=user)
-            ).order_by("name", "created").distinct()
+        return Organization.objects.all().order_by("name", "created").distinct()
 
     def get_projects(self):
         # return Projects.objects.filter()
@@ -345,6 +335,53 @@ class Organization(models.Model):
         pm.save()
 
         return org
+
+
+class Portfolio(models.Model):
+    title = models.CharField(max_length=256, help_text="The title of this Portfolio.")
+    description = models.CharField(max_length=512, blank=True, help_text="A description of this Portfolio.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        permissions = (
+            ('view_portfolio', 'View portfolio'),
+            ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission'),
+        )
+
+    @staticmethod
+    def get_all_readable_by(user):
+        return get_objects_for_user(user, 'siteapp.view_portfolio')
+
+    def assign_owner_permissions(self, user):
+        permissions = get_perms_for_model(Portfolio)
+        for perm in permissions:
+            assign_perm(perm.codename, user, self)
+
+    def assign_editor_permissions(self, user):
+        permissions = ['view_portfolio', 'change_portfolio', 'add_portfolio']
+        for perm in permissions:
+            assign_perm(perm, user, self)
+
+    def remove_permissions(self, user):
+        permissions = get_perms_for_model(Portfolio)
+        for perm in permissions:
+            remove_perm(perm.codename, user, self)
+
+    def get_invitation_verb_inf(self, invitation):
+        return "to view"
+
+    def users_with_perms(self):
+        users_with_perms = get_users_with_perms(self, attach_perms=True)
+        users = []
+        for user in users_with_perms:
+            user_perms = (get_user_perms(user, self))
+            owner = True if user_perms.filter(codename='can_grant_portfolio_owner_permission') else False
+            name = user.name() if user.name() else str(user)
+            user = {'name': name, 'id': user.id, 'owner': owner}
+            users.append(user)
+        sorted_users = sorted(users, key=lambda k: (-k['owner'], k['name'].lower()))
+        return sorted_users
 
 class Folder(models.Model):
     """A folder is a collection of Projects."""
@@ -407,8 +444,8 @@ class Folder(models.Model):
 
 class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
-
     organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
+    portfolio = models.ForeignKey(Portfolio, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Portfolio that this Project belongs to.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
     is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
@@ -863,8 +900,9 @@ class ProjectMembership(models.Model):
 class Invitation(models.Model):
     # who is sending the invitation
     from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The User who sent the invitation.")
-    from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The Project within which the invitation exists.")
-    
+    from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The Project within which the invitation exists.", blank=True, null=True)
+    from_portfolio = models.ForeignKey(Portfolio, related_name="portfolio_invitations_sent", on_delete=models.CASCADE, help_text="The Portfolio within which the invitation exists.", blank=True, null=True)
+
     # what is the recipient being invited to?
     into_project = models.BooleanField(default=False, help_text="Whether the user being invited is being invited to join from_project.")
     target_content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
@@ -922,6 +960,16 @@ class Invitation(models.Model):
         }
 
     @staticmethod
+    def portfolio_form_context_dict(user, portfolio, exclude_users):
+        from guidedmodules.models import ProjectMembership
+        return {
+            "portfolio_id": portfolio.id,
+            "portfolio_title": portfolio.title,
+            "users": [{ "id": user.id, "name": str(user) }
+                for user in User.objects.exclude(username__in=exclude_users)]
+        }
+
+    @staticmethod
     def get_for(object, open_invitations=True):
         content_type = ContentType.objects.get_for_model(object)
         ret = Invitation.objects.filter(target_content_type=content_type, target_object_id=object.id)
@@ -939,6 +987,9 @@ class Invitation(models.Model):
 
     def is_target_the_project(self):
         return isinstance(self.target, Project)
+
+    def is_target_the_portfolio(self):
+        return isinstance(self.target, Portfolio)
 
     def purpose(self):
         return self.purpose_verb() + " " + self.target.title
