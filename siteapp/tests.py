@@ -113,6 +113,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         elem = self.browser.find_elements_by_link_text(text)
         elem[0].click()
 
+    def click_element_with_xpath(self, xpath):
+        elem = self.browser.find_elements_by_xpath(xpath)
+        elem[0].click()
+
     def click_element(self, css_selector):
         # ensure element is on screen or else it can't be clicked
         # see https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
@@ -237,6 +241,18 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.client.login(username=self.user2.username, password=self.user2.clear_password)
         portfolio = Portfolio.objects.create(title=self.user2.username)
         portfolio.assign_owner_permissions(self.user2)
+
+        # create a third user
+        self.user3 = User.objects.create(
+            username="me3",
+            email="test+user3@q.govready.com")
+        self.user3.clear_password = get_random_string(16)
+        self.user3.set_password(self.user2.clear_password)
+        self.user3.save()
+        self.user3.reset_api_keys()
+        self.client.login(username=self.user3.username, password=self.user3.clear_password)
+        portfolio = Portfolio.objects.create(title=self.user3.username)
+        portfolio.assign_owner_permissions(self.user3)
 
         # Grant second user membership in the organization
         # from https://github.com/GovReady/govready-q/blob/master/siteapp/admin.py#L41
@@ -578,7 +594,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
-    def test_portfolios(self):
+    def test_create_portfolios(self):
         # Create a new account
         self.browser.get(self.url("/"))
         self.click_element('#tab-register')
@@ -591,17 +607,10 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Navigate to portfolio created on signup
         self.click_element_with_link_text("portfolio-user")
 
+    def test_create_portfolio_project(self):
         # Create new project within portfolio
-        self.click_element("#new-project-submit")
-
-        # Click Add Button
-        self.click_element(".app[data-app='project/simple_project'] .start-app")
-
-        var_sleep(2)
-        self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
-
-        m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
-        self.current_project = Project.objects.get(id=m.group(1))
+        self._login()
+        self._new_project()
 
         # Create new portfolio
         self.browser.get(self.url("/portfolios"))
@@ -612,34 +621,40 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Your Compliance Portfolios")
         self.click_element_with_link_text("Security Projects")
         self.assertRegex(self.browser.title, "Security Projects Portfolio")
-        self.assertInNodeText("portfolio_user (Owner)", "#portfolio-member-portfolio_user")
+        self.assertInNodeText("{} (Owner)".format(self.user.username), "#portfolio-member-{}".format(self.user.username))
 
+    def test_grant_portfolio_access(self):
         # Grant another member access to portfolio
-        self.click_element("#grant-portfolio-access")
-        self.select_option_by_visible_text('#invite-user-select', 'me')
-        self.click_element("#invitation_modal button.btn-submit")
-        var_sleep(1)
-        self.assertInNodeText("Send Invitation", ".modal-title")
-        self.assertInNodeText("The invitation has been sent. We will notify you when the invitation has been accepted.", ".modal-body p")
-        self.click_element("button.btn.btn-default")
-        self.assertInNodeText("me", "#portfolio-member-me")
-
-        # Grant another member ownership of portfolio
-        self.click_element("#me_grant_owner_permission")
-        self.assertInNodeText("me (Owner)", "#portfolio-member-me")
-
-       # Grant another member access to portfolio
+        self._login()
+        self.browser.get(self.url("/portfolios"))
+        self.click_element("#portfolio_{}".format(self.user.username))
         self.click_element("#grant-portfolio-access")
         self.select_option_by_visible_text('#invite-user-select', 'me2')
         self.click_element("#invitation_modal button.btn-submit")
         var_sleep(1)
-        self.click_element("button.btn.btn-default")
+        self.assertInNodeText("Send Invitation", "#global_modal_title")
+        self.assertInNodeText("The invitation has been sent. We will notify you when the invitation has been accepted.", ".modal-body p")
+        self.click_element_with_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]")
         self.assertInNodeText("me2", "#portfolio-member-me2")
 
+        # Grant another member ownership of portfolio
+        var_sleep(1)
+        self.click_element("#me2_grant_owner_permission")
+        var_sleep(1)
+        self.assertInNodeText("me2 (Owner)", "#portfolio-member-me2")
+
+       # Grant another member access to portfolio
+        self.click_element("#grant-portfolio-access")
+        self.select_option_by_visible_text('#invite-user-select', 'me3')
+        self.click_element("#invitation_modal button.btn-submit")
+        var_sleep(1)
+        self.click_element_with_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]")
+        self.assertInNodeText("me3", "#portfolio-member-me3")
+
         # Remove another member access to portfolio
-        self.click_element("#me2_remove_permissions")
-        self.assertNotInNodeText("me2", "#portfolio-members")
-        self.assertNodeNotVisible("#portfolio-member-me2")
+        self.click_element("#me3_remove_permissions")
+        self.assertNotInNodeText("me3", "#portfolio-members")
+        self.assertNodeNotVisible("#portfolio-member-me3")
 
 
 
