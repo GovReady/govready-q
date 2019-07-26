@@ -635,7 +635,9 @@ def task_finished(request, task, answered, context, *unused_args):
         "outputs": outputs,
         "all_answers": answered.render_answers(show_metadata=True, show_imputed_nulls=False),
         "can_review": task.has_review_priv(request.user),
-        "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),
+        "project": task.project,
+        "can_upgrade_app": task.project.root_task.module.app.has_upgrade_priv(request.user),
+        "authoring_tool_enabled": task.project.root_task.module.is_authoring_tool_enabled(request.user),
     })
     return render(request, "module-finished.html", context)
 
@@ -823,7 +825,7 @@ def authoring_create_q(request):
     # Write temporary file
     shutil.copytree(os.path.join(guidedmodules_path, "stub_app"), path, copy_function=shutil.copy)
 
-    # Edit the app title.
+    # Edit the app title and catalog information.
     with rtyaml.edit(os.path.join(path, "app.yaml")) as app:
         app['title'] = new_q["title"]
         app['catalog']['description']['short'] = new_q['short_description']
@@ -954,10 +956,10 @@ def authoring_download_app(request, task):
 @transaction.atomic
 def authoring_download_app_project(request, task):
     # Download a project
-    print("Calling to download task: {}".format(task))
+#    print("Calling to download task: {}".format(task))
     # Get project that this Task is a part of
     project_obj = task.project
-    print("project is {}".format(project_obj))
+#    print("project is {}".format(project_obj))
 
     # Get module that this task is answering
     # module_obj = task.module
@@ -966,10 +968,10 @@ def authoring_download_app_project(request, task):
     # print("module.serialize: ")
     # print("{}".format(module_obj.serialize()))
     # Recreate the yaml of the module (e.g, app-project)
-    print("text {}".format(task.module.serialize()))
+#    print("text {}".format(task.module.serialize()))
 
     # Download current project_app (.e.g, module) in use.
-    print("In `authoring_download_app_project` and attempting to download project-app")
+#    print("In `authoring_download_app_project` and attempting to download project-app")
     try:
         module_yaml = task.module.serialize()
     except Exception as e:
@@ -1009,29 +1011,67 @@ def authoring_new_question(request, task):
     definition_order = max([0] + list(task.module.questions.values_list("definition_order", flat=True))) + 1
 
     # Make a new spec.
-    if task.module.spec.get("type") != "project":
-        spec = {
-            "id": key,
-            "type": "text",
-            "title": "New Question Title",
-            "prompt": "Enter some text.",
-        }
-    else:
+    if task.module.spec.get("type") == "project":
+        # Probably in app.yaml
         spec = {
             "id": key,
             "type": "module",
             "title": "New Question Title",
             "protocol": ["choose-a-module-or-enter-a-protocol-id"],
         }
+        # # Make a new modular spec
+        # mspec = {"id": key,
+        #          "title": key.replace("_"," ").title(),
+        #          "questions": [
+        #             {"id": "mqo",
+        #              "type": "text",
+        #              "title": "New Question Title",
+        #              "prompt": "Enter some text.",
+        #              },
+        #          ],
+        #          "output": []
+        #          }
+        # # Make a new modular instance
+        # new_module = Module(
+        #     source=task.module.app.source,
+        #     app=task.module.app,
+        #     module_name=key,
+        #     spec=mspec
+        # )
+        # new_module.save()
 
-    # Make a new question instance.
-    question = ModuleQuestion(
-        module=task.module,
-        key=key,
-        definition_order=definition_order,
-        spec=spec
-        )
-    question.save()
+        # spec = {
+        #    "id": key,
+        #    "type": "module",
+        #    "title": "New Question Title",
+        #    "module-id": key,
+        # }
+
+        # # Make a new question instance.
+        # question = ModuleQuestion(
+        #     module=task.module,
+        #     key=key,
+        #     definition_order=definition_order,
+        #     spec=spec
+        #     )
+        # question.save()
+
+    else:
+        spec = {
+            "id": key,
+            "type": "text",
+            "title": "New Question Title",
+            "prompt": "Enter some text.",
+        }
+
+        # Make a new question instance.
+        question = ModuleQuestion(
+            module=task.module,
+            key=key,
+            definition_order=definition_order,
+            spec=spec
+            )
+        question.save()
 
     # Write to disk. Write updates to disk if developing on local machine
     # with local App Source
