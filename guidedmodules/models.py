@@ -400,6 +400,7 @@ class Module(models.Model):
         """Write out the in-memory module specification."""
 
         import os.path
+        import yaml
         import rtyaml
 
         spec = OrderedDict(self.spec)
@@ -412,13 +413,19 @@ class Module(models.Model):
                 spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
                 continue
 
+            # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
+            # Then we can remove this temporary fix to help out RTYAML
+            # to give us nice output
+            for q_key in ['prompt', 'help', 'default']:
+                if q_key in q.spec:
+                    q.spec[q_key] = q.spec[q_key].replace("\r\n", "\n")
+
             # Rewrite some fields that get rewritten during module-loading.
             qspec = OrderedDict(q.spec)
             if q.answer_type_module:
                 qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
 
             spec["questions"].append(qspec)
-
         return rtyaml.dump(spec)
 
     def serialize_to_disk(self):
@@ -437,6 +444,13 @@ class Module(models.Model):
             if i == 0 and q.key == "_introduction":
                 spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
                 continue
+
+            # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
+            # Then we can remove this temporary fix to help out RTYAML
+            # to give us nice output
+            for q_key in ['prompt', 'help', 'default']:
+                if q_key in q.spec:
+                    q.spec[q_key] = q.spec[q_key].replace("\r\n", "\n")
 
             # Rewrite some fields that get rewritten during module-loading.
             qspec = OrderedDict(q.spec)
