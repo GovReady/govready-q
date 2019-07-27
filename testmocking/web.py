@@ -19,6 +19,7 @@ class WebClient():
     base_url = None
     projects = None
     comp_links = None
+    current_url = ''
 
     def __init__(self, username, org_slug):
         self.user = User.objects.get(username=username)
@@ -39,11 +40,13 @@ class WebClient():
         self.html_debug(dir="/tmp/")
 
     def _resolve(self, req):
+        self.current_url = req.path
         for url in urlpatterns:
             try:
                 match = url.resolve(req.path[1:])
                 if match:
-                    return match.func(req, *match.args, **match.kwargs)
+                    self._use_page(match.func(req, *match.args, **match.kwargs))
+                    return
             except Resolver404:
                 pass
         raise Exception("{} not resolved".format(req.path))
@@ -54,7 +57,7 @@ class WebClient():
         req = self.session.get(url)
         req.user = self.user
         req.organization = self.org
-        self._use_page(self._resolve(req))
+        self._resolve(req)
 
 
     def form_fields(self, css):
@@ -81,9 +84,7 @@ class WebClient():
         req = self.session.post(url, base_fields)
         req.user = self.user
         req.organization = self.org
-        res = self._resolve(req)
-        self._use_page(res)
-
+        self._resolve(req)
 
 
     def add_system(self):
