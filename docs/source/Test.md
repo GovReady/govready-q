@@ -85,7 +85,7 @@ Continuous integration is set up with CircleCI at https://circleci.com/gh/GovRea
 1. CI checks that there are no known vulnerabilities in the dependencies using [pyup.io](https://pyup.io/).
 1. CI checks that all packages are up to date with upstream sources (unless the package and its latest upstream version are listed in `requirements_txt_checker_ignoreupdates.txt`).
 
-## Populating sample data for manual testing/verification
+## Populating sample data for manual testing and verification
 
 In some cases, you may wish to perform manual testing on an instance of GovReady-Q which has been populated with data. Several Django commands have been added to facilitate this, in the `testmocking` module. Generated data is intended to be structurally similar to what might be found in a real GovReady-Q instance, but the actual content of the data will often appear machine-generated.
 
