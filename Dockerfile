@@ -87,6 +87,7 @@ COPY deployment/docker/dockerfile_exec.sh .
 COPY deployment/docker/first_run.sh /usr/local/bin/first_run
 COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
 COPY deployment/docker/tail_logs.sh /usr/local/bin/tail_logs
+COPY deployment/docker/add_sample_data.sh /usr/local/bin/add_sample_data
 
 # This directory must be present for the AppSource created by our
 # first_run script. The directory only has something in it if
