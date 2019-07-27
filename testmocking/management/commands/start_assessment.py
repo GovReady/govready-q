@@ -45,9 +45,9 @@ class Command(BaseCommand):
                 comp = sample(all, 1)[0]
         print(comp)
         self.client.load('/store?q=' + comp)
-        url_before = self.client.response.url
+        url_before = self.client.current_url
         self.client.add_comp()
-        url_after = self.client.response.url
+        url_after = self.client.current_url
 
         if url_before == url_after:
             self.bad_comps.append(comp)

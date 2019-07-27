@@ -16,17 +16,15 @@ from django.utils.crypto import get_random_string
 from testmocking.data_management import create_user, create_organization
 
 class Command(BaseCommand):
-    help = 'Create a set of dummy data for extended testing/verification'
+    help = 'Create a set of dummy data for extended testing/verification. Creates users, organizations, user/org assignments, and with --full, can also populate the created organizations with assessments.'
 
     def add_arguments(self, parser):
-        parser.add_argument('--password')
+        parser.add_argument('--password', help="The password to set for all users. Optional, but recommended. If not set, all users will have the same random password, instead.")
         
-        parser.add_argument('--user-count', type=int, default=5)
-        parser.add_argument('--org-count', type=int, default=1)
-        parser.add_argument('--print-iter', type=int, default=100)
+        parser.add_argument('--user-count', type=int, default=5, help="How many users to create at once")
+        parser.add_argument('--org-count', type=int, default=1, help="How many organizations to create at once")
 
         parser.add_argument('--full', action="store_true", help="Also start and fill out assessments, etc., for each organization")
-        parser.add_argument('--port', type=str, help="Only needed in --full mode, when running on a non-default port (currently, the port isn't detected from the config file)")
 
     def handle(self, *args, **options):
         users = []
@@ -38,7 +36,7 @@ class Command(BaseCommand):
             u = create_user(password=options['password'], pw_hash=pw_hash)
             pw_hash = u.password # MASSIVE performance optimization here
             users += [u]
-            if ((x+1) % options['print_iter'] == 0):
+            if ((x+1) % 100 == 0):
                 print("Created user #" + str(x+1))
         for x in range(0, options['org_count']):
             admin = sample(users, 1)[0]
