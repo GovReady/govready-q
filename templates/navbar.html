@@ -52,7 +52,10 @@
               <li><a href="/api-keys">Your API Keys</a></li>
               {% if can_upgrade_app %}
               <li role="separator" class="divider"></li>
-              <li><a href="#" onclick="upgrade_app({{project.root_task.module.app.id}});">
+              <li>{% if is_question_page %}<a href="#" onclick="upgrade_app({{task.project.root_task.module.app.id}});">
+                  {% else %}
+                  <a href="#" onclick="upgrade_app({{project.root_task.module.app.id}});">
+                  {% endif %}
                 <em class="glyphicon glyphicon-upload"></em> Upgrade Project</a>
               </li>
               {% endif %}
