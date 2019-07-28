@@ -1103,8 +1103,6 @@ def project_start_apps(request, *args):
 
     return viewfunc(request, *args)
 
-
-# <<<<<<< HEAD
 @project_read_required
 def project_upgrade_app(request, project):
     # Upgrade the AppVersion that the project is linked to. The
@@ -1198,8 +1196,6 @@ def portfolio_projects(request, pk):
       "users_with_perms": portfolio.users_with_perms()
       })
 
-# =======
-# >>>>>>> origin/0.9.0-authoring
 # INVITATIONS
 
 @login_required
