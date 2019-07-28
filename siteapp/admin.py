@@ -14,8 +14,8 @@ def all_user_fields_still_exist(fieldlist):
     return True
 
 class UserAdmin(contribauthadmin.UserAdmin):
-    ordering = ('email',)
-    list_display = ('email', 'id', 'date_joined') # base has first_name, etc. fields that we don't have on our model
+    ordering = ('username',)
+    list_display = ('id', 'email', 'date_joined') # base has first_name, etc. fields that we don't have on our model
     fieldsets = [
         (None, {'fields': ('email', 'password')}),
     ] + [fs for fs in contribauthadmin.UserAdmin.fieldsets if all_user_fields_still_exist(fs[1]['fields'])]
@@ -105,7 +105,7 @@ class FolderAdmin(admin.ModelAdmin):
 
 class ProjectAdmin(GuardedModelAdmin):
     list_display = ('id', 'organization', 'title', 'root_task', 'created')
-    raw_id_fields = ('organization', 'root_task')
+    raw_id_fields = ('organization', 'root_task',)
     readonly_fields = ('id', 'extra',)
 
 class ProjectMembershipAdmin(admin.ModelAdmin):

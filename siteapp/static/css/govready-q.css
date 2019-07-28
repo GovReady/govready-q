@@ -4,6 +4,9 @@ body {
   padding-right: 20px;
   padding-bottom: 20px;
   overflow-y: scroll;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all;
   font-family: 'Hind', sans-serif;
 }
 
