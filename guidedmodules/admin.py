@@ -54,7 +54,7 @@ class AppSourceSpecWidget(forms.Widget):
 		 forms.Textarea(attrs={"rows": 2 }),
 		 "Other parameters specified in YAML.",
 		 None),
-	]
+    ]
 
     def render(self, name, value, attrs=None):
     	# For some reason we get the JSON value as a string. Unless we override Form.clean(),
@@ -184,12 +184,12 @@ class AppSourceAdminForm(forms.ModelForm):
 			except Exception as e:
 				raise forms.ValidationError(str(e))
 
-
 class AppSourceAdmin(admin.ModelAdmin):
 	form = AppSourceAdminForm # customize spec widget
-	list_display = ('slug', 'source', 'flags')
+	list_display = ('id', 'slug', 'source', 'flags')
 	filter_horizontal = ('available_to_orgs',)
 	readonly_fields = ('is_system_source',)
+	ordering = ('id',)
 	def source(self, obj):
 		return obj.get_description()
 	def flags(self, obj):
@@ -221,7 +221,7 @@ class AppSourceAdmin(admin.ModelAdmin):
 		return HttpResponseRedirect("/admin/guidedmodules/appsource/{}/change".format(appsourceid))
 
 class AppVersionAdmin(admin.ModelAdmin):
-	list_display = ('appname', 'version_number', 'version_name', 'source', 'show_in_catalog', 'system_app')
+	list_display = ('id', 'appname', 'version_number', 'version_name', 'source', 'show_in_catalog', 'system_app')
 	list_filter = ('source', 'show_in_catalog', 'system_app')
 	raw_id_fields = ('source', 'asset_files',)
 	readonly_fields = ('asset_files','asset_paths', 'system_app')
@@ -230,10 +230,13 @@ class ModuleAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'app_', 'module_name', 'created')
 	list_filter = ('source',)
 	raw_id_fields = ('source', 'app', 'superseded_by')
+	readonly_fields = ('id',)
 	def app_(self, obj): return "{} [{}]".format(obj.app.appname, obj.app.id) if obj.app else "(not in an app)"
 
 class ModuleQuestionAdmin(admin.ModelAdmin):
+	list_display = ('id', 'key', 'module')
 	raw_id_fields = ('module', 'answer_type_module')
+	readonly_fields = ("id",)
 
 class ModuleAssetAdmin(admin.ModelAdmin):
 	list_display = ('id', 'source', 'content_hash', 'created')
@@ -241,19 +244,20 @@ class ModuleAssetAdmin(admin.ModelAdmin):
 	readonly_fields = ('source','content_hash','file')
 
 class TaskAdmin(admin.ModelAdmin):
-	list_display = ('title', 'organization_and_project', 'editor', 'module', 'is_finished', 'submodule_of', 'created')
+	list_display = ('id', 'title', 'organization_and_project', 'module', 'is_finished', 'submodule_of', 'editor', 'created',)
 	raw_id_fields = ('project', 'editor', 'module')
-	readonly_fields = ('module', 'invitation_history')
+	readonly_fields = ('id', 'title', 'module', 'invitation_history')
 	search_fields = ('project__organization__name', 'editor__username', 'editor__email', 'module__key')
+
 	def submodule_of(self, obj):
 		return obj.is_answer_to_unique()
 	def organization_and_project(self, obj):
 		return obj.project.organization_and_title()
 
 class TaskAnswerAdmin(admin.ModelAdmin):
-	list_display = ('question', 'task', '_project', 'created')
+	list_display = ('id', 'question', 'task', '_project', 'created')
 	raw_id_fields = ('task',)
-	readonly_fields = ('task', 'question')
+	readonly_fields = ('id', 'task', 'question')
 	search_fields = ('task__project__organization__name', 'task__module__key')
 	fieldsets = [(None, { "fields": ('task', 'question') }),
 	             (None, { "fields": ('notes',) }),
@@ -261,9 +265,9 @@ class TaskAnswerAdmin(admin.ModelAdmin):
 	def _project(self, obj): return obj.task.project
 
 class TaskAnswerHistoryAdmin(admin.ModelAdmin):
-	list_display = ('created', 'taskanswer', 'answered_by', 'is_latest')
+	list_display = ('id', 'created', 'taskanswer', 'answered_by', 'is_latest')
 	raw_id_fields = ('taskanswer', 'answered_by', 'answered_by_task')
-	readonly_fields = ('taskanswer', 'answered_by', 'created')
+	readonly_fields = ('id', 'taskanswer', 'answered_by', 'created')
 	search_fields = ('taskanswer__task__project__organization__name', 'taskanswer__task__module__key', 'answered_by__username', 'answered_by__email')
 	fieldsets = [(None, { "fields": ('created', 'taskanswer', 'answered_by') }),
 	             (None, { "fields": ('stored_value', 'stored_encoding', 'cleared') }),

@@ -6,12 +6,12 @@
     <span id="debug-module-key">{{m.source.slug}}/{{m.app.appname}}/{{m.module_name}}</span>{% if user.is_staff %}</a>{% endif %}
   {% if q %}
   <br />
-  question:
+  question id:
     {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/modulequestion/{{q.id}}">{% endif %}
     <span id="debug-question-key">{{q.key}}</span>{% if user.is_staff %}</a>{% endif %}
   {% endif %}
   <br />
-  task:
+  task id:
     {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/task/{{task.id}}">{% endif %}
     {{task.id}}
     {% if user.is_staff %}</a>{% endif %}
@@ -19,7 +19,7 @@
   <br />
   answer:
     {% if user.is_staff %}<a href="{{ADMIN_ROOT_URL}}/guidedmodules/taskanswerhistory/{{answer_obj.id}}">{% endif %}
-    {{q.key}}{% if user.is_staff %}</a>{% endif %}
+    {{q.key}} ({{answer_obj.id}}){% if user.is_staff %}</a>{% endif %}
   {% endif %}
 </p>
 </div>

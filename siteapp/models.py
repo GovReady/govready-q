@@ -453,7 +453,7 @@ class Project(models.Model):
         # the root_task has to be nullable because the Task itself has a non-null
         # field that refers back to this Project, and one must be NULL until the
         # other instance is created
-    root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of", on_delete=models.CASCADE, help_text="The root Task of this Project, which defines the structure of the Project.")
+    root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of", on_delete=models.CASCADE, help_text="All Projects have a 'root Task' (e.g., 'guidedmodules.task'). The root Task defines important information about Project.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)

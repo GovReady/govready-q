@@ -69,6 +69,7 @@ class AppSource(models.Model):
         return AppSourceConnection.create(self, self.spec)
 
     def get_available_apps(self):
+        # TODO need to include already loaded apps
         with self.open() as src:
             for app in src.list_apps():
                 yield {
@@ -115,11 +116,14 @@ class AppVersion(models.Model):
 
     def __str__(self):
         # For the admin.
-        return "%s [%d] (from %s)" % (self.appname, self.id, self.source)
+        return "<%s/%s(%d)>" % (self.source, self.appname, self.id)
+        # return "AppVersion=\"name: %s, id: %d, appsource: %s, \"" % (self.appname, self.id, self.source)
 
     def __repr__(self):
         # For debugging.
-        return "<AppVersion [%d] %s from %s>" % (self.id, self.appname, self.source)
+        return "<%s/%s(%d)>" % (self.source, self.appname, self.id)
+        # return "AppVersion=\"name: %s, id: %d, appsource: %s, \"" % (self.appname, self.id, self.source)
+        # return "AppVersion=\"name: %s, id: %d, %s from %s>" % (self.id, self.appname, self.source)
 
     def get_version_display(self):
         v = self.version_number or self.created.isoformat()
@@ -170,7 +174,6 @@ class AppVersion(models.Model):
             .filter(show_in_catalog=True)\
             .filter(source__is_system_source=False)\
             .filter(Q(source__available_to_all=True) | Q(source__available_to_orgs=organization))
-    
 
 def extract_catalog_metadata(app_module, migration=None):
     # Note that this function is used in migration 0044 and so
@@ -253,11 +256,13 @@ class Module(models.Model):
 
     def __str__(self):
         # For the admin.
-        return "%s %s [%d]" % (self.app, self.module_name, self.id)
+        return "<%s(%d)/%s(%d)/%s(%d)>" % (self.source, self.source.id, self.app.appname, self.app.id, self.module_name, self.id )
+        # return "%s Module=\"name: %s, id:%d\"" % (self.app, self.module_name, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "<Module [%d] %s %s (%s)>" % (self.id, self.module_name, self.spec.get("title", "<No Title>")[0:30], self.app)
+        return "<%s(%d)/%s(%d)/%s(%d)>" % (self.source, self.source.id, self.app.appname, self.app.id, self.module_name, self.id )
+        # return "<Module [%d] %s %s (%s)>" % (self.id, self.module_name, self.spec.get("title", "<No Title>")[0:30], self.app)
 
     def save(self):
         if self.source != self.app.source: raise ValueError("Module source != app.source.")
@@ -395,6 +400,7 @@ class Module(models.Model):
         """Write out the in-memory module specification."""
 
         import os.path
+        import yaml
         import rtyaml
 
         spec = OrderedDict(self.spec)
@@ -407,13 +413,19 @@ class Module(models.Model):
                 spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
                 continue
 
+            # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
+            # Then we can remove this temporary fix to help out RTYAML
+            # to give us nice output
+            for q_key in ['prompt', 'help', 'default']:
+                if q_key in q.spec:
+                    q.spec[q_key] = q.spec[q_key].replace("\r\n", "\n")
+
             # Rewrite some fields that get rewritten during module-loading.
             qspec = OrderedDict(q.spec)
             if q.answer_type_module:
                 qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
 
             spec["questions"].append(qspec)
-
         return rtyaml.dump(spec)
 
     def serialize_to_disk(self):
@@ -432,6 +444,13 @@ class Module(models.Model):
             if i == 0 and q.key == "_introduction":
                 spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
                 continue
+
+            # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
+            # Then we can remove this temporary fix to help out RTYAML
+            # to give us nice output
+            for q_key in ['prompt', 'help', 'default']:
+                if q_key in q.spec:
+                    q.spec[q_key] = q.spec[q_key].replace("\r\n", "\n")
 
             # Rewrite some fields that get rewritten during module-loading.
             qspec = OrderedDict(q.spec)
@@ -537,23 +556,17 @@ class ModuleQuestion(models.Model):
 
 class Task(models.Model):
     project = models.ForeignKey(Project, related_name="tasks", on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
+    title_override = models.CharField(max_length=256, blank=True, null=True, help_text="The title of this Task if overriding the computed instance-name or Module.title default.")
     editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.PROTECT, help_text="The user that has primary responsibility for completing this Task.")
     module = models.ForeignKey(Module, on_delete=models.PROTECT, help_text="The Module that this Task is answering.")
-
-    title_override = models.CharField(max_length=256, blank=True, null=True, help_text="The title of this Task if overriding the computed instance-name or Module.title default.")
     notes = models.TextField(blank=True, help_text="Notes set by the user about why they are completing this task.")
-
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     deleted_at = models.DateTimeField(blank=True, null=True, db_index=True, help_text="If 'deleted' by a user, the date & time the Task was deleted.")
-
     cached_state = JSONField(blank=True, default=None, help_text="Cached value storing whether the Task is finished, its computed title, and other state that depends on question answers.")
-
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Task, used to synchronize Task content between systems.")
-
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
-
     invitation_history = models.ManyToManyField('siteapp.Invitation', blank=True, help_text="The history of accepted invitations that had this Task as a target.")
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Task, used to synchronize Task content between systems.")
 
     class Meta:
         index_together = [
@@ -1540,7 +1553,6 @@ class Task(models.Model):
 
         return did_update_any_questions
 
-
 class TaskAnswer(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="answers", help_text="The Task that this TaskAnswer is a part of.")
     question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT, help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
@@ -1837,7 +1849,6 @@ class TaskAnswer(models.Model):
             if anyone_invited:
                 self.extra["invited-help-squad"] = timezone.now()
                 self.save()
-
 
 class TaskAnswerHistory(models.Model):
     taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
@@ -2224,7 +2235,6 @@ class TaskAnswerHistory(models.Model):
             value = None
 
         return value, answered_by_tasks, answered_by_file, subtasks_updated
-
 
 class InstrumentationEvent(models.Model):
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)

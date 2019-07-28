@@ -50,6 +50,12 @@
             <ul class="dropdown-menu">
               <li><a href="{{user.user_settings_task_create_if_doesnt_exist.get_absolute_url}}" id="user-menu-account-settings">Account Settings</a></li>
               <li><a href="/api-keys">Your API Keys</a></li>
+              {% if can_upgrade_app %}
+              <li role="separator" class="divider"></li>
+              <li><a href="#" onclick="upgrade_app({{project.root_task.module.app.id}});">
+                <em class="glyphicon glyphicon-upload"></em> Upgrade Project</a>
+              </li>
+              {% endif %}
               <li role="separator" class="divider"></li>
               <li><a href="/accounts/logout/">Log Out</a></li>
             </ul>

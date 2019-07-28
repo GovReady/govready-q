@@ -335,10 +335,14 @@ def apps_catalog(request):
             app["title"], # except if two apps differ only in case, sort case-sensitively
         ))
 
+    # If user is superuser, enable creating new apps
+    authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
+    
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
+        "authoring_tool_enabled": authoring_tool_enabled,
     })
 
 @login_required
@@ -603,8 +607,10 @@ def project(request, project):
         columns = [
             { "title": "To Do" },
             { "title": "In Progress" },
+            { "title": "Completed" },
             { "title": "Submitted" },
-            { "title": "Approved" },
+            { "title": "Under Review" },
+            { "title": "Accepted" },
         ]
         for column in columns:
             column["questions"] = []
@@ -620,7 +626,6 @@ def project(request, project):
             else:
                 col = 1
             columns[col]["questions"].append(question)
-
 
     # Assign questions in columns to groups.
     for i, column in enumerate(columns):
@@ -725,7 +730,6 @@ def project_list_all_answers(request, project):
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
     })
 
-
 @project_read_required
 def project_outputs(request, project):
     # To render fast, combine all of the templates by type and render as
@@ -765,10 +769,11 @@ def project_outputs(request, project):
         for doc in docs:
             anchor = "doc_%d" % len(toc)
             title = doc.get("title") or doc["id"]
-            templates.append(header[format](anchor, title) + doc["template"])
+            # TODO: Can we move the HTML back into the template?
+            templates.append(header[format](anchor, title) + "<div class='doc'>"+doc["template"]+"</div>")
             toc.append((anchor, title))
         template = joiner[format].join(templates)
-        
+
         # Render.
         from guidedmodules.module_logic import render_content
         try:
@@ -788,6 +793,8 @@ def project_outputs(request, project):
         combined_output += "<div>" + content + "</div>\n\n"
 
     return render(request, "project-outputs.html", {
+        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
+        "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "page_title": "Related Controls",
         "project": project,
         "toc": toc,
@@ -1097,6 +1104,7 @@ def project_start_apps(request, *args):
     return viewfunc(request, *args)
 
 
+# <<<<<<< HEAD
 @project_read_required
 def project_upgrade_app(request, project):
     # Upgrade the AppVersion that the project is linked to. The
@@ -1190,6 +1198,8 @@ def portfolio_projects(request, pk):
       "users_with_perms": portfolio.users_with_perms()
       })
 
+# =======
+# >>>>>>> origin/0.9.0-authoring
 # INVITATIONS
 
 @login_required

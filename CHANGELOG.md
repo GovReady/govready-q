@@ -1,89 +1,101 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.dev30+devel
+v0.9.0.dev34+devel
 ------------------
 
-Introduces improved permissions model using Django-Guardian and concept of Portfolios, which replaces both concepts of both Orgnizations and Groups.
+Our most exciting release of GovReady-Q!
 
-Portfolios are used to organize Projects and manage extensible permissions and access.
-
-* When a new user joins GovReady they are automatically added and made owner of their own Portfolio
-* Users can be invited to a Portfolio by Portfolio owners and granted ownership by Portfolio owners
-* Any user can create a portfolio and add projects to the portfolio
-* Projects cannot exist in more than one portfolio
-* Permissions can be more easily managed on indivdidual instances of objects
-* New Permissions object primarily applied to portfolios in this release
-
-v0.9.0.dev24+devel
-------------------
-
-Version upgrade with braking database changes.
-
-Backup your database before running these migrations.
-
-This is our most exciting release of GovReady-Q!
-
-* Faster loading and launching of Asssessments/questionnaires!
+* Faster loading and launching of asssessments/questionnaires!
 * Simplified install with no subdomains to worry about!
-* Replaces subdomain multi-tenancy with simplified "Groups" model!
-* Improved authoring tools!
+* Better permissions model using Django-Guardian!
+* Portfolios to organize projects and manage permissions and access!
+* Better authoring tools!
 * Streamlined new register,login page!
 * Beautiful and helpful new start page!
+* One-click deployment scripts for simple testing deploys into AWS.
 
-NOTE: Running the migrations to update the database will perform changes that will prevent rolling back the data migrations.
+**WARNINGS - SIGNIFICANT DATABASE CHANGES**
 
-WIP CHECKLIST
+Running the migrations to update the database will perform changes that will prevent rolling back the data migrations.
 
-- [ ] Updated documentation
-- [ ] Updated tests and test passing
-- [ ] Updated changelog and version number
+**Migrating from 0.8.6 to 0.9.0**
 
-Application changes:
+We recommend testinging 0.9.0 with an empty database.
 
-* compliance apps catalog now reads from the database rather than going to remote repositories
-The app catalog cache is removed since the page loads much faster.
+We are developing migration scripts to support 0.8.6 to 0.9.0 upgrades.
 
-* Remove multitenancy and subdomains Major UX improvements and convert organizations into groups All pages are served on the same domain.
-* Nav bar no longer shows the current organization since pages are no longer organization-specific
-* the page at /, when the user is logged out, now shows the old landing domain's homepage instead of the organization-specific homepage, but links around org names (when logged in) are removed because orgs no longer have landing pages
-* the projects page now shows projects across all of a user's organizations, various functions that returned resources specific to an organization now don't filter by organization
-* the apps catalog, which was organization-specific, now merges the catalogs all all of the organizations that the user is nominally a part of
-* if the user is a part of more than one group, the user must choose which group to start an app in 
+New manage.py commands help populate 0.8.6 test data to test migration scripts.
+
+**Catalog changes:**
+
+* Compliance apps catalog (blank projects/assessments) read from the database rather than going to remote repositories App Source. Performance significantly improved.
+* Delete app catalog cache because the page loads fast.
+* New versions of the compliance apps are added to the catalog at the bottom of the Guidedmodules > AppSource page in the Django admin interface.
+
+**Multitenancy and subdomains removed:**
+
+* Remove multitenancy and subdomains.
+* Serve all pages on the same domain.
+* Remove organization-specific name and branding from nav bar.
+* Projects page now shows projects across all of a user's organizations, various functions that returned resources specific to an organization don't filter by organization.
+* Single apps catalog for all users. (In future we will use new permissions model to restrict access to compliance apps in catalog.)
+* [WIP] Remove link to legacy organization project in settings page.
+
+**Portfolios added:**
+
+* Portfolio feature to organize and manage related projects (assessments).
+* Projects exist in only one portfolio.
+* [WIP] When a new user joins GovReady they are automatically added and made owner of their own Portfolio.
+* Any user can create a portfolio and add projects to the portfolio.
+* Users can be invited to a Portfolio by Portfolio owners and granted ownership by Portfolio owners.
+
+**Permission changes:**
+
+* Added popular, mature Django-Guardian permission framework to enable better management of permissions on indivdidual instances of objects.
+* New Permissions object primarily applied to portfolios in this release.
+* Preserved original lifecycle interface in template project_lifecycle_original.html.
+* On login errors make signin tab active on page reload to display the errors.
+* Remove listing in catalog of the fields related to the size of the organization.
+* Display username instead of email asddress for user string.
+* Use plane language for names of top-level questionnaire stage columns: To Do, In Progress, Submitted, Approved.
+
+**Authoring tool improvements:**
+
+* Superusers can create whole new questionnaire files.
+* Shift question edit modular dialog from large center screen popup to right-hand thin sidebar.
+* Increase readability of edit form.
+* Insert question into questionnaire.
+* Enable editing on questionnaires from all App Sources instead of just "local".
+* Button to view entire questionnaire source YAML.
+* TEMPORARY correction of admin access to get tests to run. MUST FIX.
+* Upgrade assessment no longer requires loading intermediary page; Upgrade routine begins directly with action button.
+
+**UX changes:**
+
+* Clean up reactive styling to operate across multi-size screens.
 * Register/login page simplified by putting register and sign in inside a tabs and replacing jumbotron look and feel with minimal sign up and join links.
 * User home /project page improved with four getting started actions recommend on what was previously a nearly blank page; replacing "compliance app" terminology with "project" terminology; sleeker table-like display of started projects.
-* "Groups" feature to organize and manage related projects (assessments). Goal is to eventually completely replace the previous multi-tenancy Organization feature with a more informal and flexible "Groups" feature. UI uses "groups" terminology while code base currently uses "org_group" terminology to ease transition. Any user can create a group. Group names are global across a GovReady-Q install. Groups provides a folder-like functionality for organizing related projects.
-* Navbar improved with displayed links to "Projects" and "Groups"; icons for "Analytics" and "Settings"; removal of dropdown "MENU" item.
+* Nav bar improved with displayed links to "Projects" and "Portfolios".
+* Nav bar icons for "Analytics" and "Settings"; Remove of dropdown "MENU" item.
 * Django messages indicating successful logins/logouts now ignored in base template. Change will hide any Django message of level "Success". Hiding success messages removes the need to dismiss messages or fade them out.
-* Preserved original lifecycle interface in template project_lifecycle_original.html
-* Create a default org_group slug for user that is username. Test proposed slugs based on username properly report error on name collision with existing org_groups (e.g., a username cannot be created that conflicts with an existing org_group (may want to white list creating of org_groups that are common first names).
-* On login errors make signin tab active on page reload to display the errors.
 
-* Add group slug to breadcrumbs for projects, tasks and reduce font size of breadcrumbs. Add group slug to display of project name for clarity. Remove "Component" from breadcrumbs.
-* Remove link to legacy organization project in settings page.
-* Display username instead of email asddress for user string.
-* Use plane lane language for names of top-level questionnaire stage
-    columns: To Do, In Progress, Submitted, Approved.
+**Developer changes:**
 
-* Better authoring tool:
-    - Shift question edit modular dialog from large center screen popup
-      to right-hand thin sidebar
-    - Increase readability of edit form
-    - Insert question into questionnaire
-    - Enable editing on questionnaires from all App Sources instead of just "local"
-    - Button to view entire questionnaire source YAML
-    - TEMPORARY correction of admin access to get tests to run. MUST FIX
+* The OrganizationSubdomainMiddleware which checked the subdomain in the request host header, performed Organization-level authorization checks, and set the global request.organization attribute to the requested Organization, is deleted.
+* the Content Security Policy for the site is updated to remove the white-listed landing domain (we used it for cross-origin requests to get user profile photos, which were always served from the landing domain)
+* Django's ALLOWED_HOSTS setting no longer needs an entry for a wildcard subdomain under the landing domain since we are not using that anymore.
+* The LANDING_DOMAIN, ORGANIZATION_PARENT_DOMAIN, SINGLE_ORGANIZATION_KEY, and REVEAL_ORGS_TO_ANON_USERS attributes on django.conf.settings are removed.
+* Update tests for organizational remove
+* Remove description of multi-tenant mode and organization subdomains from documentation
+* siteapp.views.new_folder isn't currently in use, so did not fully update related code to get the new folder's organization from somewhere
 
-Developer changes:
+* Starting to switching language from apps to assessments/questionnaires
+* Beware of legacy references to organization in source code. Still cleaning up removal of multitenancy and subdomains.
 
-* All apps
-* switching language from apps to assessments/questionnaires
-* still legacy refrences to organization in source code. org_group language in source code.
-
-* absolute URLs to user-uploaded media now use SITE_ROOT_URL instead of organization subdomains
-* the landing domain URLs are moved into the main urlconf (except the ones that were duplicated in both urlconfs because they appeared on both domains)
-* revise API URLs to no longer have the organization in the path (we can put it back if it was nice, but it no longer serves a functional purpose)
-
+* Absolute URLs to user-uploaded media now use SITE_ROOT_URL instead of organization subdomains
+* The landing domain URLs are moved into the main urlconf (except the ones that were duplicated in both urlconfs because they appeared on both domains)
+* Revise API URLs to no longer have the organization in the path (we can put it back if it was nice, but it no longer serves a functional purpose)
 * AppVersion now has a boolean field for whether the instance should be included in the compliance apps catalog for users to start new projects with that app.
 * The AppSource admin now lists all of the apps provided by the source and has links to import new app versions into the database and to see the app versions already in the database by version number.
 * When starting a compliance app (i.e. creating a new project), we no longer have to import the app from the remote repository --- instead, we create a new Project and set its root_task to point to a Module in an AppVersion already in the database.
@@ -91,28 +103,18 @@ Developer changes:
 * The AppSource admin's approved app lists form is removed since adding apps into the database is now an administrative function and the database column for it is dropped.
 * Tests now load into the database the apps they need.
 * The app catalog cache is removed since the page loads much faster.
-
-* Organizations now have 'slug' instead of 'subdomain'. get_absolute_url is removed because Organizations have no dedicated pages on the site. get_url is removed because we no longer need complicated logic to form the right absolute URLs to Organization page, since there is no such thing as Organization-specific pages anymore
-* remove the Invitation.organization field
-* User profile information was previously pre-loaded by the OrganizationSubdomainMiddleware, now it's loaded on first use
-* when users register, the email to site admins no longer includes the organization they were looking at when they signed up because there's no such thing anymore
-* siteapp.views.new_folder isn't currently in use, so I didn't fully update it to get the new folder's organization from somewhere
-* update tests
-* remove description of multi-tenant mode and organization subdomains from documentation
-
-* the OrganizationSubdomainMiddleware which checked the subdomain in the request host header, performed Organization-level authorization checks, and set the global request.organization attribute to the requested Organization, is deleted
-* the Content Security Policy for the site is updated to remove the white-listed landing domain (we used it for cross-origin requests to get user profile photos, which were always served from the landing domain)
-* Django's ALLOWED_HOSTS setting no longer needs an entry for a wildcard subdomain under the landing domain since we are not using that anymore
-* the LANDING_DOMAIN, ORGANIZATION_PARENT_DOMAIN, SINGLE_ORGANIZATION_KEY, and REVEAL_ORGS_TO_ANON_USERS attributes on django.conf.settings are removed
-
+* Remove the Invitation.organization field.
+* User profile information was previously pre-loaded by the OrganizationSubdomainMiddleware, now it's loaded on first use.
+* When users register, the email to site admins no longer includes the organization they were looking at when they signed up because there's no such thing anymore.
 * Fix tests to login with new forms in landing page tabs
-
 * Fix various SonarQube reported issues to use preferred HTML tags for stong and em
+* Testmocking scripts for populating test data into application.
 
-Deployment changes:
+**Deployment changes:**
 
-* Removes multi-tenancy and serves all pages from the on the same domain. Previosuly, requests to Q came in on subdomains and the subdomain determined which Organization in the database the request would be associated with and individuals had to re-login across subdomains. Multitenancy increased install complexity and we were not seeing use of the multitenancy feature. Deployment is now simpler.
-* Added deployment of multi-container GovReady-Q and NGINX via Docker-compose
+* Remove multi-tenancy and serves all pages from the on the same domain. Previosuly, requests to Q came in on subdomains and the subdomain determined which Organization in the database the request would be associated with and individuals had to re-login across subdomains. Multitenancy increased install complexity and we were not seeing use of the multitenancy feature. Deployment is now simpler.
+* Add deployment scripts of multi-container GovReady-Q and NGINX via Docker-compose.
+* `first_run` reports if Superuser previously created.
 
 
 v0.8.6.2+devel

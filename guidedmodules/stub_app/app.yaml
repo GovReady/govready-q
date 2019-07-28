@@ -1,25 +1,18 @@
 id: app
 title: New Compliance App
 type: project
-version: 0.5
+version: 0.1.0
 icon: app.png
 catalog:
-  category: Technology
+  category: Draft
   vendor: GovReady
-  vendor_url: http://www.govready.com
+  vendor_url: ~
   status: stub
-  version: 0.2
-  source_url: https://github.com/GovReady/govready-sample-apps/generic_file_server
+  version: 0.1.0
+  source_url: ~
   description:
     short: |
       Short description.
-  recommended_for:
-  - key_short: Org
-    value: Small
-  - key_short: Tech
-    value: Sophisticated
-  - key_short: Role
-    value: PM
 introduction:
   format: markdown
   template: |
