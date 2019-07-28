@@ -340,7 +340,7 @@ label:hover .onhover { display: inline; }
               {% if q.spec.min > 0 and q.spec.min == q.spec.max %}
                   <p class="help-block">You must choose exactly {{q.spec.min}} option{{q.spec.min|pluralize}}.</p>
               {% elif q.spec.min > 0 %}
-                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} option{{q.spec.min|pluralize}}.</p>
+                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} option{{q.spec.max|pluralize}}.</p>
               {% elif q.spec.max %}
                   <p class="help-block">You may choose at most {{q.spec.max}} option{{q.spec.max|pluralize}}.</p>
               {% endif %}
