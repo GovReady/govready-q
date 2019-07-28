@@ -9,7 +9,20 @@
 {% block body %}
   {{ block.super }}
 
-  <div id="focus-area-wrapper">
+<div class="row">
+  <div id="context-area-wrapper" class="col-xs-0 col-sm-2 col-md-3 col-lg-3"
+       style="background-color: rgb(225, 225, 225);
+              border-radius: 6px;
+              /*color: white;*/
+             ">
+    {% include "task-progress-project-list.html" with previous="question" %}
+  </div>
+
+  <div class="col-spacer col-xs-0 col-sm-0 col-md-0 col-lg-1">
+    &nbsp;
+  </div>
+
+  <div id="focus-area-wrapper" class="col-sm-12 col-md-10 col-lg-8">
 
     {% if top_of_page_output %}
       <div style="margin-bottom: 30px;">
@@ -158,6 +171,8 @@
   {% endif %}
 </div> <!-- / continue panel -->
 </div> <!-- focus-area-wrapper -->
+
+</div>
 
 {% endblock %}
 

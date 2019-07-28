@@ -547,6 +547,87 @@ def show_question(request, task, answered, context, q):
         "text" if q.spec["type"] != "longtext" else "html",
         demote_headings=False)
 
+    # Get higher level context history for this task
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    root_task_answers = task.project.root_task.get_answers().with_extended_info()
+    task_progress_project_list = []
+    current_mq_group = ""
+    # print(dir(root_task_answers))
+    # print(root_task_answers.answertuples)
+    # print(len(root_task_answers.answertuples))
+
+    # print(dir(root_task_answers.answertuples))
+    # print("root_task_answers.answertuples.items()")
+    # print(root_task_answers.answertuples.keys())
+    # # for t_id in root_task_answers.answertuples:
+    #     # ('tp_introduction', (<ModuleQuestion [385] app.tp_introduction (<cbp-big-q-apps(5)/cbp-pilot-apps(6)/app(44)>)>, False, None, None))
+    #     print(t_id)
+    #     print(t_id[0])
+    # for k in root_task_answers.answertuples.keys():
+    #     print("key: {}".format(k))
+
+
+    # Let's talk about where the data is for this question. The 'q'
+    # argument is a ModuleQuestion instance. The YAML data associated
+    # with this question (like id, type, prompt, etc.) are stored in
+    #   q.spec
+    # which is a Python dict holding the exact same information as
+    # in the part of the YAML file for this question.
+    #
+    # q.module points to the Module it is contained in (i.e. the YAML file
+    # it is contained in). q.module is a Module instance, and the
+    # YAML data associated with that Module (id, output documents, etc)
+    # is stored in
+    #  q.module.spec
+    # which is a Python dict holding the exact same information as in
+    # the module YAML file on disk *except* for the questions array,
+    # because that data is stored in the ModuleQuestions instances.
+    #
+    # q.module.app points to the AppVersion instance for the compliance
+    # app that contains the module that contains the question. The
+    # AppVersion stores the app.yaml data in two places. One place is
+    #   q.module.app.catalog_metadata
+    # which is a Python dict that holds the YAML data found in the
+    # "catalog" key in the app.yaml file.
+    #
+    # The other data in app.yaml is used to define the Module named
+    # "app" within the compliance app. Therefore it is found in
+    #   q.module.app.modules.get(module_name="app").spec
+    # which is a Python dict similar to q.module.spec.
+
+ 
+    #request, task, answered, context, q
+    print("\nq", q)
+    print("\nq.module", q.module)
+    print("\nq.module.spec", q.module.spec)
+    # print("\nq.module.root_task.get_absolute_url()", q.project.root_task.get_absolute_url())
+    print("\ncontext", context)
+    print("\ntask", task)
+
+    for item in root_task_answers.answertuples.items():
+        # print("------")
+        # print("1 item: {}".format(item))
+        # print("2 type(item): {}".format(type(item)))
+        # print(type(item[1][0]))
+        # print(item[1][0])
+        # print("5 dir(item[1][0]){}".format(dir(item[1][0])))
+        # print("setting mq")
+        mq = item[1][0]
+        # print("6 mq.spec.keys() {}".format(mq.spec.keys()))
+        print("6 {} - {}".format(mq.spec['group'], mq.spec["title"]))
+        tasks_in_group = {
+            "id": mq.spec.get('id'),
+            "module_id": mq.spec.get('module-id'),
+            "group": mq.spec.get('group'),
+            "title": mq.spec.get('title'),
+            "type": mq.spec.get('type'),
+            "link": "/tasks/{}/start".format(mq.spec.get('module-id'))
+            }
+        task_progress_project_list.append(tasks_in_group)
+        print("\ntasks_in_group", tasks_in_group)
+        # print("*** task_progress_project_list: {}".format(task_progress_project_list))
+
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
@@ -571,6 +652,9 @@ def show_question(request, task, answered, context, q):
         "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
 
         "context": module_logic.get_question_context(answered, q),
+
+        "root_task_answers": root_task_answers,
+        "task_progress_project_list": task_progress_project_list,
 
         # Helpers for showing date month, day, year dropdowns, with
         # localized strings and integer values. Default selections

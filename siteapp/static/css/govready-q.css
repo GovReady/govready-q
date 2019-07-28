@@ -6,7 +6,6 @@ body {
   overflow-y: scroll;
   overflow-wrap: break-word;
   word-wrap: break-word;
-  word-break: break-all;
   font-family: 'Hind', sans-serif;
 }
 
@@ -108,4 +107,10 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 
 .textcomplete-item {
   cursor: pointer;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
