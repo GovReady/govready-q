@@ -406,6 +406,8 @@ def show_question(request, task, answered, context, q):
     # then redirect away from this page. If the user is allowed to use the authoring
     # tool, then allow seeing this question so they can edit all questions.
     authoring_tool_enabled = task.module.is_authoring_tool_enabled(request.user)
+    can_upgrade_app = task.module.app.has_upgrade_priv(request.user)
+
     is_answerable = (((q not in answered.unanswered) or (q in answered.can_answer)) and (q.key not in answered.was_imputed))
     if not is_answerable and not authoring_tool_enabled:
         return HttpResponseRedirect(task.get_absolute_url())
@@ -673,7 +675,9 @@ def show_question(request, task, answered, context, q):
         },
 
         "is_answerable": is_answerable, # only false if authoring tool is enabled, otherwise this page is not renderable
+        "can_upgrade_app": can_upgrade_app,
         "authoring_tool_enabled": authoring_tool_enabled,
+        "is_question_page": True,
     })
     return render(request, "question.html", context)
 
