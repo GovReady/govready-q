@@ -6,7 +6,6 @@ body {
   overflow-y: scroll;
   overflow-wrap: break-word;
   word-wrap: break-word;
-  word-break: break-all;
   font-family: 'Hind', sans-serif;
 }
 

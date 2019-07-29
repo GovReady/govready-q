@@ -161,7 +161,11 @@
     var upgrade_app_option_confirm = true; // is set to true in dev tools for headless scripting
     function upgrade_app(app_id) {
       if (upgrade_app_option_confirm
+         {% if is_question_page %}
+         && !confirm("All instances of '{{task.project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
+         {% else %}
          && !confirm("All instances of '{{project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
+         {% endif %}
         return;
       ajax_with_indicator({
           url: "/tasks/_upgrade-app",

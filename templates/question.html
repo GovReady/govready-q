@@ -173,7 +173,7 @@ label:hover .onhover { display: inline; }
                   </div>
                 </div>
                 <div class="toggler"
-                     style="text-align: right; font-style: italic; font-size: 90%;">
+                     style="text-align: left; font-style: italic; font-size: 90%;">
                   <a
                      href="#more"
                      onclick="$(this).parents('.expandable').find('.expandy').data('original-height', $(this).parents('.expandable').find('.expandy').height()); $(this).parents('.expandable').find('.expandy').animate({ minHeight: $(this).parents('.expandable').find('.expandy>div').outerHeight() + $(this).parents('.expandable').find('.toggler').outerHeight() }); $(this).parents('.expandable').find('a[href=&quot;#more&quot;]').hide(); $(this).parents('.expandable').find('a[href=&quot;#less&quot;]').show(); return false;">Show more</a>
@@ -340,7 +340,7 @@ label:hover .onhover { display: inline; }
               {% if q.spec.min > 0 and q.spec.min == q.spec.max %}
                   <p class="help-block">You must choose exactly {{q.spec.min}} option{{q.spec.min|pluralize}}.</p>
               {% elif q.spec.min > 0 %}
-                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} option{{q.spec.min|pluralize}}.</p>
+                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} option{{q.spec.max|pluralize}}.</p>
               {% elif q.spec.max %}
                   <p class="help-block">You may choose at most {{q.spec.max}} option{{q.spec.max|pluralize}}.</p>
               {% endif %}
