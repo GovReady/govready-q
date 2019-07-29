@@ -1,27 +1,21 @@
-<div style="margin: 12px 0 12px 6px; text-align: center;">
-    <a href="{{task.project.get_absolute_url}}" style="color:black;">
-      <div style="color: #787878;">
-        <span class="glyphicon glyphicon-list-alt" style=""></span>&nbsp;<!-- {{task.project.title}} -->
-        PTA (Privacy Threshold Analysis)
-      </div>
+<div class="truncate" style="margin: 12px 0 12px 6px; text-align: left; ">
+    PROJECT:&nbsp; <a href="{{task.project.get_absolute_url}}" style="color:#444;">
+      {{task.project.title}}
     </a>
+    {% if current_group %}
+    <br>
+    SECTION:&nbsp; <a href="{{task.project.get_absolute_url}}#{{current_group}}" style="color:#444;">
+      {{current_group}}
+    </a>
+    {% endif %}
 </div>
 
 {% for pt in task_progress_project_list %}
-  {% if pt.group == "PTA (Privacy Threshold Analysis)" %}
-    <div class="truncate" style="margin: 0 0 6px 0; padding: 2px; font-size: .8em;">
-      {% if pt.title == task.title %}
-      <span class="glyphicon glyphicon-play-circle"> </span> <b>{{pt.title}}</b>
-        <!-- <div class="truncate" 
-             style="font-weight: bold;
-                    border: 1px solid #ddd;
-                    padding: 12px 4px 12px 4px;
-                    background-color: rgb(247, 247, 247);
-                    margin-bottom: 4px;
-                    text-align: center;
-                   "> -->
-          <!-- <span class="glyphicon glyphicon-play-circle"> </span> --> <!-- &raquo; {{task.title}} &laquo; -->
-        <!-- </div> -->
+  {% if pt.group == current_group %}
+    <div class="truncate" style="margin: 0 0 6px 0; padding: 2px; font-size: 1.0em;text-align:left;">
+      {% if pt.task_id == task.id %}
+      <span class="glyphicon glyphicon-play-circle"> </span> <b>{{task.title}}</b>
+        {% if context|length > 0 %}
         <div id="question-history-context">
           <ul>
           {% if context %}
@@ -29,53 +23,44 @@
             {% include "task-progress-question-list.html" with previous="question" %}
             <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
             <li>&nbsp;</li>
-            <!-- <li>&middot;</li>
-            <li>&middot;</li>
-            <li>&middot;</li> -->
             </div>
             <li>
               ...and we&rsquo;re done
             </li>
           {% endif %}
           </ul>
-      </div> <!-- /question-history-context -->
+        </div> <!-- /question-history-context -->
+        {% endif %}
       {% else %}
-      <div class="truncate" style="color: #787878;">
-        <span class="glyphicon glyphicon-unchecked"> </span> <a href="{{pt.link}}">{{pt.title}}</a>
-      </div>
+        {% if pt.link == "/TODO" %}
+          {% if pt.type == "module" or pt.type == "module-set" %}
+            {# Start a task directly using the module type in the specification. #}
+            <form class="" method="post" action="/tasks/start"
+              onclick="$(this).submit();" style="cursor: pointer;display: inline;text-align: left;">
+              {% csrf_token %}
+              <input type="hidden" name="project" value="{{task.project.id}}"/>
+              <input type="hidden" name="question" value="{{pt.id}}"/>
+              <input type="hidden" name="previous" value="project"/>
+          {% else %}
+            {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
+            <form method="get" action="/store"
+              onclick="$(this).submit();" style="cursor: pointer; display: inline">
+              <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{q.question.key}}">
+          {% endif %}
+              <div class="btn btn-sm btn-link truncate" style="color: black; font-size: 1.0em; text-align: left;">
+                <span class="glyphicon glyphicon-unchecked"> </span> <!-- Start --> {{pt.title}}
+              </div>
+            </form>
+        {% else %}
+          <form class="truncate">&nbsp;&nbsp;
+            {% if pt.task_started and pt.task_answered %}
+              <span class="glyphicon glyphicon-check"> </span><a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
+            {% elif pt.task_started %}
+              <span class="glyphicon glyphicon-edit"> </span> <a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
+            {% endif %}
+          </form>
+          {% endif %}
       {% endif %}
     </div>
   {% endif %}
-{% endfor %}
-
-
-{% for q in context %}
-{% if not q.imputed %}
-<!--   <div id="link-to-question-{{q.key}}" 
-      class="truncate
-             {% if q.is_this_question %}this{% else %}other{% endif %}
-             "
-      style="margin: 0px 0px 0px 0px;
-             {% if not q.is_this_question %}height: 30px;{% endif %}
-             {% if q.is_this_question %}max-height: 400px;{% endif %}
-
-             font-size: .8em; padding: 2px 0px 0px 3px; text-overflow: ellipsis;
-             {% if q.is_this_question %}
-             border: 1px solid #999;
-             {% elif q.skipped %}
-             {% elif q.answered %}
-             {% endif %}
-            ">
-    {% if not q.is_this_question %}<a href="{{q.link}}?previous={{previous|urlencode}}"></a>{% endif %}
-
-    {% if q.is_this_question  %}<span class="glyphicon glyphicon-play-circle"> </span>
-    {% elif q.skipped %}<span class="glyphicon glyphicon-edit"> </span>
-    {% elif q.answered %}<span class="glyphicon glyphicon-check"> </span>
-    {% else %}<span class="glyphicon glyphicon-unchecked"> </span>{% endif %}
-
-    {{q.title}}
-
-    {% if not q.is_this_question and q.can_link %}</a>{% endif %}
-  </div> -->
-{% endif %}
 {% endfor %}
