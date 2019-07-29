@@ -129,21 +129,15 @@ label:hover .onhover { display: inline; }
 
 {{block.super}}
 
-<!-- <div class="row"> -->
-  <div id="context-area-wrapper" class="col-xs-0 col-sm-2 col-md-3 col-lg-3"
-       style="
-              background-color: rgb(230, 230, 230);
-              border-radius: 6px;
-              /*color: white;*/
-             ">
-    {% include "task-progress-project-list.html" with previous="question" %}
-  </div>
+<div class="row">
 
+  <!--
   <div class="col-spacer col-xs-0 col-sm-0 col-md-0 col-lg-1">
     &nbsp;
   </div>
+  -->
 
-  <div id="focus-area-wrapper" class="col-xs-12 col-sm-8 col-md-7 col-lg-7">
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7">
     <div style="
       margin-top: -20px;
       margin-bottom: 20px;
@@ -598,8 +592,17 @@ label:hover .onhover { display: inline; }
     </div>
   </div> <!-- /focus-area-wrapper -->
 
-  <div class="col-spacer col-xs-0 col-sm-0 col-md-0 col-lg-1">
+  <div class="col-spacer col-xs-hidden col-sm-1 col-md-1 col-lg-2">
     &nbsp;
+  </div>
+
+  <div id="context-area-wrapper" class="col-xs-0 col-sm-2 col-md-3 col-lg-3"
+       style="
+              background-color: rgb(230, 230, 230);
+              border-radius: 6px;
+              /*color: white;*/
+             ">
+    {% include "task-progress-project-list.html" with previous="question" %}
   </div>
 
 <!--   <div class="col-spacer col-xs-0 col-sm-0 col-md-0 col-lg-1">
@@ -624,9 +627,9 @@ label:hover .onhover { display: inline; }
         </ul>
     </div> --> <!-- /question-history-context -->
 
-<!-- 
+
   </div>
-</div>  --><!-- /row -->
+</div><!-- /row -->
 
 {% if authoring_tool_enabled %}
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
