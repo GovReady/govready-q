@@ -258,9 +258,14 @@ def get_question_context(answers, question):
             "reviewed": answer_obj.reviewed if answer_obj is not None else None,
             "is_this_question": (question is not None) and (q.key == question.key),
             "value": LazyRenderedAnswer(q, is_answered, answer_obj, answer_value),
+            "definition_order": q.definition_order
         })
 
-    return context
+    # Sort list of questions by definition_order
+    from operator import itemgetter
+    context_sorted = sorted(context, key=itemgetter('definition_order'))
+
+    return context_sorted
 
 
 def render_content(content, answers, output_format, source, additional_context={},

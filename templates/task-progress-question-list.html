@@ -9,7 +9,7 @@
              font-size: 1.0em; padding: 2px 0px 0px 3px; text-overflow: ellipsis;
              background-color: {% if q.is_this_question %}
                                {% elif q.skipped %}rgb(241, 220, 219);
-                               {% elif q.answered %}rgb(235, 241, 222);
+                               {% elif q.answered %}rgb(198, 223, 181);
                                {% endif %}
             ">
     {% if not q.is_this_question %}<a href="{{q.link}}?previous={{previous|urlencode}}">{% endif %}

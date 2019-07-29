@@ -120,7 +120,7 @@ h3.question-group-title {
 }
 #project-members .role {
   font-style: italic;
-  font-size: 85%;
+  /*font-size: 85%;*/
 }
 #project-members .action {
   font-size: 85%;
@@ -222,7 +222,7 @@ h3.question-group-title {
         You are in author mode. Authoring tools have been enabled for this module.
       </p></center>
 
-    <center style="font-size: 90%;" class="authoring-tool-hidden">
+      <center style="font-size: 90%;" class="authoring-tool-hidden">
       <p>
       <a href="#" onclick="show_authoring_tool_module_editor(); return false;" style="margin: 0 1em;">
         <span class="glyphicon glyphicon-pencil"></span>
@@ -266,6 +266,7 @@ h3.question-group-title {
             {% endif %}
 
             {% for group in column.groups %}
+            {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
             <div class="question-group">
 
               {% if group.title %}
@@ -471,81 +472,102 @@ h3.question-group-title {
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="project_settings_title">{{project.title}} Settings</h4>
+        <h4 class="modal-title" id="project_settings_title">Project Settings</h4>
       </div>
       <div class="modal-body">
-        <h4>Participants</h4>
-
-              <div style="margin-bottom: 1em">
-                <div id="project-members">
-                  {% for user, authz in project.get_all_participants %}
-                    <div class="clearfix" style="margin-bottom: 4px;">
-                      <div style="width: 24px; height: 24px; border: 1px solid #AAA; margin-right: .5em; float: left; margin-top: -2px;">
-                      {% if authz.user_details.picture %}
-                        <img src="{{authz.user_details.picture.url}}" alt="{{authz.user_details.name}} Profile Picture"
-                          style="display:block; width: 100%; height: 100%;">
-                      {% endif %}
-                      </div>
-
-                      <span {% if authz.user_details.name != user.email %}title="{{user.email}}"{% endif %}>
-                        {{authz.user_details.name}}
-                      </span>
-                      <span class="role">{{authz.role}}</span>
-                      {% if is_admin %} {# user loading page is an admin #}
-	                      {% if authz.is_member %} {# user in the list is an explicit member of the project (e.g. not a discussion guest) #}
-		                      {% if not authz.is_admin %}
-			                      <span class="action">(<a href="#" onclick="make_admin(true, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make admin</a>)</span>
-			                  {% elif user != request.user %}
-			                      <span class="action">(<a href="#" onclick="make_admin(false, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make regular member</a>)</span>
-		                      {% endif %}
-		                  {% endif %}
-                      {% endif %}
-                    </div>
-                  {% endfor %}
-                </div>
-              </div>
-
-            {% if send_invitation.can_add_invitee_to_team %}
-              <div style="margin: 1em 0">
-                <button id="invite-user-to-project" class="btn btn-success" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Invite Colleague to Join Project ...</button>
-              </div>
-            {% endif %}
-
-            {% if open_invitations %}
-              <div id="open-invitations-container">
-                <h3>Invitations waiting for a response...</h3>
-                <div class="invitation-list">
-                {% for inv in open_invitations %}
-                  <p data-invitation-id="{{inv.id}}">
-                    You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
-                    (<a href="#" onclick="return cancel_invitation(this, function() { if ($('#open-invitations-container .invitation-list p').length == 0) { $('#open-invitations-container').remove(); } });">cancel</a>)
-                  </p>
-                {% endfor %}
-                </div>
-              </div>
-            {% endif %}
-
       {% if project.is_deletable and is_admin %}
-        <h4>Project Details</h4>
-        <p>
-          {% if can_start_any_apps %}
-            <a class="btn btn-primary" href="{{project.get_absolute_url}}/startapps">Start Apps</a>
-          {% endif %}
-          <button class="btn btn-default" onclick="return rename_project();">Change Project Title</button>
-          <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button>
-        </p>
+        <div class="row">
+          <div class="col-sm-2">
+            <span style="font-weight: bold;">Project</span>
+          </div>
+          <div class="col-sm-6" style="font-size: 1.1em;">
+            {{project.title}}
+          </div>
+          <div class="col-sm-1">
+            <button class="btn btn-default btn-small" onclick="return rename_project();">Edit</button>
+          </div>
+        </div>
 
-        <h4>Share Data</h4>
-              {# export #}
+        {% if can_start_any_apps %}
+        <div class="row">
+          <div class="col-sm-6">
+              <a class="btn btn-default" href="{{project.get_absolute_url}}/startapps">Start Apps</a>
+          </div>
+        </div>
+        {% endif %}
+
+
+      {% endif %}
+
+        <div class="row" style="margin-top:12px;">
+          <div class="col-sm-2">
+            <span style="font-weight: bold;">Participants</span>
+          </div>
+          <div class="col-sm-10">
+              {% for user, authz in project.get_all_participants %}
+                <div class="clearfix" style="margin-bottom: 2px;">
+                  <div style="width: 28px; height: 24px; border: 1px solid #444; margin-right: .5em; float: left; margin-top: -2px; border-radius: 2px;">
+                  {% if authz.user_details.picture %}
+                    <img src="{{authz.user_details.picture.url}}" alt="{{authz.user_details.name}} Profile Picture"
+                      style="display:block; width: 100%; height: 100%;">
+                  {% else %}
+                  <div class="avatar" style="font-size:1.0em; text-align: center; font-weight: bold; {{user.get_avatar_fallback_css.css}}">
+                    {{user.get_avatar_fallback_css.text}}
+                  </div>
+                  {% endif %}
+                  </div>
+                  <span {% if authz.user_details.name != user.email %}title="{{user.email}}"{% endif %}>
+                    <!-- {{authz.user_details.name}} -->
+                    {{user}}
+                  </span>&nbsp;&nbsp;&nbsp;
+                  <span class="role">{{authz.role}}</span>
+                  {% if is_admin %} {# user loading page is an admin #}
+                    {% if authz.is_member %} {# user in the list is an explicit member of the project (e.g. not a discussion guest) #}
+                      {% if not authz.is_admin %}
+                        <span class="action">(<a href="#" onclick="make_admin(true, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make admin</a>)</span>
+                    {% elif user != request.user %}
+                        <span class="action">(<a href="#" onclick="make_admin(false, {{user.id}}, '{{authz.user_details.name|escapejs}}')">make regular member</a>)</span>
+                      {% endif %}
+                  {% endif %}
+                  {% endif %}
+              {% endfor %}
+              {% if send_invitation.can_add_invitee_to_team %}
+                <div style="margin: 1em 0">
+                  <button id="invite-user-to-project" class="btn btn-default" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Grant access to member</button>
+                </div>
+              {% endif %}
+
+              {% if open_invitations %}
+                <div id="open-invitations-container">
+                  <h3>Invitations waiting for a response...</h3>
+                  <div class="invitation-list">
+                  {% for inv in open_invitations %}
+                    <p data-invitation-id="{{inv.id}}">
+                      You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+                      (<a href="#" onclick="return cancel_invitation(this, function() { if ($('#open-invitations-container .invitation-list p').length == 0) { $('#open-invitations-container').remove(); } });">cancel</a>)
+                    </p>
+                  {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px;">
+          <div class="col-sm-2">
+            <span style="font-weight: bold;">Share Data</span>
+          </div>
+          <div class="col-sm-10">
+            {# export #}
               <form method="post" action="{% url "export_project" project.id %}" style="display: inline-block; margin: 0; padding: 0;">{% csrf_token %}
-                <button class="btn btn-success">
+                <button class="btn btn-default">
                   <span class="glyphicon glyphicon-share" style="margin-right: .25em"></span>
                   Export Project Data
                 </button>
               </form>
-
               {# import #}
-              <button class="btn btn-default" onclick="$('#import-file-input').click()">
+              <button class="btn btn-default" onclick="$('#import-file-input').click()" style="margin-left: 12px;">
                 <span class="glyphicon glyphicon-cloud-upload" style="margin-right: .25em"> </span> Import Answers From File
               </button>
               <form id="import-form" style="display: none;"
@@ -554,7 +576,21 @@ h3.question-group-title {
                   style="width: auto; border:  none; padding: 0; display: inline-block"
                   onchange="$('#import-form').submit()" />
               </form>
+          </div>
+        </div>
+
+      {% if project.is_deletable and is_admin %}
+        <hr>
+        <div class="row" style="margin-top: 12px;">
+          <div class="col-sm-2">
+            <span style="font-weight: bold;">DANGER</span>
+          </div>
+          <div class="col-sm-10">
+            <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button>
+          </div>
+        </div>
       {% endif %}
+
       </div> {# modal-body #}
     </div> {# modal-content #}
   </div> {# /modal #}

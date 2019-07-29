@@ -21,6 +21,8 @@ Next Question: {{q.spec.title}} | {{task.title}}
   margin-bottom: 30px;
 }
 
+
+
 h1 {
   margin: 4px 0 18px 0;
   font-size: 22px;
@@ -129,7 +131,7 @@ label:hover .onhover { display: inline; }
 
 {{block.super}}
 
-<div class="row">
+<!-- <div class="row"> -->
 
   <!--
   <div class="col-spacer col-xs-0 col-sm-0 col-md-0 col-lg-1">
@@ -137,15 +139,7 @@ label:hover .onhover { display: inline; }
   </div>
   -->
 
-  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-7">
-    <div style="
-      margin-top: -20px;
-      margin-bottom: 20px;
-      color: #999;
-      ">
-      <!-- <small>{{task.title}}</small> -->
-    </div>
-
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 ">
     {% if source_invitation %}
       <div style="margin-bottom: 2em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -160,34 +154,7 @@ label:hover .onhover { display: inline; }
         </div>
       </div>
     {% endif %}
-    <!-- 
-        <pre>TESTING
 
-        task.id: {{task.id}}
-        task.project: {{task.project}}
-        task.project.root_task: {{task.project.root_task.}}
-
-        task.module: {{task.module}}
-        task.module.spec: {{task.module.spec}}
-        task.project.get_open_tasks {{task.project.get_open_tasks}}
-
-        root_task_answers: {{root_task_answers}}
-        root_task_answers.as_dict: {{root_task_answers.as_dict}}
-
-        {% for tp in root_task_answers.answer_tuples %}
-          {{tp}}
-        {% endfor %}
-
-        {% for ta in root_task_answers.as_dict %}
-          {{ta}} 
-            {{ta}}
-        {% endfor %}
-
-
-        {{m.app}}
-        
-      </pre>
-    -->
     <h1>{{title|safe}}</h1>
 
     <div id="question">
@@ -208,7 +175,7 @@ label:hover .onhover { display: inline; }
                 <div class="expandy" style="max-height: 4.25em; overflow: hidden;">
                   <div>
                     {% for ex in example_answers %}
-                      <div> 
+                      <div>
                         <div><small style="color: #666;">Example{% if example_answers|length > 1 %} {{forloop.counter}}{% endif %}</small></div>
                         {{ex|safe}}
                       </div>
@@ -394,7 +361,7 @@ label:hover .onhover { display: inline; }
                 {% comment %}
                   The HTML5 number input is a bit confusing in how it handles periods and commas.
                   Browsers seem to currently only support a period or comma as a decimal separator,
-                  depending on the lang attribute on the input or HTML. They do not allow 
+                  depending on the lang attribute on the input or HTML. They do not allow
                   thousands-commas. But we should let users type that in.
                 {% endcomment %}
                 {% if q.spec.min > -1000 and q.spec.max < 1000 %}
@@ -456,7 +423,7 @@ label:hover .onhover { display: inline; }
                         {% if m.project != task.project and m.project.title != title %}
                         {{ m.project.title }}.
                         {% endif %}
-                        
+
                         {% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}}.
 
                         <a href="{{m.get_absolute_url}}" class="onhover" style="color: #999; margin-left: 3px; font-size: 90%;"><span class="glyphicon glyphicon-pencil"> </span></a>
@@ -516,7 +483,7 @@ label:hover .onhover { display: inline; }
                       {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
                         <button id="start-a-discussion" onclick="start_a_discussion();" type=button data-toggleable=false>
                             {# if you can see this page, you can start a conversation #}
-                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss 
+                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss
                         </button>
                       {% endif %}
                       {% if task.can_transfer_owner and write_priv %}
@@ -551,10 +518,10 @@ label:hover .onhover { display: inline; }
                   {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
                   {% if answer_obj and DEBUG %}
                     <button id="clear-button"
-                      type="submit" class="btn btn-default"
+                      type="submit" class="btn btn-link" style="color: #999; font-size: 0.9em;"
                       onclick="$('#question > form input[name=method]').val('clear')">
                         Mark as Unanswered
-                        &raquo;
+                        <!-- &raquo; -->
                       </button>
                   {% endif %}
                 </div> {# /.pull-left #}
@@ -588,48 +555,22 @@ label:hover .onhover { display: inline; }
     </div> <!-- /question -->
 
     <div>
+      <hr>
       {% include "discussion/discussion.html" %}
     </div>
   </div> <!-- /focus-area-wrapper -->
 
-  <div class="col-spacer col-xs-hidden col-sm-1 col-md-1 col-lg-2">
+  <div class="col-spacer col-xs-hidden col-sm-1 col-md-1 col-lg-3 col-xl-2">
     &nbsp;
   </div>
 
-  <div id="context-area-wrapper" class="col-xs-0 col-sm-2 col-md-3 col-lg-3"
-       style="
-              background-color: rgb(230, 230, 230);
-              border-radius: 6px;
-              /*color: white;*/
-             ">
+  <div id="progress-project-area-wrapper" class="col-xs-0 col-sm-2 col-md-3 col-lg-3 col-xl-2"
+       style="background-color: rgb(230, 230, 230); border-radius: 6px;">
     {% include "task-progress-project-list.html" with previous="question" %}
   </div>
 
-<!--   <div class="col-spacer col-xs-0 col-sm-0 col-md-0 col-lg-1">
-    &nbsp;
-  </div> -->
-
-<!--   <div class="col-xs-12 col-sm-2 col-md-3 col-lg-2">
-    <div id="question-history-context">
-        <ul>
-        {% if context %}
-          <p>Progress:</p>
-          {% include "task-progress-question-list.html" with previous="question" %}
-          <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222; ">
-          <li>&middot;</li>
-          <li>&middot;</li>
-          <li>&middot;</li>
-          </div>
-          <li>
-            ...and we&rsquo;re done
-          </li>
-        {% endif %}
-        </ul>
-    </div> --> <!-- /question-history-context -->
-
-
   </div>
-</div><!-- /row -->
+<!--</div> /row -->
 
 {% if authoring_tool_enabled %}
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
@@ -711,7 +652,7 @@ $(function() {
     // VALIDATION
 
     {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
-    
+
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
@@ -954,7 +895,7 @@ $(function() {
             // the answer.
             form.find('input[name=method]').val('skip');
             form.find('input[name=skipped_reason]').val('dont-know');
-          
+
           } else if ($('#not-applicable-button').hasClass('active')) {
             // Skipping this question because the question doesn't
             // apply to the user's circumstances.
@@ -971,7 +912,7 @@ $(function() {
               }
           }
         }
-        
+
         // Assemble the form submission data.
         //
         // While this would normally work:
