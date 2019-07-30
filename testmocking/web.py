@@ -1,30 +1,63 @@
 import requests
 import parsel
 from random import sample
+import re
+
+from django.test import Client
+
+from django.test import RequestFactory
+from siteapp.urls import urlpatterns
+
+from django.urls.exceptions import Resolver404 as Resolver404
+
+from siteapp.models import *
 
 class WebClient():
-    session = requests.Session()
+    session = None
     response = None
     selector = None
     base_url = None
     projects = None
     comp_links = None
+    current_url = ''
 
-    def __init__(self, base_url):
-        self.base_url = base_url
-        if not self.base_url.endswith('/'):
-            self.base_url += '/' # probably not strictly standard, but testing thus far has included a trailing '/'
+    def __init__(self, username, org_slug):
+        self.user = User.objects.get(username=username)
+        self.org = Organization.objects.get(subdomain=org_slug)
+
+        User.localize_users_to_org(self.org, [self.user])
+
+        self.session = RequestFactory()
+        print("web test client with host <{}>".format(self.org.subdomain))
+
+    def _url(self, path):
+        # currently a no-op function, but for debug purposes it is useful to be able to change path handling in one spot
 
     def _use_page(self, response):
         self.response = response
-        self.selector = parsel.Selector(text=response.text)
+        self.selector = parsel.Selector(text=response.content.decode('utf-8'))
+        self.html_debug(dir="/tmp/")
+
+    def _resolve(self, req):
+        self.current_url = req.path
+        for url in urlpatterns:
+            try:
+                match = url.resolve(req.path[1:])
+                if match:
+                    self._use_page(match.func(req, *match.args, **match.kwargs))
+                    return
+            except Resolver404:
+                pass
+        raise Exception("{} not resolved".format(req.path))
 
     def load(self, path):
-        self._use_page(self.session.get(self.base_url + path))
+        url = self._url(path)
+        print("GET on: <{}>".format(url))
+        req = self.session.get(url)
+        req.user = self.user
+        req.organization = self.org
+        self._resolve(req)
 
-    def login(self, username, password):
-        self.load("/accounts/login/")
-        self.form('.login', {"login": username, "password": password})
 
     def form_fields(self, css):
         return self.form_fields_by_ref(self.selector.css(css))
@@ -43,16 +76,19 @@ class WebClient():
         for (key, val) in fields.items():
             base_fields[key] = val
         if 'action' in form.attrib:
-            path = form.attrib['action']
+            url = self._url(form.attrib['action'])
         else:
-            path = self.response.url.replace(self.base_url, '')
-        res = self.session.post(self.base_url + path, base_fields)
-        self._use_page(res)
-
+            url = self.base_url
+        print("POST on: <{}>".format(url))
+        req = self.session.post(url, base_fields)
+        req.user = self.user
+        req.organization = self.org
+        self._resolve(req)
 
 
     def add_system(self):
         self.load("/store")
+
         form = sample(self.selector.css('[action^="/store"]'), 1)[0]
         self.form_by_ref(form)
         print(self.response.url)
@@ -100,8 +136,8 @@ class WebClient():
 
     def html_debug(self, filename="test.html", dir="siteapp/static/"):
         with open(dir + filename, 'w') as file:
-            file.write(self.response.text)
-        return self.response.url
+            file.write(self.response.content.decode('utf-8'))
+        #return self.response.url
         
 
 
