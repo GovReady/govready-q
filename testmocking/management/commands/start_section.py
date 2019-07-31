@@ -19,8 +19,8 @@ class Command(BaseCommand):
     help = 'Starts one or many sections for a project'
 
     def add_arguments(self, parser):
-        parser.add_argument('--org', type=str, required=True, help="")
-        parser.add_argument('--username', type=str, required=True, help="")
+        parser.add_argument('--org', default='main' type=str, required=True, help="slug of the org to use (largely ignored, defaults to 'main')")
+        parser.add_argument('--username', type=str, required=True, help="username to act on behalf of")
         parser.add_argument('--project', type=int, required=False, help="the project ID to target. If omitted, the most-recent project will be used instead")
         parser.add_argument('--to-completion', action="store_true", help="")
 
