@@ -19,14 +19,13 @@ class Command(BaseCommand):
     help = 'Starts one or many sections for a project'
 
     def add_arguments(self, parser):
+        parser.add_argument('--org', type=str, required=True, help="")
         parser.add_argument('--username', type=str, required=True, help="")
-        parser.add_argument('--password', type=str, required=True, help="")
         parser.add_argument('--project', type=int, required=False, help="the project ID to target. If omitted, the most-recent project will be used instead")
         parser.add_argument('--to-completion', action="store_true", help="")
 
     def handle(self, *args, **options):
-        self.client = WebClient(settings.SITE_ROOT_URL)
-        self.client.login(options['username'], options['password'])
+        self.client = WebClient(options['username'], options['org'])
 
         project = options['project']
         if not project:

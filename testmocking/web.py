@@ -23,15 +23,13 @@ class WebClient():
 
     def __init__(self, username, org_slug):
         self.user = User.objects.get(username=username)
-        self.org = Organization.objects.get(subdomain=org_slug)
-
-        User.localize_users_to_org(self.org, [self.user])
+        self.org = Organization.objects.get(slug=org_slug)
 
         self.session = RequestFactory()
-        print("web test client with host <{}>".format(self.org.subdomain))
 
     def _url(self, path):
         # currently a no-op function, but for debug purposes it is useful to be able to change path handling in one spot
+        return path
 
     def _use_page(self, response):
         self.response = response
@@ -92,7 +90,7 @@ class WebClient():
         form = sample(self.selector.css('[action^="/store"]'), 1)[0]
         self.form_by_ref(form)
         print(self.response.url)
-        self.html_debug()
+        #self.html_debug()
 
     def get_projects(self):
         if not self.projects:
