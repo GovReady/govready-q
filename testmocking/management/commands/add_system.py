@@ -16,7 +16,7 @@ class Command(BaseCommand):
     help = 'Adds a System to an organization'
 
     def add_arguments(self, parser):
-        parser.add_argument('--org', default='main' type=str, required=True, help="slug of the org to use (largely ignored, defaults to 'main')")
+        parser.add_argument('--org', default='main', type=str, required=True, help="slug of the org to use (largely ignored, defaults to 'main')")
         parser.add_argument('--username', type=str, required=True, help="username to act on behalf of")
 
     def handle(self, *args, **options):
