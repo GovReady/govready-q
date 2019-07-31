@@ -347,6 +347,6 @@ The functional tests run a headless Chromium web browser session. We welcome ass
 
 If you wish to add sample data for testing purposes to your GovReady-Q image, run the following command (after `first_run` has completed):
 
-    docker container exec -it govready-q add_sample_data TEST_PASSWORD_HERE
+    docker container exec -it govready-q add_data --non-interactive
 
-This will run `populate --full --password TEST_PASSWORD_HERE`, as described in more detail in the [Testing](Test.html#populating-sample-data-for-manual-testing-and-verification) section of this documentation.
+This will run a quickstart command to generate data in your GovReady-Q instance, as described in more detail in the [Testing](Test.html#populating-sample-data-for-manual-testing-and-verification) section of this documentation.
