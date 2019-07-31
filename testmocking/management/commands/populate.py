@@ -47,9 +47,9 @@ class Command(BaseCommand):
 
             if options['full']:
                 print('Adding system...')
-                call_command('add_system',  '--password', options['password'], '--username', admin.username, '--org', org.subdomain)
+                call_command('add_system', '--username', admin.username, '--org', org.slug)
                 print('Adding assessments...')
-                call_command('start_section', '--to-completion', '--password', options['password'], '--username', admin.username, '--org', org.subdomain)
+                call_command('start_section', '--to-completion', '--username', admin.username, '--org', org.slug)
 
                 print('Prepping assessments (tasks, pass #1)...')
                 call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.slug)
