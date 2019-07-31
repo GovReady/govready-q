@@ -106,9 +106,7 @@ function send_invitation(form) {
    method: "POST",
    data: data,
    success: function(res) {
-     // status == error is handled by ajax_with_indicator
-     show_modal_error("Send Invitation", "The invitation has been sent. We will notify you when the invitation has been accepted.", 
-      invite_modal_callback);
+    window.location.reload()
    }
   });
 

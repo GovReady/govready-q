@@ -631,10 +631,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element("#grant-portfolio-access")
         self.select_option_by_visible_text('#invite-user-select', 'me2')
         self.click_element("#invitation_modal button.btn-submit")
-        var_sleep(1)
-        self.assertInNodeText("Send Invitation", "#global_modal_title")
-        self.assertInNodeText("The invitation has been sent. We will notify you when the invitation has been accepted.", ".modal-body p")
-        self.click_element_with_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]")
         self.assertInNodeText("me2", "#portfolio-member-me2")
 
         # Grant another member ownership of portfolio
@@ -648,7 +644,6 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.select_option_by_visible_text('#invite-user-select', 'me3')
         self.click_element("#invitation_modal button.btn-submit")
         var_sleep(1)
-        self.click_element_with_xpath("//*[@id='global_modal']/div/div/div[3]/button[1]")
         self.assertInNodeText("me3", "#portfolio-member-me3")
 
         # Remove another member access to portfolio
