@@ -338,7 +338,7 @@ class Organization(models.Model):
 
 
 class Portfolio(models.Model):
-    title = models.CharField(max_length=256, help_text="The title of this Portfolio.")
+    title = models.CharField(max_length=256, help_text="The title of this Portfolio.", unique=True)
     description = models.CharField(max_length=512, blank=True, help_text="A description of this Portfolio.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
