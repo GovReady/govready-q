@@ -2,10 +2,12 @@
     PROJECT:&nbsp; <a href="{{task.project.get_absolute_url}}" style="color:#444;">
       {{task.project.title}}
     </a>
+    {% if current_group %}
     <br>
     SECTION:&nbsp; <a href="{{task.project.get_absolute_url}}#{{current_group}}" style="color:#444;">
       {{current_group}}
     </a>
+    {% endif %}
 </div>
 
 {% for pt in task_progress_project_list %}
