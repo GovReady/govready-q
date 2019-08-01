@@ -383,6 +383,9 @@ class Portfolio(models.Model):
         sorted_users = sorted(users, key=lambda k: (-k['owner'], k['name'].lower()))
         return sorted_users
 
+    def can_invite_others(self, user):
+        return user.has_perm('can_grant_portfolio_owner_permission', self)
+
 class Folder(models.Model):
     """A folder is a collection of Projects."""
 
@@ -461,6 +464,9 @@ class Project(models.Model):
 
     class Meta:
         unique_together = [('organization', 'is_organization_project')] # ensures only one can be true
+        permissions = (
+            ('view_project', 'View project'),
+        )
 
     def __str__(self):
         # For the admin, notification strings
@@ -503,7 +509,12 @@ class Project(models.Model):
         return (not self.is_account_project) and (user in self.get_members())
 
     def can_invite_others(self, user):
-        return (not self.is_account_project) and (user in self.get_admins())
+        return user.has_perm('can_grant_portfolio_owner_permission', self.portfolio)
+
+    def assign_editor_permissions(self, user):
+        permissions = ['view_project', 'change_project', 'add_project']
+        for perm in permissions:
+            assign_perm(perm, user, self)
 
     def get_owner_domains(self):
         # Utility function for the admin/debugging to quickly see the domain
@@ -948,25 +959,19 @@ class Invitation(models.Model):
         super(Invitation, self).save(*args, **kwargs)
 
     @staticmethod
-    def form_context_dict(user, project, exclude_users):
-        from guidedmodules.models import ProjectMembership
+    def form_context_dict(user, model, exclude_users):
+        users_with_perms = get_users_with_perms(model)
+        names_to_exclude = [o.username for o in users_with_perms]
+        if len(exclude_users) > 0:
+            for u in exclude_users:
+                names_to_exclude.append(u.username)
+        users = [{ "id": user.id, "name": str(user) }
+                for user in User.objects.exclude(username__in=names_to_exclude)]
         return {
-            "project_id": project.id,
-            "project_title": project.title,
-            "users": [{ "id": pm.user.id, "name": str(pm.user) }
-                for pm in ProjectMembership.objects.filter(project=project)\
-                    .exclude(user__in=exclude_users)],
-            "can_add_invitee_to_team": project.can_invite_others(user),
-        }
-
-    @staticmethod
-    def portfolio_form_context_dict(user, portfolio, exclude_users):
-        from guidedmodules.models import ProjectMembership
-        return {
-            "portfolio_id": portfolio.id,
-            "portfolio_title": portfolio.title,
-            "users": [{ "id": user.id, "name": str(user) }
-                for user in User.objects.exclude(username__in=exclude_users)]
+            "model_id": model.id,
+            "model_title": model.title,
+            "users": users,
+            "can_add_invitee_to_team": model.can_invite_others(user),
         }
 
     @staticmethod

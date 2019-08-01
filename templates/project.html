@@ -595,12 +595,12 @@ $(function() {
 function invite_user_into_project() {
   var info = project_invitation_info;
   show_invite_modal(
-    'Invite To Project Team (' + info.project_title + ')',
+    'Invite To Project Team (' + info.model_title + ')',
     'Invite a colleague to join this project team.',
     info,
-    'Please join the project team for ' + info.project_title + '.',
+    'Please join the project team for ' + info.model_title + '.',
     {
-      project: info.project_id,
+      project: info.model_id,
       add_to_team: "1"
     },
     function() { window.location.reload() }
@@ -612,12 +612,12 @@ function invite_user_into_project() {
 function invite_user_to_start_module(module_title, question_id) {
   var info = project_invitation_info;
   show_invite_modal(
-    'Start a Module (' + info.project_title + ')',
+    'Start a Module (' + info.model_title + ')',
     'Invite a colleague to answer the module ' + module_title + '.',
     info,
-    'Can you give me a hand completing the module ' + module_title + ' for ' + info.project_title + '?',
+    'Can you give me a hand completing the module ' + module_title + ' for ' + info.model_title + '?',
     {
-      project: info.project_id,
+      project: info.model_id,
       into_new_task_question_id: question_id
     },
     function() { window.location.reload() }

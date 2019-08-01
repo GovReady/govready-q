@@ -97,6 +97,7 @@ Remove contextbar from top of page
 
       <div id="portfolio-members" class="container">
         <div class="row" style="margin-top: 60px;">
+          <p id="portfolio-members"></p>
           <p> <b>Users With Access:</b></p>
           {% for user in users_with_perms %}
           <div id="portfolio-member-{{user.name}}">
@@ -137,12 +138,12 @@ Remove contextbar from top of page
         function invite_user_into_portfolio() {
           var info = project_invitation_info;
           show_invite_modal(
-            'Invite To A Portfolio (' + info.portfolio_title + ')',
+            'Invite To A Portfolio (' + info.model_title + ')',
             'Give a colleague access to this portfolio.',
             info,
-            'You have been granted access to the portfolio ' + info.portfolio_title + '.',
+            'You have been granted access to the portfolio ' + info.model_title + '.',
             {
-              portfolio: info.portfolio_id,
+              portfolio: info.model_id,
             },
             function () { window.location.reload() }
           );
