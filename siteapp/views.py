@@ -1152,7 +1152,7 @@ def update_permissions(request):
 def portfolio_list(request):
     """List portfolios"""
     return render(request, "portfolios/index.html", {
-        "portfolios": Portfolio.get_all_readable_by(request.user) if request.user.is_authenticated else None
+        "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None
     })
 
 @login_required

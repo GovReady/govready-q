@@ -244,6 +244,17 @@ class User(AbstractUser):
     def can_see_any_org_settings(self):
         return ProjectMembership.objects.filter(project__is_organization_project=True).exists()
 
+    def portfolio_list(self):
+        portfolio_permissions = Portfolio.get_all_readable_by(self)
+        project_permissions = self.get_portfolios_from_projects()
+        return portfolio_permissions | project_permissions
+
+    def get_portfolios_from_projects(self):
+        projects = get_objects_for_user(self, 'siteapp.view_project')
+        portfolio_list = projects.values_list('portfolio', flat=True)
+        portfolios = Portfolio.objects.filter(id__in=portfolio_list)
+        return portfolios
+
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):
     # Register in settings.py!
