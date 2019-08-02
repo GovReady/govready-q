@@ -368,6 +368,9 @@ class Portfolio(models.Model):
         for perm in permissions:
             remove_perm(perm.codename, user, self)
 
+    def remove_owner_permissions(self, user):
+        remove_perm('can_grant_portfolio_owner_permission', user, self)
+
     def get_invitation_verb_inf(self, invitation):
         return "to view"
 

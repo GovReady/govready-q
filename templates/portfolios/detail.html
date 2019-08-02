@@ -104,6 +104,16 @@ Remove contextbar from top of page
           <p class="inline"> {{user.name}}
             {% if user.owner %}
             (Owner)
+            {% if can_invite_to_portfolio and request.user.id != user.id %}
+            <form id="{{user.name}}_remove_permissions" name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">
+                {% csrf_token %}
+                <input type="hidden" id="portfolio_id" name="portfolio_id" value={{portfolio.id}}>
+                <input type="hidden" id="user_id" name="user_id" value={{user.id}}>
+                <input type="hidden" id="permission" name="permission" value="remove_owner_permissions">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <input type="submit" value="Remove Ownership" class="btn btn-sm btn-danger" />
+            </form>
+            {%endif%}
           </p>
           {% elif can_invite_to_portfolio %}
           <form id="{{user.name}}_remove_permissions" name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">

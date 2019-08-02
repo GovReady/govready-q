@@ -1143,6 +1143,8 @@ def update_permissions(request):
         portfolio.remove_permissions(user)
       elif permission == 'grant_owner_permission':
         portfolio.assign_owner_permissions(user)
+      elif permission == 'remove_owner_permissions':
+          portfolio.remove_owner_permissions(user)
     next = request.POST.get('next', '/')
     return HttpResponseRedirect(next)
 
