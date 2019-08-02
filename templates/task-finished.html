@@ -6,12 +6,29 @@
 {{m.title}}
 {% endblock %}
 
+{% block head %}
+
+{{block.super}}
+<style>
+  #focus-area-wrapper {
+    /* on mobile, space between columns */
+    margin-bottom: 30px;
+  }
+
+  h1 {
+    margin: 4px 0 18px 0;
+    font-size: 22px;
+    font-weight: bold;
+  }
+</style>
+{% endblock %}
+
 {% block body %}
   {{ block.super }}
 
 <div class="row">
   <div id="focus-area-wrapper" class="col-sm-12 col-md-10 col-lg-8">
-
+    <h1 style="margin:0.5em 0 1em 0;">...and we&rsquo;re done</h1>
     {% if top_of_page_output %}
       <div style="margin-bottom: 30px;">
         {{top_of_page_output.html|safe}}
@@ -120,16 +137,39 @@
           {% else %}
             {% if answers_question.task == answers_question.task.project.root_task %}
               {# return to project #}
-              <p><a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{answers_question.question.spec.tab|slugify}}/{{answers_question.question.spec.group|slugify}}/{{answers_question.question.key|slugify}}/{{task.id}}" class="btn btn-success">
-                {# we used to say 'with other modules in {{task.project.title}}' but there may not be any other modules #}
-                Continue &raquo;
-              </a></p>
+              <p>
+                {# Show this form when we successfully determine next question #}
+                {% if next_module_spec %}
+                  {# Start a task directly using the module type in the specification. #}
+                  {% if not next_module_spec.protocol %}
+                  <form class="start-task" method="post" action="/tasks/start"
+                        onclick="$(this).submit();" style="cursor: pointer">
+                        {% csrf_token %}
+                        <input type="hidden" name="project" value="{{task.project.id}}"/>
+                        <input type="hidden" name="question" value="{{next_module_spec.id}}"/>
+                        <input type="hidden" name="previous" value="project"/>
+                    {% else %}
+                      {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
+                      <form method="get" action="/store"
+                        onclick="$(this).submit();" style="cursor: pointer">
+                        <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{next_module_spec.id}}">
+                    {% endif %}
+                    <div class="btn btn-success">Continue to {{next_module_spec.title}} &raquo;</div>
+                  </form>
+                  <br>
+                {% endif %}
+                {# Include default link to the project page #}
+                <a id="return-to-project" href="{{task.project.get_absolute_url}}#tab={{answers_question.question.spec.tab|slugify}}/{{answers_question.question.spec.group|slugify}}/{{answers_question.question.key|slugify}}/{{task.id}}" class="btn btn-default">
+                  Return to project
+                </a>
+              </p>
             {% else %}
               {# return to non-project parent task #}
               <p><a id="return-to-supertask" href="{{answers_question.task.get_absolute_url}}" class="btn btn-success">
                 Continue Answering {{answers_question.task.title}} &raquo;
               </a></p>
             {% endif %}
+            {# TODO: Does module-set work correctly? #}
             {% if answers_question.question.spec.type == "module-set" %}
               <form method="post" action="/tasks/start" style="display:inline;">
                 {% csrf_token %}

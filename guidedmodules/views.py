@@ -772,6 +772,9 @@ def task_finished(request, task, answered, context, *unused_args):
     task_progress_project_list = []
     # current_mq_group = ""
     current_group = None
+    next_group = None
+    next_module = None
+    next_module_spec = None
 
     # Check if this user has authorization to start tasks in this Project.
     can_start_task = task.project.can_start_task(request.user)
@@ -873,6 +876,11 @@ def task_finished(request, task, answered, context, *unused_args):
         task_progress_project_list.append(tasks_in_group)
         if mq.spec.get('id') == task.module.spec.get('id'):
             current_group = mq.spec.get('group')
+        elif current_group is not None and next_group is None:
+            # Determine next group after current group
+            next_group = mq.spec.get('group')
+            next_module = mq
+            next_module_spec = mq.spec
     ###############################################################################
     # END BLOCK task_progress_project_list
     ###############################################################################
@@ -901,10 +909,13 @@ def task_finished(request, task, answered, context, *unused_args):
         "task_progress_project_list": task_progress_project_list,
         "current_group": current_group,
         "context": module_logic.get_question_context(answered, None),
+        "next_group": next_group,
+        "next_module": next_module,
+        "next_module_spec": next_module_spec,
         # "context": context,
 
     })
-    return render(request, "module-finished.html", context)
+    return render(request, "task-finished.html", context)
 
 @task_view
 def download_answer_file(request, task, answered, context, q, history_id):
