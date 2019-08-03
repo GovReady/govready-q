@@ -5,6 +5,18 @@ set -euf -o pipefail # abort script on error
 # Defaults
 ##########
 
+# The image on hub.docker.com to use. Set with
+# --image IMAGENAME. The default is govready/govready-q.
+# If --image is given, then it is up to the user to
+# run `docker image pull`.
+IMAGE="govready/govready-q"
+PULLIMAGE=1
+
+# The name for the newly run container. Set with
+# --name NAME. If set to the empty string, no name
+# is used. The default is:
+DC_NAME=govready-q
+
 # The site's public address as would be entered in a
 # web browser. Set with --address HOST:PORT. The port
 # is optional if 80. The default is:
@@ -33,6 +45,15 @@ while [ $# -gt 0 ]; do
       DM_NAME="$2"
       shift 2 ;;
 
+    --dc-name)
+      DC_NAME="$2"
+      shift 2 ;;
+
+    --image)
+      IMAGE="$2"
+      PULLIMAGE=0
+      shift 2 ;;
+
     --aws-region)
       AWS_REGION="$2"
       shift 2 ;;
@@ -50,14 +71,20 @@ while [ $# -gt 0 ]; do
 
     --help)
       echo "Starts an instance of GovReady-Q running on AWS via Docker Machine."
-      echo "Usage: "$(basename "$0")" [--help] [--address] [--aws-region] [--debug] [--dm-name]"
       echo " "
+      echo "Usage: "$(basename "$0")" [--help] [--debug] [--aws-region] [--dm-name] [--image] dc-name] [--address govready-q.myorg.com]"
       echo "where:"
       echo "  --address     GovReady-Q's public address as would be entered in a web browser. Set with --address HOST:PORT (PORT optional if 80)."
       echo "  --aws-region  AWS region to launch in, defaults to '$AWS_REGION'."
       echo "  --debug       Turn on Django DEBUG mode."
       echo "  --dm-name     The docker-machine name for the Docker host, defaults to '$DM_NAME'."
+      echo "  --image       Name of the image file to pull from Docker Hub, defaults to '$IMAGE'."
+      echo "  --dc-name     Name to give the Docker container, defaults to '$DC_NAME'."
       echo "  --help        Show this help text."
+      echo " "
+      echo "Example SQLITE:"
+      echo ""$(basename "$0")" --aws-region $AWS_REGION --dm-name $DM_NAME --image $IMAGE --dc-name $DC_NAME --address govready-q.myorg.com"
+      echo ""
       exit 1 ;;
 
     --)
@@ -117,22 +144,28 @@ echo "EC2 instance running and active. Proceed with docker run commands..."
 
 echo "Setting GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR).amazonaws.com"
 export GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR).amazonaws.com
-echo "Setting GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0"
-export GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
+echo "Setting GOVREADY_Q_IMAGENAME=$IMAGE"
+export GOVREADY_Q_IMAGENAME=$IMAGE
 # export GOVREADY_Q_DBURL=postgres://govready_q:my_private_password@grq-002.cog63arfw9bib.us-east-1.rds.amazonaws.com/govready_q
 echo "Set GOVREADY_Q_DBURL to default (blank for SQLITE)"
 
 echo "Bring containers up using: docker run commands..."
 # Pull and run GovReady-Q 0.9.0 container making site available on port 80 with no https
-docker run --detach --name govready-q-0.9.0 -p $PRIVATE_IP:80:8000 \
+echo "Command that will be run:"
+echo "docker run --detach --name $DC_NAME -p $PRIVATE_IP:80:8000 \
 -e HTTPS=false -e DBURL= -e DEBUG=$DEBUG \
 -e HOST=$HOSTNAME \
-govready/govready-q-0.9.0
+$GOVREADY_Q_IMAGENAME"
+# Run the docker command
+docker run --detach --name $DC_NAME -p $PRIVATE_IP:80:8000 \
+-e HTTPS=false -e DBURL= -e DEBUG=$DEBUG \
+-e HOST=$HOSTNAME \
+$GOVREADY_Q_IMAGENAME
 
 # Configure Superuser account for GovReady-Q
 echo " "
 echo "Load demo assessments and create superuser"
-docker exec -it govready-q-0.9.0 first_run
+docker exec -it $DC_NAME first_run
 
 # Provide some friendly feedback
 echo " "
