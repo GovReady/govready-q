@@ -1143,6 +1143,8 @@ def update_permissions(request):
         portfolio.remove_permissions(user)
       elif permission == 'grant_owner_permission':
         portfolio.assign_owner_permissions(user)
+      elif permission == 'remove_owner_permissions':
+          portfolio.remove_owner_permissions(user)
     next = request.POST.get('next', '/')
     return HttpResponseRedirect(next)
 
@@ -1150,7 +1152,7 @@ def update_permissions(request):
 def portfolio_list(request):
     """List portfolios"""
     return render(request, "portfolios/index.html", {
-        "portfolios": Portfolio.get_all_readable_by(request.user) if request.user.is_authenticated else None
+        "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None
     })
 
 @login_required
@@ -1192,7 +1194,7 @@ def portfolio_projects(request, pk):
       "projects": projects,
       "project_form": project_form,
       "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
-      "send_invitation": Invitation.portfolio_form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
+      "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
       "users_with_perms": portfolio.users_with_perms()
       })
 
@@ -1203,31 +1205,22 @@ def send_invitation(request):
     import email_validator
     if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
     try:
-        if not request.POST['user_id'] and not request.POST['user_email']:
+        if not request.POST['user_id']:
             raise ValueError("Select a team member or enter an email address.")
 
-        if request.POST['user_email']:
-            # Validate that the provided email address is syntactically
-            # correct and that the domain name resolved.
-            #
-            # When we're running tests, skip DNS-based deliverability checks
-            # so that tests can be run in a completely offline mode. Otherwise
-            # dns.resolver.NoNameservers will result in EmailUndeliverableError.
-            email_validator.validate_email(request.POST['user_email'], check_deliverability=settings.VALIDATE_EMAIL_DELIVERABILITY)
-
         # Get the recipient user
-        to_user = User.objects.get(id=request.POST["user_id"]) if request.POST.get("user_id") else None,
+        to_user = get_object_or_404(User, id=request.POST.get("user_id"))
 
         # Find the Portfolio and grant permissions to the user being invited
         if request.POST.get("portfolio"):
           from_portfolio = Portfolio.objects.filter(id=request.POST["portfolio"]).first()
-          to_user = get_object_or_404(User, id=request.POST.get("user_id"))
           from_portfolio.assign_editor_permissions(to_user)
           from_project = None
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
         elif request.POST.get("project"):
           from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
+          from_project.assign_editor_permissions(to_user)
           from_portfolio = None
 
         # Authorization for adding invitee to the project team.
