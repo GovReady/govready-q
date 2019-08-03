@@ -11,6 +11,9 @@ from guidedmodules.models import AppSource, Module
 from siteapp.models import User, Organization
 from django.contrib.auth.management.commands import createsuperuser
 
+import fs, fs.errors
+
+
 class Command(BaseCommand):
     help = 'Interactively set up an initial user and organization.'
 
@@ -60,16 +63,17 @@ class Command(BaseCommand):
                 except Exception as e:
                     raise
 
-        # Finally, for authoring
-        # Q currently only works on Unix systems; this is OK bc Window users have to use Docker version locally
-        qfiles_path = "/tmp"
+        # Finally, for authoring, create an AppSource to the stub file
+        qfiles_path = 'guidedmodules/stubs/q-files'
         if os.path.exists(qfiles_path):
+            # For 0.9.x+.
             AppSource.objects.get_or_create(
-                slug="tmp",
+                slug="govready-q-files-stubs",
                 defaults={
                     "spec": { "type": "local", "path": qfiles_path }
                 }
             )
+            print("Adding AppSource for authoring.")
 
         # Create the first user.
         if not User.objects.filter(is_superuser=True).exists():

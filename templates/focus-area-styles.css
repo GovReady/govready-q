@@ -7,7 +7,6 @@ body {
 #focus-area-wrapper {
   border-radius: 10px;
   border-bottom: 1px solid rgb(204, 204, 204);
-  padding: 2em;
-  padding-bottom: 3em;
+  padding: 2em 2em 3em 2em;
   background-color: white;
 }

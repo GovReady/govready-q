@@ -333,7 +333,7 @@ class Organization(models.Model):
         # See admin.py::OrganizationAdmin also.
 
         assert admin_user
-        
+
         # Create instance by passing field values to the ORM.
         org = Organization.objects.create(**kargs)
 
@@ -359,6 +359,9 @@ class Portfolio(models.Model):
             ('view_portfolio', 'View portfolio'),
             ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission'),
         )
+
+    def get_absolute_url(self):
+        return "/portfolios/%s/projects" % (self.id)
 
     @staticmethod
     def get_all_readable_by(user):

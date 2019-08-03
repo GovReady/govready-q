@@ -495,6 +495,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # reset_login()
 
+        # TODO Fix known issue (https://github.com/GovReady/govready-q/issues/681) causing failing test
+        # Fix is best done after new permissions framework extended to projects
         # # Test an invitation to take over editing a task but without joining the project.
         # self.click_element('#question-simple_module') # go to the task page
         # var_sleep(.5) # wait for page to load
@@ -549,6 +551,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # # This takes the user directly to the discussion they were invited to join.
         # # Leave a comment.
+
         # self.fill_field("#discussion-your-comment", "Yes, @me, I am here!\n\nI am here with you!")
         # self.click_element("#discussion .comment-input button.btn-primary")
         # var_sleep(.5) # wait for it to submit

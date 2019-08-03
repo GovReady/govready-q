@@ -21,6 +21,8 @@ Next Question: {{q.spec.title}} | {{task.title}}
   margin-bottom: 30px;
 }
 
+
+
 h1 {
   margin: 4px 0 18px 0;
   font-size: 22px;
@@ -67,7 +69,8 @@ h1 {
 
 {% if q.spec.type == "longtext" %}
 #question .ql-container {
-  font-size: 14pt !important; /* override default quill style */
+  font-size: 10pt !important; /* override default quill style */
+  /*font-family: trebuchet ms;*/
 }
 #question .ql-container p {
   margin-bottom: .75em;
@@ -128,8 +131,15 @@ label:hover .onhover { display: inline; }
 
 {{block.super}}
 
-<div class="row">
-  <div id="focus-area-wrapper" class="col-sm-8 col-md-9">
+<!-- <div class="row"> -->
+
+  <!--
+  <div class="col-spacer col-xs-0 col-sm-0 col-md-0 col-lg-1">
+    &nbsp;
+  </div>
+  -->
+
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 ">
     {% if source_invitation %}
       <div style="margin-bottom: 2em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -165,7 +175,7 @@ label:hover .onhover { display: inline; }
                 <div class="expandy" style="max-height: 4.25em; overflow: hidden;">
                   <div>
                     {% for ex in example_answers %}
-                      <div> 
+                      <div>
                         <div><small style="color: #666;">Example{% if example_answers|length > 1 %} {{forloop.counter}}{% endif %}</small></div>
                         {{ex|safe}}
                       </div>
@@ -351,7 +361,7 @@ label:hover .onhover { display: inline; }
                 {% comment %}
                   The HTML5 number input is a bit confusing in how it handles periods and commas.
                   Browsers seem to currently only support a period or comma as a decimal separator,
-                  depending on the lang attribute on the input or HTML. They do not allow 
+                  depending on the lang attribute on the input or HTML. They do not allow
                   thousands-commas. But we should let users type that in.
                 {% endcomment %}
                 {% if q.spec.min > -1000 and q.spec.max < 1000 %}
@@ -413,7 +423,7 @@ label:hover .onhover { display: inline; }
                         {% if m.project != task.project and m.project.title != title %}
                         {{ m.project.title }}.
                         {% endif %}
-                        
+
                         {% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}}.
 
                         <a href="{{m.get_absolute_url}}" class="onhover" style="color: #999; margin-left: 3px; font-size: 90%;"><span class="glyphicon glyphicon-pencil"> </span></a>
@@ -473,7 +483,7 @@ label:hover .onhover { display: inline; }
                       {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
                         <button id="start-a-discussion" onclick="start_a_discussion();" type=button data-toggleable=false>
                             {# if you can see this page, you can start a conversation #}
-                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss 
+                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss
                         </button>
                       {% endif %}
                       {% if task.can_transfer_owner and write_priv %}
@@ -508,24 +518,26 @@ label:hover .onhover { display: inline; }
                   {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
                   {% if answer_obj and DEBUG %}
                     <button id="clear-button"
-                      type="submit" class="btn btn-default"
+                      type="submit" class="btn btn-link" style="color: #999; font-size: 0.9em;"
                       onclick="$('#question > form input[name=method]').val('clear')">
                         Mark as Unanswered
-                        &raquo;
+                        <!-- &raquo; -->
                       </button>
                   {% endif %}
                 </div> {# /.pull-left #}
-              </div> <!-- /action-buttons -->
 
-            {% if answer_obj and can_review %}
-              <select style="display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this)">
-                {% for key, label in review_choices %}
-                  <option value="{{key}}" {% if answer_obj.reviewed == key %}selected{% endif %}>
-                    {{label}}
-                  </option>
-                {% endfor %}
-              </select>
-            {% endif %}
+                <div class="pull-right" style="margin-top: -10px;">
+                  {% if answer_obj and can_review %}
+                  <select style="display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this)">
+                    {% for key, label in review_choices %}
+                      <option value="{{key}}" {% if answer_obj.reviewed == key %}selected{% endif %}>
+                        {{label}}
+                      </option>
+                    {% endfor %}
+                  </select>
+                {% endif %}
+                </div>
+              </div> <!-- /action-buttons -->
 
           {% else %} {# write_priv #}
             {# User does not have write permission so cannot answer the question, start a discussion, or change the editor. But we instead still want to show the review state. #}
@@ -542,47 +554,23 @@ label:hover .onhover { display: inline; }
         </form>
     </div> <!-- /question -->
 
-    {% include "discussion/discussion.html" %}
+    <div>
+      <hr>
+      {% include "discussion/discussion.html" %}
+    </div>
   </div> <!-- /focus-area-wrapper -->
 
-  <div class="col-xs-12 col-sm-4 col-md-3">
-    <div id="question-history-context">
-        <ul>
-        {% if context %}
-          <p>Progress:</p>
-          {% include "task-progress-question-list.html" with previous="question" %}
-          <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
-          <li>&middot;</li>
-          <li>&middot;</li>
-          <li>&middot;</li>
-          </div>
-          <li>
-            ...and we&rsquo;re done
-          </li>
-        {% endif %}
-        </ul>
-    </div> <!-- /question-history-context -->
-
-    {% if authoring_tool_enabled %}
-    <div id="author-tools" style="margin: 1em 0; font-size: 80%;">
-      <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-pencil" style="color: "></span>
-        Edit
-      </a>
-      &nbsp;&nbsp;
-      <a id="add_new_question" href="#" target="_blank" onclick="authoring_tool_new_question({{task.id}}, false); return false;">
-        <span class="glyphicon glyphicon-plus-sign"></span>
-        New
-      </a>
-      &nbsp;&nbsp;
-      <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-eye-open"></span>
-        Source
-      </a>
-    </div>
-    {% endif %}
+  <div class="col-spacer col-xs-hidden col-sm-1 col-md-1 col-lg-3 col-xl-2">
+    &nbsp;
   </div>
-</div> <!-- /row -->
+
+  <div id="progress-project-area-wrapper" class="col-xs-0 col-sm-2 col-md-3 col-lg-3 col-xl-2"
+       style="background-color: rgb(230, 230, 230); border-radius: 6px;">
+    {% include "task-progress-project-list.html" with previous="question" %}
+  </div>
+
+  </div>
+<!--</div> /row -->
 
 {% if authoring_tool_enabled %}
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
@@ -664,7 +652,7 @@ $(function() {
     // VALIDATION
 
     {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
-    
+
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
@@ -907,7 +895,7 @@ $(function() {
             // the answer.
             form.find('input[name=method]').val('skip');
             form.find('input[name=skipped_reason]').val('dont-know');
-          
+
           } else if ($('#not-applicable-button').hasClass('active')) {
             // Skipping this question because the question doesn't
             // apply to the user's circumstances.
@@ -924,7 +912,7 @@ $(function() {
               }
           }
         }
-        
+
         // Assemble the form submission data.
         //
         // While this would normally work:
