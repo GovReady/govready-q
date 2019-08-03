@@ -294,7 +294,6 @@ class Comment(models.Model):
     # draft / publish / update
 
     def publish(self):
-        print("\n HERE 1")
         if not self.draft: raise Exception("I'm not a draft.")
         self._on_published()
 
