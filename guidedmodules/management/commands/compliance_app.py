@@ -69,7 +69,7 @@ class Command(BaseCommand):
 
             # Copy stub files.
             guidedmodules_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            shutil.copytree(os.path.join(guidedmodules_path, "stub_app"), path, copy_function=shutil.copy)
+            shutil.copytree(os.path.join(guidedmodules_path, "stubs", "q-files","stub_app"), path, copy_function=shutil.copy)
 
             # Edit the app title.
             with rtyaml.edit(os.path.join(path, "app.yaml")) as app:

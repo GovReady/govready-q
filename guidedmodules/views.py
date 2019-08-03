@@ -13,6 +13,8 @@ import guidedmodules.answer_validation as answer_validation
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
 
+import fs, fs.errors
+
 @login_required
 def new_task(request):
     # Create a new task by answering a module question of a project rook task.
@@ -1054,11 +1056,9 @@ def authoring_tool_auth(f):
 @transaction.atomic
 def authoring_create_q(request):
     from guidedmodules.models import AppSource
-
-    import os, os.path, shutil
     from collections import OrderedDict
 
-    import rtyaml
+    new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
 
     # Get the values from submitted form
     new_q = OrderedDict()
@@ -1076,50 +1076,16 @@ def authoring_create_q(request):
             else:
                 new_q[field] = value
 
-    # Assign Q to the "tmp" App Source
-    # We want to be able to author regardless of environment (e.g., local, server, docker, ...)
-    new_q_appsrc = AppSource.objects.get(slug="tmp")
-
-    # Copy over the stub files and save files
-    # Does path exist?
-    if not new_q_appsrc.spec.get("path"):
-        print("AppSource does not have a local path specified!")
-        return
-
-    # What's the path to the app?
-    path = os.path.join(new_q_appsrc.spec["path"], new_q["q_slug"])
-
-    # Does a Q already exist with directory name?
-    # TODO: Better test, test name in database and path?
-    if os.path.exists(path):
-        print("A project with this slug already exists {}".format(os.path.exists(path)))
-        return
-
-    # Copy stub files.
-    guidedmodules_path = os.path.dirname(__file__)
-
-    # Write temporary file
-    shutil.copytree(os.path.join(guidedmodules_path, "stub_app"), path, copy_function=shutil.copy)
-
-    # Edit the app title and catalog information.
-    with rtyaml.edit(os.path.join(path, "app.yaml")) as app:
-        app['title'] = new_q["title"]
-        app['catalog']['description']['short'] = new_q['short_description']
-        app['introduction']['template'] = new_q['short_description']
-        app['category'] = new_q['category']
-
-    # Create a unique icon for the app and delete the existing app icon
-    # svg file that we know is in the stub.
-    from mondrianish import generate_image
-    colors = ("#FFF8F0", "#FCAA67", "#7DB7C0", "#932b25", "#498B57")
-    with open(os.path.join(path, "assets", "app.png"), "wb") as f:
-        generate_image("png", (128, 128), 3, colors, f)
-    # Clean up
-    os.unlink(os.path.join(path, "assets", "app.svg"))
-
-    # Publish our new app
+    # Use stub_app to publish our new app
     try:
-        appver = new_q_appsrc.add_app_to_catalog(new_q["q_slug"])
+        appver = new_q_appsrc.add_app_to_catalog("stub_app" )
+        # Update app details
+        appver.appname = new_q["title"]
+        appver.catalog_metadata["title"] = new_q["title"]
+        appver.catalog_metadata["description"]["short"] = new_q['short_description']
+        appver.catalog_metadata["category"] = new_q["category"]
+        # appver.spec.introduction.template = new_q['short_description']
+        appver.save()
     except Exception as e:
         raise
 
