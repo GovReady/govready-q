@@ -18,8 +18,14 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--non-interactive', action='store_true', help="Don't prompt the user for anything (uses various default values instead)")
 
-    def handle(self, *args, **options): 
+    def prompt(self, msg):
+        return input(msg + "\n> ")
+
+    def handle(self, *args, **options):
+        delay = 0
+        count = 1
+
         if not options['non_interactive']:
-            input("Future versions are expected to ask for user input. For non-interactive usage, run with `--non-interactive`. Waiting for input:\n> ")
+            delay = self.prompt("It's possible to insert a delay between each action, while generating data. Enter the desired number of seconds to wait, or 0 for no delay.")
             
-        call_command('create_and_fill_assessment')
+        call_command('create_and_fill_assessment', '--action-delay', delay)
