@@ -27,7 +27,7 @@
   {{ block.super }}
 
 <div class="row">
-  <div id="focus-area-wrapper" class="col-sm-12 col-md-10 col-lg-8">
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-12 col-md-9 col-lg-8">
     <h1 style="margin:0.5em 0 1em 0;">...and we&rsquo;re done</h1>
     {% if top_of_page_output %}
       <div style="margin-bottom: 30px;">
@@ -102,19 +102,18 @@
 
       {% for document in outputs %}
         <div class="panel panel-default">
-          <div class="panel-heading" role="tab" id="document-{{forloop.counter}}-title">
+          <div class="panel-heading" role="tabx" id="document-{{forloop.counter}}-title">
             <h4 class="panel-title">
-              {% if document.id %}
-              <div class="pull-right">
-                <span class="glyphicon glyphicon-download-alt"
-                  style="cursor: pointer"
-                  onclick="download_document('{{document.id|escapejs}}')"> </span>
-              </div>
-              {% endif %}
-
               <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{forloop.counter}}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{forloop.counter}}-body">
                 {{document.title}}
               </a>
+              {% if document.id %}
+                <div class="pull-right">
+                  <span class="glyphicon glyphicon-download-alt"
+                    style="cursor: pointer"
+                    onclick="download_document('{{document.id|escapejs}}')"> </span>
+                </div>
+              {% endif %}
             </h4>
           </div>
           <div id="document-{{forloop.counter}}-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-{{forloop.counter}}-title">
@@ -125,7 +124,6 @@
         </div>
       {% endfor %}
     </div> <!-- /accordion -->
-
     <div id="continue-nav "style="margin: 2em 0">
       {% with answers_question=task.is_answer_to_unique %}
         {% if answers_question and answers_question.task.editor == request.user %}
@@ -198,14 +196,13 @@
         </a></p>
       {% endif %}
     </div> <!-- / continue panel -->
-
   </div> <!-- focus-area-wrapper -->
 
-  <div class="col-spacer col-xs-0 col-sm-0 col-md-0 col-lg-1">
+  <div class="col-spacer hidden-xs hidden-sm hidden-md col-lg-1">
     &nbsp;
   </div>
 
-  <div id="progress-project-area-wrapper" class="col-xs-0 col-sm-2 col-md-3 col-lg-3"
+  <div id="progress-project-area-wrapper" class="col-xs-6 col-sm-6 col-md-3 col-lg-3"
        style="background-color: rgb(230, 230, 230); border-radius: 6px;">
     {% include "task-progress-project-list.html" with previous="question" %}
   </div>
