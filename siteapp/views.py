@@ -1,6 +1,7 @@
 import random
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.forms import ModelForm
@@ -17,10 +18,10 @@ from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
 
+from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User
-from .forms import PortfolioForm, ProjectForm
 from .notifications_helpers import *
 
 
@@ -307,7 +308,11 @@ def apps_catalog(request):
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
     # Add the portfolio id the user is creating the project from to the args
-    if "portfolio" in request.POST: forward_qsargs["portfolio"] = request.POST["portfolio"]
+    if "portfolio" not in request.POST:
+        messages.add_message(request, messages.ERROR, "Please select 'Start a project' to continue.")
+        return redirect('projects')
+    else:
+        forward_qsargs["portfolio"] = request.POST["portfolio"]
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
@@ -916,7 +921,6 @@ def show_api_keys(request):
     if request.method == "POST" and request.POST.get("method") == "resetkeys":
         request.user.reset_api_keys()
 
-        from django.contrib import messages
         messages.add_message(request, messages.INFO, 'Your API keys have been reset.')
 
         return HttpResponseRedirect(request.path)
@@ -1339,7 +1343,6 @@ def accept_invitation(request, code=None):
 
 def accept_invitation_do_accept(request, inv):
     from django.contrib.auth import authenticate, login, logout
-    from django.contrib import messages
     from django.http import HttpResponseRedirect
     import urllib.parse
 
@@ -1492,8 +1495,6 @@ def organization_settings_save(request):
         return HttpResponseForbidden()
     if request.user not in request.organization.get_organization_project().get_admins():
         return HttpResponseForbidden()
-
-    from django.contrib import messages
 
     if request.POST.get("action") == "remove-from-org-admins":
         # I don't think organization projects have non-admin members so we
