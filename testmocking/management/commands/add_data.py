@@ -26,6 +26,7 @@ class Command(BaseCommand):
         count = 1
 
         if not options['non_interactive']:
+            count = self.prompt("How many assessments do you want to create and populate? (note: if you want to run until canceled, enter a large number, and hit Ctrl-C when you want to stop)")
             delay = self.prompt("It's possible to insert a delay between each action, while generating data. Enter the desired number of seconds to wait, or 0 for no delay.")
             
-        call_command('create_and_fill_assessment', '--action-delay', delay)
+        call_command('create_and_fill_assessment', '--action-delay', delay, '--count', count)
