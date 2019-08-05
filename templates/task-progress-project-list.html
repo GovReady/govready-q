@@ -1,0 +1,66 @@
+<div class="truncate" style="margin: 12px 0 12px 6px; text-align: left; ">
+    PROJECT:&nbsp; <a href="{{task.project.get_absolute_url}}" style="color:#444;">
+      {{task.project.title}}
+    </a>
+    {% if current_group %}
+    <br>
+    SECTION:&nbsp; <a href="{{task.project.get_absolute_url}}#{{current_group}}" style="color:#444;">
+      {{current_group}}
+    </a>
+    {% endif %}
+</div>
+
+{% for pt in task_progress_project_list %}
+  {% if pt.group == current_group %}
+    <div class="truncate" style="margin: 0 0 6px 0; padding: 2px; font-size: 1.0em;text-align:left;">
+      {% if pt.task_id == task.id %}
+      <span class="glyphicon glyphicon-play-circle"> </span> <b>{{task.title}}</b>
+        {% if context|length > 0 %}
+        <div id="question-history-context">
+          <ul>
+          {% if context %}
+            <!-- <p>Progress:</p> -->
+            {% include "task-progress-question-list.html" with previous="question" %}
+            <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
+            <li>&nbsp;</li>
+            </div>
+            <li>
+              <a href="{{task.get_absolute_url}}/finished">...and we&rsquo;re done</a>
+            </li>
+          {% endif %}
+          </ul>
+        </div> <!-- /question-history-context -->
+        {% endif %}
+      {% else %}
+        {% if pt.link == "/TODO" %}
+          {% if pt.type == "module" or pt.type == "module-set" %}
+            {# Start a task directly using the module type in the specification. #}
+            <form class="" method="post" action="/tasks/start"
+              onclick="$(this).submit();" style="cursor: pointer;display: inline;text-align: left;">
+              {% csrf_token %}
+              <input type="hidden" name="project" value="{{task.project.id}}"/>
+              <input type="hidden" name="question" value="{{pt.id}}"/>
+              <input type="hidden" name="previous" value="project"/>
+          {% else %}
+            {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
+            <form method="get" action="/store"
+              onclick="$(this).submit();" style="cursor: pointer; display: inline">
+              <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{q.question.key}}">
+          {% endif %}
+              <div class="btn btn-sm btn-link truncate" style="color: black; font-size: 1.0em; text-align: left;">
+                <span class="glyphicon glyphicon-unchecked"> </span> <!-- Start --> {{pt.title}}
+              </div>
+            </form>
+        {% else %}
+          <form class="truncate">&nbsp;&nbsp;
+            {% if pt.task_started and pt.task_answered %}
+              <span class="glyphicon glyphicon-check"> </span><a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
+            {% elif pt.task_started %}
+              <span class="glyphicon glyphicon-edit"> </span> <a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
+            {% endif %}
+          </form>
+          {% endif %}
+      {% endif %}
+    </div>
+  {% endif %}
+{% endfor %}

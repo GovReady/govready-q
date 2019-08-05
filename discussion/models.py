@@ -340,9 +340,9 @@ class Comment(models.Model):
         # Send invitations to anyone @-mentioned who is not yet a participant
         # in the discussion.
         from siteapp.models import Invitation
+
         for user in mentioned_users - discussion_participants:
             inv = Invitation.objects.create(
-                organization=self.discussion.organization,
                 from_user=self.user,
                 from_project=self.discussion.attached_to_obj.task.project, # TODO: Breaks abstraction, assumes attached_to => TaskAnswer.
                 target=self.discussion,
@@ -355,7 +355,6 @@ class Comment(models.Model):
         # Let the owner object of the discussion know that a comment was left.
         if hasattr(self.discussion.attached_to_obj, 'on_discussion_comment'):
             self.discussion.attached_to_obj.on_discussion_comment(self)
-
 
     def push_history(self, field):
         if not isinstance(self.extra, dict):

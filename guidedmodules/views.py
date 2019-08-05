@@ -13,6 +13,8 @@ import guidedmodules.answer_validation as answer_validation
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
 
+import fs, fs.errors
+
 @login_required
 def new_task(request):
     # Create a new task by answering a module question of a project rook task.
@@ -549,6 +551,130 @@ def show_question(request, task, answered, context, q):
         "text" if q.spec["type"] != "longtext" else "html",
         demote_headings=False)
 
+    ###############################################################################
+    # BLOCK CREATE task_progress_project_list
+    #
+    # TODO: REFACTOR INTO INDIVIDUAL ROUTE
+    # Get higher level context history for this task
+    # This code largely repeated from siteapp > views > project page
+    #
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    # Better to refactor context into its own view
+    # instead of recreating from inside this question
+    ###############################################################################
+
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    root_task_answers = task.project.root_task.get_answers().with_extended_info()
+    task_progress_project_list = []
+    # current_mq_group = ""
+    current_group = None
+
+    # Check if this user has authorization to start tasks in this Project.
+    can_start_task = task.project.can_start_task(request.user)
+
+    # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
+    # Create a "question" record for each question that is displayed by the template.
+    # For module-set questions, create one record to start new entries and separate
+    # records for each answered module.
+    from collections import OrderedDict
+    questions = OrderedDict()
+    can_start_any_apps = False
+
+    # for item in root_task_answers.answertuples.items():
+    for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
+
+        # Display module/module-set questions only. Other question types in a project
+        # module are not valid.
+        if mq.spec.get("type") not in ("module", "module-set"):
+            continue
+
+        # Skip questions that are imputed.
+        if is_answered and not answer_obj:
+            continue
+
+        # Create a "question" record for all Task answers to this question.
+        if answer_value is None:
+            # Question is unanswered - there are no sub-tasks.
+            answer_value = []
+        elif mq.spec["type"] == "module":
+            # The answer is a ModuleAnswers instance. Wrap it in an array containing
+            # just itself so we create as single question entry.
+            answer_value = [answer_value]
+        elif mq.spec["type"] == "module-set":
+            # The answer is already a list of zero-or-more ModuleAnswers instances.
+            pass
+
+        # If the question specification specifies an icon asset, load the asset.
+        # This saves the browser a request to fetch it, which is somewhat
+        # expensive because assets are behind authorization logic.
+        if "icon" in mq.spec:
+            icon = task.project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+        else:
+            icon = None
+
+        for i, module_answers in enumerate(answer_value):
+            # Create template context dict for this question.
+            key = mq.id
+            if mq.spec["type"] == "module-set":
+                key = (mq.id, i)
+            questions[key] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "task": module_answers.task,
+                "can_start_new_task": False,
+                # "discussions": [d for d in discussions if d.attached_to.task == module_answers.task],
+            }
+
+        # Create a "question" record for the question itself it is is unanswered or if
+        # this is a module-set question, and only if the user has permission to start tasks.
+        if can_start_task and (len(answer_value) == 0 or mq.spec["type"] == "module-set"):
+            questions[mq.id] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "can_start_new_task": True,
+            }
+
+            # Set a flag if any app can be started, i.e. if this question has a protocol field.
+            # Is this a protocol question?
+            if mq.spec.get("protocol"):
+                can_start_any_apps = True
+
+        if 'task' in questions[mq.id]:
+            # print("\nquestions[mq.id]['task'].id", dir(questions[mq.id]['task']))
+            task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
+            task_id = questions[mq.id]['task'].id
+            task_started = questions[mq.id]['task'].is_started()
+            task_answered = questions[mq.id]['task'].is_finished()
+        else:
+            # Question not started
+            # TODO: Need better match than "/TODO"
+            task_link = "/TODO"
+            task_id = None
+            task_started = False
+            task_answered = False
+
+        tasks_in_group = {
+            "id": mq.spec.get('id'),
+            "module_id": mq.spec.get('module-id'),
+            "group": mq.spec.get('group'),
+            "title": mq.spec.get('title'),
+            "type": mq.spec.get('type'),
+            "link": task_link,
+            "task_id": task_id,
+            "task_started": task_started,
+            "task_answered": task_answered,
+            }
+        task_progress_project_list.append(tasks_in_group)
+        if mq.spec.get('id') == task.module.spec.get('id'):
+            current_group = mq.spec.get('group')
+    ###############################################################################
+    # END BLOCK task_progress_project_list
+    ###############################################################################
+
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
@@ -573,6 +699,11 @@ def show_question(request, task, answered, context, q):
         "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
 
         "context": module_logic.get_question_context(answered, q),
+
+        # task_progress_project_list parameters
+        "root_task_answers": root_task_answers,
+        "task_progress_project_list": task_progress_project_list,
+        "current_group": current_group,
 
         # Helpers for showing date month, day, year dropdowns, with
         # localized strings and integer values. Default selections
@@ -624,6 +755,138 @@ def task_finished(request, task, answered, context, *unused_args):
         task=task,
     )
 
+    ###############################################################################
+    # BLOCK CREATE task_progress_project_list
+    #
+    # TODO: REFACTOR INTO INDIVIDUAL ROUTE
+    # Get higher level context history for this task
+    # This code largely repeated from siteapp > views > project page
+    #
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    # Better to refactor context into its own view
+    # instead of recreating from inside this question
+    ###############################################################################
+
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    root_task_answers = task.project.root_task.get_answers().with_extended_info()
+    task_progress_project_list = []
+    # current_mq_group = ""
+    current_group = None
+    next_group = None
+    next_module = None
+    next_module_spec = None
+
+    # Check if this user has authorization to start tasks in this Project.
+    can_start_task = task.project.can_start_task(request.user)
+
+    # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
+    # Create a "question" record for each question that is displayed by the template.
+    # For module-set questions, create one record to start new entries and separate
+    # records for each answered module.
+    from collections import OrderedDict
+    questions = OrderedDict()
+    can_start_any_apps = False
+
+    # for item in root_task_answers.answertuples.items():
+    for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
+
+        # Display module/module-set questions only. Other question types in a project
+        # module are not valid.
+        if mq.spec.get("type") not in ("module", "module-set"):
+            continue
+
+        # Skip questions that are imputed.
+        if is_answered and not answer_obj:
+            continue
+
+        # Create a "question" record for all Task answers to this question.
+        if answer_value is None:
+            # Question is unanswered - there are no sub-tasks.
+            answer_value = []
+        elif mq.spec["type"] == "module":
+            # The answer is a ModuleAnswers instance. Wrap it in an array containing
+            # just itself so we create as single question entry.
+            answer_value = [answer_value]
+        elif mq.spec["type"] == "module-set":
+            # The answer is already a list of zero-or-more ModuleAnswers instances.
+            pass
+
+        # If the question specification specifies an icon asset, load the asset.
+        # This saves the browser a request to fetch it, which is somewhat
+        # expensive because assets are behind authorization logic.
+        if "icon" in mq.spec:
+            icon = task.project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+        else:
+            icon = None
+
+        for i, module_answers in enumerate(answer_value):
+            # Create template context dict for this question.
+            key = mq.id
+            if mq.spec["type"] == "module-set":
+                key = (mq.id, i)
+            questions[key] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "task": module_answers.task,
+                "can_start_new_task": False,
+                # "discussions": [d for d in discussions if d.attached_to.task == module_answers.task],
+            }
+
+        # Create a "question" record for the question itself it is is unanswered or if
+        # this is a module-set question, and only if the user has permission to start tasks.
+        if can_start_task and (len(answer_value) == 0 or mq.spec["type"] == "module-set"):
+            questions[mq.id] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "can_start_new_task": True,
+            }
+
+            # Set a flag if any app can be started, i.e. if this question has a protocol field.
+            # Is this a protocol question?
+            if mq.spec.get("protocol"):
+                can_start_any_apps = True
+
+        if 'task' in questions[mq.id]:
+            # print("\nquestions[mq.id]['task'].id", dir(questions[mq.id]['task']))
+            task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
+            task_id = questions[mq.id]['task'].id
+            task_started = questions[mq.id]['task'].is_started()
+            task_answered = questions[mq.id]['task'].is_finished()
+        else:
+            # Question not started
+            # TODO: Need better match than "/TODO"
+            task_link = "/TODO"
+            task_id = None
+            task_started = False
+            task_answered = False
+
+        tasks_in_group = {
+            "id": mq.spec.get('id'),
+            "module_id": mq.spec.get('module-id'),
+            "group": mq.spec.get('group'),
+            "title": mq.spec.get('title'),
+            "type": mq.spec.get('type'),
+            "link": task_link,
+            "task_id": task_id,
+            "task_started": task_started,
+            "task_answered": task_answered,
+            }
+        task_progress_project_list.append(tasks_in_group)
+        if mq.spec.get('id') == task.module.spec.get('id'):
+            current_group = mq.spec.get('group')
+        elif current_group is not None and next_group is None:
+            # Determine next group after current group
+            next_group = mq.spec.get('group')
+            next_module = mq
+            next_module_spec = mq.spec
+    ###############################################################################
+    # END BLOCK task_progress_project_list
+    ###############################################################################
+
     # Construct the page.
 
     top_of_page_output = None
@@ -642,8 +905,19 @@ def task_finished(request, task, answered, context, *unused_args):
         "project": task.project,
         "can_upgrade_app": task.project.root_task.module.app.has_upgrade_priv(request.user),
         "authoring_tool_enabled": task.project.root_task.module.is_authoring_tool_enabled(request.user),
+
+        # task_progress_project_list parameters
+        "root_task_answers": root_task_answers,
+        "task_progress_project_list": task_progress_project_list,
+        "current_group": current_group,
+        "context": module_logic.get_question_context(answered, None),
+        "next_group": next_group,
+        "next_module": next_module,
+        "next_module_spec": next_module_spec,
+        # "context": context,
+
     })
-    return render(request, "module-finished.html", context)
+    return render(request, "task-finished.html", context)
 
 @task_view
 def download_answer_file(request, task, answered, context, q, history_id):
@@ -782,11 +1056,9 @@ def authoring_tool_auth(f):
 @transaction.atomic
 def authoring_create_q(request):
     from guidedmodules.models import AppSource
-
-    import os, os.path, shutil
     from collections import OrderedDict
 
-    import rtyaml
+    new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
 
     # Get the values from submitted form
     new_q = OrderedDict()
@@ -804,50 +1076,16 @@ def authoring_create_q(request):
             else:
                 new_q[field] = value
 
-    # Assign Q to the "tmp" App Source
-    # We want to be able to author regardless of environment (e.g., local, server, docker, ...)
-    new_q_appsrc = AppSource.objects.get(slug="tmp")
-
-    # Copy over the stub files and save files
-    # Does path exist?
-    if not new_q_appsrc.spec.get("path"):
-        print("AppSource does not have a local path specified!")
-        return
-
-    # What's the path to the app?
-    path = os.path.join(new_q_appsrc.spec["path"], new_q["q_slug"])
-
-    # Does a Q already exist with directory name?
-    # TODO: Better test, test name in database and path?
-    if os.path.exists(path):
-        print("A project with this slug already exists {}".format(os.path.exists(path)))
-        return
-
-    # Copy stub files.
-    guidedmodules_path = os.path.dirname(__file__)
-
-    # Write temporary file
-    shutil.copytree(os.path.join(guidedmodules_path, "stub_app"), path, copy_function=shutil.copy)
-
-    # Edit the app title and catalog information.
-    with rtyaml.edit(os.path.join(path, "app.yaml")) as app:
-        app['title'] = new_q["title"]
-        app['catalog']['description']['short'] = new_q['short_description']
-        app['introduction']['template'] = new_q['short_description']
-        app['category'] = new_q['category']
-
-    # Create a unique icon for the app and delete the existing app icon
-    # svg file that we know is in the stub.
-    from mondrianish import generate_image
-    colors = ("#FFF8F0", "#FCAA67", "#7DB7C0", "#932b25", "#498B57")
-    with open(os.path.join(path, "assets", "app.png"), "wb") as f:
-        generate_image("png", (128, 128), 3, colors, f)
-    # Clean up
-    os.unlink(os.path.join(path, "assets", "app.svg"))
-
-    # Publish our new app
+    # Use stub_app to publish our new app
     try:
-        appver = new_q_appsrc.add_app_to_catalog(new_q["q_slug"])
+        appver = new_q_appsrc.add_app_to_catalog("stub_app" )
+        # Update app details
+        appver.appname = new_q["title"]
+        appver.catalog_metadata["title"] = new_q["title"]
+        appver.catalog_metadata["description"]["short"] = new_q['short_description']
+        appver.catalog_metadata["category"] = new_q["category"]
+        # appver.spec.introduction.template = new_q['short_description']
+        appver.save()
     except Exception as e:
         raise
 

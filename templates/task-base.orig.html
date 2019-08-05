@@ -14,7 +14,7 @@
     max-width: 450px;
   }
 
-  #question-history-context, #question-debug-links {
+  #question-history-context, #author-tools, #question-debug-links {
     font-size: 0.85em;
     background-color: rgba(255,255,255,0.2);
     padding: 8px;
@@ -61,24 +61,21 @@
   }
 
   .breadcrumb {
-    font-size: 1.0em;
+    font-size: .8em;
   }
 </style>
 {% endblock %}
 
-  {% block navbar %}
-  {% endblock %}
-
   {% block breadcrumbs %}
     {% if not task.project.is_account_project %}
-    <li>
+    <!-- <li>
       <a href="/">
         <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
       </a>
     </li>
     <li class="hidden-xs">
-      <a href="{{task.project.portfolio.get_absolute_url}}">
-        {{task.project.portfolio.title}}
+      <a href="{{task.project.organization.get_absolute_url}}">
+        {{task.project.organization.name}}
       </a>
     </li>
     {% for parent_project in task.project.get_parent_projects %}
@@ -88,50 +85,46 @@
         </a>
       </li>
     {% endfor %}
-
     <li class="hidden-xs">
       <a href="{{task.project.get_absolute_url}}">
         {{task.project.title}}
       </a>
     </li>
-
-    {% if is_question_page %}
-         <li class="hidden-xs">
-      <a href="{{task.project.get_absolute_url}}#{{current_group}}">
-        {{current_group}}
-      </a>
-    </li>
-    {% endif %}
-
     {% endif %}
     <li class="active">
       {{task.title}}
-    </li>
+    </li> -->
 
-    {% if is_admin %}
+    <!-- <div class="row">
+      <div class="col-spacer xs-hidden sm-hidden md-hidden col-lg-1">
+        &nbsp;
+      </div>
+
+      <div class="col-xs-12 col-sm-8 col-md-7 col-lg-7" style="text-align: center;">
+        <a href="{{task.project.get_absolute_url}}">
+          {{task.project.title}}
+        </a> 
+        /
+        {{task.title}}
+      </div>
+
+        <div class="col-spacer xs-hidden sm-hidden col-md-0 col-lg-1">
+        &nbsp;
+      </div>
+
+      <div id="context-area-wrapper" class="xs-hidden col-sm-2 col-md-3 col-lg-3">
+          {% if is_admin %}
+          <div class="pull-right hidden-xs">
+            <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" style="color: #BBB;"></span></a>
+          </div>
+          {% endif %}
+      </div> -->
+
+  <!--   {% if is_admin %}
     <div class="pull-right hidden-xs">
-      <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" title="Delete answers" style="color: #BBB;"></span></a>
+      <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" style="color: #BBB;"></span></a>
     </div>
-    {% endif %}
-
-    {% if authoring_tool_enabled %}
-    <div id="author-tools" class="pull-right" style="font-size: 80%; margin-right: 8px;">
-      <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-pencil" title="Edit" style="color: #aaa;"></span>
-        <!-- Edit -->
-      </a>
-      &nbsp;&nbsp;
-      <a id="add_new_question" href="#" target="_blank" onclick="authoring_tool_new_question({{task.id}}, false); return false;">
-        <span class="glyphicon glyphicon-plus-sign" title="New Question" style="color: #aaa;"></span>
-        <!-- New -->
-      </a>
-      &nbsp;&nbsp;
-      <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-eye-open" title="View Source" style="color: #aaa;"></span>
-        <!-- Source -->
-      </a>
-    </div>
-    {% endif %}
+    {% endif %} -->
 
   {% endblock %}
 

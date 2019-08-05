@@ -1,6 +1,17 @@
 {% for q in context %}
 {% if not q.imputed %}
-  <li id="link-to-question-{{q.key}}" class="{% if q.is_this_question %}this{% else %}other{% endif %}">
+  <li id="link-to-question-{{q.key}}" 
+      class="truncate
+             {% if q.is_this_question %}this{% else %}other{% endif %}
+             "
+      style="margin:0px;
+             border-top:0.5px dotted #ddd;
+             font-size: 1.0em; padding: 2px 0px 0px 3px; text-overflow: ellipsis;
+             background-color: {% if q.is_this_question %}
+                               {% elif q.skipped %}rgb(241, 220, 219);
+                               {% elif q.answered %}rgb(198, 223, 181);
+                               {% endif %}
+            ">
     {% if not q.is_this_question %}<a href="{{q.link}}?previous={{previous|urlencode}}">{% endif %}
 
     {% if q.is_this_question  %}<span class="glyphicon glyphicon-play-circle"> </span>
@@ -10,7 +21,7 @@
 
     {{q.title}}
 
-    {% if not q.is_this_question and q.can_link %}</a>{% endif %}
+    {% if not q.is_this_question %}</a>{% endif %}
   </li>
 {% endif %}
 {% endfor %}
