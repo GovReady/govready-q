@@ -112,9 +112,13 @@ class Command(BaseCommand):
             org = Organization.objects.get(slug="main")
 
         # Add the user to the org's help squad and reviewers lists.
-        if user not in org.help_squad.all(): org.help_squad.add(user)
-        if user not in org.reviewers.all(): org.reviewers.add(user)
+        try:
+            user
+        except NameError:
+            print("[WARNING] Admin already added to Help Squad and Reviewers")
+        else:
+            if user not in org.help_squad.all(): org.help_squad.add(user)
+            if user not in org.reviewers.all(): org.reviewers.add(user)
 
         # Provide feedback to user
         print("You can now login into GovReady-Q...")
-
