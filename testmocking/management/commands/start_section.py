@@ -25,7 +25,7 @@ class Command(BaseCommand):
         parser.add_argument('--username', type=str, required=True, help="username to act on behalf of")
         parser.add_argument('--project', type=int, required=False, help="the project ID to target. If omitted, the most-recent project will be used instead")
         parser.add_argument('--to-completion', action="store_true", help="")
-        parser.add_argument('--delay', default=0, type=int, help="Number of seconds to wait between each action. Must be non-negative (0 is no delay)")
+        parser.add_argument('--delay', default=0, type=float, help="Number of seconds to wait between each action. Must be non-negative (0 is no delay)")
 
     def handle(self, *args, **options):
         def delay():

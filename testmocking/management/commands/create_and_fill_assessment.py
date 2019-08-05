@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--count', default=1, type=int, help="Number of iterations to run (i.e., how many systems to add)")
-        parser.add_argument('--action-delay', default=0, type=int, help="Number of seconds to wait between each action. Must be non-negative (0 is no delay)")
+        parser.add_argument('--action-delay', default=0, type=float, help="Number of seconds to wait between each action. Must be non-negative (0 is no delay)")
 
     def handle(self, *args, **options):
         def echo_section(info):
