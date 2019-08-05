@@ -180,7 +180,7 @@
     {% endif %}
 </div>
 
-<div id="comment-template" style="display: none">
+<div id="comment-template" style="display: none;">
   <div class="comment row">
     <div class="col-xs-2 col-lg-1 avatar-container" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
     </div>
@@ -650,7 +650,7 @@ function render_avatar(container, user) {
     +'</table>'
     +'</div>');
     n.attr('style', user.fallback_avatar.css);
-    n.css({ width: "48px", height: "48px", border: '1px solid #444' });
+    n.css({ width: "36px", height: "36px", border: '1px solid #444' });
   }
 
   n.css({ float: "right" })

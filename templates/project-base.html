@@ -30,7 +30,7 @@ div.subtitle {
 }
 
 .breadcrumb {
-  font-size: .8em;
+  font-size: 1.0em;
 }
 </style>
 {% endblock %}
@@ -41,9 +41,9 @@ div.subtitle {
       <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
     </a>
   </li>
-  <li>
-    <a href="{{project.organization.get_absolute_url}}">
-      {{project.organization.name}}
+  <li class="hidden-xs">
+    <a href="{{project.portfolio.get_absolute_url}}">
+      {{project.portfolio.title}}
     </a>
   </li>
   {% for parent_project in project.get_parent_projects %}
@@ -83,12 +83,11 @@ div.subtitle {
       {% endif %}
 
       {% if project.organization %}
-      {% with project.title as title %}
       <h1 id="project-title">
-        {{project.organization.name}} / 
-        {{title}}
+        {{project.title}}
         {% block title_suffix_text %}
         {% endblock %}
+        <br><small>Project ID: {{project.id}} &nbsp;|&nbsp; Portfolio: <a href="{{project.portfolio.get_absolute_url}}" style="color: inherit;">{{project.portfolio.title}}</a></small>
       </h1>
 
       {% if title != project.root_task.module.spec.title %}
@@ -96,7 +95,6 @@ div.subtitle {
         {{project.root_task.module.spec.title}}
       </div>
       {% endif %}
-      {% endwith %}
       {% endif %}
       <div class="clearfix"></div>
 

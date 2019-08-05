@@ -18,7 +18,7 @@ div.modal-content{
   .modal.right .modal-dialog {
     position: fixed;
     margin: auto;
-    width: 440px;
+    width: 450px;
     height: calc(100% - 53px);
     -webkit-transform: translate3d(0%, 0, 0);
         -ms-transform: translate3d(0%, 0, 0);
@@ -40,10 +40,11 @@ div.modal-content{
 /*Left*/
   .modal.left.fade .modal-dialog{
     left: -320px;
-    -webkit-transition: opacity 0.2s linear, left 0.2s ease-out;
-       -moz-transition: opacity 0.2s linear, left 0.2s ease-out;
-         -o-transition: opacity 0.2s linear, left 0.2s ease-out;
-            transition: opacity 0.2s linear, left 0.2s ease-out;
+    top:53px;
+    -webkit-transition: opacity 0.0s linear, left 0.0s ease-out;
+       -moz-transition: opacity 0.0s linear, left 0.0s ease-out;
+         -o-transition: opacity 0.0s linear, left 0.0s ease-out;
+            transition: opacity 0.0s linear, left 0.0s ease-out;
   }
 
   .modal.left.fade.in .modal-dialog{
@@ -67,6 +68,7 @@ div.modal-content{
 /*Center*/
   .modal.center.fade .modal-dialog {
     /*right: -320px;*/
+    width: 620px;
     top:22px;
     -webkit-tranition: opacity 0.0s linear, right 0.0s ease-out;
        -moz-transition: opacity 0.0s linear, right 0.0s ease-out;
@@ -344,27 +346,27 @@ label {
         <form class="form-horizontal" onsubmit="return false;">
           <div class="form-group">
             <label for="authoring_tool_q_2_title" class="col-sm-2 control-label">Name</label>
-            <div class="col-sm-10">
+            <div class="col-sm-9">
               <input type="text" class="form-control" id="authoring_tool_q_2_title" name="title">
             </div>
           </div>
           <div class="form-group">
             <label for="authoring_tool_q_name" class="col-sm-2 control-label">Slug</label>
-            <div class="col-sm-10">
+            <div class="col-sm-9">
               <input type="text" class="form-control" id="authoring_tool_q_name" pattern="[a-zA-Z0-9_-]*" name="q_slug">
               <span class="help-block small">Letters, numbers, "-", "_" only)</span>
             </div>
           </div>
           <div class="form-group">
             <label for="authoring_tool_q_1_ds" class="col-sm-2 control-label">Category</label>
-            <div class="col-sm-10">
-              <input type="text" class="form-control" id="authoring_tool_q_1_ds" name="category" value="Drafts">
+            <div class="col-sm-9">
+              <input type="text" class="form-control" id="authoring_tool_q_1_ds" name="category" value="Draft">
               <span class="help-block small">Ex: Technology, Policy, Drafts, . . .</span>
             </div>
           </div>
           <div class="form-group">
             <label for="authoring_tool_q_1_ds" class="col-sm-2 control-label">Description</label>
-            <div class="col-sm-10">
+            <div class="col-sm-9">
               <input type="text" class="form-control" id="authoring_tool_q_1_ds" name="short_description">
               <span class="help-block small">Less than 100 characters</span>
             </div>

@@ -221,13 +221,7 @@ class PyFsAppSourceConnection(AppSourceConnection):
         for entry in self.root.scandir(""):
             # Is this a valid app directory?
             if not entry.is_dir: continue
-            try:
-                if "app.yaml" not in self.root.listdir(entry.name): continue
-            except:
-                # Skip anything we cannot read. We only care about what we can see.
-                # Of course, this could be a RISK that we aren't seeing an error
-                # TODO: Add better tests for different error states, like no permission.
-                continue
+            if "app.yaml" not in self.root.listdir(entry.name): continue
 
             # Yield an app instance.
             yield PyFsApp(

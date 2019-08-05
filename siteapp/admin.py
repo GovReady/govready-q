@@ -104,9 +104,15 @@ class FolderAdmin(admin.ModelAdmin):
     readonly_fields = ('projects', 'extra')
 
 class ProjectAdmin(GuardedModelAdmin):
-    list_display = ('id', 'organization', 'title', 'root_task', 'created')
+    list_display = ('id', 'portfolio_name', 'title', 'root_task', 'created')
     raw_id_fields = ('organization', 'root_task',)
     readonly_fields = ('id', 'extra',)
+
+    def portfolio_name(self, obj):
+        if obj.portfolio:
+            return obj.portfolio.title
+
+    portfolio_name.admin_order_field = 'portfolio'
 
 class ProjectMembershipAdmin(admin.ModelAdmin):
     list_display = ('project', 'organization', 'user', 'is_admin', 'created')
