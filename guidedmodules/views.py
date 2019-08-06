@@ -194,8 +194,11 @@ def save_answer(request, task, answered, context, __):
     if not task.has_write_priv(request.user):
         return HttpResponseForbidden()
 
-    # normal redirect - reload the page
-    redirect_to = task.get_absolute_url() + "?previous=nquestion"
+    # normal redirect - load next linear question if possible
+    if request.POST["next_linear_question"]:
+        redirect_to = request.POST["next_linear_question"] + "?previous=nquestion"
+    else:
+        redirect_to = task.get_absolute_url() + "?previous=nquestion"
 
     # validate question
     q = task.module.questions.get(id=request.POST.get("question"))
@@ -675,6 +678,16 @@ def show_question(request, task, answered, context, q):
     # END BLOCK task_progress_project_list
     ###############################################################################
 
+    # get context of questions in module
+    context_sorted = module_logic.get_question_context(answered, q)
+    # determine next linear question
+    current_q_index = next((index for (index, d) in enumerate(context_sorted) if d["is_this_question"] == True), None)
+    if current_q_index < len(context_sorted) - 1:
+        next_linear_question = context_sorted[current_q_index + 1]
+    else:
+        next_linear_question = None
+
+
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
@@ -698,7 +711,8 @@ def show_question(request, task, answered, context, q):
         "answer_tasks": answer_tasks,
         "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
 
-        "context": module_logic.get_question_context(answered, q),
+        "context": context_sorted,
+        "next_linear_question": next_linear_question,
 
         # task_progress_project_list parameters
         "root_task_answers": root_task_answers,

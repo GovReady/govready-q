@@ -160,6 +160,7 @@ label:hover .onhover { display: inline; }
     <div id="question">
         <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
             <input type="hidden" name="question" value="{{q.id}}">
+            <input type="hidden" name="next_linear_question" value="{{next_linear_question.link}}">
             <input type="hidden" name="method" value="save">
             <input type="hidden" name="skipped_reason" value="">
             <input type="hidden" name="unsure" value="">
