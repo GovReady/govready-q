@@ -1210,18 +1210,18 @@ def send_invitation(request):
 
         # Get the recipient user
         to_user = get_object_or_404(User, id=request.POST.get("user_id"))
-
+        from_project = None
+        from_portfolio = None
         # Find the Portfolio and grant permissions to the user being invited
         if request.POST.get("portfolio"):
           from_portfolio = Portfolio.objects.filter(id=request.POST["portfolio"]).first()
           from_portfolio.assign_editor_permissions(to_user)
-          from_project = None
+
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
         elif request.POST.get("project"):
           from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
           from_project.assign_editor_permissions(to_user)
-          from_portfolio = None
 
         # Authorization for adding invitee to the project team.
         if not from_project:
