@@ -35,6 +35,10 @@ class Command(BaseCommand):
 
             halt_impute = (options['impute'] == 'halt')
             skip_impute = (options['impute'] == 'skip')
-            answer_randomly(task, halt_impute=halt_impute, skip_impute=skip_impute, quiet=options['quiet'])
+            did_anything = answer_randomly(task, halt_impute=halt_impute, skip_impute=skip_impute, quiet=options['quiet'])
+            if did_anything:
+                delay()
+            else:
+                print("Fully skipped")
+
             print("")
-            delay()
