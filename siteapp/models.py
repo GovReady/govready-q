@@ -543,7 +543,7 @@ class Project(models.Model):
         # this project + anyone that's a guest in dicussion within this project.
         # See get_all_participants for the inverse of this function.
         from guidedmodules.models import Task
-        if ProjectMembership.objects.filter(project=self, user=user).exists():
+        if user.has_perm('view_project', self) or ProjectMembership.objects.filter(project=self, user=user).exists():
             return True
         if Task.get_all_tasks_readable_by(user, recursive=True).filter(project=self).exists():
             return True
