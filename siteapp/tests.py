@@ -247,7 +247,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             username="me3",
             email="test+user3@q.govready.com")
         self.user3.clear_password = get_random_string(16)
-        self.user3.set_password(self.user2.clear_password)
+        self.user3.set_password(self.user3.clear_password)
         self.user3.save()
         self.user3.reset_api_keys()
         self.client.login(username=self.user3.username, password=self.user3.clear_password)
@@ -495,17 +495,15 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # reset_login()
 
-        # TODO Fix known issue (https://github.com/GovReady/govready-q/issues/681) causing failing test
-        # Fix is best done after new permissions framework extended to projects
-        # # Test an invitation to take over editing a task but without joining the project.
-        # self.click_element('#question-simple_module') # go to the task page
-        # var_sleep(.5) # wait for page to load
-        # self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
-        # var_sleep(.5) # wait for page to load
-        # self.click_element('#transfer-editorship')
-        # do_invitation(self.user3.username)
-        # var_sleep(5)
-        # self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
+        # Test an invitation to take over editing a task but without joining the project.
+        self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
+        var_sleep(.5) # wait for page to load
+        self.click_element('#transfer-editorship')
+        do_invitation(self.user3.username)
+        self.fill_field("#id_login", self.user3.username)
+        self.fill_field("#id_password", self.user3.clear_password)
+        self.click_element("form button.primaryAction")
+        self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
 
         # reset_login()
 
