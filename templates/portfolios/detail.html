@@ -95,6 +95,7 @@ Remove contextbar from top of page
       </div>
       {% endif %}
 
+      {% if display_users_with_perms %}
       <div id="portfolio-members" class="container">
         <div class="row" style="margin-top: 60px;">
           <p id="portfolio-members"></p>
@@ -138,6 +139,7 @@ Remove contextbar from top of page
           {% endfor %}
         </div>
       </div>
+      {% endif %}
       {% include "portfolios/select-portfolio-modal.html" %}
       {{ block.super }}
       {% endblock %}
