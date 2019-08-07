@@ -195,7 +195,7 @@ def save_answer(request, task, answered, context, __):
         return HttpResponseForbidden()
 
     # normal redirect - load next linear question if possible
-    if request.POST["next_linear_question"]:
+    if request.POST.get("next_linear_question"):
         redirect_to = request.POST["next_linear_question"] + "?previous=nquestion"
     else:
         redirect_to = task.get_absolute_url() + "?previous=nquestion"
