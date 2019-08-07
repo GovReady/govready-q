@@ -646,7 +646,7 @@ def show_question(request, task, answered, context, q):
             if mq.spec.get("protocol"):
                 can_start_any_apps = True
 
-        if 'task' in questions[mq.id]:
+        if questions.get(mq.id) and 'task' in questions[mq.id]:
             # print("\nquestions[mq.id]['task'].id", dir(questions[mq.id]['task']))
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
