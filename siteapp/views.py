@@ -1181,7 +1181,13 @@ def portfolio_read_required(f):
 
         # Check authorization.
         has_portfolio_permissions = request.user.has_perm('view_portfolio', portfolio)
-        if not has_portfolio_permissions:
+        has_portfolio_project_permissions = False
+        projects = Project.objects.filter(portfolio_id=portfolio.id)
+        for project in projects:
+            if request.user.has_perm('view_project', project):
+                has_portfolio_project_permissions = True
+
+        if not (has_portfolio_permissions or has_portfolio_project_permissions):
             return HttpResponseForbidden()
         return f(request, portfolio.id)
     return g
