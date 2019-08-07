@@ -1202,7 +1202,7 @@ def portfolio_projects(request, pk):
   project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
   return render(request, "portfolios/detail.html", {
       "portfolio": portfolio,
-      "projects": user_projects,
+      "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
       "project_form": project_form,
       "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
       "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
