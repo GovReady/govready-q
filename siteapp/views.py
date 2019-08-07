@@ -1,6 +1,7 @@
 import random
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.forms import ModelForm
@@ -17,10 +18,10 @@ from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
 
+from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User
-from .forms import PortfolioForm, ProjectForm
 from .notifications_helpers import *
 
 
@@ -307,7 +308,11 @@ def apps_catalog(request):
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
     # Add the portfolio id the user is creating the project from to the args
-    if "portfolio" in request.POST: forward_qsargs["portfolio"] = request.POST["portfolio"]
+    if "portfolio" not in request.POST:
+        messages.add_message(request, messages.ERROR, "Please select 'Start a project' to continue.")
+        return redirect('projects')
+    else:
+        forward_qsargs["portfolio"] = request.POST["portfolio"]
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
@@ -916,7 +921,6 @@ def show_api_keys(request):
     if request.method == "POST" and request.POST.get("method") == "resetkeys":
         request.user.reset_api_keys()
 
-        from django.contrib import messages
         messages.add_message(request, messages.INFO, 'Your API keys have been reset.')
 
         return HttpResponseRedirect(request.path)
@@ -1177,7 +1181,13 @@ def portfolio_read_required(f):
 
         # Check authorization.
         has_portfolio_permissions = request.user.has_perm('view_portfolio', portfolio)
-        if not has_portfolio_permissions:
+        has_portfolio_project_permissions = False
+        projects = Project.objects.filter(portfolio_id=portfolio.id)
+        for project in projects:
+            if request.user.has_perm('view_project', project):
+                has_portfolio_project_permissions = True
+
+        if not (has_portfolio_permissions or has_portfolio_project_permissions):
             return HttpResponseForbidden()
         return f(request, portfolio.id)
     return g
@@ -1187,15 +1197,17 @@ def portfolio_projects(request, pk):
   """List of projects within a portfolio"""
   portfolio = Portfolio.objects.get(pk=pk)
   projects = Project.objects.filter(portfolio=portfolio)
+  user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
   anonymous_user = User.objects.get(username='AnonymousUser')
   project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
   return render(request, "portfolios/detail.html", {
       "portfolio": portfolio,
-      "projects": projects,
+      "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
       "project_form": project_form,
       "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
       "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
-      "users_with_perms": portfolio.users_with_perms()
+      "users_with_perms": portfolio.users_with_perms(),
+      "display_users_with_perms": len(portfolio.users_with_perms())
       })
 
 # INVITATIONS
@@ -1210,18 +1222,18 @@ def send_invitation(request):
 
         # Get the recipient user
         to_user = get_object_or_404(User, id=request.POST.get("user_id"))
-
+        from_project = None
+        from_portfolio = None
         # Find the Portfolio and grant permissions to the user being invited
         if request.POST.get("portfolio"):
           from_portfolio = Portfolio.objects.filter(id=request.POST["portfolio"]).first()
           from_portfolio.assign_editor_permissions(to_user)
-          from_project = None
+
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
         elif request.POST.get("project"):
           from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
           from_project.assign_editor_permissions(to_user)
-          from_portfolio = None
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -1339,7 +1351,6 @@ def accept_invitation(request, code=None):
 
 def accept_invitation_do_accept(request, inv):
     from django.contrib.auth import authenticate, login, logout
-    from django.contrib import messages
     from django.http import HttpResponseRedirect
     import urllib.parse
 
@@ -1492,8 +1503,6 @@ def organization_settings_save(request):
         return HttpResponseForbidden()
     if request.user not in request.organization.get_organization_project().get_admins():
         return HttpResponseForbidden()
-
-    from django.contrib import messages
 
     if request.POST.get("action") == "remove-from-org-admins":
         # I don't think organization projects have non-admin members so we
