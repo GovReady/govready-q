@@ -73,30 +73,43 @@ div.subtitle {
   </div>
   {% endif %}
 
-  <div class="{% if is_project_page %}col-md-pull-2{% endif %} col-md-10">
+  <div class="{% if is_project_page %}col-md-pull-2{% endif %} col-md-9">
     <div id="focus-area-wrapper">
       {% block above_title %}
       {% endblock %}
 
-      {% if project.root_task.get_app_icon_url %}
-        <img id="project-icon" src="{{project.root_task.get_app_icon_url}}" alt="Project Icon">
-      {% endif %}
+    <div id="project-title-info" class="row">
+      <div class="col-sm-10">
+        {% if project.root_task.get_app_icon_url %}
+          <img id="project-icon" src="{{project.root_task.get_app_icon_url}}" alt="Project Icon">
+        {% endif %}
 
-      {% if project.organization %}
-      <h1 id="project-title">
-        {{project.title}}
-        {% block title_suffix_text %}
-        {% endblock %}
-        <br><small>Project ID: {{project.id}} &nbsp;|&nbsp; Portfolio: <a href="{{project.portfolio.get_absolute_url}}" style="color: inherit;">{{project.portfolio.title}}</a></small>
-      </h1>
+        {% if project.organization %}
+        <h1 id="project-title">
+          {{project.title}}
+          {% block title_suffix_text %}
+          {% endblock %}
+          <br><small>Project ID: {{project.id}} &nbsp;|&nbsp; Portfolio: <a href="{{project.portfolio.get_absolute_url}}" style="color: inherit;">{{project.portfolio.title}}</a></small>
+        </h1>
 
-      {% if title != project.root_task.module.spec.title %}
-      <div class="subtitle">
-        {{project.root_task.module.spec.title}}
+        {% if title != project.root_task.module.spec.title %}
+        <div class="subtitle">
+          {{project.root_task.module.spec.title}}
+        </div>
+        {% endif %}
+        {% endif %}
+        <div class="clearfix"></div>
       </div>
-      {% endif %}
-      {% endif %}
-      <div class="clearfix"></div>
+      <div class="col-sm-2">
+        <div id="btn-edit-title" style="text-align: center;">
+          {% if not project.is_account_project or project.is_deletable %}
+            {% if project.is_deletable and is_admin %}
+              <button class="btn btn-default btn-small" onclick="return rename_project();">Edit</button>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div><!-- /project-title-info -->
 
       {% if project.lifecycle_stage %}
       {% with nstages=project.lifecycle_stage.0.stages|length %}
