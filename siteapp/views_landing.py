@@ -2,18 +2,24 @@
 # is a landing page and a way to create new organization
 # subdomains.
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
-from django.views.decorators.http import require_http_methods
-from django.urls import reverse
-from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.views.decorators.csrf import csrf_exempt
 from django import forms
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import (Http404, HttpResponse, HttpResponseForbidden,
+                         HttpResponseNotAllowed, HttpResponseRedirect,
+                         JsonResponse)
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
-from .models import User, Organization, Portfolio
+from system_settings.models import SystemSettings
+
 from .forms import PortfolioSignupForm
+from .models import Organization, Portfolio, User
+from .notifications_helpers import notification_reply_email_hook
+
 
 def homepage(request):
     # Main landing page.
@@ -77,6 +83,7 @@ def homepage(request):
         return HttpResponseRedirect('/') # reload
 
     return render(request, "index.html", {
+        "hide_registration": SystemSettings.hide_registration,
         "signup_form": signup_form,
         "portfolio_form": portfolio_form,
         "login_form": login_form,
@@ -189,7 +196,6 @@ def new_org_group(request):
         # "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })
 
-from .notifications_helpers import notification_reply_email_hook
 
 @csrf_exempt
 def project_api(request, project_id):
