@@ -28,7 +28,7 @@ class Command(BaseCommand):
         def echo_section(info):
             print("=== {} ===".format(info))
 
-        admin = User.objects.get(id=1)
+        admin = User.objects.get(id=2)
         org_slug = 'main'
 
         def delay():
