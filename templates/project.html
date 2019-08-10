@@ -244,18 +244,21 @@ h3.question-group-title {
 {% endblock %}
 
 {% block body_content %}
-    {% if project.root_task.module.spec.introduction %}
-      <p style="margin: 1em 0;">
-      {{project.root_task.render_introduction|safe}}
-      </p>
-    {% endif %}
+    <div class="row">
+      <div class="col-sm-12">
+        {% if project.root_task.module.spec.introduction %}
+          <p style="margin: 1em 0;">
+          {{project.root_task.render_introduction|safe}}
+          </p>
+        {% endif %}
 
-    {% if project.root_task.module.spec.is_app_stub %}
-      {# This project is tied to an app that has not yet been imported. #}
-      <h2>Activate App</h2>
-      <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
-    {% endif %}
-
+        {% if project.root_task.module.spec.is_app_stub %}
+          {# This project is tied to an app that has not yet been imported. #}
+          <h2>Activate App</h2>
+          <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
+        {% endif %}
+      </div>
+    </div>
     <div class="row">
     {% with ncolumns=columns|length %}
     {% for column in columns %}
