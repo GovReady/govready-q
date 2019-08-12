@@ -65,6 +65,7 @@ COPY templates ./templates
 COPY fixtures ./fixtures
 COPY q-files ./q-files
 COPY testmocking ./testmocking
+COPY system_settings ./system_settings
 COPY manage.py .
 
 # Flatten static files. Create a local/environment.json file that
