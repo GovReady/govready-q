@@ -26,13 +26,15 @@ Welcome to Compliance Automation
     <div class="col-md-5" style="margin: 40px 0px 30px 0px;">
       <!-- Nav tabs -->
       <ul class="nav nav-tabs" role="tablist">
+        {% if not hide_registration%}
          <li id="tab-register" role="presentation" {% if request.POST.action|escapejs != 'login' %}class="active"{% endif %}><a href="#register" aria-controls="register" role="tab" data-toggle="tab">Register</a></li>
+         {% endif %}
          <li id="tab-signin" role="presentation" {% if request.POST.action|escapejs == 'login' %}class="active"{% endif %}><a href="#signin" aria-controls="signin" role="tab" data-toggle="tab">Sign in</a></li>
       </ul>
 
       <!-- Tab panes -->
       <div class="tab-content">
-        <div role="tabpanel" class="tab-pane {% if request.POST.action|escapejs == 'login' %}active{% endif %}" id="signin">
+        <div role="tabpanel" class="tab-pane {% if hide_registration or request.POST.action|escapejs == 'login' %}active{% endif %}" id="signin">
           <div class="well">
             {% if not request.user.is_authenticated %}
             <a name="signin"></a>
@@ -63,6 +65,7 @@ Welcome to Compliance Automation
             {% endif %}
           </div>
         </div>
+        {% if not hide_registration %}
         <div role="tabpanel" class="tab-pane {% if request.POST.action|escapejs != 'login' %}active{% endif %}" id="register">
           <div class="well">
             <form method="post">
@@ -76,6 +79,7 @@ Welcome to Compliance Automation
             </form>
           </div>
         </div>
+        {% endif %}
       </div><!-- /Tab panes -->
     </div>
   </div>
