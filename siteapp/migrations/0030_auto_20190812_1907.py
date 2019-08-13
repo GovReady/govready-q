@@ -22,13 +22,6 @@ class Migration(migrations.Migration):
                 project.portfolio = portfolio
                 # save project
                 project.save()
-                # assign portfolio permissions
-                for helper in project.organization.help_squad.all():
-                    logger.info("assigning editor permission for {} to {}".format(project.portfolio, helper))
-                    project.portfolio.assign_editor_permissions(helper)
-                for reviewer in project.organization.reviewers.all():
-                    logger.info("assigning owner permission for {} to {}".format(project.portfolio, reviewer))
-                    project.portfolio.assign_owner_permissions(reviewer)
 
             # get project membership object
             project_memberships = ProjectMembership.objects.filter(project=project)
