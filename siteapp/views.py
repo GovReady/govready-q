@@ -1495,6 +1495,9 @@ def organization_settings(request):
         # "reviewers": preload_profiles(request.organization.reviewers.all()),
         "help_squad": preload_profiles(User.objects.all()),
         "reviewers": preload_profiles(User.objects.all()),
+        "projects": Project.objects.all(),
+        "portfolios": Portfolio.objects.all(),
+        "users": User.objects.all()
     })
 
 @login_required

@@ -523,7 +523,18 @@ h3.question-group-title {
                     <!-- {{authz.user_details.name}} -->
                     {{user}}
                   </span>&nbsp;&nbsp;&nbsp;
-                  <span class="role">{{authz.role}}</span>
+                  <span>
+                    {% load guardian_tags %}
+                    {% get_obj_perms user for project as "user_perms" %}
+                    {% if 'project_owner' in user_perms %}
+                    Project Editor
+                    {% elif 'change_project' in user_perms %}
+                    Project Editor
+                    {% elif 'view_project' in user_perms %}
+                    Project Viewer
+                    {% endif %}
+                  </span>
+                  <div class="role">{{authz.role}}</div>
                   {% if is_admin %} {# user loading page is an admin #}
                     {% if authz.is_member %} {# user in the list is an explicit member of the project (e.g. not a discussion guest) #}
                       {% if not authz.is_admin %}
