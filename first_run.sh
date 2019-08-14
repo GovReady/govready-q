@@ -70,7 +70,7 @@ if grep 'RequestFactory' testmocking/web.py --quiet
 then
 	while true;
 	do
-		read -p "Do you want to add some simulated starting data (users, a second organization, and assessments)?\n[y/n] " answer
+		read -p "Do you want to add some simulated starting data (users, a second organization, and assessments)? [y/n] " answer
 		case $answer in
 			[Yy]* ) python3 manage.py populate --full; break;;
 			[Nn]* ) break;;
@@ -88,7 +88,7 @@ echo $SPACER
 # functional line of the script
 while true;
 do
-	read -p "Do you want to run the webserver now, in the foreground?\n[y/n] " answer
+	read -p "Do you want to run the webserver now, in the foreground? [y/n] " answer
 	case $answer in
 		[Yy]* ) python3 manage.py runserver; break;;
 		[Nn]* ) break;;
