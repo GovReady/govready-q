@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 def forwards(apps, schema_editor):
     Portfolio = apps.get_model('siteapp', 'Portfolio')
     Project = apps.get_model('siteapp', 'Project')
+    ProjectMembership = apps.get_model('siteapp', 'ProjectMembership')
 
     projects = Project.objects.all()
 
@@ -26,14 +27,12 @@ def forwards(apps, schema_editor):
         project_memberships = ProjectMembership.objects.filter(project=project)
         for pm in project_memberships:
             # assign editor permissions
-            logger.info("assigning editor permission for {} to {}".format(
-                project, project.user))
-            project.assign_editor_permissions(project.user)
+            logger.info("assigning editor permission for {} to {}".format(pm.project, pm.user))
+            pm.project.assign_editor_permissions(pm.user)
             if pm.is_admin:
                 # if admin assign owner permissions
-                logger.info("assigning owner permission for {} to {}".format(
-                    project, project.user))
-                project.assign_owner_permissions(project.user)
+                logger.info("assigning owner permission for {} to {}".format(pm.project, pm.user))
+                pm.project.assign_owner_permissions(pm.user)
 
     # TODO
     # what to do with project.is_account_project?
