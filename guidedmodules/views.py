@@ -8,10 +8,12 @@ from django.db import transaction
 import re
 
 from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
+
 import guidedmodules.module_logic as module_logic
 import guidedmodules.answer_validation as answer_validation
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
+from siteapp.forms import ProjectForm
 
 import fs, fs.errors
 
@@ -739,6 +741,7 @@ def show_question(request, task, answered, context, q):
         "can_upgrade_app": can_upgrade_app,
         "authoring_tool_enabled": authoring_tool_enabled,
         "is_question_page": True,
+        "project_form": ProjectForm(request.user),
     })
     return render(request, "question.html", context)
 
@@ -929,6 +932,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "next_module": next_module,
         "next_module_spec": next_module_spec,
         # "context": context,
+        "project_form": ProjectForm(request.user, initial={'portfolio': task.project.portfolio.id}) if task.project.portfolio else ProjectForm(request.user)
 
     })
     return render(request, "task-finished.html", context)

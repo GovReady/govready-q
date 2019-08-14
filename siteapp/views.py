@@ -116,11 +116,10 @@ def project_list(request):
         # Put the project into the lifecycle's appropriate stage.
         project.lifecycle_stage[1].setdefault("projects", []).append(project)
 
-    project_form = ProjectForm(request.user)
     return render(request, "projects.html", {
         "lifecycles": lifecycles,
         "projects": projects,
-        "project_form": project_form,
+        "project_form": ProjectForm(request.user),
     })
 
 def get_compliance_apps_catalog_for_user(user):
@@ -348,6 +347,7 @@ def apps_catalog(request):
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
         "authoring_tool_enabled": authoring_tool_enabled,
+        "project_form": ProjectForm(request.user),
     })
 
 @login_required
@@ -432,6 +432,7 @@ def apps_catalog_item(request, source_slug, app_name):
     return render(request, "app-store-item.html", {
         "app": app_catalog_info,
         "error": error,
+        "project_form": ProjectForm(request.user),
     })
 
 
@@ -691,6 +692,7 @@ def project(request, project):
         "action_buttons": action_buttons,
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
+        "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
     })
 
 @project_read_required
@@ -1039,6 +1041,7 @@ def import_project_data(request, project):
     return render(request, "project-import-finished.html", {
         "project": project,
         "log": log_output,
+        "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
     })
 
 def project_start_apps(request, *args):
@@ -1156,7 +1159,8 @@ def update_permissions(request):
 def portfolio_list(request):
     """List portfolios"""
     return render(request, "portfolios/index.html", {
-        "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None
+        "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
+        "project_form": ProjectForm(request.user),
     })
 
 @login_required
@@ -1172,7 +1176,10 @@ def new_portfolio(request):
     else:
         form = PortfolioForm()
 
-    return render(request, 'portfolios/form.html', {'form': form})
+    return render(request, 'portfolios/form.html', {
+        'form': form,
+        "project_form": ProjectForm(request.user),
+    })
 
 def portfolio_read_required(f):
     @login_required
@@ -1207,7 +1214,7 @@ def portfolio_projects(request, pk):
       "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
       "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
       "users_with_perms": portfolio.users_with_perms(),
-      "display_users_with_perms": len(portfolio.users_with_perms())
+      "display_users_with_perms": len(portfolio.users_with_perms()),
       })
 
 # INVITATIONS
@@ -1575,4 +1582,6 @@ def shared_static_pages(request, page):
         "base_template": "base.html",
         "SITE_ROOT_URL": request.build_absolute_uri("/"),
         "password_hash_method": password_hash_method,
+        "project_form": ProjectForm(request.user),
     })
+
