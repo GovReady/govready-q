@@ -18,13 +18,19 @@ div.modal-content{
   .modal.right .modal-dialog {
     position: fixed;
     margin: auto;
-    width: 450px;
+    width: 600px;
     height: calc(100% - 53px);
     -webkit-transform: translate3d(0%, 0, 0);
         -ms-transform: translate3d(0%, 0, 0);
          -o-transform: translate3d(0%, 0, 0);
             transform: translate3d(0%, 0, 0);
   }
+
+@media screen and (max-width: 700px) {
+  .modal.left .modal-dialog, .modal.right .modal-dialog {
+     width: 400px;
+  }
+}
 
   .modal.left .modal-content,
   .modal.right .modal-content {
