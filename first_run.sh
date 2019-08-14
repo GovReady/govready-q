@@ -63,23 +63,16 @@ echo $SPACER
 python3 manage.py first_run
 echo $SPACER
 
-# prompt the user if they want to run data generation, but only if it's
-# going to work (there's a different pull request which makes that datagen
-# less prone to failure)
-if grep 'RequestFactory' testmocking/web.py --quiet
-then
-	while true;
-	do
-		read -p "Do you want to add some simulated starting data (users, a second organization, and assessments)? [y/n] " answer
-		case $answer in
-			[Yy]* ) python3 manage.py populate --full; break;;
-			[Nn]* ) break;;
-			* ) echo "Please answer 'yes' or 'no'";;
-		esac
-	done
-else
-	echo 'Data generation in this script requires data handling improvements from PR #672. Improvements not detected, skipping data generation.'
-fi
+# prompt the user if they want to run data generation
+while true;
+do
+	read -p "Do you want to add some simulated starting data (users, a second organization, and assessments)? [y/n] " answer
+	case $answer in
+		[Yy]* ) python3 manage.py populate --full; break;;
+		[Nn]* ) break;;
+		* ) echo "Please answer 'yes' or 'no'";;
+	esac
+done
 
 echo $SPACER
 
