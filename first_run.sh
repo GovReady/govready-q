@@ -29,7 +29,7 @@ fi
 # install basic requirements as the local user
 pip3 install --user -r requirements.txt
 echo $SPACER
-./fetch_vendor_resources.sh
+./fetch-vendor-resources.sh
 
 # create the local/environment.json file, if it is missing (it generally will be)
 if [ ! -e local/environment.json ];
