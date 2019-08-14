@@ -341,3 +341,12 @@ The functional tests run a headless Chromium web browser session. We welcome ass
 	python3.6 manage.py test
 	...
 	selenium.common.exceptions.WebDriverException: Message: unknown error: Chrome failed to start: exited abnormally
+
+
+### Populating sample data for manual testing and verification
+
+If you wish to add sample data for testing purposes to your GovReady-Q image, run the following command (after `first_run` has completed):
+
+    docker container exec -it govready-q add_data --non-interactive
+
+This will run a quickstart command to generate data in your GovReady-Q instance, as described in more detail in the [Testing](Test.html#populating-sample-data-for-manual-testing-and-verification) section of this documentation.

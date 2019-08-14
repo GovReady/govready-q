@@ -104,6 +104,9 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
     # sooo... sometimes we might have accidentally created a project with no admin. Use the org admin instead.
     dummy_user = task.project.organization.get_organization_project().get_admins()[0]
 
+    # we want to communicate back to the caller whether this was fully skipped or not
+    did_anything = False
+
     for question in task.module.questions.order_by('definition_order'):
         if (halt_impute or skip_impute) and 'impute' in question.spec:
             log("'impute' handling not yet implemented, skipping " + question.key)
@@ -134,11 +137,14 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
         elif type == 'module' and 'module-id' in question.spec:
             subtask = task.get_or_create_subtask(dummy_user, question, create=True)
             log("doing subtask")
+            did_anything = True
             continue
         
         if not answer and type != 'interstitial':
             print("Cannot answer question of type '" + type + "'")
             continue
+
+        did_anything = True
         
         log(str((question.key, type, answer)))
         taskans, isnew = TaskAnswer.objects.get_or_create(task=task, question=question)
@@ -157,6 +163,8 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
         else:
             log("No change?")
             break
+
+        return did_anything
 
 
 import requests

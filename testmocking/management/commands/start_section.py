@@ -12,6 +12,8 @@ from testmocking.web import WebClient
 
 from guidedmodules.models import Project
 
+from time import sleep, ctime
+
 class Command(BaseCommand):
     client = None
     bad_comps = []
@@ -23,8 +25,14 @@ class Command(BaseCommand):
         parser.add_argument('--username', type=str, required=True, help="username to act on behalf of")
         parser.add_argument('--project', type=int, required=False, help="the project ID to target. If omitted, the most-recent project will be used instead")
         parser.add_argument('--to-completion', action="store_true", help="")
+        parser.add_argument('--delay', default=0, type=float, help="Number of seconds to wait between each action. Must be non-negative (0 is no delay)")
 
     def handle(self, *args, **options):
+        def delay():
+            if options['delay'] > 0:
+                print("pausing for {} seconds -- at {}".format(options['delay'], ctime()))
+                sleep(options['delay'])
+
         self.client = WebClient(options['username'], options['org'])
 
         project = options['project']
@@ -36,4 +44,5 @@ class Command(BaseCommand):
         print("{} sections available at the start".format(count))
         if options['to_completion']:
             while count > 1:
+                delay()
                 count = self.client.start_section_for_proj(project)
