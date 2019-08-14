@@ -1,0 +1,55 @@
+{% load guardian_tags %}
+
+<h2>Permissions</h2>
+<h3> Project Permissions</h3>
+<table class="table" style="width: auto;">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Project Name</th>
+      <th>View </th>
+      <th>Add</th>
+      <th>Change</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for project in projects %}
+    {% for user in users %}
+    {% get_obj_perms user for project as "user_perms" %}
+    {% if user_perms%}
+    <tr>
+      <td>
+        {{user.username}}
+      </td>
+      <td>
+        {{project}}
+      </td>
+      <td>
+        {% if 'view_project' in user_perms %}
+        ✓
+        {% endif%}
+      </td>
+
+      <td>
+        {% if 'add_project' in user_perms %}
+        ✓
+        {% endif%}
+      </td>
+      <td>
+        {% if 'change_project' in user_perms %}
+        ✓
+        {% endif%}
+      </td>
+      <td>
+        {% if 'delete_project' in user_perms %}
+        ✓
+        {% endif%}
+      </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    {% endfor %}
+  </tbody>
+</table>

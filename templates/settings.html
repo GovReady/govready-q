@@ -57,6 +57,9 @@ GovReady-Q Setup
   </p>
   {% endif %}
   {% endif %}
+
+  {% include "permissions.html" with users=users portfolios=portfolios projects=projects %}
+
 {% endblock %}
 
 {% block scripts %}
