@@ -2,6 +2,19 @@ GovReady-Q Release Notes
 ========================
 
 
+v0.8.6.2 (August 14, 2019)
+-----------------------
+
+Development/testing changes:
+
+* Added `quickstart.sh` script for quick install and testing with mock data.
+* Added mock data generation for testing.
+
+Documentation changes:
+
+* Tabbed docs.
+* Improvements in documentation.
+
 v0.8.6.1 (May 08, 2019)
 -----------------------
 
