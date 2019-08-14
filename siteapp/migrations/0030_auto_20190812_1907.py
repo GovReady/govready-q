@@ -66,10 +66,6 @@ def forwards(apps, schema_editor):
                 logger.info("assigning owner permission for {} to {}".format(pm.project, pm.user))
                 assign_owner_permissions(apps, project, pm.user)
 
-    # TODO
-    # what to do with project.is_account_project?
-    # what to do with project.is_organization_project?
-
 
 class Migration(migrations.Migration):
 
