@@ -58,6 +58,8 @@ class Command(BaseCommand):
                 call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.subdomain)
 
                 final_output.append('Finished org {}. Check subdomain "{}" using user:pass {} : {}'.format(org.name, org.subdomain, admin.username, options['password']))
+                final_output.append('\nEDIT /etc/hosts TO ADD:\n\n127.0.0.1  {}.localhost\n'.format(org.subdomain))
+                final_output.append('OPEN IN WEB BROWSER (assuming standard options):\n\nhttp://{}.localhost:8000/\n'.format(org.subdomain))
 
         for line in final_output:
             print(line)
