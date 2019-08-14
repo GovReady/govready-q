@@ -1,0 +1,146 @@
+id: app
+title: (Demo) Rules of Behavior
+type: project
+protocol:
+- govready.com/apps/compliance/2017/nist-sp-800-53-r4-ssp
+- govready.com/apps/compliance/2017/rules-of-behavior
+version: 0.7.1
+icon: app.png
+
+catalog:
+  category: Technology
+  vendor: GovReady
+  vendor_url: http://www.govready.com
+  status: draft
+  version: 0.3
+  source_url: https://github.com/GovReady/govready-apps-dev/tree/published/apps/rules-of-behavior
+  description:
+    short: Document organization's Rules of Behavior
+    long: Document organization's Rules of Behavior
+
+introduction:
+  format: markdown
+  template: >-
+    Document your organization's Rules of Behavior
+
+questions:
+- id: general_info
+  title: General Information
+  type: module
+  module-id: general_info
+
+- id: rob
+  title: Rules of Behavior
+  type: module
+  module-id: rob
+
+- id: misc
+  title: Miscellaneous Information
+  type: module
+  module-id: misc
+
+- id: controls_80053r4
+  title: 800-53r4 Controls
+  type: module
+  module-id: controls_80053r4
+  placement: action-buttons
+
+output:
+
+- id: ssp_nist80053r4_AC_2
+  title: NIST 800-53r4 AC-2 Account Management
+  format: markdown
+  template: |
+    {% if project.general_info.exists != "yes" %}The following controls will be in place with the completion of the Rules of Behavior.{% endif %}
+
+    {{project.rob.applies_to}}
+
+    {{project.general_info.obtain}}
+
+- id: ssp_nist80053r4_AT_2
+  title: NIST 800-53r4 AT-2 Security Awareness Training
+  format: markdown
+  template: >+
+    {% if project.general_info.exists != "yes" %}The following controls will be in place with the completion of the Rules of Behavior.{% endif %}
+
+    The organization Rules of Behavior (officially titled _{{project.general_info.official_name}}_) {% if project.general_info.exists == "yes" %}describes{% else %}will describe{% endif %} general responsibilities and expected media protection behavior of personnel with access to organization IT resources.
+
+- id: ssp_nist80053r4_MP_1
+  title: NIST 800-53r4 MP-1 Media Protection Policy And Procedures
+  format: markdown
+  template: >+
+    {% if project.general_info.exists != "yes" %}The following controls will be in place with the completion of the Rules of Behavior.{% endif %}
+
+    Media protection policy and procedures {% if project.general_info.exists == "yes" %}are{% else %}will be{% endif %} documented in System Security Plan and the IT System Rules of Behavior. These documents provide the roles and responsibilities for media protection policies and procedures as it pertains to clearing, sanitization, disposal, and storage of media.
+
+- id: ssp_nist80053r4_PL_4
+  title: NIST 800-53r4 PL-4 Rules of Behavior
+  format: markdown
+  template: >+
+    {% if project.general_info.exists == 'yes' %}
+
+    {{project.general_info.organization}} implements Control PL-4 with its Rules of Behavior document
+    officially titled _{{project.general_info.official_name}}_.
+    The Rules of Behavior describes users' responsibilities and expected behavior when using {{organization}} IT resources.
+    {{project.rob.applies_to}}
+
+    The Rules of Behavior doucement is maintained as a {{project.general_info.source_repo.text}}. {{project.general_info.source_repo_identifier}}
+
+    The {{project.general_info.role_owner}} maintains the Rules of Behavior and reviews
+    the Rules of Behavior {{project.general_info.review_frequency.text}}. 
+
+    
+    {{project.general_info.obtain}}
+
+    {% if project.general_info.source_public == 'yes' %}
+    The Rules of Behavior is available publicly online at [{{project.general_info.source_public_url}}]({{project.general_info.source_public_url}}).
+    {% else %}
+    The Rules of Behavior is not available publicly online.
+    {% endif %}
+
+    {% else %}
+
+    {{project.general_info.organization}} will implement Control PL-4 with Rules of Behavior document
+    officially titled _{{project.general_info.official_name}}_.
+    The Rules of Behavior will describe users' responsibilities and expected behavior when using {{organization}} IT resources.
+    {{project.rob.applies_to}}
+
+    The Rules of Behavior doucement will be maintained as a {{project.general_info.source_repo.text}}. {{project.general_info.source_repo_identifier}}
+
+    The {{project.general_info.role_owner}} will maintain the Rules of Behavior and review
+    them {{project.general_info.review_frequency.text}}. 
+
+
+    {{project.general_info.obtain}}
+
+    {% if project.general_info.source_public == 'yes' %}
+    The Rules of Behavior will be available publicly online at [{{project.general_info.source_public_url}}]({{project.general_info.source_public_url}}).
+    {% else %}
+    The Rules of Behavior will not be available publicly online.
+    {% endif %}
+
+    {% endif %}
+
+- id: ssp_nist80053r4_PS_6
+  title: NIST 800-53r4 PS-6 Access Agreements
+  format: markdown
+  template: >+
+    {% if project.general_info.exists != "yes" %}The following controls will be in place with the completion of the Rules of Behavior.{% endif %}
+
+    The Department {% if project.general_info.exists == "yes" %}has implemented{% else %}will implement{% endif %} a formalized process for user account administration which requires applicable personnel requesting access to organization IT resources read and agree to the Rules of Behavior found in the document officially titled _{{project.general_info.official_name}}_.
+
+- id: ssp_nist80053r4_PS_7
+  title: NIST 800-53r4 PS-7 Third-Party Personnel Security
+  format: markdown
+  template: >+
+    {% if project.general_info.exists != "yes" %}The following controls will be in place with the completion of the Rules of Behavior.{% endif %}
+
+    All contractor support personnel are required to meet the same personnel security policy requirements as {{organization}} personnel who have privileged access to the IT System. Third party providers {% if project.general_info.exists == "yes" %}are required{% else %}will be required{% endif %} to review and sign the Rules of Behavior found in the document officially titled _{{project.general_info.official_name}}_ prior to being granted access to the system.
+
+- id: ssp_nist80053r4_SA_7
+  title: NIST 800-53r4 SA-7 User-Installed Software
+  format: markdown
+  template: |+
+    {% if project.general_info.exists != "yes" %}The following controls will be in place with the completion of the Rules of Behavior.{% endif %}
+
+    {{organization}} {% if project.general_info.exists == "yes" %}uses{% else %}will use{% endif %} the Rules of Behavior (officially titled _{{project.general_info.official_name}}_) to document and set forth appropriate activities on an information system.

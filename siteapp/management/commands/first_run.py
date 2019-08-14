@@ -38,12 +38,18 @@ class Command(BaseCommand):
                     "spec": { "type": "local", "path": "/mnt/apps" }
                 }
             )
-        AppSource.objects.get_or_create(
-            slug="samples",
-            defaults={
-                "spec": { "type": "git", "url": "https://github.com/GovReady/govready-sample-apps" }
-            }
-        )
+        # Second, for 0.9.x startpack (backported to 0.8.6)
+        # We can use forward slashes because we are storing the path in the database
+        # and the path will be applied correctly to the operating OS.
+        qfiles_path = 'q-files/vendors/govready/govready-q-files-startpack/q-files'
+        if os.path.exists(qfiles_path):
+            # For 0.9.x+, and >0.8.6.1.
+            AppSource.objects.get_or_create(
+                slug="govready-q-files-startpack",
+                defaults={
+                    "spec": { "type": "local", "path": qfiles_path }
+                }
+            )
 
         # Create the first user.
         if not User.objects.filter(is_superuser=True).exists():

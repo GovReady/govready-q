@@ -1,0 +1,390 @@
+id: ic_forms_pta
+title: Questions
+output:
+- id: ic_forms_pta
+  title: IC / Form Description
+  format: html
+  filename: templates/ic_forms_pta.md
+  template: |2
+
+    <style>
+      .dos-pta-form {
+        font-family: TimesNewRoman, Times, serif;
+        width: 650px;
+        margin: auto;
+      }
+
+      .dos-pta-form h2 {
+        font-size: 12pt;
+        font-family: TimesNewRoman, Times, serif;
+        background-color: rgb(89, 129, 187);
+        padding: 4px 30px 4px 30px;
+        color: white;
+        font-weight: bold;
+        margin: 0px 0px 0px 0px;
+        margin-top: 2em;
+      }
+
+      .dos-pta-form .cell-full {
+        border-left: 1px solid rgb(89, 129, 187);
+        border-right: 1px solid rgb(89, 129, 187);
+        border-bottom: 1px solid rgb(89, 129, 187);padding: 4px 30px 4px 30px;
+        font-family: TimesNewRoman, Times, serif;
+      }
+
+      .dos-pta-form .cell-left {
+        border-left: 1px solid rgb(89, 129, 187);
+        border-bottom: 1px solid rgb(89, 129, 187);
+        padding: 4px 30px 4px 30px;
+        width: 49.5%;
+        display: table-cell;
+        height: 100%;
+      }
+
+      .dos-pta-form .cell-right {
+        border-left: 1px solid rgb(89, 129, 187);
+        border-right: 1px solid rgb(89, 129, 187);
+        border-bottom: 1px solid rgb(89, 129, 187);
+        padding: 4px 30px 4px 30px;
+        width: 49.5%;
+        display: table-cell;
+        height: 100%;
+        vertical-align: top;
+      }
+
+    </style>
+
+    <div class="dos-pta-form">
+
+      <h2>1. Purpose of the Information Collection or Form</h2>
+      <div class="cell-full">
+        a. Describe the purpose of the information collection or form. <i>Please provide a general description of the project and its purpose, including how it supports the DOS mission, in a way a non-technical person could understand (you may use information from the Supporting Statement).</i>
+        <div style="margin-left: -18px;">
+        <i>If this is an updated PTA, please specifically describe what changes or upgrades are triggering the update to this PTA.</i>
+        </div>
+      </div>
+      <div class="cell-full">
+        {{ q1a|safe }}
+      </div>
+      <div class="cell-full">
+        b. List the DOS (or component) authorities to collect, store, and use this information. <i>If this information will be stored and used by a specific DOS component, list the component-specific authorities.</i>
+      </div>
+      <div class="cell-full">
+        <pre style="background-color: white; border: 0px solid black; font-family: TimesNewRoman, Times, serif;">{{ q1b }}</pre>
+      </div>
+
+      <h2>2. Describe the IC/Form</h2>
+      <div class="cell-left">
+       a. Does this form collect any "Personally Identifiable Information" (PII)?
+      </div>
+      <div class="cell-right">
+        {{ q2a }}
+      </div>
+
+      <div class="cell-full" style="height:0px; border-top: 0px black solid;"></div>
+
+      <div class="cell-left">
+       b. From which type(s) of individuals does this form collect information? <i>(Check all that apply.)</i>
+      </div>
+      <div class="cell-right">
+        <ul>
+          {% for item in q2b %}
+          <li>
+            {{ item.text }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="cell-full" style="height:0px; border-top: 0px black solid;"></div>
+
+      <div class="cell-left">
+       c. Who will complete and submit this form? <i>(Check all that apply.)</i>
+      </div>
+      <div class="cell-right">
+        <ul>
+          {% for item in q2c %}
+          <li>
+            {{ item.text }}
+            {% if item == "businessentity" %}<div style="display:inline;margin-left:5em;">If a business entity, is the only information collected business contact information?<br/>{{ q2c_businesscontactinformation }}</div>{% endif %}
+            {% if item == "other" %} - {{ q2c_other }}{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="cell-full" style="height:0px; border-top: 0px black solid;"></div>
+
+      <div class="cell-left">
+       How do individuals complete the form? <i>(Check all that apply.)</i>
+      </div>
+      <div class="cell-right">
+        <ul>
+          {% for item in q2d %}
+          <li>
+            {{ item.text }}
+            {% if item == "webform" %} - {{ q2d_link }}{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="cell-full">
+       e. What information will DOS collect on the form? <i>List all PII data elements on the form. If the form will collect information from more than one type of individual, please break down list of data elements collected by type of individual.</i>
+      </div>
+      <div class="cell-full">
+        {{ q2e }}
+      </div>
+
+      <div class="cell-full">
+        f. Does this form collect Social Security number (SSN) or other element that is stand-alone Sensitive Personally Identifiable Information (SPII)? <i>Check all that apply.</i>
+      </div>
+      <div class="cell-full">
+        <ul>
+          {% for item in q2f %}
+          <li>
+            {{ item.text }}
+            {% if item == "other" %} <i>Please list</i>: {{ q2f_other }}{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="cell-full">
+        g. List the <b><i>specific authority</i></b> to collect SSN or these other SPII elements.
+      </div>
+      <div class="cell-full">
+        {{ q2g }}
+      </div>
+
+      <div class="cell-full">
+        h. How will this information be used? What is the purpose of the collection? Describe <b><i>why</i></b> this collection of SPII is the minimum amount of information necessary to accomplish the purpose of the program.
+      </div>
+      <div class="cell-full">
+        {{ q2h }}
+      </div>
+
+      <div class="cell-full">
+        i. Are individuals provided notice at the time of collection by DOS?<i>(Does the records subject have notice of the collection or is form filled out by third party?)</i>
+      </div>
+      <div class="cell-full">
+        {{ q2i }}{% if q2i == "yes" %} <i>Please describe how notices is provided.</i>: {{ q2i_describe }}{% endif %}
+      </div>
+
+    </div>
+questions:
+- id: q1
+  title: 1. Purpose of the Information Collection or Form
+  prompt: |
+    Purpose of the Information Collection or Form
+
+    The next few questions will ask about the purpose of the information collection or form.
+  type: interstitial
+- id: q1a
+  title: 1a. Describe the purpose of the information collection or form
+  prompt: |
+    1a. Describe the purpose of the information collection or form.
+
+    Please provide a general description of the project and its purpose, including how it supports the DOS mission, in a way a non-technical person could understand (you may use information from the Supporting Statement).
+
+    If this is an updated PTA, please specifically describe what changes or upgrades are triggering the update to this PTA.
+  type: longtext
+- id: q1b
+  title: 1b. DOS(or component) authorities to collect, store, and use this information
+  prompt: |
+    1b. List the DOS(or component) authorities to collect, store, and use this information.
+
+    If this information will be stored and used by a specific DOS component, list the component-specific authorities.
+  type: longtext
+- id: q2
+  title: 2. Describe the IC/Form
+  prompt: |
+    2. Describe the IC/Form
+
+    In the next few questions, describe the IC/form.
+  type: interstitial
+- id: q2a
+  title: 2a. Collecting "Personally Identifiable Information" (PII)
+  prompt: |
+    2a. Does this form collect any "Personally Identifiable Information" (PII)?
+  type: yesno
+- id: q2b
+  title: 2b. Which type(s) of individuals
+  prompt: "2b. From which type(s) of individuals does this form collect information?
+    (Check all that apply.) \n"
+  type: multiple-choice
+  choices:
+  - key: members_of_the_public
+    text: Members of the public
+  - key: us_citizens_permanent_residents
+    text: U.S. citizens or lawful permanent residents
+  - key: non_us_persons
+    text: Non-U.S. Persons.
+  - key: agency_employees
+    text: DOS Employees
+  - key: agency_contractors
+    text: DOS Contractors
+  - key: other_feds_contractors
+    text: Other federal employees or contractors.
+  min: 0
+  max: ~
+- id: q2c
+  title: 2c. Who will complete and submit this form
+  prompt: |
+    2c. Who will complete and submit this form? (Check all that apply.)
+  type: multiple-choice
+  choices:
+  - key: record_subject
+    text: The record subject of the form (e.g., the individual applicant).
+  - key: legal_representative
+    text: Legal Representative (preparer, attorney, etc.).
+  - key: business_entity
+    text: Business entity.
+  - key: law_enforcement
+    text: Law enforcement.
+  - key: agency_employee_contractor
+    text: DOS employee or contractor.
+  - key: other
+    text: Other individual/entity/organization that is NOT the record subject.
+  min: 0
+  max: ~
+- id: q2c_businesscontactinformation
+  title: 2c. Business contact information
+  prompt: |
+    2c. Is the only information collected business contact information?
+
+    You said in the previous question that a business entity will complete and submit this form.
+  type: yesno
+  impute:
+  - condition: '''businessentity'' not in q2c'
+    value: ~
+- id: q2c_other
+  title: 2c. The other individual/entity/organization
+  prompt: >
+    2c. Describe the other individual/entity/organization that is NOT the record subject
+    who will complete and submit this form.
+
+    You said in the previous question that an other individual/entity/organization
+    entity that is NOT the record subject will complete and submit this form. Describe
+    that entity.
+  type: text
+  impute:
+  - condition: '''other'' not in q2c'
+    value: ~
+
+- id: q2d
+  title: 2d. How do individuals complete the form
+  prompt: |
+    2d. How do individuals complete the form? (Check all that apply.)
+  type: multiple-choice
+  choices:
+  - key: paper
+    text: Paper
+  - key: electronic
+    text: Electronic
+    help: (e.g., Fillable PDF)
+  - key: webform
+    text: Online web form
+  min: 0
+  max: 5
+
+- id: q2d_link
+  title: 2d. Link to the online web form
+  prompt: |
+    2d. Provide the link to the online web form.
+
+    You said in the previous question that individuals complete the form using an online web form. Provide the link to that form.
+  type: url
+  impute:
+  - condition: '''webform'' not in q2c'
+    value: ~
+- id: q2e
+  title: 2e. What information will DOS collect on the form
+  prompt: |
+    2e. What information will DOS collect on the form?
+
+    List all PII data elements on the form. If the form will collect information from more than one type of individual, please break down list of data elements collected by type of individual.
+  type: longtext
+- id: q2f
+  title: 2f. SPII
+  prompt: |
+    2f. Does this form collect Social Security number (SSN) or other element that is stand-alone Sensitive Personally Identifiable Information (SPII)?
+
+    Check all that apply.
+  type: multiple-choice
+  choices:
+  - key: ssn
+    text: Social Security number
+  - key: alien_number
+    text: Alien Number (A-Number)
+  - key: tin
+    text: Tax Identification Number
+  - key: visa_number
+    text: Visa Number
+  - key: passport_number
+    text: Passport Number
+  - key: financial_account_number
+    text: Bank Account, Credit Card, or other financial account number
+  - key: agency_edipi
+    text: DOS Electronic Data Interchange Personal Identifier (EDIPI)
+  - key: social_media_handle
+    text: Social Media Handle/ID
+  - key: known_traveler_number
+    text: Known Traveler Number
+  - key: trusted_traveler_number
+    text: Trusted Traveler Number (Global Entry, Pre-Check, etc.)
+  - key: drivers_license_number
+    text: Driver’s License Number
+  - key: biometrics
+    text: Biometrics
+  - key: other
+    text: Other
+  min: 0
+  max: ~
+- id: q2f_other
+  title: 2f. Other SPII
+  prompt: |
+    2f. What other stand-alone Sensitive Personally Identifiable Information (SPII) does the form collect?
+
+    {% if q2f|length > 1 %}
+    In the previous question you answered:
+
+    {% for item in q2f %}{% if item != "other" %}({{item.text}})
+    {% endif %}{% endfor %}
+
+    What other SPII does the form collect?
+    {% endif %}
+  type: longtext
+  impute:
+  - condition: '''other'' not in q2c'
+    value: ~
+- id: q2g
+  title: 2g. Specific authority to collect SPII elements
+  prompt: "2g. List the specific authority to collect SSN or these other SPII elements.\r\n\r\n\"Specific
+    authority\" are the laws and agency rules that justify the agency collection of
+    information."
+  type: longtext
+- id: q2h
+  title: 2h. How will this information be used
+  prompt: |
+    2h. How will this information be used?
+
+    What is the purpose of the collection? Describe _why_ this collection of SPII is the minimum amount of information necessary to accomplish the purpose of the program.
+  type: longtext
+- id: q2i
+  title: 2i. Notice at the time of collection
+  prompt: |
+    2i. Are individuals provided notice at the time of collection?
+
+    Does the records subject have notice of the collection or is form filled out by third party?
+  type: yesno
+- id: q2i_describe
+  title: 2i. Describe how notice is provided
+  prompt: |
+    2i. Please describe how notice is provided.
+
+    In the last question you answered that individuals are provided notice at the time of collection.
+  type: longtext
+  impute:
+  - condition: q2i != 'yes'
+    value: ~

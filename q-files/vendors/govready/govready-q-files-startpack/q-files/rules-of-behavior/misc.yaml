@@ -1,0 +1,37 @@
+id: misc
+title: Miscellaneous
+internal:
+  questions_to_add: |
+    * Do you have a different or additional Rules of Behavior for privileged users
+    * Describe the additional requirements of the rules of behavior
+    * Is the Rules of Behavior incorporated into an online Terms of Service?
+    * Has it been reviewed by legal?
+  
+introduction:
+  format: markdown
+  template: |
+    Miscellaneous information about your Rules of Behavior 
+
+    In this module, we will capture some miscellaneous information that may be relevant. 
+
+output:
+
+- format: markdown
+  title: What You Chose
+  template: |2
+
+    {% if exists_privileged_users == 'yes' %}
+    {{organization}} has different or additional Rules of Behavior for privileged users.
+    {% else %}
+    {{organization}} does not have different or additional Rules of Behavior for privileged users.
+    {% endif %}
+
+questions:
+- id: exists_privileged_users
+  title: Does your organization have a different or additional Rules of Behavior for privileged users?
+  prompt: Does your organization have a different or additional Rules of Behavior for privileged users?
+  type: yesno
+  help: |
+    "Privileged users" are systems administrators, operators, and others with extensive IT permissions.
+
+

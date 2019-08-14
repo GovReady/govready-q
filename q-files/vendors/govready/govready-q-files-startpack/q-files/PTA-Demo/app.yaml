@@ -1,0 +1,75 @@
+id: app
+title: (Demo) PTA for Information Collections and Forms
+type: project
+version: 0.8.1.1
+icon: app.png
+protocol: dos.gov/policy/pta
+catalog:
+  category: Privacy
+  vendor: GovReady PBC
+  vendor_url: http://www.govready.com
+  status: published
+  version: 0.8.1.1
+  source_url: https://github.com/GovReady/govready-q-starter-assessments
+  description:
+    short: |
+      DOS Privacy Threshold Analysis
+  recommended_for:
+  - key_short: Org
+    value: Small
+  - key_short: Tech
+    value: Sophisticated
+  - key_short: Role
+    value: PM
+introduction:
+  format: markdown
+  template: |
+    The Privacy Threshold Analysis (PTA). Generally, a PTA must accompany all Information Collections submitted as part of the Paperwork Reduction Act process (any instrument for collection (form, survey, questionnaire, etc.) from ten or more members of the public). Components may use this PTA to assess internal, component-specific forms as well.
+questions:
+- id: pta_intro
+  title: Privacy Threshold Analysis (PTA) Overview
+  type: module
+  module-id: pta_intro
+
+- id: purpose
+  title: Purpose of the Information Collection
+  type: module
+  module-id: purpose
+
+- id: poc_details
+  title: POC Details
+  type: module
+  module-id: poc_details
+
+- id: ic_forms_pta
+  title: Questions
+  type: module
+  module-id: ic_forms_pta
+
+- id: info_description
+  title: Type of Information Collected
+  type: module
+  module-id: info_description
+
+- id: info_storage
+  title: How Will DOS Store the Collected Information?
+  type: module
+  module-id: info_storage
+
+# Artifacts
+- id: pta_form
+  title: View PTA Artifact
+  type: module
+  module-id: pta_form
+  icon: checkmark.png
+  # Note: It is not necessary to include an 'icon' key-value pair
+  placement: action-buttons
+
+deprecated-to-delete:
+
+# - id: ic_forms_pta
+#   title: Questions
+#   type: module
+#   module-id: ic_forms_pta
+
+output: []

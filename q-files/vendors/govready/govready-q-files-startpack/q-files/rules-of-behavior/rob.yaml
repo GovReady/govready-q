@@ -1,0 +1,419 @@
+id: rob
+title: Rules of Behavior
+internal:
+  snippets:
+    - snippet: |
+          Don't over think this. Rules of Behavior are just the major Do's and Dont's users and administrators receive and agree to abide by as part of their pre-access training. (The requirement flows from See Section (h) of Appendix III to OMB Circular A-130 and NIST Special Publication (SP) 800-18, Rev. 1 implemented under FISMA.)
+
+introduction:
+  format: markdown
+  template: |
+    Rules of Behavior 
+
+    In this module, we'll ask you to describe the responsibilities and expected behavior of users
+    and administrators of your organization's information systems and devices.
+
+    {% if project.general_info.exists == "no" %}
+    You said your organization's Rules of Behavior don't exist. We'll draft a version from your answers to these questions.
+    {% endif %}
+    
+    This information will {% if project.general_info.exists == "no" %}also{% endif %} be used to describe the essense of your rules in your compliance documentation for auditors.
+
+    ## References
+    1. Section (h) of Appendix III to OMB Circular A-130 
+    1. NIST Special Publication (SP) 800-18, Rev. 1, Section 1.8
+    <!--nice to add popup graphic of example rules from 800-18-->
+
+# Applicability
+
+questions:
+- id: applies_to
+  title: To whom do your organizational Rules of Behavior apply?
+  prompt: |
+    To whom {% if project.general_info.exists == 'yes' %}do{% else %}will{% endif %} your organizational Rules of Behavior apply?
+
+
+  examples:
+  - example: |
+      {{organization}}'s Rules of Behavior apply to all {{organization}} employees and support contractors who
+      use {{organization}} IT resources such as workstations, portable electronic devices to access, store,
+      receive or transmit sensitive information.
+  type: longtext
+
+# Policy Consistency
+
+- id: policy_consistent
+  title: Briefly describe or list any laws or policies with which your Rules of Behavior are consistent
+  prompt: |
+    Briefly describe or list any laws or policies with which your Rules of Behavior {% if project.general_info.exists == 'yes' %}are{% else %}will be{% endif %} consistent
+
+  examples:
+  - example: |
+      These rules of behavior are consistent with IT security policy and procedures given in DHS Management Directive 140-1, "Information Technology Systems Security," DHS Sensitive Systems Policy Directive 4300A, and the DHS 4300A Sensitive Systems Handbook.
+
+    Hint: You may need to invite a security specialist or organization lawyer to help answer this question.
+  type: longtext
+
+# Password and Authentation Rules
+
+- id: password_interstitial
+  type: interstitial
+  title: Password and Authentation Rules
+  prompt: |
+    Password and Authentation Rules
+
+    Rules of Behavior are a good place to make password and authentication related rules explicit.
+
+    Indicate the password and authentication related rules that are part of your organization's 
+    Rules of Behavior.
+
+- id: password_strength
+  title: What are your organization's password strength rules?
+  prompt: |
+    What {% if project.general_info.exists == 'yes' %}are{% else %}will be{% endif %} your organization's password strength rules?
+
+  examples:
+  - example: |
+      Passwords must be at least 12 characters in length and include upper and lower case letters, numerals, and special characters.
+  type: longtext
+
+- id: authorized_password_tools
+  title: Which of the following password management tools are authorized by your organization?
+  prompt: Which of the following password management tools {% if project.general_info.exists == 'yes' %}are{% else %}will be{% endif %} authorized by your organization?
+  type: multiple-choice
+  choices:
+  - key: apple_keychain
+    text: Apple OS X KeyChain
+  - key: 1password
+    text: 1 Password
+  - key: dashlane
+    text: Dashlane
+  - key: enpass
+    text: Enpass
+  - key: keeper
+    text: Keeper
+  - key: lastpass
+    text: Lastpass
+  - key: passpack
+    text: Passpack
+  - key: roboform
+    text: Roboform
+  - key: zoho
+    text: zoho
+
+- id: authorized_password_tools_other
+  title: List any other password tools authorized by your organization
+  prompt: List any other password tools {% if project.general_info.exists == 'yes' %}authorized{% else %}will be authorized{% endif %} by your organization
+  type: text
+
+# Completion
+
+- id: completion_interstitial
+  type: interstitial
+  title: Module complete!
+  prompt: |
+    Module complete!
+
+    Congratulations! You've successfully described your ROB.
+
+    We've prepared a summary describing your Rules of Behavior for auditors.
+
+    {% if project.general_info.exists == "yes" %}
+    We've also prepared sample ROBs you can compare with yours or ignore.
+    {% else %}
+    We've also prepared sample ROBs to get you started with yours. 
+
+    Download and modify the boilerplate ROB document you like the best to create your organizations official Rules of Behavior.
+    {% endif %}
+
+output:
+
+- id: instructions
+  format: markdown
+  display: top
+  title: |
+    Instructions for Downloading and Using Sample Rules of Behaviors
+  template: |
+
+    # Instructions for Downloading and Using Sample Rules of Behaviors
+
+    We've generated a few sample Rules of Behavior based on the information you provided.
+
+    Click on each to review. Decide the one with the best format and content for the
+    organization Rules of Behavior you want.
+
+    Each sample is available under the copyright license indicated in the "Credits" section of document. Most documents are available under a license that permits your generous reuse. _Be sure to adhere to the indicated license._
+
+    Click the download button on the upper right of each to download the ROB you prefer. Modify it to your liking as permitted by its copyright license.
+
+    Save the document to maintenance location you earlier indicated.
+
+    {{project.general_info.source_repo_identifier}}
+
+    Have your organization and {{project.general_info.role_owner}} approve the document as your official Rules of Behavior and make it available 
+    as part of your training to personnel in accordance with your described policies.
+
+- id: doj_sample
+  format: markdown
+  title: |
+    SAMPLE RULES OF BEHAVIOR GOVERNING COMPUTER USE copied from Department of Justice archives
+  template: |
+
+    # SAMPLE RULES OF BEHAVIOR GOVERNING COMPUTER USE
+
+    Trustees must have rules governing the use of the trustee’s computer system by the trustee’s employees. These rules should explain the employee’s responsibilities as a user and the penalties for noncompliance. The section on user responsibilities should at a minimum include the following:
+
+    ## Applicability
+
+    {{applies_to}}
+
+    ## General:
+
+    1. Use trustee information systems for lawful, official use and authorized purposes in accordance with current guidelines.
+    2. Do not generate or send offensive or inappropriate e-mail messages, images, or sound files. Limit distribution of email to only those who need to receive it.
+    3. Do not open emails from suspicious sources and do not visit untrusted web sites.
+    4. Protect and safeguard all trustee information, including personally identifiable information (PII), per the sensitivity and value of the data at risk, from unauthorized access, unauthorized or inadvertent modification, disclosure, destruction, denial of service, improper sanitization or use, in accordance with applicable policy, practices, and procedures.
+    5. Report known or suspected security incidents (including loss of PII) upon discovery of the incident to the trustee.
+    6. Encrypt all trustee data on transportable/mobile computers (including laptops) and removable media which contains sensitive information.
+    7. Use only authorized media storage devices. Download files only from known and reliable sources and use virus-checking procedures prior to use.
+    8. Screen-lock or log off your computer when leaving the work area and log off when departing for the day.
+
+    ## Passwords:
+
+    9. Change passwords at least every 90 days or more often if compromised or if directed by your supervisor; choose a password at least 8 characters in length; and use at least 3 of the following 4 characters: upper case letters, lower case letters, numbers, and/or special characters.
+    10. Do not share passwords with anyone.
+
+    ## Hardware:
+
+    11. Do not add, modify, or remove hardware accessories or networks to a computer.
+
+    ## Software:
+
+    12. Comply with terms of software licenses and only use licensed and authorized software.
+    13. Do not install any software.
+    14. Do not change any configurations and/or settings of the operating system and security- related software without advance approval.
+    15. Do not attempt to access any electronic audit trails that may exist on the computer unless specifically authorized to do so.
+
+    I acknowledge receipt of these Rules of Behavior and understand my responsibilities as identified above. This includes my responsibility to ensure protection of PII that I may handle.
+    
+    Signature: ______________________________________ 
+
+    Printed Name: ___________________________________
+
+    Date: ___________________________________________
+
+
+    ## Credits
+
+    1. [Sample_Rules_of_Behavior_re_Computer_Use, Dept of Justice ](https://www.justice.gov/sites/default/files/ust/legacy/2012/07/03/Sample_Rules_of_Behavior_re_Computer_Use.pdf), License: Public Domain (Government work of art)
+
+
+  # Template 3
+- id: govready
+  format: markdown
+  title: Acceptable Use Policy written by GovReady PBC (Very Detailed with User Practices)
+  template: |
+
+    Acceptable Use Practices
+    ========================
+
+    Abstract
+    --------
+    This practice describes policy and practices that will be followed when using {{organization}}’s systems and devices, and when handling {{organization}}’s information and data. This practice also specifies how {{organization}} defines misuse, and how {{organization}} will address misuse. This practice applies to any person who carries out work in any capacity for {{organization}} and its subsidiaries, and includes all employees, workers, contractors, sub-contractors, volunteers, trainees and apprentices.
+
+    Contents
+    --------
+
+      * [Abstract](#Abstract)
+      * [Motivation](#Motivation)
+      * [Information Handling](#Information-Handling)
+         * [Passwords and Authentication](#Passwords-and-Authentication)
+         * [Sensitive Information](#Sensitive-Information)
+         * [Client Data](#Client-Data)
+         * [Clear Screen](#Clear-Screen)
+      * [Computing devices](#Computing-devices)
+         * [Ownership](#Ownership)
+         * [Password Protection](#Password-Protection)
+         * [Device Encryption](#Device-Encryption)
+         * [Patching](#Patching)
+      * [Information Systems](#Information-Systems)
+         * [Email, Slack, Social Media Communications](#Email-Slack-Social-Media-Communications)
+         * [Internet Use](#Internet-Use)
+         * [Misuse](#Misuse)
+      * [Monitoring](#Monitoring)
+
+
+    Motivation
+    ==========
+    {{organization}}'s of staff, contractors, and all those who have access to {{organization}}’s systems must uphold acceptable security practices while interacting with {{organization}}’s systems, and while handling {{organization}}’s information. These practices provide practical guidance, designed to ensure that {{organization}}’s systems and information remain protected while {{organization}} staff and contractors carry out their responsibilities.
+
+    Information Handling
+    ====================
+
+    ### Passwords and Authentication
+    {{organization}} uses strong passwords and keeps them safe at all times. {{organization}} requires passwords used for work-related accounts, including systems owned by {{organization}} and from external providers. Passwords used for GovReady-related accounts, including systems owned by {{organization}} and from external providers, must be strong and difficult to guess or computationally expensive to crack. 
+
+    {{organization}} uses two Factor Authentication for all systems that support it. The use of an authenticator application, such as Google Authenticator or Authy, is recommended over use of SMS for Two Factor Authentication.
+
+    {{organization}} requires SSH keys be protected with passphrases and the passphrase is either memorized or stored in approved Password Management software.
+
+    > #### Practices for Individuals
+    > 
+    > You are responsible for the management of your account credentials and the quality of your passwords.
+    > 
+    > Use two Factor Authentication for all systems that support it. The use of an authenticator application, such as Google Authenticator or Authy, is recommended over use of SMS for Two Factor Authentication.
+    > 
+    > Create and use SSH keys with passphrases and either memorize the passphrase or store the passphrases in approved Password Management software.
+    > 
+    > Store your passwords only in an approved Password Manager.
+    > 
+    > | Approved Password Managers | Website                                  |
+    > |:---------------------------|:-----------------------------------------|
+    > | LastPass                   | https://www.lastpass.com                 |
+    > | Passpack                   | https://www.passpack.com                 |
+    > | 1Password                  | https://1password.com                    |
+    > | Apple Keychain             | https://support.apple.com/en-us/HT204085 |
+    > 
+    > Pick unique, difficult to guess passwords. Passwords must:
+    > 
+    > - Be at least 10 characters long
+    > - Not be used for any other accounts, including personal accounts
+    > - Be kept secret
+    > - Not be written down or stored anywhere except in approved Password Management software
+    > 
+    > Do not share credentials or passwords with other people except where individuals are require access to the same account for redunancy and the credentials are shared only through an approved Password Manager.
+    > 
+    > Do not transmitted passwords via email, SMS (text message) or instant messaging services except under special circumsntances such as providing credentials to a new account and the password will be immediately changed.
+
+    ### Sensitive Information
+    {{organization}} always handles with due care and does not share with unauthorized parties information regarding the internal operation of {{organization}} and {{organization}} clients. This includes emails, slack communications, details of internal discussions, documents and information relating to our clients.
+
+    {{organization}} staff and contractors only use tools provided by or identified and approved by {{organization}}, for example G-Suite and slack, to share information marked or identified as confidential.
+
+    {{organization}} does not handle any on any of its systems information identified by the U.S. government as Classified.
+
+    {{organization}} has established controls for handling Controlled Unclassified Information (CUI) in accordance to NIST Special Publication 800-171.
+
+    > #### Practices for Individuals
+    > 
+    > You are a stewart of {{organization}} sensitive information. 
+    > 
+    > - {{organization}} will only be disclosed to you with prior authorisation.
+    > - Disclose {{organization}} to others with prior authorization.
+    > - Return all {{organization}} you have in your possession upon the conclusion of your business relationship with {{organization}}, including any notes or paper records that belong to {{organization}} or {{organization}} clients.
+    > - Use tools provided by or identified and approved by {{organization}}, for example G-Suite and slack, to share information marked or identified as confidential.
+    > 
+    > {{organization}} does not handle any on any of its systems information identified by the U.S. government as Classified.
+
+    ### Client Data
+    {{organization}} considers client data, and data from production systems to be especially sensitive and handled with additional care. {{organization}} always encrypts client data in transit, and at rest (for example on an encrypted hard drive). {{organization}} does not transmit client data via email, unless requested explicitly by the client, and instead uses secure file sharing services. {{organization}} data securely archives and/or destroys client information as soon as it is no longer required to provide customer support or for legal requirements.
+
+    > #### Practices for Individuals
+    > 
+    > You are a stewart of client information.
+    > 
+    > - Encrypted in transit, and at rest (for example on an encrypted hard drive). Do not store client data on a computer that doesnothave an encrypted hard drive.
+    > - Do not share sensitive or proprietary client data via email. 
+    > - Do not transmit client data via any network, unless it is encrypted in traffic.
+    > - Share sensitive or proprietary client detail via secure file sharing service identified by the client of {{organization}}. This may take a couple of minutes longer, but you will have less worries.
+    > - Securely destroy client sensitive or proprietary data as soon as it is no longer required to provide customer support.
+    > - Store client data in Google Drive only if client approves.
+
+    ### Clear Screen
+    {{organization}} requires devices be protected while unattended. 
+
+    > #### Practices for Individuals
+    > 
+    > - Lock computing devices (e.g. computer, mobile phone) when they are unattended.
+    > - Configure computing devices (e.g. computer, mobile phone) to autolock after a few minutes while unattended.
+    > - Immediately remove sensitive or classified information from printers.
+
+    Computing devices
+    =================
+
+    ### Ownership
+
+    - All computers and mobile devices issued to staff remain the property of {{organization}}. 
+    - {{organization}} takes no responsibility for personal devices used for work purposes.
+
+    > #### Practices for Individuals
+    > 
+    > - Remember all computers and mobile devices issued to staff remain the property of {{organization}}. 
+    > - You are responsible for personal devices that you use for work purposes.
+    > - Employees, contractors, and other staff must surrender all {{organization}} computers and mobile devices upon the conclusion of their business relationship with {{organization}}.
+
+
+    ### Password Protection
+    All devices (workstations, laptops and mobile devices) must require a login password.
+
+    > #### Practices for Individuals
+    > 
+    > Configure your {{organization}} devices to require a login password.
+
+    ### Device Encryption
+    All devices (workstations, laptops and mobile devices) must have device (disk) encryption enabled.
+
+    > #### Practices for Individuals
+    > 
+    > Encryption of storage devices has become very reliable and very insvisible.
+    > 
+    > - Enable storage/disk encryption on all {{organization}} devices.
+    > - Enable storage/disk encryption on all personal devices that may hold {{organization}} information.
+    > - Encrypt any personal information about your relationship with {{organization}} that you store on personal devices.
+    > - Store any decryption recovery key codes in secure and separate location from where your {{organization}} devices live.
+
+    ### Patching
+    All devices (workstations, laptops and mobile devices) must be patched and kept up to date. Applying patches and updates is the responsibility of the operator of the device, and patches must be applied within one week of release. Critical security patches must be applied immediately. It is highly recommended that automatic updates are enabled on workstations, laptops and mobile devices.
+
+    > #### Practices for Individuals
+    > 
+    > You are responsible for applying software patches to {{organization}} devices in your trust.
+    > It is OK to prioritize updating patches over other work deliverables for {{organization}}. 
+
+
+    Information Systems
+    ===================
+
+    ### Email, Slack, Social Media Communications
+    Communications sent from {{organization}}’s email, slack or Social Media systems impact on the reputation of the company. The content of such communications should be professional.
+
+    > #### Practices for Individuals
+    > 
+    > - Communications sent from GovReady's email, slack or Social Media systems impact on the reputation of the company. The content of such communications should be professional.
+    > - Public comments regarding the internal operation of GovReady should not be made without authorisation.
+
+
+    ### Internet Use
+
+    - Private {{organization}} information will not be disclosed without prior authorisation.
+    - All {{organization}} computers should be running a local firewall.
+    - All devices should be running Anti-Virus software.
+
+    ### Misuse
+
+    {{organization}}’s systems and devices will not be used to create, share or access any material that is illegal, obscene, lewd, pornographic, defamatory or otherwise inappropriate for the workplace. {{organization}} does not provide access to any device or system owned by GovReady without authorization. {{organization}} requires employees and staff not use personal accounts, or any unauthorised 3rd party services, to store or process information owned by {{organization}}.
+
+    {{organization}} investigates and may take disciplinary action for misuse of {{organization}}’s devices and systems.
+
+    > #### Practices for Individuals
+    > 
+    > - Do not use {{organization}}’s systems and devices to create, share or access any material that is illegal, obscene, lewd, pornographic, defamatory or otherwise inappropriate for the workplace.
+    > - Do not grant access to {{organization}}'s systems without authorisation.
+    > - Do not use personal accounts, or any unauthorised 3rd party services, to store or process information owned by GovReady.
+    > 
+    > Misuse of {{organization}}’s devices and systems will be investigated and may lead to disciplinary action being taken.
+
+
+    ### Monitoring
+    {{organization}} owns all communications stored in or sent through its systems. The company has the right to access any material in {{organization}} email or stored in GovReady accounts, electronic communication, storage and internet access using {{organization}}’s systems and is not considered private unless the communication is of type that is considered private by law even within a corporation.
+
+    > #### Practices for Individuals
+    > 
+    > {{organization}} owns all communications stored in or sent through its systems and has the right to access any material in your email or stored in GovReady accounts, your electronic communication, storage and internet access using GovReady’s systems.
+    > 
+    > Do not consider communications sent or stored in {{organization}} systems or accounts personally private.
+    > Use personal email for private communications.
+
+    ## Credits
+
+    1. [Acceptable Use Policy, GovReady PBC](https://github.com/GovReady/govready-pbc-practices/blob/master/practices/p-0020.md),  License: Creative Commons ShareAlike

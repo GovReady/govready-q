@@ -1,0 +1,58 @@
+id: system_basics_technical
+title: "Document basic technical details"
+introduction:
+  format: markdown
+  template: |
+    A System Security Plan will include a summary of your system's technology
+
+    * Where the system will be hosted
+    * Type of operating system
+
+    Tip: Consider assigning this module to a more technical member of your team.
+
+questions:
+  - id: application_where_hosted
+    title: Where is application hosted?
+    prompt: |
+      Is the **{{project.system_basics.system_name}}** system hosted in the cloud or in an on-premises data center at {{organization}}?
+    type: choice
+    choices:
+      - key: cloud
+        text: In the cloud
+      - key: onpremesis
+        text: On premises
+    
+  - id: cloud_provider
+    title: What cloud provider?
+    prompt: |
+      You said the **{{project.system_basics.system_name}}** system is hosted in the cloud.
+
+      Which cloud service provider will host **{{project.system_basics.system_name}}**?
+    type: choice
+    choices:
+      - key: AWS
+        text: Amazon Web Services (AWS)
+      - key: PWS
+        text: Pivotal Web Services (PWS)
+      - key: Azure
+        text: Microsoft Azure
+      - key: Other
+        text: Other cloud service provider
+    impute:
+    - condition: application_where_hosted != 'cloud'
+      value: ~
+
+  - id: operating_system_flavor
+    title: Primary OS type
+    prompt: |
+      What is the primary Operating System type?
+    type: choice
+    choices:
+      - key: unix
+        text: Unix or Linix
+      - key: windows
+        text: Windows
+      - key: serverless
+        text: Serverless
+      - key: Other
+        text: Other flavor of operating system
