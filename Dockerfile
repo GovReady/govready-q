@@ -55,6 +55,7 @@ COPY modules ./modules
 COPY siteapp ./siteapp
 COPY templates ./templates
 COPY fixtures ./fixtures
+COPY q-files ./q-files
 COPY testmocking ./testmocking
 COPY manage.py .
 

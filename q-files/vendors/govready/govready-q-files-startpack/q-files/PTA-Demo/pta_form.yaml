@@ -1,0 +1,15 @@
+id: pta_form
+title: Privacy Threshold Analysis Artifact
+version: 1
+
+questions:
+- id: dummy
+  title: dummy
+  prompt: dummy
+  type: raw
+  impute:
+    - condition: "true"
+      value: ~
+
+output:
+- templates/pta_complete_form.html

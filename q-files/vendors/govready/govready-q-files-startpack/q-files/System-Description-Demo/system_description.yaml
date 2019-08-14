@@ -1,0 +1,96 @@
+id: system_description
+title: "System Description"
+introduction:
+  format: markdown
+  template: |
+    A System Security Plan will include a description of your system.
+
+    Let's prepare three descriptions for **{{project.system_basics.system_name}}**:
+    * one line description
+    * value and purpose overview
+    * technical summary
+
+    [//]: # (This may be the most platform independent comment)
+
+
+questions:
+  - id: one_line_description
+    title: One line description
+    prompt: |
+      OK, what's the one line description for <b>{{project.system_basics.system_name}}</b>?
+    type: text
+    reference_text: |
+      ## Example one line descriptions
+      
+      Django - "The Web framework for perfectionists with deadlines."
+
+      KomodoEdit - "Komodo Edit is a fast and free multi-language code editor. Written in JS, Python, C++ and based on the Mozilla platform."
+
+      CitySDK - "User-friendly javascript SDK for US Census Bureau data, including simple integrations to facilitate mash-up of other open datasets."
+
+  - id: value_overview
+    title: Value overview
+    prompt: Next, write an overview of **{{project.system_basics.system_name}}**'s value or purpose. Think of this like an elevator pitch.
+    type: longtext
+    reference_text: |
+
+      ## Example value overviews
+
+      Django - "Django is a high-level Python Web framework that encourages rapid development and clean, pragmatic design. Built by experienced developers, it takes care of much of the hassle of Web development, so you can focus on writing your app without needing to reinvent the wheel. It’s free and open source."
+
+      CitySDK - "Through our City SDK, we are aiming to provide a user-friendly 'toolbox' for civic hackers to connect local and national public data. The creation of the SDK came out of the desire to make it easier to use the Census API for common tasks that our developer community asked for. We have been engaging developers around the country for the past two years and have observed how they use the API and have built the most commonly needed functionalities built on top of our API right into the SDK, saving the developer from having to do it herself."
+
+  - id: value_overview_review
+    title: Value overview review
+    prompt: |
+      Great! Let's review the description of **{{project.system_basics.system_name}}** so far...
+
+
+      <table class="table" style="width:600px; border:1px solid black;margin: 0 auto !important;float: none !important;">
+      <thead>
+        <th style="text-align:center;">One Line Description</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{one_line_description}}</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <p>&nbsp;</p>
+
+      <table class="table" style="width:600px; border:1px solid black;margin: 0 auto !important;float: none !important;">
+      <thead>
+        <th style="text-align:center;">Value Overview</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{value_overview}}</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <p>&nbsp;</p>
+
+      <table class="table" style="width:600px; border:1px solid black;margin: 0 auto !important;float: none !important;">
+      <thead>
+        <th style="text-align:center;">Technical Description</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td><i>To be written next...</i></td>
+        </tr>
+        </tbody>
+      </table>
+    type: interstitial
+
+  - id: technical_description
+    title: Technical description
+    prompt: Finally, let's capture a technical description of **{{project.system_basics.system_name}}**. Describe <b>{{project.system_basics.system_name}}</b> from a technical perspective.
+    type: longtext
+    reference_text: |
+      ## Example technical descriptions
+
+      Django - "Django is a free and open-source web framework, written in Python, which follows the model-view-template (MVT) architectural pattern. Django's primary goal is to ease the creation of complex, database-driven websites. Django emphasizes reusability and "pluggability" of components, rapid development, and the principle of don't repeat yourself. Python is used throughout, even for settings files and data models.Django also provides an optional administrative create, read, update and delete interface that is generated dynamically through introspection and configured via admin models. Some well-known sites that use Django include the Public Broadcasting Service, Pinterest, Instagram, Mozilla, The Washington Times, Disqus, Bitbucket, and Nextdoor. - [Wikipedia](https://en.wikipedia.org/wiki/Django_(web_framework))"
+
+      CitySDK - "CitySDK javascript application available as an API and SDK. To use the JavaScript SDK, you'll need to add four dependencies: JQuery, ES6 Promise Polyfill, Terraformer, Terraformer ArcGIS Parser."

@@ -1,0 +1,250 @@
+id: general_info
+title: General Information
+introduction:
+  format: markdown
+  template: |
+    FISMA compliance requires Rules of Behavior 
+
+    Rules of Behavior describe "the responsibilities and expected behavior" of users and administrators of
+    your organization's information systems and devices.
+
+    Rules of Behavior are generally established at the organizational level. 
+
+    In this module, we will gather general information about your Rules of Behavior: who manages it,
+    how users agree to it, and recordkeeping.
+
+output:
+
+- id: instructions
+  title: instructions
+  format: markdown
+  display: top
+  template: |
+
+    # Rules of Behavior General Information Complete 
+
+    Nice job! We have enough information to start drafting your related controls.
+
+    You can see your answers and the most pertinent text below. 
+
+- id: ssp_nist80053r4_PL_4
+  title: NIST 800-53r4 PL-4 Rules of Behavior (Partial)
+  format: markdown
+  template: >+
+    {% if project.general_info.exists == 'yes' %}
+
+    {{organization}} implements Control PL-4 with its Rules of Behavior document
+    officially titled _{{project.general_info.official_name}}_.
+    The Rules of Behavior describes users' responsibilities and expected behavior when using {{organization}} IT resources.
+
+    The Rules of Behavior doucement is maintained as a {{project.general_info.source_repo.text}}. {{project.general_info.source_repo_identifier}}
+
+    The {{project.general_info.role_owner}} maintains the Rules of Behavior and reviews
+    the Rules of Behavior {{project.general_info.review_frequency.text}}. 
+
+    
+    {{project.general_info.obtain}}
+
+    {% if project.general_info.source_public == 'yes' %}
+    The Rules of Behavior is available publicly online at [{{project.general_info.source_public_url}}]({{project.general_info.source_public_url}}).
+    {% else %}
+    The Rules of Behavior is not available publicly online.
+    {% endif %}
+
+    {% else %}
+
+    {{organization}} will implement Control PL-4 with Rules of Behavior document
+    officially titled _{{project.general_info.official_name}}_.
+    The Rules of Behavior will describe users' responsibilities and expected behavior when using {{organization}} IT resources.
+    {{project.rob.applies_to}}
+
+    The Rules of Behavior doucement will be maintained as a {{project.general_info.source_repo.text}}. {{project.general_info.source_repo_identifier}}
+
+    The {{project.general_info.role_owner}} will maintain the Rules of Behavior and review
+    them {{project.general_info.review_frequency.text}}. 
+
+
+    {{project.general_info.obtain}}
+
+    {% if project.general_info.source_public == 'yes' %}
+    The Rules of Behavior will be available publicly online at [{{project.general_info.source_public_url}}]({{project.general_info.source_public_url}}).
+    {% else %}
+    The Rules of Behavior will not be available publicly online.
+    {% endif %}
+
+    {% endif %}
+
+
+questions:
+- id: exists
+  title: Does your organization already have Rules of Behavior for using IT resources?
+  prompt: Does your organization already have Rules of Behavior for using IT resources?
+  help: |
+    Hint: Your Rules of Behavior document may called something else.
+  type: yesno
+
+- id: exists_interstitial
+  title: Tip! Capture your intentions.
+  prompt: |
+
+    Tip! Capture your intentions.
+
+    No Rules of Behavior? No worries! Answer the following questions for the Rules of Behavior your organization _will_ create.
+
+    We'll help you create a Rules of Behavior later on.
+
+  type: interstitial
+  impute:
+  - condition: exists == "yes"
+    value: ~
+
+- id: official_name
+  title: What is the official name of your organization's Rules of Behavior document?
+  prompt: |
+    What {% if exists == 'yes' %}is{% else %}will be{% endif %} the official name of your organization's Rules of Behavior document?
+
+    Common titles are "Acceptable Use Policy", "Employee IT Manual", or "General Rules of Behavior for Users of {{organization}} IT Resources"
+  type: text
+
+- id: source_public
+  title: Do you publish your Rules of Behavior publicly online?
+  prompt: |
+    {% if exists == 'yes' %}Do{% else %}Will{% endif %} you publish your Rules of Behavior publicly online?
+  type: yesno
+
+- id: source_public_url
+  title: What is the URL for the publicly available Rules of Behavior? 
+  prompt: |
+    What {% if exists == 'yes' %}is{% else %}will be{% endif %} the URL for the publicly available Rules of Behavior?
+
+    {% if exists == 'no' %}Skip this question if you do not know.{% endif %} 
+  type: url
+  impute:
+  - condition: source_public == "no"
+    value: ~
+
+- id: source_repo
+  title: Where does your organization maintain the Rules of Behavior file for editing?
+  prompt: |
+    Where {% if exists == 'yes' %}does{% else %}will{% endif %} your organization maintain the Rules of Behavior file for editing?
+  type: choice
+  choices:
+  - key: workstation_file
+    text: workstation file
+  - key: network_file
+    text: network file
+  - key: sharepoint_file
+    text: Sharepoint file
+  - key: other_internal_cms
+    text: internal CMS
+  - key: office_365_file
+    text: Office 365 file
+  - key: google_docs_file
+    text: Google Docs file
+  - key: box_file
+    text: Box
+  - key: dropbox_file
+    text: Dropbox file
+  - key: github_file
+    text: GitHub file
+  - key: gitlab_file
+    text: GitLab file
+  - key: external_filesharing
+    text: external filesharing file
+  - key: other
+    text: other
+
+- id: source_repo_other
+  title: Describe the "Other" location where your organization stores the authoritative Rules of Behavior?
+  prompt: |
+    Describe the "Other" location where your organization {% if exists == 'yes' %}stores{% else %}will store{% endif %} the authoritative Rules of Behavior?
+  type: text
+  impute:
+  - condition: source_repo != "other"
+    value: ~
+
+- id: source_repo_identifier
+  title: Describe in a sentence where your organization maintains the Rules of Behavior file for editing   
+  prompt: |
+    Describe in a sentence where your organization {% if exists == 'yes' %}maintains{% else %}will maintain{% endif %} the Rules of Behavior {{source_repo.text}} for editing
+  examples:
+  - example: |
+      The authoritative Rules and Behavior document is maintained on the Security Team's file share at '/path/to/rob_file_v.docx'.
+  type: longtext
+
+- id: role_owner
+  title: What organizational role is responsible for maintaining the content of the Rules of Behavior?
+  prompt: |
+    What organizational role {% if exists == 'yes' %}does{% else %}will be{% endif %} responsible for maintaining the content of the Rules of Behavior?
+
+    Common responsible roles are: CISO, Security Team, CIO, Chief Security Executive, ISSO, etc.   
+  type: text
+
+- id: review_frequency
+  title: How frequently does your organization review the Rules of Behavior for possible updates?
+  prompt: |
+    How frequently {% if exists == 'yes' %}does{% else %}will{% endif %} your organization review the Rules of Behavior for possible updates?
+  type: choice
+  choices:
+    - key: as_needed
+      text: As needed
+    - key: quarterly
+      text: Quarterly
+    - key: semi-annually
+      text: Semi-annually
+    - key: annually
+      text: Annually
+
+- id: obtain_interstitial
+  title: Rules of Behavior document management completed
+  prompt: |
+
+    Rules of Behavior document management completed.
+
+    Excellent! You've answered questions regarding how your organization maintains the Rules of Behavior file.
+
+    Let's next find out how your users agree to the Rules of Behavior and related recordkeeping.
+  type: interstitial
+
+- id: obtain
+  title: How do new users obtain the Rules of Behavior?
+  prompt: |
+    How {% if exists == 'yes' %}do{% else %}will{% endif %} new users obtain the Rules of Behavior?
+
+    Users should receive and agree to your organization's Rules of Behavior before getting access to its
+    information technology.
+    
+    In your own words, share the process your org {% if exists == 'yes' %}uses{% else %}will use{% endif %} to ensure this happens.
+
+  type: longtext
+  examples:
+  - example: |
+      New system users receive the organization Rules of Behavior from the organization's System Security Team as part of their onboarding documents.
+  - example: |
+      The Information Systems Security Officer (ISSO) shall ensure that a user reads, accepts, and signs the general rules of behavior and all system-specific rules of behavior pertaining to systems to which that user will be given access; the rules must be signed before the user is given access. The signed rules of behavior may be filed either in the employee’s Official Personnel Folder (OPF) or in the employee’s personnel file.
+
+- id: maintain
+  title: Who maintains the completed and signed Rules of Behavior?
+  prompt: |
+    Who {% if exists == 'yes' %}maintains{% else %}will maintain{% endif %} the completed and signed Rules of Behavior?
+  type: choice
+  choices:
+  - key: org_security_team
+    text: Organization Security Team
+  - key: system_security_team
+    text: System Security Team
+  - key: isso
+    text: Information System Security Officer
+  - key: hr
+    text: Human Resources
+  - key: other
+    text: Other
+- id: maintain_other
+  title: Who is the "Other" party who maintains the completed and signed Rules of
+    Behavior?
+  prompt: Who is the "Other" party who maintains the completed and signed Rules of
+    Behavior?
+  type: text
+  impute:
+  - condition: maintain != "other"
+    value: ~
