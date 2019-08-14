@@ -5,6 +5,10 @@ from django.utils.crypto import get_random_string
 from siteapp.models import User, Organization
 from guidedmodules.models import Task, TaskAnswer, Module, Project
 
+TMP_BASE_PATH="/tmp/govready-q/datagen"
+
+os.makedirs(TMP_BASE_PATH, exist_ok=True)
+
 def get_file_dir():
     return os.path.dirname(os.path.realpath(__file__))
 
@@ -18,7 +22,7 @@ def get_wordlist(path="eff_short_wordlist_1.txt"):
         
 
 def _getpath(model):
-    return get_file_dir() + ("/TMP_%s.idlist" % model._meta.db_table)
+    return TMP_BASE_PATH + ("/%s.idlist" % model._meta.db_table)
 
 def get_name(count, separator=' ', path='eff_short_wordlist_1.txt'):
     wordlist = get_wordlist(path=path)
