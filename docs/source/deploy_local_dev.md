@@ -10,12 +10,12 @@ For local development, there is a quickstart script available to speed up enviro
 git clone https://github.com/govready/govready-q
 cd govready-q
 virtualenv -p python3 env
-./first_run.sh
+./quickstart.sh
 ```
 
 This will set up a `local/environment.json` file suitable for a dev environment; set up local dependencies; and run the assorted initial manage.py commands (`migrate`, `load_modules`, `first_run`, etc.). Additionally, it can run common post-installation steps, based on user input.
 
-The `first_run.sh` script is set up to take user input, and is expected to be run interactively.
+The `quickstart.sh` script is set up to take user input, and is expected to be run interactively.
 
 ## Creating local/environment.json file
 
