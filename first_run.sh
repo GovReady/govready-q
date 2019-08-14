@@ -29,7 +29,7 @@ fi
 # install basic requirements as the local user
 pip3 install --user -r requirements.txt
 echo $SPACER
-./fetch_vendor_resources.sh
+./fetch-vendor-resources.sh
 
 # create the local/environment.json file, if it is missing (it generally will be)
 if [ ! -e local/environment.json ];
@@ -63,32 +63,25 @@ echo $SPACER
 python3 manage.py first_run
 echo $SPACER
 
-# prompt the user if they want to run data generation, but only if it's
-# going to work (there's a different pull request which makes that datagen
-# less prone to failure)
-if grep 'RequestFactory' testmocking/web.py --quiet
-then
-	while true;
-	do
-		read -p "Do you want to add some simulated starting data (users, a second organization, and assessments)?\n[y/n] " answer
-		case $answer in
-			[Yy]* ) python3 manage.py populate --full; break;;
-			[Nn]* ) break;;
-			* ) echo "Please answer 'yes' or 'no'";;
-		esac
-	done
-else
-	echo 'Data generation in this script requires data handling improvements from PR #672. Improvements not detected, skipping data generation.'
-fi
+# prompt the user if they want to run data generation
+while true;
+do
+	read -p "Do you want to add some simulated starting data (users, a second organization, and assessments)? [y/n] " answer
+	case $answer in
+		[Yy]* ) python3 manage.py populate --full; break;;
+		[Nn]* ) break;;
+		* ) echo "Please answer 'yes' or 'no'";;
+	esac
+done
 
 echo $SPACER
 
 # prompt the user if they want to run the webserver now
-# this currently runs synchrnously, in the foreground, so it needs to be the last
+# this currently runs synchronously, in the foreground, so it needs to be the last
 # functional line of the script
 while true;
 do
-	read -p "Do you want to run the webserver now, in the foreground?\n[y/n] " answer
+	read -p "Do you want to run the webserver now, in the foreground? [y/n] " answer
 	case $answer in
 		[Yy]* ) python3 manage.py runserver; break;;
 		[Nn]* ) break;;
