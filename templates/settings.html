@@ -15,6 +15,10 @@ GovReady-Q Setup
   <p class="small">You are a Django Administrator. You have extra permissions on this page and can visit the <a href="{{django_admin_url}}">Django Admin homepage</a>.</p>
   {% endif %}
 
+<h2>Permissions List</h2>
+
+  {% include "permissions_list.html" with portfolio_permissions=portfolio_permissions project_permissions=project_permissions %}
+
   {% include "permissions.html" with users=users portfolios=portfolios projects=projects %}
 
   {% if can_edit_org_settings %}
@@ -59,6 +63,9 @@ GovReady-Q Setup
   </p>
   {% endif %}
   {% endif %}
+
+  {% include "permissions.html" with users=users portfolios=portfolios projects=projects %}
+
 {% endblock %}
 
 {% block scripts %}

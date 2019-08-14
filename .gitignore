@@ -92,3 +92,8 @@ vendor
 docs/_build/
 # Local Sphinx / Read The Docs files
 docs/build
+
+# scanners
+.scannerwork/
+sonar-project.properties
+

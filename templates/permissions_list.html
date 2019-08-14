@@ -1,0 +1,14 @@
+{% load guardian_tags %}
+
+<h3><strong>Portfolios</strong></h3>
+{% for perm in portfolio_permissions %}
+<p>{{perm.name}}</p>
+{% endfor %}
+
+<h3><strong>Projects</strong></h3>
+{% for perm in project_permissions %}
+<p>{{perm.name}}</p>
+{% endfor %}
+
+<!-- <h3>Users</h3> -->
+<!-- Will Add when we add users to model -->
