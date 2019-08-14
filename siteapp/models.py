@@ -483,7 +483,6 @@ class Project(models.Model):
         unique_together = [('organization', 'is_organization_project')] # ensures only one can be true
         permissions = (
             ('view_project', 'View project'),
-            ('project_owner', 'Project Owner')
         )
 
     def __str__(self):

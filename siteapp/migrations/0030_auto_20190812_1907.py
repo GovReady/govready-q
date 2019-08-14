@@ -9,7 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 logger = logging.getLogger(__name__)
 
 
-def assign_editor_permissions(apps, model, user):
+def assign_editor_permissions(apps, project, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
     Permission = apps.get_model('auth', 'Permission')
@@ -20,10 +20,11 @@ def assign_editor_permissions(apps, model, user):
     user_lookup = User.objects.get(id=user.id)
     permissions = [view_project, change_project, add_project]
     for perm in permissions:
-        UserObjectPermission.objects.create(permission=perm, user=user_lookup, content_type_id=project_type.id)
+        UserObjectPermission.objects.get_or_create(
+            permission=perm, user=user_lookup, object_pk=project.pk, content_type_id=project_type.id)
 
 
-def assign_owner_permissions(apps, model, user):
+def assign_owner_permissions(apps, project, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
     Permission = apps.get_model('auth', 'Permission')
@@ -34,7 +35,8 @@ def assign_owner_permissions(apps, model, user):
     permissions = [view_project, change_project, add_project]
     user_lookup = User.objects.get(id=user.id)
     for perm in permissions:
-        UserObjectPermission.objects.create(permission=perm, user=user_lookup, content_type_id=project_type.id)
+        UserObjectPermission.objects.get_or_create(
+            permission=perm, user=user_lookup, object_pk=project.pk, content_type_id=project_type.id)
 
 def forwards(apps, schema_editor):
     Portfolio = apps.get_model('siteapp', 'Portfolio')
