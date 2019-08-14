@@ -1,13 +1,15 @@
 {% load guardian_tags %}
 
 <h3><strong>Portfolios</strong></h3>
+<p>Users can be granted the following permissions in Portfolios:</p>
 {% for perm in portfolio_permissions %}
-<p>{{perm.name}}</p>
+<li>{{perm.name}}</li>
 {% endfor %}
 
 <h3><strong>Projects</strong></h3>
+<p>Users have the following permissions in Projects:</p>
 {% for perm in project_permissions %}
-<p>{{perm.name}}</p>
+<li>{{perm.name}}</li>
 {% endfor %}
 
 <!-- <h3>Users</h3> -->
