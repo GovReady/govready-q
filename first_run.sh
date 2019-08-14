@@ -84,7 +84,7 @@ fi
 echo $SPACER
 
 # prompt the user if they want to run the webserver now
-# this currently runs synchrnously, in the foreground, so it needs to be the last
+# this currently runs synchronously, in the foreground, so it needs to be the last
 # functional line of the script
 while true;
 do
