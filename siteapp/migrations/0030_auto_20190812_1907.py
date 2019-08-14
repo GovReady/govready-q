@@ -5,43 +5,47 @@ from guardian.shortcuts import assign_perm
 import logging
 logger = logging.getLogger(__name__)
 
+
+def forwards(apps, schema_editor):
+    Portfolio = apps.get_model('siteapp', 'Portfolio')
+    Project = apps.get_model('siteapp', 'Project')
+
+    projects = Project.objects.all()
+
+    for project in projects:
+        if project.organization and project.portfolio is None:
+            # get or create portfolio from project organization
+            portfolio, created = Portfolio.objects.get_or_create(
+                title=project.organization.name)
+            # assign projects portfolio id
+            project.portfolio = portfolio
+            # save project
+            project.save()
+
+        # get project membership object
+        project_memberships = ProjectMembership.objects.filter(project=project)
+        for pm in project_memberships:
+            # assign editor permissions
+            logger.info("assigning editor permission for {} to {}".format(
+                project, project.user))
+            project.assign_editor_permissions(project.user)
+            if pm.is_admin:
+                # if admin assign owner permissions
+                logger.info("assigning owner permission for {} to {}".format(
+                    project, project.user))
+                project.assign_owner_permissions(project.user)
+
+    # TODO
+    # what to do with project.is_account_project?
+    # what to do with project.is_organization_project?
+
+
 class Migration(migrations.Migration):
-
-    def forwards(self, schema_editor):
-        # method 1
-        Portfolio = apps.get_model('siteapp', 'Portfolio')
-        Project = apps.get_model('siteapp', 'Project')
-
-        projects = Project.objects.all()
-
-        for project in projects:
-            if project.organization and project.portfolio is None:
-                # get or create portfolio from project organization
-                portfolio, created = Portfolio.objects.get_or_create(title=project.organization.name)
-                # assign projects portfolio id
-                project.portfolio = portfolio
-                # save project
-                project.save()
-
-            # get project membership object
-            project_memberships = ProjectMembership.objects.filter(project=project)
-            for pm in project_memberships:
-                # assign editor permissions
-                logger.info("assigning editor permission for {} to {}".format(project, project.user))
-                project.assign_editor_permissions(project.user)
-                if pm.is_admin:
-                    # if admin assign owner permissions
-                    logger.info("assigning owner permission for {} to {}".format(project, project.user))
-                    project.assign_owner_permissions(project.user)
-        
-        # TODO
-        # what to do with project.is_account_project?
-        # what to do with project.is_organization_project?
 
     dependencies = [
         ('siteapp', '0029_auto_20190801_2000'),
     ]
 
     operations = [
-        migrations.RunPython(forwards),
+        migrations.RunPython(forwards, migrations.RunPython.noop),
     ]
