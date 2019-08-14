@@ -2,6 +2,20 @@
 
 This page provides additional tips for installing and run GovReady-Q in a mode suitable for making and testing changes to the software (i.e., in a Dev environment).
 
+## Quickstart
+
+For local development, there is a quickstart script available to speed up environment setup. After installing system requirements through your package manager, run the following 3 commands in order to set up GovReady-Q in a new directory:
+
+```
+git clone https://github.com/govready/govready-q
+cd govready-q
+./first_run.sh
+```
+
+This will set up a `local/environment.json` file suitable for a dev environment; set up local dependencies; and run the assorted initial manage.py commands (`migrate`, `load_modules`, `first_run`, etc.). Additionally, it can run common post-installation steps, based on user input.
+
+The `first_run.sh` script is set up to take user input, and is expected to be run interactively.
+
 ## Creating local/environment.json file
 
 When you first run GovReady-Q with `python manage.py runserver`, you'll be prompted to copy some JSON data into a file at `local/environment.json` like this:
