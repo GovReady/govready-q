@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from guardian.decorators import permission_required_or_403
+from guardian.shortcuts import get_perms_for_model
 
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
@@ -1504,7 +1505,9 @@ def organization_settings(request):
         "reviewers": preload_profiles(User.objects.all()),
         "projects": Project.objects.all(),
         "portfolios": Portfolio.objects.all(),
-        "users": User.objects.all()
+        "users": User.objects.all(),
+        "project_permissions": get_perms_for_model(Project),
+        "portfolio_permissions": get_perms_for_model(Portfolio),
     })
 
 @login_required

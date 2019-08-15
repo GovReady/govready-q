@@ -1,16 +1,14 @@
 {% load guardian_tags %}
 
-<h2>Permissions</h2>
-<h3> Project Permissions</h3>
+<h3><strong>Project Permissions</strong></h3>
 <table class="table" style="width: auto;">
   <thead>
     <tr>
       <th>Username</th>
       <th>Project Name</th>
-      <th>View </th>
-      <th>Add</th>
-      <th>Change</th>
-      <th>Delete</th>
+      <th>Project Viewer </th>
+      <th>Project Editor</th>
+      <th>Project Owner</th>
     </tr>
   </thead>
 
@@ -26,23 +24,17 @@
       <td>
         {{project}}
       </td>
-      <td>
+      <td align="center">
         {% if 'view_project' in user_perms %}
         ✓
         {% endif%}
       </td>
-
-      <td>
-        {% if 'add_project' in user_perms %}
-        ✓
-        {% endif%}
-      </td>
-      <td>
+      <td align="center">
         {% if 'change_project' in user_perms %}
         ✓
         {% endif%}
       </td>
-      <td>
+      <td align="center">
         {% if 'delete_project' in user_perms %}
         ✓
         {% endif%}
