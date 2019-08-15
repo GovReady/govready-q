@@ -30,7 +30,8 @@ def assign_owner_permissions(apps, project, user):
     view_project = Permission.objects.get(codename='view_project')
     change_project = Permission.objects.get(codename='change_project')
     add_project = Permission.objects.get(codename='add_project')
-    permissions = [view_project, change_project, add_project]
+    delete_project = Permission.objects.get(codename='delete_project')
+    permissions = [view_project, change_project, add_project, delete_project]
     user_lookup = User.objects.get(id=user.id)
     for perm in permissions:
         UserObjectPermission.objects.get_or_create(
