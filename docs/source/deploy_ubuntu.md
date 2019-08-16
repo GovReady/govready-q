@@ -67,7 +67,7 @@
         .. code-block:: bash
 
             # run the server
-            python3 manage.py migrate
+            python3 manage.py runserver
 
         Visit your GovReady-Q site in your web browser at:
 

@@ -287,7 +287,7 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
         .. code-block:: bash
 
             # run the server
-            python3 manage.py migrate
+            python3 manage.py runserver
 
         Visit your GovReady-Q site in your web browser at:
 
@@ -360,7 +360,7 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
         .. code-block:: bash
 
             # run the server
-            python3 manage.py migrate
+            python3 manage.py runserver
 
         Visit your GovReady-Q site in your web browser at:
 

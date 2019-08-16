@@ -93,7 +93,7 @@ Click one of the tab belows to see quickstart for indicated platform.
         .. code-block:: bash
 
             # run the server
-            python3 manage.py migrate
+            python3 manage.py runserver
 
         Visit your GovReady-Q site in your web browser at:
 
@@ -168,7 +168,7 @@ Click one of the tab belows to see quickstart for indicated platform.
         .. code-block:: bash
 
             # run the server
-            python3 manage.py migrate
+            python3 manage.py runserver
 
         Visit your GovReady-Q site in your web browser at:
 
@@ -237,7 +237,7 @@ Click one of the tab belows to see quickstart for indicated platform.
         .. code-block:: bash
 
             # run the server
-            python3 manage.py migrate
+            python3 manage.py runserver
 
         Visit your GovReady-Q site in your web browser at:
 
