@@ -2,7 +2,7 @@ import os
 from random import sample, randint
 
 from django.utils.crypto import get_random_string
-from siteapp.models import User, Organization
+from siteapp.models import User, Organization, ProjectMembership
 from guidedmodules.models import Task, TaskAnswer, Module, Project
 
 TMP_BASE_PATH="/tmp/govready-q/datagen"
@@ -55,6 +55,8 @@ def create_organization(name=None, admin=None, help_squad=[], reviewers=[]):
         name += " " + get_name(1, path='company_suffixes.txt')
     subdomain = name.replace(' ', '-').lower()
 
+    superuser = User.objects.get(id=1)
+
     with open(_getpath(Organization), 'a+') as file:
         org = Organization.create(
             name=name,
@@ -68,6 +70,11 @@ def create_organization(name=None, admin=None, help_squad=[], reviewers=[]):
         org.help_squad.add(user)
     for user in reviewers:
         org.reviewers.add(user)
+
+    # also add the superuser as an admin, for convenience's sake
+    pm, isnew = ProjectMembership.objects.get_or_create(user=superuser, project=org.get_organization_project())
+    pm.is_admin = True
+    pm.save()
     return org 
 
 
