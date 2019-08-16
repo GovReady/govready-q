@@ -97,4 +97,4 @@ done
 
 echo $SPACER
 
-echo "Reminder: use the command `python3 manage.py runserver` to restart the webserver"
+echo 'Reminder: use the command `python3 manage.py runserver` to restart the webserver'
