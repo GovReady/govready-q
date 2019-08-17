@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.dev34+devel
+v0.9.0.dev41+devel
 ------------------
 
 Our most exciting release of GovReady-Q!
@@ -13,7 +13,7 @@ Our most exciting release of GovReady-Q!
 * Better authoring tools!
 * Streamlined new register,login page!
 * Beautiful and helpful new start page!
-* One-click deployment scripts for simple testing deploys into AWS.
+* One-click deployment scripts for simple testing deployments into AWS.
 
 **WARNINGS - SIGNIFICANT DATABASE CHANGES**
 
@@ -76,6 +76,9 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 * Clean up reactive styling to operate across multi-size screens.
 * Register/login page simplified by putting register and sign in inside a tabs and replacing jumbotron look and feel with minimal sign up and join links.
 * User home /project page improved with four getting started actions recommend on what was previously a nearly blank page; replacing "compliance app" terminology with "project" terminology; sleeker table-like display of started projects.
+* Question progress list improved styling incorporates colors to more clearly see completed and skipped questions and displays module to module progress.
+* Question navigation to next question now linear to make skipping around easier and links to question in next module.
+* Nav bar provides "add" button to start new project or create portfolio from every appropriate page.
 * Nav bar improved with displayed links to "Projects" and "Portfolios".
 * Nav bar icons for "Analytics" and "Settings"; Remove of dropdown "MENU" item.
 * Django messages indicating successful logins/logouts now ignored in base template. Change will hide any Django message of level "Success". Hiding success messages removes the need to dismiss messages or fade them out.

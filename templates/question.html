@@ -459,7 +459,10 @@ label:hover .onhover { display: inline; }
             {% endif %}
 
             {% if not is_answerable %}
-                <p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
+              <p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
+              {% if authoring_tool_enabled %}
+                <p class="text-danger">You are seeing this question because the Authoring Tools are enabled. Ordinary users would not see this question displayed.</p>
+              {% endif %}
 
             {% elif write_priv %}
 
