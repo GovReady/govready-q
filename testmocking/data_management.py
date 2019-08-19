@@ -41,6 +41,16 @@ def get_random_paragraph():
     sents = [get_random_sentence() + '.' for x in range(0, count)]
     return '\n\n'.join(sents)
 
+def get_random_email():
+    wordlist = get_wordlist()
+    word = sample(wordlist, 1)[0]
+    return "{}@example.com".format(word)
+
+def get_random_url():
+    wordlist = get_wordlist()
+    word = sample(wordlist, 1)[0]
+    return "http://example.com/some_path/{}".format(word)
+
 def create_user(username=None, password=None, pw_hash=None):
     if username == None:
         username = get_name(1, '_', path='names.txt')
@@ -132,6 +142,10 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
             answer = get_random_sentence()
         elif type == 'longtext':
             answer = get_random_paragraph()
+        elif type == 'email-address':
+            answer = get_random_email()
+        elif type == 'url':
+            answer = get_random_url()
         elif type == 'choice':
             answer = sample(question.spec['choices'], 1)[0]['key']
         elif type == 'multiple-choice':
