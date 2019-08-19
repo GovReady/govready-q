@@ -11,9 +11,9 @@ def assign_editor_permissions(apps, project, user):
     Permission = apps.get_model('auth', 'Permission')
     project_type = ContentType.objects.get(
         app_label='siteapp', model='project')
-    view_project = Permission.objects.get(codename='view_project')
-    change_project = Permission.objects.get(codename='change_project')
-    add_project = Permission.objects.get(codename='add_project')
+    view_project, created = Permission.objects.get_or_create(codename='view_project', content_type_id=project_type.id)
+    change_project, created = Permission.objects.get_or_create(codename='change_project', content_type_id=project_type.id)
+    add_project, created  = Permission.objects.get_or_create(codename='add_project', content_type_id=project_type.id)
     user_lookup = User.objects.get(id=user.id)
     permissions = [view_project, change_project, add_project]
     for perm in permissions:
@@ -27,10 +27,10 @@ def assign_owner_permissions(apps, project, user):
     Permission = apps.get_model('auth', 'Permission')
     project_type = ContentType.objects.get(
         app_label='siteapp', model='project')
-    view_project = Permission.objects.get(codename='view_project')
-    change_project = Permission.objects.get(codename='change_project')
-    add_project = Permission.objects.get(codename='add_project')
-    delete_project = Permission.objects.get(codename='delete_project')
+    view_project, created = Permission.objects.get_or_create(codename='view_project', content_type_id=project_type.id)
+    change_project, created = Permission.objects.get_or_create(codename='change_project', content_type_id=project_type.id)
+    add_project, created = Permission.objects.get_or_create(codename='add_project', content_type_id=project_type.id)
+    delete_project, created = Permission.objects.get_or_create(codename='delete_project', content_type_id=project_type.id)
     permissions = [view_project, change_project, add_project, delete_project]
     user_lookup = User.objects.get(id=user.id)
     for perm in permissions:
