@@ -16,7 +16,7 @@ from django.utils.crypto import get_random_string
 from testmocking.data_management import create_user, create_organization, create_portfolio
 
 class Command(BaseCommand):
-    help = 'Create a set of dummy data for extended testing/verification. Creates users, organizations, user/org assignments, and with --full, can also populate the created organizations with assessments.'
+    help = 'Create a set of dummy data for extended testing/verification. Creates users, portfolios, organizations, user/org assignments, and with --full, can also populate the created organizations with assessments.'
 
     def add_arguments(self, parser):
         parser.add_argument('--password', help="The password to set for all users. Optional, but recommended. If not set, all users will have the same random password, instead.")
