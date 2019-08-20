@@ -2,7 +2,7 @@ import os
 from random import sample, randint
 
 from django.utils.crypto import get_random_string
-from siteapp.models import User, Organization
+from siteapp.models import User, Organization, Portfolio
 from guidedmodules.models import Task, TaskAnswer, Module, Project
 
 TMP_BASE_PATH="/tmp/govready-q/datagen"
@@ -83,6 +83,9 @@ def create_organization(name=None, admin=None, help_squad=[], reviewers=[]):
         org.reviewers.add(user)
     return org 
 
+def create_portfolio(user):
+    portfolio = Portfolio.objects.create(title=user.username)
+    portfolio.assign_owner_permissions(user)
 
 def delete_objects(model):
     with open(_getpath(model), 'r') as file:

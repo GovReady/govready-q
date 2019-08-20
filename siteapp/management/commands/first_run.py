@@ -8,7 +8,7 @@ from django.db.utils import OperationalError
 from django.conf import settings
 
 from guidedmodules.models import AppSource, Module
-from siteapp.models import User, Organization
+from siteapp.models import User, Organization, Portfolio
 from django.contrib.auth.management.commands import createsuperuser
 
 import fs, fs.errors
@@ -93,6 +93,11 @@ class Command(BaseCommand):
                 ))
             # Get the admin user - it was just created and should be the only admin user.
             user = User.objects.filter(is_superuser=True).get()
+
+            # Create the first portfolio
+            portfolio = Portfolio.objects.create(title=user.username)
+            portfolio.assign_owner_permissions(user)
+            print("Created administrator portfolio {}".format(portfolio.title))
         else:
             # One or more superusers already exist
             print("\n[WARNING] Superuser(s) already exist. Are you connecting to a persistent database?\n")
