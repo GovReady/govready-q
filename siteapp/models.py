@@ -355,7 +355,6 @@ class Portfolio(models.Model):
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
-        default_permissions = ('add', 'change', 'delete')
         permissions = (
             ('view_portfolio', 'View portfolio'),
             ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission'),
@@ -482,7 +481,6 @@ class Project(models.Model):
 
     class Meta:
         unique_together = [('organization', 'is_organization_project')] # ensures only one can be true
-        default_permissions = ('add', 'change', 'delete')
         permissions = (
             ('view_project', 'View project'),
         )
