@@ -164,7 +164,7 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
             log("doing subtask")
             continue
         
-        if not answer and type != 'interstitial':
+        if not answer and not (type == 'interstitial' or type == 'raw'):
             print("Cannot answer question of type '" + type + "'")
             continue
         
