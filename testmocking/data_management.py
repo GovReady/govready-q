@@ -146,6 +146,13 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
             answer = get_random_email()
         elif type == 'url':
             answer = get_random_url()
+        elif type == 'date':
+            year = randint(2010, 2030)
+            month = randint(1, 12)
+            # stopping our day at 28 means we don't need to worry about varying month lengths
+            day = randint(1, 28) 
+            # internal answer format seems to be yyyy-mm-dd
+            answer = "{}-{:02}-{:02}".format(year, month, day)
         elif type == 'choice':
             answer = sample(question.spec['choices'], 1)[0]['key']
         elif type == 'multiple-choice':
