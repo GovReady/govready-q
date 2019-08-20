@@ -13,7 +13,7 @@ from guidedmodules.models import AppSource, Module
 from siteapp.models import User, Organization
 
 from django.utils.crypto import get_random_string
-from testmocking.data_management import create_user, create_organization
+from testmocking.data_management import create_user, create_organization, create_portfolio
 
 class Command(BaseCommand):
     help = 'Create a set of dummy data for extended testing/verification. Creates users, organizations, user/org assignments, and with --full, can also populate the created organizations with assessments.'
@@ -38,6 +38,8 @@ class Command(BaseCommand):
             users += [u]
             if ((x+1) % 100 == 0):
                 print("Created user #" + str(x+1))
+            create_portfolio(u)
+            print("Created portfolio for user {}".format(u.username))
         for x in range(0, options['org_count']):
             admin = sample(users, 1)[0]
             help_squad = sample(users, 5)
