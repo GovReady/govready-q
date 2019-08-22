@@ -9,7 +9,7 @@ def assign_project_editor_permissions(apps, project, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
     Permission = apps.get_model('auth', 'Permission')
-    project_type = ContentType.objects.get(
+    project_type, created = ContentType.objects.get_or_create(
         app_label='siteapp', model='project')
     view_project, created = Permission.objects.get_or_create(codename='view_project', content_type_id=project_type.id)
     change_project, created = Permission.objects.get_or_create(codename='change_project', content_type_id=project_type.id)
@@ -25,7 +25,7 @@ def assign_project_owner_permissions(apps, project, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
     Permission = apps.get_model('auth', 'Permission')
-    project_type = ContentType.objects.get(
+    project_type, created = ContentType.objects.get_or_create(
         app_label='siteapp', model='project')
     view_project, created = Permission.objects.get_or_create(codename='view_project', content_type_id=project_type.id)
     change_project, created = Permission.objects.get_or_create(codename='change_project', content_type_id=project_type.id)
@@ -41,7 +41,7 @@ def assign_portfolio_owner_permissions(apps, portfolio, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
     Permission = apps.get_model('auth', 'Permission')
-    portfolio_type = ContentType.objects.get(app_label='siteapp', model='portfolio')
+    portfolio_type, created = ContentType.objects.get_or_create(app_label='siteapp', model='portfolio')
     portfolio_owner, created = Permission.objects.get_or_create(codename='can_grant_portfolio_owner_permission', content_type_id=portfolio_type.id)
     view_portfolio, created = Permission.objects.get_or_create(codename='view_portfolio', content_type_id=portfolio_type.id)
     change_portfolio, created = Permission.objects.get_or_create(codename='change_portfolio', content_type_id=portfolio_type.id)
