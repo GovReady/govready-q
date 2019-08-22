@@ -1240,7 +1240,7 @@ def send_invitation(request):
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
         elif request.POST.get("project"):
-          from_project = Project.objects.filter(id=request.POST["project"], members__user=request.user).first()
+          from_project = Project.objects.filter(id=request.POST["project"]).first()
           from_project.assign_editor_permissions(to_user)
 
         # Authorization for adding invitee to the project team.
