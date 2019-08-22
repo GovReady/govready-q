@@ -637,6 +637,20 @@ class Project(models.Model):
                     if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
                         projects.add(d.attached_to.task.project)
 
+
+        # Add projects the user has permissions for
+        for project in Project.objects.all():
+            user_permissions = get_user_perms(user, project)
+            if len(user_permissions):
+                projects.add(project)
+
+        # Add projects the user has permissions for through a portfolio
+        for portfolio in Portfolio.objects.all():
+            user_permissions = get_user_perms(user, portfolio)
+            if len(user_permissions):
+                for project in portfolio.projects.all():
+                    projects.add(project)
+
         # Don't show system projects.
         system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
         projects -= system_projects
