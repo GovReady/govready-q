@@ -7,6 +7,10 @@
 # and does not edit /etc/hosts. those will have to be done manually
 
 
+# When adding users, we expect they'll be created for test purposes. Therefore, a
+# static easy-to-remember password is useful.
+DEFAULT_USER_PASSWORD="GovReadyTest2019"
+
 # some of these commands generate a big wall of text, so we may want visual space
 # between them
 SPACER="..."
@@ -74,7 +78,7 @@ while true;
 do
 	read -p "Do you want to add some simulated starting data (users, a second organization, and assessments)? [y/n] " answer
 	case $answer in
-		[Yy]* ) python3 manage.py populate --full; break;;
+		[Yy]* ) python3 manage.py populate --full --password "$DEFAULT_USER_PASSWORD"; break;;
 		[Nn]* ) break;;
 		* ) echo "Please answer 'yes' or 'no'";;
 	esac
