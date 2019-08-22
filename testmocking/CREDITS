@@ -1,2 +1,2 @@
 `eff_short_wordlist_1.txt` taken from the EFF diceware files.
-`names.txt` populated using first name data from generatedata.com
+`names.txt` populated using first name data from the Social Security name popularity page (https://www.ssa.gov/oact/babynames/decades/century.html)
