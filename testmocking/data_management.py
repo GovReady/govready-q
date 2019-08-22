@@ -60,7 +60,9 @@ def create_user(username=None, password=None, pw_hash=None):
     with open(_getpath(User), 'a+') as file:
         u = User.objects.create(
             username=username,
-            email=("testuser_%s@govready.com" % username),
+            first_name=username,
+            last_name='Smith', # decent enough generic last name for a US professional context
+            email=("%s@govready.com" % username),
         )
         if pw_hash:
             u.password = pw_hash
