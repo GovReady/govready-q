@@ -24,9 +24,16 @@ def get_wordlist(path="eff_short_wordlist_1.txt"):
 def _getpath(model):
     return TMP_BASE_PATH + ("/%s.idlist" % model._meta.db_table)
 
-def get_name(count, separator=' ', path='eff_short_wordlist_1.txt'):
+def get_name(count, separator=' ', path='eff_short_wordlist_1.txt', filter=[]):
     wordlist = get_wordlist(path=path)
-    return separator.join([name.title() for name in sample(wordlist, count)])
+    if len(filter) >= len(wordlist) ** count:
+        raise Exception("Cannot get a unique name for this entity")
+    name = None
+    while name == None:
+        name = separator.join([name.title() for name in sample(wordlist, count)])
+        if name in filter:
+            name = None
+    return name
 
 
 def get_random_sentence():
@@ -53,14 +60,16 @@ def get_random_url():
 
 def create_user(username=None, password=None, pw_hash=None):
     if username == None:
-        username = get_name(1, '_', path='names.txt')
+        username = get_name(1, '_', path='names.txt', filter=[u.username for u in User.objects.all()])
     if password == None:
         password = get_random_string(16)
 
     with open(_getpath(User), 'a+') as file:
         u = User.objects.create(
             username=username,
-            email=("testuser_%s@govready.com" % username),
+            first_name=username,
+            last_name='Smith', # decent enough generic last name for a US professional context
+            email=("%s@govready.com" % username),
         )
         if pw_hash:
             u.password = pw_hash
@@ -74,7 +83,7 @@ def create_user(username=None, password=None, pw_hash=None):
 
 def create_organization(name=None, admin=None, help_squad=[], reviewers=[]):
     if name == None:
-        name = get_name(2)
+        name = get_name(1, filter=[org.name for org in Organization.objects.all()])
         name += " " + get_name(1, path='company_suffixes.txt')
     subdomain = name.replace(' ', '-').lower()
 
