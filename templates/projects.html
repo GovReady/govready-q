@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load guardian_tags %}
 {% load q %}
 {% load humanize %}
 
@@ -135,8 +136,17 @@ Your Compliance Projects
     <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
   </div>
 
+  {% get_obj_perms request.user for project as "perms" %}
+  {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
+  {% if "delete_project" in perms %}
+  <div class="col-xs-6 col-sm-1"><small style="color: #888;">Role: Owner</small></div>
+  {% elif "change_project" in perms%}
+  <div class="col-xs-6 col-sm-1"><small style="color: #888;">Role: Member</small></div>
+  {% elif "portfolio_perms"%}
+  <div class="col-xs-6 col-sm-1"><small style="color: #888;">Portfolio Permission</small></div>
+  {% endif %}
   <div class="col-xs-6 col-sm-2"><small style="color: #888;">Portfolio: {{project.portfolio.title}}</small></div>
-  <div class="col-xs-6 col-sm-2"><small style="color: #888;">ID: {{project.id}}</small></div>
+  <div class="col-xs-6 col-sm-1"><small style="color: #888;">ID: {{project.id}}</small></div>
 
   <div class="col-xs-12 col-md-2" style="text-align: right;">
       <small style="color: #888;">
