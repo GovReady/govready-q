@@ -5,7 +5,7 @@ from django.db import migrations
 from guardian.shortcuts import assign_perm, get_perms_for_model
 
 
-def assign_project_editor_permissions(apps, project, user):
+def assign_project_edit_permissions(apps, project, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
     Permission = apps.get_model('auth', 'Permission')
@@ -70,10 +70,10 @@ def forwards(apps, schema_editor):
         assign_portfolio_owner_permissions(apps, portfolio, user)
         tasks = Task.objects.filter(editor=user, deleted_at=None)
         for task in tasks:
-            assign_project_editor_permissions(apps, task.project, user)
+            assign_project_edit_permissions(apps, task.project, user)
         discussions = Discussion.objects.filter(guests=user)
         for discussion in discussions:
-            assign_project_editor_permissions(apps, discussion.attached_to.task.project, user)
+            assign_project_edit_permissions(apps, discussion.attached_to.task.project, user)
 
 
     for project in projects:
@@ -90,7 +90,7 @@ def forwards(apps, schema_editor):
         project_memberships = ProjectMembership.objects.filter(project=project)
         for pm in project_memberships:
             # assign editor permissions
-            assign_project_editor_permissions(apps, project, pm.user)
+            assign_project_edit_permissions(apps, project, pm.user)
             if pm.is_admin:
                 # if admin assign owner permissions
                 assign_project_owner_permissions(apps, project, pm.user)
