@@ -1,3 +1,4 @@
+from itertools import chain
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
@@ -514,10 +515,16 @@ class Project(models.Model):
         return " / ".join(parts)
 
     def get_members(self):
-        return User.objects.filter(projectmembership__project=self)
+        queryset1 = User.objects.filter(projectmembership__project=self)
+        queryset2 = get_users_with_perms(self)
+        users = list(chain(queryset1, queryset2))
+        return users
 
     def get_admins(self):
-        return User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+        queryset1 = User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+        queryset2 = get_users_with_perms(self, only_with_perms_in=['can_grant_portfolio_owner_permission'])
+        users = list(chain(queryset1, queryset2))
+        return users
 
     def is_deletable(self):
         return not self.is_organization_project and not self.is_account_project
