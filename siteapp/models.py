@@ -373,7 +373,7 @@ class Portfolio(models.Model):
         for perm in permissions:
             assign_perm(perm.codename, user, self)
 
-    def assign_editor_permissions(self, user):
+    def assign_edit_permissions(self, user):
         permissions = ['view_portfolio', 'change_portfolio', 'add_portfolio']
         for perm in permissions:
             assign_perm(perm, user, self)
@@ -535,7 +535,7 @@ class Project(models.Model):
     def can_invite_others(self, user):
         return user.has_perm('can_grant_portfolio_owner_permission', self.portfolio)
 
-    def assign_editor_permissions(self, user):
+    def assign_edit_permissions(self, user):
         permissions = ['view_project', 'change_project', 'add_project']
         for perm in permissions:
             assign_perm(perm, user, self)
