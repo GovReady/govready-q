@@ -1,4 +1,5 @@
 {% load guardian_tags %}
+{% load notification_helpers %}
 
 <h3><strong>Project Permissions</strong></h3>
 <table class="table" style="width: auto;">
@@ -9,6 +10,7 @@
       <th>Project Viewer </th>
       <th>Project Editor</th>
       <th>Project Owner</th>
+      <th>Project Membership (old)</th>
     </tr>
   </thead>
 
@@ -38,6 +40,11 @@
         {% if 'delete_project' in user_perms %}
         ✓
         {% endif%}
+      </td>
+      <td align="center">
+          {% if project|has_membership:user %}
+          ✓
+          {% endif%}
       </td>
     </tr>
     {% endif %}

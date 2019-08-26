@@ -25,6 +25,13 @@ from .good_settings_helpers import \
 from .models import Folder, Invitation, Portfolio, Project, User
 from .notifications_helpers import *
 
+from django import template
+
+register = template.Library()
+
+@register.filter
+def membership(project):
+    return project
 
 def homepage(request):
     # If the user is logged in, then redirect them to the projects page.
