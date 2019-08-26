@@ -5,6 +5,17 @@ from django.db import migrations
 from guardian.shortcuts import assign_perm, get_perms_for_model
 
 
+def assign_project_viewer_permissions(apps, project, user):
+    User = apps.get_model('siteapp', 'User')
+    UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
+    Permission = apps.get_model('auth', 'Permission')
+    project_type, created = ContentType.objects.get_or_create(app_label='siteapp', model='project')
+    view_project, created = Permission.objects.get_or_create(codename='view_project', content_type_id=project_type.id)
+    user_lookup = User.objects.get(id=user.id)
+    UserObjectPermission.objects.get_or_create(
+        permission=view_project, user=user_lookup, object_pk=project.pk, content_type_id=project_type.id)
+
+
 def assign_project_editor_permissions(apps, project, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
@@ -59,6 +70,8 @@ def forwards(apps, schema_editor):
     Project = apps.get_model('siteapp', 'Project')
     User = apps.get_model('siteapp', 'User')
     ProjectMembership = apps.get_model('siteapp', 'ProjectMembership')
+    Task = apps.get_model('guidedmodules', 'Task')
+    Discussion = apps.get_model('discussion', 'Discussion')
 
     projects = Project.objects.all()
     users = User.objects.all()
@@ -66,6 +79,13 @@ def forwards(apps, schema_editor):
     for user in users:
         portfolio, created = Portfolio.objects.get_or_create(title=user.username)
         assign_portfolio_owner_permissions(apps, portfolio, user)
+        tasks = Task.objects.filter(editor=user, deleted_at=None)
+        for task in tasks:
+            assign_project_viewer_permissions(apps, task.project, user)
+        discussions = Discussion.objects.filter(guests=user)
+        for discussion in discussions:
+            assign_project_viewer_permissions(apps, discussion.attached_to.task.project, user)
+
 
     for project in projects:
         if project.organization and project.portfolio is None:
