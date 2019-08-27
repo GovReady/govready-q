@@ -21,7 +21,15 @@ class Command(BaseCommand):
         parser.add_argument('--quiet', action='store_true', help="Reduces verbosity")
 
     def handle(self, *args, **options):
-        tasks = [task for task in Task.objects.all() if task.project.organization.subdomain == options['org']] 
+        tasks = [
+            task for task in Task.objects.all()
+            if
+                task.project.organization.subdomain == options['org']
+                and
+                # we DON'T want to fill in account settings randomly. That leads to confusing data
+                task.project.title != 'Account Settings Project'
+        ]
+
         for task in tasks:
             print("Handling task {}".format(task.id))
 
