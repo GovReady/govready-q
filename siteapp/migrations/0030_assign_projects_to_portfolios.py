@@ -5,11 +5,11 @@ from django.db import migrations
 from guardian.shortcuts import assign_perm, get_perms_for_model
 
 
-def assign_project_editor_permissions(apps, project, user):
+def assign_project_edit_permissions(apps, project, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
     Permission = apps.get_model('auth', 'Permission')
-    project_type = ContentType.objects.get(
+    project_type, created = ContentType.objects.get_or_create(
         app_label='siteapp', model='project')
     view_project, created = Permission.objects.get_or_create(codename='view_project', content_type_id=project_type.id)
     change_project, created = Permission.objects.get_or_create(codename='change_project', content_type_id=project_type.id)
@@ -25,7 +25,7 @@ def assign_project_owner_permissions(apps, project, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
     Permission = apps.get_model('auth', 'Permission')
-    project_type = ContentType.objects.get(
+    project_type, created = ContentType.objects.get_or_create(
         app_label='siteapp', model='project')
     view_project, created = Permission.objects.get_or_create(codename='view_project', content_type_id=project_type.id)
     change_project, created = Permission.objects.get_or_create(codename='change_project', content_type_id=project_type.id)
@@ -41,7 +41,7 @@ def assign_portfolio_owner_permissions(apps, portfolio, user):
     User = apps.get_model('siteapp', 'User')
     UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
     Permission = apps.get_model('auth', 'Permission')
-    portfolio_type = ContentType.objects.get(app_label='siteapp', model='portfolio')
+    portfolio_type, created = ContentType.objects.get_or_create(app_label='siteapp', model='portfolio')
     portfolio_owner, created = Permission.objects.get_or_create(codename='can_grant_portfolio_owner_permission', content_type_id=portfolio_type.id)
     view_portfolio, created = Permission.objects.get_or_create(codename='view_portfolio', content_type_id=portfolio_type.id)
     change_portfolio, created = Permission.objects.get_or_create(codename='change_portfolio', content_type_id=portfolio_type.id)
@@ -54,18 +54,31 @@ def assign_portfolio_owner_permissions(apps, portfolio, user):
         UserObjectPermission.objects.get_or_create(
             permission=perm, user=user_lookup, object_pk=portfolio.pk, content_type_id=portfolio_type.id)
 
+def assign_portfolio_edit_permissions(apps, portfolio, user):
+    User = apps.get_model('siteapp', 'User')
+    UserObjectPermission = apps.get_model('guardian', 'UserObjectPermission')
+    Permission = apps.get_model('auth', 'Permission')
+    portfolio_type, created = ContentType.objects.get_or_create(app_label='siteapp', model='portfolio')
+    view_portfolio, created = Permission.objects.get_or_create(codename='view_portfolio', content_type_id=portfolio_type.id)
+    change_portfolio, created = Permission.objects.get_or_create(codename='change_portfolio', content_type_id=portfolio_type.id)
+    add_portfolio, created = Permission.objects.get_or_create(codename='add_portfolio', content_type_id=portfolio_type.id)
+    permissions = [view_portfolio, change_portfolio, add_portfolio]
+    user_lookup = User.objects.get(id=user.id)
+    for perm in permissions:
+        print(portfolio)
+        UserObjectPermission.objects.get_or_create(
+            permission=perm, user=user_lookup, object_pk=portfolio.pk, content_type_id=portfolio_type.id)
+
 def forwards(apps, schema_editor):
     Portfolio = apps.get_model('siteapp', 'Portfolio')
     Project = apps.get_model('siteapp', 'Project')
     User = apps.get_model('siteapp', 'User')
     ProjectMembership = apps.get_model('siteapp', 'ProjectMembership')
+    Task = apps.get_model('guidedmodules', 'Task')
+    Discussion = apps.get_model('discussion', 'Discussion')
 
     projects = Project.objects.all()
     users = User.objects.all()
-
-    for user in users:
-        portfolio, created = Portfolio.objects.get_or_create(title=user.username)
-        assign_portfolio_owner_permissions(apps, portfolio, user)
 
     for project in projects:
         if project.organization and project.portfolio is None:
@@ -81,13 +94,27 @@ def forwards(apps, schema_editor):
         project_memberships = ProjectMembership.objects.filter(project=project)
         for pm in project_memberships:
             # assign editor permissions
-            assign_project_editor_permissions(apps, project, pm.user)
+            assign_project_edit_permissions(apps, project, pm.user)
+            if project.portfolio:
+                assign_portfolio_edit_permissions(apps, project.portfolio, pm.user)
             if pm.is_admin:
                 # if admin assign owner permissions
                 assign_project_owner_permissions(apps, project, pm.user)
                 if project.portfolio:
                     assign_portfolio_owner_permissions(apps, project.portfolio, pm.user)
 
+    for user in users:
+        portfolio, created = Portfolio.objects.get_or_create(title=user.username)
+        assign_portfolio_owner_permissions(apps, portfolio, user)
+        tasks = Task.objects.filter(editor=user, deleted_at=None)
+        for task in tasks:
+            assign_project_edit_permissions(apps, task.project, user)
+            if task.project.portfolio:
+                assign_portfolio_edit_permissions(apps, task.project.portfolio, user)
+        discussions = Discussion.objects.filter(guests=user)
+        for discussion in discussions:
+            assign_project_edit_permissions(apps, discussion.attached_to.task.project, user)
+            assign_portfolio_edit_permissions(apps, discussion.attached_to.task.project.portfolio, user)
 
 class Migration(migrations.Migration):
 

@@ -1,3 +1,4 @@
+from itertools import chain
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
@@ -372,7 +373,7 @@ class Portfolio(models.Model):
         for perm in permissions:
             assign_perm(perm.codename, user, self)
 
-    def assign_editor_permissions(self, user):
+    def assign_edit_permissions(self, user):
         permissions = ['view_portfolio', 'change_portfolio', 'add_portfolio']
         for perm in permissions:
             assign_perm(perm, user, self)
@@ -514,10 +515,16 @@ class Project(models.Model):
         return " / ".join(parts)
 
     def get_members(self):
-        return User.objects.filter(projectmembership__project=self)
+        queryset1 = User.objects.filter(projectmembership__project=self)
+        queryset2 = get_users_with_perms(self)
+        users = list(chain(queryset1, queryset2))
+        return users
 
     def get_admins(self):
-        return User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+        queryset1 = User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+        queryset2 = get_users_with_perms(self, only_with_perms_in=['can_grant_portfolio_owner_permission'])
+        users = list(chain(queryset1, queryset2))
+        return users
 
     def is_deletable(self):
         return not self.is_organization_project and not self.is_account_project
@@ -528,7 +535,7 @@ class Project(models.Model):
     def can_invite_others(self, user):
         return user.has_perm('can_grant_portfolio_owner_permission', self.portfolio)
 
-    def assign_editor_permissions(self, user):
+    def assign_edit_permissions(self, user):
         permissions = ['view_project', 'change_project', 'add_project']
         for perm in permissions:
             assign_perm(perm, user, self)
@@ -636,6 +643,20 @@ class Project(models.Model):
                 if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
                     if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
                         projects.add(d.attached_to.task.project)
+
+
+        # Add projects the user has permissions for
+        for project in Project.objects.all():
+            user_permissions = get_user_perms(user, project)
+            if len(user_permissions):
+                projects.add(project)
+
+        # Add projects the user has permissions for through a portfolio
+        for portfolio in Portfolio.objects.all():
+            user_permissions = get_user_perms(user, portfolio)
+            if len(user_permissions):
+                for project in portfolio.projects.all():
+                    projects.add(project)
 
         # Don't show system projects.
         system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
