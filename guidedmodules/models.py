@@ -930,10 +930,10 @@ class Task(models.Model):
         return None
 
     def has_read_priv(self, user, allow_access_to_deleted=False):
-        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in ("READ", "WRITE")
+        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in ("READ", "WRITE") or self.project.has_read_priv(user)
 
     def has_write_priv(self, user, allow_access_to_deleted=False):
-        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE"
+        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE" or self.project.has_read_priv(user)
 
     def has_review_priv(self, user):
         if self.project.organization is None:
@@ -1836,7 +1836,6 @@ class TaskAnswer(models.Model):
             for user in self.task.project.organization.help_squad.all():
                 if user in self.get_notification_watchers(): continue # no need to invite
                 inv = Invitation.objects.create(
-                    organization=self.task.project.organization,
                     from_user=comment.user,
                     from_project=self.task.project,
                     target=comment.discussion,
