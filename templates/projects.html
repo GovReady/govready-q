@@ -121,6 +121,15 @@ Your Compliance Projects
 {% endif %}
 
 <div class="container">
+<div class="row">
+  <div class="col-sm-1">&nbsp;</div>
+  <div class="col-xs-10 col-md-4">Project</div>
+  <div class="col-xs-6 col-sm-1">ID</div>
+  <div class="col-xs-6 col-sm-2">Portfolio</div>
+  <div class="col-xs-6 col-sm-2">Role</div>
+  <div class="col-xs-12 col-md-2">Updated</div>
+</div>
+
 {% for project in projects %}
 <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
   <div class="col-sm-1">
@@ -132,26 +141,27 @@ Your Compliance Projects
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endif %}
   </div>
-  <div class="col-xs-10 col-md-5">
+  <div class="col-xs-10 col-md-4">
     <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
   </div>
+
+  <div class="col-xs-6 col-sm-1"><small style="color: #888;">{{project.id}}</small></div>
+  <div class="col-xs-6 col-sm-2"><small style="color: #888;">{{project.portfolio.title}}</small></div>
 
   {% get_obj_perms request.user for project as "perms" %}
   {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
   {% if "delete_project" in perms %}
-  <div class="col-xs-6 col-sm-1"><small style="color: #888;">Role: Owner</small></div>
+  <div class="col-xs-6 col-sm-2"><small style="color: #888;">Owner</small></div>
   {% elif "change_project" in perms%}
-  <div class="col-xs-6 col-sm-1"><small style="color: #888;">Role: Member</small></div>
+  <div class="col-xs-6 col-sm-2"><small style="color: #888;">Project Member</small></div>
   {% elif "portfolio_perms"%}
-  <div class="col-xs-6 col-sm-1"><small style="color: #888;">Portfolio Permission</small></div>
+  <div class="col-xs-6 col-sm-2"><small style="color: #888;">Portfolio Member</small></div>
   {% endif %}
-  <div class="col-xs-6 col-sm-2"><small style="color: #888;">Portfolio: {{project.portfolio.title}}</small></div>
-  <div class="col-xs-6 col-sm-1"><small style="color: #888;">ID: {{project.id}}</small></div>
 
-  <div class="col-xs-12 col-md-2" style="text-align: right;">
+  <div class="col-xs-12 col-md-2" style="text-align: left;">
       <small style="color: #888;">
       <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
-      Updated {{project.root_task.updated|naturaltime}}
+      {{project.root_task.updated|naturaltime}}
       <!-- Started: {{project.created|naturaltime}} -->
     </small>
   </div>

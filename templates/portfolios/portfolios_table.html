@@ -3,27 +3,37 @@
 {% load guardian_tags %}
 
 <div class="container">
+<div class="row">
+  <div class="col-xs-10 col-md-5">Portfolio</div>
+  <div class="col-xs-6 col-sm-1">ID</div>
+  <div class="col-xs-6 col-sm-2">Role</div>
+  <div class="col-md-2">&nbsp;</div>
+  <div class="col-xs-12 col-md-2">Created</div>
+</div>
 
   {% for portfolio in portfolios %}
   <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
 
-    <div class="col-md-4">
+    <div class="col-xs-10 col-md-5">
       <div>
         <span class="glyphicon glyphicon-folder-close"></span>&nbsp;&nbsp;&nbsp;
         <a href="/portfolios/{{portfolio.id}}/projects" id="portfolio_{{portfolio.title}}" style="color: black;">{{portfolio.title}}</a>
       </div>
     </div>
 
+    <div class="col-md-1"><small style="color: #888;">{{portfolio.id}}</small></div>
+
     {% get_obj_perms request.user for portfolio as "perms" %}
     {% if "can_grant_portfolio_owner_permission" in perms %}
-    <div class="col-md-2"><small style="color: #888;">Role: Owner</small></div>
+    <div class="col-md-2"><small style="color: #888;">Owner</small></div>
     {% elif "change_portfolio" in perms%}
-    <div class="col-md-2"><small style="color: #888;">Role: Can Edit</small></div>
+    <div class="col-md-2"><small style="color: #888;">Portfolio Member</small></div>
+    {% else %}
+    <div class="col-md-2"><small style="color: #888;">Project Member</small></div>
     {% endif %}
     <div class="col-md-2">&nbsp;</div>
-    <div class="col-md-1"><small style="color: #888;">ID: {{portfolio.id}}</small></div>
 
-    <div class="col-md-2" style="text-align: right;"><small style="color: #888;">Created
+    <div class="col-xs-12 col-md-2" style="text-align: left;"><small style="color: #888;">
         {{portfolio.created|naturaltime}}</small></div>
   </div>
   {% endfor %}

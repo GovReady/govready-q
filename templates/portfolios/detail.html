@@ -46,29 +46,41 @@ Remove contextbar from top of page
     {% endif %}
 
     <div class="container">
+      <div class="row">
+        <div class="col-sm-1">&nbsp;</div>
+        <div class="col-xs-10 col-md-4">Project</div>
+        <div class="col-xs-6 col-sm-1">ID</div>
+        <div class="col-xs-6 col-sm-2">Portfolio</div>
+        <div class="col-xs-6 col-sm-2">Role</div>
+        <div class="col-xs-12 col-md-2">Updated</div>
+      </div>
+
       {% for project in projects %}
       <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
-        <div class="col-md-6">
+
+        <div class="col-sm-1">
           {% if project.root_task.get_app_icon_url %}
-          <a href="{{project.get_absolute_url}}" class="project-image">
-            <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive">
-          </a>
+            <a href="{{project.get_absolute_url}}" class="project-image">
+              <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive" alt="App Icon">
+            </a>
           {% else %}
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           {% endif %}
-          &nbsp;&nbsp;&nbsp;
+        </div>
+
+        <div class="col-xs-10 col-md-4">
           <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
         </div>
 
-        <div class="col-md-3">&nbsp;</div>
+        <div class="col-xs-6 col-sm-1"><small style="color: #888;">{{project.id}}</small></div>
+        <div class="col-xs-6 col-sm-2"><small style="color: #888;">{{project.portfolio.title}}</small></div>
 
-        <div class="col-md-1">
-          <small style="color: #888;">(ID: {{project.id}})</small>
-        </div>
+        {# get_obj_perms request.user for project as "perms" #}
+        <div class="col-xs-6 col-sm-2"><small style="color: #888;">PERMISSIONS HERE</small></div>
 
         <div class="col-md-2">
           <small style="color: #888;">
-            Updated {{project.root_task.updated|naturaltime}}
+            {{project.root_task.updated|naturaltime}}
           </small>
         </div>
 
