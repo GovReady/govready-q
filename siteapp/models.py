@@ -515,13 +515,20 @@ class Project(models.Model):
         return " / ".join(parts)
 
     def get_members(self):
+        # Who are members of this project?
+        # Project members from 0.8.6 permissions structure
         queryset1 = User.objects.filter(projectmembership__project=self)
+        # Project members from 0.9.0 Django guardian permission structure
         queryset2 = get_users_with_perms(self)
-        users = list(chain(queryset1, queryset2))
+        # Project's Portfolio members from 0.9.0 Django guardian permission structure
+        queryset3 = get_users_with_perms(self.portfolio)
+        users = list(chain(queryset1, queryset2, queryset3))
         return users
 
     def get_admins(self):
+        # Project members from 0.8.6 permissions structure with "is_admin" flag have Project admin rights
         queryset1 = User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+        # Project's Portfolio owner from 0.9.0 Django guardian permission structure have Project admin rights
         queryset2 = get_users_with_perms(self, only_with_perms_in=['can_grant_portfolio_owner_permission'])
         users = list(chain(queryset1, queryset2))
         return users
@@ -530,6 +537,8 @@ class Project(models.Model):
         return not self.is_organization_project and not self.is_account_project
 
     def can_start_task(self, user):
+        # Anyone who is a Project member can start task
+        # This includes users who are project members because they are Project's Portfolio's members
         return (not self.is_account_project) and (user in self.get_members())
 
     def can_invite_others(self, user):
@@ -546,8 +555,9 @@ class Project(models.Model):
         return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True) if m.user.email and "@" in m.user.email))
 
     def has_read_priv(self, user):
-        # Who can see this project? Team members + anyone with read privs to a task within
-        # this project + anyone that's a guest in dicussion within this project.
+        # Who can see this project?
+        # Team members + anyone with read privs to a task within this project
+        # + anyone that's a guest in discussion within this project
         # See get_all_participants for the inverse of this function.
         from guidedmodules.models import Task
         if user.has_perm('view_project', self) or ProjectMembership.objects.filter(project=self, user=user).exists():
@@ -555,6 +565,10 @@ class Project(models.Model):
         if Task.get_all_tasks_readable_by(user, recursive=True).filter(project=self).exists():
             return True
         for d in self.get_discussions_in_project_as_guest(user):
+            return True
+        # + anyone who is a member of the project's portfolio
+        # + anyone who has read, view, change permission on project
+        if (not self.is_account_project) and (user in self.get_members()):
             return True
         return False
 

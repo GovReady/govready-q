@@ -298,6 +298,7 @@ h3.question-group-title {
                         {# This is a module-type question that has been started. Clicking the question doesn't start a new task --- instead, it's just a link to the started Task. #}
 
                         {# Link to the Task. #}
+                        {# This is a module-type question that has been answered already (e.g., it has a Task answer). We are making the display of the information about the module one big link. Here we open the link tag and put everything that follows, including the progress bar and the buttons will clickable. #}
                         <a href="{{q.task.get_absolute_url}}" style="display: block;">
 
                       {% elif not q.question.spec.protocol %}

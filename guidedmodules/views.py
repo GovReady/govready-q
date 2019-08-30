@@ -85,7 +85,7 @@ def download_module_asset(request, taskid, taskslug, asset_path):
 # decorator for pages that render tasks
 def task_view(view_func):
     @login_required
-    def inner_func(request, taskid, taskslug, pagepath, question_key, *args):
+    def new_view_func(request, taskid, taskslug, pagepath, question_key, *args):
         # Get the Task.
         task = get_object_or_404(Task, id=taskid)
 
@@ -124,9 +124,9 @@ def task_view(view_func):
 
             return False
         if not read_priv():
-            return HttpResponseForbidden()
+            return HttpResponseForbidden("You do not have read privileges to this page.")
 
-        # We skiped the check for whether the Task is deleted above. Now
+        # We skipped the check for whether the Task is deleted above. Now
         # check for that and provide a more specific error.
         if task.deleted_at:
             # The Task is deleted. If the user would have had access to it,
@@ -167,8 +167,7 @@ def task_view(view_func):
 
         # Render the view.
         return view_func(request, task, answered, context, question, *args)
-
-    return inner_func
+    return new_view_func
 
 
 @task_view
