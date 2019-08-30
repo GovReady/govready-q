@@ -407,7 +407,6 @@ class Comment(models.Model):
             "emojis": self.emojis.split(",") if self.emojis else None,
         }
 
-
 class Attachment(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user uploading this attachment.")
     comment = models.ForeignKey(Comment, blank=True, null=True, related_name="attachments", on_delete=models.CASCADE, help_text="The Comment that this Attachment is attached to. Null when the file has been uploaded before the Comment has been saved.")
@@ -433,7 +432,6 @@ def reldate(date, ref=None):
     if rd.hours >= 1: return c((rd.hours, "hour"), (rd.minutes, "minute"))
     if rd.minutes >= 1: return c((rd.minutes, "minute"),)
     return c((rd.seconds, "second"),)
-
 
 def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
     # Render comment text into HTML.
@@ -464,7 +462,6 @@ def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
         text = re.sub(r"^<p>(.*)</p>$", r"\1", text)
 
     return text
-
 
 def match_autocompletes(text, autocompletes, replace_mentions=None):
     import re

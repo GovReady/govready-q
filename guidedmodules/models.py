@@ -10,6 +10,9 @@ import uuid
 from .module_logic import ModuleAnswers, render_content
 from .answer_validation import validator
 from siteapp.models import User, Organization, Project, ProjectMembership
+from guardian.shortcuts import (assign_perm, get_objects_for_user,
+                                get_perms_for_model, get_user_perms,
+                                get_users_with_perms, remove_perm)
 
 
 class AppSource(models.Model):
@@ -145,7 +148,7 @@ class AppVersion(models.Model):
         return (user.has_perm('guidedmodules.change_module'))
 
     def has_upgrade_priv(self, user):
-        # Does a user have permission to ugprade the Modules in this AppVersion?
+        # Does a user have permission to upgrade the Modules in this AppVersion?
         # Yes if the user is an admin of all the Projects that the Tasks that use
         # the Modules are in. In practice, that's just during app authoring when
         # the author is testing changes.
@@ -1755,7 +1758,14 @@ class TaskAnswer(models.Model):
 
     # required to attach a Discussion to it
     def get_discussion_participants(self):
-        return User.objects.filter(projectmembership__project=self.task.project).distinct()
+        # Who are members of this task answer's parent project?
+        # Project members from 0.9.0 Django guardian permission structure
+        queryset2 = get_users_with_perms(self.task.project)
+        # Project's Portfolio members from 0.9.0 Django guardian permission structure
+        queryset3 = get_users_with_perms(self.task.project.portfolio)
+        # users = chain(queryset2, queryset3)
+        users = queryset2 | queryset3 | User.objects.filter(projectmembership__project=self.task.project).distinct()
+        return users
 
     # required to attach a Discussion to it
     def get_project_context_dict(self):
@@ -1823,7 +1833,6 @@ class TaskAnswer(models.Model):
                 for term in organization.extra.get("vocabulary", [])
             ]
         }
-
 
     # required to attach a Discussion to it
     def on_discussion_comment(self, comment):
