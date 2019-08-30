@@ -441,11 +441,13 @@ function display_discussion(discussion, is_page_load) {
     // options
   });
 
-  // start polling the server for new events
+  // start poor-man's polling the server for new events
   // don't poll if the user can't comment because the discussion view
   // will say they don't have permission to poll
+  /* Temporarily stop our polling to make logs quieter
   if (discussion_info.can_comment)
-    discussion_poll();
+     discussion_poll();
+  */
 }
 
 function render_events(discussion, initial) {

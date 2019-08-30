@@ -71,14 +71,13 @@ class Discussion(models.Model):
             return "<Deleted Discussion>"
 
     def is_participant(self, user):
-        # No one is a participant of a dicussion attached to (a question
-        # of) a deleted Task.
+        # No one is a participant of a discussion attached to (a question of) a deleted Task.
         if self.attached_to_obj is not None and self.attached_to_obj.is_discussion_deleted():
             return False
         return user in self.get_all_participants()
 
     def get_all_participants(self):
-        # because get_discussion_participants uses distinct, self.guests must too
+        # Because get_discussion_participants uses distinct, self.guests must too
         participants = self.guests.all().distinct()
         if self.attached_to_obj is not None:
             participants = (participants | self.attached_to_obj.get_discussion_participants()).distinct()
@@ -303,7 +302,6 @@ class Comment(models.Model):
 
         # Reset the creation date to the moment it's published.
         self.created = timezone.now()
-
         # Save.
         self.save()
 

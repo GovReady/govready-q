@@ -38,14 +38,13 @@ def update_discussion_comment_draft(request):
     # Return the comment's id and rendered text for displaying a preview.
     return JsonResponse(comment.render_context_dict(request.user))
 
-
 @login_required
 @transaction.atomic
 def submit_discussion_comment(request):
     # Get the discussion object.
     discussion = get_object_or_404(Discussion, id=request.POST['discussion'])
     if not discussion.can_comment(request.user):
-        return HttpResponseForbidden()
+        return HttpResponseForbidden("You do not have permission to post to this discussion.")
 
     # Get the Comment draft.
     try:
@@ -55,13 +54,11 @@ def submit_discussion_comment(request):
 
     if not comment.draft:
         return JsonResponse({ "status": "error", "message": "It looks like the comment was already submitted from another browser session." })
-
     # Publish it.
     comment.publish()
 
     # Return the comment for display.
     return JsonResponse(comment.render_context_dict(request.user))
-
 
 @login_required
 def edit_discussion_comment(request):
