@@ -29,11 +29,12 @@ class Command(BaseCommand):
             # Run on-off job.
             self.send_new_emails()
 
-
     def send_new_emails(self):
         # Find notifications that have not been emailed but should be emailed.
-        #  * The user has notifications enabled.
-        #  * The notification is more recent than the last notification email sent.
+        #  * The user has notifications enabled as per notifemails_enabled value
+        #    [(0, "As They Happen"), (1, "Don't Email")] in User model.
+        #  * The notification is more recent than the last notification email sent
+        #    via the "_notifemails_last_notif_id" field in User model.
         #  * The notification has target object so that we can generate a link back
         #    to the site.
         # And go in order because once we mark a notification as emailed, we imply
@@ -41,7 +42,8 @@ class Command(BaseCommand):
         notifs = Notification.objects\
             .filter(
                 recipient__notifemails_enabled=0,
-                id__gt=models.F('recipient__notifemails_last_notif_id')
+                id__gt=models.F('recipient__notifemails_last_notif_id'),
+                emailed=False,
             )\
             .exclude(target_object_id=None)\
             .order_by('id')
@@ -81,25 +83,43 @@ class Command(BaseCommand):
             # Some notifications go stale and can't generate links,
             # and then we can't email notifications.
             return
-        send_mail(
-            "email/notification",
-            settings.DEFAULT_FROM_EMAIL,
-            [notif.recipient.email],
-            {
-                "notification": notif,
-                "url": settings.SITE_ROOT_URL + url,
-                "whatreplydoes": what_reply_does,
-            },
-            headers={
-                "From": settings.NOTIFICATION_FROM_EMAIL_PATTERN % (str(notif.actor),),
-                "Reply-To": (settings.NOTIFICATION_REPLY_TO_EMAIL_PATTERN % (organization.name, notif.id, notif.data["secret_key"]))
-                if what_reply_does else "",
-                "Date": format_datetime(notif.timestamp),
-            }
-        )
 
-        # Mark it as sent.
-        notif.recipient.notifemails_last_notif_id = notif.id
-        notif.recipient.notifemails_last_at = timezone.now()
-        notif.recipient.save(update_fields=['notifemails_last_notif_id', 'notifemails_last_at'])
+        # Prevent multiple notifications emailed from multiple instances/containers of GovReady-Q
+        # Make this transaction atomic
+        # Re-check the database to make sure the individual notification is still unsent
+        # Lock the notification record in the database while sending the email
+        with transaction.atomic():
+            notif_latest = (
+                Notification.objects.select_for_update().get(id=notif.id)
+            )
 
+            if not notif_latest.emailed:
+                send_mail(
+                    "email/notification",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [notif_latest.recipient.email],
+                    {
+                        "notification": notif,
+                        "url": settings.SITE_ROOT_URL + url,
+                        "whatreplydoes": what_reply_does,
+                    },
+                    headers={
+                        "From": settings.NOTIFICATION_FROM_EMAIL_PATTERN % (str(notif.actor),),
+                        "Reply-To": (settings.NOTIFICATION_REPLY_TO_EMAIL_PATTERN % (organization.name, notif.id, notif.data["secret_key"]))
+                        if what_reply_does else "",
+                        "Date": format_datetime(notif.timestamp),
+                    }
+                )
+
+                # Mark notification as sent.
+                notif_latest.emailed = True
+                notif_latest.save(update_fields=['emailed'])
+                # Update id of last notification sent to user
+                notif.recipient.notifemails_last_notif_id = notif.id
+                notif.recipient.notifemails_last_at = timezone.now()
+                notif.recipient.save(update_fields=['notifemails_last_notif_id', 'notifemails_last_at'])
+            else:
+                # Save record with nothing changed to close transaction
+                notif_latest.save()
+
+        # Release row level database lock on notification
