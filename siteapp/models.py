@@ -572,6 +572,23 @@ class Project(models.Model):
             return True
         return False
 
+    def has_write_priv(self, user):
+        # TODO: Create interfaces for managing separate has_write_priv
+        # Meanwhile, during transition from 0.8.6 to 0.9.0 allow users who had access
+        # to continue access and be able to edit
+
+        # Who can edit this project('s questions)?
+        # + anyone who is a member of the project's portfolio
+        if (user.has_perm('change_portfolio', self.portfolio) or user.has_perm('view_portfolio', self.portfolio)):
+            return True
+        # + anyone who has read, view, change permission on project
+        if user.has_perm('change_project', self):
+            return True
+        # TODO: Is this too permissive?
+        if (not self.is_account_project) and (user in self.get_members()):
+            return True
+        return False
+
     def get_all_participants(self):
         # Get all users who have read access to this project. Inverse of
         # has_read_priv.
