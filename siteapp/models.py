@@ -203,6 +203,9 @@ class User(AbstractUser):
         except:
             pass
 
+        # Add username to profile
+        profile["username"] = self.username
+
         return profile
 
 

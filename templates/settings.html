@@ -98,7 +98,7 @@ GovReady-Q Setup
         },
         template: function(value) {
           var node = $("<span></span>");
-          node.text(value.name_and_email);
+          node.text(value.username + " " + value.name_and_email);
           return node.html();
         },
         replace: function(value, event) {

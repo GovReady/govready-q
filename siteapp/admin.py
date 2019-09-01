@@ -15,7 +15,7 @@ def all_user_fields_still_exist(fieldlist):
 
 class UserAdmin(contribauthadmin.UserAdmin):
     ordering = ('username',)
-    list_display = ('id', 'email', 'date_joined') # base has first_name, etc. fields that we don't have on our model
+    list_display = ('username', 'email', 'date_joined', 'id') # base has first_name, etc. fields that we don't have on our model
     fieldsets = [
         (None, {'fields': ('email', 'password')}),
     ] + [fs for fs in contribauthadmin.UserAdmin.fieldsets if all_user_fields_still_exist(fs[1]['fields'])]
@@ -23,7 +23,7 @@ class UserAdmin(contribauthadmin.UserAdmin):
     pass
 
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('slug', 'name')
+    list_display = ('slug', 'name', 'id')
     filter_horizontal = ('help_squad', 'reviewers')
 
     def save_model(self, request, obj, form, change):
