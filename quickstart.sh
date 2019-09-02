@@ -76,9 +76,9 @@ echo $SPACER
 # prompt the user if they want to run data generation
 while true;
 do
-	read -p "Do you want to add some simulated starting data (users, a second organization, and assessments)? [y/n] " answer
+	read -p "Do you want to add some simulated starting data (assessments)? [y/n] " answer
 	case $answer in
-		[Yy]* ) python3 manage.py populate --full --password "$DEFAULT_USER_PASSWORD"; break;;
+		[Yy]* ) python3 manage.py add_data; break;;
 		[Nn]* ) break;;
 		* ) echo "Please answer 'yes' or 'no'";;
 	esac
