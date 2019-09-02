@@ -77,17 +77,22 @@ class WebClient():
             url = self._url(form.attrib['action'])
         else:
             url = self.base_url
+        self.post(url, base_fields)
+
+    def post(self, url, fields):
         print("POST on: <{}>".format(url))
-        req = self.session.post(url, base_fields)
+        req = self.session.post(url, fields)
         req.user = self.user
         req.organization = self.org
         self._resolve(req)
 
 
     def add_system(self):
-        self.load("/store")
+        portfolio = sample(list(self.user.portfolio_list()), 1)[0]
+        print("Adding project to portfolio: {} (#{})".format(portfolio.title, portfolio.id))
+        self.post("/store", {"portfolio":portfolio.id})
 
-        form = sample(self.selector.css('[action^="/store"]'), 1)[0]
+        form = sample(self.selector.css('[action^="/store/"]'), 1)[0]
         self.form_by_ref(form)
         print(self.response.url)
         #self.html_debug()
