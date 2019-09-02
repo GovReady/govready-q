@@ -62,27 +62,6 @@ def create_user(username=None, password=None, pw_hash=None):
         file.write("\n")
     return u 
 
-def create_organization(name=None, admin=None, help_squad=[], reviewers=[]):
-    if name == None:
-        name = get_name(2)
-        name += " " + get_name(1, path='company_suffixes.txt')
-    slug = name.replace(' ', '-').lower()
-
-    with open(_getpath(Organization), 'a+') as file:
-        org = Organization.create(
-            name=name,
-            slug=slug,
-            admin_user=admin,
-        )
-        file.write(str(org.id))
-        file.write("\n")
-
-    for user in help_squad:
-        org.help_squad.add(user)
-    for user in reviewers:
-        org.reviewers.add(user)
-    return org 
-
 def create_portfolio(user):
     portfolio = Portfolio.objects.create(title=user.username)
     portfolio.assign_owner_permissions(user)
