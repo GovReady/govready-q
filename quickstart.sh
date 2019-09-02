@@ -7,10 +7,6 @@
 # and does not edit /etc/hosts. those will have to be done manually
 
 
-# When adding users, we expect they'll be created for test purposes. Therefore, a
-# static easy-to-remember password is useful.
-DEFAULT_USER_PASSWORD="GovReadyTest2019"
-
 # some of these commands generate a big wall of text, so we may want visual space
 # between them
 SPACER="..."
@@ -76,7 +72,7 @@ echo $SPACER
 # prompt the user if they want to run data generation
 while true;
 do
-	read -p "Do you want to add some simulated starting data (assessments)? [y/n] " answer
+	read -p "Do you want to add some simulated starting data (users, assessments)? [y/n] " answer
 	case $answer in
 		[Yy]* ) python3 manage.py add_data; break;;
 		[Nn]* ) break;;
