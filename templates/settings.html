@@ -58,6 +58,10 @@ GovReady-Q Setup
   {% endif %}
   {% endif %}
 
+  <h2>Environment Settings</h2>
+
+  Database in use: {{db_type}}
+
   <h2>Permissions List</h2>
 
   {% include "permissions_list.html" with portfolio_permissions=portfolio_permissions project_permissions=project_permissions %}

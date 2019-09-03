@@ -1490,6 +1490,16 @@ def organization_settings(request):
     if not is_django_staff:
         return HttpResponseForbidden("You do not have access to this page.")
 
+    # Get database environment settings
+    if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+        db_type = "Postgres"
+    elif settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
+        db_type = "MySQL"
+    elif settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+        db_type = "MySQL"
+    else:
+        db_type = "Unknown"
+
     def preload_profiles(users):
         users = list(users)
         User.preload_profiles(users, sort=True)
@@ -1510,6 +1520,7 @@ def organization_settings(request):
         "users": User.objects.all(),
         "project_permissions": get_perms_for_model(Project),
         "portfolio_permissions": get_perms_for_model(Portfolio),
+        "db_type": db_type,
     })
 
 @login_required
