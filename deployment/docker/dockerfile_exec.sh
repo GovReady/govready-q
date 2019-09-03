@@ -89,6 +89,9 @@ echo "Starting at ${ADDRESS} with HTTPS ${HTTPS-false}."
 # Run checks.
 python3.6 manage.py check --deploy
 
+# Check if 0.9.0 upgrade has happened
+DB_BEFORE_090 ="$(python3.6 manage.py db_before_090_migration_check)"
+
 # Initialize the database.
 python3.6 manage.py migrate
 python3.6 manage.py load_modules
