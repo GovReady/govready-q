@@ -22,7 +22,7 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User
+from .models import Folder, Invitation, Portfolio, Project, User, Organization
 from .notifications_helpers import *
 
 
@@ -1481,10 +1481,14 @@ def organization_settings(request):
     can_edit_org_settings = request.user.is_staff
     is_django_staff = request.user.is_staff
 
+    # In 0.9.0 we only have 1 organization, so let's get that
+    # TODO better setting of organization
+    organization = Organization.objects.get(id=1)
+
     # If the user doesn't have permission to see anything on this
     # page, give an appropriate HTTP response.
     if not is_django_staff:
-        return HttpResponseForbidden()
+        return HttpResponseForbidden("You do not have access to this page.")
 
     def preload_profiles(users):
         users = list(users)
@@ -1499,10 +1503,8 @@ def organization_settings(request):
         "django_admin_url": settings.SITE_ROOT_URL + "/admin",
         "org_admins": preload_profiles(org_admins),
         # TODO better pulling of teams
-        # "help_squad": preload_profiles(request.organization.help_squad.all()),
-        # "reviewers": preload_profiles(request.organization.reviewers.all()),
-        "help_squad": preload_profiles(User.objects.all()),
-        "reviewers": preload_profiles(User.objects.all()),
+        "help_squad": preload_profiles(organization.help_squad.all()),
+        "reviewers": preload_profiles(organization.reviewers.all()),
         "projects": Project.objects.all(),
         "portfolios": Portfolio.objects.all(),
         "users": User.objects.all(),
@@ -1514,8 +1516,12 @@ def organization_settings(request):
 def organization_settings_save(request):
     if request.method != "POST":
         return HttpResponseForbidden()
-    if request.user not in request.organization.get_organization_project().get_admins():
-        return HttpResponseForbidden()
+
+    # In 0.9.0 we only have 1 organization, so let's get that
+    # TODO better setting of organization
+    organization = Organization.objects.get(id=1)
+    if request.user not in organization.get_organization_project().get_admins():
+        return HttpResponseForbidden("You do not have permission.")
 
     if request.POST.get("action") == "remove-from-org-admins":
         # I don't think organization projects have non-admin members so we
@@ -1523,7 +1529,7 @@ def organization_settings_save(request):
         # keeping the ProjectMembership record but just making them a non-admin?
         user = get_object_or_404(User, id=request.POST.get("user"))
         ProjectMembership.objects.filter(
-            project=request.organization.get_organization_project(),
+            project=organization.get_organization_project(),
             user=user
         ).delete()
         messages.add_message(request, messages.INFO, '%s has been removed from the list of organization administrator.' % user)
@@ -1531,20 +1537,20 @@ def organization_settings_save(request):
 
     if request.POST.get("action") == "remove-from-help-squad":
         user = get_object_or_404(User, id=request.POST.get("user"))
-        request.organization.help_squad.remove(user)
+        organization.help_squad.remove(user)
         messages.add_message(request, messages.INFO, '%s has been removed from the help squad.' % user)
         return JsonResponse({ "status": "ok" })
 
     if request.POST.get("action") == "remove-from-reviewers":
         user = get_object_or_404(User, id=request.POST.get("user"))
-        request.organization.reviewers.remove(user)
+        organization.reviewers.remove(user)
         messages.add_message(request, messages.INFO, '%s has been removed from the reviewers.' % user)
         return JsonResponse({ "status": "ok" })
 
     if request.POST.get("action") == "add-to-org-admins":
         user = get_object_or_404(User, id=request.POST.get("user"))
         mbr, _ = ProjectMembership.objects.get_or_create(
-            project=request.organization.get_organization_project(),
+            project=organization.get_organization_project(),
             user=user
         )
         mbr.is_admin = True
@@ -1554,22 +1560,21 @@ def organization_settings_save(request):
 
     if request.POST.get("action") == "add-to-help-squad":
         user = get_object_or_404(User, id=request.POST.get("user"))
-        request.organization.help_squad.add(user)
+        organization.help_squad.add(user)
         messages.add_message(request, messages.INFO, '%s has been added to the help squad.' % user)
         return JsonResponse({ "status": "ok" })
 
     if request.POST.get("action") == "add-to-reviewers":
         user = get_object_or_404(User, id=request.POST.get("user"))
-        request.organization.reviewers.add(user)
+        organization.reviewers.add(user)
         messages.add_message(request, messages.INFO, '%s has been added to the reviewers.' % user)
         return JsonResponse({ "status": "ok" })
 
     if request.POST.get("action") == "search-users":
         # TODO: Filter in a database query or else cache the result of get_who_can_read.
-        users = list(request.organization.get_who_can_read())
-        User.preload_profiles(users, sort=True)
+        users = list(organization.get_who_can_read())
         users = [user for user in users
-            if request.POST.get("query", "").lower().strip() in user.name_and_email().lower()
+            if request.POST.get("query", "").lower().strip() in user.username.lower()
         ]
         users = users[:20] # limit
         return JsonResponse({ "users": [user.render_context_dict() for user in users] })

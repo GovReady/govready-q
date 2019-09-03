@@ -24,7 +24,7 @@ class UserAdmin(contribauthadmin.UserAdmin):
     pass
 
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('slug', 'name')
+    list_display = ('slug', 'name', 'id')
     filter_horizontal = ('help_squad', 'reviewers')
 
     def save_model(self, request, obj, form, change):

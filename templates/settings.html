@@ -15,12 +15,6 @@ GovReady-Q Setup
   <p class="small">You are a Django Administrator. You have extra permissions on this page and can visit the <a href="{{django_admin_url}}">Django Admin homepage</a>.</p>
   {% endif %}
 
-<h2>Permissions List</h2>
-
-  {% include "permissions_list.html" with portfolio_permissions=portfolio_permissions project_permissions=project_permissions %}
-
-  {% include "permissions.html" with users=users portfolios=portfolios projects=projects %}
-
   {% if can_edit_org_settings %}
   <h2 style="margin-top: 2em;">Organization Administrators</h2>
 
@@ -64,6 +58,9 @@ GovReady-Q Setup
   {% endif %}
   {% endif %}
 
+  <h2>Permissions List</h2>
+
+  {% include "permissions_list.html" with portfolio_permissions=portfolio_permissions project_permissions=project_permissions %}
   {% include "permissions.html" with users=users portfolios=portfolios projects=projects %}
 
 {% endblock %}
@@ -98,7 +95,7 @@ GovReady-Q Setup
         },
         template: function(value) {
           var node = $("<span></span>");
-          node.text(value.name_and_email);
+          node.text(value.username + " " + value.name_and_email);
           return node.html();
         },
         replace: function(value, event) {

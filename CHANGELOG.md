@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.dev42+devel
+v0.9.0.dev45+devel
 ------------------
 
 Our most exciting release of GovReady-Q!
@@ -15,15 +15,17 @@ Our most exciting release of GovReady-Q!
 * Beautiful and helpful new start page!
 * One-click deployment scripts for simple testing deployments into AWS.
 
-**WARNINGS - SIGNIFICANT DATABASE CHANGES**
+**WARNING - SIGNIFICANT DATABASE CHANGES**
 
 Running the migrations to update the database will perform changes that will prevent rolling back the data migrations.
 
 **Migrating from 0.8.6 to 0.9.0**
 
-We recommend testinging 0.9.0 with an empty database.
+We recommend testing 0.9.0 with an empty database.
 
-We are developing migration scripts to support 0.8.6 to 0.9.0 upgrades.
+We recommend testing migrations from 0.8.6 to 0.9.0 against a copy of your database.
+
+We have developed migration script and guide to support 0.8.6 to 0.9.0 upgrades.
 
 New manage.py commands help populate 0.8.6 test data to test migration scripts.
 
@@ -53,17 +55,17 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 **Permission changes:**
 
 * Added popular, mature Django-Guardian permission framework to enable better management of permissions on indivdidual instances of objects.
-* New Permissions object primarily applied to portfolios in this release.
+* New Permissions object primarily applied to portfolios in this release, with some overlap into projects.
 * Preserved original lifecycle interface in template project_lifecycle_original.html.
 * On login errors make signin tab active on page reload to display the errors.
 * Remove listing in catalog of the fields related to the size of the organization.
-* Display username instead of email asddress for user string.
+* Display username instead of email address for user string.
 * Use plane language for names of top-level questionnaire stage columns: To Do, In Progress, Submitted, Approved.
 
 **Authoring tool improvements:**
 
 * Superusers can create whole new questionnaire files.
-* Shift question edit modular dialog from large center screen popup to right-hand thin sidebar.
+* Edit question modular dialog moved from large center screen popup to right-hand sidebar.
 * Increase readability of edit form.
 * Insert question into questionnaire.
 * Enable editing on questionnaires from all App Sources instead of just "local".
@@ -85,20 +87,24 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 
 **Developer changes:**
 
+*Organization related*
+
 * The OrganizationSubdomainMiddleware which checked the subdomain in the request host header, performed Organization-level authorization checks, and set the global request.organization attribute to the requested Organization, is deleted.
 * the Content Security Policy for the site is updated to remove the white-listed landing domain (we used it for cross-origin requests to get user profile photos, which were always served from the landing domain)
 * Django's ALLOWED_HOSTS setting no longer needs an entry for a wildcard subdomain under the landing domain since we are not using that anymore.
 * The LANDING_DOMAIN, ORGANIZATION_PARENT_DOMAIN, SINGLE_ORGANIZATION_KEY, and REVEAL_ORGS_TO_ANON_USERS attributes on django.conf.settings are removed.
-* Update tests for organizational remove
-* Remove description of multi-tenant mode and organization subdomains from documentation
-* siteapp.views.new_folder isn't currently in use, so did not fully update related code to get the new folder's organization from somewhere
-
-* Starting to switching language from apps to assessments/questionnaires
+* Update tests for organizational removal.
+* Remove description of multi-tenant mode and organization subdomains from documentation.
+* siteapp.views.new_folder isn't currently in use, so did not fully update related code to get the new folder's organization from somewhere.
+* Starting to switching language from apps to assessments/questionnaires.
 * Beware of legacy references to organization in source code. Still cleaning up removal of multitenancy and subdomains.
+* Absolute URLs to user-uploaded media now use SITE_ROOT_URL instead of organization subdomains.
+* The landing domain URLs are moved into the main urlconf (except the ones that were duplicated in both urlconfs because they appeared on both domains).
+* Revise API URLs to no longer have the organization in the path (we can put it back if it was nice, but it no longer serves a functional purpose).
+* Remove the Invitation.organization field.
 
-* Absolute URLs to user-uploaded media now use SITE_ROOT_URL instead of organization subdomains
-* The landing domain URLs are moved into the main urlconf (except the ones that were duplicated in both urlconfs because they appeared on both domains)
-* Revise API URLs to no longer have the organization in the path (we can put it back if it was nice, but it no longer serves a functional purpose)
+*Questionnaire related*
+
 * AppVersion now has a boolean field for whether the instance should be included in the compliance apps catalog for users to start new projects with that app.
 * The AppSource admin now lists all of the apps provided by the source and has links to import new app versions into the database and to see the app versions already in the database by version number.
 * When starting a compliance app (i.e. creating a new project), we no longer have to import the app from the remote repository --- instead, we create a new Project and set its root_task to point to a Module in an AppVersion already in the database.
@@ -106,10 +112,13 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 * The AppSource admin's approved app lists form is removed since adding apps into the database is now an administrative function and the database column for it is dropped.
 * Tests now load into the database the apps they need.
 * The app catalog cache is removed since the page loads much faster.
-* Remove the Invitation.organization field.
+
 * User profile information was previously pre-loaded by the OrganizationSubdomainMiddleware, now it's loaded on first use.
 * When users register, the email to site admins no longer includes the organization they were looking at when they signed up because there's no such thing anymore.
 * Fix tests to login with new forms in landing page tabs
+
+*Miscellaneous*
+
 * Fix various SonarQube reported issues to use preferred HTML tags for stong and em
 * Testmocking scripts for populating test data into application.
 
@@ -117,6 +126,7 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 
 * Remove multi-tenancy and serves all pages from the on the same domain. Previosuly, requests to Q came in on subdomains and the subdomain determined which Organization in the database the request would be associated with and individuals had to re-login across subdomains. Multitenancy increased install complexity and we were not seeing use of the multitenancy feature. Deployment is now simpler.
 * Add deployment scripts of multi-container GovReady-Q and NGINX via Docker-compose.
+* Prevent multiple notification emails in environments running multiple Q instances against single database by performing record lock on notification and checking if notification already sent.
 * `first_run` reports if Superuser previously created.
 
 
