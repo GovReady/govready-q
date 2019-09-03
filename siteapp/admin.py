@@ -4,6 +4,7 @@ from guardian.admin import GuardedModelAdmin
 import django.contrib.auth.admin as contribauthadmin
 
 from .models import User, Organization, Folder, Project, ProjectMembership, Portfolio
+from notifications.models import Notification
 
 def all_user_fields_still_exist(fieldlist):
     for f in fieldlist:
@@ -15,10 +16,10 @@ def all_user_fields_still_exist(fieldlist):
 
 class UserAdmin(contribauthadmin.UserAdmin):
     ordering = ('username',)
-    list_display = ('username', 'email', 'date_joined', 'id') # base has first_name, etc. fields that we don't have on our model
+    list_display = ('id', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
     fieldsets = [
         (None, {'fields': ('email', 'password')}),
-    ] + [fs for fs in contribauthadmin.UserAdmin.fieldsets if all_user_fields_still_exist(fs[1]['fields'])]
+    ] + [fs for fs in contribauthadmin.UserAdmin.fieldsets if all_user_fields_still_exist(fs[1]['fields'])] + [("Notifications", {'fields': ('notifemails_last_notif_id', 'notifemails_last_at')}),]
 
     pass
 
@@ -103,6 +104,10 @@ class FolderAdmin(admin.ModelAdmin):
     raw_id_fields = ('organization','admin_users')
     readonly_fields = ('projects', 'extra')
 
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'recipient', 'actor', 'level', 'target', 'unread', 'public', 'emailed')
+    readonly_fields = ('id',)
+
 class ProjectAdmin(GuardedModelAdmin):
     list_display = ('id', 'portfolio_name', 'title', 'root_task', 'created')
     raw_id_fields = ('organization', 'root_task',)
@@ -130,4 +135,6 @@ admin.site.register(Folder, FolderAdmin)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectMembership, ProjectMembershipAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)
-
+# Notification is an external library and registers itself. So we need to unregister and re-register it.
+admin.site.unregister(Notification)
+admin.site.register(Notification, NotificationAdmin)
