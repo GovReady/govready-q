@@ -8,11 +8,20 @@ class Command(BaseCommand):
   help = 'Check if version 0.9.0 migration has been run.'
 
   def handle(self, *args, **options):
-    migration_exists = MigrationRecorder.Migration.objects.filter(app='siteapp', name='0025_auto_20190515_1455')
+    site_app_migration_exists = MigrationRecorder.Migration.objects.filter(app='siteapp', name='0025_auto_20190515_1455')
+    guardian_migration_exists = MigrationRecorder.Migration.objects.filter(app='guardian', name='0001_initial')
+    system_settings_exists = MigrationRecorder.Migration.objects.filter(app='system_settings', name='0002_auto_20190808_1947')
 
-    if not migration_exists:
+    migration_to_090_occured = False
+
+    if not site_app_migration_exists:
       print("0.9.0 migration has not been run")
-      return True
-    else:
-      print("0.9.0 migration has been run")
-      return False
+      migration_to_090_occured = True
+    elif not guardian_migration_exists:
+      print("0.9.0 migration has not been run")
+      migration_to_090_occured = True
+    elif not system_settings_exists:
+      print("0.9.0 migration has not been run")
+      migration_to_090_occured = True
+
+    return migration_to_090_occured
