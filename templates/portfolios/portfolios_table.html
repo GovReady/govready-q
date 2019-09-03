@@ -2,6 +2,7 @@
 {% load humanize %}
 {% load guardian_tags %}
 
+{% if portfolios %}
 <div class="container">
 <div class="row">
   <div class="col-xs-10 col-md-5">Portfolio</div>
@@ -10,6 +11,7 @@
   <div class="col-md-2">&nbsp;</div>
   <div class="col-xs-12 col-md-2">Created</div>
 </div>
+{% endif %}
 
   {% for portfolio in portfolios %}
   <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
