@@ -14,14 +14,14 @@ class Command(BaseCommand):
 
     migration_to_090_occured = False
 
-    if not site_app_migration_exists:
-      print("0.9.0 migration has not been run")
+    if site_app_migration_exists:
+      print("site app migrations have been run")
       migration_to_090_occured = True
-    elif not guardian_migration_exists:
-      print("0.9.0 migration has not been run")
+    if guardian_migration_exists:
+      print("guardian migrations have been run")
       migration_to_090_occured = True
-    elif not system_settings_exists:
-      print("0.9.0 migration has not been run")
+    if system_settings_exists:
+      print("system_settings migrations have been run")
       migration_to_090_occured = True
 
-    return migration_to_090_occured
+    print(migration_to_090_occured)
