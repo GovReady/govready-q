@@ -12,13 +12,13 @@ class Command(BaseCommand):
     guardian_migration_exists = MigrationRecorder.Migration.objects.filter(app='guardian', name='0001_initial')
     system_settings_exists = MigrationRecorder.Migration.objects.filter(app='system_settings', name='0002_auto_20190808_1947')
     
-    DB_BEFORE_090 = "true"
+    DB_BEFORE_090 = "True"
 
     if site_app_migration_exists:
-      DB_BEFORE_090 = "false"
+      DB_BEFORE_090 = "False"
     if guardian_migration_exists:
-      DB_BEFORE_090 = "false"
+      DB_BEFORE_090 = "False"
     if system_settings_exists:
-      DB_BEFORE_090 = "false"
+      DB_BEFORE_090 = "False"
 
     print(DB_BEFORE_090)
