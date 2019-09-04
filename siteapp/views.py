@@ -1173,7 +1173,7 @@ def new_portfolio(request):
         form.save()
         portfolio = form.instance
         portfolio.assign_owner_permissions(request.user)
-        return HttpResponseRedirect('/portfolios')
+        return redirect('portfolio_projects', pk=portfolio.pk)
     else:
         form = PortfolioForm()
 

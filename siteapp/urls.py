@@ -48,7 +48,7 @@ urlpatterns = [
     # portfolios
     url(r'^portfolios$', views.portfolio_list),
     url(r'^portfolios/new$', views.new_portfolio),
-    url(r'^portfolios/(?P<pk>.*)/projects$', views.portfolio_projects),
+    url(r'^portfolios/(?P<pk>.*)/projects$', views.portfolio_projects, name="portfolio_projects"),
     url(r'^portfolio/update_permissions', views.update_permissions, name="update_permissions"),
 
     # org groups
