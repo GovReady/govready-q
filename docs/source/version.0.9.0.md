@@ -28,9 +28,16 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 
 <!-- ![0.8.6 Sign-in Page](assets/086_sign_in.png) -->
 
-0.9.0 | 0.8.6 
---- | --- 
-<img src="assets/090_sign_in.png" width="480" height="400" /> | <img src="assets/086_sign_in.png" width="480" height="400" />
+<table cellspacing="0" cellpadding="0">
+    <tr> 
+        <th> 0.8.6 (Old Version) </th> 
+        <th> 0.9.0 (New Version) </th>
+    </tr>
+    <tr>
+        <td><img src="assets/086_sign_in.png" width="480" /></td> 
+        <td><img src="assets/090_sign_in.png" width="480" /></td>
+    </tr>
+</table> 
 
 **0.9.0 vs 0.8.6: Project Page**
 ![0.9.0 Project Page](assets/090_project_page.png)
