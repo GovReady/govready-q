@@ -21,6 +21,36 @@ For a complete list of changes see the [0.9.0.dev branch CHANGELOG](https://gith
 
 Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branches.
 
+## 0.9.0 vs 0.8.6 Screenshots
+
+**0.9.0 vs 0.8.6: Sign-in Page**
+![0.9.0 Sign-in Page](assets/090_sign_in.png)
+
+![0.8.6 Sign-in Page](assets/060_sign_in.png)
+
+**0.9.0 vs 0.8.6: Project Page**
+![0.9.0 Project Page](assets/090_project_page.png)
+
+![0.8.6 Project Page](assets/090_project_page.png)
+
+**0.9.0 vs 0.8.6: New Portfolios vs Old Compliance Apps**
+![0.9.0 Portfolios](assets/090_porfolio_1.png)
+![0.9.0 Portfolios continued](assets/assets/090_porfolio_2.png)
+
+![0.8.6 Old Compliance Apps](assets/086_compliance_app.png)
+
+**0.9.0 vs 0.8.6: Module View**
+![0.9.0 Module](assets/090_module_view.png)
+
+![0.8.6 Module](assets/assets/086_module_view.png)
+
+**0.9.0 Feature Showcase**
+![Retooled Form Interface](assets/090_retooled_form.png)
+![Permissions Settings](assets/090_permissions_settings.png)
+![Help Squad](assets/090_help_squad.png)
+![API Keys Screen](assets/090_api_keys.png)
+
+
 ## Release Date
 
 The target release date 0.9.0 is July 2019.
