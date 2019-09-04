@@ -57,11 +57,11 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
     </tr>
     <tr>
         <td><img src="assets/086_compliance_app.png" width="480" /></td> 
-        <td><img src="assets/090_porfolio_1.png" width="480" /></td>
+        <td><img src="assets/090_portfolio_1.png" width="480" /></td>
     </tr>
     <tr>
         <td></td>
-        <td><img src="assets/090_porfolio_2.png" width="480" /></td>
+        <td><img src="assets/090_portfolio_2.png" width="480" /></td>
     </tr>
 </table> 
 
