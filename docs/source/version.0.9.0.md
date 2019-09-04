@@ -33,7 +33,7 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
         <td><img src="assets/086_sign_in.png" width="480" /></td> 
         <td><img src="assets/090_sign_in.png" width="480" /></td>
     </tr>
-</table>  
+</table>
 
 
 <p align="center"><b>0.8.6 vs 0.9.0: Project Page</b></p>
@@ -46,10 +46,10 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
         <td><img src="assets/086_project_page.png" width="480" /></td> 
         <td><img src="assets/090_project_page.png" width="480" /></td>
     </tr>
-</table>  
+</table>
 
 
-<p align="center"><b>0.8.6 vs 0.9.0: New Portfolios vs Old Compliance Apps</b></p>
+<p align="center"><b>0.8.6 vs 0.9.0: Compliance Apps vs New Portfolio Functionality</b></p>
 <table>
     <tr> 
         <th> 0.8.6 (Old Version) </th> 
@@ -63,18 +63,46 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
         <td></td>
         <td><img src="assets/090_portfolio_2.png" width="480" /></td>
     </tr>
-</table>  
+</table>
 
-<!-- **0.9.0 vs 0.8.6: New Portfolios vs Old Compliance Apps**
-![0.9.0 Portfolios](assets/090_porfolio_1.png)
-![0.9.0 Portfolios continued](assets/assets/090_porfolio_2.png)
 
-![0.8.6 Old Compliance Apps](assets/086_compliance_app.png) -->
+<p align="center"><b>0.8.6 vs 0.9.0: Module View</b></p>
+<table>
+    <tr> 
+        <th> 0.8.6 (Old Version) </th> 
+        <th> 0.9.0 (New Version) </th>
+    </tr>
+    <tr>
+        <td><img src="assets/assets/086_module_view.png" width="480" /></td> 
+        <td><img src="assets/090_module_view.png" width="480" /></td>
+    </tr>
+</table>
 
-**0.9.0 vs 0.8.6: Module View**
+
+<p align="center"><b>0.9.0: Feature Showcase</b></p>
+<table>
+    <tr> 
+        <th> 0.9.0 (New Version) </th>
+    </tr>
+    <p>Retooled Form</p>
+    <tr>
+        <td><img src="assets/090_retooled_form.png" width="480" /></td> 
+    </tr>
+    <tr>
+        <td><img src="assets/090_permissions_settings.png" width="480" /></td> 
+    </tr>
+    <tr>
+        <td><img src="assets/090_help_squad.png" width="480" /></td> 
+    </tr>
+    <tr>
+        <td><img src="assets/090_api_keys.png" width="480" /></td> 
+    </tr>
+</table>
+
+<!-- **0.9.0 vs 0.8.6: Module View**
 ![0.9.0 Module](assets/090_module_view.png)
 
-![0.8.6 Module](assets/assets/086_module_view.png)
+![0.8.6 Module](assets/assets/086_module_view.png) -->
 
 **0.9.0 Feature Showcase**
 ![Retooled Form Interface](assets/090_retooled_form.png)
