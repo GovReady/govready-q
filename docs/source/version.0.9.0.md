@@ -23,7 +23,7 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 
 ## 0.9.0 vs 0.8.6 Screenshots
 
-<p align="center">**0.8.6 vs 0.9.0: Sign-in Page**</p>
+<p align="center"><b>0.8.6 vs 0.9.0: Sign-in Page</b></p>
 <table>
     <tr> 
         <th> 0.8.6 (Old Version) </th> 
