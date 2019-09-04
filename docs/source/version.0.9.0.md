@@ -28,7 +28,7 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 
 <!-- ![0.8.6 Sign-in Page](assets/086_sign_in.png) -->
 
-<table cellspacing="0" cellpadding="0">
+<table border="0">
     <tr> 
         <th> 0.8.6 (Old Version) </th> 
         <th> 0.9.0 (New Version) </th>
