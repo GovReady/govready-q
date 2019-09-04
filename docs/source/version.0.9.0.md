@@ -89,7 +89,7 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 
 ## Release Date
 
-The target release date 0.9.0 is September 2019.
+The target release date for 0.9.0 is September 2019.
 
 ## Installing 0.9.0
 
