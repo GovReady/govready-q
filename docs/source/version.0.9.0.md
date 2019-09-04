@@ -21,9 +21,9 @@ For a complete list of changes see the [0.9.0.dev branch CHANGELOG](https://gith
 
 Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branches.
 
-## 0.8.6 vs 0.9.0 Screenshots
+## Screenshots
 
-<p align="center"><b>0.8.6 vs 0.9.0: Sign-in Page</b></p>
+<p align="center"><b>Sign-in Page</b></p>
 <table>
     <tr> 
         <th> 0.8.6 (Old Version) </th> 
@@ -35,67 +35,50 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
     </tr>
 </table>
 
-
-<p align="center"><b>0.8.6 vs 0.9.0: Project Page</b></p>
+<p align="center"><b>Projects List Page</b></p>
 <table>
     <tr> 
         <th> 0.8.6 (Old Version) </th> 
         <th> 0.9.0 (New Version) </th>
     </tr>
     <tr>
-        <td><img src="assets/086_project_page.png" width="480" /></td> 
-        <td><img src="assets/090_project_page.png" width="480" /></td>
+        <td><img src="assets/086_projects.png" width="480" /></td> 
+        <td><img src="assets/090_projects" width="480" /></td>
     </tr>
 </table>
 
-
-<p align="center"><b>0.8.6 vs 0.9.0: Compliance Apps vs New Portfolio Functionality</b></p>
+<p align="center"><b>Portfolios (New in 0.9.0)</b></p>
 <table>
-    <tr> 
-        <th> 0.8.6 (Old Version) </th> 
-        <th> 0.9.0 (New Version) </th>
-    </tr>
     <tr>
-        <td><img src="assets/086_compliance_app.png" width="480" /></td> 
-        <td><img src="assets/090_portfolio_1.png" width="480" /></td>
+        <td><img src="assets/090_portfolios_1.png" width="480" /></td>
     </tr>
     <tr>
         <td></td>
-        <td><img src="assets/090_portfolio_2.png" width="480" /></td>
+        <td><img src="assets/090_portfolios_2.png" width="480" /></td>
     </tr>
 </table>
 
-
-<p align="center"><b>0.8.6 vs 0.9.0: Module View</b></p>
+<p align="center"><b>Module View</b></p>
 <table>
     <tr> 
         <th> 0.8.6 (Old Version) </th> 
         <th> 0.9.0 (New Version) </th>
     </tr>
     <tr>
-        <td><img src="assets/086_module_view.png" width="480" /></td> 
-        <td><img src="assets/090_module_view.png" width="480" /></td>
+        <td><img src="assets/086_modules.png" width="480" /></td> 
+        <td><img src="assets/090_modules.png" width="480" /></td>
     </tr>
 </table>
 
-
-<p align="center"><b>0.9.0: New Feature Showcase</b></p>
+<p align="center"><b>Question Page</b></p>
 <table align="center">
-    <tr>
-        <td align="center">Retooled Form</td>
-        <td align="center">New Permissions Settings</td>
+    <tr> 
+        <th> 0.8.6 (Old Version) </th> 
+        <th> 0.9.0 (New Version) </th>
     </tr>
     <tr>
-        <td><img src="assets/090_retooled_form.png" width="480" /></td>
-        <td><img src="assets/090_permissions_settings.png" width="480" /></td>  
-    </tr>
-     <tr>
-        <td align="center">Help Squad Selection</td>
-        <td align="center">API Keys Page</td>
-    </tr>
-    <tr>
-        <td><img src="assets/090_help_squad.png" width="480" /></td>
-        <td><img src="assets/090_api_keys.png" width="480" /></td>       
+        <td><img src="assets/086_question.png" width="480" /></td>
+        <td><img src="assets/090_question.png" width="480" /></td>  
     </tr>
 </table>
 
