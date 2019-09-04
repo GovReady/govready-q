@@ -50,15 +50,15 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 <p align="center"><b>Portfolios (New in 0.9.0)</b></p>
 <table>
     <tr> 
-        <th width="450"> 0.8.6 (Old Version) </th> 
+        <th width="440"> 0.8.6 (Old Version) </th> 
         <th> 0.9.0 (New Version) </th>
     </tr>
     <tr>
-        <td>Feature did not exist</td>
+        <td align="center">Feature did not exist</td>
         <td><img src="assets/090_portfolios_1.png" width="480" /></td>
     </tr>
     <tr>
-        <td>Feature did not exist</td>
+        <td align="center">Feature did not exist</td>
         <td><img src="assets/090_portfolios_2.png" width="480" /></td>
     </tr>
 </table>
