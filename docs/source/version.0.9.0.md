@@ -79,11 +79,8 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 </table>
 
 
-<p align="center"><b>0.9.0: Feature Showcase</b></p>
+<p align="center"><b>0.9.0: New Feature Showcase</b></p>
 <table align="center">
-    <tr> 
-        <th> 0.9.0 (New Version) </th>
-    </tr>
     <tr>
         <td>Retooled Form</td>
         <td>New Permissions Settings</td>
@@ -101,18 +98,6 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
         <td><img src="assets/090_api_keys.png" width="480" /></td>       
     </tr>
 </table>
-
-<!-- **0.9.0 vs 0.8.6: Module View**
-![0.9.0 Module](assets/090_module_view.png)
-
-![0.8.6 Module](assets/assets/086_module_view.png) -->
-
-**0.9.0 Feature Showcase**
-![Retooled Form Interface](assets/090_retooled_form.png)
-![Permissions Settings](assets/090_permissions_settings.png)
-![Help Squad](assets/090_help_squad.png)
-![API Keys Screen](assets/090_api_keys.png)
-
 
 ## Release Date
 
