@@ -21,7 +21,7 @@ For a complete list of changes see the [0.9.0.dev branch CHANGELOG](https://gith
 
 Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branches.
 
-## 0.9.0 vs 0.8.6 Screenshots
+## 0.8.6 vs 0.9.0 Screenshots
 
 <p align="center"><b>0.8.6 vs 0.9.0: Sign-in Page</b></p>
 <table>
@@ -82,16 +82,16 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 <p align="center"><b>0.9.0: New Feature Showcase</b></p>
 <table align="center">
     <tr>
-        <td>Retooled Form</td>
-        <td>New Permissions Settings</td>
+        <td align="center">Retooled Form</td>
+        <td align="center">New Permissions Settings</td>
     </tr>
     <tr>
         <td><img src="assets/090_retooled_form.png" width="480" /></td>
         <td><img src="assets/090_permissions_settings.png" width="480" /></td>  
     </tr>
      <tr>
-        <td>Help Squad Selection</td>
-        <td>API Keys Page</td>
+        <td align="center">Help Squad Selection</td>
+        <td align="center">API Keys Page</td>
     </tr>
     <tr>
         <td><img src="assets/090_help_squad.png" width="480" /></td>
