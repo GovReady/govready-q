@@ -73,29 +73,32 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
         <th> 0.9.0 (New Version) </th>
     </tr>
     <tr>
-        <td><img src="assets/assets/086_module_view.png" width="480" /></td> 
+        <td><img src="assets/086_module_view.png" width="480" /></td> 
         <td><img src="assets/090_module_view.png" width="480" /></td>
     </tr>
 </table>
 
 
 <p align="center"><b>0.9.0: Feature Showcase</b></p>
-<table>
+<table align="center">
     <tr> 
         <th> 0.9.0 (New Version) </th>
     </tr>
-    <p>Retooled Form</p>
     <tr>
-        <td><img src="assets/090_retooled_form.png" width="480" /></td> 
+        <td>Retooled Form</td>
+        <td>New Permissions Settings</td>
     </tr>
     <tr>
-        <td><img src="assets/090_permissions_settings.png" width="480" /></td> 
+        <td><img src="assets/090_retooled_form.png" width="480" /></td>
+        <td><img src="assets/090_permissions_settings.png" width="480" /></td>  
+    </tr>
+     <tr>
+        <td>Help Squad Selection</td>
+        <td>API Keys Page</td>
     </tr>
     <tr>
-        <td><img src="assets/090_help_squad.png" width="480" /></td> 
-    </tr>
-    <tr>
-        <td><img src="assets/090_api_keys.png" width="480" /></td> 
+        <td><img src="assets/090_help_squad.png" width="480" /></td>
+        <td><img src="assets/090_api_keys.png" width="480" /></td>       
     </tr>
 </table>
 
