@@ -33,12 +33,24 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
         <td><img src="assets/086_sign_in.png" width="480" /></td> 
         <td><img src="assets/090_sign_in.png" width="480" /></td>
     </tr>
+</table>
+
+<p align="center"><b>0.8.6 vs 0.9.0: Project Page</b></p>
+<table>
+    <tr> 
+        <th> 0.8.6 (Old Version) </th> 
+        <th> 0.9.0 (New Version) </th>
+    </tr>
+    <tr>
+        <td><img src="assets/086_project_page.png" width="480" /></td> 
+        <td><img src="assets/090_project_page.png" width="480" /></td>
+    </tr>
 </table> 
 
-**0.9.0 vs 0.8.6: Project Page**
+<!-- **0.9.0 vs 0.8.6: Project Page**
 ![0.9.0 Project Page](assets/090_project_page.png)
 
-![0.8.6 Project Page](assets/086_project_page.png)
+![0.8.6 Project Page](assets/086_project_page.png) -->
 
 **0.9.0 vs 0.8.6: New Portfolios vs Old Compliance Apps**
 ![0.9.0 Portfolios](assets/090_porfolio_1.png)
