@@ -1204,7 +1204,7 @@ def portfolio_read_required(f):
 def portfolio_projects(request, pk):
   """List of projects within a portfolio"""
   portfolio = Portfolio.objects.get(pk=pk)
-  projects = Project.objects.filter(portfolio=portfolio)
+  projects = Project.objects.filter(portfolio=portfolio).exclude(is_organization_project=True)
   user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
   anonymous_user = User.objects.get(username='AnonymousUser')
   project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
