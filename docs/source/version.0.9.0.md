@@ -21,9 +21,75 @@ For a complete list of changes see the [0.9.0.dev branch CHANGELOG](https://gith
 
 Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branches.
 
+## Screenshots
+
+<p align="center"><b>Sign-in Page</b></p>
+<table>
+    <tr> 
+        <th> 0.8.6 (Old Version) </th> 
+        <th> 0.9.0 (New Version) </th>
+    </tr>
+    <tr>
+        <td><img src="assets/086_sign_in.png" width="480" /></td> 
+        <td><img src="assets/090_sign_in.png" width="480" /></td>
+    </tr>
+</table>
+
+<p align="center"><b>Projects List Page</b></p>
+<table>
+    <tr> 
+        <th> 0.8.6 (Old Version) </th> 
+        <th> 0.9.0 (New Version) </th>
+    </tr>
+    <tr>
+        <td><img src="assets/086_projects.png" width="480" /></td> 
+        <td><img src="assets/090_projects.png" width="480" /></td>
+    </tr>
+</table>
+
+<p align="center"><b>Portfolios (New in 0.9.0)</b></p>
+<table>
+    <tr> 
+        <th width="434"> 0.8.6 (Old Version) </th> 
+        <th> 0.9.0 (New Version) </th>
+    </tr>
+    <tr>
+        <td align="center">Feature did not exist</td>
+        <td><img src="assets/090_portfolios_1.png" width="480" /></td>
+    </tr>
+    <tr>
+        <td align="center">Feature did not exist</td>
+        <td><img src="assets/090_portfolios_2.png" width="480" /></td>
+    </tr>
+</table>
+
+<p align="center"><b>Module View</b></p>
+<table>
+    <tr> 
+        <th> 0.8.6 (Old Version) </th> 
+        <th> 0.9.0 (New Version) </th>
+    </tr>
+    <tr>
+        <td><img src="assets/086_modules.png" width="480" /></td> 
+        <td><img src="assets/090_modules.png" width="480" /></td>
+    </tr>
+</table>
+
+<p align="center"><b>Question Page</b></p>
+<table align="center">
+    <tr> 
+        <th> 0.8.6 (Old Version) </th> 
+        <th> 0.9.0 (New Version) </th>
+    </tr>
+    <tr>
+        <td><img src="assets/086_question.png" width="480" /></td>
+        <td><img src="assets/090_question.png" width="480" /></td>  
+    </tr>
+</table>
+
 ## Release Date
 
-The target release date 0.9.0 is July 2019.
+The target release date for 0.9.0 is September 2019.
 
 ## Installing 0.9.0
 
