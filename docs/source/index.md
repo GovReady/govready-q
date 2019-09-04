@@ -22,7 +22,8 @@ The code is open source, and [available on GitHub](https://github.com/GovReady/g
    DataDesign.md
    Test.md
    version.0.9.0.md
-   
+   migration_guide_086_090
+
 Indices and tables
 ==================
 
