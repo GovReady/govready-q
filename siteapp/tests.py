@@ -606,10 +606,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_title", "Security Projects")
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
-        self.assertRegex(self.browser.title, "Your Compliance Portfolios")
-        self.click_element_with_link_text("Security Projects")
-        self.assertRegex(self.browser.title, "Security Projects Portfolio")
-        self.assertInNodeText("{} (Owner)".format(self.user.username), "#portfolio-member-{}".format(self.user.username))
+        self.assertRegex(self.browser.title, "Security Projects")
 
     def test_create_project_without_portfolio(self):
         self._login()
