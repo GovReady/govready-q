@@ -67,7 +67,7 @@ Complete list of changes: [https://github.com/GovReady/govready-q/blob/0.9.0.dev
 * Back up the most recent version of the production database.
 * Test a restore of most recent version of the database.
 * Synchronize your container customizations to produce a new version of your container.
-* Deploy Container running version 0.9.0 <!--with the paramater YYY for deployment -->
+* Deploy Container running version 0.9.0 **with environment variable `DB_BACKED_UP_DO_UPGRADE` set to "True"**. (This special environment variable is required to avoid accidental running of database migrations before database has been backed up.)
 * Docker will automatically run migrations as part of deployment.
 
 ### Migration Finalization and Testing
