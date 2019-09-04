@@ -15,13 +15,10 @@ class Command(BaseCommand):
     DB_BEFORE_090 = True
 
     if site_app_migration_exists:
-      print("site app migrations have been run")
       DB_BEFORE_090 = False
     if guardian_migration_exists:
-      print("guardian migrations have been run")
       DB_BEFORE_090 = False
     if system_settings_exists:
-      print("system_settings migrations have been run")
       DB_BEFORE_090 = False
 
     print(DB_BEFORE_090)
