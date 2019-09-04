@@ -21,6 +21,7 @@ The code is open source, and [available on GitHub](https://github.com/GovReady/g
    Automation.md
    DataDesign.md
    Test.md
+   migration_guide_086_090.md
    
 Indices and tables
 ==================
