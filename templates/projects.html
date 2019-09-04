@@ -118,7 +118,6 @@ Your Compliance Projects
 
 {% if projects|length > 0 %}
 <p>You have access to {{ projects|length }} project{{ projects|pluralize }}</p>
-{% endif %}
 
 <div class="container">
 <div class="row">
@@ -129,6 +128,7 @@ Your Compliance Projects
   <div class="col-xs-6 col-sm-2">Role</div>
   <div class="col-xs-12 col-md-2">Updated</div>
 </div>
+{% endif %}
 
 {% for project in projects %}
 <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
