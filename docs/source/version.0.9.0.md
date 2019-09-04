@@ -23,12 +23,18 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 
 ## 0.9.0 vs 0.8.6 Screenshots
 
-**0.9.0 vs 0.8.6: Sign-in Page**
+**0.8.6 vs 0.9.0: Sign-in Page**
 <!-- ![0.9.0 Sign-in Page](assets/090_sign_in.png) -->
 
 <!-- ![0.8.6 Sign-in Page](assets/086_sign_in.png) -->
-
-<table border="0">
+<style>
+    table, th, td {
+        padding: 10px;
+        border: 0px;
+        border-collapse: collapse;
+    }
+</style>
+<table>
     <tr> 
         <th> 0.8.6 (Old Version) </th> 
         <th> 0.9.0 (New Version) </th>
