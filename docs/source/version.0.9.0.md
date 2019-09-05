@@ -1,3 +1,12 @@
+<style>
+
+table, tr, td {
+    text-align: center;
+    background-color: white;
+}
+
+</style>
+
 # Version 0.9.0
 
 ## What's New in 0.9.0
@@ -23,69 +32,92 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 
 ## Screenshots
 
-<p align="center"><b>Sign-in Page</b></p>
-<table>
-    <tr> 
-        <th> 0.8.6 (Old Version) </th> 
-        <th> 0.9.0 (New Version) </th>
-    </tr>
-    <tr>
-        <td><img src="assets/086_sign_in.png" width="480" /></td> 
-        <td><img src="assets/090_sign_in.png" width="480" /></td>
-    </tr>
-</table>
+.. |086_sign_in| image:: assets/086_sign_in.png
+   :width: 480px
+   :alt: version 0.8.6 sign in page
 
-<p align="center"><b>Projects List Page</b></p>
-<table>
-    <tr> 
-        <th> 0.8.6 (Old Version) </th> 
-        <th> 0.9.0 (New Version) </th>
-    </tr>
-    <tr>
-        <td><img src="assets/086_projects.png" width="480" /></td> 
-        <td><img src="assets/090_projects.png" width="480" /></td>
-    </tr>
-</table>
+.. |090_sign_in| image:: assets/090_sign_in.png
+   :width: 480px
+   :alt: version 0.9.0 sign in page
 
-<p align="center"><b>Portfolios (New in 0.9.0)</b></p>
-<table>
-    <tr> 
-        <th width="434"> 0.8.6 (Old Version) </th> 
-        <th> 0.9.0 (New Version) </th>
-    </tr>
-    <tr>
-        <td align="center">Feature did not exist</td>
-        <td><img src="assets/090_portfolios_1.png" width="480" /></td>
-    </tr>
-    <tr>
-        <td align="center">Feature did not exist</td>
-        <td><img src="assets/090_portfolios_2.png" width="480" /></td>
-    </tr>
-</table>
+.. |086_projects| image:: assets/086_projects.png
+   :width: 480px
+   :alt: version 0.8.6 projects page
 
-<p align="center"><b>Module View</b></p>
-<table>
-    <tr> 
-        <th> 0.8.6 (Old Version) </th> 
-        <th> 0.9.0 (New Version) </th>
-    </tr>
-    <tr>
-        <td><img src="assets/086_modules.png" width="480" /></td> 
-        <td><img src="assets/090_modules.png" width="480" /></td>
-    </tr>
-</table>
+.. |090_projects| image:: assets/090_projects.png
+   :width: 480px
+   :alt: version 0.9.0 projects page
 
-<p align="center"><b>Question Page</b></p>
-<table align="center">
-    <tr> 
-        <th> 0.8.6 (Old Version) </th> 
-        <th> 0.9.0 (New Version) </th>
-    </tr>
-    <tr>
-        <td><img src="assets/086_question.png" width="480" /></td>
-        <td><img src="assets/090_question.png" width="480" /></td>  
-    </tr>
-</table>
+.. |090_portfolios_1| image:: assets/090_portfolios_1.png
+   :width: 480px
+   :alt: version 0.8.6 portfolio create page
+
+.. |090_portfolios_2| image:: assets/090_portfolios_2.png
+   :width: 480px
+   :alt: version 0.9.0 portfolio detail page
+
+.. |086_modules| image:: assets/086_modules.png
+   :width: 480px
+   :alt: version 0.8.6 module page
+
+.. |090_modules| image:: assets/090_modules.png
+   :width: 480px
+   :alt: version 0.9.0 module page
+
+.. |086_question| image:: assets/086_question.png
+   :width: 480px
+   :alt: version 0.8.6 question page
+
+.. |090_question| image:: assets/090_question.png
+   :width: 480px
+   :alt: version 0.9.0 question page
+
+#### Sign-in Page
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| |086_sign_in|           +  |090_sign_in|           +
++-------------------------+--------------------------+
+
+
+#### Projects List Page
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| |086_projects|          +  |090_projects|          +
++-------------------------+--------------------------+
+
+
+#### Portfolios (New in 0.9.0)
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| Feature did not exist   +  |090_portfolios_1|      +
++-------------------------+--------------------------+
+| Feature did not exist   +  |090_portfolios_2|      +
++-------------------------+--------------------------+
+
+
+#### Module View
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| |086_modules|           +  |090_modules|           +
++-------------------------+--------------------------+
+
+
+#### Question Page
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| |086_question|          +  |090_question|          +
++-------------------------+--------------------------+
+
 
 ## Release Date
 
