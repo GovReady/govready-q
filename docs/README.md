@@ -11,7 +11,13 @@ To test documentation locally, install Sphinx, the theme, and the Markdown-to-re
 
 	pip install sphinx sphinx_rtd_theme m2r sphinxcontrib-contentui
 
-The build the documentation:
+If you are on macOS and prefer to install sphinx with homebrew:
+
+	brew install sphinx-doc
+	echo 'export PATH="/usr/local/opt/sphinx-doc/bin:$PATH"' >> ~/.bash_profile
+	pip install sphinx_rtd_theme m2r sphinxcontrib-contentui
+
+Then build the documentation:
 
 	make html
 
