@@ -4,13 +4,13 @@
 Migration Guide for GovReady-Q v0.8.6 to v0.9.0
 ===============================================
 
-Major Changes Between 0.8.6 and 0.9.0
--------------------------------------
+Major Changes between v0.8.6 and v0.9.0
+---------------------------------------
 
-Changes GovReady Q users will encounter in 0.9.0:
+Changes GovReady-Q users will encounter in v0.9.0:
 
 * Organization subdomains are no longer used - everything is on the main domain.
-* Individual Questionnaires/Assessments from an App Source must now be explicitly added to the catalog via the Django admin page. More information can be found in the version 0.9.0 section of the Q documentation.
+* Individual Questionnaires/Assessments from an App Source must now be explicitly added to the catalog via the Django admin page. More information can be found in the version v0.9.0 section of the GovReady-Q documentation.
 * Assessments are referred to as “Projects” in the UI.
 * “Projects” are organized into “Portfolios.” Every Project belongs to exactly one Portfolio.
 * Users can be added to Portfolios and be granted different permissions in Portfolios via an improved permission model.
@@ -30,17 +30,17 @@ Changes GovReady Q users will encounter in 0.9.0:
      - A "Portfolio" is created for each Organization with the same name as the Subdomain. Organizations continue to exist in database, but are not used.
    * - Users are associated with multiple subdomain organizations.
      - All users associated with single instance.
-     - Perserves users.
+     - Preserves users.
    * - User have different profiles for each subdomain organization.
      - User has single profile.
      - First profile is kept and can be edited by user.
    * - User "is staff" and "is super user" set in Django Admin.
      - User "is staff" and "is super user" set in Django Admin.
-     - Roles preserved, see Roles and Permissions in 0.9.0 section.
+     - Roles preserved, see Roles and Permissions in v0.9.0 section.
    * - Started and completed apps.
      - Started and completed apps.
-     - All existing apps/questionnaires are preserved. Each questionnaire becomes associated with the "Portfolio" having the same name as Organization to which project was previously associated.
-   * - User sign in under each subdomain.
+     - All existing apps/questionnaires are preserved. Each questionnaire becomes associated with the "Portfolio" having the same name as the Organization to which the project was previously associated.
+   * - User signs in under each subdomain.
      - User signs in once.
      - Subdomain associates are removed.
 
@@ -73,7 +73,7 @@ Do a Test Migration
 * Use test data that will model and exercise the same features as your production data.
 * Use a clean install of the version you run in production, with test data installed.
 * Migrate your customizations to the test platform.
-* Perform the upgrade to 0.9.0.release.
+* Perform the upgrade to v0.9.0.release.
 * Test to ensure the upgrade performed properly.  Keep notes as you test.
 * Repeat until you're comfortable with the process and results.
 * Optionally have selected end-users sign into the upgraded test instance to perform their own tests.
@@ -86,13 +86,13 @@ Distribute a Migration Plan
 * Distribute the plan to anybody affected.
 * When migration starts, communicate to users that migration is starting, and keep a communication line with them open.
 
-Do the Production Migration For Deployments with Source Code
+Do the Production Migration for Deployments with Source Code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Take your GovReady-Q instance offline.
 * Back up the most recent version of the production database.
 * Test a restore of most recent version of the database.
-* Update code to version 0.9.0.release.
+* Update code to version v0.9.0.release.
 * Run ``pip install -r requirements.txt`` to get new libraries.
 
   .. raw:: html
@@ -103,14 +103,14 @@ Do the Production Migration For Deployments with Source Code
 * Run ``python manage.py migrate`` to update your database schema.
 * Run ``python manage.py runserver`` to run your updated instance.
 
-Do the Production Migration For Deployments with Docker/Containers
+Do the Production Migration for Deployments with Docker/Containers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Take your GovReady-Q instance offline.
 * Back up the most recent version of the production database.
 * Test a restore of most recent version of the database.
 * Synchronize your container customizations to produce a new version of your container.
-* Deploy Container running version 0.9.0 :raw-html-m2r:`<!--with the paramater YYY for deployment -->`
+* Deploy Container running version v0.9.0 :raw-html-m2r:`<!--with the paramater YYY for deployment -->`
 * Docker will automatically run migrations as part of deployment.
 
 Migration Finalization and Testing
@@ -122,7 +122,7 @@ Migration Finalization and Testing
 Post Migration Clean Up
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-* Mark all old Notifications ``emailed`` as True. (0.9.0 notification checks emailed status of notifications and sets emailed to True after email is sent.)
+* Mark all old Notifications ``emailed`` as True. (v0.9.0 notification checks emailed status of notifications and sets emailed to True after email is sent.)
 * Review Help Squad, Reviewers, and Administrators. 
 
   * The migration converts Organizations to Portfolios. 
@@ -133,8 +133,8 @@ Post Migration Clean Up
 * You should review who has these permissions and adjust accordingly after migrating.
 * Release the production instance to users.
 
-Roles And Permissions in 0.9.0
-------------------------------
+Roles and Permissions in v0.9.0
+-------------------------------
 
 .. list-table::
    :header-rows: 1
@@ -157,10 +157,10 @@ Roles And Permissions in 0.9.0
      - Grant project_delete permission on project and portfolio_owner permission for portfolio for which project is a part
    * - Project > is_member Project > editor_of task(s)Project > discussion_guest_in discussion(s)
      - Various permissions in a project.
-     - Grant project_view, project_add, project_change, for project of which project is a part; Grant Portfolio_view, porfolio_add, portfolio_change for which project is a part after migration.
+     - Grant project_view, project_add, project_change, for project of which project is a part; Grant Portfolio_view, portfolio_add, portfolio_change for which project is a part after migration.
    * - task_editor
      - The user that has primary responsibility for completing this Task.
-     - Grant project_view, project_add, project_change, for project of which task is a part; Grant Portfolio_view, porfolio_add, portfolio_change for which task is a part after migration.
+     - Grant project_view, project_add, project_change, for project of which task is a part; Grant Portfolio_view, portfolio_add, portfolio_change for which task is a part after migration.
    * - help_squad
      - Receives all discussion messages
      - Not modified by migration
@@ -168,7 +168,7 @@ Roles And Permissions in 0.9.0
      - Can set review status of answers.
      - Not modified by migration
    * - superuser
-     - Django desginated superuser.
+     - Django designated superuser.
      - Not modified by migration
    * - Folder permissions
      - A folder object exists but is not used.
@@ -176,10 +176,10 @@ Roles And Permissions in 0.9.0
    * - portfolio_owner
      - Permission on portfolio object, can invite others to portfolio and can make others to portfolio owner
      - If user was project_membership and had project_membership admin flag True, user is made portfolio owner.
-   * - Portfolio_view, porfolio_add, portfolio_delete, portfolio_change
+   * - Portfolio_view, portfolio_add, portfolio_delete, portfolio_change
      - Permissions on Portfolio objects. Currently everyone who has one of these has all of these permissions.
      - Every user gets a portfolio with their name for which user is the portfolio_owner. For every organization, a portfolio is created with the same name and associating the organization projects with the portfolio. Users get access to the projects.
    * - project_view, project_add, project_change, project_delete
      - Permissions on Project objects. Currently everyone who has one of these has all of these permissions.
-     - If user has project_membership on project user gets project_view, project_add, project_change.  If user has project_membership on project and project_membership admin flag True, user also gest project_delete. If user has task object for a project, user gets project_view, project_add, project_change.  If user user is a guest of a discussion object for a project, user gets project_view, project_add, project_change.
+     - If user has project_membership on project user gets project_view, project_add, project_change.  If user has project_membership on project and project_membership admin flag True, user also gets project_delete. If user has task object for a project, user gets project_view, project_add, project_change.  If user is a guest of a discussion object for a project, user gets project_view, project_add, project_change.
 
