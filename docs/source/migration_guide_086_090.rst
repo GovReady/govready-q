@@ -10,7 +10,7 @@ Major Changes between v0.8.6 and v0.9.0
 Changes GovReady-Q users will encounter in v0.9.0:
 
 * Organization subdomains are no longer used - everything is on the main domain.
-* Individual Questionnaires/Assessments from an App Source must now be explicitly added to the catalog via the Django admin page. More information can be found in the version v0.9.0 section of the GovReady-Q documentation.
+* Individual Questionnaires/Assessments from an App Source must now be explicitly added to the catalog via the Django admin page. More information can be found in the version 0.9.0 section of the GovReady-Q documentation.
 * Assessments are referred to as “Projects” in the UI.
 * “Projects” are organized into “Portfolios.” Every Project belongs to exactly one Portfolio.
 * Users can be added to Portfolios and be granted different permissions in Portfolios via an improved permission model.
@@ -92,7 +92,7 @@ Do the Production Migration for Deployments with Source Code
 * Take your GovReady-Q instance offline.
 * Back up the most recent version of the production database.
 * Test a restore of most recent version of the database.
-* Update code to version v0.9.0.release.
+* Update code to version 0.9.0.release.
 * Run ``pip install -r requirements.txt`` to get new libraries.
 
   .. raw:: html
@@ -110,7 +110,7 @@ Do the Production Migration for Deployments with Docker/Containers
 * Back up the most recent version of the production database.
 * Test a restore of most recent version of the database.
 * Synchronize your container customizations to produce a new version of your container.
-* Deploy Container running version v0.9.0 :raw-html-m2r:`<!--with the paramater YYY for deployment -->`
+* Deploy container running version 0.9.0 **with environment variable ``DB_BACKED_UP_DO_UPGRADE`` set to "True"**. (This special environment variable is required to avoid accidental running of database migrations before database has been backed up.)
 * Docker will automatically run migrations as part of deployment.
 
 Migration Finalization and Testing
@@ -150,7 +150,7 @@ Roles and Permissions in v0.9.0
      - See Project > has_read_priv
      - See below.
    * - Project > has_read_priv (Inverse is Project > get_all_participants)
-     - Team members + anyone with read privs to a task within this project + anyone who is a guest in dicussion within this project.
+     - Team members + anyone with read privs to a task within this project + anyone who is a guest in discussion within this project.
      - See below.
    * - Project > is_admin
      - Person flagged as project admin in ProjectMembership.
@@ -181,5 +181,5 @@ Roles and Permissions in v0.9.0
      - Every user gets a portfolio with their name for which user is the portfolio_owner. For every organization, a portfolio is created with the same name and associating the organization projects with the portfolio. Users get access to the projects.
    * - project_view, project_add, project_change, project_delete
      - Permissions on Project objects. Currently everyone who has one of these has all of these permissions.
-     - If user has project_membership on project user gets project_view, project_add, project_change.  If user has project_membership on project and project_membership admin flag True, user also gets project_delete. If user has task object for a project, user gets project_view, project_add, project_change.  If user is a guest of a discussion object for a project, user gets project_view, project_add, project_change.
+     - If user has project_membership on project, user gets project_view, project_add, project_change.  If user has project_membership on project and project_membership admin flag True, user also gets project_delete. If user has task object for a project, user gets project_view, project_add, project_change.  If user is a guest of a discussion object for a project, user gets project_view, project_add, project_change.
 
