@@ -90,6 +90,12 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
     did_anything = False
 
     for question in task.module.questions.order_by('definition_order'):
+        type = question.spec['type']
+
+        if type == 'raw':
+            print("'raw' question type is out-of-scope, skipping")
+            continue
+
         if (halt_impute or skip_impute) and 'impute' in question.spec:
             log("'impute' handling not yet implemented, skipping " + question.key)
             if halt_impute:
@@ -102,7 +108,6 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
                 log("Already answered " + question.key)
                 continue
 
-        type = question.spec['type']
         answer = None
         if type == 'yesno':
             answer = sample(['yes', 'no'],1)[0]
@@ -138,6 +143,12 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
             print("Answering {}: {}...".format(question.key, e))
             #return False
             break
+        except Error as e:
+            print("------\nUnknown error occurred, debug info follows.\n")
+            print("Next line is: 'str((question.key, type, answer, question.spec))'")
+            print(str((question.key, type, answer, question.spec)))
+            print("------")
+            raise e
 
         # Save the value.
         if taskans.save_answer(value, [], None, dummy_user, "api"):
