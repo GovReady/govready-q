@@ -359,9 +359,9 @@ class Portfolio(models.Model):
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
-        permissions = (
+        permissions = [
             ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission'),
-        )
+        ]
 
     def get_absolute_url(self):
         return "/portfolios/%s/projects" % (self.id)
