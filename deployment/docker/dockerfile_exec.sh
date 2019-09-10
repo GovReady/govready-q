@@ -117,7 +117,7 @@ then
 			echo "Continuing with deployment."
 		fi
 else
-	echo "Confirmed that database has been migrated, and is compatible with version 0.9.0."
+	echo "Confirmed that database is not initialized or has been migrated, and OK for version 0.9.0 migrations."
 fi
 
 # Initialize the database.
