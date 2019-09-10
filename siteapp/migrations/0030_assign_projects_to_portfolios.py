@@ -95,13 +95,9 @@ def forwards(apps, schema_editor):
         for pm in project_memberships:
             # assign editor permissions
             assign_project_edit_permissions(apps, project, pm.user)
-            if project.portfolio:
-                assign_portfolio_edit_permissions(apps, project.portfolio, pm.user)
             if pm.is_admin:
                 # if admin assign owner permissions
                 assign_project_owner_permissions(apps, project, pm.user)
-                if project.portfolio:
-                    assign_portfolio_owner_permissions(apps, project.portfolio, pm.user)
 
     for user in users:
         portfolio, created = Portfolio.objects.get_or_create(title=user.username)
