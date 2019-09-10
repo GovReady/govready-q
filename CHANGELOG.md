@@ -128,6 +128,7 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 * Add deployment scripts of multi-container GovReady-Q and NGINX via Docker-compose.
 * Prevent multiple notification emails in environments running multiple Q instances against single database by performing record lock on notification and checking if notification already sent.
 * `first_run` reports if Superuser previously created.
+* Added check to `dockerfile_exec.sh` to prevent unintended 0.9.0 databse upgrades.
 
 
 v0.8.6.2+devel
