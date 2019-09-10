@@ -360,7 +360,6 @@ class Portfolio(models.Model):
 
     class Meta:
         permissions = (
-            ('view_portfolio', 'View portfolio'),
             ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission'),
         )
 
@@ -485,9 +484,6 @@ class Project(models.Model):
 
     class Meta:
         unique_together = [('organization', 'is_organization_project')] # ensures only one can be true
-        permissions = (
-            ('view_project', 'View project'),
-        )
 
     def __str__(self):
         # For the admin, notification strings
