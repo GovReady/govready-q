@@ -11,10 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterModelOptions(
-            name='project',
-            options={'permissions': (('view_project', 'View project'),)},
-        ),
         migrations.AlterField(
             model_name='portfolio',
             name='title',

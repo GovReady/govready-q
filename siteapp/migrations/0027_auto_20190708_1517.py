@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('projects', models.ManyToManyField(blank=True, help_text='The Projects that are listed within this Portfolio.', related_name='in_folders', to='siteapp.Project')),
             ],
             options={
-                'permissions': (('view_portfolio', 'View portfolio'), ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission')),
+                'permissions': (('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission')),
             },
         ),
         migrations.AlterField(
