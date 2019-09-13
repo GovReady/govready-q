@@ -15,7 +15,7 @@
   </thead>
 
   <tbody>
-    {% for project in projects %}
+    {% if projects %}{% endif %}
     {% for user in users %}
     {% get_obj_perms user for project as "user_perms" %}
     {% if user_perms%}
@@ -48,7 +48,6 @@
       </td>
     </tr>
     {% endif %}
-    {% endfor %}
     {% endfor %}
   </tbody>
 </table>

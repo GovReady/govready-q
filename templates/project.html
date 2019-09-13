@@ -593,6 +593,9 @@ h3.question-group-title {
               </form>
           </div>
         </div>
+        <div>
+          {% include "permissions.html" with users=users portfolios=portfolios project=project %}
+        </div>
 
       {% if project.is_deletable and is_admin %}
         <hr>

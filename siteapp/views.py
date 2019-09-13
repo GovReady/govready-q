@@ -692,6 +692,10 @@ def project(request, project):
         "columns": columns,
         "action_buttons": action_buttons,
 
+        "projects": Project.objects.all(),
+        "portfolios": Portfolio.objects.all(),
+        "users": User.objects.all(),
+
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
     })
