@@ -1,1 +1,0 @@
-Need a file here so git creates the directory so that docs/source/conf.py's reference to html_static_path is valid, but we're not using this directory yet.

@@ -1,3 +1,12 @@
+<style>
+
+table, tr, td {
+    text-align: center;
+    background-color: white;
+}
+
+</style>
+
 # Version 0.9.0
 
 ## What's New in 0.9.0
@@ -21,9 +30,98 @@ For a complete list of changes see the [0.9.0.dev branch CHANGELOG](https://gith
 
 Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branches.
 
+## Screenshots
+
+.. |086_sign_in| image:: assets/086_sign_in.png
+   :width: 480px
+   :alt: version 0.8.6 sign in page
+
+.. |090_sign_in| image:: assets/090_sign_in.png
+   :width: 480px
+   :alt: version 0.9.0 sign in page
+
+.. |086_projects| image:: assets/086_projects.png
+   :width: 480px
+   :alt: version 0.8.6 projects page
+
+.. |090_projects| image:: assets/090_projects.png
+   :width: 480px
+   :alt: version 0.9.0 projects page
+
+.. |090_portfolios_1| image:: assets/090_portfolios_1.png
+   :width: 480px
+   :alt: version 0.8.6 portfolio create page
+
+.. |090_portfolios_2| image:: assets/090_portfolios_2.png
+   :width: 480px
+   :alt: version 0.9.0 portfolio detail page
+
+.. |086_modules| image:: assets/086_modules.png
+   :width: 480px
+   :alt: version 0.8.6 module page
+
+.. |090_modules| image:: assets/090_modules.png
+   :width: 480px
+   :alt: version 0.9.0 module page
+
+.. |086_question| image:: assets/086_question.png
+   :width: 480px
+   :alt: version 0.8.6 question page
+
+.. |090_question| image:: assets/090_question.png
+   :width: 480px
+   :alt: version 0.9.0 question page
+
+#### Sign-in Page
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| |086_sign_in|           +  |090_sign_in|           +
++-------------------------+--------------------------+
+
+
+#### Projects List Page
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| |086_projects|          +  |090_projects|          +
++-------------------------+--------------------------+
+
+
+#### Portfolios (New in 0.9.0)
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| Feature did not exist   +  |090_portfolios_1|      +
++-------------------------+--------------------------+
+| Feature did not exist   +  |090_portfolios_2|      +
++-------------------------+--------------------------+
+
+
+#### Module View
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| |086_modules|           +  |090_modules|           +
++-------------------------+--------------------------+
+
+
+#### Question Page
+
++-------------------------+--------------------------+
+| **0.8.6 (Old Version)** + **0.9.0 (New Version)**  +
++-------------------------+--------------------------+
+| |086_question|          +  |090_question|          +
++-------------------------+--------------------------+
+
+
 ## Release Date
 
-The target release date 0.9.0 is July 2019.
+The target release date for 0.9.0 is September 2019.
 
 ## Installing 0.9.0
 
@@ -442,15 +540,7 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
 
 **Backup your database before upgrading to 0.9.0. Release 0.9.0 performs database changes that makes rolling back difficult.**
 
-If you are installing from source code:
-1. Pull and use the [0.9.0.dev branch](https://github.com/GovReady/govready-q/tree/0.9.0.dev).
-2. Tell Django to run the database migrations (e.g., `python manage.py migrate`).
-3. We recommend updating to your `local/environment.json` file to address release 0.9.0's removal of the need to manage subdomain-based multi-tenancy.
-
-If you are installing using Docker:
-1. Make sure you pull the [0.9.0 container](https://cloud.docker.com/u/govready/repository/docker/govready/govready-q-0.9.0).
-2. If you are using environment variables to connect the Docker deployment to a persistent database, GovReady-Q will automatically run the database migrations on start up.
-3. Release 0.9.0 will ignore the subdomain-related environment variables that are no longer needed. We recommend updating your environment variables to remove them.
+See [Migration Guide for GovReady-Q (0.8.6 to 0.9.0)](migration_guide_086_090.md).
 
 ## Adding and Managing "Compliance Apps" in 0.9.0
 
