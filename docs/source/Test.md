@@ -8,7 +8,7 @@ GovReady-Q's unit tests and integration tests are currently combined. Our integr
 To run the integration tests, you'll also need to install chromedriver:
 
 	sudo apt-get install chromium-chromedriver   (on Ubuntu)
-	brew install chromedriver                    (on Mac)
+	brew cask install chromedriver               (on Mac)
 
 Navigate within your terminal to GovReady-Q top level directory.
 
