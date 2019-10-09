@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.dev46+devel
+v0.9.0.dev47+devel
 ------------------
 
 Our most exciting release of GovReady-Q!
@@ -28,6 +28,10 @@ We recommend testing migrations from 0.8.6 to 0.9.0 against a copy of your datab
 We have developed migration script and guide to support 0.8.6 to 0.9.0 upgrades.
 
 New manage.py commands help populate 0.8.6 test data to test migration scripts.
+
+**Security enhancements:**
+
+* Upgrade to Django 2.2.x to address multiple security vulnerabilities in Django prior to 2.2.
 
 **Catalog changes:**
 
