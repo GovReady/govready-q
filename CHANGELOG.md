@@ -1,6 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
+## v0.8.6.4 (October 9, 2019)
+
+* Added security advisory banner to `docs/source/index.md` to upgrade to v0.9.0 or later as soon as possible.
+* Documentation updates
+* Minor changes to test mock data
+
+## v0.8.6.3 (October 9, 2019)
+
+Version number for internal tracking purposes.
 
 v0.8.6.2 (August 14, 2019)
 -----------------------
