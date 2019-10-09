@@ -10,6 +10,10 @@ import uuid
 from .module_logic import ModuleAnswers, render_content
 from .answer_validation import validator
 from siteapp.models import User, Organization, Project, ProjectMembership
+from guardian.shortcuts import (assign_perm, get_objects_for_user,
+                                get_perms_for_model, get_user_perms,
+                                get_users_with_perms, remove_perm)
+
 
 class AppSource(models.Model):
     is_system_source = models.BooleanField(default=False, help_text="This field is set to True for a single AppSource that holds the system modules such as user profiles.")
@@ -19,8 +23,6 @@ class AppSource(models.Model):
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
     available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
     available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this AppSource.")
-
-    approved_apps = JSONField(blank=True, help_text="Information about apps whitelisted or blacklisted for display in the catalog from this source.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -70,13 +72,33 @@ class AppSource(models.Model):
         from .app_source_connections import AppSourceConnection
         return AppSourceConnection.create(self, self.spec)
 
-class AppInstance(models.Model):
-    source = models.ForeignKey(AppSource, related_name="appinstances", on_delete=models.CASCADE, help_text="The source of this AppInstance.")
+    def get_available_apps(self):
+        # TODO need to include already loaded apps
+        with self.open() as src:
+            for app in src.list_apps():
+                yield {
+                    "name": app.name,
+                    "new_version_number": app.get_new_version_number(),
+                    "versions_in_catalog": app.get_appversions(),
+                    "hidden_versions": app.get_hidden_appversions(),
+                }
+
+    def add_app_to_catalog(self, appname):
+        from .app_loading import load_app_into_database
+        with self.open() as conn:
+            app = conn.get_app(appname)
+            appver = load_app_into_database(app)
+            appver.show_in_catalog = True
+            appver.save()
+        return appver
+
+class AppVersion(models.Model):
+    source = models.ForeignKey(AppSource, related_name="appversions", on_delete=models.CASCADE, help_text="The source repository where this AppVersion came from.")
     appname = models.CharField(max_length=200, db_index=True, help_text="The name of the app in the AppSource.")
 
         # the field below is a NullBooleanField because the unique constraint doesn't kick in
         # for NULLs but does for False/True, and we want the constraint to apply only for True.
-    system_app = models.NullBooleanField(default=None, help_text="Set to True for AppInstances that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
+    system_app = models.NullBooleanField(default=None, help_text="Set to True for AppVersions that are the current version of a system app that provides system-expected Modules. A constraint ensures that only one (source, name) pair can be true.")
 
     catalog_metadata = JSONField(blank=True, help_text="The catalog metadata that was stored in the 'app' module.")
     version_number = models.CharField(blank=True, null=True, max_length=128, help_text="The version number of the compliance app.")
@@ -85,6 +107,8 @@ class AppInstance(models.Model):
     asset_files = models.ManyToManyField('guidedmodules.ModuleAsset', help_text="The assets linked to this pack.")
     asset_paths = JSONField(help_text="A dictionary mapping file paths to the content_hashes of assets included in the assets field of this instance.")
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
+
+    show_in_catalog = models.BooleanField(default=False, help_text='Whether to show this AppVersion in the compliane app catalog, which allows users to start the app.')
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -96,11 +120,20 @@ class AppInstance(models.Model):
 
     def __str__(self):
         # For the admin.
-        return "%s [%d] (from %s)" % (self.appname, self.id, self.source)
+        return "<%s/%s(%d)>" % (self.source, self.appname, self.id)
+        # return "AppVersion=\"name: %s, id: %d, appsource: %s, \"" % (self.appname, self.id, self.source)
 
     def __repr__(self):
         # For debugging.
-        return "<AppInstance [%d] %s from %s>" % (self.id, self.appname, self.source)
+        return "<%s/%s(%d)>" % (self.source, self.appname, self.id)
+        # return "AppVersion=\"name: %s, id: %d, appsource: %s, \"" % (self.appname, self.id, self.source)
+        # return "AppVersion=\"name: %s, id: %d, %s from %s>" % (self.id, self.appname, self.source)
+
+    def get_version_display(self):
+        v = self.version_number or self.created.isoformat()
+        if self.version_name:
+            v += " (" + self.version_name + ")"
+        return v
 
     def get_asset(self, asset_path):
         if asset_path not in self.asset_paths:
@@ -112,38 +145,39 @@ class AppInstance(models.Model):
         return rtyaml.dump(self.catalog_metadata)
 
     def is_authoring_tool_enabled(self, user):
-        return (self.source.spec["type"] == "local" # so we can save to disk
-            and user.has_perm('guidedmodules.change_module'))
+        return (user.has_perm('guidedmodules.change_module'))
 
     def has_upgrade_priv(self, user):
-        # Does a user have permission to ugprade the Modules in this AppInstance?
+        # Does a user have permission to upgrade the Modules in this AppVersion?
         # Yes if the user is an admin of all the Projects that the Tasks that use
-        # the Modules are in. In practice, that's just the one Project that was
-        # created when this AppInstance was created.
+        # the Modules are in. In practice, that's just during app authoring when
+        # the author is testing changes.
         #
-        # In the database, we allow AppInstances to be shared across many Projects.
-        # The system AppInstance which holds e.g. the user profile module *is*
-        # shared across many user projects, but that AppInstance is blacklisted
-        # from upgrades below. But in other cases there's an implicit constraint
-        # that Projects and AppInstances are one-to-one because when we "start"
-        # an app **we always create an AppInstance and a Project as a pair.**
-        #
-        # In an abundance of caution, the permission check is coded to not make
-        # that assuption that there is just one Project tied to this AppInstance,
-        # so we check that the user is an admin to all relevant Projects. We would
-        # not want to upgrade an AppInstance associated with a Task that the user
-        # does not have administrative rights to. If in the future the implicit
-        # constraint is removed, we would need to be more precise about what is
-        # upgrade since we would not want to upgrade all Projects at once necessarily.
+        # In the database, we allow AppVersions to be shared across many Projects.
+        # (The system AppVersion which holds e.g. the user profile module is
+        # shared across many user projects, but that AppVersion is blacklisted
+        # from upgrades below.) 
         if self.system_app: return False
         projects = Task.objects.filter(module__app=self).values_list("project", flat=True).distinct()
         if len(projects) == 0:
-            # This AppInstance doesn't appear to be in use! Well, lock it down.
+            # This AppVersion doesn't appear to be in use! Well, lock it down.
             return False
         for project in projects:
             if user not in Project.objects.get(id=project).get_admins():
                 return False
         return True
+
+    @staticmethod
+    def get_startable_apps(organization):
+        # Load all of the startable AppVersions. An AppVersion is startable
+        # if its show_in_catalog field is True and its AppSource is available
+        # to the organization the request is for, which is true if the AppSoure
+        # is available to all organizations or the organization has been whitelisted.
+        from django.db.models import Q
+        return AppVersion.objects\
+            .filter(show_in_catalog=True)\
+            .filter(source__is_system_source=False)\
+            .filter(Q(source__available_to_all=True) | Q(source__available_to_orgs=organization))
 
 def extract_catalog_metadata(app_module, migration=None):
     # Note that this function is used in migration 0044 and so
@@ -208,9 +242,9 @@ def recombine_catalog_metadata(app_module):
 
 class Module(models.Model):
     source = models.ForeignKey(AppSource, related_name="modules", on_delete=models.CASCADE, help_text="The source of this module definition.")
-    app = models.ForeignKey(AppInstance, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppInstance that this Module is a part of. Null for legacy Modules created before we had this field.")
+    app = models.ForeignKey(AppVersion, null=True, related_name="modules", on_delete=models.CASCADE, help_text="The AppVersion that this Module is a part of. Null for legacy Modules created before we had this field.")
 
-    module_name = models.SlugField(max_length=200, help_text="A slug-like identifier for the Module that is unique within the AppInstance app.")
+    module_name = models.SlugField(max_length=200, help_text="A slug-like identifier for the Module that is unique within the AppVersion app.")
 
     superseded_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL, help_text="This field is no longer used. When a Module is superseded by a new version, this points to the newer version.")
 
@@ -226,11 +260,13 @@ class Module(models.Model):
 
     def __str__(self):
         # For the admin.
-        return "%s %s [%d]" % (self.app, self.module_name, self.id)
+        return "<%s(%d)/%s(%d)/%s(%d)>" % (self.source, self.source.id, self.app.appname, self.app.id, self.module_name, self.id )
+        # return "%s Module=\"name: %s, id:%d\"" % (self.app, self.module_name, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "<Module [%d] %s %s (%s)>" % (self.id, self.module_name, self.spec.get("title", "<No Title>")[0:30], self.app)
+        return "<%s(%d)/%s(%d)/%s(%d)>" % (self.source, self.source.id, self.app.appname, self.app.id, self.module_name, self.id )
+        # return "<Module [%d] %s %s (%s)>" % (self.id, self.module_name, self.spec.get("title", "<No Title>")[0:30], self.app)
 
     def save(self):
         if self.source != self.app.source: raise ValueError("Module source != app.source.")
@@ -351,8 +387,8 @@ class Module(models.Model):
     def get_referenceable_modules(self):
         # Return the modules that can be referenced by this
         # one in YAML as an answer type. That's any Module
-        # defined in the same AppInstance that isn't "type: project".
-        if self.app is None: return # legacy Module not associated with an AppInstance
+        # defined in the same AppVersion that isn't "type: project".
+        if self.app is None: return # legacy Module not associated with an AppVersion
         for m in self.app.modules.all():
             if m.spec.get("type") == "project": continue
             yield m
@@ -363,11 +399,14 @@ class Module(models.Model):
         if self.app != target.app:
             raise ValueError("Cannot reference %s from %s." % (target, self))
         return target.module_name
-    def serialize_to_disk(self):
-        # Write out the in-memory module specification to disk!
-        assert self.source.spec["type"] == "local" and self.source.spec["path"]
+
+    def serialize(self):
+        """Write out the in-memory module specification."""
+
         import os.path
+        import yaml
         import rtyaml
+
         spec = OrderedDict(self.spec)
         if self.module_name == "app" and self.app:
             # Add back compliance app catalog information!
@@ -378,16 +417,58 @@ class Module(models.Model):
                 spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
                 continue
 
+            # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
+            # Then we can remove this temporary fix to help out RTYAML
+            # to give us nice output
+            for q_key in ['prompt', 'help', 'default']:
+                if q_key in q.spec:
+                    q.spec[q_key] = q.spec[q_key].replace("\r\n", "\n")
+
             # Rewrite some fields that get rewritten during module-loading.
             qspec = OrderedDict(q.spec)
             if q.answer_type_module:
                 qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
 
             spec["questions"].append(qspec)
-        fn = os.path.join(self.source.spec["path"], self.app.appname, self.module_name + ".yaml")
-        with open(fn, "w") as f:
-            f.write(rtyaml.dump(spec))
+        return rtyaml.dump(spec)
 
+    def serialize_to_disk(self):
+        """Write out the in-memory module specification to disk."""
+
+        import os.path
+        import rtyaml
+        from django.http import HttpResponse, Http404
+
+        spec = OrderedDict(self.spec)
+        if self.module_name == "app" and self.app:
+            # Add back compliance app catalog information!
+            spec['catalog'] = recombine_catalog_metadata(self)
+        spec["questions"] = []
+        for i, q in enumerate(self.questions.order_by('definition_order')):
+            if i == 0 and q.key == "_introduction":
+                spec["introduction"] = { "format": "markdown", "template": q.spec["prompt"] }
+                continue
+
+            # TODO: get RTYAML fixed to recognize '\r\n' as well as '\n'
+            # Then we can remove this temporary fix to help out RTYAML
+            # to give us nice output
+            for q_key in ['prompt', 'help', 'default']:
+                if q_key in q.spec:
+                    q.spec[q_key] = q.spec[q_key].replace("\r\n", "\n")
+
+            # Rewrite some fields that get rewritten during module-loading.
+            qspec = OrderedDict(q.spec)
+            if q.answer_type_module:
+                qspec["module-id"] = self.getReferenceTo(q.answer_type_module)
+            spec["questions"].append(qspec)
+        # TODO Add a message that appears on page that questionnaire has been updated.
+
+        # Write update to disk if source is local and file is writeable
+        if self.source.spec["type"] == "local" and self.source.spec["path"]:
+            fn = os.path.join(self.source.spec["path"], self.app.appname, self.module_name + ".yaml")
+            if os.access(fn, os.W_OK):
+                with open(fn, "w") as f:
+                    f.write(rtyaml.dump(spec))
 
 class ModuleAsset(models.Model):
     source = models.ForeignKey(AppSource, on_delete=models.CASCADE, help_text="The source of the asset.")
@@ -479,23 +560,17 @@ class ModuleQuestion(models.Model):
 
 class Task(models.Model):
     project = models.ForeignKey(Project, related_name="tasks", on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
+    title_override = models.CharField(max_length=256, blank=True, null=True, help_text="The title of this Task if overriding the computed instance-name or Module.title default.")
     editor = models.ForeignKey(User, related_name="tasks_editor_of", on_delete=models.PROTECT, help_text="The user that has primary responsibility for completing this Task.")
     module = models.ForeignKey(Module, on_delete=models.PROTECT, help_text="The Module that this Task is answering.")
-
-    title_override = models.CharField(max_length=256, blank=True, null=True, help_text="The title of this Task if overriding the computed instance-name or Module.title default.")
     notes = models.TextField(blank=True, help_text="Notes set by the user about why they are completing this task.")
-
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     deleted_at = models.DateTimeField(blank=True, null=True, db_index=True, help_text="If 'deleted' by a user, the date & time the Task was deleted.")
-
     cached_state = JSONField(blank=True, default=None, help_text="Cached value storing whether the Task is finished, its computed title, and other state that depends on question answers.")
-
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Task, used to synchronize Task content between systems.")
-
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
-
     invitation_history = models.ManyToManyField('siteapp.Invitation', blank=True, help_text="The history of accepted invitations that had this Task as a target.")
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Task, used to synchronize Task content between systems.")
 
     class Meta:
         index_together = [
@@ -792,11 +867,10 @@ class Task(models.Model):
     # AUTHZ
 
     @staticmethod
-    def get_all_tasks_readable_by(user, org, recursive=False):
+    def get_all_tasks_readable_by(user, recursive=False):
         # Symmetric with get_access_level == "READ". See that for the basic logic.
         tasks = Task.objects.filter(
             models.Q(editor=user) | models.Q(project__members__user=user),
-            project__organization=org,
             deleted_at=None,
             ).distinct()
 
@@ -860,12 +934,15 @@ class Task(models.Model):
         return None
 
     def has_read_priv(self, user, allow_access_to_deleted=False):
-        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in ("READ", "WRITE")
+        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in ("READ", "WRITE") or self.project.has_read_priv(user)
 
     def has_write_priv(self, user, allow_access_to_deleted=False):
-        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE"
+        return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE" or self.project.has_write_priv(user)
 
     def has_review_priv(self, user):
+        if self.project.organization is None:
+            # account projects are not in any organization
+            return False
         return user in self.project.organization.reviewers.all()
 
     def has_delete_priv(self, user):
@@ -921,19 +998,19 @@ class Task(models.Model):
 
     # MISC
 
-    def get_open_invitations(self, user, org):
+    def get_open_invitations(self, user):
         # Return the open Invitations for transferring task ownership
         # elsewhere, sent from the user.
         from siteapp.models import Invitation
-        invs = Invitation.get_for(self).filter(organization=org, from_user=user)
+        invs = Invitation.get_for(self).filter(from_user=user)
         for inv in invs:
-            inv.from_user.localize_to_org(org)
+            inv.from_user.preload_profile()
         return invs
 
-    def get_source_invitation(self, user, org):
+    def get_source_invitation(self, user):
         inv = self.invitation_history.filter(accepted_user=user).order_by('-created').first()
         if inv:
-            inv.from_user.localize_to_org(org)
+            inv.from_user.preload_profile()
         return inv
 
     # NOTIFICATION TARGET HELEPRS
@@ -1480,7 +1557,6 @@ class Task(models.Model):
 
         return did_update_any_questions
 
-
 class TaskAnswer(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="answers", help_text="The Task that this TaskAnswer is a part of.")
     question = models.ForeignKey(ModuleQuestion, on_delete=models.PROTECT, help_text="The question (within the Task's Module) that this TaskAnswer is answering.")
@@ -1556,7 +1632,7 @@ class TaskAnswer(models.Model):
                 is_cleared = False
 
             # get a dict with information about the user
-            who = answer.answered_by.render_context_dict(self.task.project.organization)
+            who = answer.answered_by.render_context_dict()
 
             history.append({
                 "type": "event",
@@ -1682,7 +1758,14 @@ class TaskAnswer(models.Model):
 
     # required to attach a Discussion to it
     def get_discussion_participants(self):
-        return User.objects.filter(projectmembership__project=self.task.project).distinct()
+        # Who are members of this task answer's parent project?
+        # Project members from 0.9.0 Django guardian permission structure
+        queryset2 = get_users_with_perms(self.task.project)
+        # Project's Portfolio members from 0.9.0 Django guardian permission structure
+        queryset3 = get_users_with_perms(self.task.project.portfolio)
+        # users = chain(queryset2, queryset3)
+        users = queryset2 | queryset3 | User.objects.filter(projectmembership__project=self.task.project).distinct()
+        return users
 
     # required to attach a Discussion to it
     def get_project_context_dict(self):
@@ -1729,7 +1812,7 @@ class TaskAnswer(models.Model):
         organization = self.task.project.organization
         mentionable_users = set(discussion.get_all_participants()) \
                           | set(User.objects.filter(projectmembership__project__organization=self.task.project.organization).distinct())
-        User.localize_users_to_org(organization, mentionable_users)
+        User.preload_profiles(mentionable_users)
         return {
             # @-mention participants in the discussion and other
             # users in mentionable_users.
@@ -1737,7 +1820,7 @@ class TaskAnswer(models.Model):
                 {
                     "user_id": user.id,
                     "tag": user.username,
-                    "display": user.render_context_dict(organization)["name"],
+                    "display": user.render_context_dict()["name"],
                 }
                 for user in mentionable_users
             ],
@@ -1751,7 +1834,6 @@ class TaskAnswer(models.Model):
             ]
         }
 
-
     # required to attach a Discussion to it
     def on_discussion_comment(self, comment):
         # A comment was left. If we haven't already, invite all organization
@@ -1764,7 +1846,6 @@ class TaskAnswer(models.Model):
             for user in self.task.project.organization.help_squad.all():
                 if user in self.get_notification_watchers(): continue # no need to invite
                 inv = Invitation.objects.create(
-                    organization=self.task.project.organization,
                     from_user=comment.user,
                     from_project=self.task.project,
                     target=comment.discussion,
@@ -1777,7 +1858,6 @@ class TaskAnswer(models.Model):
             if anyone_invited:
                 self.extra["invited-help-squad"] = timezone.now()
                 self.save()
-
 
 class TaskAnswerHistory(models.Model):
     taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
@@ -1892,7 +1972,8 @@ class TaskAnswerHistory(models.Model):
 
             # Make it an absolute URL so that when we expose it through
             # the API it makes sense.
-            url = self.taskanswer.task.project.organization.get_url(url)
+            from urllib.parse import urljoin
+            url = urljoin(settings.SITE_ROOT_URL, url)
 
             # Convert it to a data URL so that it can be rendered in exported documents.
             content_dataurl = None
@@ -2163,7 +2244,6 @@ class TaskAnswerHistory(models.Model):
             value = None
 
         return value, answered_by_tasks, answered_by_file, subtasks_updated
-
 
 class InstrumentationEvent(models.Model):
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)

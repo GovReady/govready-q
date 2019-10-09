@@ -1,8 +1,10 @@
 from django.contrib import admin
+from guardian.admin import GuardedModelAdmin
 
 import django.contrib.auth.admin as contribauthadmin
 
-from .models import User, Organization, Folder, Project, ProjectMembership
+from .models import User, Organization, Folder, Project, ProjectMembership, Portfolio
+from notifications.models import Notification
 
 def all_user_fields_still_exist(fieldlist):
     for f in fieldlist:
@@ -13,16 +15,16 @@ def all_user_fields_still_exist(fieldlist):
     return True
 
 class UserAdmin(contribauthadmin.UserAdmin):
-    ordering = ('email',)
-    list_display = ('email', 'id', 'date_joined') # base has first_name, etc. fields that we don't have on our model
-    fieldsets = [
-        (None, {'fields': ('email', 'password')}),
-    ] + [fs for fs in contribauthadmin.UserAdmin.fieldsets if all_user_fields_still_exist(fs[1]['fields'])]
+    ordering = ('username',)
+    list_display = ('id', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
+    # fieldsets = [
+    #     (None, {'fields': ('email', 'password')}),
+    # ] + [fs for fs in contribauthadmin.UserAdmin.fieldsets if all_user_fields_still_exist(fs[1]['fields'])] + [("Notifications", {'fields': ('notifemails_last_notif_id', 'notifemails_last_at')}),]
 
     pass
 
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('subdomain', 'name')
+    list_display = ('slug', 'name', 'id')
     filter_horizontal = ('help_squad', 'reviewers')
 
     def save_model(self, request, obj, form, change):
@@ -92,23 +94,6 @@ class OrganizationAdmin(admin.ModelAdmin):
                 mb.is_admin = True
                 mb.save()
 
-                # Copy forward profile info from the last time the user
-                # entered any profile info.
-                prev_profile = Project.objects\
-                    .filter(
-                        is_account_project=True,
-                        members__user=user,
-                        )\
-                    .exclude(organization=org)\
-                    .order_by('-created')\
-                    .first()
-                if prev_profile:
-                    prev_profile_task = prev_profile.root_task.get_or_create_subtask(user, "account_settings")
-                    if prev_profile_task.get_answers().as_dict(): # not empty
-                        prev_profile_json = prev_profile.export_json()
-                        new_profile = user.get_account_project_(org)
-                        new_profile.import_json(prev_profile_json, user, "web", lambda msg : print(msg))
-
     add_me_as_admin.short_description = "Add me as an administrator to the organization"
     populate_test_organization.short_description = "Populate with the test users"
 
@@ -119,10 +104,20 @@ class FolderAdmin(admin.ModelAdmin):
     raw_id_fields = ('organization','admin_users')
     readonly_fields = ('projects', 'extra')
 
-class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('id', 'organization', 'title', 'root_task', 'created')
-    raw_id_fields = ('organization', 'root_task')
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'recipient', 'actor', 'level', 'target', 'unread', 'public', 'emailed')
+    readonly_fields = ('id',)
+
+class ProjectAdmin(GuardedModelAdmin):
+    list_display = ('id', 'portfolio_name', 'title', 'root_task', 'created')
+    raw_id_fields = ('organization', 'root_task',)
     readonly_fields = ('id', 'extra',)
+
+    def portfolio_name(self, obj):
+        if obj.portfolio:
+            return obj.portfolio.title
+
+    portfolio_name.admin_order_field = 'portfolio'
 
 class ProjectMembershipAdmin(admin.ModelAdmin):
     list_display = ('project', 'organization', 'user', 'is_admin', 'created')
@@ -130,9 +125,16 @@ class ProjectMembershipAdmin(admin.ModelAdmin):
     def organization(self, obj):
         return obj.project.organization
 
+class PortfolioAdmin(GuardedModelAdmin):
+    list_display = ('title', 'description')
+    fields = ('title', 'description')
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Folder, FolderAdmin)
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectMembership, ProjectMembershipAdmin)
-
+admin.site.register(Portfolio, PortfolioAdmin)
+# Notification is an external library and registers itself. So we need to unregister and re-register it.
+admin.site.unregister(Notification)
+admin.site.register(Notification, NotificationAdmin)

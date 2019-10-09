@@ -306,11 +306,9 @@ The following environment variables are used to configure the container when lau
 
 `DBURL` - Set to a database connection string as described in [https://github.com/kennethreitz/dj-database-url](https://github.com/kennethreitz/dj-database-url). We recommend using PostgreSQL [using a TLS server certificate](https://www.postgresql.org/docs/9.1/static/libpq-ssl.html), e.g. `postgresql://user:password@dbhost/govready_q?sslmode=verify-full&sslrootcert=/path/to/pgsql.crt` (although you'll have to figure out how to get the server certificate accessible via the container filesystem). (Default: Not set, which means using a Sqlite database stored in the container at `/usr/src/app/local/database.sqlite`, which will be ephemeral if the path is not mounted to the host or a Docker volume.)
 
-`ORGANIZATION_PARENT_DOMAIN` - If not set, GovReady-Q will be single-tenant and the database must be configured with a single organization whose subdomain is `main`. If set, GovReady-Q will be multi-tenant, serving a landing page and organization-specific sites on different domain names. A landing/signup page and the Django `/admin` site will be available at the domain name given in the `HOST` environment variable and organization sites will be served at subdomains of the `ORGANIZATION_PARENT_DOMAIN` domain name value. (Default: Not set).
-
 `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PW`, and `EMAIL_DOMAIN` - For enabling outbound email. The host, port, username, and password settings specify a TLS-enabled SMTP server. `EMAIL_DOMAIN` is the domain name to use in outbound mail. (Default: Not set and outbound emails are dumped to logs for debugging.) To test the email configuration from the command-line, you can run `docker container exec -it govready-q python3.6 manage.py sendtestemail you@example.com`. If email is configured, you should not see any output and you should get a test email.
 
-`FIRST_RUN` - If set to `1`, an administrator user will be created when the container launches and a randomly generated password will be given to the user and printed on the console, which will be visible in the container's logs. An organization with subdomain `main` will also be created.
+`FIRST_RUN` - If set to `1`, an administrator user will be created when the container launches and a randomly generated password will be given to the user and printed on the console, which will be visible in the container's logs. An organization named `main` will also be created.
 
 `PROCESSES` - The number of concurrent requests that can be handled by the container. (Default: 4)
 
@@ -349,6 +347,6 @@ The functional tests run a headless Chromium web browser session. We welcome ass
 
 If you wish to add sample data for testing purposes to your GovReady-Q image, run the following command (after `first_run` has completed):
 
-    docker container exec -it govready-q add_sample_data TEST_PASSWORD_HERE
+    docker container exec -it govready-q add_data --non-interactive
 
-This will run `populate --full --password TEST_PASSWORD_HERE`, as described in more detail in the [Testing](Test.html#populating-sample-data-for-manual-testing-and-verification) section of this documentation.
+This will run a quickstart command to generate data in your GovReady-Q instance, as described in more detail in the [Testing](Test.html#populating-sample-data-for-manual-testing-and-verification) section of this documentation.

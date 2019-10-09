@@ -7,16 +7,11 @@ from django.utils import timezone
 
 from .models import Discussion, Comment, Attachment
 
-def makekwargs(request, prefix=""):
-    if hasattr(request, "organization"):
-        return { prefix+"organization": request.organization }
-    return { }
-
 @login_required
 @transaction.atomic
 def update_discussion_comment_draft(request):
     # Get the discussion object.
-    discussion = get_object_or_404(Discussion, id=request.POST['discussion'], **makekwargs(request))
+    discussion = get_object_or_404(Discussion, id=request.POST['discussion'])
 
     # Get the text.
     text = request.POST.get("text", "").rstrip()
@@ -43,14 +38,13 @@ def update_discussion_comment_draft(request):
     # Return the comment's id and rendered text for displaying a preview.
     return JsonResponse(comment.render_context_dict(request.user))
 
-
 @login_required
 @transaction.atomic
 def submit_discussion_comment(request):
     # Get the discussion object.
-    discussion = get_object_or_404(Discussion, id=request.POST['discussion'], **makekwargs(request))
+    discussion = get_object_or_404(Discussion, id=request.POST['discussion'])
     if not discussion.can_comment(request.user):
-        return HttpResponseForbidden()
+        return HttpResponseForbidden("You do not have permission to post to this discussion.")
 
     # Get the Comment draft.
     try:
@@ -60,18 +54,16 @@ def submit_discussion_comment(request):
 
     if not comment.draft:
         return JsonResponse({ "status": "error", "message": "It looks like the comment was already submitted from another browser session." })
-
     # Publish it.
     comment.publish()
 
     # Return the comment for display.
     return JsonResponse(comment.render_context_dict(request.user))
 
-
 @login_required
 def edit_discussion_comment(request):
     # get object
-    comment = get_object_or_404(Comment, id=request.POST['id'], **makekwargs(request, 'discussion__'))
+    comment = get_object_or_404(Comment, id=request.POST['id'])
 
     # can edit? must still be a participant of the discussion, to
     # prevent editing things that you are no longer able to see
@@ -97,7 +89,7 @@ def edit_discussion_comment(request):
 @login_required
 def delete_discussion_comment(request):
     # get object
-    comment = get_object_or_404(Comment, id=request.POST['id'], **makekwargs(request, 'discussion__'))
+    comment = get_object_or_404(Comment, id=request.POST['id'])
 
     # can delete? must still be a participant of the discussion, to
     # prevent editing things that you are no longer able to see
@@ -114,7 +106,7 @@ def delete_discussion_comment(request):
 @login_required
 def save_reaction(request):
     # get comment that is being reacted *to*
-    comment = get_object_or_404(Comment, id=request.POST['id'], **makekwargs(request, 'discussion__'))
+    comment = get_object_or_404(Comment, id=request.POST['id'])
 
     # can see it?
     if not comment.can_see(request.user):

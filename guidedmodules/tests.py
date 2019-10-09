@@ -6,6 +6,7 @@ from .models import Module, Task, TaskAnswer
 from .module_logic import *
 from .app_loading import load_app_into_database
 
+
 class TestCaseWithFixtureData(TestCase):
     @classmethod
     def setUpClass(self):
@@ -16,7 +17,7 @@ class TestCaseWithFixtureData(TestCase):
         settings.VALIDATE_EMAIL_DELIVERABILITY = False
 
         # Load modules from the fixtures directory.
-        from .models import AppSource, AppInstance
+        from .models import AppSource, AppVersion
         from .management.commands.load_modules import Command as load_modules
         from .app_source_connections import MultiplexedAppSourceConnection
         src = AppSource.objects.create(
@@ -29,7 +30,7 @@ class TestCaseWithFixtureData(TestCase):
         with MultiplexedAppSourceConnection(ms for ms in AppSource.objects.all()) as store:
             for app in store.list_apps():
                 load_app_into_database(app)
-        self.fixture_app = AppInstance.objects.get(source=src, appname="simple_project")
+        self.fixture_app = AppVersion.objects.get(source=src, appname="simple_project")
 
         # Create a dummy organization, project, and user.
         self.user = User.objects.create(username="unit.test")
@@ -40,7 +41,6 @@ class TestCaseWithFixtureData(TestCase):
 
     def getModule(self, module_name):
         return self.fixture_app.modules.get(module_name=module_name)
-
 
 class ImputeConditionTests(TestCaseWithFixtureData):
     # Tests that expressions have the expected value in impute conditions
@@ -232,7 +232,6 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         self.assertEqual(answers.get("im_expr_1"), 2)
         self.assertEqual(answers.get("im_templ_1"), '1')
         self.assertEqual(answers.get("im_templ_2"), '2')
-
 
 class RenderTests(TestCaseWithFixtureData):
     ## GENERAL RENDER TESTS ##
@@ -641,7 +640,6 @@ class RenderTests(TestCaseWithFixtureData):
             actual = html.escape(str(actual))
             expected_impute_value = expected
         self.assertEqual(actual, expected_impute_value, msg="impute value expression %s" % expression)
-
 
 class ImportExportTests(TestCaseWithFixtureData):
     ## IMPORT/EXPORT TASK DATA TESTS ##

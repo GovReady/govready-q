@@ -15,7 +15,6 @@ Create a file named `local/environment.json` (ensure it is not world-readable) t
 	{
 	  "debug": false,
 	  "host": "webserver.hostname.com",
-	  "organization-parent-domain": "webserver.hostname.com",
 	  "https": true,
 	  "secret-key": "generate random string using e.g. https://www.miniwebtool.com/django-secret-key-generator/",
 	  "static": "/home/govready-q/public_html/static"
@@ -23,15 +22,13 @@ Create a file named `local/environment.json` (ensure it is not world-readable) t
 
 Because of host header checking, to test the site again using `python3 manage.py runserver` you will need to visit it using `webserver.hostname.com` and not `localhost`. (Be sure to replace `webserver.hostname.com` with your hostname.)
 
-### Remember to Define Your `host1` and `organization-parent-domain`
+### Remember to Define Your `host`
 
 The **DisallowedHost...Invalid HTTP_HOST header...You may need to add '<your domain name>' to ALLOWED_HOSTS** is a common error received when first trying to get GovReady-Q running on a server at a specific domain. The error indicates the domain you are trying to visit is not white listed in Django's special `ALLOWED_HOST` variable.
 
-For security, Django requires white listing your server's domain(s) in the `ALLOWED_HOST` variable. Ordinarily this is hardcoded into the `settings.py` file. GovReady-Q allows the `ALLOWED_HOST` to be set by a combination of the `host` and `organization-parent-domain` environment settings so the values can be passed at runtime.
+For security, Django requires white listing your server's domain(s) in the `ALLOWED_HOST` variable. Ordinarily this is hardcoded into the `settings.py` file. GovReady-Q allows the `ALLOWED_HOST` to be set by the `host` environment settings so the values can be passed at runtime.
 
 * `host` must be defined, or GovReady-Q will default value to `localhost`
-* `organization-parent-domain` should be defined, or GovReady-Q will default value to same as `host`
-* Beginning `organization-parent-domain` value with a `.` tells Django to respond to any subdomain (e.g., `.mydomain.com` will respond to `info.mydomain.com` and `www.mydomain.com`)
 
 ## Setting up the Database Server
 
@@ -45,21 +42,13 @@ It's recommended to run a dedicated webserver software, such as Apache or Nginx,
 
 ## Creating the First User
 
-If you are setting up a multi-tenant instance of Q where different organizations will use the site on different subdomains, create the administrative user using:
-
-    python3 manage.py createsuperuser
-
-and then log into the admin to create initial organizations.
-
-Otherwise, for a single-tenant setup, add to `local/environment.json`:
-
-  "single-organization": "main",
-
-which will serve just the Organization instance whose subdomain field is "main", and then create the initial user and the "main" organization using:
+Create the initial user and a "main" organization using:
 
 	python3 manage.py first_run
 
 You should now be able to log into GovReady-Q using the user created in this section.
+
+You can also use the Django admin to create organizations.
 
 ## Other Configuration Settings
 

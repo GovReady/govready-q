@@ -76,6 +76,32 @@ You can check the status of the containers:
 docker-compose ps
 ```
 
+## Specify Parameters
+
+Before starting the containers, you can specify which GovReady-Q image to use, which database host to use, and the hostname of the Docker host.  It's important to specify the correct hostname if you are using real TLS certs.
+
+Set these environment variables (sample values provided, replace with your own values):
+
+```bash
+export GOVREADY_Q_HOST=ec2-nnn-nnn-nnn-nnn.us-east-1.compute.amazonaws.com
+export GOVREADY_Q_DBURL=postgres://govready_q:my_private_password@grq-002.cog63arfw9bib.us-east-1.rds.amazonaws.com/govready_q
+export GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
+
+```
+
+After setting the variables, continue with the "Run GovReady-Q + NGINX Multi-container App" section above.
+
+If you don't set enviroment variables, these defaults are used:
+
+```bash
+export GOVREADY_Q_HOST=test.example.com
+export GOVREADY_Q_DBURL=
+export GOVREADY_Q_IMAGENAME=govready/govready-q
+
+```
+
+When no DBURL is specified, GovReady-Q uses an internal sqlite database.
+
 ## Check Logs From A Container
 
 Check the logs by specifying the service name:
@@ -121,29 +147,3 @@ To stop and remove containers:
 ```bash
 docker-compose down
 ```
-
-## Specify Parameters
-
-Before starting the containers, you can specify which GovReady-Q image to use, which database host to use, and the hostname of the Docker host.  It's important to specify the correct hostname if you are using real TLS certs.
-
-Set these environment variables (sample values provided, replace with your own values):
-
-```bash
-export GOVREADY_Q_HOST=ec2-nnn-nnn-nnn-nnn.us-east-1.compute.amazonaws.com
-export GOVREADY_Q_DBURL=postgres://govready_q:my_private_password@grq-002.cog63arfw9bib.us-east-1.rds.amazonaws.com/govready_q
-export GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
-
-```
-
-After setting the variables, continue with the "Run GovReady-Q + NGINX Multi-container App" section above.
-
-If you don't set enviroment variables, these defaults are used:
-
-```bash
-export GOVREADY_Q_HOST=test.example.com
-export GOVREADY_Q_DBURL=
-export GOVREADY_Q_IMAGENAME=govready/govready-q
-
-```
-
-When no DBURL is specified, GovReady-Q uses an internal sqlite database.

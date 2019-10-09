@@ -12,20 +12,20 @@ table, tr, td {
 ## What's New in 0.9.0
 
 Release 0.9.0 (coming Autumn 2019) is a minor release improving
-
 the user experience and performance.
 
 * Faster loading and launching of Assessments/questionnaires
 * Simplified install with no subdomains to worry about
-* Replaces subdomain multi-tenancy with simplified "Groups" model
+* Replaces subdomain multi-tenancy with simplified "Portfolios" model
 * Improved authoring screens
 * Helpful new start page
+* Adds and updates portfolio level permissions
 
 Release 0.9.0 removes multi-tenancy and serves all pages from the same domain. In the earlier multi-tenancy versions, requests to GovReady-Q came in on subdomains: the subdomain determined which organization to associate with the request, and individuals had to re-login across subdomains. Little value was being realized by actual users for the subdomain-based multi-tenancy. Removing subdomain-based multi-tenancy reduces technical debt simplifies deployment.
 
 This release's compliance apps catalog now reads from the database rather than constantly rescanning remote repositories and the file system. The app catalog cache is removed since the page loads much faster. Release 0.9.0 begins to replace the "compliance app" terminology with the plain language "projects" and "assessment" terminology in end user pages.
 
-This release also introduces a "Group" feature to organize and manage related projects.
+This release also introduces a "Portfolios" feature to organize and manage related projects.
 
 For a complete list of changes see the [0.9.0.dev branch CHANGELOG](https://github.com/GovReady/govready-q/blob/0.9.0.dev/CHANGELOG.md).
 
@@ -124,13 +124,21 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 
 The target release date for 0.9.0 is Autumn 2019.
 
+## Upgrading to 0.9.0 from 0.8.x
+
+**Backup your database before upgrading to 0.9.0. Release 0.9.0 performs database changes that makes rolling back difficult.**
+
+See [Migration Guide for GovReady-Q (0.8.6 to 0.9.0)](migration_guide_086_090.md).
+
 ## Installing 0.9.0
 
 Release 0.9.0 simplifies the installation of GovReady-Q by removing the need to manage subdomain-based multi-tenancy.
 
 Three example assessments are preloaded during the install of 0.9.0 to demonstrate the experience of using GovReady-Q.
 
-Click one of the tab belows to see the release 0.9.0 quickstart for the indicated platform.
+The installation of assessments (aka "Compliance Apps") requires an extra step in 0.9.0 but greatly improves user experience.
+
+Click one of the tab belows to see quickstart for indicated platform.
 
 .. container:: content-tabs
 
@@ -141,56 +149,48 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
 
         Make sure you first install Docker (https://docs.docker.com/engine/installation/) and, if appropriate, grant non-root users access to run Docker containers (https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
 
+        .. rubric:: Start
+
         .. code-block:: bash
 
-            # Run the govready-q-0.9.0 docker container in detached mode
-            # Note this is a multi-line command
-            # This command uses port 8000, please make sure this port is free before running 
-            docker container run --detach --name govready-q-0.9.0 -p 127.0.0.1:8000:8000 \
+            # Create a local directory for authoring Q assessment files
+            mkdir -p /path/to/govready-q-files
+            # mkdir -p /codedata/code/govready-q-files
+
+            # Run the docker container in detached mode
+            docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
-            govready/govready-q-0.9.0
+            govready/govready-q-0.9.0.dev
 
             # Create admin account and organization data if setting up a new database
-            docker container exec -it govready-q-0.9.0 first_run
+            docker container exec -it govready-q first_run
 
             # Stop, start container (when needed)
-            docker container stop govready-q-0.9.0
-            docker container start govready-q-0.9.0
+            docker container stop govready-q
+            docker container start govready-q
 
             # View logs - useful if site does not appear
-            docker container logs govready-q-0.9.0
+            docker container logs govready-q
 
             # To destroy the container and all user data entered into Q
-            docker container rm -f govready-q-0.9.0
+            docker container rm -f govready-q
 
         Visit your GovReady-Q site in your web browser at:
 
             http://localhost:8000/
 
         Dockerized GovReady-Q supports additional options. Below is a more complete example
-        parameters available, including mounting a local directory to author your own assessments.
+
+        parameters available.
 
         .. code-block:: bash
 
-            # Create a local directory for authoring Q assessment files
-            cd ~/
-            mkdir govready-q-workspace
-            cd govready-q-workspace
-
-            # Run the govready-q-0.9.0 docker container in detached mode
-            # mounting your present working directory.
-            # Additional parameters for configuring email also shown.
-            docker container run --detach --name govready-q-0.9.0 -p 127.0.0.1:8000:8000 \
+            # Run the docker container in detached mode
+            docker container run --detach --name govready-q -p 127.0.0.1:8000:8000 \
             -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
             -e EMAIL_HOST= -e EMAIL_PORT= -e EMAIL_USER= -e EMAIL_PW= -e EMAIL_DOMAIN= \
             --mount type=bind,source="$(pwd)",target=/mnt/q-files-host \
-            govready/govready-q-0.9.0
-
-            # Create admin account and organization data if setting up a new database
-            docker container exec -it govready-q-0.9.0 first_run
-
-            # To destroy the container and all user data entered into Q
-            docker container rm -f govready-q-0.9.0
+            govready/govready-q-0.9.0.dev
 
         Alternatively, we offer a shell script that helps launch GovReady-Q.
         Do the following to download the shell script and launch GovReady-Q docker container.
@@ -205,7 +205,7 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
             # Make it executable
             chmod +x docker_container_run.sh
 
-            ./docker_container_run.sh --name govready-q-0.9.0 --relaunch --debug -v --appsdevdir /codedata/code/govready-q-files --image govready/govready-q-0.9.0
+            ./docker_container_run.sh --name govready-q --relaunch --debug -v --appsdevdir /codedata/code/govready-q-files --image govready/govready-q-0.9.0.dev
 
         .. rubric:: Logs for Debugging
 
@@ -468,73 +468,37 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
     .. tab-container:: windows
         :title: Windows
 
-        .. rubric:: Installing with Docker
+        .. rubric:: Installing on Windows (with Docker)
 
-        Make sure you first install Docker (https://docs.docker.com/engine/installation/) and, if appropriate, grant non-root users access to run Docker containers (https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
+        GovReady-Q can only be installed on Windows using Docker.
+
+        Make sure you first install Docker (https://docs.docker.com/docker-for-windows/install/).
+
+        .. rubric:: Start
 
         .. code-block:: bash
 
-            # Run the govready-q-0.9.0 docker container in detached mode
-            docker container run --detach --name govready-q-0.9.0 -p 127.0.0.1:8000:8000 \
-            -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
-            govready/govready-q-0.9.0
+            # Run the docker container in detached mode
+            docker container run --name govready-q --detach -p 8000:8000 govready/govready-q-0.9.0.dev
 
-            # Create admin account and organization data if setting up a new database
-            docker container exec -it govready-q-0.9.0 first_run
+            # Create admin account and organization data
+            # Skip if you pass environment variables to connect to a persistent database
+            docker container exec -it govready-q first_run
 
-            # Stop, start container (when needed)
-            docker container stop govready-q-0.9.0
-            docker container start govready-q-0.9.0
+            # Stop, start container
+            docker container stop govready-q
+            docker container start govready-q
 
             # View logs - useful if site does not appear
-            docker container logs govready-q-0.9.0
+            docker container logs govready-q
 
             # To destroy the container and all user data entered into Q
-            docker container rm -f govready-q-0.9.0
+            docker container rm -f govready-q
+
 
         Visit your GovReady-Q site in your web browser at:
 
             http://localhost:8000/
-
-        Dockerized GovReady-Q supports additional options. Below is a more complete example
-        parameters available, including mounting a local directory to author your own assessments.
-
-        .. code-block:: bash
-
-            # Create a local directory for authoring Q assessment files
-            cd ~/
-            mkdir govready-q-workspace
-            cd govready-q-workspace
-
-            # Run the govready-q-0.9.0 docker container in detached mode
-            # mounting your present working directory.
-            # Additional parameters for configuring email also shown.
-            docker container run --detach --name govready-q-0.9.0 -p 127.0.0.1:8000:8000 \
-            -e HOST=localhost -e PORT=8000 -e HTTPS=false -e DBURL= -e DEBUG=true \
-            -e EMAIL_HOST= -e EMAIL_PORT= -e EMAIL_USER= -e EMAIL_PW= -e EMAIL_DOMAIN= \
-            --mount type=bind,source="$(pwd)",target=/mnt/q-files-host \
-            govready/govready-q-0.9.0
-
-            # Create admin account and organization data if setting up a new database
-            docker container exec -it govready-q-0.9.0 first_run
-
-            # To destroy the container and all user data entered into Q
-            docker container rm -f govready-q-0.9.0
-
-        Alternatively, we offer a shell script that helps launch GovReady-Q.
-        Do the following to download the shell script and launch GovReady-Q docker container.
-
-        .. code-block:: bash
-
-            cd /path/to/working/dir
-
-            # Get the docker_container_run.sh shell script
-            wget https://raw.githubusercontent.com/GovReady/govready-q/master/deployment/docker/docker_container_run.sh
-
-            # Make it executable
-            chmod +x docker_container_run.sh
-
-            ./docker_container_run.sh --name govready-q-0.9.0 --relaunch --debug -v --appsdevdir /codedata/code/govready-q-files --image govready/govready-q-0.9.0
 
 
 ## Upgrading to 0.9.0 from 0.8.x
@@ -547,9 +511,9 @@ See [Migration Guide for GovReady-Q (0.8.6 to 0.9.0)](migration_guide_086_090.ht
 
 ### Overview
 
-Version 0.9.0 includes three assessments preloaded for demonstration purposes.
+GovReady-Q wll load a small set of example questionnaires as part of the `python manage.py first_run` command during installation.
 
-GovReady-Q must be configured by an administrator to load compliance assessments from one or more sources, which can be local directories or remote git repositories. Full administrative privileges are assigned to original user account created when executing `python manage.py first_run` during installation.
+GovReady-Q must be configured by an administrator to load additional compliance apps (e.g., assessments and questionnaires) from one or more sources, which can be local directories or remote git repositories. Full administrative privileges are assigned to original user account created when executing `python manage.py first_run` during installation.
 
 App Sources are configured in the Django admin at the URL `/admin` on your GovReady-Q domain under `App Sources`:
 

@@ -132,7 +132,7 @@ class Command(BaseCommand):
             # in {{organization}} variables in document templates.
             self.dummy_org = Organization.objects.create(
                 name=organization_name,
-                subdomain=get_random_string(12))
+                slug=get_random_string(12))
             self.dummy_user = User.objects.create(username=get_random_string(12))
 
             # Cache app sources and app instances as we load app data into the
@@ -173,8 +173,8 @@ class Command(BaseCommand):
             if not isinstance(app.get("source"), dict): raise ValueError("invalid data type")
             if not isinstance(app.get("name"), str): raise ValueError("invalid data type")
 
-        # Get an existing AppInstance if we've already created this app,
-        # otherwise create a new AppInstance.
+        # Get an existing AppVersion if we've already created this app,
+        # otherwise create a new AppVersion.
         key = rtyaml.dump(app)
         if key in self.app_instances:
             app_inst = self.app_instances[key]

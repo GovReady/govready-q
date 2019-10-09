@@ -21,6 +21,8 @@ Next Question: {{q.spec.title}} | {{task.title}}
   margin-bottom: 30px;
 }
 
+
+
 h1 {
   margin: 4px 0 18px 0;
   font-size: 22px;
@@ -67,7 +69,8 @@ h1 {
 
 {% if q.spec.type == "longtext" %}
 #question .ql-container {
-  font-size: 14pt !important; /* override default quill style */
+  font-size: 10pt !important; /* override default quill style */
+  /*font-family: trebuchet ms;*/
 }
 #question .ql-container p {
   margin-bottom: .75em;
@@ -81,8 +84,9 @@ label .onhover { display: none; }
 label:hover .onhover { display: inline; }
 
 #confidence-buttons {
-  margin: 25px 0;
+  margin: 12px 0 0 0;
 }
+
     #confidence-buttons button {
         border: 1px solid rgba(255,255,255,0); /* same width as .active but no color */
         border-radius: 4px;
@@ -90,25 +94,27 @@ label:hover .onhover { display: inline; }
         font-size: 80%;
         background: none;
         opacity: .6;
-        margin-right: .5em;
     }
+
         #confidence-buttons button img {
             height: 1.25em;
             margin-right: .25em;
         }
+
         #confidence-buttons button.active {
             border: 1px solid #AAA;
             color: black;
             background: #EEE;
             opacity: 1;
         }
-        #confidence-buttons:hover button {
-            border: 1px solid #AAA;
-            opacity: 1;
+
+        #no-idea-button:hover, #not-applicable-button:hover, #start-a-discussion:hover, #transfer-editorship:hover {
+          border: 1px solid #AAA;
+          opacity: 1;
         }
 
 #action-buttons {
-  margin: 25px 0;
+  margin: 12px 0 0 12px;
 }
 
 #reference-text-wrapper *:first-child { margin-top: 0; }
@@ -127,9 +133,13 @@ label:hover .onhover { display: inline; }
 
 <div class="row">
 
-<div class="col-md-9">
-  <div id="focus-area-wrapper">
+  <!--
+  <div class="col-spacer hidden-xs hidden-sm hidden-md col-lg-1">
+    &nbsp;
+  </div>
+  -->
 
+  <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 ">
     {% if source_invitation %}
       <div style="margin-bottom: 2em">
         <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
@@ -137,7 +147,6 @@ label:hover .onhover { display: inline; }
             Show Invitation from {{source_invitation.from_user}}
           </a>
         </div>
-        
         <div id="source-invitation" class="alert alert-warning alert-dismissible" {% if task.is_started %}style="display: none"{% endif %} role="alert">
           <button type="button" class="close" aria-label="Close" onclick="$('#source-invitation').hide(); $('#source-invitation-show').show();"><span aria-hidden="true">&times;</span></button>
           <strong>Invitation from {{source_invitation.from_user}}:</strong>
@@ -151,6 +160,7 @@ label:hover .onhover { display: inline; }
     <div id="question">
         <form {% if not write_priv %}class="disabled"{% endif %} autocomplete="off">
             <input type="hidden" name="question" value="{{q.id}}">
+            <input type="hidden" name="next_linear_question" value="{{next_linear_question.link}}">
             <input type="hidden" name="method" value="save">
             <input type="hidden" name="skipped_reason" value="">
             <input type="hidden" name="unsure" value="">
@@ -166,7 +176,7 @@ label:hover .onhover { display: inline; }
                 <div class="expandy" style="max-height: 4.25em; overflow: hidden;">
                   <div>
                     {% for ex in example_answers %}
-                      <div> 
+                      <div>
                         <div><small style="color: #666;">Example{% if example_answers|length > 1 %} {{forloop.counter}}{% endif %}</small></div>
                         {{ex|safe}}
                       </div>
@@ -174,7 +184,7 @@ label:hover .onhover { display: inline; }
                   </div>
                 </div>
                 <div class="toggler"
-                     style="text-align: right; font-style: italic; font-size: 90%;">
+                     style="text-align: left; font-style: italic; font-size: 90%;">
                   <a
                      href="#more"
                      onclick="$(this).parents('.expandable').find('.expandy').data('original-height', $(this).parents('.expandable').find('.expandy').height()); $(this).parents('.expandable').find('.expandy').animate({ minHeight: $(this).parents('.expandable').find('.expandy>div').outerHeight() + $(this).parents('.expandable').find('.toggler').outerHeight() }); $(this).parents('.expandable').find('a[href=&quot;#more&quot;]').hide(); $(this).parents('.expandable').find('a[href=&quot;#less&quot;]').show(); return false;">Show more</a>
@@ -192,7 +202,7 @@ label:hover .onhover { display: inline; }
                 </a>
               </p>
               <div id="reference-text" style="display: none; font-size: 80%;" class="well">
-                <p><b><small>Additional Information</small></b></p>
+                <p><strong><small>Additional Information</small></strong></p>
                 {{reference_text|safe}}
               </div>
             {% endif %}
@@ -304,7 +314,7 @@ label:hover .onhover { display: inline; }
               <div style="margin: 1em 0 1.5em 0">
               {% for choice in q.spec.choices %}
               <div class="radio">
-                <label>
+                <label style="text-align: left;">
                   <input name="value" value="{{choice.key}}" type="radio" {% if answer == choice.key %}checked{% endif %}> {{choice.text}}
                   <p class="help-block">{{choice.help}}</p>
                 </label>
@@ -328,10 +338,10 @@ label:hover .onhover { display: inline; }
               </div>
 
             {% elif q.spec.type == "multiple-choice" %}
-              <div style="margin: 1em 0 1.5em 0">
+              <div style="margin: 1em 0 1.5em 0;">
               {% for choice in q.spec.choices %}
               <div class="checkbox">
-                <label>
+                <label style="text-align: left;">
                   <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer %}checked{% endif %}> {{choice.text}}
                   <p class="help-block">{{choice.help}}</p>
                 </label>
@@ -341,7 +351,7 @@ label:hover .onhover { display: inline; }
               {% if q.spec.min > 0 and q.spec.min == q.spec.max %}
                   <p class="help-block">You must choose exactly {{q.spec.min}} option{{q.spec.min|pluralize}}.</p>
               {% elif q.spec.min > 0 %}
-                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} option{{q.spec.min|pluralize}}.</p>
+                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} option{{q.spec.max|pluralize}}.</p>
               {% elif q.spec.max %}
                   <p class="help-block">You may choose at most {{q.spec.max}} option{{q.spec.max|pluralize}}.</p>
               {% endif %}
@@ -352,7 +362,7 @@ label:hover .onhover { display: inline; }
                 {% comment %}
                   The HTML5 number input is a bit confusing in how it handles periods and commas.
                   Browsers seem to currently only support a period or comma as a decimal separator,
-                  depending on the lang attribute on the input or HTML. They do not allow 
+                  depending on the lang attribute on the input or HTML. They do not allow
                   thousands-commas. But we should let users type that in.
                 {% endcomment %}
                 {% if q.spec.min > -1000 and q.spec.max < 1000 %}
@@ -389,7 +399,6 @@ label:hover .onhover { display: inline; }
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
-
             {% elif q.spec.type == "module" and answer_tasks|length == 0 %}
               {# The user must choose or start a module, but there is nothing to choose from, so show a simplified interface. #}
 
@@ -415,7 +424,7 @@ label:hover .onhover { display: inline; }
                         {% if m.project != task.project and m.project.title != title %}
                         {{ m.project.title }}.
                         {% endif %}
-                        
+
                         {% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}}.
 
                         <a href="{{m.get_absolute_url}}" class="onhover" style="color: #999; margin-left: 3px; font-size: 90%;"><span class="glyphicon glyphicon-pencil"> </span></a>
@@ -450,7 +459,10 @@ label:hover .onhover { display: inline; }
             {% endif %}
 
             {% if not is_answerable %}
-                <p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
+              <p class="text-danger">This question cannot currently be answered or skipped because its value is currently being imputed or it is dependent on questions that have not yet been answered.</p>
+              {% if authoring_tool_enabled %}
+                <p class="text-danger">You are seeing this question because the Authoring Tools are enabled. Ordinary users would not see this question displayed.</p>
+              {% endif %}
 
             {% elif write_priv %}
 
@@ -465,7 +477,7 @@ label:hover .onhover { display: inline; }
                     {% endif %}
                     {% if not hidden_button_ids or "not-applicable" not in hidden_button_ids %}
                     <button id="not-applicable-button" type=button>
-                        <span class="emoji" data-sprite="people" data-code="1f64b" data-name="person raising hand"></span>
+                        <span class="emoji" data-sprite="people" data-code="1f645" data-name="person gesturing no"></span>
                         It doesn&rsquo;t apply
                     </button>
                     {% endif %}
@@ -480,7 +492,7 @@ label:hover .onhover { display: inline; }
                       {% endif %}
                       {% if task.can_transfer_owner and write_priv %}
                         <button id="transfer-editorship" onclick="invite_to_transfer_editor();" type=button data-toggleable=false>
-                            <span class="glyphicon glyphicon-user" style="color: #A65;"></span> Assign
+                            <span class="emoji" data-sprite="people" data-code="1f449" data-name="person raising hand"></span> Assign
                         </button>
                       {% endif %}
                     {% endif %}
@@ -510,25 +522,26 @@ label:hover .onhover { display: inline; }
                   {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
                   {% if answer_obj and DEBUG %}
                     <button id="clear-button"
-                      type="submit" class="btn btn-default"
+                      type="submit" class="btn btn-link" style="color: #999; font-size: 0.9em;"
                       onclick="$('#question > form input[name=method]').val('clear')">
                         Mark as Unanswered
-                        &raquo;
+                        <!-- &raquo; -->
                       </button>
                   {% endif %}
                 </div> {# /.pull-left #}
 
+                <div class="pull-right" style="margin-top: -10px;">
+                  {% if answer_obj and can_review %}
+                  <select style="display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this)">
+                    {% for key, label in review_choices %}
+                      <option value="{{key}}" {% if answer_obj.reviewed == key %}selected{% endif %}>
+                        {{label}}
+                      </option>
+                    {% endfor %}
+                  </select>
+                {% endif %}
+                </div>
               </div> <!-- /action-buttons -->
-
-            {% if answer_obj and can_review %}
-              <select style="display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this)">
-                {% for key, label in review_choices %}
-                  <option value="{{key}}" {% if answer_obj.reviewed == key %}selected{% endif %}>
-                    {{label}}
-                  </option>
-                {% endfor %}
-              </select>
-            {% endif %}
 
           {% else %} {# write_priv #}
             {# User does not have write permission so cannot answer the question, start a discussion, or change the editor. But we instead still want to show the review state. #}
@@ -543,44 +556,24 @@ label:hover .onhover { display: inline; }
 
           {% endif %} {# write_priv #}
         </form>
-
     </div> <!-- /question -->
 
-    {% include "discussion/discussion.html" %}
-
-    </div> <!-- /focus-area-wrapper -->
-
-  </div> <!-- /col -->
-
-  <div class="col-md-3">
-    <div id="question-history-context" style="border:0px solid black; max-height: 550px; overflow-y:scroll; padding:4px;">
-        <ul>
-        {% if context %}
-          <p>Progress:</p>
-          {% include "task-progress-question-list.html" with previous="question" %}
-          <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
-          <li>&middot;</li>
-          <li>&middot;</li>
-          <li>&middot;</li>
-          </div>
-          <li>
-            ...and we&rsquo;re done
-          </li>
-        {% endif %}
-        </ul>
-    </div> <!-- /question-history-context -->
-
-    {% if authoring_tool_enabled %}
-    <div style="margin: 2em 0; font-size: 90%;">
-      <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-pencil"></span>
-        Authoring Tool
-      </a>
+    <div>
+      <hr>
+      {% include "discussion/discussion.html" %}
     </div>
-    {% endif %}
+  </div> <!-- /focus-area-wrapper -->
 
+  <div class="col-spacer hidden-xs col-sm-1 col-md-1 col-lg-3 col-xl-2">
+    &nbsp;
   </div>
 
+  <div id="progress-project-area-wrapper" class="col-xs-8 col-sm-6 col-md-3 col-lg-3 col-xl-2"
+       style="background-color: rgb(230, 230, 230); border-radius: 6px;">
+    {% include "task-progress-project-list.html" with previous="question" %}
+  </div>
+
+  </div>
 </div> <!-- /row -->
 
 {% if authoring_tool_enabled %}
@@ -663,7 +656,7 @@ $(function() {
     // VALIDATION
 
     {% if q.spec.type == "text" or q.spec.type == "password" or q.spec.type == "email-address" or q.spec.type == "integer" or q.spec.type == "real" or q.spec.type == "url" %}
-    
+
     function validate_answer() {
         var val = $('#inputctrl').val();
         if (/^ *$/.exec(val))
@@ -906,7 +899,7 @@ $(function() {
             // the answer.
             form.find('input[name=method]').val('skip');
             form.find('input[name=skipped_reason]').val('dont-know');
-          
+
           } else if ($('#not-applicable-button').hasClass('active')) {
             // Skipping this question because the question doesn't
             // apply to the user's circumstances.
@@ -923,7 +916,7 @@ $(function() {
               }
           }
         }
-        
+
         // Assemble the form submission data.
         //
         // While this would normally work:
@@ -1008,7 +1001,6 @@ function show_static_history(history) {
     });
 }
 
-
 {% if send_invitation %}
 function invite_user_to_discussion() {
   show_invite_modal(
@@ -1042,8 +1034,8 @@ function record_interaction() {
 </script>
 
 {% if authoring_tool_enabled %}
-<script src="{% static "vendor/js-yaml.min.js" %}"></script>
-<script src="{% static "js/authoring_tool.js" %}"></script>
+<script src="{% static 'vendor/js-yaml.min.js' %}"></script>
+<script src="{% static 'js/authoring_tool.js' %}"></script>
 <style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
 <script>
 $(function() {

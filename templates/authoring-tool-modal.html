@@ -1,4 +1,110 @@
-<div id="module_authoring_tool" class="modal" tabindex="-1" role="dialog" aria-labelledby="module_authoring_tool_title" aria-hidden="true" data-keyboard="false">
+<style>
+/*******************************
+* MODAL AS LEFT/RIGHT SIDEBAR
+* Add "left" or "right" in modal parent div, after class="modal".
+*******************************/
+
+
+/* remove modal shadow */
+div.modal-content{
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    -o-box-shadow: none;
+    box-shadow: none;
+    border: 1px solid rgb(220, 220, 220);
+}
+
+.modal.left .modal-dialog,
+  .modal.right .modal-dialog {
+    position: fixed;
+    margin: auto;
+    width: 600px;
+    height: calc(100% - 53px);
+    -webkit-transform: translate3d(0%, 0, 0);
+        -ms-transform: translate3d(0%, 0, 0);
+         -o-transform: translate3d(0%, 0, 0);
+            transform: translate3d(0%, 0, 0);
+  }
+
+@media screen and (max-width: 700px) {
+  .modal.left .modal-dialog, .modal.right .modal-dialog {
+     width: 400px;
+  }
+}
+
+  .modal.left .modal-content,
+  .modal.right .modal-content {
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .modal.left .modal-body,
+  .modal.right .modal-body {
+    padding: 15px 15px 0px;
+  }
+
+/*Left*/
+  .modal.left.fade .modal-dialog{
+    left: -320px;
+    top:53px;
+    -webkit-transition: opacity 0.0s linear, left 0.0s ease-out;
+       -moz-transition: opacity 0.0s linear, left 0.0s ease-out;
+         -o-transition: opacity 0.0s linear, left 0.0s ease-out;
+            transition: opacity 0.0s linear, left 0.0s ease-out;
+  }
+
+  .modal.left.fade.in .modal-dialog{
+    left: 0;
+  }
+
+/*Right*/
+  .modal.right.fade .modal-dialog {
+    right: -320px;
+    top:53px;
+    -webkit-transition: opacity 0.0s linear, right 0.0s ease-out;
+       -moz-transition: opacity 0.0s linear, right 0.0s ease-out;
+         -o-transition: opacity 0.0s linear, right 0.0s ease-out;
+            transition: opacity 0.0s linear, right 0.0s ease-out;
+  }
+
+  .modal.right.fade.in .modal-dialog {
+    right: 0;
+  }
+
+/*Center*/
+  .modal.center.fade .modal-dialog {
+    /*right: -320px;*/
+    width: 620px;
+    top:22px;
+    -webkit-tranition: opacity 0.0s linear, right 0.0s ease-out;
+       -moz-transition: opacity 0.0s linear, right 0.0s ease-out;
+         -o-transition: opacity 0.0s linear, right 0.0s ease-out;
+            transition: opacity 0.0s linear, right 0.0s ease-out;
+  }
+
+/* ----- MODAL STYLE ----- */
+  .modal-content {
+    border-radius: 0;
+    border: none;
+  }
+
+  .modal-header {
+    border-bottom-color: #EEEEEE;
+    background-color: #FAFAFA;
+  }
+
+/* ---- OTHER ----- */
+
+.form-control, label {
+  font-size: .9em;
+}
+
+label {
+  text-align: right;
+}
+</style>
+
+<div id="module_authoring_tool" class="modal right fade" tabindex="-1" role="dialog" aria-labelledby="module_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -26,6 +132,7 @@
         </form>
       </div>
       <div class="modal-footer">
+        <button type="button" class="btn btn-danger" onclick="authoring_tool_delete_question()">Delete Question</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-success" onclick="authoring_tool_save_module()">Save Changes</button>
       </div>
@@ -33,40 +140,40 @@
   </div>
 </div>
 
-<div id="question_authoring_tool" class="modal" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true" data-keyboard="false">
-  <div class="modal-dialog modal-lg">
+<div id="question_authoring_tool" class="modal right fade" tabindex="-1" role="dialog" aria-labelledby="question_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false" style="right: -55%;">
+  <div class="modal-dialog modal-md">
     <div class="modal-content">
+      <form class="form-horizontal" onsubmit="return false;">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="question_authoring_tool_title">
           Edit Question
         </h4>
-      </div>
-      <div class="modal-body">
-        <form class="form-horizontal" onsubmit="return false;">
           <div class="form-group">
-            <label for="authoring_tool_qid" class="col-sm-2 control-label">Question ID</label>
+            <label for="authoring_tool_qid" class="col-sm-2 control-label">ID</label>
             <div class="col-sm-10">
               <input type="text" class="form-control" id="authoring_tool_qid" pattern="[a-zA-Z_][a-zA-Z0-9_]*" name="newid">
-              <span class="help-block">The identifier for the question, which is used in templates and the API.</span>
+              <span class="help-block">Identifier for question used in templates and the API.</span>
             </div>
           </div>
           <div class="form-group">
             <label for="authoring_tool_qtitle" class="col-sm-2 control-label">Title</label>
             <div class="col-sm-10">
               <input type="text" class="form-control" id="authoring_tool_qtitle" name="title">
-              <span class="help-block">A title for the question.</span>
+              <span class="help-block">Title for question shown in progress list and elsewhere.</span>
             </div>
           </div>
+      </div>
+      <div class="modal-body">
           <div class="form-group">
             <label for="authoring_tool_qprompt" class="col-sm-2 control-label">Prompt</label>
             <div class="col-sm-10">
               <textarea class="form-control" id="authoring_tool_qprompt" name="prompt"></textarea>
-              <span class="help-block">A template rendered as the prompt for the question. The first line will be shown in a larger font.</span>
+              <span class="help-block">First line will be shown in a larger font.</span>
             </div>
           </div>
           <div class="form-group">
-            <label for="authoring_tool_type" class="col-sm-2 control-label">Answer Type</label>
+            <label for="authoring_tool_type" class="col-sm-2 control-label">Type</label>
             <div class="col-sm-10">
               <select class="form-control" id="authoring_tool_type" onchange="_val = $(this).val(); $('#authoring_tool_q_type_options>div, #authoring_tool_q_type_options .toggled').each(function() { $(this)[$(this).hasClass('authoring_q_type_' + _val) ? 'fadeIn' : 'hide']() });" name="type">
                 <optgroup label="Text Questions">
@@ -99,7 +206,7 @@
           </div>
           <div id="authoring_tool_q_type_options">
           <div class="form-group authoring_q_type_text authoring_q_type_email-address authoring_q_type_url authoring_q_type_integer authoring_q_type_real">
-            <label for="authoring_tool_placeholder" class="col-sm-2 control-label">Placeholder</label>
+            <label for="authoring_tool_placeholder" class="col-sm-2 control-label" style="font-size: 0.8em;">Placeholder</label>
             <div class="col-sm-10">
               <input type="text" class="form-control" id="authoring_tool_placeholder" name="placeholder">
               <span class="help-block">Template text displayed as the field&rsquo;s placeholder text when the field is empty. Do not set both a placeholder and a default.</span>
@@ -108,7 +215,11 @@
           <div class="form-group authoring_q_type_text authoring_q_type_email-address authoring_q_type_url authoring_q_type_longtext">
             <label for="authoring_tool_default" class="col-sm-2 control-label">Default</label>
             <div class="col-sm-10">
+              {% if q.spec.type == "longtext" %}
+              <textarea class="form-control" id="authoring_tool_default" name="default"></textarea>
+              {% else %}
               <input type="text" class="form-control" id="authoring_tool_default" name="default">
+              {% endif %}
               <span class="help-block">Template text provided as a default value. Do not set both a placeholder and a default.</span>
             </div>
           </div>
@@ -146,7 +257,7 @@
             </div>
           </div>
           <div class="form-group authoring_q_type_text authoring_q_type_password authoring_q_type_email-address authoring_q_type_url authoring_q_type_longtext authoring_q_type_date authoring_q_type_integer authoring_q_type_real authoring_q_type_file">
-            <label for="authoring_tool_qhelp" class="col-sm-2 control-label">Help Text</label>
+            <label for="authoring_tool_qhelp" class="col-sm-2 control-label">Help</label>
             <div class="col-sm-10">
               <input type="text" class="form-control" id="authoring_tool_qhelp" name="help">
               <span class="help-block">Template text shown as small-font help text below the question&rsquo;s input field.</span>
@@ -170,27 +281,107 @@
           </div>
           </div>
           <div class="form-group impute-condtions-holder">
-          	<label class="col-sm-2 control-label">Impute Conditions</label>
+          	<label class="col-sm-2 control-label">Impute</label>
             <div class="col-sm-10">
               <div id="authoring_tool_impute_conditions">
               </div>
-              <button class="pull-right" title="Add Impute Condition" onclick="authoring_tool_add_impute_condition_fields()"><span class="glyphicon glyphicon-plus"></span></button>
+              <button class="" title="Add Impute Condition" onclick="authoring_tool_add_impute_condition_fields()">Add impute condition</button>
               <span class="help-block">Impute conditions are run in order. The first condition to match determines the answer for this question. Each condition is a Jinja2 expression. If the condition evaluates to true, the condition matches.</span>
             </div>
           </div>
           <div class="form-group">
-            <label for="authoring_tool_qspec" class="col-sm-2 control-label">Other Data</label>
+            <label for="authoring_tool_qspec" class="col-sm-2 control-label">Optional</label>
             <div class="col-sm-10">
               <textarea class="form-control" id="authoring_tool_qspec" name="spec">{ }</textarea>
-              <span class="help-block">Other question field specification data not supported above (YAML).</span>
+              <span class="help-block">Optional question specification YAML data not defined above.</span>
+            </div>
+          </div>
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn" onclick="authoring_tool_delete_question()">Delete Question</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="authoring_tool_save_question()">Save Changes</button>
+      </div>
+    </div>
+    </form>
+  </div>
+</div>
+
+<div id="questionnaire_authoring_tool" class="modal center fade" tabindex="-1" role="dialog" aria-labelledby="questionnaire_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="questionnaire_authoring_tool_title">
+          View Questionnaire Source
+        </h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" onsubmit="return false;">
+          <div class="form-group">
+            <label for="questionnaire_authoring_tool_mspec" class="col-sm-1 control-label">Questionnaire</label>
+            <div class="col-sm-10">&nbsp;</div>
+            <div class="col-sm-12">
+              <textarea class="form-control" id="questionnaire_authoring_tool_mspec" name="spec">{ }</textarea>
+              <span class="help-block">Questionnaire definition in YAML.</span>
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" onclick="authoring_tool_delete_question()">Delete Question</button>
+        <!-- <button type="button" class="btn btn-danger" onclick="authoring_tool_delete_question()">Delete Question</button> -->
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-success" onclick="authoring_tool_save_question()">Save Changes</button>
+        <!-- <button type="button" class="btn btn-success" onclick="authoring_tool_save_module()">Save Changes</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="create_q_authoring_tool" class="modal center fade" tabindex="-1" role="dialog" aria-labelledby="questionnaire_authoring_tool_title" aria-hidden="true" data-keyboard="false" data-backdrop="false">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="questionnaire_authoring_tool_title">
+          Create New Project
+        </h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" onsubmit="return false;">
+          <div class="form-group">
+            <label for="authoring_tool_q_2_title" class="col-sm-2 control-label">Name</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" id="authoring_tool_q_2_title" name="title">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_q_name" class="col-sm-2 control-label">Slug</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" id="authoring_tool_q_name" pattern="[a-zA-Z0-9_-]*" name="q_slug">
+              <span class="help-block small">Letters, numbers, "-", "_" only)</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_q_1_ds" class="col-sm-2 control-label">Category</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" id="authoring_tool_q_1_ds" name="category" value="Draft">
+              <span class="help-block small">Ex: Technology, Policy, Drafts, . . .</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="authoring_tool_q_1_ds" class="col-sm-2 control-label">Description</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" id="authoring_tool_q_1_ds" name="short_description">
+              <span class="help-block small">Less than 100 characters</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="authoring_tool_create_q()">Create</button>
       </div>
     </div>
   </div>

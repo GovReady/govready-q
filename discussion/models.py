@@ -25,7 +25,7 @@ class Discussion(models.Model):
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")
 
     class Meta:
-      unique_together = (('attached_to_content_type', 'attached_to_object_id'))
+      unique_together = ('attached_to_content_type', 'attached_to_object_id')
 
     @staticmethod
     def get_for(org, object, create=False, must_exist=False):
@@ -33,16 +33,16 @@ class Discussion(models.Model):
         if create:
             return Discussion.objects.get_or_create(organization=org, attached_to_content_type=content_type, attached_to_object_id=object.id)[0]
         elif not must_exist:
-            return Discussion.objects.filter(organization=org, attached_to_content_type=content_type, attached_to_object_id=object.id).first()
+            return Discussion.objects.filter(attached_to_content_type=content_type, attached_to_object_id=object.id).first()
         else:
-            return Discussion.objects.get(organization=org, attached_to_content_type=content_type, attached_to_object_id=object.id)
+            return Discussion.objects.get(attached_to_content_type=content_type, attached_to_object_id=object.id)
 
     @staticmethod
-    def get_for_all(org, objects):
+    def get_for_all(objects):
         if objects.count() == 0:
             return Discussion.objects.none() # empty QuerySet
         content_type = ContentType.objects.get_for_model(objects.first())
-        return Discussion.objects.filter(organization=org, attached_to_content_type=content_type, attached_to_object_id__in=objects)
+        return Discussion.objects.filter(attached_to_content_type=content_type, attached_to_object_id__in=objects)
 
     def __str__(self):
         # for the admin, notification strings
@@ -71,14 +71,13 @@ class Discussion(models.Model):
             return "<Deleted Discussion>"
 
     def is_participant(self, user):
-        # No one is a participant of a dicussion attached to (a question
-        # of) a deleted Task.
+        # No one is a participant of a discussion attached to (a question of) a deleted Task.
         if self.attached_to_obj is not None and self.attached_to_obj.is_discussion_deleted():
             return False
         return user in self.get_all_participants()
 
     def get_all_participants(self):
-        # because get_discussion_participants uses distinct, self.guests must too
+        # Because get_discussion_participants uses distinct, self.guests must too
         participants = self.guests.all().distinct()
         if self.attached_to_obj is not None:
             participants = (participants | self.attached_to_obj.get_discussion_participants()).distinct()
@@ -109,7 +108,7 @@ class Discussion(models.Model):
         # Batch load user information. For the user's own draft, load the requesting user's info too.
         # Don't use a set to uniquify Users since the comments may have different User instances and
         # we want to fill in info for all of them.
-        User.localize_users_to_org(self.organization, [ c.user for c in comments ] + [ user ])
+        User.preload_profiles([ c.user for c in comments ] + [ user ])
 
         # Add.
         events.extend([
@@ -125,7 +124,7 @@ class Discussion(models.Model):
         if user:
             draft = self.comments.filter(user=user, draft=True).first()
             if draft:
-                draft.user = user # reuse instance for caching via User.localize_users_to_org
+                draft.user = user # reuse instance for caching via User.preload_profiles
                 draft.discussion = self # reuse instance for caching
                 draft = draft.render_context_dict(user)
 
@@ -139,7 +138,7 @@ class Discussion(models.Model):
                 "can_invite": self.can_invite_guests(user),
                 "can_comment": self.can_comment(user),
             },
-            "guests": [ user.render_context_dict(self.organization) for user in self.guests.all() ],
+            "guests": [ user.render_context_dict() for user in self.guests.all() ],
             "events": events,
             "autocomplete": self.get_autocompletes(user),
             "draft": draft,
@@ -303,7 +302,6 @@ class Comment(models.Model):
 
         # Reset the creation date to the moment it's published.
         self.created = timezone.now()
-
         # Save.
         self.save()
 
@@ -340,9 +338,9 @@ class Comment(models.Model):
         # Send invitations to anyone @-mentioned who is not yet a participant
         # in the discussion.
         from siteapp.models import Invitation
+
         for user in mentioned_users - discussion_participants:
             inv = Invitation.objects.create(
-                organization=self.discussion.organization,
                 from_user=self.user,
                 from_project=self.discussion.attached_to_obj.task.project, # TODO: Breaks abstraction, assumes attached_to => TaskAnswer.
                 target=self.discussion,
@@ -355,7 +353,6 @@ class Comment(models.Model):
         # Let the owner object of the discussion know that a comment was left.
         if hasattr(self.discussion.attached_to_obj, 'on_discussion_comment'):
             self.discussion.attached_to_obj.on_discussion_comment(self)
-
 
     def push_history(self, field):
         if not isinstance(self.extra, dict):
@@ -400,7 +397,7 @@ class Comment(models.Model):
             "can_edit": self.can_edit(whose_asking),
             "can_delete": self.can_delete(whose_asking),
             "replies_to": self.replies_to_id,
-            "user": self.user.render_context_dict(self.discussion.organization),
+            "user": self.user.render_context_dict(),
             "user_role": get_user_role(),
             "date_relative": reldate(self.created, timezone.now()) + " ago",
             "date_posix": self.created.timestamp(), # POSIX time, seconds since the epoch, in UTC
@@ -409,7 +406,6 @@ class Comment(models.Model):
             "notification_text": notification_text(),
             "emojis": self.emojis.split(",") if self.emojis else None,
         }
-
 
 class Attachment(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user uploading this attachment.")
@@ -436,7 +432,6 @@ def reldate(date, ref=None):
     if rd.hours >= 1: return c((rd.hours, "hour"), (rd.minutes, "minute"))
     if rd.minutes >= 1: return c((rd.minutes, "minute"),)
     return c((rd.seconds, "second"),)
-
 
 def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
     # Render comment text into HTML.
@@ -467,7 +462,6 @@ def render_text(text, autocompletes=None, comment=None, unwrap_p=False):
         text = re.sub(r"^<p>(.*)</p>$", r"\1", text)
 
     return text
-
 
 def match_autocompletes(text, autocompletes, replace_mentions=None):
     import re

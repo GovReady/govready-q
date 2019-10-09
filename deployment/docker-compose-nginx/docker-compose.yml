@@ -19,6 +19,6 @@ services:
         - HOST=${GOVREADY_Q_HOST-test.example.com}
     ports:
       - "80:80"
-      - "443:443"
+      - "${GOVREADY_Q_PORT-443}:443"
     networks:
       - q_network

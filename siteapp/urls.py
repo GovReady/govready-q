@@ -5,24 +5,35 @@ from django.conf import settings
 admin.autodiscover()
 
 import siteapp.views as views
+import siteapp.views_landing as views_landing
 from .good_settings_helpers import signup_wrapper
 
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
+    url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages),
 
-    # static pages that also exist on the landing domain
-    url(r"^(privacy|terms-of-service)$", views.shared_static_pages),
+    url(r'^api/v1/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
+    url(r'^media/users/(\d+)/photo/(\w+)', views_landing.user_profile_photo),
+
+    # incoming email hook for responses to notifications
+    url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
+
+    # Django admin site
+    url(r'^admin/', admin.site.urls),
 
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),
 
     # app store
-    url(r'^store$', views.apps_catalog),
+    url(r'^store$', views.apps_catalog, name="store"),
     url(r'^store/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
+    # app store
+    url(r'^library$', views.apps_catalog),
+    url(r'^library/(?P<source_slug>.*)/(?P<app_name>.*)$', views.apps_catalog_item),
 
     # projects
-    url(r"^projects$", views.project_list),
+    url(r"^projects$", views.project_list, name="projects"),
     url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__admins$', views.make_revoke_project_admin, name="make_revoke_project_admin"),
@@ -33,7 +44,17 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/list)$', views.project_list_all_answers), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
-    url(r'^projects/(\d+)/(?:[\w\-]+)(/upgrade)$', views.project_upgrade_app), # must be last because regex matches some previous URLs
+
+    # portfolios
+    url(r'^portfolios$', views.portfolio_list),
+    url(r'^portfolios/new$', views.new_portfolio),
+    url(r'^portfolios/(?P<pk>.*)/projects$', views.portfolio_projects, name="portfolio_projects"),
+    url(r'^portfolio/update_permissions', views.update_permissions, name="update_permissions"),
+
+    # org groups
+    url(r'^groups$', views_landing.org_groups),
+    url(r'^groups/new$', views_landing.new_org_group),
+    url(r"^(?P<org_slug>.*)/projects$", views_landing.org_group_projects),
 
     # api
     url(r'^api-keys$', views.show_api_keys, name="show_api_keys"),
@@ -68,10 +89,3 @@ if settings.DEBUG: # also in urls_landing
     urlpatterns += [
         url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
     ]
-
-if settings.SINGLE_ORGANIZATION_KEY:
-    # If we're operating in single-organization mode, then non-org URLs must be made available
-    # here because the landing domain is not used. The homepage at / is hidden by the
-    # projects page defined above.
-    from .urls_landing import urlpatterns as urls_landing_urlpatterns
-    urlpatterns += urls_landing_urlpatterns

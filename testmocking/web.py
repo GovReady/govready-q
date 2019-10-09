@@ -23,12 +23,9 @@ class WebClient():
 
     def __init__(self, username, org_slug):
         self.user = User.objects.get(username=username)
-        self.org = Organization.objects.get(subdomain=org_slug)
-
-        User.localize_users_to_org(self.org, [self.user])
+        self.org = Organization.objects.get(slug=org_slug)
 
         self.session = RequestFactory()
-        print("web test client with host <{}>".format(self.org.subdomain))
 
     def _url(self, path):
         # currently a no-op function, but for debug purposes it is useful to be able to change path handling in one spot
@@ -80,19 +77,25 @@ class WebClient():
             url = self._url(form.attrib['action'])
         else:
             url = self.base_url
+        self.post(url, base_fields)
+
+    def post(self, url, fields):
         print("POST on: <{}>".format(url))
-        req = self.session.post(url, base_fields)
+        req = self.session.post(url, fields)
         req.user = self.user
         req.organization = self.org
         self._resolve(req)
 
 
     def add_system(self):
-        # TODO see if this shouldn't be hardcoded
-        self.load("/store")
+        portfolio = sample(list(self.user.portfolio_list()), 1)[0]
+        print("Adding project to portfolio: {} (#{})".format(portfolio.title, portfolio.id))
+        self.post("/store", {"portfolio":portfolio.id})
 
-        form = sample(self.selector.css('[action^="/store"]'), 1)[0]
+        form = sample(self.selector.css('[action^="/store/"]'), 1)[0]
         self.form_by_ref(form)
+        print(self.response.url)
+        #self.html_debug()
 
     def get_projects(self):
         if not self.projects:
@@ -104,14 +107,16 @@ class WebClient():
         self.load(self.get_projects()[-1])
         
 
-    def get_components(self):
-        self.load_project()
-        self.comps_links = self.selector.css('form[method=get][action="/store"]').css('input::attr("value")').getall()
-        return self.comps_links
+    def start_section_for_proj(self, id):
+        url = [x for x in self.get_projects() if x.startswith('/projects/{}/'.format(id))][0]
+        self.load(url)
+        all_forms = self.selector.css('form.start-task')
+        if len(all_forms) == 0:
+            return 0
 
-    # this dumps you to the main project page after execution
-    def add_comp(self):
-        self.form('form[action^="/store"]')
+        form = all_forms[0]
+        self.form_by_ref(form)
+        return len(all_forms)
 
     def load_task(self):
         self.load_project()
@@ -131,8 +136,6 @@ class WebClient():
     def fill_questions(self):
         sel = '.row .form-group .form-control'
         form = self.selector.css(sel)
-            
-            
 
     def html_debug(self, filename="test.html", dir="siteapp/static/"):
         with open(dir + filename, 'w') as file:

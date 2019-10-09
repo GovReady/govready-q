@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% load q %}
+
+{% block head %}
+<style>
+  {% include "focus-area-styles.css" %}
+
+  #author-tools a {
+    color: #666;
+  }
+
+  #question-debug-links {
+    max-width: 450px;
+  }
+
+  #question-history-context, #author-tools, #question-debug-links {
+    font-size: 0.85em;
+    background-color: rgba(255,255,255,0.2);
+    padding: 8px;
+    /*max-width: 40vw;*/
+    border-radius: 6px;
+    border-bottom: 1px solid rgb(204, 204, 204);
+    max-height: 550px;
+    overflow-y:scroll;
+  }
+
+  #question-history-context ul {
+    list-style-type: none;
+    padding: 0;
+    color: #666;
+    line-height: 128%;
+  }
+
+  #question-history-context ul li {
+    margin-bottom: .25em;
+  }
+
+  #question-history-context ul li a {
+    color: inherit;
+  }
+
+  #question-history-context ul li.this {
+    color: #333;
+  }
+
+  #question-history-context ul li.other {
+  }
+
+  .glyphicon.glyphicon-check {
+    color: #96B;
+  }
+
+  #page-transition-paragraph p {
+    margin-bottom: 1em;
+    font-style: italic;
+  }
+
+  .help-block {
+    font-size: .85em;
+  }
+
+  .breadcrumb {
+    font-size: .8em;
+  }
+</style>
+{% endblock %}
+
+  {% block breadcrumbs %}
+    {% if not task.project.is_account_project %}
+    <!-- <li>
+      <a href="/">
+        <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
+      </a>
+    </li>
+    <li class="hidden-xs">
+      <a href="{{task.project.organization.get_absolute_url}}">
+        {{task.project.organization.name}}
+      </a>
+    </li>
+    {% for parent_project in task.project.get_parent_projects %}
+      <li class="hidden-xs">
+        <a href="{{parent_project.get_absolute_url}}">
+          {{parent_project.title}}
+        </a>
+      </li>
+    {% endfor %}
+    <li class="hidden-xs">
+      <a href="{{task.project.get_absolute_url}}">
+        {{task.project.title}}
+      </a>
+    </li>
+    {% endif %}
+    <li class="active">
+      {{task.title}}
+    </li> -->
+
+    <!-- <div class="row">
+      <div class="col-spacer xs-hidden sm-hidden md-hidden col-lg-1">
+        &nbsp;
+      </div>
+
+      <div class="col-xs-12 col-sm-8 col-md-7 col-lg-7" style="text-align: center;">
+        <a href="{{task.project.get_absolute_url}}">
+          {{task.project.title}}
+        </a> 
+        /
+        {{task.title}}
+      </div>
+
+        <div class="col-spacer xs-hidden sm-hidden col-md-0 col-lg-1">
+        &nbsp;
+      </div>
+
+      <div id="context-area-wrapper" class="xs-hidden col-sm-2 col-md-3 col-lg-3">
+          {% if is_admin %}
+          <div class="pull-right hidden-xs">
+            <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" style="color: #BBB;"></span></a>
+          </div>
+          {% endif %}
+      </div> -->
+
+  <!--   {% if is_admin %}
+    <div class="pull-right hidden-xs">
+      <a href="#" onclick="return delete_task();"><span class="glyphicon glyphicon-trash" style="color: #BBB;"></span></a>
+    </div>
+    {% endif %} -->
+
+  {% endblock %}
+
+{% block body %}
+<div id="auth-status">
+{% if task.editor == request.user %}
+
+    {% for inv in open_invitations %}
+      <div data-invitation-id="{{inv.id}}" class="panel panel-warning" style="margin-bottom: 1em">
+        <div class="panel-body">
+          You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+          (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
+          <br />You may <a href="{{task.project.get_absolute_url}}">close</a> this task.
+        </div>
+      </div>
+    {% endfor %}
+
+{% elif is_discussion_guest %}
+
+<div class="text-danger small" style="margin-bottom: 1em">
+    You are participating in the discussion on this question as a guest.
+</div>
+
+{% endif %}
+</div>
+
+<script>
+function invite_to_transfer_editor() {
+  var info = {{send_invitation|json}};
+  show_invite_modal(
+    'Ask a Colleague',
+    'Invite a colleague to complete {{task.title|escapejs}}.',
+    info,
+    '{{task.render_invitation_message|escapejs}}',
+    {
+      project: info.project_id,
+      into_task_editorship: {{task.id}}
+    });
+  return false;
+}
+
+function delete_task() {
+  show_modal_confirm(
+    "Delete Task",
+    "Are you sure you want to delete {{task.title|escapejs}}?",
+    "Delete", function() {
+      ajax_with_indicator({
+          url: "{% url 'delete_task' %}",
+          method: "POST",
+          data: {
+            id: {{task.id}}
+          },
+          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+          success: function(res) {
+            window.location = "{{task.project.get_absolute_url|escapejs}}";
+          }
+      });
+    });
+  return false; // cancel link
+}
+</script>
+{% endblock %}

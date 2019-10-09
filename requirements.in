@@ -19,7 +19,7 @@ termcolor # MIT License
 xxhash # BSD License
 
 # Common Django Packages
-Django<2.1 # BSD License
+Django<2.2.5 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
@@ -27,6 +27,7 @@ django-notifications-hq==1.4 # MIT License
 jsonfield # MIT License
 dj_database_url # BSD License
 whitenoise # MIT License
+django-guardian # MIT License
 
 # Python Packages Developed by GovReady and/or Josh
 mondrianish # CC0

@@ -5,9 +5,11 @@
 
 <style>
 #discussion-your-comment-tips {
+  margin-top: 4px;
   padding: 2px;
-  font-size: 85%;
+  font-size: 65%;
   color: #555;
+  text-align: right;
 }
   #discussion-your-comment-tips label {
     color: inherit;
@@ -105,6 +107,12 @@
     border: 1px solid #DDE;
     background-color: #EEF;
   }
+
+#preview_comment_toggle {
+  color: #999;
+  font-size: 85%;
+}
+
 </style>
 
 <div id="discussion" style="display: none;">
@@ -126,11 +134,22 @@
 -radius: .25em;"></div>
           </div>
           <div id="discussion-your-comment-tips">
-            <span><b>**bold**</b></span> <span><i>*italic*</i></span> <span>* list</span> <span>[link](http://to)</span> <span># heading.</span>
-            <a href="http://commonmark.org/help/" target="_blank"><span class="glyphicon glyphicon-info-sign" style="margin-right: 3px">
-            </a>
+
             <label for="discussion-attach-file"><span class="glyphicon glyphicon-paperclip" style="margin-right: 3px"></span>Attach a File</label>
             <div style="display: none"><input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" /></div>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span>formatting:</span>
+            &nbsp;
+            <span><b>**bold**</b></span>
+            &nbsp;  
+            <span><em>*italic*</em></span>
+            &nbsp;
+            <span style="border:1px solid #ddd; background-color: #eee; padding: 0px 2px 0px 2px; border-radius: 3px;">[link](http://to)</span>
+            &nbsp;
+            <span># heading.</span>
+            &nbsp;
+            <a href="http://commonmark.org/help/" target="_blank"><span class="glyphicon glyphicon-info-sign" style="margin-right: 3px">
+            </a>
           </div>
         </div>
         <div id="discussion-your-comment-preview-container" style="display: none;">
@@ -161,7 +180,7 @@
     {% endif %}
 </div>
 
-<div id="comment-template" style="display: none">
+<div id="comment-template" style="display: none;">
   <div class="comment row">
     <div class="col-xs-2 col-lg-1 avatar-container" style="padding-right: 0"> {# kill the right padding so we get rid of half of the gutter so the avatar isn't so far away, and do it here and not on the next column because tk's header lines up better #}
     </div>
@@ -178,14 +197,14 @@
           </div>
           <div class="col-sm-3 comment-commands">
             <a title="Edit your comment" class="ifeditpriv" href="#" onclick="return begin_comment_edit(this);">
-              <i class="glyphicon glyphicon-pencil"></i>
+              <em class="glyphicon glyphicon-pencil"></em>
             </a>
             <a title="Delete this comment" class="ifdeletepriv" href="#" onclick="return do_delete_comment(this);">
-              <i class="glyphicon glyphicon-trash"></i>
+              <em class="glyphicon glyphicon-trash"></em>
             </a>
             <a title="React to this comment with an emoji" class="react-with-emoji" href="#" onclick="return begin_emoji_reaction(event, this);">
-              <i class="glyphicon glyphicon-plus" style="font-size: 80%;"></i>
-              <i class="glyphicon glyphicon-heart" style="position: relative; left: -6px"></i>
+              <em class="glyphicon glyphicon-plus" style="font-size: 80%;"></em>
+              <em class="glyphicon glyphicon-heart" style="position: relative; left: -6px"></em>
             </a>
           </div>
         </div> <!-- /row -->
@@ -259,7 +278,7 @@
       <button type="button" class="close" aria-label="Close" onclick="save_emoji_reaction()">
         <span aria-hidden="true">&times;</span>
       </button>
-      <b>React with an emoji</b>
+      <strong>React with an emoji</strong>
     </div>
     <div class="panel-body">
       <div>
@@ -422,11 +441,13 @@ function display_discussion(discussion, is_page_load) {
     // options
   });
 
-  // start polling the server for new events
+  // start poor-man's polling the server for new events
   // don't poll if the user can't comment because the discussion view
   // will say they don't have permission to poll
+  /* Temporarily stop our polling to make logs quieter
   if (discussion_info.can_comment)
-    discussion_poll();
+     discussion_poll();
+  */
 }
 
 function render_events(discussion, initial) {
@@ -631,7 +652,7 @@ function render_avatar(container, user) {
     +'</table>'
     +'</div>');
     n.attr('style', user.fallback_avatar.css);
-    n.css({ width: "48px", height: "48px", border: '1px solid #444' });
+    n.css({ width: "36px", height: "36px", border: '1px solid #444' });
   }
 
   n.css({ float: "right" })

@@ -20,7 +20,7 @@ Read [What You Most Need to Know About GovReady-Q](http://govready-q.readthedocs
 
 ## Using Hosted GovReady-Q
 
-There's nothing to install. [Q.GovReady.com](https://q.govready.com) is the hosted, multi-tenant version of GovReady-Q.
+There's nothing to install. [Q.GovReady.com](https://q.govready.com) is the hosted version of GovReady-Q.
 
 1. Visit [Q.GovReady.com](https://q.govready.com)
 2. Fill out the form "About your organization" and "About you" to create your account

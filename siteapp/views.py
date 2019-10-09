@@ -1,33 +1,38 @@
 import random
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
-from django.views.decorators.http import require_http_methods
-from django.urls import reverse
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.utils import timezone
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.forms import ModelForm
+from django.http import (Http404, HttpResponse, HttpResponseForbidden,
+                         HttpResponseNotAllowed, HttpResponseRedirect,
+                         JsonResponse)
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.http import require_http_methods
+from guardian.decorators import permission_required_or_403
+from guardian.shortcuts import get_perms_for_model
 
-from .models import User, Folder, Project, Invitation
-from guidedmodules.models import Module, ModuleQuestion, Task, ProjectMembership
 from discussion.models import Discussion
+from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
+                                  Task)
 
-from .good_settings_helpers import AllauthAccountAdapter # ensure monkey-patch is loaded
+from .forms import PortfolioForm, ProjectForm
+from .good_settings_helpers import \
+    AllauthAccountAdapter  # ensure monkey-patch is loaded
+from .models import Folder, Invitation, Portfolio, Project, User, Organization
 from .notifications_helpers import *
 
+
 def homepage(request):
-    # If the user is logged in and has read access to the organization
-    # they're looking at, then redirect them to the projects page.
-    if hasattr(request.user, 'localized_to') and request.user.is_authenticated:
+    # If the user is logged in, then redirect them to the projects page.
+    if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
 
-    # Otherwise, show a login form.
-    from allauth.account.forms import LoginForm
-    return render(request, "index.html", {
-        "login_form": LoginForm,
-    })
-
+    from .views_landing import homepage
+    return homepage(request)
 
 def assign_project_lifecycle_stage(projects):
     # Define lifecycle stages.
@@ -36,7 +41,7 @@ def assign_project_lifecycle_stage(projects):
     lifecycle_stages = [
         {
             "id": "none",
-            "label": "General Assessments",
+            "label": "Projects",
             "stage_col_width": { "xs-12" }, # "col_" + this => Bootstrap 3 column class
             "stages": [
                 { "id": "none", "label": "", "subhead": "" },
@@ -82,12 +87,11 @@ def assign_project_lifecycle_stage(projects):
             # No matching output document with a non-empty value.
             project.lifecycle_stage = lifecycle_stage_code_mapping["none_none"]
 
-
 def project_list(request):
     # Get all of the projects that the user can see *and* that are in a folder,
     # which indicates it is top-level.
     projects = Project.get_projects_with_read_priv(
-        request.user, request.organization,
+        request.user,
         excludes={ "contained_in_folders": None })
 
     # Sort the projects by their creation date. The projects
@@ -113,108 +117,134 @@ def project_list(request):
 
     return render(request, "projects.html", {
         "lifecycles": lifecycles,
-        "can_invite_to_org": request.user.can_see_org_settings,
-        "send_invitation": Invitation.form_context_dict(request.user, request.organization.get_organization_project(), [request.user]),
+        "projects": projects,
+        "project_form": ProjectForm(request.user),
     })
 
+def get_compliance_apps_catalog_for_user(user):
+    # Each organization that the user is in sees a different set of compliance
+    # apps. Since a user may be a member of multiple organizations, merge the
+    # catalogs across all of the organizations they are a member of, but
+    # remember which organizations generated which apps.
+    from siteapp.models import Organization
+    catalog = { }
+    for org in Organization.get_all_readable_by(user):
+        apps = get_compliance_apps_catalog(org)
+        for app in apps:
+            # Add to merged catalog.
+            catalog.setdefault(app['key'], app)
 
-def get_compliance_apps_catalog(organization, reset_cache=False):
+            # Merge organization list.
+            catalog[app["key"]]["organizations"].add(org)
+
+    # Turn the organization sets into a list because the templates use |first.
+    catalog = catalog.values()
+    for app in catalog:
+        app["organizations"] = sorted(app["organizations"], key = lambda org : org.name)
+
+    return catalog
+
+def get_compliance_apps_catalog(organization):
     # Load the compliance apps available to the given organization.
-    # Since accessing remote AppSources is an expensive operation,
-    # cache the catalog information.
 
-    from django.core.cache import cache
+    from guidedmodules.models import AppVersion
+    from collections import defaultdict
 
-    from guidedmodules.models import AppSource
+    appvers = AppVersion.get_startable_apps(organization)
 
-    apps = []
+    # Group the AppVersions into apps. An app is a unique source+appname pair.
+    # For each app, one or more versions may be available.
+    apps = defaultdict(lambda : [])
+    for av in appvers:
+        apps[(av.source, av.appname)].append(av)
 
-    # For each AppSource....
-    for appsrc in AppSource.objects.all():
-        # System apps are not listed the compliance apps catalog.
-        if appsrc.is_system_source:
-            continue
+    # Replace each app entry with a list of AppVersions sorted by reverse database
+    # row created date (since we don't necessarily have sortable version numbers).
+    apps = [
+        sorted(appvers, key = lambda av : av.created, reverse=True)
+        for appvers in apps.values()
+    ]
 
-        # If we don't have cached catalog info for this source...
-        # (keyed off of the current state of the AppSource instance)
-        cache_key = "compliance_catalog_source_{}".format(appsrc.id)
-        cache_stale_key = appsrc.make_cache_stale_key()
-        cached_apps = cache.get(cache_key, (None, None))
-        if cached_apps[0] != cache_stale_key or reset_cache:
-            # Connect to the remote app data...
-            with appsrc.open() as appsrc_connection:
-                # Iterate through all of the apps provided by this source.
-                cached_apps = []
-                for app in appsrc_connection.list_apps():
-                    # Render the catalog info for display.
-                    app = render_app_catalog_entry(app)
-                    cached_apps.append(app)
-
-                # Cache the results.
-                cached_apps = (cache_stale_key, cached_apps)
-                cache.set(cache_key, cached_apps)
-
-        # Add the apps in this source to the returned list. But apps
-        # from private sources are only listed if the organization
-        # is white-listed.
-        if not appsrc.available_to_all \
-          and organization not in appsrc.available_to_orgs.all():
-            continue
-
-        # Add the apps from the cached data structure.
-        apps.extend(cached_apps[1])
+    # Collect catalog display metadata for each app from the most recent version
+    # of each app.
+    apps = [
+        render_app_catalog_entry(appvers[0], appvers, organization)
+        for appvers in apps
+    ]
 
     return apps
 
-def render_app_catalog_entry(app):
-            from guidedmodules.module_logic import render_content
+def render_app_catalog_entry(appversion, appversions, organization):
+    from guidedmodules.module_logic import render_content
+    from guidedmodules.models import image_to_dataurl
 
-            # Clone, I guess?
-            catalog_info = dict(app.get_catalog_info())
+    key = "{source}/{name}".format(source=appversion.source.slug, name=appversion.appname)
 
-            catalog_info["appsource_slug"] = app.store.source.slug
-            catalog_info["appsource_id"] = app.store.source.id
-            catalog_info["key"] = "{source}/{name}".format(source=app.store.source.slug, name=app.name)
+    catalog = appversion.catalog_metadata
+    if not isinstance(catalog, dict): catalog = { }
 
-            catalog_info.setdefault("description", {})
+    app_module = appversion.modules.filter(module_name="app").first()
 
-            catalog_info["description"]["short"] = render_content(
+    return {
+        # app identification
+        "appsource_id": appversion.source.id,
+        "key": key,
+
+        # main display fields
+        "title": catalog.get('title') or appversion.appname,
+        "description": { # rendered as markdown
+            "short": render_content(
                 {
-                    "template": catalog_info.get("description", {}).get("short") or "",
+                    "template": catalog.get("description", {}).get("short") or "",
                     "format": "markdown",
                 },
                 None,
                 "html",
-                "%s %s" % (repr(catalog_info["name"]), "short description")
-            )
-
-            catalog_info["description"]["long"] = render_content(
+                "%s %s" % (key, "short description")
+            ),
+            "long": render_content(
                 {
-                    "template": catalog_info.get("description", {}).get("long")
-                        or catalog_info.get("description", {}).get("short")
+                    "template": catalog.get("description", {}).get("long")
+                        or catalog.get("description", {}).get("short")
                         or "",
                     "format": "markdown",
                 },
                 None,
                 "html",
-                "%s %s" % (repr(catalog_info["name"]), "short description")
+                "%s %s" % (key, "short description")
             )
+        },
 
-            catalog_info["search_haystak"] = "".join([
-                app.name,
-                catalog_info["title"],
-                catalog_info.get("vendor", ""),
-                catalog_info["description"]["short"],
-                catalog_info["description"]["long"],
-            ])
+        # catalog page metadata
+        "categories": catalog.get("categories", [catalog.get("category")]),
+        "search_haystak": "".join([ # free text search uses this
+            appversion.appname,
+            catalog.get('title', ""),
+            catalog.get("vendor", ""),
+            catalog.get("description", {}).get("short", ""),
+            catalog.get("description", {}).get("long", ""),
+        ]),
+        "icon": None if "icon" not in catalog
+                    else image_to_dataurl(appversion.get_asset(catalog["icon"]), 128),
+        "protocol": app_module.spec.get("protocol", []) if app_module else [],
+        
+        # catalog detail page metadata
+        "vendor": catalog.get("vendor"),
+        "vendor_url": catalog.get("vendor_url"),
+        "source_url": catalog.get("source_url"),
+        "status": catalog.get("status"),
+        "version": appversion.version_number,
+        "recommended_for": catalog.get("recommended_for", []),
 
-            # Convert the app icon raw bytes data to a data URL.
-            if "app-icon" in catalog_info:
-                from guidedmodules.models import image_to_dataurl
-                catalog_info["app_icon_dataurl"] = image_to_dataurl(catalog_info["app-icon"], 128)
+        # versions that can be started
+        "versions": appversions,
 
-            return catalog_info
+        # organizations that can launch this app
+        "organizations": { organization },
 
+        # placeholder for future logic
+        "authz": "none",
+    }
 
 def get_task_question(request):
     # Filter catalog by apps that satisfy the right protocol.
@@ -226,7 +256,6 @@ def get_task_question(request):
     except (IndexError, ValueError):
         raise Http404()
     return (task, q)
-
 
 def app_satifies_interface(app, filter_protocols):
     if isinstance(filter_protocols, ModuleQuestion):
@@ -241,44 +270,12 @@ def app_satifies_interface(app, filter_protocols):
     else:
         raise ValueError(filter_protocols)
 
-    # Get the protocols implemented by the app.
-    if isinstance(app.get("protocol"), str):
-        # Just one - wrap in a set().
-        app_protocols = { app["protocol"] }
-    elif isinstance(app.get("protocol"), list):
-        # It's an array. Unique-ify with a set.
-        app_protocols = set(app["protocol"])
-    else:
-        # no protocol or invalid data type
-        app_protocols = set()
-
     # Check that every protocol required by the question is implemented by the
     # app.
-    return filter_protocols <= set(app_protocols)
-
+    return filter_protocols <= set(app["protocol"])
 
 def filter_app_catalog(catalog, request):
     filter_description = None
-
-    # Filter out unpublished apps.
-    from guidedmodules.models import AppSource
-    approved_apps = { src.id: (src.approved_apps or {}) for src in AppSource.objects.all() }
-    def is_app_available(app):
-        # Query the AppSource for whether this app is considered
-        # published or not.
-        try:
-            published = approved_apps[app["appsource_id"]][app["name"]]
-
-        # Fall back to the app's catalog information.
-        except KeyError:
-            published = app.get("published")
-
-        # Hide if unpublished
-        if published == "unpublished":
-            return False
-        return True
-
-    catalog = filter(is_app_available, catalog)
 
     if request.GET.get("q"):
         # Check if the app satisfies the interface required by a paricular question.
@@ -296,38 +293,30 @@ def filter_app_catalog(catalog, request):
 
     return catalog, filter_description
 
-
 @login_required
 def apps_catalog(request):
-    # A POST from a Django user with permission on AppSources
-    # clears the catalog cache.
-    can_clear_catalog_cache = request.user.has_perm('guidedmodules.appsource_change')
-    if request.method == "POST" and can_clear_catalog_cache:
-        get_compliance_apps_catalog(request.organization, reset_cache=True)
-        return HttpResponseRedirect(request.path)
-
     # We use the querystring to remember which question the user is selecting
     # an app to answer, when starting an app from within a project.
     from urllib.parse import urlencode
     forward_qsargs = { }
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
+    # Add the portfolio id the user is creating the project from to the args
+    if "portfolio" not in request.POST:
+        messages.add_message(request, messages.ERROR, "Please select 'Start a project' to continue.")
+        return redirect('projects')
+    else:
+        forward_qsargs["portfolio"] = request.POST["portfolio"]
+
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
-    from guidedmodules.app_source_connections import AppSourceConnectionError
-    try:
-        catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog(request.organization), request)
-    except (ValueError, AppSourceConnectionError) as e:
-        return render(request, "app-store.html", {
-            "error": e,
-            "apps": [],
-        })        
+    catalog, filter_description = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
 
     # Group by category from catalog metadata.
     from collections import defaultdict
     catalog_by_category = defaultdict(lambda : { "title": None, "apps": [] })
     for app in catalog:
-        for category in app.get("categories", [app.get("category")]):
+        for category in app["categories"]:
             catalog_by_category[category]["title"] = (category or "Uncategorized")
             catalog_by_category[category]["apps"].append(app)
 
@@ -345,11 +334,15 @@ def apps_catalog(request):
             app["title"], # except if two apps differ only in case, sort case-sensitively
         ))
 
+    # If user is superuser, enable creating new apps
+    authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
+    
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
         "filter_description": filter_description,
         "forward_qsargs": ("?" + urlencode(forward_qsargs)) if forward_qsargs else "",
-        "can_clear_catalog_cache": can_clear_catalog_cache,
+        "authoring_tool_enabled": authoring_tool_enabled,
+        "project_form": ProjectForm(request.user),
     })
 
 @login_required
@@ -357,7 +350,7 @@ def apps_catalog_item(request, source_slug, app_name):
     # Is this a module the user has access to? The app store
     # does some authz based on the organization.
     from guidedmodules.models import AppSource
-    catalog, _ = filter_app_catalog(get_compliance_apps_catalog(request.organization), request)
+    catalog, _ = filter_app_catalog(get_compliance_apps_catalog_for_user(request.user), request)
     for app_catalog_info in catalog:
         if app_catalog_info["key"] == source_slug + "/" + app_name:
             # We found it.
@@ -370,6 +363,14 @@ def apps_catalog_item(request, source_slug, app_name):
     if request.method == "POST":
         # Start the app.
 
+        # Get the organization context to start it within.
+        for organization in app_catalog_info["organizations"]:
+            if organization.slug == request.POST.get("organization"):
+                break # found it
+        else:
+            # Did not find a match.
+            raise ValueError("Organization does not permit starting this app.")
+
         if not request.GET.get("q"):
             # Since we no longer ask what folder to put the new Project into,
             # create a default Folder instance for all started apps that aren't
@@ -377,12 +378,12 @@ def apps_catalog_item(request, source_slug, app_name):
             # how we know to display it in the project_list view.
             default_folder_name = "Started Apps"
             folder = Folder.objects.filter(
-                organization=request.organization,
+                organization=organization,
                 admin_users=request.user,
                 title=default_folder_name,
             ).first()
             if not folder:
-                folder = Folder.objects.create(organization=request.organization, title=default_folder_name)
+                folder = Folder.objects.create(organization=organization, title=default_folder_name)
                 folder.admin_users.add(request.user)
 
             # This app is going into a folder. It does not answer a task question.
@@ -398,9 +399,19 @@ def apps_catalog_item(request, source_slug, app_name):
             if not app_satifies_interface(app_catalog_info, q):
                 raise ValueError("Invalid protocol.")
 
+        # Get portfolio project should be included in.
+        if request.GET.get("portfolio"):
+          portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+        else:
+          portfolio = None
+
+        # Start the most recent version of the app.
+        appver = app_catalog_info["versions"][0]
+
+        # Start the app.
         from guidedmodules.app_loading import ModuleDefinitionError
         try:
-            project = start_app(app_catalog_info, request.organization, request.user, folder, task, q)
+            project = start_app(appver, organization, request.user, folder, task, q, portfolio)
         except ModuleDefinitionError as e:
             error = str(e)
         else:
@@ -416,65 +427,22 @@ def apps_catalog_item(request, source_slug, app_name):
     return render(request, "app-store-item.html", {
         "app": app_catalog_info,
         "error": error,
+        "project_form": ProjectForm(request.user),
     })
 
-
-def start_app(app_catalog_info, organization, user, folder, task, q):
-    from guidedmodules.models import AppSource
+def start_app(appver, organization, user, folder, task, q, portfolio):
     from guidedmodules.app_loading import load_app_into_database
-
-    # If the first argument is a string, it's an app id of the
-    # form "source/appname". Get the catalog info.
-    if isinstance(app_catalog_info, str):
-        for app in get_compliance_apps_catalog(organization):
-            if app["key"] == app_catalog_info:
-                # We found it.
-                app_catalog_info = app
-                break
-        else:
-            raise ValueError("{} is not an app in the catalog.".format(app_catalog_info))
 
     # Begin a transaction to create the Module and Task instances for the app.
     with transaction.atomic():
-        module_source = get_object_or_404(AppSource, id=app_catalog_info["appsource_id"])
-
-        # Turn the app catalog entry into an App instance,
-        # and then import it into the database as Module instance.
-        if app_catalog_info["authz"] == "none":
-            # We can instantiate the app immediately.
-            # 1) Get the connection to the AppSource.
-            with module_source.open() as store:
-                # 2) Get the App.
-                app_name = app_catalog_info["key"][len(module_source.slug)+1:]
-                app = store.get_app(app_name)
-
-                # 3) Re-validate that the catalog information is the same.
-                if app.get_catalog_info()["authz"] != "none":
-                    raise ValueError("Invalid access.")
-
-                # 4) Import. Use the module named "app".
-                appinst = load_app_into_database(app)
-                module = appinst.modules.get(module_name="app")
-
-        else:
-            # Create a stub Module -- we'll download the app later. This
-            # is just a placeholder.
-            module = Module()
-            module.source = module_source
-            # TODO module.app = None
-            module.module_name = "app"
-            module.spec = dict(app_catalog_info)
-            module.spec["type"] = "project"
-            module.spec["is_app_stub"] = True
-            module.save()
-
         # Create project.
         project = Project()
         project.organization = organization
+        project.portfolio = portfolio
 
         # Save and add to folder
         project.save()
-        project.set_root_task(module, user)
+        project.set_root_task(appver.modules.get(module_name="app"), user)
         if folder:
             folder.projects.add(project)
 
@@ -500,14 +468,14 @@ def start_app(app_catalog_info, organization, user, folder, task, q):
 
         return project
 
-
 def project_read_required(f):
     @login_required
     def g(request, project_id, project_url_suffix):
-        project = get_object_or_404(Project, id=project_id, organization=request.organization)
+        project = get_object_or_404(Project, id=project_id)
 
         # Check authorization.
-        if not project.has_read_priv(request.user):
+        has_project_portfolio_permissions = request.user.has_perm('view_portfolio', project.portfolio)
+        if not project.has_read_priv(request.user) and not has_project_portfolio_permissions:
             return HttpResponseForbidden()
 
         # Redirect if slug is not canonical. We do this after checking for
@@ -636,10 +604,12 @@ def project(request, project):
     else:
         # number of columns must divide 12 evenly
         columns = [
-            { "title": "Backlog" },
-            { "title": "Selected" },
+            { "title": "To Do" },
             { "title": "In Progress" },
             { "title": "Completed" },
+            { "title": "Submitted" },
+            { "title": "Under Review" },
+            { "title": "Accepted" },
         ]
         for column in columns:
             column["questions"] = []
@@ -649,13 +619,12 @@ def project(request, project):
                 col = 0
                 question["hide_icon"] = True
             elif question["task"].is_finished():
-                col = 3
-            elif question["task"].is_started():
                 col = 2
+            elif question["task"].is_started():
+                col = 1
             else:
                 col = 1
             columns[col]["questions"].append(question)
-
 
     # Assign questions in columns to groups.
     for i, column in enumerate(columns):
@@ -699,7 +668,6 @@ def project(request, project):
     # Render.
     return render(request, "project.html", {
         "is_project_page": True,
-        "page_title": "Components",
         "project": project,
 
         "is_admin": request.user in project.get_admins(),
@@ -717,6 +685,7 @@ def project(request, project):
         "action_buttons": action_buttons,
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
+        "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
     })
 
 @project_read_required
@@ -761,7 +730,6 @@ def project_list_all_answers(request, project):
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
     })
 
-
 @project_read_required
 def project_outputs(request, project):
     # To render fast, combine all of the templates by type and render as
@@ -801,10 +769,11 @@ def project_outputs(request, project):
         for doc in docs:
             anchor = "doc_%d" % len(toc)
             title = doc.get("title") or doc["id"]
-            templates.append(header[format](anchor, title) + doc["template"])
+            # TODO: Can we move the HTML back into the template?
+            templates.append(header[format](anchor, title) + "<div class='doc'>"+doc["template"]+"</div>")
             toc.append((anchor, title))
         template = joiner[format].join(templates)
-        
+
         # Render.
         from guidedmodules.module_logic import render_content
         try:
@@ -824,6 +793,8 @@ def project_outputs(request, project):
         combined_output += "<div>" + content + "</div>\n\n"
 
     return render(request, "project-outputs.html", {
+        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
+        "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "page_title": "Related Controls",
         "project": project,
         "toc": toc,
@@ -945,7 +916,6 @@ def show_api_keys(request):
     if request.method == "POST" and request.POST.get("method") == "resetkeys":
         request.user.reset_api_keys()
 
-        from django.contrib import messages
         messages.add_message(request, messages.INFO, 'Your API keys have been reset.')
 
         return HttpResponseRedirect(request.path)
@@ -961,19 +931,19 @@ def show_api_keys(request):
 def new_folder(request):
     if request.method != "POST": raise HttpResponseNotAllowed(['POST'])
     f = Folder.objects.create(
-        organization=request.organization,
+        organization=organization, # TODO
         title=request.POST.get("title") or "New Folder",
     )
     f.admin_users.add(request.user)
     return JsonResponse({ "status": "ok", "id": f.id, "title": f.title })
 
-
 def project_admin_login_post_required(f):
     # Wrap the function to do authorization and change arguments.
     def g(request, project_id, *args):
         # Get project, check authorization.
-        project = get_object_or_404(Project, id=project_id, organization=request.organization)
-        if request.user not in project.get_admins():
+        project = get_object_or_404(Project, id=project_id)
+        has_owner_project_portfolio_permissions = request.user.has_perm('can_grant_portfolio_owner_permission', project.portfolio)
+        if request.user not in project.get_admins() and not has_owner_project_portfolio_permissions:
             return HttpResponseForbidden()
 
         # Call function with changed argument.
@@ -1063,14 +1033,15 @@ def import_project_data(request, project):
     return render(request, "project-import-finished.html", {
         "project": project,
         "log": log_output,
+        "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
     })
 
 def project_start_apps(request, *args):
-    # Load the Compliance Store catalog of apps.
-    all_apps = get_compliance_apps_catalog(request.organization)
-
     # What questions can be answered with an app?
     def get_questions(project):
+        # Load the Compliance Store catalog of apps.
+        all_apps = get_compliance_apps_catalog(project.organization)
+
         # A question can be answered with an app if it is a module or module-set
         # question with a protocol value and the question has not already been
         # answered (inclding imputed).
@@ -1098,15 +1069,16 @@ def project_start_apps(request, *args):
         @project_admin_login_post_required
         def viewfunc(request, project):
             # Start all of the indiciated apps. Validate that the
-            # chosen app satisfies the protocol.
+            # chosen app satisfies the protocol. For each app,
+            # start the most recent version of the app.
             errored_questions = []
             for q in get_questions(project):
                 if q.key in request.POST:
-                    startable_apps = { app["key"]: app for app in q.startable_apps}
+                    startable_apps = { app["key"]: app["versions"][0] for app in q.startable_apps}
                     if request.POST[q.key] in startable_apps:
                         app = startable_apps[request.POST[q.key]]
                         try:
-                            start_app(app, request.organization, request.user, None, project.root_task, q)
+                            start_app(app, project.organization, request.user, None, project.root_task, q)
                         except Exception as e:
                             import traceback
                             traceback.print_exc()
@@ -1119,7 +1091,7 @@ def project_start_apps(request, *args):
                 message += ", ".join(
                     "{app} ({appname}) for {title} ({key}) ({error})".format(
                         app=app["title"],
-                        appname=app["name"],
+                        appname=app["key"],
                         title=q.spec["title"],
                         key=q.key,
                         error=error,
@@ -1130,20 +1102,22 @@ def project_start_apps(request, *args):
 
     return viewfunc(request, *args)
 
-
 @project_read_required
 def project_upgrade_app(request, project):
-    # Get the app's catalog information.
+    # Upgrade the AppVersion that the project is linked to. The
+    # AppVersion is updated in place, so this updates all projects
+    # using the AppVersion. The work is done in guidedmodules.views.upgrade_app.
+
+    # Get the app's catalog information just for display purposes.
+    # We're not using the catalog to fetch newer app info - just to
+    # show the page title etc.
     error = False
-    try:
-        for app in get_compliance_apps_catalog(request.organization):
-            if app['appsource_id'] == project.root_task.module.app.source.id:
-                if app['name'] == project.root_task.module.app.appname:
-                    break
-        else:
-            error = "App not found in compliance catalog."
-    except Exception as e:
-        error = str(e)
+    for app in get_compliance_apps_catalog_for_user(request.user):
+        if app['appsource_id'] == project.root_task.module.app.source.id:
+            if app['key'].endswith("/" + project.root_task.module.app.appname):
+                break
+    else:
+        error = "App cannot be upgraded because it is no longer in the compliance apps catalog."
 
     # Show information about the app.
     return render(request, "project-upgrade-app.html", {
@@ -1154,6 +1128,86 @@ def project_upgrade_app(request, project):
         "app": app,
     })
 
+# PORTFOLIOS
+
+def update_permissions(request):
+    permission = request.POST.get('permission')
+    portfolio_id = request.POST.get('portfolio_id')
+    user_id = request.POST.get('user_id')
+    portfolio = Portfolio.objects.get(id=portfolio_id)
+    user = User.objects.get(id=user_id)
+    # TODO check if this check on request.user can be moved to decorator
+    if request.user.has_perm('can_grant_portfolio_owner_permission', portfolio):
+      if permission == 'remove_permissions':
+        portfolio.remove_permissions(user)
+      elif permission == 'grant_owner_permission':
+        portfolio.assign_owner_permissions(user)
+      elif permission == 'remove_owner_permissions':
+          portfolio.remove_owner_permissions(user)
+    next = request.POST.get('next', '/')
+    return HttpResponseRedirect(next)
+
+@login_required
+def portfolio_list(request):
+    """List portfolios"""
+    return render(request, "portfolios/index.html", {
+        "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
+        "project_form": ProjectForm(request.user),
+    })
+
+@login_required
+def new_portfolio(request):
+    """Form to create new portfolios"""
+    if request.method == 'POST':
+      form = PortfolioForm(request.POST)
+      if form.is_valid():
+        form.save()
+        portfolio = form.instance
+        portfolio.assign_owner_permissions(request.user)
+        return redirect('portfolio_projects', pk=portfolio.pk)
+    else:
+        form = PortfolioForm()
+
+    return render(request, 'portfolios/form.html', {
+        'form': form,
+        "project_form": ProjectForm(request.user),
+    })
+
+def portfolio_read_required(f):
+    @login_required
+    def g(request, pk):
+        portfolio = get_object_or_404(Portfolio, pk=pk)
+
+        # Check authorization.
+        has_portfolio_permissions = request.user.has_perm('view_portfolio', portfolio)
+        has_portfolio_project_permissions = False
+        projects = Project.objects.filter(portfolio_id=portfolio.id)
+        for project in projects:
+            if request.user.has_perm('view_project', project):
+                has_portfolio_project_permissions = True
+
+        if not (has_portfolio_permissions or has_portfolio_project_permissions):
+            return HttpResponseForbidden()
+        return f(request, portfolio.id)
+    return g
+
+@portfolio_read_required
+def portfolio_projects(request, pk):
+  """List of projects within a portfolio"""
+  portfolio = Portfolio.objects.get(pk=pk)
+  projects = Project.objects.filter(portfolio=portfolio).exclude(is_organization_project=True)
+  user_projects = [project for project in projects if request.user.has_perm('view_project', project)]
+  anonymous_user = User.objects.get(username='AnonymousUser')
+  project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
+  return render(request, "portfolios/detail.html", {
+      "portfolio": portfolio,
+      "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
+      "project_form": project_form,
+      "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
+      "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
+      "users_with_perms": portfolio.users_with_perms(),
+      "display_users_with_perms": len(portfolio.users_with_perms()),
+      })
 
 # INVITATIONS
 
@@ -1174,9 +1228,23 @@ def send_invitation(request):
             # dns.resolver.NoNameservers will result in EmailUndeliverableError.
             email_validator.validate_email(request.POST['user_email'], check_deliverability=settings.VALIDATE_EMAIL_DELIVERABILITY)
 
+        # Get the recipient user
+        if len(request.POST.get("user_id")) > 0:
+            to_user = get_object_or_404(User, id=request.POST.get("user_id"))
+        from_project = None
+        from_portfolio = None
+        # Find the Portfolio and grant permissions to the user being invited
+        if request.POST.get("portfolio"):
+          from_portfolio = Portfolio.objects.filter(id=request.POST["portfolio"]).first()
+          if len(request.POST.get("user_id")) > 0:
+            from_portfolio.assign_edit_permissions(to_user)
+
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
-        from_project = Project.objects.filter(id=request.POST["project"], organization=request.organization, members__user=request.user).first()
+        elif request.POST.get("project"):
+          from_project = Project.objects.filter(id=request.POST["project"]).first()
+          if len(request.POST.get("user_id")) > 0:
+            from_project.assign_edit_permissions(to_user)
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -1194,7 +1262,7 @@ def send_invitation(request):
             }
 
         elif request.POST.get("into_task_editorship"):
-            target = Task.objects.get(id=request.POST["into_task_editorship"], project__organization=request.organization)
+            target = Task.objects.get(id=request.POST["into_task_editorship"])
             if not target.has_write_priv(request.user):
                 return HttpResponseForbidden()
             if from_project and target.project != from_project:
@@ -1209,13 +1277,16 @@ def send_invitation(request):
             }
 
         elif "into_discussion" in request.POST:
-            target = get_object_or_404(Discussion, id=request.POST["into_discussion"], organization=request.organization)
+            target = get_object_or_404(Discussion, id=request.POST["into_discussion"])
             if not target.can_invite_guests(request.user):
                 return HttpResponseForbidden()
             target_info = {
                 "what": "invite-guest",
             }
 
+        elif request.POST.get("portfolio"):
+            target = from_portfolio
+            target_info = {}
         else:
             target = from_project
             target_info = {
@@ -1223,11 +1294,9 @@ def send_invitation(request):
             }
 
         inv = Invitation.objects.create(
-            organization=request.organization,
-
-            # who is sending the invitation?
             from_user=request.user,
             from_project=from_project,
+            from_portfolio=from_portfolio,
 
             # what is the recipient being invited to? validate that the user is an admin of this project
             # or an editor of the task being reassigned.
@@ -1236,7 +1305,7 @@ def send_invitation(request):
             target_info=target_info,
 
             # who is the recipient of the invitation?
-            to_user=User.objects.get(id=request.POST["user_id"]) if request.POST.get("user_id") else None,
+            to_user=User.objects.get(id=request.POST["user_id"]) if len(request.POST.get("user_id")) > 0 else None,
             to_email=request.POST.get("user_email"),
 
             # personalization
@@ -1256,18 +1325,14 @@ def send_invitation(request):
 
 @login_required
 def cancel_invitation(request):
-    inv = get_object_or_404(Invitation, id=request.POST['id'], organization=request.organization, from_user=request.user)
+    inv = get_object_or_404(Invitation, id=request.POST['id'], from_user=request.user)
     inv.revoked_at = timezone.now()
     inv.save(update_fields=['revoked_at'])
     return JsonResponse({ "status": "ok" })
 
 def accept_invitation(request, code=None):
-    # This route is handled specially by the siteapp.middleware.OrganizationSubdomainMiddleware that
-    # guards access to the subdomain. The user may not be authenticated and may not be a member
-    # of the Organization whose subdomain they are visiting.
-
     assert code.strip() != ""
-    inv = get_object_or_404(Invitation, organization=request.organization, email_invitation_code=code)
+    inv = get_object_or_404(Invitation, email_invitation_code=code)
 
     response = accept_invitation_do_accept(request, inv)
     if isinstance(response, HttpResponse):
@@ -1276,7 +1341,7 @@ def accept_invitation(request, code=None):
     # The invitation has been accepted by a logged in user.
 
     # Some invitations create an interstitial before redirecting.
-    inv.from_user.localize_to_org(request.organization)
+    inv.from_user.preload_profile()
     try:
         interstitial = inv.target.get_invitation_interstitial(inv)
     except AttributeError: # inv.target may not have get_invitation_interstitial method
@@ -1294,10 +1359,8 @@ def accept_invitation(request, code=None):
 
     return HttpResponseRedirect(inv.get_redirect_url())
 
-
 def accept_invitation_do_accept(request, inv):
     from django.contrib.auth import authenticate, login, logout
-    from django.contrib import messages
     from django.http import HttpResponseRedirect
     import urllib.parse
 
@@ -1409,41 +1472,75 @@ def accept_invitation_do_accept(request, inv):
 def organization_settings(request):
     # Authorization. Different users can see different things on
     # this page.
-    can_see_org_settings = request.user.can_see_org_settings
-    org_admins = request.organization.get_organization_project().get_admins()
-    can_edit_org_settings = request.user in org_admins
+    # This is the settings page for the overall install. There is no specific organization
+    # except the entire organization
+    can_see_org_settings = True
+    # TODO org_admins needs to be selected a different way
+    # This approach leverages Django's permission model for admin screens
+    org_admins = User.objects.filter(is_staff=True)
+    # TODO better selection of who can edit
+    # can_edit_org_settings = request.user in org_admins
+    can_edit_org_settings = request.user.is_staff
     is_django_staff = request.user.is_staff
+
+    # In 0.9.0 we should only have 1 organization, so let's get that
+    # If Instance has been upgraded to 0.9.0 from 0.8.6 there will be multiple organizations,
+    #   but we are still going to be looking for the first organization created during install.
+    #   This approach is more robust but still brittle. It is possible for an administrator to directly
+    #   change the organization database tables resulting in a different organization being "first."
+    #   A more robust approach might be adding a field to Organization model to identify the
+    #   "main" organization and allow only one main organization to exist.
+    # TODO better setting of organization
+    organization = Organization.objects.first()
 
     # If the user doesn't have permission to see anything on this
     # page, give an appropriate HTTP response.
-    if not can_see_org_settings and not can_edit_org_settings and not is_django_staff:
-        return HttpResponseForbidden()
+    if not is_django_staff:
+        return HttpResponseForbidden("You do not have access to this page.")
 
-    def localize_and_sort_users(users):
+    # Get database environment settings
+    if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2':
+        db_type = "Postgres"
+    elif settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
+        db_type = "MySQL"
+    elif settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+        db_type = "MySQL"
+    else:
+        db_type = "Unknown"
+
+    def preload_profiles(users):
         users = list(users)
-        User.localize_users_to_org(request.organization, users, sort=True)
+        User.preload_profiles(users, sort=True)
         return users
 
     return render(request, "settings.html", {
-        "can_see_org_settings": can_see_org_settings,
         "can_edit_org_settings": can_edit_org_settings,
         "is_django_staff": is_django_staff,
         "can_visit_org_in_django_admin": is_django_staff and request.user.has_perm("organization_change"),
         "can_visit_user_in_django_admin": is_django_staff and request.user.has_perm("user_change"),
         "django_admin_url": settings.SITE_ROOT_URL + "/admin",
-        "org_admins": localize_and_sort_users(org_admins),
-        "help_squad": localize_and_sort_users(request.organization.help_squad.all()),
-        "reviewers": localize_and_sort_users(request.organization.reviewers.all()),
+        "org_admins": preload_profiles(org_admins),
+        # TODO better pulling of teams
+        "help_squad": preload_profiles(organization.help_squad.all()),
+        "reviewers": preload_profiles(organization.reviewers.all()),
+        "projects": Project.objects.all(),
+        "portfolios": Portfolio.objects.all(),
+        "users": User.objects.all(),
+        "project_permissions": get_perms_for_model(Project),
+        "portfolio_permissions": get_perms_for_model(Portfolio),
+        "db_type": db_type,
     })
 
 @login_required
 def organization_settings_save(request):
     if request.method != "POST":
         return HttpResponseForbidden()
-    if request.user not in request.organization.get_organization_project().get_admins():
-        return HttpResponseForbidden()
 
-    from django.contrib import messages
+    # In 0.9.0 we only have 1 organization, so let's get that
+    # TODO better setting of organization
+    organization = Organization.objects.get(id=1)
+    if request.user not in organization.get_organization_project().get_admins():
+        return HttpResponseForbidden("You do not have permission.")
 
     if request.POST.get("action") == "remove-from-org-admins":
         # I don't think organization projects have non-admin members so we
@@ -1451,7 +1548,7 @@ def organization_settings_save(request):
         # keeping the ProjectMembership record but just making them a non-admin?
         user = get_object_or_404(User, id=request.POST.get("user"))
         ProjectMembership.objects.filter(
-            project=request.organization.get_organization_project(),
+            project=organization.get_organization_project(),
             user=user
         ).delete()
         messages.add_message(request, messages.INFO, '%s has been removed from the list of organization administrator.' % user)
@@ -1459,20 +1556,20 @@ def organization_settings_save(request):
 
     if request.POST.get("action") == "remove-from-help-squad":
         user = get_object_or_404(User, id=request.POST.get("user"))
-        request.organization.help_squad.remove(user)
+        organization.help_squad.remove(user)
         messages.add_message(request, messages.INFO, '%s has been removed from the help squad.' % user)
         return JsonResponse({ "status": "ok" })
 
     if request.POST.get("action") == "remove-from-reviewers":
         user = get_object_or_404(User, id=request.POST.get("user"))
-        request.organization.reviewers.remove(user)
+        organization.reviewers.remove(user)
         messages.add_message(request, messages.INFO, '%s has been removed from the reviewers.' % user)
         return JsonResponse({ "status": "ok" })
 
     if request.POST.get("action") == "add-to-org-admins":
         user = get_object_or_404(User, id=request.POST.get("user"))
         mbr, _ = ProjectMembership.objects.get_or_create(
-            project=request.organization.get_organization_project(),
+            project=organization.get_organization_project(),
             user=user
         )
         mbr.is_admin = True
@@ -1482,25 +1579,24 @@ def organization_settings_save(request):
 
     if request.POST.get("action") == "add-to-help-squad":
         user = get_object_or_404(User, id=request.POST.get("user"))
-        request.organization.help_squad.add(user)
+        organization.help_squad.add(user)
         messages.add_message(request, messages.INFO, '%s has been added to the help squad.' % user)
         return JsonResponse({ "status": "ok" })
 
     if request.POST.get("action") == "add-to-reviewers":
         user = get_object_or_404(User, id=request.POST.get("user"))
-        request.organization.reviewers.add(user)
+        organization.reviewers.add(user)
         messages.add_message(request, messages.INFO, '%s has been added to the reviewers.' % user)
         return JsonResponse({ "status": "ok" })
 
     if request.POST.get("action") == "search-users":
         # TODO: Filter in a database query or else cache the result of get_who_can_read.
-        users = list(request.organization.get_who_can_read())
-        User.localize_users_to_org(request.organization, users, sort=True)
+        users = list(organization.get_who_can_read())
         users = [user for user in users
-            if request.POST.get("query", "").lower().strip() in user.name_and_email().lower()
+            if request.POST.get("query", "").lower().strip() in user.username.lower()
         ]
         users = users[:20] # limit
-        return JsonResponse({ "users": [user.render_context_dict(request.organization) for user in users] })
+        return JsonResponse({ "users": [user.render_context_dict() for user in users] })
 
     return JsonResponse({ "status": "error", "message": str(request.POST) })
 
@@ -1513,8 +1609,8 @@ def shared_static_pages(request, page):
 
     return render(request,
         page + ".html", {
-        "base_template": "base-landing.html" if not hasattr(request, "organization")
-                         else "base.html",
+        "base_template": "base.html",
         "SITE_ROOT_URL": request.build_absolute_uri("/"),
         "password_hash_method": password_hash_method,
+        "project_form": ProjectForm(request.user),
     })

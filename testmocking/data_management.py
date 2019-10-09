@@ -2,7 +2,7 @@ import os
 from random import sample, randint
 
 from django.utils.crypto import get_random_string
-from siteapp.models import User, Organization, ProjectMembership
+from siteapp.models import User, Organization, Portfolio
 from guidedmodules.models import Task, TaskAnswer, Module, Project
 
 TMP_BASE_PATH="/tmp/govready-q/datagen"
@@ -58,6 +58,19 @@ def get_random_url():
     word = sample(wordlist, 1)[0]
     return "http://example.com/some_path/{}".format(word)
 
+
+def get_random_sentence():
+    # Potential future improvement: generate some lorem ipsum instead
+    count = randint(5, 10)
+    wordlist = get_wordlist()
+    words = ' '.join(sample(wordlist, count))
+    return words
+
+def get_random_paragraph():
+    count = randint(2, 5)
+    sents = [get_random_sentence() + '.' for x in range(0, count)]
+    return '\n\n'.join(sents)
+
 def create_user(username=None, password=None, pw_hash=None):
     if username == None:
         username = get_name(1, '_', path='names.txt', filter=[u.username for u in User.objects.all()])
@@ -81,34 +94,9 @@ def create_user(username=None, password=None, pw_hash=None):
         file.write("\n")
     return u 
 
-def create_organization(name=None, admin=None, help_squad=[], reviewers=[]):
-    if name == None:
-        name = get_name(1, filter=[org.name for org in Organization.objects.all()])
-        name += " " + get_name(1, path='company_suffixes.txt')
-    subdomain = name.replace(' ', '-').lower()
-
-    superuser = User.objects.get(id=1)
-
-    with open(_getpath(Organization), 'a+') as file:
-        org = Organization.create(
-            name=name,
-            subdomain=subdomain,
-            admin_user=admin,
-        )
-        file.write(str(org.id))
-        file.write("\n")
-
-    for user in help_squad:
-        org.help_squad.add(user)
-    for user in reviewers:
-        org.reviewers.add(user)
-
-    # also add the superuser as an admin, for convenience's sake
-    pm, isnew = ProjectMembership.objects.get_or_create(user=superuser, project=org.get_organization_project())
-    pm.is_admin = True
-    pm.save()
-    return org 
-
+def create_portfolio(user):
+    portfolio = Portfolio.objects.create(title=user.username)
+    portfolio.assign_owner_permissions(user)
 
 def delete_objects(model):
     with open(_getpath(model), 'r') as file:
@@ -130,7 +118,16 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
     # sooo... sometimes we might have accidentally created a project with no admin. Use the org admin instead.
     dummy_user = task.project.organization.get_organization_project().get_admins()[0]
 
+    # we want to communicate back to the caller whether this was fully skipped or not
+    did_anything = False
+
     for question in task.module.questions.order_by('definition_order'):
+        type = question.spec['type']
+
+        if type == 'raw':
+            print("'raw' question type is out-of-scope, skipping")
+            continue
+
         if (halt_impute or skip_impute) and 'impute' in question.spec:
             log("'impute' handling not yet implemented, skipping " + question.key)
             if halt_impute:
@@ -143,7 +140,6 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
                 log("Already answered " + question.key)
                 continue
 
-        type = question.spec['type']
         answer = None
         if type == 'yesno':
             answer = sample(['yes', 'no'],1)[0]
@@ -151,17 +147,6 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
             answer = get_random_sentence()
         elif type == 'longtext':
             answer = get_random_paragraph()
-        elif type == 'email-address':
-            answer = get_random_email()
-        elif type == 'url':
-            answer = get_random_url()
-        elif type == 'date':
-            year = randint(2010, 2030)
-            month = randint(1, 12)
-            # stopping our day at 28 means we don't need to worry about varying month lengths
-            day = randint(1, 28) 
-            # internal answer format seems to be yyyy-mm-dd
-            answer = "{}-{:02}-{:02}".format(year, month, day)
         elif type == 'choice':
             answer = sample(question.spec['choices'], 1)[0]['key']
         elif type == 'multiple-choice':
@@ -171,11 +156,14 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
         elif type == 'module' and 'module-id' in question.spec:
             subtask = task.get_or_create_subtask(dummy_user, question, create=True)
             log("doing subtask")
+            did_anything = True
             continue
         
         if not answer and not (type == 'interstitial' or type == 'raw'):
             print("Cannot answer question of type '" + type + "'")
             continue
+
+        did_anything = True
         
         log(str((question.key, type, answer)))
         taskans, isnew = TaskAnswer.objects.get_or_create(task=task, question=question)
@@ -187,6 +175,12 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
             print("Answering {}: {}...".format(question.key, e))
             #return False
             break
+        except Error as e:
+            print("------\nUnknown error occurred, debug info follows.\n")
+            print("Next line is: 'str((question.key, type, answer, question.spec))'")
+            print(str((question.key, type, answer, question.spec)))
+            print("------")
+            raise e
 
         # Save the value.
         if taskans.save_answer(value, [], None, dummy_user, "api"):
@@ -194,6 +188,8 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
         else:
             log("No change?")
             break
+
+        return did_anything
 
 
 import requests

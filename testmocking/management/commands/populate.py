@@ -13,16 +13,15 @@ from guidedmodules.models import AppSource, Module
 from siteapp.models import User, Organization
 
 from django.utils.crypto import get_random_string
-from testmocking.data_management import create_user, create_organization
+from testmocking.data_management import create_user, create_portfolio
 
 class Command(BaseCommand):
-    help = 'Create a set of dummy data for extended testing/verification. Creates users, organizations, user/org assignments, and with --full, can also populate the created organizations with assessments.'
+    help = 'Create a set of dummy data for extended testing/verification. Creates users, portfolios, organizations, user/org assignments, and with --full, can also populate the created organizations with assessments.'
 
     def add_arguments(self, parser):
         parser.add_argument('--password', help="The password to set for all users. Optional, but recommended. If not set, all users will have the same random password, instead.")
         
         parser.add_argument('--user-count', type=int, default=5, help="How many users to create at once")
-        parser.add_argument('--org-count', type=int, default=1, help="How many organizations to create at once")
 
         parser.add_argument('--full', action="store_true", help="Also start and fill out assessments, etc., for each organization")
 
@@ -38,28 +37,8 @@ class Command(BaseCommand):
             users += [u]
             if ((x+1) % 100 == 0):
                 print("Created user #" + str(x+1))
-        for x in range(0, options['org_count']):
-            admin = sample(users, 1)[0]
-            help_squad = sample(users, 5)
-            reviewers = sample(users, 5)
-            org = create_organization(admin=admin, help_squad=help_squad, reviewers=reviewers)
-            print("Admin for " + org.name + ": " + admin.username)
-
-            if options['full']:
-                print('Adding system...')
-                call_command('add_system',  '--password', options['password'], '--username', admin.username, '--org', org.subdomain)
-                print('Adding assessments...')
-                call_command('start_assessment', '--to-completion', '--password', options['password'], '--username', admin.username, '--org', org.subdomain)
-
-                print('Prepping assessments (tasks, pass #1)...')
-                call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.subdomain)
-
-                print('Filling assessments (tasks, pass #2)...')
-                call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org.subdomain)
-
-                final_output.append('Finished org {}. Check subdomain "{}" using user:pass {} : {}'.format(org.name, org.subdomain, admin.username, options['password']))
-                final_output.append('\nEDIT /etc/hosts TO ADD:\n\n127.0.0.1  {}.localhost\n'.format(org.subdomain))
-                final_output.append('OPEN IN WEB BROWSER (assuming standard options):\n\nhttp://{}.localhost:8000/\n'.format(org.subdomain))
+            create_portfolio(u)
+            print("Created portfolio for user {}".format(u.username))
 
         for line in final_output:
             print(line)

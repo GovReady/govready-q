@@ -137,7 +137,7 @@ class Command(BaseCommand):
         
         # Create a new Organization with the temporary user as the org's admin.
         self.org = Organization.create(
-            subdomain="test-screenshots-"+get_random_string(6).lower(),
+            slug="test-screenshots-"+get_random_string(6).lower(),
             name=options['org_name'],
             admin_user=self.user)
 
@@ -252,7 +252,7 @@ class Command(BaseCommand):
         self.mouse_speed = 0
 
         # Log the temporary user in.
-        self.browser.navigateToPage(self.org.subdomain, "/")
+        self.browser.navigateToPage("/")
         assert "Home" in self.browser.browser.title
         self.fill_field("#id_login", self.user.username)
         self.fill_field("#id_password", self.temporary_user_random_password)
@@ -280,7 +280,7 @@ class Command(BaseCommand):
         self.login()
 
         # Screenshot the homepage.
-        self.browser.navigateToPage(self.org.subdomain, "/")
+        self.browser.navigateToPage("/")
         self.screenshot("home")
 
         # Ok click the "Add other app" button.
@@ -445,7 +445,7 @@ class Command(BaseCommand):
                     answer_task(task, inner_test)
 
                     # Return to the project page.
-                    self.browser.navigateToPage(self.org.subdomain, project.get_absolute_url())
+                    self.browser.navigateToPage(project.get_absolute_url())
         
 
         # Get the test to run.
@@ -489,7 +489,7 @@ class Command(BaseCommand):
         self.login()
 
         # Screenshot the homepage, click on "Add other app".
-        self.browser.navigateToPage(self.org.subdomain, "/")
+        self.browser.navigateToPage("/")
         self.click_with_screenshot("#new-project", "home")
 
         # Screenshot the app catalog.
@@ -516,7 +516,7 @@ class Command(BaseCommand):
             compliance_app().handle(appsource=local_app_source.slug, appname=app_name, path=None)
 
             # Reload page.
-            self.browser.navigateToPage(self.org.subdomain, "/store")
+            self.browser.navigateToPage("/store")
 
             # Screenshot the catalog again with the new app in it.
             self.screenshot("catalog_with_app", cursor_at=".app[data-app='" + local_app_source.slug + "/" + app_name + "']") # TODO: Mixing into CSS selector.
@@ -538,7 +538,7 @@ class Command(BaseCommand):
             local_app_source.save()
 
             # Reload & screengrab, and start app.
-            self.browser.navigateToPage(self.org.subdomain, "/store")
+            self.browser.navigateToPage("/store")
             self.click_with_screenshot(".app[data-app='" + local_app_source.slug + "/" + app_name + "'] button.start-app", "start") # TODO: Mixing into CSS selector.
 
             # Screengrab app.

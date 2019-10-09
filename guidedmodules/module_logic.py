@@ -258,9 +258,14 @@ def get_question_context(answers, question):
             "reviewed": answer_obj.reviewed if answer_obj is not None else None,
             "is_this_question": (question is not None) and (q.key == question.key),
             "value": LazyRenderedAnswer(q, is_answered, answer_obj, answer_value),
+            "definition_order": q.definition_order
         })
 
-    return context
+    # Sort list of questions by definition_order
+    from operator import itemgetter
+    context_sorted = sorted(context, key=itemgetter('definition_order'))
+
+    return context_sorted
 
 
 def render_content(content, answers, output_format, source, additional_context={},
@@ -486,7 +491,7 @@ def render_content(content, answers, output_format, source, additional_context={
             def errorfunc(message, short_message, long_message, **format_vars):
                 if output_format == "html" and show_answer_metadata:
                     # In HTML outputs with popovers for answer metadata, use a popover
-                    # to display detailed error info. module-finished.html explicitly
+                    # TODO: Display detailed error info in task-finished.html more explicitly
                     # renders popovers in templates.
                     return jinja2.Markup("""
                     <span class="text-danger"

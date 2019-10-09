@@ -39,27 +39,14 @@ The profile information can be seen by all other members of the Organization bec
 
 Users marked as `staff` in the Django admin can see Q Analytics.
 
-Organizations
+Portfolios
 -------------
 
-Each deployment of Q serves one or more Organizations. Each Organization is served off of a unique subdomain.
+Portfolios are used to segment Projects and the data contained within them to create data isolation at a logical level.
 
-Organizations are used to segment Projects and the data contained within them to create data isolation both at a logical level and because of the use of subdomains at the HTTP level. (Organizations hosted by the same Q deployment use a single database backend, however.)
+### Access to Portfolios
 
-All pages on an Organization subdomain require *membership* in the Organization to be accessed. A User has *membership* in an Organization if they are authenticated and any of the following are true:
-
-* They are a _member_ of a Project within the Organization (see Project *membership* below).
-* They are the editor of a Task within the Organization (i.e. guest-style *membership* if they are not otherwise authorized).
-* They are a guest participant in a Discussion within the Organization.
-* They clicked an invitation URL, which gives them access to the invitation landing page only.
-
-An unauthorized user is always redirected to a login page. GovReady-Q can be configured with the `organization-seen-anonymously` setting to not reveal any Organization data (not even the Organization's display name) on the login page, and if that setting is turned on, and if a DNS wildcard enables resolution of all possible Organization subdomains, an unauthorized user cannot tell whether or not an Organization actually exists on the Q deployment.
-
-(Note that *membership* in an Organization is different from *membership* in a Project.)
-
-### Membership in the Organization Project
-
-Each Organization has a single "organization project" which stores additional metadata about the Organization, akin to a User's profile. This metadata can be seen by all members of the Organization because the values, e.g. an organization avatar, may be rendered on Organization pages that any such User may see. Members of the organization project (which is different from members of the organization itself) may additionally edit the metadata (see Project membership below).
+Each Portfolio begins with an 'owner' creating the portfolio. When any user signs up, a portfolio is automatically created with the title as the users username and assigning ownership to the user. An owner of a portfolio can grant other users access to their porfolio. If a user has access to a portfolio, they will have access to the projects within that portfolio. If an owner of a portfolio removes a users access to a portfolio, they will lose access to the projects within that portfolio.
 
 Folders
 -------
