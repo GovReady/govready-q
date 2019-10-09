@@ -1,8 +1,13 @@
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
+from siteapp.models import ProjectMembership
 
 register = template.Library()
+
+@register.filter
+def has_membership(project, user):
+    return True if ProjectMembership.objects.filter(project=project, user=user) else False
 
 @register.filter
 def get_notification_link(obj, notification):

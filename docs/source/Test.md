@@ -92,9 +92,7 @@ In some cases, you may wish to perform manual testing on an instance of GovReady
 If you wish to get up and running quickly, the following command is recommended:
 
 ```
-python3 manage.py populate --full --password TEST_PASSWORD_HERE
+python3 manage.py add_data --non-interactive
 ```
 
-The `populate --full` command will generate a set of users and organizations inside of GovReady-Q, and then add assessments to those organizations. User count and organization count can be controlled using the `--user-count` and `--org-count` arguments. `--password` can take any value, and is a recommended (but not required) argument, for easier login to the test accounts.
-
-Note that `populate` will use the same password for all created users, as generating unique credentials for each user would be slow (due to best practice security measures used by GovReady-Q's authentication process).
+The `add_data` command will fill in a recommended set of sample data.

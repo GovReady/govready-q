@@ -1,11 +1,27 @@
+# This module defines a SeleniumTest class that is used here and in
+# the discussion app to run Selenium and Chrome-based functional/integration
+# testing.
+#
+# Selenium requires that 'chromedriver' be on the system PATH. The
+# Ubuntu package chromium-chromedriver installs Chromium and
+# chromedriver. But if you also have Google Chrome installed, it
+# picks up Google Chrome which might be of an incompatible version.
+# So we hard-code the Chromium binary using options.binary_location="/usr/bin/chromium-browser".
+# If paths differ on your system, you may need to set the PATH system
+# environment variable and the options.binary_location field below.
+
+import os
+import os.path
+import re
+from unittest import skip
+
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
 
-from unittest import skip
+from siteapp.models import (Organization, Portfolio, Project,
+                            ProjectMembership, User)
 
-import os
-import re
 
 def var_sleep(duration):
     '''
@@ -25,12 +41,11 @@ class SeleniumTest(StaticLiveServerTestCase):
         from django.conf import settings
         settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
-        # Override ALLOWED_HOSTS, SITE_ROOT_URL, and ORGANIZATION_PARENT_DOMAIN
+        # Override ALLOWED_HOSTS, SITE_ROOT_URL, etc.
         # because they may not be set or set properly in the local environment's
         # non-test settings for the URL assigned by the LiveServerTestCase server.
-        settings.ALLOWED_HOSTS = ['.localhost', 'testserver']
+        settings.ALLOWED_HOSTS = ['localhost', 'testserver']
         settings.SITE_ROOT_URL = cls.live_server_url
-        settings.ORGANIZATION_PARENT_DOMAIN = 'orgs.localhost'
 
         # In order for these tests to succeed when not connected to the
         # Internet, disable email deliverability checks which query DNS.
@@ -42,9 +57,9 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Start a headless browser.
         import selenium.webdriver
         from selenium.webdriver.chrome.options import Options as ChromeOptions
-        os.environ['PATH'] += ":/usr/lib/chromium-browser" # 'chromedriver' executable needs to be in PATH (for newer Ubuntu)
-        os.environ['PATH'] += ":/usr/lib/chromium" # 'chromedriver' executable needs to be in PATH (for Debian 8)
         options = selenium.webdriver.ChromeOptions()
+        if os.path.exists("/usr/bin/chromium-browser"):
+            options.binary_location = "/usr/bin/chromium-browser"
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
             options.add_argument("start-maximized") # too small screens make clicking some things difficult
@@ -53,6 +68,14 @@ class SeleniumTest(StaticLiveServerTestCase):
         options.add_argument("--incognito")
         cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
+
+        # Clean up and quit tests if Q is in SSO mode
+        if getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', None):
+            print("Cannot run tests.")
+            print("Tests will not run when IAM Proxy enabled (e.g., when `local/environment.json` sets `trust-user-authentication-headers` parameter.)")
+            cls.browser.quit()
+            super(SeleniumTest, cls).tearDownClass()
+            exit()
 
     @classmethod
     def tearDownClass(cls):
@@ -66,22 +89,15 @@ class SeleniumTest(StaticLiveServerTestCase):
         # clear the browser's cookies before each test
         self.browser.delete_all_cookies()
 
-    def navigateToPage(self, subdomain, path):
-        self.browser.get(self.url(subdomain, path))
+    def navigateToPage(self, path):
+        self.browser.get(self.url(path))
 
-    def url(self, subdomain, path):
+    def url(self, path):
         # Construct a URL to the desired page. Use self.live_server_url
         # (set by StaticLiveServerTestCase) to determine the scheme, hostname,
-        # and port the test server is running on. Add the subdomain (if not None)
-        # and path.
+        # and port the test server is running on. Add the path.
         import urllib.parse
-        s = urllib.parse.urlsplit(self.live_server_url)
-        scheme, host = (s[0], s[1])
-        if subdomain:
-            port = '' if (':' not in host) else (':'+host.split(':')[1])
-            host = subdomain + '.' + settings.ORGANIZATION_PARENT_DOMAIN + port
-        base_url = urllib.parse.urlunsplit((scheme, host, '', '', ''))
-        return urllib.parse.urljoin(base_url, path)
+        return urllib.parse.urljoin(self.live_server_url, path)
 
     def clear_field(self, css_selector):
         self.browser.find_element_by_css_selector(css_selector).clear()
@@ -92,6 +108,14 @@ class SeleniumTest(StaticLiveServerTestCase):
     def clear_and_fill_field(self, css_selector, text):
         self.clear_field(css_selector)
         self.fill_field(css_selector, text)
+
+    def click_element_with_link_text(self, text):
+        elem = self.browser.find_elements_by_link_text(text)
+        elem[0].click()
+
+    def click_element_with_xpath(self, xpath):
+        elem = self.browser.find_elements_by_xpath(xpath)
+        elem[0].click()
 
     def click_element(self, css_selector):
         # ensure element is on screen or else it can't be clicked
@@ -104,6 +128,11 @@ class SeleniumTest(StaticLiveServerTestCase):
         from selenium.webdriver.support.select import Select
         e = self.browser.find_element_by_css_selector(css_selector)
         Select(e).select_by_value(value)
+
+    def select_option_by_visible_text(self, css_selector, text):
+        from selenium.webdriver.support.select import Select
+        e = self.browser.find_element_by_css_selector(css_selector)
+        Select(e).select_by_visible_text(text)
 
     def _getNodeText(self, css_selector):
         node_text = self.browser.find_element_by_css_selector(css_selector).text
@@ -135,13 +164,9 @@ class SeleniumTest(StaticLiveServerTestCase):
 #####################################################################
 
 class LandingSiteFunctionalTests(SeleniumTest):
-    def url(self, path):
-        # Within this test, we only generate URLs for the landing site.
-        return super().url(None, path)
-
     def test_homepage(self):
         self.browser.get(self.url("/"))
-        self.assertRegex(self.browser.title, "GovReady Q")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
 
 class OrganizationSiteFunctionalTests(SeleniumTest):
 
@@ -151,6 +176,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Load the Q modules from the fixtures directory.
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
+        
         AppSource.objects.all().delete()
         AppSource.objects.get_or_create(
               # this one exists on first db load because it's created by
@@ -165,6 +191,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
                 }
             }
         )
+        load_modules().handle() # load system modules
+
         AppSource.objects.create(
             slug="project",
             spec={ # contains a test project
@@ -172,26 +200,31 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
                 "path": "fixtures/modules/other",
             },
             trust_assets=True
-        )
-        load_modules().handle()
+        )\
+            .add_app_to_catalog("simple_project")
 
         # Create a default user that is a member of the organization.
         # Log the user into the test client, which is used for API
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
-        from siteapp.models import User, ProjectMembership
+
         self.user = User.objects.create(
             username="me",
-            email="test+user@q.govready.com")
+            email="test+user@q.govready.com",
+            is_staff=True
+        )
         self.user.clear_password = get_random_string(16)
         self.user.set_password(self.user.clear_password)
         self.user.save()
         self.user.reset_api_keys()
         self.client.login(username=self.user.username, password=self.user.clear_password)
 
+        # Create a Portfolio and Grant Access
+        portfolio = Portfolio.objects.create(title=self.user.username)
+        portfolio.assign_owner_permissions(self.user)
+
         # Create the Organization.
-        from siteapp.models import Organization
-        self.org = Organization.create(name="Our Organization", subdomain="testorg",
+        self.org = Organization.create(name="Our Organization", slug="testorg",
             admin_user=self.user)
 
         # Grant the user permission to change the review state of answers.
@@ -206,57 +239,63 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user2.save()
         self.user2.reset_api_keys()
         self.client.login(username=self.user2.username, password=self.user2.clear_password)
+        portfolio = Portfolio.objects.create(title=self.user2.username)
+        portfolio.assign_owner_permissions(self.user2)
+
+        # create a third user
+        self.user3 = User.objects.create(
+            username="me3",
+            email="test+user3@q.govready.com")
+        self.user3.clear_password = get_random_string(16)
+        self.user3.set_password(self.user3.clear_password)
+        self.user3.save()
+        self.user3.reset_api_keys()
+        self.client.login(username=self.user3.username, password=self.user3.clear_password)
+        portfolio = Portfolio.objects.create(title=self.user3.username)
+        portfolio.assign_owner_permissions(self.user3)
 
         # Grant second user membership in the organization
         # from https://github.com/GovReady/govready-q/blob/master/siteapp/admin.py#L41
-        from siteapp.models import ProjectMembership
         mb, isnew = ProjectMembership.objects.get_or_create(
             user=self.user2,
             project=self.org.get_organization_project(),
             )
 
-    def client_get(self, *args, domain=None, **kwargs):
-        # Wrap the Django test client's get/post functions that sets the HTTP
-        # Host: header so that the request gets to the organization site.
-        assert domain in ("LANDING", "ORG")
-        if domain == "LANDING":
-            host = settings.LANDING_DOMAIN
-        else:
-            host = self.org.subdomain + "." + settings.ORGANIZATION_PARENT_DOMAIN
+    def client_get(self, *args, **kwargs):
         resp = self.client.get(
             *args,
-            **kwargs,
-            HTTP_HOST=host)
+            **kwargs)
         self.assertEqual(resp.status_code, 200, msg=repr(resp))
         return resp # .content.decode("utf8")
-
-    def url(self, path):
-        # Within this test, we only generate URLs for the organization subdomain.
-        return super().url(self.org.subdomain, path)
 
     def _login(self, username=None, password=None):
         # Fill in the login form and submit. Use self.user's credentials
         # unless they are overridden in the arguments to test failed logins
         # with other credentials.
         self.browser.get(self.url("/"))
-        self.assertRegex(self.browser.title, "Home")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
+        self.click_element("li#tab-signin")
         self.fill_field("#id_login", username or self.user.username)
         self.fill_field("#id_password", password or self.user.clear_password)
-        self.click_element("form button.primaryAction")
+        self.click_element("form#login_form button[type=submit]")
 
-    def _new_project(self, module_key="project/simple_project"):
+    def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
-        self.click_element(".app[data-app='%s'] .view-app" % module_key)
-        self.click_element("#start-project")
-        # last two lines could also be replaced with:
-        #self.click_element(".app[data-app='%s'] .start-app" % module_key)
-        var_sleep(1)
+
+        # Select Portfolio
+        self.select_option_by_visible_text('#id_portfolio', self.user.username)
+        self.click_element("#select_portfolio_submit")
+        var_sleep(2)
+
+        # Click Add Button
+        self.click_element(".app[data-app='project/simple_project'] .start-app")
+
+        var_sleep(2)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
-        from siteapp.models import Project
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
-        self.current_projet = Project.objects.get(id=m.group(1))
+        self.current_project = Project.objects.get(id=m.group(1))
 
     def _start_task(self):
         # Assumes _new_project() just finished.
@@ -270,7 +309,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
 
 class GeneralTests(OrganizationSiteFunctionalTests):
 
-    def _accept_invitation(self, email):
+    def _accept_invitation(self, username):
         # Assumes an invitation email was sent.
 
         # Extract the URL in the email and visit it.
@@ -284,39 +323,34 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element('#button-sign-in')
         var_sleep(.5) # wait for page to load
 
-        # We're at the sign-in page. Go to the create account page
-        # and register. Use a random username so that we submit something
-        # unique, since a test may create multiple users.
         self.assertRegex(self.browser.title, "Sign In")
-        self.click_element("p a") # This isn't a very good targetting of the "sign up" link.
-        var_sleep(.5) # wait for page to load
-        self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
+
+        # TODO check if the below should still be happening
+        # Test that an allauth confirmation email was sent.
+        # self.assertIn("Please confirm your email address at GovReady Q by following this link", self.pop_email().body)
+
+    def _fill_in_signup_form(self, email, username=None):
+        if username:
+            self.fill_field("#id_username", username)
+        else:
+            self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
         self.fill_field("#id_email", email)
         new_test_user_password = get_random_string(16)
         self.fill_field("#id_password1", new_test_user_password)
         self.fill_field("#id_password2", new_test_user_password)
-        self.click_element("form.signup button") # This isn't a very good targetting of the "sign up" link.
-        var_sleep(.5) # wait for next page to load
-
-        for admin in settings.ADMINS:
-            # Test that administrators got a notice about the new user.
-            self.assertIn("A user registered!", self.pop_email().body)
-
-        # Test that an allauth confirmation email was sent.
-        self.assertIn("Please confirm your email address at GovReady Q by following this link", self.pop_email().body)
 
     def test_homepage(self):
         self.browser.get(self.url("/"))
-        self.assertRegex(self.browser.title, "GovReady Q")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
 
     def test_login(self):
         # Test that a wrong password doesn't log us in.
         self._login(password=get_random_string(4))
-        self.assertInNodeText("The username and/or password you specified are not correct.", "form.login .alert-danger")
+        self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
         # Test that a wrong username doesn't log us in.
         self._login(username="notme")
-        self.assertInNodeText("The username and/or password you specified are not correct.", "form.login .alert-danger")
+        self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
         # Log in as a new user, log out, then log in a second time.
         # We should only get the account settings questions on the
@@ -353,6 +387,17 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Your Compliance Projects")
         self.assertNodeNotVisible('#please-complete-account-settings')
 
+    def test_static_pages(self):
+        self.browser.get(self.url("/privacy"))
+        self.assertRegex(self.browser.title, "Privacy Policy")
+        var_sleep(0.5)
+        self.browser.get(self.url("/terms-of-service"))
+        self.assertRegex(self.browser.title, "Terms of Service")
+        var_sleep(0.5)
+        self.browser.get(self.url("/love-assessments"))
+        self.assertRegex(self.browser.title, "Love Assessments")
+        var_sleep(0.5)
+
     def test_simple_module(self):
         # Log in and create a new project and start its task.
         self._login()
@@ -364,7 +409,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1.5)
 
         # Text question.
         self.assertRegex(self.browser.title, "Next Question: The Question")
@@ -401,24 +446,19 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # But now go back to the project page.
         self.browser.get(project_page)
 
-        def start_invitation(email):
+        def start_invitation(username):
             # Fill out the invitation modal.
-
-            # in case there are other team members and the select box is showing,
-            # choose
-            self.select_option('#invite-user-select', '__invite__')
-
-            self.fill_field("#invitation_modal #invite-user-email", email)
+            self.select_option_by_visible_text('#invite-user-select', username)
             self.click_element("#invitation_modal button.btn-submit")
 
-        def do_invitation(email):
-            start_invitation(email)
+        def do_invitation(username):
+            start_invitation(username)
 
             var_sleep(1) # wait for invitation to be sent
 
             # Log out and accept the invitation as an anonymous user.
             self.browser.get(self.url("/accounts/logout/"))
-            self._accept_invitation(email)
+            self._accept_invitation(username)
 
         def reset_login():
             # Log out and back in as the original user.
@@ -436,113 +476,176 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.browser.execute_script("invite_user_into_project()")
 
         # Test an invalid email address.
-        start_invitation("example")
-        var_sleep(.5)
-        self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
-        self.click_element("#global_modal button") # dismiss the warning.
-        var_sleep(.25)
-        #self.click_element("#show-project-invite") # Re-open the invite box.
-        self.browser.execute_script("invite_user_into_project()") # See comment above.
+        # start_invitation("example")
+        # var_sleep(.5)
+        # self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
+        # self.click_element("#global_modal button") # dismiss the warning.
+        # var_sleep(.25)
+        # #self.click_element("#show-project-invite") # Re-open the invite box.
+        # self.browser.execute_script("invite_user_into_project()") # See comment above.
 
-        do_invitation("test+project@q.govready.com")
+        do_invitation(self.user2.username)
+        self.fill_field("#id_login", self.user2.username)
+        self.fill_field("#id_password", self.user2.clear_password)
+        self.click_element("form button.primaryAction")
+       
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
         self.click_element('#question-simple_module') # go to the task page
         self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
 
-        reset_login()
+        # reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
-        self.click_element('#question-simple_module') # go to the task page
-        var_sleep(.5) # wait for page to load
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         var_sleep(.5) # wait for page to load
         self.click_element('#transfer-editorship')
-        do_invitation("test+editor@q.govready.com")
-        var_sleep(5)
+        do_invitation(self.user3.username)
+        self.fill_field("#id_login", self.user3.username)
+        self.fill_field("#id_password", self.user3.clear_password)
+        self.click_element("form button.primaryAction")
         self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
 
-        reset_login()
+        # reset_login()
 
         # Invitations to join discussions are tested in test_discussion.
 
-    def test_discussion(self):
-        from siteapp.management.commands.send_notification_emails import Command as send_notification_emails
+    # def test_discussion(self):
+        # from siteapp.management.commands.send_notification_emails import Command as send_notification_emails
 
-        # Log in and create a new project.
+        # # Log in and create a new project.
+        # self._login()
+        # self._new_project()
+        # self._start_task()
+
+        # # Move past the introduction screen.
+        # self.assertRegex(self.browser.title, "Next Question: Introduction")
+        # self.click_element("#save-button")
+        # var_sleep(.8) # wait for page to reload
+
+        # # We're now on the first actual question.
+        # # Start a team conversation.
+        # self.click_element("#start-a-discussion")
+        # self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
+        # var_sleep(.5) # wait for options to slideDown
+        # self.click_element("#discussion .comment-input button.btn-primary")
+
+        # # Invite a guest to join.
+        # var_sleep(.5) # wait for the you-are-alone div to show
+        # self.click_element("#discussion-you-are-alone a")
+        # self.fill_field("#invitation_modal #invite-user-email", "invited-user@q.govready.com")
+        # self.click_element("#invitation_modal button.btn-submit")
+        # var_sleep(1) # wait for invitation to be sent
+
+        # # Now we become that guest. Log out.
+        # # Then accept the invitation as an anonymous user.
+        # self.browser.get(self.url("/accounts/logout/"))
+        # self._accept_invitation("test+account@q.govready.com")
+        # var_sleep(1) # wait for the invitation to be accepted
+
+        # # Check that the original user received a notification that the invited user
+        # # accepted the invitation.
+        # send_notification_emails().send_new_emails()
+        # self.assertRegex(self.pop_email().body, "accepted your invitation to join the discussion")
+
+        # # This takes the user directly to the discussion they were invited to join.
+        # # Leave a comment.
+
+        # self.fill_field("#discussion-your-comment", "Yes, @me, I am here!\n\nI am here with you!")
+        # self.click_element("#discussion .comment-input button.btn-primary")
+        # var_sleep(.5) # wait for it to submit
+
+        # # Test that a notification was sent to the main user.
+        # from notifications.models import Notification
+        # self.assertTrue(Notification.objects.filter(
+        #     recipient=self.user,
+        #     verb="mentioned you in a comment on").exists())
+
+        # # Test that the notification is emailed out to the main user.
+        # send_notification_emails().send_new_emails()
+        # notification_email_body = self.pop_email().body
+        # self.assertRegex(notification_email_body, "mentioned you in")
+
+        # # Leave an emoji reaction on the initial user's comment.
+        # self.click_element(".react-with-emoji")
+        # var_sleep(.5) # emoji selector shows
+        # self.click_element("#emoji-selector .emoji[data-emoji-name=heart]") # makes active
+        # self.click_element("body") # closes emoji panel and submits via ajax
+        # var_sleep(.5) # emoji reaction submitted
+
+        # # Log back in as the original user.
+        # discussion_page = self.browser.current_url
+        # self.browser.get(self.url("/accounts/logout/"))
+        # self._login()
+        # self.browser.get(discussion_page)
+
+        # # Test that we can see the comment and the reaction.
+        # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
+        # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
+
+    def test_create_portfolios(self):
+        # Create a new account
+        self.browser.get(self.url("/"))
+        self.click_element('#tab-register')
+        self._fill_in_signup_form("test+account@q.govready.com", "portfolio_user")
+        self.click_element("#signup-button")
+
+        # Go to portfolio page
+        self.browser.get(self.url("/portfolios"))
+
+        # Navigate to portfolio created on signup
+        self.click_element_with_link_text("portfolio-user")
+
+    def test_create_portfolio_project(self):
+        # Create new project within portfolio
         self._login()
         self._new_project()
-        self._start_task()
 
-        # Move past the introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
-        self.click_element("#save-button")
-        var_sleep(.5) # wait for page to reload
+        # Create new portfolio
+        self.browser.get(self.url("/portfolios"))
+        self.click_element("#new-portfolio")
+        self.fill_field("#id_title", "Security Projects")
+        self.fill_field("#id_description", "Project Description")
+        self.click_element("#create-portfolio-button")
+        self.assertRegex(self.browser.title, "Security Projects")
 
-        # We're now on the first actual question.
-        # Start a team conversation.
-        self.click_element("#start-a-discussion")
-        self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
-        var_sleep(.5) # wait for options to slideDown
-        self.click_element("#discussion .comment-input button.btn-primary")
-
-        # Invite a guest to join.
-        var_sleep(.5) # wait for the you-are-alone div to show
-        self.click_element("#discussion-you-are-alone a")
-        self.fill_field("#invitation_modal #invite-user-email", "invited-user@q.govready.com")
-        self.click_element("#invitation_modal button.btn-submit")
-        var_sleep(1) # wait for invitation to be sent
-
-        # Now we become that guest. Log out.
-        # Then accept the invitation as an anonymous user.
-        self.browser.get(self.url("/accounts/logout/"))
-        self._accept_invitation("test+account@q.govready.com")
-        var_sleep(1) # wait for the invitation to be accepted
-
-        # Check that the original user received a notification that the invited user
-        # accepted the invitation.
-        send_notification_emails().send_new_emails()
-        self.assertRegex(self.pop_email().body, "accepted your invitation to join the discussion")
-
-        # This takes the user directly to the discussion they were invited to join.
-        # Leave a comment.
-        self.fill_field("#discussion-your-comment", "Yes, @me, I am here!\n\nI am here with you!")
-        self.click_element("#discussion .comment-input button.btn-primary")
-        var_sleep(.5) # wait for it to submit
-
-        # Test that a notification was sent to the main user.
-        from notifications.models import Notification
-        self.assertTrue(Notification.objects.filter(
-            recipient=self.user,
-            verb="mentioned you in a comment on").exists())
-
-        # Test that the notification is emailed out to the main user.
-        send_notification_emails().send_new_emails()
-        notification_email_body = self.pop_email().body
-        self.assertRegex(notification_email_body, "mentioned you in")
-
-        # Leave an emoji reaction on the initial user's comment.
-        self.click_element(".react-with-emoji")
-        var_sleep(.5) # emoji selector shows
-        self.click_element("#emoji-selector .emoji[data-emoji-name=heart]") # makes active
-        self.click_element("body") # closes emoji panel and submits via ajax
-        var_sleep(.5) # emoji reaction submitted
-
-        # Log back in as the original user.
-        discussion_page = self.browser.current_url
-        self.browser.get(self.url("/accounts/logout/"))
+    def test_create_project_without_portfolio(self):
         self._login()
-        self.browser.get(discussion_page)
+        self.browser.get(self.url("/store"))
+        self.assertInNodeText("Please select 'Start a project' to continue.", ".alert-danger")
 
-        # Test that we can see the comment and the reaction.
-        self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
-        self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
+    def test_grant_portfolio_access(self):
+        # Grant another member access to portfolio
+        self._login()
+        self.browser.get(self.url("/portfolios"))
+        self.click_element("#portfolio_{}".format(self.user.username))
+        self.click_element("#grant-portfolio-access")
+        self.select_option_by_visible_text('#invite-user-select', 'me2')
+        self.click_element("#invitation_modal button.btn-submit")
+        self.assertInNodeText("me2", "#portfolio-member-me2")
+
+        # Grant another member ownership of portfolio
+        var_sleep(1)
+        self.click_element("#me2_grant_owner_permission")
+        var_sleep(1)
+        self.assertInNodeText("me2 (Owner)", "#portfolio-member-me2")
+
+       # Grant another member access to portfolio
+        self.click_element("#grant-portfolio-access")
+        self.select_option_by_visible_text('#invite-user-select', 'me3')
+        self.click_element("#invitation_modal button.btn-submit")
+        var_sleep(1)
+        self.assertInNodeText("me3", "#portfolio-member-me3")
+
+        # Remove another member access to portfolio
+        self.click_element("#me3_remove_permissions")
+        self.assertNotInNodeText("me3", "#portfolio-members")
+        self.assertNodeNotVisible("#portfolio-member-me3")
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def _test_api_get(self, path, expected_value):
         resp = self.client_get(
-                "/api/v1/organizations/" + self.org.subdomain + "/projects/" + str(self.current_projet.id) + "/answers",
-                domain="LANDING",
+                "/api/v1/projects/" + str(self.current_project.id) + "/answers",
                 HTTP_AUTHORIZATION=self.user.api_key_rw)
         resp = resp.json()
         self.assertTrue(isinstance(resp, dict))
@@ -955,25 +1058,23 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
     def test_homepage(self):
         self.browser.get(self.url("/"))
-        self.assertRegex(self.browser.title, "GovReady Q")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
         var_sleep(0.5)
 
     def test_settings_page(self):
         # test navigating to settings page not logged in
         self.browser.get(self.url("/settings"))
-        self.assertRegex(self.browser.title, "GovReady Q")
+        self.assertRegex(self.browser.title, "GovReady-Q")
         self.assertNotRegex(self.browser.title, "GovReady Setup")
         var_sleep(0.5)
 
         # login as user without admin privileges and test settings page unreachable
         self._login(self.user2.username, self.user2.clear_password)
         self.browser.get(self.url("/projects"))
-        print("*** USER2 logged in ***")
         var_sleep(1)
 
-        self.browser.get(self.url("/settings"))
-        var_sleep(1)
-        self.assertRegex(self.browser.title, "GovReady-Q Setup")
+        response = self.client.get('/settings')
+        self.assertEqual(response.status_code, 403)
 
         # logout
         self.browser.get(self.url("/accounts/logout/"))

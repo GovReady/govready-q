@@ -64,7 +64,7 @@ Every call to the API requires an API key. Each user has three API keys listed o
 
 Project data can be read from the API using an HTTP GET request to a URL of the following pattern:
 
-```{site base URL}/api/v1/organizations/{organization subdomain}/projects/{project id}/answers```
+```{site base URL}/api/v1/projects/{project id}/answers```
 
 The complete URL can be found on the `API Docs` page for a compliance app that has been started and added to a project folder.
 
@@ -75,7 +75,7 @@ The API response is a JSON data structure similar to the example above. The sche
 If you are using an operating system with a command line and the `curl` tool, you can try out the API by running:
 
 	curl --header "Authorization: {your-api-key}" \
-	  {site base URL}/api/v1/organizations/{organization subdomain}/projects/{project id}/answers
+	  {site base URL}/api/v1/projects/{project id}/answers
 
 ### Updating data using a POST request with form data
 
@@ -93,7 +93,7 @@ If you are using an operating system with a command line and the `curl` tool, yo
       --header "Authorization: <i>your-api-key</i>" \
       -F project.question.subquestion1=datavalue \
       -F project.question.subquestion2=datavalue \
-	  {site base URL}/api/v1/organizations/{organization subdomain}/projects/{project id}/answers
+	  {site base URL}/api/v1/projects/{project id}/answers
 
 For a file upload, use `-F @filename.ext`. `curl`&rsquo;s `-d` option can be used in place of `-F` if none of the fields are file uploads.
 
@@ -118,7 +118,7 @@ If you are using an operating system with a command line and the `curl` tool, yo
 
     curl --header "Authorization: {your-api-key}" \
       -XPOST --data @data.json --header "Content-Type: application/json" \
-	  {site base URL}/api/v1/organizations/{organization subdomain}/projects/{project id}/answers
+	  {site base URL}/api/v1/projects/{project id}/answers
 
 API Data Schema
 ---------------

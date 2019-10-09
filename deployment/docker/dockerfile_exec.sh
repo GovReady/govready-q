@@ -60,16 +60,6 @@ function set_env_setting {
 	rm -f /tmp/new-environment.json
 }
 
-# Add Q settings.
-if [ -z "${ORGANIZATION_PARENT_DOMAIN-}" ]; then
-	# Not multi-tenant with "main" as the subdomain of the
-	# default organization.
-	set_env_setting '["single-organization"]' main
-else
-	# Multi-tenant.
-	set_env_setting '["organization-parent-domain"]' "$ORGANIZATION_PARENT_DOMAIN"
-fi
-
 # Add email parameters.
 if [ ! -z "${EMAIL_HOST-}" ]; then
 	set_env_setting email.host "$EMAIL_HOST"
@@ -98,6 +88,37 @@ echo "Starting at ${ADDRESS} with HTTPS ${HTTPS-false}."
 
 # Run checks.
 python3.6 manage.py check --deploy
+
+# Check if 0.9.0 upgrade has happened
+DB_BEFORE_090=$(python3.6 manage.py db_before_090)
+if [ $DB_BEFORE_090 = "True" ]
+then
+	echo "** WARNING!! **"
+	echo "Launching this container will automatically upgrade your GovReady-Q deployment to version 0.9.0!"
+	echo "Upgrading to version 0.9.0 will migrate your database."
+	echo "Please review migration notes at https://govready-q.readthedocs.io/en/latest/migration_guide_086_090.html"
+	if [ -z "${DB_BACKED_UP_DO_UPGRADE-}" ]
+		then
+			echo "'DB_BACKED_UP_DO_UPGRADE' environment variable not set."
+			echo "To confirm you have backed up your database and deploy version 0.9.0, set the 'DB_BACKED_UP_DO_UPGRADE' environment variable to 'True' for your deployment."
+			echo "Launch and deployment halted to protect your existing database."
+			exit 1
+		else
+			echo "Confirmed 'DB_BACKED_UP_DO_UPGRADE' environment variable is set."
+		fi
+		if [ "${DB_BACKED_UP_DO_UPGRADE-}" != "True" ]
+		then
+			echo "'DB_BACKED_UP_DO_UPGRADE' environment variable not set to 'True'."
+			echo "To confirm you have backed up your database and deploy version 0.9.0, set the 'DB_BACKED_UP_DO_UPGRADE' environment variable to 'True' for your deployment."
+			echo "Launch and deployment halted to protect your existing database."
+			exit 1
+		else
+			echo "Confirmed 'DB_BACKED_UP_DO_UPGRADE' environment variable is set to 'True'."
+			echo "Continuing with deployment."
+		fi
+else
+	echo "Confirmed that database is not initialized or has been migrated, and OK for version 0.9.0 migrations."
+fi
 
 # Initialize the database.
 python3.6 manage.py migrate

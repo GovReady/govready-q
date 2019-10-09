@@ -1,0 +1,54 @@
+{% load guardian_tags %}
+{% load notification_helpers %}
+
+<h3><strong>Project Permissions</strong></h3>
+<table class="table" style="width: auto;">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Project Name</th>
+      <th>Project Viewer </th>
+      <th>Project Editor</th>
+      <th>Project Owner</th>
+      <th>Project Membership (old)</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for project in projects %}
+    {% for user in users %}
+    {% get_obj_perms user for project as "user_perms" %}
+    {% if user_perms%}
+    <tr>
+      <td>
+        {{user.username}}
+      </td>
+      <td>
+        {{project}}
+      </td>
+      <td align="center">
+        {% if 'view_project' in user_perms %}
+        ✓
+        {% endif%}
+      </td>
+      <td align="center">
+        {% if 'change_project' in user_perms %}
+        ✓
+        {% endif%}
+      </td>
+      <td align="center">
+        {% if 'delete_project' in user_perms %}
+        ✓
+        {% endif%}
+      </td>
+      <td align="center">
+          {% if project|has_membership:user %}
+          ✓
+          {% endif%}
+      </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    {% endfor %}
+  </tbody>
+</table>

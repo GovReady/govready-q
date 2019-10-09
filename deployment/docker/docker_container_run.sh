@@ -219,7 +219,7 @@ fi
 APPSMNT=""
 if [ ! -z "$APPSDEVDIR" ]; then
   mkdir -p $APPSDEVDIR
-  APPSMNT="--mount type=bind,src=$APPSDEVDIR,dst=/mnt/apps"
+  APPSMNT="--mount type=bind,src=$APPSDEVDIR,dst=/usr/src/app/q-files"
 fi
 
 # Container filesystem options.

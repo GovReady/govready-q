@@ -2,54 +2,33 @@
 # is a landing page and a way to create new organization
 # subdomains.
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
-from django.views.decorators.http import require_http_methods
-from django.urls import reverse
-from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.views.decorators.csrf import csrf_exempt
 from django import forms
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import (Http404, HttpResponse, HttpResponseForbidden,
+                         HttpResponseNotAllowed, HttpResponseRedirect,
+                         JsonResponse)
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
-from .models import User, Organization
+from system_settings.models import SystemSettings
+
+from .forms import PortfolioSignupForm
+from .models import Organization, Portfolio, User
+from .notifications_helpers import notification_reply_email_hook
+
 
 def homepage(request):
     # Main landing page.
 
-    if settings.SINGLE_ORGANIZATION_KEY:
-        raise ValueError("view is not valid when this instance is single-organization")
-    if 'django.contrib.auth.backends.ModelBackend' not in settings.AUTHENTICATION_BACKENDS:
-        raise ValueError("view is not valid when logins are handled by enterprise authentication")
-
     from allauth.account.forms import SignupForm, LoginForm
 
-    class NewOrgForm(forms.ModelForm):
-        class Meta:
-            model = Organization
-            fields = ['name', 'subdomain']
-            labels = {
-                "name": "Organization Name",
-                "subdomain": "Pick a web address",
-            }
-            help_texts = {
-                "name": "",
-                "subdomain": "Must be all lowercase and can contain letters, digits, and dashes.",
-            }
-            widgets = {
-                "subdomain": forms.TextInput(attrs={"placeholder": "orgname", "addon_after": "." + settings.ORGANIZATION_PARENT_DOMAIN})
-            }
-        def clean_subdomain(self):
-            # Not sure why the field validator isn't being run by the ModelForm.
-            import re
-            from .models import subdomain_regex
-            from django.forms import ValidationError
-            if not re.match(subdomain_regex, self.cleaned_data['subdomain']):
-                raise ValidationError("The organization address must contain only lowercase letters, digits, and dashes and cannot start or end with a dash.")
-            return self.cleaned_data['subdomain']
-
+    portfolio_form = PortfolioSignupForm()
     signup_form = SignupForm()
-    neworg_form = NewOrgForm()
     login_form = LoginForm()
 
     # The allauth forms have 'autofocus' set on their widgets that draw the
@@ -57,42 +36,44 @@ def homepage(request):
     signup_form.fields['username'].widget.attrs.pop("autofocus", None)
     login_form.fields['login'].widget.attrs.pop("autofocus", None)
 
-    if request.POST.get("action") == "neworg":
+    if request.POST.get("action") == "signup":
         signup_form = SignupForm(request.POST)
-        neworg_form = NewOrgForm(request.POST)
-        if (request.user.is_authenticated or signup_form.is_valid()) and neworg_form.is_valid():
-            # Perform signup and new org creation, then redirect
-            # to that org.
+        portfolio_form = PortfolioSignupForm(request.POST)
+        if (request.user.is_authenticated or signup_form.is_valid()) and portfolio_form.is_valid():
+            # Perform signup and new org creation, then redirect to main page
             with transaction.atomic():
                 if not request.user.is_authenticated:
                     # Create account.
-                    user = signup_form.save(request)
+                    new_user = signup_form.save(request)
 
                     # Log them in.
                     from django.contrib.auth import authenticate, login
-                    user = authenticate(user_object=user)
-                    login(request, user)
+                    user = authenticate(request, username=signup_form.cleaned_data['username'], password=signup_form.cleaned_data['password1'])
+                    if user is not None:
+                        login(request, user, 'django.contrib.auth.backends.ModelBackend')
+                    else:
+                        print("[ERROR] new_user '{}' did not authenticate after during account creation.".format(new_user.username))
+                        messages.error(request, "[ERROR] new_user '{}' did not authenticate during account creation. Account not created. Report error to System Administrator. {}".format(new_user.username, vars(new_user)))
+                        return HttpResponseRedirect("/")
                 else:
                     user = request.user
-
-                org = Organization.create(admin_user=user, **neworg_form.cleaned_data)
+                if portfolio_form.is_valid():
+                    portfolio = portfolio_form.save()
+                    portfolio.assign_owner_permissions(request.user)
 
                 # Send a message to site administrators.
                 from django.core.mail import mail_admins
                 def subvars(s):
                     return s.format(
-                        org_subdomain=org.subdomain,
-                        org_name=org.name,
-                        org_link=settings.SITE_ROOT_URL + "/admin/siteapp/organization/{}/change".format(org.id),
+                        portfolio=portfolio.title,
                         username=user.username,
                         email=user.email,
-                        user_link=settings.SITE_ROOT_URL + "/admin/siteapp/user/{}/change".format(user.id),
                     )
                 mail_admins(
-                    subvars("New organization: {org_name} (created by {email})"),
-                    subvars("A new organization has been registered!\n\nOrganization\n------------\nName: {org_name}\nSubdomain: {org_subdomain}\nAdmin: {org_link}\n\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}\nOrganization: {org_name}\nAdmin: {user_link}"))
+                    subvars("New portfolio: {portfolio} (created by {email})"),
+                    subvars("A new portfolio has been registered!\n\nPortfolio\n------------\nName: {portfolio}\nRegistering User\n----------------\nUsername: {username}\nEmail: {email}"))
 
-                return HttpResponseRedirect("/welcome/" + org.subdomain)
+                return HttpResponseRedirect("/projects")
 
     elif request.POST.get("action") == "login":
         login_form = LoginForm(request.POST, request=request)
@@ -105,30 +86,32 @@ def homepage(request):
         logout(request)
         return HttpResponseRedirect('/') # reload
 
-    return render(request, "landing.html", {
-        "domain": settings.ORGANIZATION_PARENT_DOMAIN,
+    return render(request, "index.html", {
+        "hide_registration": SystemSettings.hide_registration,
         "signup_form": signup_form,
-        "neworg_form": neworg_form,
+        "portfolio_form": portfolio_form,
         "login_form": login_form,
         "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
     })
 
-def org_welcome_page(request, org_slug):
-    org = get_object_or_404(Organization, subdomain=org_slug)
-    return render(request, "neworgwelcome.html", {
-        "domain": settings.ORGANIZATION_PARENT_DOMAIN,
+def org_group_projects(request, org_slug):
+    """Get projects belonging to group"""
+    org = get_object_or_404(Organization, slug=org_slug)
+    projects = org.get_projects()
+    return render(request, "org_groups/org_group.html", {
         "org": org,
-    })    
+        "projects": projects,
+    })
 
-def user_profile_photo(request, user_id, org_subdomain, hash):
+@login_required
+def user_profile_photo(request, user_id, hash):
     # Get the User's profile photo for the specified organization.
     # To prevent enumeration of User info, we expect a hash value
     # in the URL that we compare against the User's current photo.
     # Raises 404 on any request that doesn't work out to prevent
     # enumeration of Organization subdomains too.
     user = get_object_or_404(User, id=user_id)
-    org = get_object_or_404(Organization, subdomain=org_subdomain)
-    prj = user.get_account_project(org)
+    prj = user.get_account_project()
     try:
         account_settings = prj.root_task.get_or_create_subtask(user, "account_settings", create=False)
         photo = account_settings.get_answers().get("picture")
@@ -138,7 +121,7 @@ def user_profile_photo(request, user_id, org_subdomain, hash):
     if not photo.answered_by_file.name: raise Http404()
 
     # Check that the fingerprint in the URL matches. See User.get_profile_picture_absolute_url.
-    user.localize_to_org(org)
+    user.preload_profile()
     path_with_fingerprint = user.get_profile_picture_absolute_url()
     if not path_with_fingerprint.endswith(request.path):
         raise Http404()
@@ -156,10 +139,70 @@ def user_profile_photo(request, user_id, org_subdomain, hash):
     resp['Content-Disposition'] = 'inline; filename=' + user.username + "_" + os.path.basename(photo.answered_by_file.name)
     return resp
 
-from .notifications_helpers import notification_reply_email_hook
+# TODO: Make groups available to all after managing group membership
+@login_required
+def org_groups(request):
+    """List org groups"""
+
+    return render(request, "org_groups/org_groups.html", {
+        "org_groups": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
+    })
+
+@login_required
+def new_org_group(request):
+    # Create new organization group
+
+    class NewOrgForm(forms.ModelForm):
+        class Meta:
+            model = Organization
+            fields = ['name', 'slug']
+            labels = {
+                "name": "Group name",
+                "slug": "Group \"slug\" to appear in URLs",
+            }
+            help_texts = {
+                "name": "An organizational group for you teams assessments.",
+                "slug": "Only lowercase letters, digits, and dashes.",
+            }
+            widgets = {
+                "name": forms.TextInput(attrs={"placeholder": "Privacy Office"}),
+                "slug": forms.TextInput(attrs={"placeholder": "privacy"})
+            }
+
+        def clean_slug(self):
+            # Not sure why the field validator isn't being run by the ModelForm.
+            import re
+            from .models import subdomain_regex
+            from django.forms import ValidationError
+            if not re.match(subdomain_regex, self.cleaned_data['slug']):
+                raise ValidationError("The organization address must contain only lowercase letters, digits, and dashes and cannot start or end with a dash.")
+            return self.cleaned_data['slug']
+
+    neworg_form = NewOrgForm()
+
+    if request.POST.get("action") == "neworg":
+        # signup_form = SignupForm(request.POST)
+        neworg_form = NewOrgForm(request.POST)
+        if request.user.is_authenticated and neworg_form.is_valid():
+            # Perform new org group creation, then redirect
+            # to that org group.
+            with transaction.atomic():
+                if not request.user.is_authenticated:
+                    # TODO Log message that usunloged in user tried to create a group
+                    return HttpResponseRedirect("/")
+                else:
+                    user = request.user
+                org = Organization.create(admin_user=user, **neworg_form.cleaned_data)
+                return HttpResponseRedirect("/" + org.slug + "/projects")
+
+    return render(request, "org_groups/new_org_group.html", {
+        "neworg_form": neworg_form,
+        # "member_of_orgs": Organization.get_all_readable_by(request.user) if request.user.is_authenticated else None,
+    })
+
 
 @csrf_exempt
-def project_api(request, org_slug, project_id):
+def project_api(request, project_id):
     from collections import OrderedDict
 
     # Get user from API key.
@@ -176,8 +219,7 @@ def project_api(request, org_slug, project_id):
         return JsonResponse(OrderedDict([("status", "error"), ("error", "A valid API key was not present in the Authorization header.")]), json_dumps_params={ "indent": 2 }, status=403)
 
     # Get project and check authorization.
-    organization = get_object_or_404(Organization, subdomain=org_slug)
-    project = get_object_or_404(Project, id=project_id, organization=organization)
+    project = get_object_or_404(Project, id=project_id)
     if not project.has_read_priv(user):
         return JsonResponse(OrderedDict([("status", "error"), ("error", "The user associated with the API key does not have read perission on the project.")]), json_dumps_params={ "indent": 2 }, status=403)
 

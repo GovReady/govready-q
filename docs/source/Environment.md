@@ -33,8 +33,6 @@ A production system deployment may need to set more options in `local/environmen
 	  "admins": [["Name", "email@domain.com"], ...],
 	  "host": "q.<yourdomain>.com",
 	  "https": true,
-	  "organization-parent-domain": "<yourdomain>.com",
-	  "organization-seen-anonymously": false,
 	  "secret-key": "something random here",
 	  "static": "/root/public_html"
 	}

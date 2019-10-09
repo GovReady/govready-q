@@ -107,7 +107,7 @@ Let's create our first compliance app! Use the command below:
 
 The output will be:
 
-	Created new app in AppSource host at /mnt/apps/myfirstapp
+	Created new app in AppSource host at /usr/src/app/q-files/myfirstapp
 
 The path shown in the output is a path _within_ the container's filesystem, which is inaccessible from the workstation. The actual path is inside the path given to the `--appsdevdir` command line argument previously. If you followed our steps above exactly, you can see the app's files in your `apps` folder:
 
@@ -338,12 +338,12 @@ The default setup from GovReady-Q docker installation only show apps in the comp
 
 Recall that the path given to `--appsdevdir` is mapped to a path within the Docker container so that the container can see the YAML files on the (host) local filesystem. The container sees these directories as
 
-	/mnt/apps/repo1/compliance_apps
-	/mnt/apps/repo2/compliance_apps
+	/usr/src/app/q-files/repo1/compliance_apps
+	/usr/src/app/q-files/repo2/compliance_apps
 
 Log into the Django admin at `http://localhost:8000/admin`. Add two new `AppSource` entries:
 
-For the first, set the `Slug` to `repo1` (or any other label that will help you distinguish the two repositories), the `Source Type` to `Local Directory`, and the `Path` to `/mnt/apps/repo1/compliance_apps`. For the second, set the `Slug` to `repo2`, the `Source Type` to `Local Directory`, and the `Path` to `/mnt/apps/repo2/compliance_apps`.
+For the first, set the `Slug` to `repo1` (or any other label that will help you distinguish the two repositories), the `Source Type` to `Local Directory`, and the `Path` to `/usr/src/app/q-files/repo1/compliance_apps`. For the second, set the `Slug` to `repo2`, the `Source Type` to `Local Directory`, and the `Path` to `/usr/src/app/q-files/repo2/compliance_apps`.
 
 Then restart the container:
 

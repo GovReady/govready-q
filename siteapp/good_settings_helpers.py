@@ -7,23 +7,17 @@ class AllauthAccountAdapter(DefaultAccountAdapter):
         # Create the new user account.
         user = super(AllauthAccountAdapter, self).save_user(request, *args, **kwargs)
 
-        # Send a message to site administrators. Since the user isn't
-        # logged in on signup page, we're not 'inside' an organization
-        # subdomain --- the sign-up page is not behind organization
-        # authentication. So request.organization isn't set. But
-        # unauthenticated_organization_subdomain is.
+        # Send a message to site administrators.
         from django.core.mail import mail_admins
         def subvars(s):
             return s.format(
-                org_subdomain=request.unauthenticated_organization_subdomain.subdomain if hasattr(request, 'unauthenticated_organization_subdomain') else "<no organization>",
-                org_name=request.unauthenticated_organization_subdomain.name if hasattr(request, 'unauthenticated_organization_subdomain') else "<no organization>",
                 username=user.username,
                 email=user.email,
                 link=settings.SITE_ROOT_URL + "/admin/siteapp/user/{}/change".format(user.id),
             )
         mail_admins(
-            subvars("New account on {org_subdomain}: {username} <{email}>"),
-            subvars("A user registered!\n\nUsername: {username}\nEmail: {email}\nOrganization: {org_name}\nAdmin: {link}"))
+            subvars("New account: {username} <{email}>"),
+            subvars("A user registered!\n\nUsername: {username}\nEmail: {email}\nAdmin: {link}"))
 
         return user
 

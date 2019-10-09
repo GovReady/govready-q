@@ -8,7 +8,7 @@ GovReady-Q is a Python 3.6 and higher, Django 2.x application with a relational 
 | --- |
 | (GovReady-Q application) |
 | Python 3.6 |
-| Django 2.x |
+| Django 2.2 |
 | Jinja 2.x |
 | uwsgi 2.x |
 | unzip |

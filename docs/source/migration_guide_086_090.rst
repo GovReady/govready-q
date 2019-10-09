@@ -17,7 +17,7 @@ Changes GovReady-Q users will encounter in v0.9.0:
 
 .. list-table::
    :header-rows: 1
-   :class: tight-table 
+   :class: tight-table
 
    * - **v0.8.6**
      - **v0.9.0**
@@ -123,12 +123,12 @@ Post Migration Clean Up
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 * Mark all old Notifications ``emailed`` as True. (v0.9.0 notification checks emailed status of notifications and sets emailed to True after email is sent.)
-* Review Help Squad, Reviewers, and Administrators. 
+* Review Help Squad, Reviewers, and Administrators.
 
-  * The migration converts Organizations to Portfolios. 
-  * Help Squad, Reviewers, and Organization admins are only preserved on the “main” organization (e.g., first organization created). 
-  * The migration does not modify the Help Squad or Reviewers. 
-  * Organization Admins are associated with the “main” organization. 
+  * The migration converts Organizations to Portfolios.
+  * Help Squad, Reviewers, and Organization admins are only preserved on the “main” organization (e.g., first organization created).
+  * The migration does not modify the Help Squad or Reviewers.
+  * Organization Admins are associated with the “main” organization.
 
 * You should review who has these permissions and adjust accordingly after migrating.
 * Release the production instance to users.
@@ -138,7 +138,7 @@ Roles and Permissions in v0.9.0
 
 .. list-table::
    :header-rows: 1
-   :class: tight-table 
+   :class: tight-table
 
    * - **Permission/Role Name**
      - **Description**
@@ -182,4 +182,3 @@ Roles and Permissions in v0.9.0
    * - project_view, project_add, project_change, project_delete
      - Permissions on Project objects. Currently everyone who has one of these has all of these permissions.
      - If user has project_membership on project, user gets project_view, project_add, project_change.  If user has project_membership on project and project_membership admin flag True, user also gets project_delete. If user has task object for a project, user gets project_view, project_add, project_change.  If user is a guest of a discussion object for a project, user gets project_view, project_add, project_change.
-

@@ -1,13 +1,17 @@
-from django.db import models, transaction
-from django.utils import timezone, crypto
+from itertools import chain
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
-
+from django.db import models, transaction
+from django.utils import crypto, timezone
+from guardian.shortcuts import (assign_perm, get_objects_for_user,
+                                get_perms_for_model, get_user_perms,
+                                get_users_with_perms, remove_perm)
 from jsonfield import JSONField
+
 
 class User(AbstractUser):
     # Additional user profile data.
@@ -23,12 +27,11 @@ class User(AbstractUser):
     # Methods
 
     def __str__(self):
-        name = self._get_setting("name")
-        if name: # question might be skipped
-            return name
-
+        # name = self._get_setting("name")
+        # if name: # question might be skipped
+        #     return name
         # User has not entered their name.
-        return self.email or "Anonymous User"
+        return self.username or "Anonymous User"
 
     def name(self):
         return self._get_setting("name")
@@ -46,21 +49,15 @@ class User(AbstractUser):
             return "Anonymous User Without Email Address"
 
     @staticmethod
-    def localize_users_to_org(org, users, sort=False):
-        # Set cached state for when the users are viewed from a particular Organization.
+    def preload_profiles(users, sort=False):
         # For each user, set:
         # * user_settings_task, which holds the account project's settings Task, if created
         # * user_settings_dict, which holds that Task's current answers as a dict, if the Task was created
-        # * can_see_org_settings, which holds whether the user is in the org's organization project
-
-        org_members = org.get_organization_project().get_members()
-        if len(users) > 1: org_members = set(org_members) # pre-load
 
         # Get the account projects of all of the users in batch.
         account_project_root_tasks = { }
         for pm in ProjectMembership.objects.filter(
             user__in=users,
-            project__organization=org,
             project__is_account_project=True)\
             .select_related("project", "project__root_task", "project__root_task__module"):
             account_project_root_tasks[pm.user] = pm.project.root_task
@@ -92,47 +89,46 @@ class User(AbstractUser):
 
         # Set attributes on each user instance.
         for user in users:
-            user.localized_to = org
             user.user_settings_task = account_project_settings.get(account_project_root_tasks.get(user))
             user.user_settings_task_answers = settings.get(user.user_settings_task, None)
-            user.can_see_org_settings = (user in org_members)
 
         # Apply a standard sort.
         if sort:
             users.sort(key = lambda user : user.name_and_email())
 
-    def localize_to_org(self, org):
-        # Prep this user's cached state when viewed from a particular Organization.
-        User.localize_users_to_org(org, [self])
+    def preload_profile(self):
+        # Prep this user's cached state.
+        User.preload_profiles([self])
 
     def user_settings_task_create_if_doesnt_exist(self):
         # If a task is set, return it.
         if getattr(self, 'user_settings_task', None):
             return self.user_settings_task
 
-        # Otherwise, create it for the localized organization.
-        return self.get_settings_task(self.localized_to)
+        # Otherwise, create it.
+        return self.get_settings_task()
 
     def _get_setting(self, key):
+        if not hasattr(self, 'user_settings_task'):
+            self.preload_profile()
         if getattr(self, 'user_settings_task_answers', None):
             return self.user_settings_task_answers.get(key)
         return None
 
-    def get_account_project(self, org):
+    def get_account_project(self):
         p = getattr(self, "_account_project", None)
         if p is None:
-            p = self.get_account_project_(org)
+            p = self.get_account_project_()
             self._account_project = p
         return p
 
     @transaction.atomic
-    def get_account_project_(self, org):
+    def get_account_project_(self):
         # TODO: There's a race condition here.
 
         # Get an existing account project.
         pm = ProjectMembership.objects.filter(
             user=self,
-            project__organization=org,
             project__is_account_project=True)\
             .select_related("project", "project__root_task", "project__root_task__module")\
             .first()
@@ -141,7 +137,6 @@ class User(AbstractUser):
 
         # Create a new one.
         p = Project.objects.create(
-            organization=org,
             is_account_project=True,
         )
         ProjectMembership.objects.create(
@@ -154,8 +149,8 @@ class User(AbstractUser):
         return p
 
     @transaction.atomic
-    def get_settings_task(self, org):
-        p = self.get_account_project(org)
+    def get_settings_task(self):
+        p = self.get_account_project()
         return p.root_task.get_or_create_subtask(self, "account_settings")
 
     def get_profile_picture_absolute_url(self):
@@ -164,8 +159,6 @@ class User(AbstractUser):
         # caches when photos change, we include in the URL some
         # information about the internal data of the profile photo,
         # which is checked in views_landing.py's user_profile_photo().
-        # Also since profile photos are per-Organization we have to
-        # include which org this User instance is localized to.
 
         # Get the current profile photo.
         try:
@@ -181,19 +174,17 @@ class User(AbstractUser):
         fingerprint = base64.urlsafe_b64encode(
                         xxhash.xxh64(payload).digest()
                        ).decode('ascii').rstrip("=")
-        return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s/%s" % (
+        return settings.SITE_ROOT_URL + "/media/users/%d/photo/%s" % (
             self.id,
-            self.user_settings_task.project.organization.subdomain,
             fingerprint
         )
 
-    def render_context_dict(self, req_organization):
+    def render_context_dict(self):
         # Get the user's account settings task's answers as a dict.
-        organization = req_organization if isinstance(req_organization, Organization) else req_organization.organization
-        if getattr(self, 'user_settings_task', None) and self.user_settings_task.project.organization == organization:
+        if getattr(self, 'user_settings_task', None):
             profile = dict(self.user_settings_task_answers)
         else:
-            profile = self.get_settings_task(organization).get_answers().as_dict()
+            profile = self.get_settings_task().get_answers().as_dict()
 
         # Add some information.
         profile.update({
@@ -211,6 +202,9 @@ class User(AbstractUser):
             del profile["picture"]["content_dataurl"]
         except:
             pass
+
+        # Add username to profile
+        profile["username"] = self.username
 
         return profile
 
@@ -251,6 +245,19 @@ class User(AbstractUser):
             "wo": self.api_key_wo,
         }
 
+    def can_see_any_org_settings(self):
+        return ProjectMembership.objects.filter(project__is_organization_project=True).exists()
+
+    def portfolio_list(self):
+        portfolio_permissions = Portfolio.get_all_readable_by(self)
+        project_permissions = self.get_portfolios_from_projects()
+        return portfolio_permissions | project_permissions
+
+    def get_portfolios_from_projects(self):
+        projects = get_objects_for_user(self, 'siteapp.view_project')
+        portfolio_list = projects.values_list('portfolio', flat=True)
+        portfolios = Portfolio.objects.filter(id__in=portfolio_list)
+        return portfolios
 
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):
@@ -266,7 +273,7 @@ subdomain_regex = r"^([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])$"
 
 class Organization(models.Model):
     name = models.CharField(max_length=256, help_text="The display name of the Organization.")
-    subdomain = models.CharField(max_length=200, unique=True, help_text="The subdomain of the host site that this Organization's site is served at.", validators=[RegexValidator(regex=subdomain_regex)])
+    slug = models.CharField(max_length=32, unique=True, help_text="A URL-safe abbreviation for the Organization.", validators=[RegexValidator(regex=subdomain_regex)])
 
     help_squad = models.ManyToManyField(User, blank=True, related_name="in_help_squad_of", help_text="Users who are invited to all new discussions in this Organization.")
     reviewers = models.ManyToManyField(User, blank=True, related_name="is_reviewer_of", help_text="Users who are permitted to change the reviewed state of task answers.")
@@ -279,46 +286,10 @@ class Organization(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        # Return a URL with a hostname. That's unusual.
-        return self.get_url()
-
-    def get_url(self, path=''):
-        # Construct the base URL of the root page of the site for this organization.
-        #
-        # If SINGLE_ORGANIZATION_KEY is empty, then this is a multi-org installation
-        # and the Organization's subdomain gets added to the ORGANIZATION_PARENT_DOMAIN.
-        # settings.SITE_ROOT_URL tells us the scheme, host, and port of the main Q landing site.
-        # In testing it's http://localhost:8000, and in production it's https://q.govready.com.
-        # Combine the scheme and port with settings.ORGANIZATION_PARENT_DOMAIN to form the
-        # base URL for this Organization.
-        #
-        # If SINGLE_ORGANIZATION_KEY is not empty, then we are running off of SITE_ROOT_URL
-        # directly.
-        if settings.SINGLE_ORGANIZATION_KEY:
-            return settings.SITE_ROOT_URL + path
-        import urllib.parse
-        s = urllib.parse.urlsplit(settings.SITE_ROOT_URL)
-        scheme, host = (s[0], s[1])
-        port = '' if (':' not in host) else (':'+host.split(':')[1])
-        return urllib.parse.urlunsplit((
-            scheme, # scheme
-            self.subdomain + '.' + settings.ORGANIZATION_PARENT_DOMAIN + port, # host
-            path,
-            '', # query
-            '' # fragment
-            ))
+        return "/%s/projects" % (self.slug)
 
     def get_who_can_read(self):
-        # A user can see an Organization if:
-        # * they have read permission on any Project within the Organization
-        # * they are an editor of a Task within a Project within the Organization (but might not otherwise be a Project member)
-        # * they are a guest in any Discussion on TaskQuestion in a Task in a Project in the Organization
-        # The inverse function is below.
-        return (
-               User.objects.filter(projectmembership__project__organization=self)
-             | User.objects.filter(tasks_editor_of__project__organization=self)
-             | User.objects.filter(guest_in_discussions__organization=self)
-             ).distinct()
+        return User.objects.all()
 
     def can_read(self, user):
         # Although we can check it by evaluating:
@@ -332,11 +303,14 @@ class Organization(models.Model):
         # See can_read.
         from guidedmodules.models import Task
         from discussion.models import Discussion
-        return (
-              Organization.objects.filter(projects__members__user=user)
-            | Organization.objects.filter(projects__tasks__editor=user)
-            | Organization.objects.filter(discussions__guests=user)
-            ).order_by("name", "created").distinct()
+        return Organization.objects.all().order_by("name", "created").distinct()
+
+    def get_projects(self):
+        # return Projects.objects.filter()
+        return Project.objects.filter(organization=self)
+
+    def get_members(self):
+        return User.objects.filter(projectmembership__project=self)
 
     def get_organization_project(self):
         prj, isnew = Project.objects.get_or_create(organization=self, is_organization_project=True)
@@ -363,7 +337,7 @@ class Organization(models.Model):
         # See admin.py::OrganizationAdmin also.
 
         assert admin_user
-        
+
         # Create instance by passing field values to the ORM.
         org = Organization.objects.create(**kargs)
 
@@ -376,6 +350,60 @@ class Organization(models.Model):
         pm.save()
 
         return org
+
+class Portfolio(models.Model):
+    title = models.CharField(max_length=256, help_text="The title of this Portfolio.", unique=True)
+    description = models.CharField(max_length=512, blank=True, help_text="A description of this Portfolio.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        permissions = [
+            ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission'),
+        ]
+
+    def get_absolute_url(self):
+        return "/portfolios/%s/projects" % (self.id)
+
+    @staticmethod
+    def get_all_readable_by(user):
+        return get_objects_for_user(user, 'siteapp.view_portfolio')
+
+    def assign_owner_permissions(self, user):
+        permissions = get_perms_for_model(Portfolio)
+        for perm in permissions:
+            assign_perm(perm.codename, user, self)
+
+    def assign_edit_permissions(self, user):
+        permissions = ['view_portfolio', 'change_portfolio', 'add_portfolio']
+        for perm in permissions:
+            assign_perm(perm, user, self)
+
+    def remove_permissions(self, user):
+        permissions = get_perms_for_model(Portfolio)
+        for perm in permissions:
+            remove_perm(perm.codename, user, self)
+
+    def remove_owner_permissions(self, user):
+        remove_perm('can_grant_portfolio_owner_permission', user, self)
+
+    def get_invitation_verb_inf(self, invitation):
+        return "to view"
+
+    def users_with_perms(self):
+        users_with_perms = get_users_with_perms(self, attach_perms=True)
+        users = []
+        for user in users_with_perms:
+            user_perms = (get_user_perms(user, self))
+            owner = True if user_perms.filter(codename='can_grant_portfolio_owner_permission') else False
+            name = user.name() if user.name() else str(user)
+            user = {'name': name, 'id': user.id, 'owner': owner}
+            users.append(user)
+        sorted_users = sorted(users, key=lambda k: (-k['owner'], k['name'].lower()))
+        return sorted_users
+
+    def can_invite_others(self, user):
+        return user.has_perm('can_grant_portfolio_owner_permission', self)
 
 class Folder(models.Model):
     """A folder is a collection of Projects."""
@@ -433,21 +461,21 @@ class Folder(models.Model):
     def get_readable_projects(self, user):
         # Get the projects that are in the folder that the user can see. This also handily
         # sets user_is_admin on the projects.
-        return Project.get_projects_with_read_priv(user, self.organization,
+        return Project.get_projects_with_read_priv(user,
             { "contained_in_folders": self })
 
 class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
-
-    organization = models.ForeignKey(Organization, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this project belongs to.")
+    organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
+    portfolio = models.ForeignKey(Portfolio, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Portfolio that this Project belongs to.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
-    is_account_project = models.BooleanField(default=False, help_text="Each User has one Project per Organization for account Tasks.")
+    is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
 
         # the root_task has to be nullable because the Task itself has a non-null
         # field that refers back to this Project, and one must be NULL until the
         # other instance is created
-    root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of", on_delete=models.CASCADE, help_text="The root Task of this Project, which defines the structure of the Project.")
+    root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of", on_delete=models.CASCADE, help_text="All Projects have a 'root Task' (e.g., 'guidedmodules.task'). The root Task defines important information about Project.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -483,21 +511,41 @@ class Project(models.Model):
         else:
             parts.append(self.title)
         return " / ".join(parts)
-        
+
     def get_members(self):
-        return User.objects.filter(projectmembership__project=self)
+        # Who are members of this project?
+        # Project members from 0.8.6 permissions structure
+        queryset1 = User.objects.filter(projectmembership__project=self)
+        # Project members from 0.9.0 Django guardian permission structure
+        queryset2 = get_users_with_perms(self)
+        # Project's Portfolio members from 0.9.0 Django guardian permission structure
+        queryset3 = get_users_with_perms(self.portfolio)
+        users = list(chain(queryset1, queryset2, queryset3))
+        return users
 
     def get_admins(self):
-        return User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+        # Project members from 0.8.6 permissions structure with "is_admin" flag have Project admin rights
+        queryset1 = User.objects.filter(projectmembership__project=self, projectmembership__is_admin=True)
+        # Project's Portfolio owner from 0.9.0 Django guardian permission structure have Project admin rights
+        queryset2 = get_users_with_perms(self, only_with_perms_in=['can_grant_portfolio_owner_permission'])
+        users = list(chain(queryset1, queryset2))
+        return users
 
     def is_deletable(self):
         return not self.is_organization_project and not self.is_account_project
 
     def can_start_task(self, user):
+        # Anyone who is a Project member can start task
+        # This includes users who are project members because they are Project's Portfolio's members
         return (not self.is_account_project) and (user in self.get_members())
 
     def can_invite_others(self, user):
-        return (not self.is_account_project) and (user in self.get_admins())
+        return user.has_perm('can_grant_portfolio_owner_permission', self.portfolio)
+
+    def assign_edit_permissions(self, user):
+        permissions = ['view_project', 'change_project', 'add_project']
+        for perm in permissions:
+            assign_perm(perm, user, self)
 
     def get_owner_domains(self):
         # Utility function for the admin/debugging to quickly see the domain
@@ -505,15 +553,37 @@ class Project(models.Model):
         return ", ".join(sorted(m.user.email.split("@", 1)[1] for m in ProjectMembership.objects.filter(project=self, is_admin=True) if m.user.email and "@" in m.user.email))
 
     def has_read_priv(self, user):
-        # Who can see this project? Team members + anyone with read privs to a task within
-        # this project + anyone that's a guest in dicussion within this project.
+        # Who can see this project?
+        # Team members + anyone with read privs to a task within this project
+        # + anyone that's a guest in discussion within this project
         # See get_all_participants for the inverse of this function.
         from guidedmodules.models import Task
-        if ProjectMembership.objects.filter(project=self, user=user).exists():
+        if user.has_perm('view_project', self) or ProjectMembership.objects.filter(project=self, user=user).exists():
             return True
-        if Task.get_all_tasks_readable_by(user, self.organization, recursive=True).filter(project=self).exists():
+        if Task.get_all_tasks_readable_by(user, recursive=True).filter(project=self).exists():
             return True
         for d in self.get_discussions_in_project_as_guest(user):
+            return True
+        # + anyone who is a member of the project's portfolio
+        # + anyone who has read, view, change permission on project
+        if (not self.is_account_project) and (user in self.get_members()):
+            return True
+        return False
+
+    def has_write_priv(self, user):
+        # TODO: Create interfaces for managing separate has_write_priv
+        # Meanwhile, during transition from 0.8.6 to 0.9.0 allow users who had access
+        # to continue access and be able to edit
+
+        # Who can edit this project('s questions)?
+        # + anyone who is a member of the project's portfolio
+        if (user.has_perm('change_portfolio', self.portfolio) or user.has_perm('view_portfolio', self.portfolio)):
+            return True
+        # + anyone who has read, view, change permission on project
+        if user.has_perm('change_project', self):
+            return True
+        # TODO: Is this too permissive?
+        if (not self.is_account_project) and (user in self.get_members()):
             return True
         return False
 
@@ -537,7 +607,7 @@ class Project(models.Model):
             participants[pm.user]["is_admin"] = pm.is_admin
         for task in Task.objects.filter(project=self).select_related("editor"):
             participants[task.editor]["editor_of"].append(task)
-        discussions = Discussion.get_for_all(self.organization, TaskAnswer.objects.filter(task__project=self, task__deleted_at=None))\
+        discussions = Discussion.get_for_all(TaskAnswer.objects.filter(task__project=self, task__deleted_at=None))\
             .prefetch_related("guests")
         for d in discussions:
             for user in d.guests.all():
@@ -545,7 +615,7 @@ class Project(models.Model):
 
         # Add text labels to describe user and authz.
         for user, info in participants.items():
-            info["user_details"] = user.render_context_dict(self.organization)
+            info["user_details"] = user.render_context_dict()
             descr = []
             if info["is_admin"]:
                 descr.append("admin")
@@ -561,7 +631,7 @@ class Project(models.Model):
         return sorted(participants.items(), key = lambda kv : kv[0].username)
 
     @staticmethod
-    def get_projects_with_read_priv(user, organization, filters={}, excludes={}):
+    def get_projects_with_read_priv(user, filters={}, excludes={}):
         # Gets all projects a user has read priv to, excluding
         # account and organization profile projects, and sorted
         # in reverse chronological order by modified date.
@@ -571,10 +641,9 @@ class Project(models.Model):
         if not user.is_authenticated:
             return projects
 
-        # Add all of the Projects the user is a member of within the Organization
-        # that the user is on the subdomain of.
+        # Add all of the Projects the user is a member of.
         for pm in ProjectMembership.objects\
-            .filter(project__organization=organization, user=user)\
+            .filter(user=user)\
             .filter(**{ "project__"+k: v for k, v in filters.items() })\
             .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
             .select_related('project__root_task__module')\
@@ -587,7 +656,7 @@ class Project(models.Model):
         # Add projects that the user is the editor of a task in, even if
         # the user isn't a team member of that project.
         from guidedmodules.models import Task
-        for task in Task.get_all_tasks_readable_by(user, organization)\
+        for task in Task.get_all_tasks_readable_by(user)\
             .filter(**{ "project__"+k: v for k, v in filters.items() })\
             .exclude(**{ "project__"+k: v for k, v in excludes.items() })\
             .order_by('-created')\
@@ -598,11 +667,25 @@ class Project(models.Model):
         # Add projects that the user is participating in a Discussion in
         # as a guest.
         from discussion.models import Discussion
-        for d in Discussion.objects.filter(organization=organization, guests=user):
+        for d in Discussion.objects.filter(guests=user):
             if d.attached_to is not None: # because it is generic there is no cascaded delete and the Discussion can become dangling
                 if not filters or d.attached_to.task.project in Project.objects.filter(**filters):
                     if not excludes or d.attached_to.task.project not in Project.objects.exclude(**filters):
                         projects.add(d.attached_to.task.project)
+
+
+        # Add projects the user has permissions for
+        for project in Project.objects.all():
+            user_permissions = get_user_perms(user, project)
+            if len(user_permissions):
+                projects.add(project)
+
+        # Add projects the user has permissions for through a portfolio
+        for portfolio in Portfolio.objects.all():
+            user_permissions = get_user_perms(user, portfolio)
+            if len(user_permissions):
+                for project in portfolio.projects.all():
+                    projects.add(project)
 
         # Don't show system projects.
         system_projects = set(p for p in projects if p.is_organization_project or p.is_account_project)
@@ -629,7 +712,7 @@ class Project(models.Model):
         from guidedmodules.models import Task
         return [
             task for task in
-            Task.get_all_tasks_readable_by(user, self.organization)
+            Task.get_all_tasks_readable_by(user)
                 .filter(project=self, editor=user) \
                 .order_by('-updated')\
                 .select_related('project')
@@ -878,13 +961,9 @@ class Project(models.Model):
 
     def get_api_url(self):
         # Get the URL to the data API for this Project.
-        return \
-        settings.SITE_ROOT_URL \
-          + "/api/v1/organizations/{org}/projects/{id}/answers".format(
-            org=self.organization.subdomain,
-            id=self.id,
-        )
-
+        import urllib.parse
+        return urllib.parse.urljoin(settings.SITE_ROOT_URL,
+            "/api/v1//projects/{id}/answers".format(id=self.id))
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE, help_text="The Project this is defining membership for.")
@@ -897,12 +976,11 @@ class ProjectMembership(models.Model):
         unique_together = [('project', 'user')]
 
 class Invitation(models.Model):
-    organization = models.ForeignKey(Organization, related_name="invitations", on_delete=models.CASCADE, help_text="The Organization that this Invitation belongs to.")
-
     # who is sending the invitation
     from_user = models.ForeignKey(User, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The User who sent the invitation.")
-    from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The Project within which the invitation exists.")
-    
+    from_project = models.ForeignKey(Project, related_name="invitations_sent", on_delete=models.CASCADE, help_text="The Project within which the invitation exists.", blank=True, null=True)
+    from_portfolio = models.ForeignKey(Portfolio, related_name="portfolio_invitations_sent", on_delete=models.CASCADE, help_text="The Portfolio within which the invitation exists.", blank=True, null=True)
+
     # what is the recipient being invited to?
     into_project = models.BooleanField(default=False, help_text="Whether the user being invited is being invited to join from_project.")
     target_content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
@@ -948,15 +1026,19 @@ class Invitation(models.Model):
         super(Invitation, self).save(*args, **kwargs)
 
     @staticmethod
-    def form_context_dict(user, project, exclude_users):
-        from guidedmodules.models import ProjectMembership
+    def form_context_dict(user, model, exclude_users):
+        users_with_perms = get_users_with_perms(model)
+        names_to_exclude = [o.username for o in users_with_perms]
+        if len(exclude_users) > 0:
+            for u in exclude_users:
+                names_to_exclude.append(u.username)
+        users = [{ "id": user.id, "name": str(user) }
+                for user in User.objects.exclude(username__in=names_to_exclude)]
         return {
-            "project_id": project.id,
-            "project_title": project.title,
-            "users": [{ "id": pm.user.id, "name": str(pm.user) }
-                for pm in ProjectMembership.objects.filter(project=project)\
-                    .exclude(user__in=exclude_users)],
-            "can_add_invitee_to_team": project.can_invite_others(user),
+            "model_id": model.id,
+            "model_title": model.title,
+            "users": users,
+            "can_add_invitee_to_team": model.can_invite_others(user),
         }
 
     @staticmethod
@@ -978,14 +1060,15 @@ class Invitation(models.Model):
     def is_target_the_project(self):
         return isinstance(self.target, Project)
 
+    def is_target_the_portfolio(self):
+        return isinstance(self.target, Portfolio)
+
     def purpose(self):
         return self.purpose_verb() + " " + self.target.title
 
     def get_acceptance_url(self):
-        # The invitation must be sent using the subdomain of the organization it is
-        # a part of.
         from django.urls import reverse
-        return self.organization.get_url(reverse('accept_invitation', kwargs={'code': self.email_invitation_code}))
+        return settings.SITE_ROOT_URL + reverse('accept_invitation', kwargs={'code': self.email_invitation_code})
 
     def send(self):
         # Send and mark as sent.
@@ -1022,4 +1105,3 @@ class Invitation(models.Model):
 
     def get_redirect_url(self):
         return self.target.get_invitation_redirect_url(self)
-

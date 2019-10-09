@@ -1,7 +1,9 @@
+# GovReady-Q App
 __pycache__/
 /local
 /modules/local
 siteapp/static/vendor
+apps/
 
 # generated files
 .bash_history
@@ -22,6 +24,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+venv/
 build/
 develop-eggs/
 dist/
@@ -65,9 +68,6 @@ coverage.xml
 # Django stuff:
 *.log
 
-# Sphinx documentation
-docs/_build/
-
 # PyBuilder
 target/
 
@@ -89,5 +89,12 @@ vendor
 *~
 \#*\#
 
+# Sphinx documentation
+docs/_build/
 # Local Sphinx / Read The Docs files
 docs/build
+
+# scanners
+.scannerwork/
+sonar-project.properties
+

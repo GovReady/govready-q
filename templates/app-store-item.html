@@ -50,13 +50,30 @@
   </div>
   <div class="col-sm-3 col-sm-pull-9">
     <div style="padding-right: 1em">
-      {% if app.app_icon_dataurl %}
-        <img src="{{app.app_icon_dataurl}}" style="width: 100%;">
+      {% if app.icon %}
+        <img src="{{app.icon}}" style="width: 100%;" alt= "App Icon">
       {% endif %}
 
       <form method="post" style="margin: 1em; text-align: center;">
         {% csrf_token %}
-        <button id="start-project" type="submit" class="btn btn-success">
+
+        {# If the user is a member of more than one organization that can start this app, the user much choose which organization context to start this app in. #}
+        {% if app.organizations|length == 1 %}
+          {% with app.organizations|first as first_org %}
+            <input type="hidden" name="organization" value="{{first_org.slug}}">
+          {% endwith %}
+        {% else %}
+          <div style="margin-bottom: 1em">
+            <label for="add-to-org" style="font-weight: normal; margin: 0; font-size: 90%;">Add to:</label>
+            <select id="add-to-org" name="organization" class="form-control">
+              {% for org in app.organizations %}
+                <option value="{{org.slug}}">{{org.name}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+       
+        <button id="start-project" type="submit" class="btn btn-success" style="width: 100%;">
           {% if not request.GET.q %}
           Add to project
           {% else %}
@@ -78,10 +95,6 @@
           <div><span class="meta-key">Startable</span>: Requires Admin
         {% endif %}
 
-        <div class="meta-heading"><strong>Recommended for</strong></div>
-        {% for item in app.recommended_for %}
-        <div><span class="meta-key">{{item.key_short}}</span>: {{item.value}}</div>
-        {% endfor %}
       </div>
     </div>
   </div>

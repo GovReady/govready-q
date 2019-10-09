@@ -1,3 +1,11 @@
+# Build GovReady-Q Docker container
+#
+# Build examples:
+#   docker build --tag govready/govready-q-0.9.0 .
+#
+# Run examples:
+#   docker run -it -d -p 8000:8000 --name govready-q-0.9.0 --rm govready/govready-q-0.9.0
+
 # Build on Docker's official CentOS 7 image.
 FROM centos:7
 
@@ -57,6 +65,7 @@ COPY templates ./templates
 COPY fixtures ./fixtures
 COPY q-files ./q-files
 COPY testmocking ./testmocking
+COPY system_settings ./system_settings
 COPY manage.py .
 
 # Flatten static files. Create a local/environment.json file that
@@ -88,12 +97,13 @@ COPY deployment/docker/dockerfile_exec.sh .
 COPY deployment/docker/first_run.sh /usr/local/bin/first_run
 COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
 COPY deployment/docker/tail_logs.sh /usr/local/bin/tail_logs
-COPY deployment/docker/add_sample_data.sh /usr/local/bin/add_sample_data
+COPY deployment/docker/add_data.sh /usr/local/bin/add_data
 
 # This directory must be present for the AppSource created by our
 # first_run script. The directory only has something in it if
 # the container is launched with --mount.
-RUN mkdir -p /mnt/apps
+# --mount type=bind,source="$(pwd)",dst=/mnt/q-files-host
+RUN mkdir -p /mnt/q-files-host
 
 # Create a non-root user and group for the application to run as to guard against
 # run-time modification of the system and application.

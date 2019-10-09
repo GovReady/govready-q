@@ -8,15 +8,19 @@ from django.db import transaction
 import re
 
 from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
+
 import guidedmodules.module_logic as module_logic
 import guidedmodules.answer_validation as answer_validation
 from discussion.models import Discussion
 from siteapp.models import User, Invitation, Project, ProjectMembership
+from siteapp.forms import ProjectForm
+
+import fs, fs.errors
 
 @login_required
 def new_task(request):
     # Create a new task by answering a module question of a project rook task.
-    project = get_object_or_404(Project, id=request.POST["project"], organization=request.organization)
+    project = get_object_or_404(Project, id=request.POST["project"])
 
     # Can the user create a task within this project?
     if not project.can_start_task(request.user):
@@ -35,7 +39,7 @@ def new_task(request):
 @login_required
 def download_module_asset(request, taskid, taskslug, asset_path):
     # Get the Task and check that the user has read permission.
-    task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
+    task = get_object_or_404(Task, id=taskid)
     if not task.has_read_priv(request.user): raise Http404()
 
     # Check that this path is one of app's assets.
@@ -81,9 +85,9 @@ def download_module_asset(request, taskid, taskslug, asset_path):
 # decorator for pages that render tasks
 def task_view(view_func):
     @login_required
-    def inner_func(request, taskid, taskslug, pagepath, question_key, *args):
+    def new_view_func(request, taskid, taskslug, pagepath, question_key, *args):
         # Get the Task.
-        task = get_object_or_404(Task, id=taskid, project__organization=request.organization)
+        task = get_object_or_404(Task, id=taskid)
 
         # If this task is actually a project root, redirect away from here.
         # Only do this for GET requests since POST requests can be API-like things.
@@ -107,14 +111,22 @@ def task_view(view_func):
             # to the show-question page only, where we know which question is
             # being asked from the URL.
             if taskans:
-                d = Discussion.get_for(request.organization, taskans)
+                d = Discussion.get_for(task.project.organization, taskans)
                 if d and d.is_participant(request.user):
                     return True
+
+            # Yes in the special case of user accessing the avatar of another user
+            # TODO: Re-evaluate this code block after implementing a more traditional
+            #       user profile model instead of using a Q module for a persons profile.
+            #       see https://github.com/GovReady/govready-q/issues/632
+            if question_key == "picture":
+                return True
+
             return False
         if not read_priv():
-            return HttpResponseForbidden()
+            return HttpResponseForbidden("You do not have read privileges to this page.")
 
-        # We skiped the check for whether the Task is deleted above. Now
+        # We skipped the check for whether the Task is deleted above. Now
         # check for that and provide a more specific error.
         if task.deleted_at:
             # The Task is deleted. If the user would have had access to it,
@@ -148,16 +160,14 @@ def task_view(view_func):
             "write_priv": task.has_write_priv(request.user),
             "is_admin": request.user in task.project.get_admins(),
             "send_invitation": Invitation.form_context_dict(request.user, task.project, [task.editor]),
-            "open_invitations": task.get_open_invitations(request.user, request.organization),
-            "source_invitation": task.get_source_invitation(request.user, request.organization),
+            "open_invitations": task.get_open_invitations(request.user),
+            "source_invitation": task.get_source_invitation(request.user),
             "previous_page_type": request.GET.get("previous"),
         }
 
         # Render the view.
         return view_func(request, task, answered, context, question, *args)
-
-    return inner_func
-
+    return new_view_func
 
 @task_view
 def next_question(request, task, answered, *unused_args):
@@ -174,7 +184,6 @@ def next_question(request, task, answered, *unused_args):
         q = answered.can_answer[0]
         return HttpResponseRedirect(task.get_absolute_url_to_question(q) + previous)
 
-
 @task_view
 def save_answer(request, task, answered, context, __):
     if request.method != "POST":
@@ -184,8 +193,11 @@ def save_answer(request, task, answered, context, __):
     if not task.has_write_priv(request.user):
         return HttpResponseForbidden()
 
-    # normal redirect - reload the page
-    redirect_to = task.get_absolute_url() + "?previous=nquestion"
+    # normal redirect - load next linear question if possible
+    if request.POST.get("next_linear_question"):
+        redirect_to = request.POST["next_linear_question"] + "?previous=nquestion"
+    else:
+        redirect_to = task.get_absolute_url() + "?previous=nquestion"
 
     # validate question
     q = task.module.questions.get(id=request.POST.get("question"))
@@ -363,7 +375,6 @@ def save_answer(request, task, answered, context, __):
     # Return the response.
     return response
 
-
 @task_view
 def show_question(request, task, answered, context, q):
     # Let's talk about where the data is for this question. The 'q'
@@ -398,6 +409,8 @@ def show_question(request, task, answered, context, q):
     # then redirect away from this page. If the user is allowed to use the authoring
     # tool, then allow seeing this question so they can edit all questions.
     authoring_tool_enabled = task.module.is_authoring_tool_enabled(request.user)
+    can_upgrade_app = task.module.app.has_upgrade_priv(request.user)
+
     is_answerable = (((q not in answered.unanswered) or (q in answered.can_answer)) and (q.key not in answered.was_imputed))
     if not is_answerable and not authoring_tool_enabled:
         return HttpResponseRedirect(task.get_absolute_url())
@@ -425,7 +438,7 @@ def show_question(request, task, answered, context, q):
     if answer_module:
         # The user can choose from any Task instances they have read permission on
         # and that are of the correct Module type.
-        answer_tasks = Task.get_all_tasks_readable_by(request.user, request.organization, recursive=True)\
+        answer_tasks = Task.get_all_tasks_readable_by(request.user, recursive=True)\
             .filter(module=answer_module)
 
         # Annotate the instances with whether the user also has write permission.
@@ -539,6 +552,140 @@ def show_question(request, task, answered, context, q):
         "text" if q.spec["type"] != "longtext" else "html",
         demote_headings=False)
 
+    ###############################################################################
+    # BLOCK CREATE task_progress_project_list
+    #
+    # TODO: REFACTOR INTO INDIVIDUAL ROUTE
+    # Get higher level context history for this task
+    # This code largely repeated from siteapp > views > project page
+    #
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    # Better to refactor context into its own view
+    # instead of recreating from inside this question
+    ###############################################################################
+
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    root_task_answers = task.project.root_task.get_answers().with_extended_info()
+    task_progress_project_list = []
+    # current_mq_group = ""
+    current_group = None
+
+    # Check if this user has authorization to start tasks in this Project.
+    can_start_task = task.project.can_start_task(request.user)
+
+    # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
+    # Create a "question" record for each question that is displayed by the template.
+    # For module-set questions, create one record to start new entries and separate
+    # records for each answered module.
+    from collections import OrderedDict
+    questions = OrderedDict()
+    can_start_any_apps = False
+
+    # for item in root_task_answers.answertuples.items():
+    for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
+
+        # Display module/module-set questions only. Other question types in a project
+        # module are not valid.
+        if mq.spec.get("type") not in ("module", "module-set"):
+            continue
+
+        # Skip questions that are imputed.
+        if is_answered and not answer_obj:
+            continue
+
+        # Create a "question" record for all Task answers to this question.
+        if answer_value is None:
+            # Question is unanswered - there are no sub-tasks.
+            answer_value = []
+        elif mq.spec["type"] == "module":
+            # The answer is a ModuleAnswers instance. Wrap it in an array containing
+            # just itself so we create as single question entry.
+            answer_value = [answer_value]
+        elif mq.spec["type"] == "module-set":
+            # The answer is already a list of zero-or-more ModuleAnswers instances.
+            pass
+
+        # If the question specification specifies an icon asset, load the asset.
+        # This saves the browser a request to fetch it, which is somewhat
+        # expensive because assets are behind authorization logic.
+        if "icon" in mq.spec:
+            icon = task.project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+        else:
+            icon = None
+
+        for i, module_answers in enumerate(answer_value):
+            # Create template context dict for this question.
+            key = mq.id
+            if mq.spec["type"] == "module-set":
+                key = (mq.id, i)
+            questions[key] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "task": module_answers.task,
+                "can_start_new_task": False,
+                # "discussions": [d for d in discussions if d.attached_to.task == module_answers.task],
+            }
+
+        # Create a "question" record for the question itself it is is unanswered or if
+        # this is a module-set question, and only if the user has permission to start tasks.
+        if can_start_task and (len(answer_value) == 0 or mq.spec["type"] == "module-set"):
+            questions[mq.id] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "can_start_new_task": True,
+            }
+
+            # Set a flag if any app can be started, i.e. if this question has a protocol field.
+            # Is this a protocol question?
+            if mq.spec.get("protocol"):
+                can_start_any_apps = True
+
+        if questions.get(mq.id) and 'task' in questions[mq.id]:
+            # print("\nquestions[mq.id]['task'].id", dir(questions[mq.id]['task']))
+            task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
+            task_id = questions[mq.id]['task'].id
+            task_started = questions[mq.id]['task'].is_started()
+            task_answered = questions[mq.id]['task'].is_finished()
+        else:
+            # Question not started
+            # TODO: Need better match than "/TODO"
+            task_link = "/TODO"
+            task_id = None
+            task_started = False
+            task_answered = False
+
+        tasks_in_group = {
+            "id": mq.spec.get('id'),
+            "module_id": mq.spec.get('module-id'),
+            "group": mq.spec.get('group'),
+            "title": mq.spec.get('title'),
+            "type": mq.spec.get('type'),
+            "link": task_link,
+            "task_id": task_id,
+            "task_started": task_started,
+            "task_answered": task_answered,
+            }
+        task_progress_project_list.append(tasks_in_group)
+        if mq.spec.get('id') == task.module.spec.get('id'):
+            current_group = mq.spec.get('group')
+    ###############################################################################
+    # END BLOCK task_progress_project_list
+    ###############################################################################
+
+    # get context of questions in module
+    context_sorted = module_logic.get_question_context(answered, q)
+    # determine next linear question
+    current_q_index = next((index for (index, d) in enumerate(context_sorted) if d["is_this_question"] == True), None)
+    if current_q_index < len(context_sorted) - 1:
+        next_linear_question = context_sorted[current_q_index + 1]
+    else:
+        next_linear_question = None
+
+
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
@@ -555,14 +702,20 @@ def show_question(request, task, answered, context, q):
         "hidden_button_ids": q.module.app.modules.get(module_name="app").spec.get("hidden-buttons", []),
         "can_review": task.has_review_priv(request.user),
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
-        "discussion": Discussion.get_for(request.organization, taskq) if taskq else None,
+        "discussion": Discussion.get_for(taskq.task.project.organization, taskq) if taskq else None,
         "show_discussion_members_count": True,
 
         "answer_module": answer_module,
         "answer_tasks": answer_tasks,
         "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
 
-        "context": module_logic.get_question_context(answered, q),
+        "context": context_sorted,
+        "next_linear_question": next_linear_question,
+
+        # task_progress_project_list parameters
+        "root_task_answers": root_task_answers,
+        "task_progress_project_list": task_progress_project_list,
+        "current_group": current_group,
 
         # Helpers for showing date month, day, year dropdowns, with
         # localized strings and integer values. Default selections
@@ -581,10 +734,12 @@ def show_question(request, task, answered, context, q):
         },
 
         "is_answerable": is_answerable, # only false if authoring tool is enabled, otherwise this page is not renderable
+        "can_upgrade_app": can_upgrade_app,
         "authoring_tool_enabled": authoring_tool_enabled,
+        "is_question_page": True,
+        "project_form": ProjectForm(request.user),
     })
     return render(request, "question.html", context)
-
 
 @task_view
 def task_finished(request, task, answered, context, *unused_args):
@@ -612,6 +767,138 @@ def task_finished(request, task, answered, context, *unused_args):
         task=task,
     )
 
+    ###############################################################################
+    # BLOCK CREATE task_progress_project_list
+    #
+    # TODO: REFACTOR INTO INDIVIDUAL ROUTE
+    # Get higher level context history for this task
+    # This code largely repeated from siteapp > views > project page
+    #
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    # Better to refactor context into its own view
+    # instead of recreating from inside this question
+    ###############################################################################
+
+    # Pre-load the answers to project root task questions and impute answers so
+    # that we know which questions are suppressed by imputed values.
+    root_task_answers = task.project.root_task.get_answers().with_extended_info()
+    task_progress_project_list = []
+    # current_mq_group = ""
+    current_group = None
+    next_group = None
+    next_module = None
+    next_module_spec = None
+
+    # Check if this user has authorization to start tasks in this Project.
+    can_start_task = task.project.can_start_task(request.user)
+
+    # Collect all of the questions and answers, i.e. the sub-tasks, that we'll display.
+    # Create a "question" record for each question that is displayed by the template.
+    # For module-set questions, create one record to start new entries and separate
+    # records for each answered module.
+    from collections import OrderedDict
+    questions = OrderedDict()
+    can_start_any_apps = False
+
+    # for item in root_task_answers.answertuples.items():
+    for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
+
+        # Display module/module-set questions only. Other question types in a project
+        # module are not valid.
+        if mq.spec.get("type") not in ("module", "module-set"):
+            continue
+
+        # Skip questions that are imputed.
+        if is_answered and not answer_obj:
+            continue
+
+        # Create a "question" record for all Task answers to this question.
+        if answer_value is None:
+            # Question is unanswered - there are no sub-tasks.
+            answer_value = []
+        elif mq.spec["type"] == "module":
+            # The answer is a ModuleAnswers instance. Wrap it in an array containing
+            # just itself so we create as single question entry.
+            answer_value = [answer_value]
+        elif mq.spec["type"] == "module-set":
+            # The answer is already a list of zero-or-more ModuleAnswers instances.
+            pass
+
+        # If the question specification specifies an icon asset, load the asset.
+        # This saves the browser a request to fetch it, which is somewhat
+        # expensive because assets are behind authorization logic.
+        if "icon" in mq.spec:
+            icon = task.project.root_task.get_static_asset_image_data_url(mq.spec["icon"], 75)
+        else:
+            icon = None
+
+        for i, module_answers in enumerate(answer_value):
+            # Create template context dict for this question.
+            key = mq.id
+            if mq.spec["type"] == "module-set":
+                key = (mq.id, i)
+            questions[key] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "task": module_answers.task,
+                "can_start_new_task": False,
+                # "discussions": [d for d in discussions if d.attached_to.task == module_answers.task],
+            }
+
+        # Create a "question" record for the question itself it is is unanswered or if
+        # this is a module-set question, and only if the user has permission to start tasks.
+        if can_start_task and (len(answer_value) == 0 or mq.spec["type"] == "module-set"):
+            questions[mq.id] = {
+                "question": mq,
+                "icon": icon,
+                "invitations": [], # filled in below
+                "can_start_new_task": True,
+            }
+
+            # Set a flag if any app can be started, i.e. if this question has a protocol field.
+            # Is this a protocol question?
+            if mq.spec.get("protocol"):
+                can_start_any_apps = True
+
+        if 'task' in questions[mq.id]:
+            # print("\nquestions[mq.id]['task'].id", dir(questions[mq.id]['task']))
+            task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
+            task_id = questions[mq.id]['task'].id
+            task_started = questions[mq.id]['task'].is_started()
+            task_answered = questions[mq.id]['task'].is_finished()
+        else:
+            # Question not started
+            # TODO: Need better match than "/TODO"
+            task_link = "/TODO"
+            task_id = None
+            task_started = False
+            task_answered = False
+
+        tasks_in_group = {
+            "id": mq.spec.get('id'),
+            "module_id": mq.spec.get('module-id'),
+            "group": mq.spec.get('group'),
+            "title": mq.spec.get('title'),
+            "type": mq.spec.get('type'),
+            "link": task_link,
+            "task_id": task_id,
+            "task_started": task_started,
+            "task_answered": task_answered,
+            }
+        task_progress_project_list.append(tasks_in_group)
+        if mq.spec.get('id') == task.module.spec.get('id'):
+            current_group = mq.spec.get('group')
+        elif current_group is not None and next_group is None:
+            # Determine next group after current group
+            next_group = mq.spec.get('group')
+            next_module = mq
+            next_module_spec = mq.spec
+    ###############################################################################
+    # END BLOCK task_progress_project_list
+    ###############################################################################
+
     # Construct the page.
 
     top_of_page_output = None
@@ -627,10 +914,23 @@ def task_finished(request, task, answered, context, *unused_args):
         "outputs": outputs,
         "all_answers": answered.render_answers(show_metadata=True, show_imputed_nulls=False),
         "can_review": task.has_review_priv(request.user),
-        "authoring_tool_enabled": task.module.is_authoring_tool_enabled(request.user),
-    })
-    return render(request, "module-finished.html", context)
+        "project": task.project,
+        "can_upgrade_app": task.project.root_task.module.app.has_upgrade_priv(request.user),
+        "authoring_tool_enabled": task.project.root_task.module.is_authoring_tool_enabled(request.user),
 
+        # task_progress_project_list parameters
+        "root_task_answers": root_task_answers,
+        "task_progress_project_list": task_progress_project_list,
+        "current_group": current_group,
+        "context": module_logic.get_question_context(answered, None),
+        "next_group": next_group,
+        "next_module": next_module,
+        "next_module_spec": next_module_spec,
+        # "context": context,
+        "project_form": ProjectForm(request.user, initial={'portfolio': task.project.portfolio.id}) if task.project.portfolio else ProjectForm(request.user)
+
+    })
+    return render(request, "task-finished.html", context)
 
 @task_view
 def download_answer_file(request, task, answered, context, q, history_id):
@@ -702,7 +1002,7 @@ def instrumentation_record_interaction(request):
 
     # Get event variables.
     
-    task = get_object_or_404(Task, id=request.POST["task"], project__organization=request.organization)
+    task = get_object_or_404(Task, id=request.POST["task"])
     if not task.has_read_priv(request.user):
         return HttpResponseForbidden()
 
@@ -754,7 +1054,7 @@ def authoring_tool_auth(f):
 
         # Get the task and question and check permissions.
 
-        task = get_object_or_404(Task, id=request.POST["task"], project__organization=request.organization)
+        task = get_object_or_404(Task, id=request.POST["task"])
         if not task.has_write_priv(request.user):
             return HttpResponseForbidden()
         if not task.module.is_authoring_tool_enabled(request.user):
@@ -767,24 +1067,72 @@ def authoring_tool_auth(f):
 
 @login_required
 @transaction.atomic
+def authoring_create_q(request):
+    from guidedmodules.models import AppSource
+    from collections import OrderedDict
+
+    new_q_appsrc = AppSource.objects.get(slug="govready-q-files-stubs")
+
+    # Get the values from submitted form
+    new_q = OrderedDict()
+    for field in (
+        "q_slug", "title", "short_description", "category"):
+        value = request.POST.get(field, "").strip()
+        # Example how we can test values and make changes
+        if value:
+            if field in ("min", "max"):
+                new_q[field] = int(value)
+            elif field == "protocol":
+                # The protocol value is given as a space-separated list of
+                # of protocols.
+                new_q[field] = re.split(r"\s+", value)
+            else:
+                new_q[field] = value
+
+    # Use stub_app to publish our new app
+    try:
+        appver = new_q_appsrc.add_app_to_catalog("stub_app" )
+        # Update app details
+        appver.appname = new_q["title"]
+        appver.catalog_metadata["title"] = new_q["title"]
+        appver.catalog_metadata["description"]["short"] = new_q['short_description']
+        appver.catalog_metadata["category"] = new_q["category"]
+        # appver.spec.introduction.template = new_q['short_description']
+        appver.save()
+    except Exception as e:
+        raise
+
+    from django.contrib import messages
+    messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
+
+    return JsonResponse({ "status": "ok", "redirect": "/store" })
+
+@login_required
+@transaction.atomic
 def upgrade_app(request):
-    # Upgrade an AppInstance by reloading all of its Modules from the
-    # app's current definition in its AppSource.
+    # Upgrade an AppVersion in place by reloading all of its Modules from the
+    # app's current definition in its AppSource. This should mainly be used
+    # for compliance app authors during the app authoring process. All projects
+    # that are using the AppVersion will be affected.
+    #
+    # TODO: We should have a different sort of upgrade when instead of updating
+    # an AppVersion in-place, we simply re-link this Project to a newer AppVersion
+    # already in the database.
 
     # Check that the user is permitted to do so.
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    from .models import AppInstance
-    appinst = get_object_or_404(AppInstance, id=request.POST["app"])
-    if not appinst.has_upgrade_priv(request.user):
+    from .models import AppVersion
+    appver = get_object_or_404(AppVersion, id=request.POST["app"])
+    if not appver.has_upgrade_priv(request.user):
         return HttpResponseForbidden()
 
     from .app_loading import load_app_into_database, AppImportUpdateMode, ModuleDefinitionError, IncompatibleUpdate
-    with appinst.source.open() as store:
+    with appver.source.open() as store:
             # Load app.
             try:
-                app = store.get_app(appinst.appname)
+                app = store.get_app(appver.appname)
             except ValueError as e:
                 return JsonResponse({ "status": "error", "message": str(e) })
 
@@ -792,13 +1140,13 @@ def upgrade_app(request):
             mode = AppImportUpdateMode.CompatibleUpdate
 
             # If using authoring tools, allow forced updates.
-            if appinst.is_authoring_tool_enabled(request.user) \
+            if appver.is_authoring_tool_enabled(request.user) \
                 and request.POST.get("force") == "true":
                 mode = AppImportUpdateMode.ForceUpdate
 
             # Import.
             try:
-                load_app_into_database(app, mode, appinst)
+                load_app_into_database(app, mode, appver)
             except (ModuleDefinitionError, IncompatibleUpdate) as e:
                 return JsonResponse({ "status": "error", "message": str(e) })
 
@@ -808,12 +1156,103 @@ def upgrade_app(request):
 
     # Since impute conditions, output documents, and other generated
     # data may have changed, clear all cached Task state.
-    Task.clear_state(Task.objects.filter(module__app=appinst))
+    Task.clear_state(Task.objects.filter(module__app=appver))
 
     from django.contrib import messages
     messages.add_message(request, messages.INFO, 'App upgraded.')
 
     return JsonResponse({ "status": "ok" })
+
+@authoring_tool_auth
+@transaction.atomic
+def authoring_download_app(request, task):
+    question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
+
+    # Download current questionnaire.
+    print("In `authoring_download_app` and attempting to download question/app")
+    try:
+        questionnaire_yaml = question.module.serialize()
+    except Exception as e:
+        return JsonResponse({ "status": "error", "message": "Could not download YAML file: " + str(e) })
+
+    # Clear cache...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
+
+    # ////////////////////
+    # GET DOWNLOAD TO WORK
+    # mime_type = "text/x-yaml"
+    # disposition = "inline"
+    # resp = HttpResponse(questionnaire_yaml, content_type=mime_type)
+    # resp['Content-Disposition'] = disposition + '; filename=' + "q-file.yaml"
+
+    # # Browsers may guess the MIME type if it thinks it is wrong. Prevent
+    # # that so that if we are forcing application/octet-stream, it
+    # # doesn't guess around it and make the content executable.
+    # resp['X-Content-Type-Options'] = 'nosniff'
+
+    # # Browsers may still allow HTML to be rendered in the browser. IE8
+    # # apparently rendered HTML in the context of the domain even when a
+    # # user clicks "Open" in an attachment-disposition response. This
+    # # prevents that. Doesn't seem to affect anything else (like images).
+    # resp['X-Download-Options'] = 'noopen'
+
+    # return resp
+    # ////////////////////
+
+    # Return status. The browser will reload/redirect --- if the question key
+    # changed, this sends the new key.
+    return JsonResponse({ "status": "ok",
+                          "data": questionnaire_yaml,
+                          "redirect": task.get_absolute_url_to_question(question)
+                        })
+
+@authoring_tool_auth
+@transaction.atomic
+def authoring_download_app_project(request, task):
+    # Download a project
+#    print("Calling to download task: {}".format(task))
+    # Get project that this Task is a part of
+    project_obj = task.project
+#    print("project is {}".format(project_obj))
+
+    # Get module that this task is answering
+    # module_obj = task.module
+    # print("module_obj is {}".format(module_obj))
+    # print("module_obj.spec is {}".format(module_obj.spec))
+    # print("module.serialize: ")
+    # print("{}".format(module_obj.serialize()))
+    # Recreate the yaml of the module (e.g, app-project)
+#    print("text {}".format(task.module.serialize()))
+
+    # Download current project_app (.e.g, module) in use.
+#    print("In `authoring_download_app_project` and attempting to download project-app")
+    try:
+        module_yaml = task.module.serialize()
+    except Exception as e:
+        return JsonResponse({ "status": "error", "message": "Could not download YAML file: " + str(e) })
+
+    # Do I need something similar?
+    # Clear cache...
+    # from .module_logic import clear_module_question_cache
+    # clear_module_question_cache()
+
+    # As a project app, There also exists:
+    # - asset directory with assets
+    # - state information
+
+    # Get the app (AppVersion) connected to this module
+    # appversion_obj =  module_obj.app
+    # print("appversion_obj is {}".format(appversion_obj))
+    # print("appversion_obj version_name is {}".format(appversion_obj.version_name))
+    # print("appversion_obj version_number is {}".format(appversion_obj.version_number))
+
+    # Download current questionnaire.
+
+    # How do I dump the entire app?
+    return JsonResponse({ "status": "ok",
+                          "data": module_yaml,
+                        })
 
 @authoring_tool_auth
 def authoring_new_question(request, task):
@@ -827,32 +1266,70 @@ def authoring_new_question(request, task):
     definition_order = max([0] + list(task.module.questions.values_list("definition_order", flat=True))) + 1
 
     # Make a new spec.
-    if task.module.spec.get("type") != "project":
+    if task.module.spec.get("type") == "project":
+        # Probably in app.yaml
+        spec = {
+            "id": key,
+            "type": "module",
+            "title": "New Question Title",
+            "protocol": ["choose-a-module-or-enter-a-protocol-id"],
+        }
+        # # Make a new modular spec
+        # mspec = {"id": key,
+        #          "title": key.replace("_"," ").title(),
+        #          "questions": [
+        #             {"id": "mqo",
+        #              "type": "text",
+        #              "title": "New Question Title",
+        #              "prompt": "Enter some text.",
+        #              },
+        #          ],
+        #          "output": []
+        #          }
+        # # Make a new modular instance
+        # new_module = Module(
+        #     source=task.module.app.source,
+        #     app=task.module.app,
+        #     module_name=key,
+        #     spec=mspec
+        # )
+        # new_module.save()
+
+        # spec = {
+        #    "id": key,
+        #    "type": "module",
+        #    "title": "New Question Title",
+        #    "module-id": key,
+        # }
+
+        # # Make a new question instance.
+        # question = ModuleQuestion(
+        #     module=task.module,
+        #     key=key,
+        #     definition_order=definition_order,
+        #     spec=spec
+        #     )
+        # question.save()
+
+    else:
         spec = {
             "id": key,
             "type": "text",
             "title": "New Question Title",
             "prompt": "Enter some text.",
         }
-    else:
-        spec = {
-            "id": key,
-            "type": "module",
-            "title": "New Question Title",
-            "protocol": "choose-a-module-or-enter-a-protocol-id",
-        }
 
-    # Make a new question instance.
-    question = ModuleQuestion(
-        module=task.module,
-        key=key,
-        definition_order=definition_order,
-        spec=spec
-        )
-    question.save()
+        # Make a new question instance.
+        question = ModuleQuestion(
+            module=task.module,
+            key=key,
+            definition_order=definition_order,
+            spec=spec
+            )
+        question.save()
 
-    # Write to disk. Errors writing should not be suppressed because
-    # saving to disk is a part of the contract of how app editing works.
+    # Write to disk. Write updates to disk if developing on local machine
+    # with local App Source
     try:
         question.module.serialize_to_disk()
     except Exception as e:
@@ -869,6 +1346,7 @@ def authoring_new_question(request, task):
 @authoring_tool_auth
 @transaction.atomic
 def authoring_edit_question(request, task):
+
     question = get_object_or_404(ModuleQuestion, module=task.module, key=request.POST['question'])
 
     # Delete the question?
@@ -1027,7 +1505,6 @@ def authoring_edit_module(request, task):
     # changed, this sends the new key.
     return JsonResponse({ "status": "ok", "redirect": task.get_absolute_url() })
 
-
 @login_required
 @transaction.atomic
 def delete_task(request):
@@ -1040,7 +1517,7 @@ def delete_task(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    task = get_object_or_404(Task, id=request.POST["id"], project__organization=request.organization)
+    task = get_object_or_404(Task, id=request.POST["id"])
     if not task.has_delete_priv(request.user):
         return HttpResponseForbidden()
 
@@ -1078,7 +1555,7 @@ def get_task_timetamp(request):
     # Check access.
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
-    task = get_object_or_404(Task, id=request.POST["id"], project__organization=request.organization)
+    task = get_object_or_404(Task, id=request.POST["id"])
     if not task.has_read_priv(request.user):
         return HttpResponseForbidden()
 
@@ -1147,7 +1624,6 @@ def get_task_timetamp(request):
 
     return JsonResponse(ret)
 
-
 @login_required
 def start_a_discussion(request):
     # This view function creates a discussion, or returns an existing one.
@@ -1170,17 +1646,16 @@ def start_a_discussion(request):
         # Get the TaskAnswer for this task. It may not exist yet.
         tq, isnew = TaskAnswer.objects.get_or_create(**tq_filter)
 
-    discussion = Discussion.get_for(request.organization, tq)
+    discussion = Discussion.get_for(task.project.organization, tq)
     if not discussion:
         # Validate user can create discussion.
         if not task.has_read_priv(request.user):
             return JsonResponse({ "status": "error", "message": "You do not have permission!" })
 
         # Get the Discussion.
-        discussion = Discussion.get_for(request.organization, tq, create=True)
+        discussion = Discussion.get_for(task.project.organization, tq, create=True)
 
     return JsonResponse(discussion.render_context_dict(request.user))
-
 
 @login_required
 def analytics(request):
@@ -1195,11 +1670,6 @@ def analytics(request):
         qs = InstrumentationEvent.objects\
             .filter(event_type=opt["event_type"])\
             .values(opt["field"])
-
-        # When we look at the analytics page in an organization domain,
-        # we only pull instrumentation for projects within that organization.
-        if hasattr(request, "organization"):
-            qs = qs.filter(project__organization=request.organization)
 
         overall = qs.aggregate(
                 avg_value=Avg('event_value'),
@@ -1233,7 +1703,6 @@ def analytics(request):
         return opt
 
     return render(request, "analytics.html", {
-        "base_template": "base.html" if hasattr(request, "organization") else "base-landing.html",
         "tables": [
             compute_table({
                 "event_type": "task-done",

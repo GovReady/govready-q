@@ -43,8 +43,8 @@ API
     <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API by running the following command. Replace <code>your-api-key</code> with <a href="/api-keys">your API key</a>. (The slash in the command below indicates a continued line.)</p>
 
     <pre>curl \
-      --header "Authorization: <i>your-api-key</i>" \
-      {{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+      --header "Authorization: <em>your-api-key</em>" \
+      {{SITE_ROOT_URL}}/api/v1/projects/{{project.id}}/answers</pre>
 
 
     <!-- -->
@@ -53,9 +53,9 @@ API
 
     <p>There are two types of POST requests that can be used to update app data. In the first type, described in this section, data values are provided as key-value pairs using the regular web browser form submission method. (In the second form, described below, answers are provided using a JSON data structure that is formatted the same as the JSON data structure returned by a GET request, which may be more appropriate when submitting non-textual and non-binary content.) 
 
-    <p>In each of the key-value pairs submitted in the POST request, the <b>key</b> is a dotted-path question ID. The key always begins with <code>project.</code> and is followed by the property names on the path to the question being updated, according to the JSON data structure, with property names separated by the <code>.</code> character.</p>
+    <p>In each of the key-value pairs submitted in the POST request, the <strong>key</strong> is a dotted-path question ID. The key always begins with <code>project.</code> and is followed by the property names on the path to the question being updated, according to the JSON data structure, with property names separated by the <code>.</code> character.</p>
 
-    <p>The <b>value</b> of each key-value pair is an answer submitted either as plain text or, for file-type questions, as a binary file. If submitted as plain text and the question expects non-text data, such as a number, the value will be converted. When uploading a binary file, the <a href="https://tools.ietf.org/html/rfc2388">multipart/form-data</a> content type must be used for the POST request.</p>
+    <p>The <strong>value</strong> of each key-value pair is an answer submitted either as plain text or, for file-type questions, as a binary file. If submitted as plain text and the question expects non-text data, such as a number, the value will be converted. When uploading a binary file, the <a href="https://tools.ietf.org/html/rfc2388">multipart/form-data</a> content type must be used for the POST request.</p>
 
     <p>For example:</p>
 
@@ -73,9 +73,9 @@ API
     <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API using <code>curl</code>. Replace <code>your-api-key</code> in the command below with <a href="/api-keys">your full access API key</a>. Then run the following command. (The slash in the command below indicates a continued line.)</p>
 
     <pre>curl \
-      --header "Authorization: <i>your-api-key</i>" \
+      --header "Authorization: <em>your-api-key</em>" \
       {% for key, value in sample_post_keyvalue %}-F "{{key}}={% if value != "<binary file content>" %}{{value}}{% else %}@filename.ext{% endif %}" \
-      {% endfor %}{{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+      {% endfor %}{{SITE_ROOT_URL}}/api/v1/projects/{{project.id}}/answers</pre>
 
     <p>(<code>curl</code>&rsquo;s <code>-d</code> option can be used in place of <code>-F</code> if none of the fields are file uploads.)
 
@@ -114,10 +114,10 @@ API
     <p>If you are using an operating system with a command line and the <code>curl</code> tool, you can try out the API using <code>curl</code>. First copy the sample POST request body or make your own and save it in a file named <code>data.json</code>. Replace <code>your-api-key</code> in the command below with <a href="/api-keys">your full access API key</a>. Then run the following command. (The slash in the command below indicates a continued line.)</p>
 
     <pre>curl \
-      --header "Authorization: <i>your-api-key</i>" \
+      --header "Authorization: <em>your-api-key</em>" \
       -XPOST --data @data.json \
       --header "Content-Type: application/json" \
-      {{SITE_ROOT_URL}}/api/v1/organizations/{{request.organization.subdomain}}/projects/{{project.id}}/answers</pre>
+      {{SITE_ROOT_URL}}/api/v1/projects/{{project.id}}/answers</pre>
 
     <h2>Data Schema</h2>
 
@@ -155,7 +155,7 @@ API
             {% if question.spec.type == "module" or question.spec.type == "module-set" %}
               <p>
               {% if question.answer_type_module %}
-               This data field is a JSON object which has sub-fields documented in the &ldquo;<b>{{question.answer_type_module.spec.title}}</b>&rdquo; section below.
+               This data field is a JSON object which has sub-fields documented in the &ldquo;<strong>{{question.answer_type_module.spec.title}}</strong>&rdquo; section below.
                {% if question.spec.type == "module-set" %}
                  When updating answers within this key, a new {{question.answer_type_module.spec.title}} is created on each POST request and appended to the existing set of answers.
                {% endif %}
@@ -198,7 +198,7 @@ API
             {% else %}
               <p>Data type: {{question.spec.type}}.</p>
             {% endif %}
-            {% if question.spec.impute %}<p><i>This field&rsquo;s value might be imputed from other values and if so is read-only.</i></p>{% endif %}
+            {% if question.spec.impute %}<p><em>This field&rsquo;s value might be imputed from other values and if so is read-only.</em></p>{% endif %}
             </small>
           </td>
         </tr>

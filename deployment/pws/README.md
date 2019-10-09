@@ -40,7 +40,6 @@ When creating routes under domains we own (e.g. govready.com), the two routes sh
 Then the settings for the environment variable will be:
 
 	"host": "sandbox.govready.com"
-	"organization-parent-domain": "sandbox.govready.com"
 
 (Note: We haven't yet figured out how to do HTTPS when using our own domains on PWS.)
 
@@ -53,7 +52,6 @@ But when creating routes under one of PWS's domains so that it generates an http
 And the settings for the environment variable will be:
 
 	"host": "q-sandbox-admin.cfapps.io"
-	"organization-parent-domain": "cfapps.io"
 
 (Although `sandbox` appears in the route here, the routes can be anything so long as the environment variables settings are adjusted accordingly.)
 
@@ -68,7 +66,6 @@ You can copy and modify from this, but _delete the comments_ before you paste it
 	{
 	  "debug": true, # Controls the Django DEBUG setting. Should be false in production.
 	  "host": "q.govready.com", # domain of main landing site
-	  "organization-parent-domain": "govready.com", # parent domain of organization subdomains
 	  "admins": [ # List of people who get Django error emails.
 	    ["name", "...@govready.com"]
 	  ],

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils.crypto import get_random_string
 
-from siteapp.models import User, ProjectMembership, Organization
+from siteapp.models import User, ProjectMembership, Organization, Portfolio
 from siteapp.tests import SeleniumTest, var_sleep
 
 from selenium.common.exceptions import NoSuchElementException
@@ -17,14 +17,15 @@ class DiscussionTests(SeleniumTest):
         # modules as well as a test project.
         from guidedmodules.models import AppSource
         from guidedmodules.management.commands.load_modules import Command as load_modules
+        load_modules().handle() # load system modules
         AppSource.objects.create(
             slug="fixture",
             spec={
                 "type": "local",
                 "path": "fixtures/modules/other",
             }
-        )
-        load_modules().handle()
+        )\
+        	.add_app_to_catalog("simple_project")
 
         # Create a default user that is a member of the organization.
 
@@ -35,25 +36,32 @@ class DiscussionTests(SeleniumTest):
 
         # Create the Organization.
 
-        org = Organization.create(name="Our Organization", subdomain="testorg",
+        org = Organization.create(name="Our Organization", slug="testorg",
             admin_user=self.user)
-
-    def url(self, path):
-        # Within this test, we only generate URLs for the organization subdomain.
-        return super().url("testorg", path)
+        
+        # Create a Portfolio and Grant Access
+        portfolio = Portfolio.objects.create(title=self.user.username)
+        portfolio.assign_owner_permissions(self.user)
 
     def _login(self):
         # Fill in the login form and submit.
         self.browser.get(self.url("/"))
-
-        self.assertRegex(self.browser.title, "Home")
+        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
+        self.click_element("li#tab-signin")
         self.fill_field("#id_login", self.user.username)
         self.fill_field("#id_password", self.user_pw)
-        self.click_element("form button.primaryAction")
+        self.click_element("form#login_form button[type=submit]")
+        self.assertRegex(self.browser.title, "Your Compliance Projects")
 
     def _new_project(self):
         self.browser.get(self.url("/projects"))
         self.click_element("#new-project")
+
+        # Select Portfolio
+        self.select_option_by_visible_text('#id_portfolio', self.user.username)
+        self.click_element("#select_portfolio_submit")
+        var_sleep(2)
+
         self.click_element(".app[data-app='fixture/simple_project'] .view-app")
         self.click_element("#start-project")
         var_sleep(1)
@@ -75,7 +83,7 @@ class DiscussionTests(SeleniumTest):
         # Move past the introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(.5) # wait for page to reload
+        var_sleep(.8) # wait for page to reload
 
         # We're now on the first actual question.
         # Start a team conversation.
