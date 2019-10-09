@@ -11,7 +11,8 @@ table, tr, td {
 
 ## What's New in 0.9.0
 
-Release 0.9.0 (coming July 2019) is a minor release improving
+Release 0.9.0 (coming Autumn 2019) is a minor release improving
+
 the user experience and performance.
 
 * Faster loading and launching of Assessments/questionnaires
@@ -121,7 +122,7 @@ Release 0.9.0 progress can be found on the `0.9.0.dev` and `0.9.0.rc-xxx` branch
 
 ## Release Date
 
-The target release date for 0.9.0 is September 2019.
+The target release date for 0.9.0 is Autumn 2019.
 
 ## Installing 0.9.0
 
@@ -540,7 +541,7 @@ Click one of the tab belows to see the release 0.9.0 quickstart for the indicate
 
 **Backup your database before upgrading to 0.9.0. Release 0.9.0 performs database changes that makes rolling back difficult.**
 
-See [Migration Guide for GovReady-Q (0.8.6 to 0.9.0)](migration_guide_086_090.md).
+See [Migration Guide for GovReady-Q (0.8.6 to 0.9.0)](migration_guide_086_090.html).
 
 ## Adding and Managing "Compliance Apps" in 0.9.0
 
