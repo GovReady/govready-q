@@ -55,7 +55,7 @@ download \
   http://www6.atomicorp.com/channels/atomic/centos/7/x86_64/RPMS/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm \
   /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm \
   '72ec76327ce9816b258d5cbeffc2930d93edd0bf50ff567c30fa775583eabf85'
-yum -y localinstall /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm
+/usr/bin/yum -y localinstall /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm
 mv /lib64/libsqlite3.so.0.8.6{,-3.17}
 cp /opt/atomic/atomic-sqlite/root/usr/lib64/libsqlite3.so.0.8.6 /lib64
 rm -f /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm
