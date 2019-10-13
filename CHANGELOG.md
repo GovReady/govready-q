@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.dev47+devel
-------------------
+v0.9.0
+------
 
 Our most exciting release of GovReady-Q!
 
