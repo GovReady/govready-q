@@ -272,7 +272,7 @@ class DirectLoginBackend(ModelBackend):
 subdomain_regex = r"^([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])$"
 
 class Organization(models.Model):
-    name = models.CharField(max_length=256, help_text="The display name of the Organization.")
+    name = models.CharField(max_length=255, help_text="The display name of the Organization.")
     slug = models.CharField(max_length=32, unique=True, help_text="A URL-safe abbreviation for the Organization.", validators=[RegexValidator(regex=subdomain_regex)])
 
     help_squad = models.ManyToManyField(User, blank=True, related_name="in_help_squad_of", help_text="Users who are invited to all new discussions in this Organization.")
@@ -352,7 +352,7 @@ class Organization(models.Model):
         return org
 
 class Portfolio(models.Model):
-    title = models.CharField(max_length=256, help_text="The title of this Portfolio.", unique=True)
+    title = models.CharField(max_length=255, help_text="The title of this Portfolio.", unique=True)
     description = models.CharField(max_length=512, blank=True, help_text="A description of this Portfolio.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -410,7 +410,7 @@ class Folder(models.Model):
 
     organization = models.ForeignKey(Organization, related_name="folders", on_delete=models.CASCADE, help_text="The Organization that this project belongs to.")
 
-    title = models.CharField(max_length=256, help_text="The title of this Folder.")
+    title = models.CharField(max_length=255, help_text="The title of this Folder.")
     description = models.CharField(max_length=512, blank=True, help_text="A description of this Folder.")
 
     admin_users = models.ManyToManyField(User, blank=True, related_name="admin_of_folders", help_text="Users who have admin privs to the folder besides those who are admins of projects within the folder.")
@@ -990,7 +990,7 @@ class Invitation(models.Model):
 
     # who is the recipient of the invitation?
     to_user = models.ForeignKey(User, related_name="invitations_received", blank=True, null=True, on_delete=models.CASCADE, help_text="The user who the invitation was sent to, if to an existing user.")
-    to_email = models.CharField(max_length=256, blank=True, null=True, help_text="The email address the invitation was sent to, if to a non-existing user.")
+    to_email = models.CharField(max_length=255, blank=True, null=True, help_text="The email address the invitation was sent to, if to a non-existing user.")
 
     # personalization
     text = models.TextField(blank=True, help_text="The personalized text of the invitation.")
