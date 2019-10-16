@@ -22,7 +22,7 @@ The following environment variables are used to configure your GovReady-Q instan
 - `single-organization`: used to enforce single organization mode with "main" as subdomain of default organization instead of multi-tenant with different subdomains for different organizations.
 - `static`: used to prepend a root path to the default `/static/` URL path for accessing static assets.
 - `syslog`: used to set the host and port of a syslog-compatible log message sink. (Default: None.)
-- `trust-user-authentication-headers`: used to activate reverse proxy authentication. See [Proxy Authentication Sever](enterprise_sso.html#proxy-authentication-sever).
+- `trust-user-authentication-headers`: used to activate reverse proxy authentication. See [Proxy Authentication Server](enterprise_sso.html#proxy-authentication-server).
 
 ### Production Deployment Environment Settings
 

@@ -322,7 +322,7 @@ The following environment variables are used to configure the container when lau
 
 `BRANDING` (downstream packaging only): You may override the templates and stylesheets that are used for GovReady-Q's branding by setting this environment variable to the name of an installed Django app Python module (i.e. created using `manage.py startapp`) that holds templates and static files. No such app is provided in the GovReady-Q published Docker image, so this variable can only be used by downstream image maintainers.  See [Applying Custom Organization Branding](CustomBranding.html).
 
-`PROXY_AUTHENTICATION_USER_HEADER` and `PROXY_AUTHENTICATION_EMAIL_HEADER`: GovReady-Q can be deployed behind a reverse proxy that authenticates users and passes the authenticated user's username and email address in HTTP headers. These environment variables correspond to the settings documented in [Enterprise Login](Environment.html#proxy-authentication-sever).
+`PROXY_AUTHENTICATION_USER_HEADER` and `PROXY_AUTHENTICATION_EMAIL_HEADER`: GovReady-Q can be deployed behind a reverse proxy that authenticates users and passes the authenticated user's username and email address in HTTP headers. These environment variables correspond to the settings documented in [Enterprise Login](Environment.html#proxy-authentication-server).
 
 ### Running tests
 

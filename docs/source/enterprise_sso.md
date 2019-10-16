@@ -1,6 +1,6 @@
 ## Enterprise Single-Sign On / Login
 
-### Proxy Authentication Sever
+### Proxy Authentication Server
 
 GovReady-Q can be deployed behind a reverse proxy that authenticates users and passes the authenticated user's username and email address in HTTP headers. In this configuration:
 
