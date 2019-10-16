@@ -1,6 +1,20 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.1 (October 16, 2019)
+---------------------------
+
+Minor patches to v0.9.0.
+
+**UX changes:**
+
+* Permissions added to settings modal. Permissions removed from settings. (#761)
+
+**Documentation changes:**
+
+* Minor typo corrections. (#762)
+
+
 v0.9.0 (October 9, 2019)
 ------------------------
 
