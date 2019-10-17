@@ -150,7 +150,7 @@ export GOVREADY_Q_IMAGENAME=$IMAGE
 echo "Set GOVREADY_Q_DBURL to default (blank for SQLITE)"
 
 echo "Bring containers up using: docker run commands..."
-# Pull and run GovReady-Q 0.9.0 container making site available on port 80 with no https
+# Pull and run GovReady container making site available on port 80 with no https
 echo "Command that will be run:"
 echo "docker run --detach --name $DC_NAME -p $PRIVATE_IP:80:8000 \
 -e HTTPS=false -e DBURL= -e DEBUG=$DEBUG \
