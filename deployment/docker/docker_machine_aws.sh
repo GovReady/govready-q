@@ -154,7 +154,7 @@ echo "Bring containers up using: docker run commands..."
 echo "Command that will be run:"
 echo "docker run --detach --name $DC_NAME -p $PRIVATE_IP:80:8000 \
 -e HTTPS=false -e DBURL= -e DEBUG=$DEBUG \
--e HOST=$HOSTNAME \
+-e GR_HOST=$HOSTNAME \
 $GOVREADY_Q_IMAGENAME"
 # Run the docker command
 docker run --detach --name $DC_NAME -p $PRIVATE_IP:80:8000 \

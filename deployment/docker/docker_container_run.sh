@@ -202,7 +202,7 @@ fi
 PORTMAP="-p $BIND:8000"
 
 # Set environment variables for the Django process to use.
-ENVS="-e HOST=$HOST -e PORT=$PORT -e HTTPS=$HTTPS -e DBURL=$DBURL -e DEBUG=$DEBUG"
+ENVS="-e GR_HOST=$HOST -e GR_PORT=$PORT -e HTTPS=$HTTPS -e DBURL=$DBURL -e DEBUG=$DEBUG"
 ENVS="$ENVS -e EMAIL_HOST=$EMAIL_HOST -e EMAIL_PORT=$EMAIL_PORT -e EMAIL_USER=$EMAIL_USER -e EMAIL_PW=$EMAIL_PW -e EMAIL_DOMAIN=$EMAIL_DOMAIN"
 
 # Add a mount argument for having the Sqlite database stored on the host.

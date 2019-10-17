@@ -1,6 +1,24 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.1 (October XX, 2019)
+-----------------------------
+
+Modifications to container deployment environmental variables to better support deployments in Mesosphere and other Docker orchestration environments.
+
+**WARNING - CONTAINER ENVIRONMENTAL VARIABLE CHANGES**
+
+The `HOST` and `PORT` container deployment environmental variables renamed to `GR_HOST` and `GR_PORT`. Update your container-based deployment configurations accordingly.
+
+**Developer changes:**
+
+* Change `HOST` and `PORT` container deployment environmental variable names to avoid name collision. Update container-based deployment configurations accordingly.
+
+**Documentation changes:**
+
+* Change `HOST` and `PORT` container deployment environmental variable names to avoid name collision in Mesosphere and other container orchestration tools.
+
+
 v0.9.0.2 (October 16, 2019)
 ---------------------------
 

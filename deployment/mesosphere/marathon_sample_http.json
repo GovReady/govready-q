@@ -1,0 +1,65 @@
+{
+  "id": "/govready-q-sample-http",
+  "acceptedResourceRoles":[
+      "slave_public"
+   ],
+  "instances": 1,
+  "container": {
+    "type": "DOCKER",
+    "volumes": [],
+    "docker": {
+      "network": "BRIDGE",
+      "image": "govready/govready-q-0.9.0",
+      "forcePullImage": true,
+      "privileged": false,
+      "parameters": []
+    }
+  },
+  "mem": 100,
+  "cpus": 0.2,
+  "disk": 0,
+  "gpus": 0,
+  "labels": {
+    "HAPROXY_GROUP": "dev",
+    "HAPROXY_0_MODE": "tcp"
+  },
+  "backoffFactor": 2,
+  "backoffSeconds": 3,
+  "maxLaunchDelaySeconds": 3600,
+  "constraints": [],
+  "portDefinitions": [],
+  "requirePorts": false,
+  "upgradeStrategy": {
+    "maximumOverCapacity": 1,
+    "minimumHealthCapacity": 1
+  },
+  "killSelection": "YOUNGEST_FIRST",
+  "unreachableStrategy": {
+    "inactiveAfterSeconds": 0,
+    "expungeAfterSeconds": 0
+  },
+  "healthChecks": [
+    {
+      "gracePeriodSeconds": 300,
+      "intervalSeconds": 60,
+      "timeoutSeconds": 20,
+      "maxConsecutiveFailures": 3,
+      "port": 80,
+      "delaySeconds": 15,
+      "protocol": "HTTP",
+      "path": "/"
+    }
+  ],
+  "fetch": [],
+  "secrets": {
+    "secret1": {},
+    "secret2": {}
+  },
+  "env": {
+    "GR_HOST": "localhost",
+    "GR_PORT": "80",
+    "HTTPS": "false",
+    "DEBUG": "true"
+  },
+  "networks": []
+}

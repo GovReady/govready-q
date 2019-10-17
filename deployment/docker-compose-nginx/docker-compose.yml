@@ -6,8 +6,8 @@ services:
   govready-q:
     image: ${GOVREADY_Q_IMAGENAME-govready/govready-q}
     environment:
-      - HOST=${GOVREADY_Q_HOST-test.example.com}
-      - PORT=8000
+      - GR_HOST=${GOVREADY_Q_HOST-test.example.com}
+      - GR_PORT=8000
       - HTTPS=true
       - DBURL=${GOVREADY_Q_DBURL-}
     networks:

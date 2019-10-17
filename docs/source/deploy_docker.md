@@ -296,9 +296,9 @@ For example:
 
 The following environment variables are used to configure the container when launching GovReady-Q using `docker run` or a container service (i.e., not when using our `docker_container_run.sh` helper script).
 
-`HOST` - The domain name that GovReady-Q will be accessible at by end users. (Default: `localhost`)
+`GR_HOST` - The domain name that GovReady-Q will be accessible at by end users. (Default: `localhost`)
 
-`PORT` - The port that GovReady-Q will be accessed at by end users, typically either 80 (no HTTPS) or 443 (HTTPS). (Default: `8080`)
+`GR_PORT` - The port that GovReady-Q will be accessed at by end users, typically either 80 (no HTTPS) or 443 (HTTPS). (Default: `8080`)
 
 `HTTPS` - Set to `true` if GovReady-Q will be accessed by end users at an https: address.  This must be done through a proxy that accepts HTTPS connections and passes the requests using HTTP to the Docker container. The proxy must set the `X-Forwarded-Proto: https` header. It is also permissible for the proxy to forward HTTP requests, and those requests will be automatically redirected to the https: URL. (Default: `false`)
 

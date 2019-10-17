@@ -30,10 +30,10 @@ if [ "$(whoami)" != "application" ]; then
 fi
 
 # What's the address (and port, if not 80) that end users
-# will access the site at? If the HOST and PORT environment
-# variables are set (and PORT is not 80), take the values
+# will access the site at? If the GR_HOST and GR_PORT environment
+# variables are set (and GR_PORT is not 80), take the values
 # from there, otherwise default to "localhost:8000".
-ADDRESS="${HOST-localhost}:${PORT-8080}"
+ADDRESS="${GR_HOST-localhost}:${GR_PORT-8080}"
 ADDRESS=$(echo $ADDRESS | sed s/:80$//; )
 
 # Create a local/environment.json file. Use jq to
