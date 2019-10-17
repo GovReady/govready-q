@@ -159,7 +159,7 @@ $GOVREADY_Q_IMAGENAME"
 # Run the docker command
 docker run --detach --name $DC_NAME -p $PRIVATE_IP:80:8000 \
 -e HTTPS=false -e DBURL= -e DEBUG=$DEBUG \
--e HOST=$HOSTNAME \
+-e GR_HOST=$HOSTNAME \
 $GOVREADY_Q_IMAGENAME
 
 # Configure Superuser account for GovReady-Q
