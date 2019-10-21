@@ -22,8 +22,16 @@ def index(request):
 def systeminstance_list(request):
     """List system instances"""
     # TODO: Restrict to user's permissions
-    return render(request, "itsystems/index.html", {
+    return render(request, "itsystems/systeminstance_index.html", {
         "systeminstances": SystemInstance.objects.all(),
+    })
+
+@login_required
+def hostinstance_list(request):
+    """List host instances"""
+    # TODO: Restrict to user's permissions
+    return render(request, "itsystems/hostinstance_index.html", {
+        "hostinstances": HostInstance.objects.all(),
     })
 
 @login_required
