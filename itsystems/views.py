@@ -6,8 +6,8 @@ from django.utils import timezone
 from django.db import transaction
 from django import forms
 from django.forms import ModelForm
-from siteapp.forms import SystemInstanceForm
-from siteapp.forms import HostInstanceForm
+from itsystems.forms import SystemInstanceForm
+from itsystems.forms import HostInstanceForm
 import json
 
 import re
