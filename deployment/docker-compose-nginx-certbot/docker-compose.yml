@@ -1,0 +1,40 @@
+version: '3'
+
+networks:
+  q_network:
+    driver: bridge
+
+services:
+  govready-q:
+    image: ${GOVREADY_Q_IMAGENAME-govready/govready-q}
+    environment:
+      - HOST=${GOVREADY_Q_HOST-test.example.com}
+      - PORT=8000
+      - HTTPS=true
+      - DBURL=${GOVREADY_Q_DBURL-}
+    networks:
+      - q_network
+  nginx:
+    build:
+      context: ./nginx
+      args:
+        - HOST=${GOVREADY_Q_HOST-test.example.com}
+    ports:
+      - "80:80"
+      - "${GOVREADY_Q_PORT-443}:443"
+    volumes:
+      - data-certbot-conf:/etc/letsencrypt
+      - data-certbot-www:/var/www/certbot
+    networks:
+      - q_network
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - data-certbot-conf:/etc/letsencrypt
+      - data-certbot-www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+volumes:
+  data-certbot-conf:
+  data-certbot-www:
