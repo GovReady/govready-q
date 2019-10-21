@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ModelForm
 
 from .models import Portfolio, Project
+from itsystems.models import SystemInstance
 
 class ProjectForm(ModelForm):
     class Meta:
@@ -20,6 +21,13 @@ class PortfolioForm(ModelForm):
     class Meta:
         model = Portfolio
         fields = ['title', 'description']
+        
+
+class SystemInstanceForm(ModelForm):
+
+    class Meta:
+        model = SystemInstance
+        fields = ['name', 'sdlc_stage']
 
 
 class PortfolioSignupForm(ModelForm):

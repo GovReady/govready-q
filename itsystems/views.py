@@ -42,3 +42,46 @@ def hostinstance(request, pk):
         "hostinstance": hostinstance,
         "agent": hostinstance.get_first_agent()
     })
+
+@login_required
+def new_systeminstance(request):
+    """Form to create new system instances"""
+    return HttpResponse("This is for new system instance.")
+    # if request.method == 'POST':
+    #   form = SystemInstanceForm(request.POST)
+    #   if form.is_valid():
+    #     form.save()
+    #     systeminstance = form.instance
+    #     systeminstance.assign_owner_permissions(request.user)
+    #     return redirect('systeminstance_projects', pk=systeminstance.pk)
+    # else:
+    #     form = SystemInstanceForm()
+
+    # return render(request, 'itsystems/form.html', {
+    #     'form': form,
+    #     "project_form": ProjectForm(request.user),
+    # })
+
+@login_required
+def new_hostinstance(request):
+    """Form to create new system instances"""
+    return HttpResponse("This is for new host instance.")
+
+@login_required
+def new_agent(request):
+    """Form to create new system instances"""
+    return HttpResponse("This is for new agent.")
+
+@login_required
+def new_agentservice(request):
+    """Form to create new system instances"""
+    return HttpResponse("This is for new agent service.")
+
+
+
+
+
+
+
+
+

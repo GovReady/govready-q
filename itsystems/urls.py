@@ -7,8 +7,12 @@ import itsystems.views
 
 urlpatterns = [
     url(r'^hello$', itsystems.views.index, name="hello"),
+    url(r'^new$', itsystems.views.new_systeminstance),
+    url(r'^hosts/new$', itsystems.views.new_hostinstance),
+    url(r'^agents/new$', itsystems.views.new_agent),
+    url(r'^agentservice/new$', itsystems.views.new_agentservice),
     url(r'^(?P<pk>.*)/hosts', itsystems.views.systeminstance_hostinstances_list),
-    url(r'^host/(?P<pk>.*)', itsystems.views.hostinstance),
+    url(r'^hosts/(?P<pk>.*)', itsystems.views.hostinstance),
     url(r'', itsystems.views.systeminstance_list),
 
 ]
