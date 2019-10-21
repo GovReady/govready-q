@@ -4,6 +4,9 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
+from django import forms
+from django.forms import ModelForm
+from siteapp.forms import SystemInstanceForm
 
 import re
 
@@ -46,21 +49,21 @@ def hostinstance(request, pk):
 @login_required
 def new_systeminstance(request):
     """Form to create new system instances"""
-    return HttpResponse("This is for new system instance.")
-    # if request.method == 'POST':
-    #   form = SystemInstanceForm(request.POST)
-    #   if form.is_valid():
-    #     form.save()
-    #     systeminstance = form.instance
-    #     systeminstance.assign_owner_permissions(request.user)
-    #     return redirect('systeminstance_projects', pk=systeminstance.pk)
-    # else:
-    #     form = SystemInstanceForm()
+    # return HttpResponse("This is for new system instance.")
+    if request.method == 'POST':
+      form = SystemInstanceForm(request.POST)
+      if form.is_valid():
+        form.save()
+        systeminstance = form.instance
+        # systeminstance.assign_owner_permissions(request.user)
+        return redirect('systeminstance_hostinstances_list', pk=systeminstance.pk)
+    else:
+        form = SystemInstanceForm()
 
-    # return render(request, 'itsystems/form.html', {
-    #     'form': form,
-    #     "project_form": ProjectForm(request.user),
-    # })
+    return render(request, 'itsystems/form.html', {
+        'form': form,
+        "system_instance_form": SystemInstanceForm(request.user),
+    })
 
 @login_required
 def new_hostinstance(request):
@@ -69,12 +72,12 @@ def new_hostinstance(request):
 
 @login_required
 def new_agent(request):
-    """Form to create new system instances"""
+    """Form to create new agent"""
     return HttpResponse("This is for new agent.")
 
 @login_required
 def new_agentservice(request):
-    """Form to create new system instances"""
+    """Form to create new agent service"""
     return HttpResponse("This is for new agent service.")
 
 
