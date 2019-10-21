@@ -7,6 +7,7 @@ from django.db import transaction
 from django import forms
 from django.forms import ModelForm
 from siteapp.forms import SystemInstanceForm
+from siteapp.forms import HostInstanceForm
 
 import re
 
@@ -60,7 +61,7 @@ def new_systeminstance(request):
     else:
         form = SystemInstanceForm()
 
-    return render(request, 'itsystems/form.html', {
+    return render(request, 'itsystems/systeminstance_form.html', {
         'form': form,
         "system_instance_form": SystemInstanceForm(request.user),
     })
@@ -68,7 +69,21 @@ def new_systeminstance(request):
 @login_required
 def new_hostinstance(request):
     """Form to create new system instances"""
-    return HttpResponse("This is for new host instance.")
+    # return HttpResponse("This is for new host instance.")
+    if request.method == 'POST':
+      form = HostInstanceForm(request.POST)
+      if form.is_valid():
+        form.save()
+        hostinstance = form.instance
+        # systeminstance.assign_owner_permissions(request.user)
+        return redirect('systeminstance_hostinstances_list', pk=hostinstance.pk)
+    else:
+        form = HostInstanceForm()
+
+    return render(request, 'itsystems/hostinstance_form.html', {
+        'form': form,
+        "host_instance_form": HostInstanceForm(request.user),
+    })
 
 @login_required
 def new_agent(request):

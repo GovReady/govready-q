@@ -3,6 +3,7 @@ from django.forms import ModelForm
 
 from .models import Portfolio, Project
 from itsystems.models import SystemInstance
+from itsystems.models import HostInstance
 
 class ProjectForm(ModelForm):
     class Meta:
@@ -28,6 +29,12 @@ class SystemInstanceForm(ModelForm):
     class Meta:
         model = SystemInstance
         fields = ['name', 'sdlc_stage']
+
+class HostInstanceForm(ModelForm):
+
+    class Meta:
+        model = HostInstance
+        fields = ['name', 'host_type', 'os', 'system_instance']
 
 
 class PortfolioSignupForm(ModelForm):
