@@ -3,9 +3,15 @@ from django.contrib import admin
 from .models import SystemInstance, HostInstance, AgentService, Agent
 
 
+class HostInstancesInLine(admin.TabularInline):
+    model = HostInstance
+
 class SystemInstanceAdmin(admin.ModelAdmin):
     ordering = ('name', 'sdlc_stage')
     list_display = ('name', 'sdlc_stage', 'id')
+    inlines = [
+        HostInstancesInLine,
+    ]
 
 class HostInstanceAdmin(admin.ModelAdmin):
     ordering = ('name',)
