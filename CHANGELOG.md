@@ -1,6 +1,23 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.3 (October 20, 2019)
+---------------------------
+
+[WIP] Experimental release with new It System Django app and integration with Wazuh.
+
+Represent "Systems", "Hosts", and "Agents" in GovReady to facilitate data exchanges with Wazuh and other scanning services.
+
+**UX changes:**
+
+* New screens and admin screens for SystemInstances, HostInstances, AgentServices, and Agents.
+
+
+**Developer changes:**
+
+* New models for SystemInstances, HostInstances, AgentServices, and Agents.
+
+
 v0.9.0.2 (October 16, 2019)
 ---------------------------
 

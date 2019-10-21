@@ -51,6 +51,9 @@ urlpatterns = [
     url(r'^portfolios/(?P<pk>.*)/projects$', views.portfolio_projects, name="portfolio_projects"),
     url(r'^portfolio/update_permissions', views.update_permissions, name="update_permissions"),
 
+    # itsystems
+    url(r"^itsystems/", include("itsystems.urls")),
+
     # org groups
     url(r'^groups$', views_landing.org_groups),
     url(r'^groups/new$', views_landing.new_org_group),
