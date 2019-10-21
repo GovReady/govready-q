@@ -114,7 +114,7 @@ def new_hostinstance(request):
         form.save()
         hostinstance = form.instance
         # systeminstance.assign_owner_permissions(request.user)
-        return redirect('systeminstance_hostinstances_list', pk=hostinstance.pk)
+        return redirect('systeminstance_hostinstances_list', pk=hostinstance.system_instance.pk)
     else:
         form = HostInstanceForm()
 
