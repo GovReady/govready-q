@@ -50,14 +50,21 @@ def systeminstance_hostinstances_list(request, pk):
 def hostinstance(request, pk):
     """HostInstance detail"""
     # TODO: Restrict to user's permissions
+    print("** hostinstance ** pk: {}".format(pk))
     try:
         hostinstance = HostInstance.objects.get(id=pk)
+        print("* try works *")
+    except:
+        print("* try fails *")
+        hostinstance = None
+        # return HttpResponseNotFound("404 - page not found.")
+
+    try:
         agent = hostinstance.get_first_agent()
     except:
-        hostinstance = None
         agent = None
-        return HttpResponseNotFound("404 - page not found.")
-
+        agent_service = None
+        
     # Retrieving data from a service
     # MVP currently supports only Wazuh
     # Wazuh record must already exist in database AgentService table

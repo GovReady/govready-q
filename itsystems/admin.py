@@ -18,7 +18,7 @@ class SystemInstanceAdmin(admin.ModelAdmin):
 
 class HostInstanceAdmin(admin.ModelAdmin):
     ordering = ('name',)
-    list_display = ('name', 'system_instance', 'host_type', 'os')
+    list_display = ('name', 'system_instance', 'host_type', 'os', 'id')
     inlines = [
         AgentInLine,
     ]
