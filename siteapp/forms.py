@@ -24,29 +24,6 @@ class PortfolioForm(ModelForm):
         fields = ['title', 'description']
         
 
-class SystemInstanceForm(ModelForm):
-
-    class Meta:
-        model = SystemInstance
-        fields = ['name', 'sdlc_stage']
-        labels = {
-            'name': ('Name'),
-            'sdlc_stage': ('Software Development Life Cycle (SDLC) Stage'),
-        }
-
-class HostInstanceForm(ModelForm):
-
-    class Meta:
-        model = HostInstance
-        fields = ['name', 'host_type', 'os', 'system_instance']
-        labels = {
-            'name': ('Name'),
-            'host_type': ('Host Type'),
-            'os': ('Operating System'),
-            'system_instance': ('System Instance'),
-        }
-
-
 class PortfolioSignupForm(ModelForm):
 
     class Meta:
