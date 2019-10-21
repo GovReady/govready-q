@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+Your IT Systems
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">Your IT Systems</li>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+    <div style="float: right; margin: 0 0.5em 0em 5em;">
+      <a id="new-itsystem" href="/itsystem/new" class="btn btn-success">Create an IT System</a>
+    </div>
+
+    <h2 class="">IT Systems</h2>
+    {% if systeminstances|length > 0 %}
+    <p>You have access to {{ systeminstances|length }} IT System{{ systeminstances|pluralize }}</p>
+    {% else %}
+    <p>You do not have access to any IT Systems.</p>
+    {% endif %}
+
+    {% include "itsystems/systeminstances_table.html" with systeminstances=systeminstances %}
+
+    {% endblock %}

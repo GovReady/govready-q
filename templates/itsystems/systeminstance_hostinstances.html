@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+{{systeminstance.name}}
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">{{systeminstance.name}} Hosts</li>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+    <div style="float: right; margin: 0 0.5em 0em 5em;">
+      <a id="new-itsystem-host" href="/itsystem/host/new" class="btn btn-success">Add a Host</a>
+    </div>
+
+    <h2 class="">{{ systeminstance.name }} / Hosts</h2>
+    {% if hostinstances|length > 0 %}
+    <p>{{ systeminstance.name }} contains {{ hostinstances|length }} Host{{ hostinstances|pluralize }}</p>
+    {% else %}
+    <p>You do not have access to any Hosts for this IT System.</p>
+    {% endif %}
+
+    {% include "itsystems/systeminstance_hostinstances_table.html" with hostinstances=hostinstances %}
+
+    {% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+{{hostinstance.name}}
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">{{hostinstance.name}} xx</li>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+    <!-- <div style="float: right; margin: 0 0.5em 0em 5em;">
+      <a id="new-itsystem" href="/itsystem/new" class="btn btn-success">Create an IT System</a>
+    </div> -->
+
+    <h2 class="">{{ hostinstance.system_instance.name }} / {{hostinstance.name}}</h2>
+
+    <p>detail page</p>
+    <p><a href="http://35.175.122.207:5601/app/wazuh#/agents?_g=()&agent={{agent.agent_id}}&_a=(columns:!(_source),index:'wazuh-alerts-3.x-*',interval:auto,query:(language:kuery,query:''),sort:!(timestamp,desc))&tab=welcome">view agent details</a> ({{agent.agent_id}})</p>
+
+    {% endblock %}

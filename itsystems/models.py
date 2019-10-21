@@ -33,6 +33,12 @@ class HostInstance(models.Model):
         # For the admin, notification strings
         return self.name
 
+    def get_agents(self):
+        return Agent.objects.filter(host_instance__pk=self.pk)
+
+    def get_first_agent(self):
+        return Agent.objects.filter(host_instance__pk=self.pk)[0]
+
 class AgentService(models.Model):
     name = models.CharField(max_length=255, help_text="The name of this endpoint/host Agent Service .", unique=True)
     api_user = models.CharField(max_length=255, null=True, blank=True, help_text="The user/login identify for accessing Agent Service's API.")
@@ -46,8 +52,8 @@ class AgentService(models.Model):
 
 class Agent(models.Model):
     agent_id = models.CharField(max_length=24, help_text="The unique identifier of an installed Agent on a Host Instance.")
-    agent_service = models.ForeignKey(AgentService, null=False, blank=False, related_name="agent", on_delete="CASCADE", help_text="The AgentService to which this Agent belonts.")
-    host_instance = models.ForeignKey(HostInstance, null=True, blank=True, related_name="agent", on_delete="models.SET_NULL", help_text="The HostInstance on which the Agent is installed and monitoring.")
+    agent_service = models.ForeignKey(AgentService, null=False, blank=False, related_name="agents", on_delete="CASCADE", help_text="The AgentService to which this Agent belonts.")
+    host_instance = models.ForeignKey(HostInstance, null=True, blank=True, related_name="agents", on_delete="models.SET_NULL", help_text="The HostInstance on which the Agent is installed and monitoring.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 

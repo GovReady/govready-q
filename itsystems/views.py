@@ -32,3 +32,13 @@ def systeminstance_hostinstances_list(request, pk):
         "systeminstance": systeminstance,
         "hostinstances": hostinstances,
     })
+
+@login_required
+def hostinstance(request, pk):
+    """HostInstance detail"""
+    # TODO: Restrict to user's permissions
+    hostinstance  = HostInstance.objects.get(id=pk)
+    return render(request, "itsystems/hostinstance.html", {
+        "hostinstance": hostinstance,
+        "agent": hostinstance.get_first_agent()
+    })
