@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.utils import timezone
@@ -8,6 +8,7 @@ from django import forms
 from django.forms import ModelForm
 from siteapp.forms import SystemInstanceForm
 from siteapp.forms import HostInstanceForm
+import json
 
 import re
 
@@ -41,10 +42,39 @@ def systeminstance_hostinstances_list(request, pk):
 def hostinstance(request, pk):
     """HostInstance detail"""
     # TODO: Restrict to user's permissions
-    hostinstance  = HostInstance.objects.get(id=pk)
+    try:
+        hostinstance = HostInstance.objects.get(id=pk)
+        agent = hostinstance.get_first_agent()
+    except:
+        hostinstance = None
+        agent = None
+        return HttpResponseNotFound("404 - page not found.")
+
+    # Retrieving data from a service
+    # MVP currently supports only Wazuh
+    # Wazuh record must already exist in database AgentService table
+    # Name: Wazuh
+    # Api_user: <api_user_name>
+    # Api_pw: <api_pw>
+    # TODO: AgentService should be set by HostInstance - Agent relationship, yes?
+    agent_service = AgentService.objects.filter(name='Wazuh').first()
+    if agent_service:
+        agent_service_api_address = "35.175.122.207:55000"
+        agent_service_api_user = agent_service.api_user
+        agent_service_api_pw = agent_service.api_pw
+        
+        import requests
+        from requests.auth import HTTPBasicAuth
+        r = requests.get('http://35.175.122.207:55000/summary/agents?pretty', auth=HTTPBasicAuth(agent_service_api_user, agent_service_api_pw))
+        agent_service_data = r.json()
+        agent_service_data_pretty = json.dumps(agent_service_data, sort_keys=True, indent=4)
+    else:
+        agent_service_data_pretty = "Agent Service not defined or not supported."
+
     return render(request, "itsystems/hostinstance.html", {
         "hostinstance": hostinstance,
-        "agent": hostinstance.get_first_agent()
+        "agent": agent,
+        "agent_service_data_pretty": agent_service_data_pretty
     })
 
 @login_required
