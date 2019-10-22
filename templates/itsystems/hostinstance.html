@@ -22,8 +22,42 @@
 
     <h2 class="">{{ hostinstance.system_instance.name }} / {{hostinstance.name}}</h2>
 
-    <p><a href="http://35.175.122.207:5601/app/wazuh#/agents?_g=()&agent={{agent.agent_id}}&_a=(columns:!(_source),index:'wazuh-alerts-3.x-*',interval:auto,query:(language:kuery,query:''),sort:!(timestamp,desc))&tab=welcome">view agent details</a> ({{agent.agent_id}})</p>
+    <!-- <p><a href="http://35.175.122.207:5601/app/wazuh#/agents?_g=()&agent={{agent.agent_id}}&_a=(columns:!(_source),index:'wazuh-alerts-3.x-*',interval:auto,query:(language:kuery,query:''),sort:!(timestamp,desc))&tab=welcome">view agent details</a> ({{agent.agent_id}})</p> -->
 
-    <h3>Data from {{ hostinstance.name }}</h3>
-    <p><pre>{{agent_service_data_pretty}}</pre></p>
+    <!-- <h3>Data from {{ hostinstance.name }}</h3>
+    <p><pre>{{agent_service_data_pretty}}</pre></p> -->
+    <p>Example display of data collected live from Host</p>
+
+    <h3 style="border-bottom:1px solid gray;font-weight: bold;">CIS Scan Summary for {{hostinstance.name}}</h3>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Item</th>
+            <th scope="col">Value</th>
+        </tr>
+        </thead>
+    {% for report in agent_service_data.data.items %}
+        <tr><td width="200">Baseline</td><td>{{ report.name }}<br>{{ report.description }}</td></tr>
+        <tr><td>Overall Score</td><td>{{ report.score }} out of 100</td></tr>
+        <tr><td>Checks</td><td>Checks {{ report.total_checks }} &nbsp;&nbsp;&nbsp; Pass {{ report.pass }} &nbsp;&nbsp;&nbsp; Fail {{ report.fail }}</td></tr>
+        <tr><td>References</td><td><a href="{{ report.reference }}">{{ report.references }}</a></td></tr>
+    {% endfor %}
+    </table>
+
+    <h3 style="border-bottom:1px solid gray;font-weight: bold;">{{ agent_service_data_pkgs.data.items|length }} software packages installed on {{hostinstance.name}}</h3>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Software package</th>
+            <th scope="col">Description</th>
+        </tr>
+        </thead>
+    {% for pkg in agent_service_data_pkgs.data.items %}
+        <tr><td>{{ pkg.name }}</td><td>{{ pkg.description }}</td></tr>
+    {% endfor %}
+    </table>
+
+    <!-- <h3>Data from {{ hostinstance.name }}</h3>
+    <p><pre>{{agent_service_data_pkgs_pretty}}</pre></p> -->
     {% endblock %}

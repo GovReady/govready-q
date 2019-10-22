@@ -80,16 +80,27 @@ def hostinstance(request, pk):
         
         import requests
         from requests.auth import HTTPBasicAuth
-        r = requests.get('http://35.175.122.207:55000/summary/agents?pretty', auth=HTTPBasicAuth(agent_service_api_user, agent_service_api_pw))
+        r = requests.get('http://35.175.122.207:55000/sca/{}/?pretty'.format(agent.agent_id), auth=HTTPBasicAuth(agent_service_api_user, agent_service_api_pw))
         agent_service_data = r.json()
         agent_service_data_pretty = json.dumps(agent_service_data, sort_keys=True, indent=4)
+
+        #curl -u foo:bar -X GET  "http://35.175.122.207:55000/syscollector/006/packages?pretty"
+        r_pkgs = requests.get('http://35.175.122.207:55000/syscollector/{}/packages?pretty'.format(agent.agent_id), auth=HTTPBasicAuth(agent_service_api_user, agent_service_api_pw))
+        agent_service_data_pkgs = r_pkgs.json()
+        agent_service_data_pkgs_pretty = json.dumps(agent_service_data_pkgs, sort_keys=True, indent=4)
+        # pkgs_parsed = (json.loads(agent_service_data_pkgs))
+        print(agent_service_data_pkgs)
+
     else:
         agent_service_data_pretty = "Agent Service not defined or not supported."
 
     return render(request, "itsystems/hostinstance.html", {
         "hostinstance": hostinstance,
         "agent": agent,
-        "agent_service_data_pretty": agent_service_data_pretty
+        "agent_service_data": agent_service_data,
+        "agent_service_data_pkgs": agent_service_data_pkgs,
+        "agent_service_data_pretty": agent_service_data_pretty,
+        "agent_service_data_pkgs_pretty": agent_service_data_pkgs_pretty
     })
 
 @login_required
