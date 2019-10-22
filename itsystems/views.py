@@ -83,13 +83,19 @@ def hostinstance(request, pk):
         r = requests.get('http://35.175.122.207:55000/sca/{}/?pretty'.format(agent.agent_id), auth=HTTPBasicAuth(agent_service_api_user, agent_service_api_pw))
         agent_service_data = r.json()
         agent_service_data_pretty = json.dumps(agent_service_data, sort_keys=True, indent=4)
+        # Temporarily retreive checks information here
+        checks_total = agent_service_data["data"]["items"][0]["total_checks"]
+        checks_pass = agent_service_data["data"]["items"][0]["pass"]
+        checks_pass_percent = round(checks_pass / checks_total * 100, 1)
+        checks_fail = agent_service_data["data"]["items"][0]["fail"]
+        checks_fail_percent = round(checks_fail / checks_total * 100, 1)
 
         #curl -u foo:bar -X GET  "http://35.175.122.207:55000/syscollector/006/packages?pretty"
         r_pkgs = requests.get('http://35.175.122.207:55000/syscollector/{}/packages?pretty'.format(agent.agent_id), auth=HTTPBasicAuth(agent_service_api_user, agent_service_api_pw))
         agent_service_data_pkgs = r_pkgs.json()
         agent_service_data_pkgs_pretty = json.dumps(agent_service_data_pkgs, sort_keys=True, indent=4)
         # pkgs_parsed = (json.loads(agent_service_data_pkgs))
-        print(agent_service_data_pkgs)
+        # print(agent_service_data_pkgs)
 
     else:
         agent_service_data_pretty = "Agent Service not defined or not supported."
@@ -98,6 +104,11 @@ def hostinstance(request, pk):
         "hostinstance": hostinstance,
         "agent": agent,
         "agent_service_data": agent_service_data,
+        "checks_total": checks_total,
+        "checks_pass": checks_pass,
+        "checks_fail": checks_fail,
+        "checks_pass_percent": checks_pass_percent,
+        "checks_fail_percent": checks_fail_percent,
         "agent_service_data_pkgs": agent_service_data_pkgs,
         "agent_service_data_pretty": agent_service_data_pretty,
         "agent_service_data_pkgs_pretty": agent_service_data_pkgs_pretty

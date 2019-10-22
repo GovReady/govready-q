@@ -20,7 +20,7 @@
       <a id="new-host" href="/itsystems/hosts/new" class="btn btn-success">Create a Host</a>
     </div>
 
-    <h2 class="">{{ hostinstance.system_instance.name }} / {{hostinstance.name}}</h2>
+    <h2 class=""><a href="/itsystems/{{ hostinstance.system_instance.id }}/hosts" style="color: black;">{{ hostinstance.system_instance.name }}</a> / {{hostinstance.name}}</h2>
 
     <!-- <p><a href="http://35.175.122.207:5601/app/wazuh#/agents?_g=()&agent={{agent.agent_id}}&_a=(columns:!(_source),index:'wazuh-alerts-3.x-*',interval:auto,query:(language:kuery,query:''),sort:!(timestamp,desc))&tab=welcome">view agent details</a> ({{agent.agent_id}})</p> -->
 
@@ -37,10 +37,25 @@
         </tr>
         </thead>
     {% for report in agent_service_data.data.items %}
-        <tr><td width="200">Baseline</td><td>{{ report.name }}<br>{{ report.description }}</td></tr>
-        <tr><td>Overall Score</td><td>{{ report.score }} out of 100</td></tr>
-        <tr><td>Checks</td><td>Checks {{ report.total_checks }} &nbsp;&nbsp;&nbsp; Pass {{ report.pass }} &nbsp;&nbsp;&nbsp; Fail {{ report.fail }}</td></tr>
-        <tr><td>References</td><td><a href="{{ report.reference }}">{{ report.references }}</a></td></tr>
+        <tr><td width="200">Baseline</td><td>{{ report.name }}
+            <div class="small">{{ report.description }}</div>
+        </td></tr>
+        <!-- <tr><td>Overall Score</td><td>{{ report.score }} out of 100</td></tr> -->
+        <tr><td>Checks</td><td>
+            <div class="progress">
+              <div class="progress-bar progress-bar-success progress-bar-striped" style="width: {{checks_pass_percent}}%" aria-valuenow="{{checks_pass_percent}}" aria-valuemin="0" aria-valuemax="100">
+                <span class="">{{checks_pass_percent}}% Pass</span>
+              </div>
+              <div class="progress-bar progress-bar-danger progress-bar-striped" style="width: {{checks_fail_percent}}%" aria-valuenow="{{checks_fail_percent}}" aria-valuemin="0" aria-valuemax="100">
+                <span class="">{{checks_fail_percent}}% Fail</span>
+              </div>
+              <!-- <div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 20%">
+                <span class="sr-only">20% Complete (warning)</span>
+              </div> -->
+            </div>
+            Checks {{ report.total_checks }} &nbsp;&nbsp;&nbsp; Pass {{ report.pass }} &nbsp;&nbsp;&nbsp; Fail {{ report.fail }}
+        </td></tr>
+        <tr><td>References</td><td><a href="{{ report.references }}" target="blank">{{ report.references }}</a></td></tr>
     {% endfor %}
     </table>
 
