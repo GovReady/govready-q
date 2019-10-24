@@ -5,9 +5,9 @@
 {% if hostinstances %}
 <div class="container">
 <div class="row">
-  <div class="col-xs-10 col-md-5">Portfolio</div>
-  <div class="col-xs-6 col-sm-1">ID</div>
-  <div class="col-xs-6 col-sm-2">Role</div>
+  <div class="col-xs-10 col-md-5">Host Instance Name</div>
+  <div class="col-xs-6 col-sm-1">Host Type</div>
+  <div class="col-xs-6 col-sm-2">Operating System</div>
   <div class="col-md-2">&nbsp;</div>
   <div class="col-xs-12 col-md-2">Created</div>
 </div>
@@ -19,11 +19,13 @@
     <div class="col-xs-10 col-md-5">
       <div>
         <span class="glyphicon glyphicon-hdd"></span>&nbsp;&nbsp;&nbsp;
-        <a href="/itsystems/{{systeminstance.id}}/hosts" id="systeminstance_{{systeminstance.name}}" style="color: black;">{{hostinstance.name}}</a>
+        <a href="/itsystems/agent/list" id="systeminstance_{{systeminstance.name}}" style="color: black;">{{hostinstance.name}}</a>
       </div>
     </div>
 
-    <div class="col-md-1"><small style="color: #888;">{{hostinstance.id}}</small></div>
+    <div class="col-md-1"><small style="color: #888;">{{hostinstance.host_type}}</small></div>
+
+    <div class="col-md-1"><small style="color: #888;">{{hostinstance.os}}</small></div>
 
     <div class="col-md-2">&nbsp;</div>
 

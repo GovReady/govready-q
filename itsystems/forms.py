@@ -3,6 +3,7 @@ from django.forms import ModelForm
 
 from itsystems.models import SystemInstance
 from itsystems.models import HostInstance
+from itsystems.models import Agent
 
 class SystemInstanceForm(ModelForm):
 
@@ -24,4 +25,15 @@ class HostInstanceForm(ModelForm):
             'host_type': ('Host Type'),
             'os': ('Operating System'),
             'system_instance': ('System Instance'),
+        }
+
+class AgentForm(ModelForm):
+
+    class Meta:
+        model = Agent
+        fields = ['agent_id', 'agent_service', 'host_instance',]
+        labels = {
+            'agent_id': ('Agent Id'),
+            'agent_service': ('Agent Service'),
+            'host_instance': ('Host Instance'),
         }

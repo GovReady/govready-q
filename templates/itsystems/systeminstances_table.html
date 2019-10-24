@@ -5,9 +5,8 @@
 {% if systeminstances %}
 <div class="container">
 <div class="row">
-  <div class="col-xs-10 col-md-5">Portfolio</div>
-  <div class="col-xs-6 col-sm-1">ID</div>
-  <div class="col-xs-6 col-sm-2">Role</div>
+  <div class="col-xs-10 col-md-5">System Instance Name</div>
+  <div class="col-xs-6 col-sm-1">SDLC</div>
   <div class="col-md-2">&nbsp;</div>
   <div class="col-xs-12 col-md-2">Created</div>
 </div>
@@ -23,7 +22,7 @@
       </div>
     </div>
 
-    <div class="col-md-1"><small style="color: #888;">{{systeminstance.id}}</small></div>
+    <div class="col-md-1"><small style="color: #888;">{{systeminstance.sdlc_stage}}</small></div>
 
     <div class="col-md-2">&nbsp;</div>
 

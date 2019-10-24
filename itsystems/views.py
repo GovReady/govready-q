@@ -8,6 +8,7 @@ from django import forms
 from django.forms import ModelForm
 from itsystems.forms import SystemInstanceForm
 from itsystems.forms import HostInstanceForm
+from itsystems.forms import AgentForm
 import json
 
 import re
@@ -33,6 +34,14 @@ def hostinstance_list(request):
     # TODO: Restrict to user's permissions
     return render(request, "itsystems/hostinstance_index.html", {
         "hostinstances": HostInstance.objects.all(),
+    })
+
+@login_required
+def agent_list(request):
+    """List host instances"""
+    # TODO: Restrict to user's permissions
+    return render(request, "itsystems/agent_index.html", {
+        "agents": Agent.objects.all(),
     })
 
 @login_required
@@ -133,7 +142,23 @@ def new_hostinstance(request):
 @login_required
 def new_agent(request):
     """Form to create new agent"""
-    return HttpResponse("This is for new agent.")
+    # return HttpResponse("This is for new agent.")
+    """Form to create new system instances"""
+    # return HttpResponse("This is for new host instance.")
+    if request.method == 'POST':
+      form = AgentForm(request.POST)
+      if form.is_valid():
+        form.save()
+        agent = form.instance
+        # systeminstance.assign_owner_permissions(request.user)
+        return redirect('systeminstance_hostinstances_list', pk=agent.host_instance.pk)
+    else:
+        form = AgentForm()
+
+    return render(request, 'itsystems/agent_form.html', {
+        'form': form,
+        "agent_form": AgentForm(request.user),
+    })
 
 @login_required
 def new_agentservice(request):

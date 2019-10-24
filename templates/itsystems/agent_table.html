@@ -2,34 +2,37 @@
 {% load humanize %}
 {% load guardian_tags %}
 
-{% if hostinstances %}
+{% if agents %}
 <div class="container">
 <div class="row">
-  <div class="col-xs-10 col-md-5">Host</div>
-  <div class="col-xs-6 col-sm-1">ID</div>
-  <div class="col-xs-6 col-sm-2">Role</div>
+  <div class="col-xs-10 col-md-5">Agent ID</div>
+  <div class="col-xs-6 col-sm-1">Agent Service</div>
+  <div class="col-xs-6 col-sm-2">Host Instance</div>
   <div class="col-md-2">&nbsp;</div>
   <div class="col-xs-12 col-md-2">Created</div>
 </div>
 {% endif %}
 
-  {% for hostinstance in hostinstances %}
+  {% for agent in agents %}
   <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
 
     <div class="col-xs-10 col-md-5">
       <div>
         <span class="glyphicon glyphicon-hdd"></span>&nbsp;&nbsp;&nbsp;
-        <a href="/itsystems/hosts/{{hostinstance.id}}" id="hostinstance_{{hostinstance.name}}" style="color: black;">{{hostinstance.name}}</a>
+        <a style="color: black;">{{agent.agent_id}}</a>
       </div>
     </div>
 
-    <div class="col-md-1"><small style="color: #888;">{{hostinstance.id}}</small></div>
+    <div class="col-md-1"><small style="color: #888;">{{agent.agent_service}}</small></div>
+
+    <div class="col-md-1"><small style="color: #888;">{{agent.host_instance}}</small></div>
 
     <div class="col-md-2">&nbsp;</div>
 
     <div class="col-xs-12 col-md-2" style="text-align: left;"><small style="color: #888;">
-        {{hostinstance.created|naturaltime}}</small></div>
+        {{agent.created|naturaltime}}</small></div>
   </div>
   {% endfor %}
 
 </div>
+
