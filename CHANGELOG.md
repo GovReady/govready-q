@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.3 (October 20, 2019)
+v0.9.0.3 (October 25, 2019)
 ---------------------------
 
 [WIP] Experimental release with new It System Django app and integration with Wazuh.
@@ -17,6 +17,12 @@ Represent "Systems", "Hosts", and "Agents" in GovReady to facilitate data exchan
 
 * New models for SystemInstances, HostInstances, AgentServices, and Agents.
 
+v0.9.0.2.1.1 (October 24, 2019)
+-------------------------------
+
+**Developer Change**
+
+* Create migrations for shortening varchar field length to 255 on siteapp.models
 
 v0.9.0.2 (October 16, 2019)
 ---------------------------
