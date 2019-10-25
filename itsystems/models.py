@@ -60,3 +60,24 @@ class Agent(models.Model):
     def __str__(self):
         # For the admin, notification strings
         return self.agent_id
+
+class Vendor(models.Model):
+    name = models.CharField(max_length=200, null=False, blank=False, help_text="The name of the Vendor.", unique=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        # For the admin, notification strings
+        return self.name
+
+class Component(models.Model):
+    name = models.CharField(max_length=200, null=False, blank=False, help_text="The unique name of a usable component.")
+    vendor = models.ForeignKey(Vendor, null=False, blank=False, related_name="components", 
+        on_delete="CASCADE", help_text="The vendor who supports or sells this component.")
+    version = models.CharField(max_length=50, null=True, blank=True, help_text="The current version number for this component.")
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    def __str__(self):
+        # For the admin, notification strings
+        return self.name

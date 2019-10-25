@@ -9,11 +9,13 @@ from django.forms import ModelForm
 from itsystems.forms import SystemInstanceForm
 from itsystems.forms import HostInstanceForm
 from itsystems.forms import AgentForm
+from itsystems.forms import ComponentForm
+from itsystems.forms import VendorForm
 import json
 
 import re
 
-from .models import SystemInstance, HostInstance, AgentService, Agent
+from .models import SystemInstance, HostInstance, AgentService, Agent, Component, Vendor
 
 # Create your views here.
 
@@ -54,6 +56,15 @@ def systeminstance_hostinstances_list(request, pk):
         "systeminstance": systeminstance,
         "hostinstances": hostinstances,
     })
+
+@login_required
+def components_list(request):
+    """List host instances"""
+    # TODO: Restrict to user's permissions
+    return render(request, "itsystems/component_index.html", {
+        "component": Component.objects.all(),
+    })
+
 
 @login_required
 def hostinstance(request, pk):
@@ -164,6 +175,25 @@ def new_agent(request):
 def new_agentservice(request):
     """Form to create new agent service"""
     return HttpResponse("This is for new agent service.")
+
+@login_required
+def new_components(request):
+    """Form to create new agent component"""
+    # return HttpResponse("This is for a new component.")
+    if request.method == 'POST':
+      form = ComponentForm(request.POST)
+      if form.is_valid():
+        form.save()
+        component = form.instance
+        # systeminstance.assign_owner_permissions(request.user)
+        return redirect('components_list', pk=component.pk)
+    else:
+        form = ComponentForm()
+
+    return render(request, 'itsystems/component_form.html', {
+        'form': form,
+        "component_form": ComponentForm(request.user),
+    })
 
 
 

@@ -1,0 +1,38 @@
+<!-- List of systeminstances -->
+{% load humanize %}
+{% load guardian_tags %}
+
+{% if component %}
+<div class="container">
+<div class="row">
+  <div class="col-xs-10 col-md-5">Component Name</div>
+  <div class="col-xs-6 col-sm-1">Vendor</div>
+  <div class="col-xs-6 col-sm-2">Version</div>
+  <div class="col-md-2">&nbsp;</div>
+  <div class="col-xs-12 col-md-2">Created</div>
+</div>
+{% endif %}
+
+  {% for component in components %}
+  <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+
+    <div class="col-xs-10 col-md-5">
+      <div>
+        <span class="glyphicon glyphicon-hdd"></span>&nbsp;&nbsp;&nbsp;
+        <a style="color: black;">{{component.name}}</a>
+      </div>
+    </div>
+
+    <div class="col-md-1"><small style="color: #888;">{{component.vendor}}</small></div>
+
+    <div class="col-md-1"><small style="color: #888;">{{component.version}}</small></div>
+
+    <div class="col-md-2">&nbsp;</div>
+
+    <div class="col-xs-12 col-md-2" style="text-align: left;"><small style="color: #888;">
+        {{component.created|naturaltime}}</small></div>
+  </div>
+  {% endfor %}
+
+</div>
+
