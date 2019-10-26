@@ -8,11 +8,14 @@ from django import forms
 from django.forms import ModelForm
 from itsystems.forms import SystemInstanceForm
 from itsystems.forms import HostInstanceForm
+from itsystems.forms import AgentForm
+from itsystems.forms import ComponentForm
+from itsystems.forms import VendorForm
 import json
 
 import re
 
-from .models import SystemInstance, HostInstance, AgentService, Agent
+from .models import SystemInstance, HostInstance, AgentService, Agent, Component, Vendor
 
 # Create your views here.
 
@@ -36,6 +39,14 @@ def hostinstance_list(request):
     })
 
 @login_required
+def agent_list(request):
+    """List host instances"""
+    # TODO: Restrict to user's permissions
+    return render(request, "itsystems/agent_index.html", {
+        "agents": Agent.objects.all(),
+    })
+
+@login_required
 def systeminstance_hostinstances_list(request, pk):
     """List system instance host intances"""
     # TODO: Restrict to user's permissions
@@ -45,6 +56,15 @@ def systeminstance_hostinstances_list(request, pk):
         "systeminstance": systeminstance,
         "hostinstances": hostinstances,
     })
+
+@login_required
+def components_list(request):
+    """List host instances"""
+    # TODO: Restrict to user's permissions
+    return render(request, "itsystems/component_index.html", {
+        "component": Component.objects.all(),
+    })
+
 
 @login_required
 def hostinstance(request, pk):
@@ -155,12 +175,47 @@ def new_hostinstance(request):
 @login_required
 def new_agent(request):
     """Form to create new agent"""
-    return HttpResponse("This is for new agent.")
+    # return HttpResponse("This is for new agent.")
+    """Form to create new system instances"""
+    # return HttpResponse("This is for new host instance.")
+    if request.method == 'POST':
+      form = AgentForm(request.POST)
+      if form.is_valid():
+        form.save()
+        agent = form.instance
+        # systeminstance.assign_owner_permissions(request.user)
+        return redirect('systeminstance_hostinstances_list', pk=agent.host_instance.pk)
+    else:
+        form = AgentForm()
+
+    return render(request, 'itsystems/agent_form.html', {
+        'form': form,
+        "agent_form": AgentForm(request.user),
+    })
 
 @login_required
 def new_agentservice(request):
     """Form to create new agent service"""
     return HttpResponse("This is for new agent service.")
+
+@login_required
+def new_components(request):
+    """Form to create new agent component"""
+    # return HttpResponse("This is for a new component.")
+    if request.method == 'POST':
+      form = ComponentForm(request.POST)
+      if form.is_valid():
+        form.save()
+        component = form.instance
+        # systeminstance.assign_owner_permissions(request.user)
+        return redirect('components_list', pk=component.pk)
+    else:
+        form = ComponentForm()
+
+    return render(request, 'itsystems/component_form.html', {
+        'form': form,
+        "component_form": ComponentForm(request.user),
+    })
 
 
 

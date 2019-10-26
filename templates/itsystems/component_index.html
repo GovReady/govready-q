@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+Your Components
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">Your Components</li>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+    <div style="float: right; margin: 0 0.5em 0em 5em;">
+      <a id="new-itsystem" href="/itsystems/components/new" class="btn btn-success">Create a Component</a>
+    </div>
+
+    <h2 class="">Components</h2>
+    {% if component|length > 0 %}
+    <p>You have access to {{ component|length }} Component{{ component|pluralize }}.</p>
+    {% else %}
+    <p>You do not have access to any Components.</p>
+    {% endif %}
+
+    {% include "itsystems/component_table.html" with components=component %}
+
+    {% endblock %}

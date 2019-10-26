@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+Your Agents
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">Your Agents</li>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+    <div style="float: right; margin: 0 0.5em 0em 5em;">
+      <a id="new-itsystem" href="/itsystems/agents/new" class="btn btn-success">Create an Agent</a>
+    </div>
+
+    <h2 class="">Agents</h2>
+    {% if agents|length > 0 %}
+    <p>You have access to {{ agents|length }} Agent{{ agents|pluralize }}.</p>
+    {% else %}
+    <p>You do not have access to any Agents.</p>
+    {% endif %}
+
+    {% include "itsystems/agent_table.html" with agents=agents %}
+
+    {% endblock %}

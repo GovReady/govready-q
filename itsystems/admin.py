@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import SystemInstance, HostInstance, AgentService, Agent
+from .models import SystemInstance, HostInstance, AgentService, Agent, Vendor, Component
 
 
 class HostInstancesInLine(admin.TabularInline):
@@ -26,7 +26,15 @@ class HostInstanceAdmin(admin.ModelAdmin):
 class AgentAdmin(admin.ModelAdmin):
     list_display = ('agent_id', 'host_instance', 'agent_service')
 
+class VendorAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+class ComponentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'version')
+
 admin.site.register(SystemInstance, SystemInstanceAdmin)
 admin.site.register(HostInstance, HostInstanceAdmin)
+admin.site.register(Vendor, VendorAdmin)
+admin.site.register(Component, ComponentAdmin)
 admin.site.register(AgentService)
 admin.site.register(Agent, AgentAdmin)
