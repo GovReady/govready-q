@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.1.1 (October 24, 2019)
+-------------------------------
+
+**Developer Change**
+
+* Create migrations for shortening varchar field length to 255 on siteapp.models
+
 v0.9.0.2 (October 16, 2019)
 ---------------------------
 
