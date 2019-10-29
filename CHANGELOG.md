@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.1 (October 16, 2019)
+v0.9.0.2 (October 16, 2019)
 ---------------------------
 
 Minor patches to v0.9.0.
@@ -9,6 +9,7 @@ Minor patches to v0.9.0.
 **UX changes:**
 
 * Permissions added to settings modal. Permissions removed from settings. (#761)
+* Correctly display database type SQLite on /settings (#764)
 
 **Documentation changes:**
 

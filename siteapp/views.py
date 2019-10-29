@@ -1508,7 +1508,7 @@ def organization_settings(request):
     elif settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
         db_type = "MySQL"
     elif settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
-        db_type = "MySQL"
+        db_type = "SQLite"
     else:
         db_type = "Unknown"
 
