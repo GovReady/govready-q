@@ -1,10 +1,10 @@
 # Build on Docker's official CentOS 7 image.
 #FROM centos:7
-FROM docker.cbp.dhs.gov/cloud/python:3.6
+FROM python:3.6
 
 # Expose the port that `manage.py runserver` uses by default.
 # Ports are exposed by marathon, so  not necessary to specify.
-# EXPOSE 8000
+EXPOSE 8000
 
 # Put the Python source code here.
 WORKDIR /usr/src/app
