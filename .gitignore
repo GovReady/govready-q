@@ -2,7 +2,6 @@
 __pycache__/
 /local
 /modules/local
-siteapp/static/vendor
 apps/
 
 # generated files
@@ -82,7 +81,6 @@ modules/oirmfo
 
 # Local build/test files
 siteapp/staticfiles
-vendor
 .kitchen
 
 # Emacs

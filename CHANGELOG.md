@@ -1,10 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.3 (November 8, 2019)
+-----------------------------
+
+For Mesosphere deployment, fetch and pre-collect the static files into `static_root`.
+Make sure vendor and siteapp/static/vendor files are no longer gitignored.
+
 v0.9.0.2.2 (November 7, 2019)
 -----------------------------
 
-For Mesosphere deployment, fetch and pre-collect the static files into `static_root`. 
+For Mesosphere deployment, fetch and pre-collect the static files into `static_root`.
 
 v0.9.0.2.1 (October 18, 2019)
 -----------------------------
