@@ -67,9 +67,9 @@ fi
 
 # jQuery (MIT License)
 download \
-  https://code.jquery.com/jquery-3.3.1.min.js \
+  https://code.jquery.com/jquery-3.4.1.min.js \
   $VENDOR/jquery.js \
-  '160a426ff2894252cd7cebbdd6d6b7da8fcd319c65b70468f10b6690c45d02ef'
+  '0925e8ad7bd971391a8b1e98be8e87a6971919eb5b60c196485941c3c1df089a'
 
 # Bootstrap (MIT License)
 download \
