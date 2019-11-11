@@ -1,6 +1,6 @@
 # Build on Docker's official CentOS 7 image.
 #FROM centos:7
-FROM python:3.6
+FROM centos:7
 
 # Expose the port that `manage.py runserver` uses by default.
 # Ports are exposed by marathon, so  not necessary to specify.
@@ -18,10 +18,10 @@ ENV LANGUAGE en_US:en
 # git2u: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
 # jq: we use it to assemble the local/environment.json file
 # FIX FOR CBP: Try to put ius git2u and related files into Artifactory
-# RUN \
-#   yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
-# Run yum -y update
-RUN yum -y install \
+RUN \
+  yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
+&& yum -y update \
+&& yum -y install \
 	python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 \
 	unzip git2u jq nmap-ncat \
 	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
@@ -45,8 +45,8 @@ RUN chown -R application:application local
 # file because they're not commonly used in development.
 COPY requirements.txt ./
 COPY requirements_mysql.txt ./
-RUN pip3 install --no-cache-dir -r requirements.txt
-RUN pip3 install --no-cache-dir -r requirements_mysql.txt
+RUN pip3.6 install --no-cache-dir -r requirements.txt
+RUN pip3.6 install --no-cache-dir -r requirements_mysql.txt
 
 # Run pyup.io's python package vulnerability check.
 # FIX FOR CBP: We probably cannot run the safety check because we will not see public Internet
