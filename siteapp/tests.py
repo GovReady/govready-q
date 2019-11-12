@@ -621,6 +621,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element("#grant-portfolio-access")
         self.select_option_by_visible_text('#invite-user-select', 'me2')
         self.click_element("#invitation_modal button.btn-submit")
+        var_sleep(1)
         self.assertInNodeText("me2", "#portfolio-member-me2")
 
         # Grant another member ownership of portfolio
