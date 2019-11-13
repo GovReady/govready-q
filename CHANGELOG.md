@@ -1,6 +1,11 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.4 (November 13, 2019)
+-----------------------------
+
+Created a Dockerfile.mesosphere to have a local build/test of container for Mesosphere to test.
+
 v0.9.0.2.3 (November 8, 2019)
 -----------------------------
 
