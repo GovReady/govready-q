@@ -773,9 +773,12 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#save-button")
         var_sleep(.5)
 
+        # Click interstital "Got it" button
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # choice
         self.assertIn("| Test The Choice Question Types - GovReady-Q", self.browser.title)
-        var_sleep(20)
         self.click_element('#question input[name="value"][value="choice2"]')
         self.click_element("#save-button")
         var_sleep(.5)
@@ -816,8 +819,11 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # integer
         self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title)
 
+        # Click interstital "Got it" button
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # Test a non-integer.
-        var_sleep(20)
         self.clear_and_fill_field("#inputctrl", "1.01")
         self.click_element("#save-button")
         var_sleep(.5)
@@ -972,13 +978,16 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # file upload
         self.assertIn("| Test The Media Question Types - GovReady-Q", self.browser.title)
 
+        # Click interstital "Got it" button
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # We need to upload a file that we know exists.
         testFilePath = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             'fixtures',
             'testimage.png'
         )
-        var_sleep(20)
         self.fill_field("#inputctrl", testFilePath)
 
         self.click_element("#save-button")
