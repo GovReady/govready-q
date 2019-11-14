@@ -87,6 +87,7 @@ class DiscussionTests(SeleniumTest):
 
         # We're now on the first actual question.
         # Start a team conversation.
+        var_sleep(2)
         self.click_element("#start-a-discussion")
         self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
         var_sleep(.5)

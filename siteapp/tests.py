@@ -412,7 +412,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(1.5)
 
         # Text question.
-        self.assertRegex(self.browser.title, "Next Question: The Question")
+        self.assertIn("| A Simple Module - GovReady-Q", self.browser.title)
         self.fill_field("#inputctrl", "This is some text.")
         self.click_element("#save-button")
         var_sleep(.5)
@@ -497,7 +497,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Test an invitation to take over editing a task but without joining the project.
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
-        var_sleep(.5) # wait for page to load
+        var_sleep(3)
         self.click_element('#transfer-editorship')
         do_invitation(self.user3.username)
         self.fill_field("#id_login", self.user3.username)
@@ -669,7 +669,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # text
-        self.assertRegex(self.browser.title, "Next Question: text")
+        self.assertIn("| Test The Text Input Question Types - GovReady-Q", self.browser.title)
         self.fill_field("#inputctrl", "This is some text.")
         self.click_element("#save-button")
         var_sleep(.5)
@@ -774,7 +774,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # choice
-        self.assertRegex(self.browser.title, "Next Question: choice")
+        self.assertIn("| Test The Choice Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="choice2"]')
         self.click_element("#save-button")
         var_sleep(.5)
@@ -813,7 +813,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # integer
-        self.assertRegex(self.browser.title, "Next Question: integer")
+        self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title)
 
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
@@ -830,7 +830,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # This is caught by the browser itself, so we don't have to dismiss anything.
         # Make sure we haven't moved past the url page.
-        self.assertRegex(self.browser.title, "Next Question: integer")
+        self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title)
         var_sleep(.5)
 
         # Test a good integer.
@@ -968,7 +968,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # file upload
-        self.assertRegex(self.browser.title, "Next Question: file")
+        self.assertIn("| Test The Media Question Types - GovReady-Q", self.browser.title)
 
         # We need to upload a file that we know exists.
         testFilePath = os.path.join(
@@ -1006,7 +1006,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # "You will now begin a module."
-        self.assertRegex(self.browser.title, "Next Question: module")
+        self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -1040,7 +1040,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             self.click_element("#link-to-question-q_module a")
             var_sleep(.5)
         change_answer()
-        self.assertRegex(self.browser.title, "Next Question: module")
+        self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
         self.click_element("#save-button")
         var_sleep(.5)
