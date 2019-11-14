@@ -775,6 +775,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # choice
         self.assertIn("| Test The Choice Question Types - GovReady-Q", self.browser.title)
+        var_sleep(20)
         self.click_element('#question input[name="value"][value="choice2"]')
         self.click_element("#save-button")
         var_sleep(.5)
@@ -816,6 +817,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title)
 
         # Test a non-integer.
+        var_sleep(20)
         self.clear_and_fill_field("#inputctrl", "1.01")
         self.click_element("#save-button")
         var_sleep(.5)
@@ -976,6 +978,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             'fixtures',
             'testimage.png'
         )
+        var_sleep(20)
         self.fill_field("#inputctrl", testFilePath)
 
         self.click_element("#save-button")
@@ -1016,6 +1019,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         import urllib.parse
         s = urllib.parse.urlsplit(self.browser.current_url)
         m = re.match(r"/tasks/(\d+)/a-simple-module", s[2])
+        var_sleep(20)
         task_id = int(m.group(1))
 
         def do_submodule(answer_text):
