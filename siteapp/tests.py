@@ -668,6 +668,10 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#save-button")
         var_sleep(.5)
 
+        # Click interstital "Got it" button
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # text
         self.assertIn("| Test The Text Input Question Types - GovReady-Q", self.browser.title)
         self.fill_field("#inputctrl", "This is some text.")
@@ -1027,8 +1031,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # so that we can select it again later.
         import urllib.parse
         s = urllib.parse.urlsplit(self.browser.current_url)
-        m = re.match(r"/tasks/(\d+)/a-simple-module", s[2])
-        var_sleep(20)
+        m = re.match(r"^/tasks/(\d+)/", s[2])
         task_id = int(m.group(1))
 
         def do_submodule(answer_text):
