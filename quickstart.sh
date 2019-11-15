@@ -31,7 +31,10 @@ if test -f env/bin/activate
 then
 	source env/bin/activate;
 	pip3 install -r requirements.txt;
-else
+elif [ -v $VIRTUALENV_ENV ]
+then
+  pip3 install -r requirements.txt;
+else 
 	pip3 install --user -r requirements.txt;
 fi
 echo $SPACER
