@@ -1,6 +1,11 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.5 (November 14, 2019)
+------------------------------
+
+Re-fetch and collect static files.
+
 v0.9.0.2.4 (November 13, 2019)
 -----------------------------
 
