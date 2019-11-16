@@ -13,6 +13,7 @@ GovReady-Q is a Python 3.6 and higher, Django 2.x application with a relational 
 | uwsgi 2.x |
 | unzip |
 | graphviz |
+| libmagic |
 | pandoc |
 | Wkhtmltopdf |
 | Git 2.x |
