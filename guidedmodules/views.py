@@ -670,7 +670,20 @@ def show_question(request, task, answered, context, q):
             "task_answered": task_answered,
             }
         task_progress_project_list.append(tasks_in_group)
-        if mq.spec.get('id') == task.module.spec.get('id'):
+
+        # Notes on what comes next, how we identify the current_group we are in based on the question.
+        # We need to make sure we are comparing module-id rather than id b/c the question.module-id
+        # does not have to be the same as the question.module.id.
+        # The original comparison (below) works only when the app.yaml question `id` and `module-id` are identical: 
+        #
+        #       if mq.spec.get('id') == task.module.spec.get('id'): #orig
+        #
+        # But the above fails when the`module-id` differs from the `id` which is permitted.
+        #
+        # To address the shortcoming of the above original test, we remember that the id of the module does not need to be the same as the "module-id". We need to do some walking in the relationship to compare
+        # apples to apple. For the `mq` (module question), we need to go to `answer_type_module` and get the `module_name`. For the `Task`, we need to
+        # go to the `module` and the `spec` to get the `id`).
+        if mq.answer_type_module.module_name == task.module.spec.get('id'):
             current_group = mq.spec.get('group')
     ###############################################################################
     # END BLOCK task_progress_project_list
