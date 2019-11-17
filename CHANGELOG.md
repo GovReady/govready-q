@@ -1,6 +1,19 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.1.2 (November 17, 2019)
+-------------------------------
+
+**UX changes:**
+
+* Significantly improve performance of rendering questions and module review page (PR #774)
+* Fix failure to display list of questions in progress history in certain circumstances
+
+**Developer Change**
+
+* Create migrations for shortening varchar field length
+
+
 v0.9.0.2.1.1 (October 24, 2019)
 -------------------------------
 
