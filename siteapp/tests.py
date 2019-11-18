@@ -432,6 +432,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
                 self.assertEqual(answer.reviewed, 1)
 
     def test_invitations(self):
+        print("INFO: Entering '{}'".format('test_invitations(self)'))
         # Test a bunch of invitations.
 
         # Log in and create a new project.
@@ -447,11 +448,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.browser.get(project_page)
 
         def start_invitation(username):
+            print("INFO: Entering '{}', '{}'".format('start_invitation(username)', username))
             # Fill out the invitation modal.
             self.select_option_by_visible_text('#invite-user-select', username)
             self.click_element("#invitation_modal button.btn-submit")
 
         def do_invitation(username):
+            print("INFO: Entering '{}', '{}'".format('do_invitation(username)', username))
             start_invitation(username)
 
             var_sleep(1) # wait for invitation to be sent
@@ -461,6 +464,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
             self._accept_invitation(username)
 
         def reset_login():
+            print("INFO: Entering '{}'".format('reset_login()'))
             # Log out and back in as the original user.
             self.browser.get(self.url("/accounts/logout/"))
             self._login()
@@ -496,14 +500,14 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
+        var_sleep(1)
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
-        var_sleep(3)
         self.click_element('#transfer-editorship')
         do_invitation(self.user3.username)
         self.fill_field("#id_login", self.user3.username)
         self.fill_field("#id_password", self.user3.clear_password)
         self.click_element("form button.primaryAction")
-        var_sleep(2)
+        var_sleep(1)
         self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
 
         # reset_login()
