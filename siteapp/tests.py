@@ -503,6 +503,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_login", self.user3.username)
         self.fill_field("#id_password", self.user3.clear_password)
         self.click_element("form button.primaryAction")
+        var_sleep(2)
         self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
 
         # reset_login()
