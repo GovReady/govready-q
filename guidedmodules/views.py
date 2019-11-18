@@ -657,7 +657,7 @@ def show_question(request, task, answered, context, q):
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
             task_started = questions[mq.id]['task'].is_started()
-            # TODO: Create a better, chached test for is_finished
+            # TODO: Create a better, cached test for is_finished
             # `is_finished` should return a value very quickly.
             # Until a faster `is_finished` function, assume response is false.
             # task_answered = questions[mq.id]['task'].is_finished()
@@ -910,7 +910,7 @@ def task_finished(request, task, answered, context, *unused_args):
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
             task_started = questions[mq.id]['task'].is_started()
-            # TODO: Create a better, chached test for is_finished
+            # TODO: Create a better, cached test for is_finished
             # `is_finished` should return a value very quickly.
             # Until a faster `is_finished` function, assume response is false.
             # task_answered = questions[mq.id]['task'].is_finished()
