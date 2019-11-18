@@ -85,6 +85,10 @@ class DiscussionTests(SeleniumTest):
         self.click_element("#save-button")
         var_sleep(.8) # wait for page to reload
 
+        # Click interstital "Got it" button
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # We're now on the first actual question.
         # Start a team conversation.
         self.click_element("#start-a-discussion")
