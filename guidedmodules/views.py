@@ -652,7 +652,7 @@ def show_question(request, task, answered, context, q):
 
         # if questions.get(mq.id) and 'task' in questions[mq.id]:
         # print("** questions.get(mq.id)", questions.get(mq.id)) # Debug
-        if 'task' in questions[mq.id]:
+        if questions.get(mq.id) and 'task' in questions[mq.id]:
             # print("\nquestions[mq.id]['task'].id", questions[mq.id]['task'].id, questions[mq.id]['task']) # Debug
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
