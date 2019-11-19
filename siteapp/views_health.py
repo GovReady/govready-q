@@ -8,7 +8,6 @@ def check_system(request):
     return HttpResponse(html)
 
 def check_vendor_resources(request):
-    output = ''
     output = os.popen("./check-vendor-resources.sh").read()
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
