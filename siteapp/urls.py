@@ -70,9 +70,11 @@ urlpatterns = [
     url(r'^settings/_save$', views.organization_settings_save),
 
     # health
+    url(r'^health/$', views_health.index),
     url(r'^health/check-system$', views_health.check_system),
     url(r'^health/check-vendor-resources$', views_health.check_vendor_resources),
     url(r'^health/list-vendor-resources$', views_health.list_vendor_resources),
+    url(r'^health/load-base/(?P<args>.*)$', views_health.load_base),
 ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
