@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.5.1 (November 20, 2019)
+--------------------------------
+
+**Deployment changes:**
+
+Adding in health paths to examine 
+
 v0.9.0.2.5 (November 14, 2019)
 ------------------------------
 
