@@ -22,6 +22,13 @@ v0.9.0.2.2 (November 7, 2019)
 
 For Mesosphere deployment, fetch and pre-collect the static files into `static_root`.
 
+v0.9.0.2.1.1 (October 24, 2019)
+-------------------------------
+
+**Developer Change**
+
+* Create migrations for shortening varchar field length to 255 on siteapp.models
+
 v0.9.0.2.1 (October 18, 2019)
 -----------------------------
 
@@ -38,7 +45,6 @@ The `HOST` and `PORT` container deployment environmental variables renamed to `G
 **Documentation changes:**
 
 * Change `HOST` and `PORT` container deployment environmental variable names to avoid name collision in Mesosphere and other container orchestration tools.
-
 
 v0.9.0.2 (October 16, 2019)
 ---------------------------
