@@ -4,17 +4,17 @@
     </a>
     {% if current_group %}
     <br>
-    SECTION:&nbsp; <a href="{{task.project.get_absolute_url}}#{{current_group}}" style="color:#444;">
-      {{current_group}}
+    SECTION:&nbsp; <a href="{{task.project.get_absolute_url}}#{{current_group}}" style="color:#444;">{{current_group}}
     </a>
     {% endif %}
 </div>
 
+<div>
 {% for pt in task_progress_project_list %}
   {% if pt.group == current_group %}
     <div class="truncate" style="margin: 0 0 6px 0; padding: 2px; font-size: 1.0em;text-align:left;">
       {% if pt.task_id == task.id %}
-      <span class="glyphicon glyphicon-play-circle"> </span> <b>{{task.title}}</b>
+        <span class="glyphicon glyphicon-play-circle"> </span> <b>{{task.title}}</b>
         {% if context|length > 0 %}
         <div id="question-history-context">
           <ul>
@@ -57,6 +57,8 @@
               <span class="glyphicon glyphicon-check"> </span><a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
             {% elif pt.task_started %}
               <span class="glyphicon glyphicon-edit"> </span> <a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
+            {% else %}
+              <span class="glyphicon glyphicon-unchecked"> </span> <a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
             {% endif %}
           </form>
           {% endif %}

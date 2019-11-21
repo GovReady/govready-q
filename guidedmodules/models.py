@@ -751,19 +751,21 @@ class Task(models.Model):
             # an answer and that all module-type questions are
             # finished.
             try:
+                # Fetch all questions and run impute conditions
                 answers = self.get_answers().with_extended_info()
             except Exception:
                 # If there is an error evaluating imputed conditions,
                 # just say the task is unfinished.
                 return False
+            # Module is not finished if there are more questions to answer
             if len(answers.can_answer) != 0:
                 return False
             for a in answers.as_dict().values():
-                # module-type questions
+                # Are all `module` type questions answered?
                 if isinstance(a, ModuleAnswers) and a.task:
                     if not a.task.is_finished():
                         return False
-                # module-set-type questions
+                # Are all `module-set` type questions answered?
                 if isinstance(a, list):
                     for item in a:
                         if isinstance(item, ModuleAnswers) and item.task:
