@@ -136,16 +136,16 @@ fi
 # * The port is fixed --- see docker_container_run.sh.
 # * Use 4 concurrent processes by default. Expose management statistics to localhost only.
 # * Set `http-auto-chunked` to true for potential HTTP 1.1 Load Balancer to HTTP 1.0 connection mismatch
-cat > /tmp/uwsgi.ini <<EOF;
-[uwsgi]
-http = 0.0.0.0:8000
-wsgi-file = siteapp/wsgi.py
-processes = ${PROCESSES-4}
-stats = 127.0.0.1:9191
-http-auto-chunked = true
-http-keepalive = true
-add-header = Connection: Keep-Alive
-EOF
+# cat > /tmp/uwsgi.ini <<EOF;
+# [uwsgi]
+# http = 0.0.0.0:8000
+# wsgi-file = siteapp/wsgi.py
+# processes = ${PROCESSES-4}
+# stats = 127.0.0.1:9191
+# http-auto-chunked = true
+# http-keepalive = true
+# add-header = Connection: Keep-Alive
+# EOF
 
 # Write a file that indicates to the host that Q
 # is now fully configured. It will still be a few

@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.5.3 (November 27, 2019
+--------------------------------
+
+**Deployment changes**
+
+Stop using uwsgi and return to `python manage.py runserver` as web server to correct problems serving static files in Mesosphere.
+
 v0.9.0.2.5.2 (November 21, 2019)
 --------------------------------
 
