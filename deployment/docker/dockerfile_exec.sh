@@ -135,12 +135,12 @@ fi
 # Configure the HTTP+applications server.
 # * The port is fixed --- see docker_container_run.sh.
 # * Use 4 concurrent processes by default. Expose management statistics to localhost only.
-cat > /tmp/uwsgi.ini <<EOF;
-[uwsgi]
-http = 0.0.0.0:8000
-wsgi-file = siteapp/wsgi.py
-processes = ${PROCESSES-4}
-stats = 127.0.0.1:9191
+cat > /tmp/gunicorn.conf.py <<EOF;
+import multiprocessing
+bind = "0.0.0.0:8000"
+workers = multiprocessing.cpu_count() * 2 + 1
+worker_class = gevent
+keepalive = 10
 EOF
 
 # Write a file that indicates to the host that Q
