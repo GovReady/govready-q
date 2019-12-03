@@ -137,18 +137,18 @@ fi
 # * Use 4 concurrent processes by default. Expose management statistics to localhost only.
 cat > /tmp/gunicorn.conf.py <<EOF;
 import multiprocessing
-bind = "0.0.0.0:8000"
+bind = '0.0.0.0:8000'
 workers = multiprocessing.cpu_count() * 2 + 1
-worker_class = gevent
+worker_class = 'gevent'
 keepalive = 10
 EOF
 
 # Write a file that indicates to the host that Q
 # is now fully configured. It will still be a few
-# moments before uWSGI is accepting connections.
+# moments before Gunicorn is accepting connections.
 echo "done" > /tmp/govready-q-is-ready
 echo "GovReady-Q is starting."
-echo # usgi output follows
+echo # gunicorn output follows
 
 # Start the server.
 exec supervisord -n
