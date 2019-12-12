@@ -47,6 +47,10 @@ else:
 	print(json.dumps(environment, sort_keys=True, indent=2))
 	print()
 
+# Load pre-specified admin users
+# Example: "govready_admins":[{"username": "First Last", "email":"first.last@example.com", "password": "REPLACEME"}]
+GOVREADY_ADMINS = environment.get("govready_admins") or []
+
 # DJANGO SETTINGS #
 ###################
 

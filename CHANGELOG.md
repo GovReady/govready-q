@@ -1,7 +1,22 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.2.5.3 (November 27, 2019
+v0.9.0.2.5.4 (December 16, 2019)
+-------------------------------
+ 
+**Deployment changes**
+ 
+Automatically create admin user accounts when defined in local/environment.json file.
+ 
+v0.9.0.2.5.3 (December 9, 2019)
+-------------------------------
+ 
+**Deployment changes**
+ 
+Add in "trust-user-authentication-headers" to `local/environment.json` file to support CBP Single Sign On
+Add in Alternate paths added for cbp-pilot-apps questionnsaire source.
+
+v0.9.0.2.5.3 (November 27, 2019)
 --------------------------------
 
 **Deployment changes**

@@ -8,9 +8,10 @@ The following environment variables are used to configure your GovReady-Q instan
 - `branding`: used for [custom branding](Custombranding.html)
 - `db`: if supplied, this is the DB connection used. See [DB configuration](configure_db.html).
 - `debug`: should be `false` or absent in production environments. If set to `true`, turns on certain debug/development settings.
-- `email`: used to configure access to a mail server for sending and receiving email. Ojbect has the following format: `{"host": "smtp.server.com", "port": "587", "user": "...", "pw": "....",
+- `email`: used to configure access to a mail server for sending and receiving email. Object has the following format: `{"host": "smtp.server.com", "port": "587", "user": "...", "pw": "....",
   "domain": "webserver.hostname.com"}`. See [Configuring email](deploy_docker.html#configuring-email) and [Other Configuration Settings](deploy_prod.html#other-configuration-settings).
 },.
+- `govready_admins`: a list of GovReady admin users for `manage.py first_run` to create. If present, overrides creation of default admin with random password. Example: `"govready_admins":[{"username": "First Last", "email":"first.last@example.com", "password": "REPLACEME"}]`
 - `govready_cms_api_auth`: used to store API key to interact with GovReady's CMS agent and dashboard. Not relevant to most users. See [GovReady-CMS-API](https://github.com/GovReady/GovReady-CMS-API).
 - `host`: this is the domain name (HTTP `Host` header) used for root-level GovReady-Q pages. See also `organization-parent-domain`, which is used to construct organization subdomains (if using a different base domain).
 - `https`: set to true to generate HTTPS headers and urls when site is running behind a proxy terminating HTTPS connections. See [Configuring a Reverse Proxy Webserver for Production Use](configure_webserver.html).
