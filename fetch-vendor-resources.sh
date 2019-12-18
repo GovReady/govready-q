@@ -49,19 +49,18 @@ mkdir -p $VENDOR
 
 # Fetch resources.
 
-# sqlite3 3.8.5 (Public Domain)
+# sqlite3 3.8.3 (Public Domain)
 # Django 2.2 requires SQLite 3.8.3 or later; on CentOS 7 an upgrade is needed
+# We borrow the package from Fedora Project, https://koji.fedoraproject.org/koji/packageinfo?packageID=485
 if command -v rpm > /dev/null 2>&1 ; then
   if test $(rpm --eval %{centos_ver}) = 7; then
-    echo "Upgrading SQLite library to 3.8.5"
+    echo "Upgrading SQLite to 3.8.3"
     download \
-      http://www6.atomicorp.com/channels/atomic/centos/7/x86_64/RPMS/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm \
-      /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm \
-      '72ec76327ce9816b258d5cbeffc2930d93edd0bf50ff567c30fa775583eabf85'
-    yum -y localinstall /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm
-    mv /lib64/libsqlite3.so.0.8.6{,-3.17}
-    cp /opt/atomic/atomic-sqlite/root/usr/lib64/libsqlite3.so.0.8.6 /lib64
-    rm -f /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm
+      https://kojipkgs.fedoraproject.org/packages/sqlite/3.8.3/1.fc20/x86_64/sqlite-3.8.3-1.fc20.x86_64.rpm \
+      /tmp/sqlite-3.8.3-1.fc20.x86_64.rpm \
+      '4c976fc17e3676ce76aa71ce604be6d16cef36c73515e9bf1ebcdbdc6cc6e7d4'
+    yum -y install /tmp/sqlite-3.8.3-1.fc20.x86_64.rpm
+    rm -f /tmp/sqlite-3.8.3-1.fc20.x86_64.rpm
   fi
 fi
 
