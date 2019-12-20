@@ -29,8 +29,6 @@ def list_vendor_resources(request):
     return HttpResponse(html)
 
 def load_base(request, args):
-    print(args)
     args = args.split(",")
-    print(args)
     context = {'args': args}
     return render(request, 'base-conditional.html', context)
