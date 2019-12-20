@@ -412,7 +412,12 @@ def show_question(request, task, answered, context, q):
     can_upgrade_app = task.module.app.has_upgrade_priv(request.user)
 
     is_answerable = (((q not in answered.unanswered) or (q in answered.can_answer)) and (q.key not in answered.was_imputed))
-    if not is_answerable and not authoring_tool_enabled:
+    # TODO Create Guidedmodules settings model set in database whether to display_non_answerable
+    # to allow allow access to imputed questions/
+    # Only show imputed questions if user is administrator and (new) setting says to display imputed
+    # Old test of `if not is_answerable and not authoring_tool_enabled:` was not smart enough.
+    display_not_answerable = False
+    if not is_answerable and not display_not_answerable:
         return HttpResponseRedirect(task.get_absolute_url())
 
     # Is there a TaskAnswer for this yet?
@@ -564,7 +569,6 @@ def show_question(request, task, answered, context, q):
     # Better to refactor context into its own view
     # instead of recreating from inside this question
     ###############################################################################
-
     # Pre-load the answers to project root task questions and impute answers so
     # that we know which questions are suppressed by imputed values.
     root_task_answers = task.project.root_task.get_answers().with_extended_info()
@@ -582,9 +586,11 @@ def show_question(request, task, answered, context, q):
     from collections import OrderedDict
     questions = OrderedDict()
     can_start_any_apps = False
-
     # for item in root_task_answers.answertuples.items():
     for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
+
+
+        # print("******  mq.id: {} |||  mq.answer_type_module.module_name  {}    || dir(mq): {}".format( mq.id, mq.answer_type_module.module_name, dir(mq) ))
 
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
@@ -644,12 +650,18 @@ def show_question(request, task, answered, context, q):
             if mq.spec.get("protocol"):
                 can_start_any_apps = True
 
+        # if questions.get(mq.id) and 'task' in questions[mq.id]:
+        # print("** questions.get(mq.id)", questions.get(mq.id)) # Debug
         if questions.get(mq.id) and 'task' in questions[mq.id]:
-            # print("\nquestions[mq.id]['task'].id", dir(questions[mq.id]['task']))
+            # print("\nquestions[mq.id]['task'].id", questions[mq.id]['task'].id, questions[mq.id]['task']) # Debug
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
             task_started = questions[mq.id]['task'].is_started()
-            task_answered = questions[mq.id]['task'].is_finished()
+            # TODO: Create a better, cached test for is_finished
+            # `is_finished` should return a value very quickly.
+            # Until a faster `is_finished` function, assume response is false.
+            # task_answered = questions[mq.id]['task'].is_finished()
+            task_answered = False
         else:
             # Question not started
             # TODO: Need better match than "/TODO"
@@ -670,7 +682,22 @@ def show_question(request, task, answered, context, q):
             "task_answered": task_answered,
             }
         task_progress_project_list.append(tasks_in_group)
-        if mq.spec.get('id') == task.module.spec.get('id'):
+
+        # Notes on what comes next, how we identify the current_group we are in based on the question.
+        # We need to make sure we are comparing module-id rather than id b/c the question.module-id
+        # does not have to be the same as the question.module.id.
+        # The original comparison (below) works only when the app.yaml question `id` and `module-id` are identical:
+        #
+        #       if mq.spec.get('id') == task.module.spec.get('id'): #orig
+        #
+        # But the above fails when the`module-id` differs from the `id` which is permitted.
+        #
+        # To address the shortcoming of the above original test, we remember that the id of the module
+        # does not need to be the same as the "module-id". We need to do some walking in the relationship to compare
+        # apples to apple. For the `mq` (module question), we need to go to `answer_type_module` and get the `module_name`.
+        #
+        # For the `Task`, we need to go to the `module` and the `spec` to get the `id`).
+        if mq.answer_type_module.module_name == task.module.spec.get('id'):
             current_group = mq.spec.get('group')
     ###############################################################################
     # END BLOCK task_progress_project_list
@@ -685,38 +712,52 @@ def show_question(request, task, answered, context, q):
     else:
         next_linear_question = None
 
-
+    # Split the `context.update` into smaller parts so it is possible to add in timing code
+    # to examine performance of certain embedded calls.
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
         "title": title,
         "prompt": prompt,
+    })
+    context.update({
         "placeholder_answer": render_markdown_field("placeholder", "text") or "", # Render Jinja2 template but don't turn Markdown into HTML.
         "example_answers": [render_markdown_value(ex.get("example", ""), "html", "example {}".format(i+1)) for i, ex in enumerate(q.spec.get("examples", []))],
         "reference_text": render_markdown_field("reference_text", "html"),
+    })
+    context.update({
         "history": taskq.get_history() if taskq else None,
+    })
+    context.update({
         "answer_obj": answer,
         "answer": existing_answer,
         "answer_rendered": answer_rendered,
         "default_answer": default_answer,
         "hidden_button_ids": q.module.app.modules.get(module_name="app").spec.get("hidden-buttons", []),
+    })
+    context.update({
         "can_review": task.has_review_priv(request.user),
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
+    })
+    context.update({
         "discussion": Discussion.get_for(taskq.task.project.organization, taskq) if taskq else None,
         "show_discussion_members_count": True,
 
         "answer_module": answer_module,
         "answer_tasks": answer_tasks,
+    })
+    context.update({
         "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
-
+    })
+    context.update({
         "context": context_sorted,
+
         "next_linear_question": next_linear_question,
 
         # task_progress_project_list parameters
         "root_task_answers": root_task_answers,
         "task_progress_project_list": task_progress_project_list,
         "current_group": current_group,
-
         # Helpers for showing date month, day, year dropdowns, with
         # localized strings and integer values. Default selections
         # are done in the template & client-side so that we can use
@@ -737,6 +778,8 @@ def show_question(request, task, answered, context, q):
         "can_upgrade_app": can_upgrade_app,
         "authoring_tool_enabled": authoring_tool_enabled,
         "is_question_page": True,
+    })
+    context.update({
         "project_form": ProjectForm(request.user),
     })
     return render(request, "question.html", context)
@@ -867,7 +910,11 @@ def task_finished(request, task, answered, context, *unused_args):
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
             task_started = questions[mq.id]['task'].is_started()
-            task_answered = questions[mq.id]['task'].is_finished()
+            # TODO: Create a better, cached test for is_finished
+            # `is_finished` should return a value very quickly.
+            # Until a faster `is_finished` function, assume response is false.
+            # task_answered = questions[mq.id]['task'].is_finished()
+            task_answered = False
         else:
             # Question not started
             # TODO: Need better match than "/TODO"
@@ -888,8 +935,24 @@ def task_finished(request, task, answered, context, *unused_args):
             "task_answered": task_answered,
             }
         task_progress_project_list.append(tasks_in_group)
-        if mq.spec.get('id') == task.module.spec.get('id'):
+
+        # Notes on what comes next, how we identify the current_group we are in based on the question.
+        # We need to make sure we are comparing module-id rather than id b/c the question.module-id
+        # does not have to be the same as the question.module.id.
+        # The original comparison (below) works only when the app.yaml question `id` and `module-id` are identical:
+        #
+        #       if mq.spec.get('id') == task.module.spec.get('id'): #orig
+        #
+        # But the above fails when the`module-id` differs from the `id` which is permitted.
+        #
+        # To address the shortcoming of the above original test, we remember that the id of the module
+        # does not need to be the same as the "module-id". We need to do some walking in the relationship to compare
+        # apples to apple. For the `mq` (module question), we need to go to `answer_type_module` and get the `module_name`.
+        #
+        # For the `Task`, we need to go to the `module` and the `spec` to get the `id`).
+        if mq.answer_type_module.module_name == task.module.spec.get('id'):
             current_group = mq.spec.get('group')
+
         elif current_group is not None and next_group is None:
             # Determine next group after current group
             next_group = mq.spec.get('group')

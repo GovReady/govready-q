@@ -4,7 +4,7 @@ This page provides additional tips for installing and run GovReady-Q in a mode s
 
 ## Quickstart
 
-For local development, there is a quickstart script available to speed up environment setup. After installing system requirements through your package manager, run the following four commands in order to set up GovReady-Q in a new directory:
+For local development, there is a quickstart script available to speed up environment setup. After installing [system requirements](https://govready-q.readthedocs.io/en/latest/requirements.html#system-requirements) through your package manager, run the following four commands in order to set up GovReady-Q in a new directory:
 
 ```
 git clone https://github.com/govready/govready-q
