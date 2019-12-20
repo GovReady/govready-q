@@ -6,10 +6,10 @@ from django.shortcuts import render
 def index(request):
     html = (
         '<html><body><ul>'
-        '<li><a href="/health/check-system">check-system</a></li>'
-        '<li><a href="/health/check-vendor-resources">check-vendor-resources</a></li>'
-        '<li><a href="/health/list-vendor-resources">list-vendor-resources</a></li>'
-        '<li><a href="/health/load-base">load-base</a></li>'
+        '<li><a href="/health/check-system">check-system</a> - View OS health (from "top").</li>'
+        '<li><a href="/health/check-vendor-resources">check-vendor-resources</a> - Checksum fetched vendor resources.</li>'
+        '<li><a href="/health/list-vendor-resources">list-vendor-resources</a> - List fetched vendor resources.</li>'
+        '<li><a href="/health/load-base">load-base</a> - Load base page template with toggleable libraries. Use "all" or "none" link at bottom of page, or edit URL to change which libraries are loaded.</li>'
         '</body></html>' )
     return HttpResponse(html)
 
