@@ -57,4 +57,23 @@ You can also try starting up GovReady-Q using our docker image:
 
 	deployment/docker/docker_container_run.sh --relaunch --bind 8001 -- -e PROXY_AUTHENTICATION_USER_HEADER=IAM-Username -e PROXY_AUTHENTICATION_EMAIL_HEADER=IAM-Email
 
+Running Simple IAM Proxy Server with Docker
+---------------------------------------------------------
+
+This directory includes a Dockerfile which will build a Docker image for running the Simple IAM Proxy Server.
+
+To build the image:
+
+	docker image build --tag govready/simple-iam-proxy .
+
+After building the image, you can run a container:
+
+	docker container run -it --rm -p 8000:8000 govready/simple-iam-proxy
+
+Since `-it` is specified, the debug output will be printed to the console.  When you're ready, use `^C` to stop the container.  Since `--rm` is specified, the container will be automatically removed when you stop it.
+
+Environment variables can be used as above.  Because of Docker networking, `BIND_HOST` is defaulted to `0.0.0.0`, and `BACKEND_URL` is defaulted to `http://host.docker.internal:8001`. (`host.docker.internal` is the address for your Docker host; it is equivalent to `localhost` from the directions above.)
+
+You can override `BIND_HOST` and `BACKEND_URL`, but be mindful of the Docker networking concerns, or you may not be able to connect to the proxy server, or the proxy server may not be able to connect to your local computer.
+
 ---
