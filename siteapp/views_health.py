@@ -2,6 +2,7 @@ import subprocess #nosec
 
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.conf import settings
 
 def index(request):
     html = (
@@ -11,6 +12,7 @@ def index(request):
         '<li><a href="/health/list-vendor-resources">list-vendor-resources</a> - List fetched vendor resources.</li>'
         '<li><a href="/health/load-base">load-base</a> - Load base page template with toggleable libraries. Use "all" or "none" link at bottom of page, or edit URL to change which libraries are loaded.</li>'
         '<li><a href="/health/request-headers">request-headers</a> - View HTTP headers present in request sent by web browser.</li>'
+        '<li><a href="/health/request">request</a> - View entire request (must have DEBUG set).</li>'
         '</body></html>' )
     return HttpResponse(html)
 
@@ -38,4 +40,13 @@ def request_headers(request):
     from pprint import pformat
     output = pformat({k:v for k,v in request.headers.items()})
     html = "<html><body><pre>{}</pre></body></html>".format(output)
+    return HttpResponse(html)
+
+def request(request):
+    if settings.DEBUG:
+        from pprint import pformat
+        output = pformat(vars(request))
+        html = "<html><body><pre>{}</pre></body></html>".format(output)
+    else:
+        html = "<html><body><p>Please set DEBUG and try again.</p></body></html>"
     return HttpResponse(html)
