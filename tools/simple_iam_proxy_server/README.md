@@ -66,7 +66,7 @@ To build the image:
 
 	docker image build --tag govready/simple-iam-proxy .
 
-After building the image, you can run a container:
+To start the proxy, run:
 
 	docker container run -it --rm -p 8000:8000 govready/simple-iam-proxy
 
