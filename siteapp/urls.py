@@ -75,6 +75,7 @@ urlpatterns = [
     url(r'^health/check-vendor-resources$', views_health.check_vendor_resources),
     url(r'^health/list-vendor-resources$', views_health.list_vendor_resources),
     url(r'^health/load-base/(?P<args>.*)$', views_health.load_base),
+    url(r'^health/request-headers$', views_health.request_headers),
 ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
