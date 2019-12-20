@@ -4,7 +4,6 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 def index(request):
-    output = subprocess.check_output(["./check-system.sh"]).decode("utf-8")
     html = (
         '<html><body><ul>'
         '<li><a href="/health/check-system">check-system</a></li>'
