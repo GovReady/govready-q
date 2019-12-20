@@ -6,6 +6,7 @@ admin.autodiscover()
 
 import siteapp.views as views
 import siteapp.views_landing as views_landing
+import siteapp.views_health as views_health
 from .good_settings_helpers import signup_wrapper
 
 urlpatterns = [
