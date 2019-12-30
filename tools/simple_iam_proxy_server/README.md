@@ -74,10 +74,13 @@ To build an "ICAM" image that overrides the default names of the authentication 
 
 	docker image build --tag govready/simple-iam-proxy-icam -f Dockerfile-ICAM .
 
-
 To start the proxy, run:
 
 	docker container run -it --rm -p 8000:8000 govready/simple-iam-proxy
+
+Or for the ICAM version, run:
+
+	docker container run -it --rm -p 8000:8000 govready/simple-iam-proxy-icam
 
 Since `-it` is specified, the debug output will be printed to the console.  When you're ready, use `^C` to stop the container.  Since `--rm` is specified, the container will be automatically removed when you stop it.
 
