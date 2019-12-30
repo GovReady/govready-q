@@ -127,5 +127,6 @@ socketserver.TCPServer.allow_reuse_address = True
 httpd = socketserver.TCPServer((BIND_HOST, BIND_PORT), Handler)
 
 # Begin listening for connections.
+print("Authentication headers: " + IAM_USERNAME_HEADER + ", " + IAM_EMAIL_HEADER + ".")
 print("Forwarding http://" + BIND_HOST + ":" + str(BIND_PORT) + " to " + BACKEND_URL + ".")
 httpd.serve_forever()

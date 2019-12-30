@@ -57,14 +57,23 @@ You can also try starting up GovReady-Q using our docker image:
 
 	deployment/docker/docker_container_run.sh --relaunch --bind 8001 -- -e PROXY_AUTHENTICATION_USER_HEADER=IAM-Username -e PROXY_AUTHENTICATION_EMAIL_HEADER=IAM-Email
 
+Use the authentication headers appropriate for your environment.  For instance, to use `ICAM_DISPLAYNAME` and `ICAM_EMAIL_ADDRESS`, use this command instead:
+
+	deployment/docker/docker_container_run.sh --relaunch --bind 8001 -- -e PROXY_AUTHENTICATION_USER_HEADER=ICAM_DISPLAYNAME -e PROXY_AUTHENTICATION_EMAIL_HEADER=ICAM_EMAIL_ADDRESS
+
 Running Simple IAM Proxy Server with Docker
 ---------------------------------------------------------
 
 This directory includes a Dockerfile which will build a Docker image for running the Simple IAM Proxy Server.
 
-To build the image:
+To build the default image:
 
 	docker image build --tag govready/simple-iam-proxy .
+
+To build an "ICAM" image that overrides the default names of the authentication headers (to match the second `docker_container_run.sh` example above):
+
+	docker image build --tag govready/simple-iam-proxy-icam -f Dockerfile-ICAM .
+
 
 To start the proxy, run:
 
