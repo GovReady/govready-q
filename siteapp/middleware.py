@@ -55,7 +55,6 @@ class ProxyHeaderUserAuthenticationMiddleware(django.contrib.auth.middleware.Rem
     else:
         # use as-is
         header = proxy_authentication_username
-    print("header: {}".format(header)) ### DEBUG ###
 class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUserBackend):
     def authenticate(self, request, remote_user):
         # Let the Django class get the user.
@@ -70,7 +69,6 @@ class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUs
             else:
                 # use as-is
                 email_header = proxy_authentication_email
-            print("email_header: {}".format(email_header)) ### DEBUG ###
             email_addr = request.META.get(email_header)
             if email_addr and user.email != email_addr:
                 user.email = email_addr
