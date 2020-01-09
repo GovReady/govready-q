@@ -35,17 +35,27 @@ def QTemplateContextProcessor(request):
         "LOGIN_ENABLED": ('django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS),
     }
 
-# This authentication backend is used when Q is behind an enterprise proxy server handling
-# authentication. The proxy server passes the username and email address of the authenticated
-# user in HTTP headers. Django provides request headers in request.meta["HTTP_HEADER_NAME"]
-# format, so we must convert the setting that holds the header name to the way the header
-# will appear inside request.meta. We update the user's email address with the one passed
+# The authentication backend below is used when Q is behind an enterprise proxy server
+# handling authentication. The proxy server passes the username and email address of
+# the authenticated user in the environment (via HTTP headers or other variables). When
+# specifying HTTP headers, be sure to prepend "HTTP_" (e.g., HTTP_IAM-Username). Do not
+# prepend anything if it's in the environment (e.g., ICAM_DISPLAYNAME).
+
+# Email address handling: We update the user's email address with the one passed
 # in the header whenever we come here. But this only occurs when the user is logging in.
 # It seems like if the user has an active Django session and the username in the header
 # matches the user in the session then the session is kept and ProxyHeaderUserAuthenticationBackend
 # is not called.
+
 class ProxyHeaderUserAuthenticationMiddleware(django.contrib.auth.middleware.RemoteUserMiddleware):
-    header = "HTTP_" + re.sub(r"[-_]", "_", getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', {}).get('username', '').upper())
+    proxy_authentication_username = getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', {}).get('username', '')
+    if re.match(r"^http_", proxy_authentication_username, re.I):
+        # munge as web servers do -- replace dash with underscore, and make uppercase
+        header = re.sub(r"[-_]", "_", proxy_authentication_username.upper())
+    else:
+        # use as-is
+        header = proxy_authentication_username
+    print("header: {}".format(header)) ### DEBUG ###
 class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUserBackend):
     def authenticate(self, request, remote_user):
         # Let the Django class get the user.
@@ -53,7 +63,14 @@ class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUs
 
         if user:
             # Update with the email address provided in an HTTP header.
-            email_header = "HTTP_" + re.sub(r"[-_]", "_",settings.PROXY_HEADER_AUTHENTICATION_HEADERS['email'].upper())
+            proxy_authentication_email = settings.PROXY_HEADER_AUTHENTICATION_HEADERS['email']
+            if re.match(r"^http_", proxy_authentication_email, re.I):
+                # munge as web servers do -- replace dash with underscore, and make uppercase
+                email_header = re.sub(r"[-_]", "_",proxy_authentication_email.upper())
+            else:
+                # use as-is
+                email_header = proxy_authentication_email
+            print("email_header: {}".format(email_header)) ### DEBUG ###
             email_addr = request.META.get(email_header)
             if email_addr and user.email != email_addr:
                 user.email = email_addr
