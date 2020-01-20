@@ -1,12 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.2.6.1 (January 20, 2020)
+v0.9.0.2.7 (January 20, 2020)
 --------------------------------
 
 **Deployment changes**
 
-Small refactorings of extra lines and comments that should have no impact.
+* Default portfolio created for user during SSO registration process
+* Small refactorings of extra lines and comments that should have no impact.
 
 v0.9.0.2.5.17 (January 17, 2020)
 --------------------------------
