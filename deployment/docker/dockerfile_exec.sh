@@ -38,8 +38,12 @@ ADDRESS=$(echo $ADDRESS | sed s/:80$//; )
 
 # Create a local/environment.json file. Use jq to
 # guarantee valid JSON encoding of strings.
+# Use 'trust-user-authentication-headers' for SSO
+# "PROXY_AUTHENTICATION_USER_HEADER": "ICAM_DISPLAYNAME"
+# "PROXY_AUTHENTICATION_EMAIL_HEADER": "ICAM_EMAIL_ADDRESS"
+#
 cat > local/environment.json << EOF;
-{ 
+{
 	"debug": ${DEBUG-false},
 	"host": $(echo ${ADDRESS} | jq -R .),
 	"https": ${HTTPS-false},
@@ -48,6 +52,10 @@ cat > local/environment.json << EOF;
 	"admins": ${ADMINS-[]},
 	"static": "static_root",
 	"db": $(echo ${DBURL-} | jq -R .)
+	"trust-user-authentication-headers": {
+		"username": "ICAM_EMAIL_ADDRESS",
+		"email": "ICAM_EMAIL_ADDRESS"
+	}
 }
 EOF
 
@@ -136,20 +144,34 @@ fi
 # * The port is fixed --- see docker_container_run.sh.
 # * Use 4 concurrent processes by default. Expose management statistics to localhost only.
 # * Set `http-auto-chunked` to true for potential HTTP 1.1 Load Balancer to HTTP 1.0 connection mismatch
-# cat > /tmp/uwsgi.ini <<EOF;
-# [uwsgi]
-# http = 0.0.0.0:8000
-# wsgi-file = siteapp/wsgi.py
-# processes = ${PROCESSES-4}
-# stats = 127.0.0.1:9191
-# http-auto-chunked = true
-# http-keepalive = true
-# add-header = Connection: Keep-Alive
-# EOF
+
+# uWSGI configuration file
+cat > /tmp/uwsgi.ini <<EOF;
+[uwsgi]
+http = 0.0.0.0:8000
+wsgi-file = siteapp/wsgi.py
+processes = ${PROCESSES-4}
+stats = 127.0.0.1:9191
+http-auto-chunked = true
+http-keepalive = true
+add-header = Connection: Keep-Alive
+EOF
+
+# gunicorn configuration file
+cat > /tmp/gunicorn.conf.py <<EOF;
+import multiprocessing
+bind = "0.0.0.0:8000"
+workers = multiprocessing.cpu_count() * 2 + 1
+worker_class = 'gevent'
+keepalive = 10
+EOF
+
+ls -l /tmp/gunicorn.conf.py
+chmod 755 /tmp/gunicorn.conf.py
 
 # Write a file that indicates to the host that Q
 # is now fully configured. It will still be a few
-# moments before uWSGI is accepting connections.
+# moments before WSGI server is accepting connections.
 echo "done" > /tmp/govready-q-is-ready
 echo "GovReady-Q is starting."
 echo # usgi output follows

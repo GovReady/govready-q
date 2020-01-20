@@ -1,20 +1,35 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.6.1 (January 20, 2020)
+--------------------------------
+
+**Deployment changes**
+
+Small refactorings of extra lines and comments that should have no impact.
+
+v0.9.0.2.5.17 (January 17, 2020)
+--------------------------------
+
+**Deployment changes**
+
+* Fix reading of SSO headers by using Green Unicorn (gunicorn) web server for WSGI service.
+* Add additional health pages for diagnostic
+
 v0.9.0.2.5.4 (December 16, 2019)
 -------------------------------
- 
+
 **Deployment changes**
- 
+
 Automatically create admin user accounts when defined in local/environment.json file.
- 
+
 v0.9.0.2.5.3 (December 9, 2019)
 -------------------------------
- 
+
 **Deployment changes**
- 
-Add in "trust-user-authentication-headers" to `local/environment.json` file to support CBP Single Sign On
-Add in Alternate paths added for cbp-pilot-apps questionnsaire source.
+
+Add in "trust-user-authentication-headers" to `local/environment.json` file to support Single Sign On
+Add in alternate paths added for questionnsaire source.
 
 v0.9.0.2.5.3 (November 27, 2019)
 --------------------------------

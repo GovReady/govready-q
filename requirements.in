@@ -40,6 +40,8 @@ commonmarkextensions # BSD 3
 
 # Only needed in common production deployment configurations
 uwsgi # GPL2
+gunicorn # MIT License
+gevent # MIT License
 psycopg2-binary # LGPL
 rfc5424-logging-handler # BSD License
 

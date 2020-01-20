@@ -34,6 +34,15 @@ def homepage(request):
     from .views_landing import homepage
     return homepage(request)
 
+def debug(request):
+    # Raise Exception to see session information
+    raise Exception()
+    if request.user.is_authenticated:
+        return HttpResponseRedirect("/projects")
+
+    from .views_landing import homepage
+    return homepage(request)
+
 def assign_project_lifecycle_stage(projects):
     # Define lifecycle stages.
     # Because we alter this data structure in project_list,
