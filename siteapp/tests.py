@@ -407,9 +407,10 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Answer the questions.
 
         # Introduction screen.
+        var_sleep(1)
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(1.5)
+        var_sleep(1)
 
         # Text question.
         self.assertIn("| A Simple Module - GovReady-Q", self.browser.title)
