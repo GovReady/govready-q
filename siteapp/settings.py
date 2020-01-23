@@ -140,7 +140,7 @@ if not DEBUG:
 # email address before confirming ownership.
 AUTH_USER_MODEL = primary_app + '.User'
 LOGIN_REDIRECT_URL = "/"
-AUTHENTICATION_BACKENDS = [
+AUTHENTICATION_BACKENDS = [ # see settings_application.py for how this is possible changed later
 	'django.contrib.auth.backends.ModelBackend',
 	'allauth.account.auth_backends.AuthenticationBackend', # allauth
 	'guardian.backends.ObjectPermissionBackend',
