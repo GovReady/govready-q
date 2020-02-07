@@ -1921,10 +1921,16 @@ class TaskAnswerHistory(models.Model):
         # instance, an array of instances, that will lazy-load the answers
         # when needed.
         if q.spec["type"] in ("module", "module-set"):
-            value = [
-                ModuleAnswers(t.module, t, None)
-                for t in self.answered_by_task.all()
+            if self.id is not None:
+                # this is in the database
+                value = [
+                    ModuleAnswers(t.module, t, None)
+                    for t in self.answered_by_task.all()
                 ]
+            else:
+                # this is _not_ in the database, and the answer is stored_value
+                # see Task.build_answers() regarding imputed answers
+                return self.stored_value
             if q.spec["type"] == "module":
                 if len(value) == 0:
                     # The question is skipped.
