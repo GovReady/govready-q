@@ -19,6 +19,9 @@ urlpatterns = [
     # incoming email hook for responses to notifications
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
 
+    # Enterprise Single Sign On
+    url(r'^sso-logout$', views.sso_logout, name="sso-logout"),
+
     # Django admin site
     url(r'^admin/', admin.site.urls),
 
