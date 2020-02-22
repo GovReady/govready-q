@@ -239,8 +239,10 @@ function enableMouseCursorFollower()
 
     // Adjust the animation duration so the mouse moves at
     // constant speed.
-    var distance = ((target_pos[0]-current_pos[0])**2 + (target_pos[1]-current_pos[1])**2)**.5;
-    var base_distance = ($(window).width()**2 + $(window).height()**2)**.5 / 2;
+    // var distance = ((target_pos[0]-current_pos[0])**2 + (target_pos[1]-current_pos[1])**2)**.5;
+    var distance = Math.pow((Math.pow((target_pos[0]-current_pos[0]),2) + Math.pow((target_pos[1]-current_pos[1]),2)),.5);
+    // var base_distance = ($(window).width()**2 + $(window).height()**2)**.5 / 2;
+    var base_distance = Math.pow(Math.pow(Math.pow($(window).width(),2) + $(window).height(),2),.5) / 2;
     animation_duration *= distance/base_distance;
 
     // Run an animation.
