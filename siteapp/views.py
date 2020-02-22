@@ -1115,32 +1115,6 @@ def project_start_apps(request, *args):
 
     return viewfunc(request, *args)
 
-@project_read_required
-def project_upgrade_app(request, project):
-    # Upgrade the AppVersion that the project is linked to. The
-    # AppVersion is updated in place, so this updates all projects
-    # using the AppVersion. The work is done in guidedmodules.views.upgrade_app.
-
-    # Get the app's catalog information just for display purposes.
-    # We're not using the catalog to fetch newer app info - just to
-    # show the page title etc.
-    error = False
-    for app in get_compliance_apps_catalog_for_user(request.user):
-        if app['appsource_id'] == project.root_task.module.app.source.id:
-            if app['key'].endswith("/" + project.root_task.module.app.appname):
-                break
-    else:
-        error = "App cannot be upgraded because it is no longer in the compliance apps catalog."
-
-    # Show information about the app.
-    return render(request, "project-upgrade-app.html", {
-        "page_title": "Upgrade App",
-        "project": project,
-        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
-        "error": error,
-        "app": app,
-    })
-
 # PORTFOLIOS
 
 def update_permissions(request):
@@ -1627,3 +1601,8 @@ def shared_static_pages(request, page):
         "password_hash_method": password_hash_method,
         "project_form": ProjectForm(request.user),
     })
+
+def sso_logout(request):
+    output = "You are logged out."
+    html = "<html><body><pre>{}</pre></body></html>".format(output)
+    return HttpResponse(html)
