@@ -1,15 +1,23 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.3.1 (February 18, 2019)
+v0.9.0.3.2 (February 21, 2019)
 -------------------------------
 
-**Deployment Change**
+**Deployment changes**
 
 * Support environmental param for GovReady Admins in SSO context
 * Create portfolio for user account added by SSO
 * Adding in views.debug route and view
 * Remove deprecated upgrade app view
+
+**UI changes**
+
+* Fix IE11 not displaying assign and invite modals due to error parsing main.js
+
+**Other changes**
+
+* Add templates for Django performance debug toolbar
 
 v0.9.0.3 (November 21, 2019)
 -------------------------------
