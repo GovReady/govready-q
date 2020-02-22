@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.db import transaction
 
 import re
+import yappi # Debug
 
 from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 
@@ -377,6 +378,10 @@ def save_answer(request, task, answered, context, __):
 
 @task_view
 def show_question(request, task, answered, context, q):
+    import time # Debug
+    start_time = time.time() # Debug
+    print("0 <show_question> L383 --- %s seconds ---" % (time.time() - start_time)) # Debug
+
     # Let's talk about where the data is for this question. The 'q'
     # argument is a ModuleQuestion instance. The YAML data associated
     # with this question (like id, type, prompt, etc.) are stored in
@@ -652,12 +657,12 @@ def show_question(request, task, answered, context, q):
 
         # if questions.get(mq.id) and 'task' in questions[mq.id]:
         # print("** questions.get(mq.id)", questions.get(mq.id)) # Debug
-        if questions.get(mq.id) and 'task' in questions[mq.id]:
-            # print("\nquestions[mq.id]['task'].id", questions[mq.id]['task'].id, questions[mq.id]['task']) # Debug
+        if 'task' in questions[mq.id]:
+            print("\nquestions[mq.id]['task'].id", questions[mq.id]['task'].id, questions[mq.id]['task'])
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
             task_started = questions[mq.id]['task'].is_started()
-            # TODO: Create a better, cached test for is_finished
+            # TODO: Create a better, chached test for is_finished
             # `is_finished` should return a value very quickly.
             # Until a faster `is_finished` function, assume response is false.
             # task_answered = questions[mq.id]['task'].is_finished()
@@ -702,6 +707,7 @@ def show_question(request, task, answered, context, q):
     ###############################################################################
     # END BLOCK task_progress_project_list
     ###############################################################################
+    print("L685 --- %s seconds ---" % (time.time() - start_time)) # Debug
 
     # get context of questions in module
     context_sorted = module_logic.get_question_context(answered, q)
@@ -712,22 +718,24 @@ def show_question(request, task, answered, context, q):
     else:
         next_linear_question = None
 
-    # Split the `context.update` into smaller parts so it is possible to add in timing code
-    # to examine performance of certain embedded calls.
+    print("L696 --- %s seconds ---" % (time.time() - start_time)) # Debug
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
         "title": title,
         "prompt": prompt,
     })
+    print("L704 --- %s seconds ---" % (time.time() - start_time)) # Debug
     context.update({
         "placeholder_answer": render_markdown_field("placeholder", "text") or "", # Render Jinja2 template but don't turn Markdown into HTML.
         "example_answers": [render_markdown_value(ex.get("example", ""), "html", "example {}".format(i+1)) for i, ex in enumerate(q.spec.get("examples", []))],
         "reference_text": render_markdown_field("reference_text", "html"),
     })
+    print("L710 --- %s seconds ---" % (time.time() - start_time)) # Debug
     context.update({
         "history": taskq.get_history() if taskq else None,
     })
+    print("L714 --- %s seconds ---" % (time.time() - start_time)) # Debug
     context.update({
         "answer_obj": answer,
         "answer": existing_answer,
@@ -735,10 +743,12 @@ def show_question(request, task, answered, context, q):
         "default_answer": default_answer,
         "hidden_button_ids": q.module.app.modules.get(module_name="app").spec.get("hidden-buttons", []),
     })
+    print("L722 --- %s seconds ---" % (time.time() - start_time)) # Debug
     context.update({
         "can_review": task.has_review_priv(request.user),
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
     })
+    print("L727 --- %s seconds ---" % (time.time() - start_time)) # Debug
     context.update({
         "discussion": Discussion.get_for(taskq.task.project.organization, taskq) if taskq else None,
         "show_discussion_members_count": True,
@@ -746,9 +756,11 @@ def show_question(request, task, answered, context, q):
         "answer_module": answer_module,
         "answer_tasks": answer_tasks,
     })
+    print("L735 --- %s seconds ---" % (time.time() - start_time)) # Debug
     context.update({
         "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
     })
+    print("L739 --- %s seconds ---" % (time.time() - start_time)) # Debug
     context.update({
         "context": context_sorted,
 
@@ -779,9 +791,13 @@ def show_question(request, task, answered, context, q):
         "authoring_tool_enabled": authoring_tool_enabled,
         "is_question_page": True,
     })
+    print("L770 --- %s seconds --- (start ProjectForm(request.user)" % (time.time() - start_time)) # Debug
     context.update({
         "project_form": ProjectForm(request.user),
     })
+    import sys
+    print("7 L774 --- %s seconds --- (finished ProjectForm(request.user) - sys.getsizeof(context): %d" % (time.time() - start_time, sys.getsizeof(context))) # Debug
+    # return HttpResponse("<html><body>It is now %s.</body></html>" % (time.time() - start_time))
     return render(request, "question.html", context)
 
 @task_view
@@ -910,7 +926,7 @@ def task_finished(request, task, answered, context, *unused_args):
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
             task_started = questions[mq.id]['task'].is_started()
-            # TODO: Create a better, cached test for is_finished
+            # TODO: Create a better, chached test for is_finished
             # `is_finished` should return a value very quickly.
             # Until a faster `is_finished` function, assume response is false.
             # task_answered = questions[mq.id]['task'].is_finished()
