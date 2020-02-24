@@ -221,8 +221,10 @@ function enableMouseCursorFollower()
     var target_pos = [$(elem).offset().left+$(elem).width()/2, $(elem).offset().top+$(elem).height()/2];
     function move_cursor(t) {
       // make the motion curved
-      var tx = t**1.5;
-      var ty = t**.5;
+      // var tx = t**1.5;
+      // var ty = t**.5;
+      var tx = Math.pow(t,1.5);
+      var ty = Math.pow(t,0.5);
 
       // move toward target
       var new_pos = [(1-tx)*current_pos[0] + tx*target_pos[0], (1-ty)*current_pos[1] + ty*target_pos[1]];
