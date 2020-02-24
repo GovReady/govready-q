@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.3.3 (February 23, 2020)
+--------------------------------
+
+**Bug fixes**
+
+* Use Math.pow in main.js to fix IE11 failing to display invite modal
+
+
 v0.9.0.3.2 (February 21, 2019)
 -------------------------------
 
