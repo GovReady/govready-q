@@ -1,6 +1,74 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.2.10 (February 23, 2020)
+--------------------------------
+
+**Bug fixes**
+
+* Use Math.pow in main.js to fix IE11 failing to display invite modal
+
+v0.9.0.2.9.2-.8 (February 21, 2020)
+----------------------------------
+
+Synchronizing local GovReady-Q code with upstream 0.9.0.dev
+
+9.2
+Synchronizing various small files.
+Synchronizing guidedmodules.
+
+9.3
+Synchronizing siteapp directory.
+
+9.4
+Removing static file warning messages from previous missing file issue.
+
+9.5
+Removing unused templates
+Removing deprecated project_upgrade_app route that used separate page to upgrade app
+
+9.6
+Synching discussion directory
+
+9.7
+Fixing a couple poorly worded prompts in questions
+Fixing typo of slug name to correctly be 'cbp-big-q-apps'
+
+9.8
+Adding simple route, page for `/sso-logout`
+
+v0.9.0.2.9 (February 7, 2020)
+----------------------------------
+
+**Bug fixes**
+
+Apply fix for export bug TaskAnswerHistory.get_value() in certain conditions
+
+v0.9.0.2.8 (February 6, 2020)
+----------------------------------
+**Deployment changes**
+
+* Testing persistent database
+
+v.0.9.0.2.8.1 - Just bumping version to test database remains persistent
+
+v0.9.0.2.7.8 (January 26, 2020)
+----------------------------------
+
+**Configuration changes**
+
+* White list cookies from allowed hosts (Testing with explictly setting the domains)
+* Hard coding 'govready-cace-dev.cbp.dhs.gov' into ALLOWED_HOSTS for debugging CSRF_TOKEN
+
+**Deployment changes**
+
+* Adjusting username to be email header instead of display name
+* Setting gunicorn worker to 1 until we can set SECRETKEY
+* Add cbp-big-apps app source from local files automatically
+* Creating GOVREADY_ADMINS before creating app sources to make sure admins created in cases of problems with app sources
+
+
+
 v0.9.0.2.7 (January 20, 2020)
 --------------------------------
 
