@@ -21,6 +21,10 @@ class question_input_parser:
             # A list of strings is what we want here.
             pass
 
+        if question.spec["type"] == "datagrid":
+            # A list of strings is what we want here.
+            pass
+
         elif question.spec["type"] == "file":
             # An UploadedFile instance is what we want here.
             pass
@@ -61,6 +65,10 @@ class question_input_parser:
         return value
 
     def parse_multiple_choice(question, value):
+        # Comes in from the view function as an array of strings, which is what we want.
+        return value
+
+    def parse_datagrid(question, value):
         # Comes in from the view function as an array of strings, which is what we want.
         return value
 
@@ -214,6 +222,20 @@ class validator:
         for item in value:
             if item not in { choice['key'] for choice in question.spec["choices"] }:
                 raise ValueError("invalid choice: " + item)
+        if len(value) < question.spec.get("min", 0):
+            raise ValueError("not enough choices")
+        if question.spec.get("max") and len(value) > question.spec["max"]:
+            raise ValueError("too many choices")
+        return value
+
+    def validate_datagrid(question, value):
+        # print("datagrid question: {}".format(question))
+        # print("datagrid value: {}".format(value))
+        # De-stringify object
+        import ast
+        value = ast.literal_eval(value[0])
+        if not isinstance(value, list):
+            raise ValueError("Invalid data type (%s)." % type(value))
         if len(value) < question.spec.get("min", 0):
             raise ValueError("not enough choices")
         if question.spec.get("max") and len(value) > question.spec["max"]:

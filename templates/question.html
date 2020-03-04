@@ -357,6 +357,22 @@ label:hover .onhover { display: inline; }
               {% endif %}
               </div>
 
+            {% elif q.spec.type == "datagrid" %}
+              <div id="jsGrid"></div>
+              <div style="margin: 1em 0 1.5em 0;">
+              {% for choice in q.spec.choices %}
+              {% endfor %}
+
+              {% if q.spec.min > 0 and q.spec.min == q.spec.max %}
+                  <p class="help-block">You must choose exactly {{q.spec.min}} option{{q.spec.min|pluralize}}.</p>
+              {% elif q.spec.min > 0 %}
+                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} option{{q.spec.max|pluralize}}.</p>
+              {% elif q.spec.max %}
+                  <p class="help-block">You may choose at most {{q.spec.max}} option{{q.spec.max|pluralize}}.</p>
+              {% endif %}
+              </div>
+
+
             {% elif q.spec.type == "integer" or q.spec.type == "real" %}
               <div class="form-group">
                 {% comment %}
@@ -771,6 +787,36 @@ $(function() {
       return form.find('input[type="checkbox"]:checked').length > 0;
     }
 
+    {% elif q.spec.type == "datagrid" %}
+
+    function validate_answer() {
+        // Collect datagrid values
+        // var vals = [];
+        // alert($("#jsGrid").jsGrid("rowByItem", 1));
+        var vals = $("#jsGrid").jsGrid("option", "data");
+
+        // form.find('input[type="checkbox"]:checked').each(function() {
+        //     vals.push($(this).val());
+        // });
+        if (vals.length < {{q.spec.min}})
+            return "You must choose at least {{q.spec.min}} options.";
+        {% if q.spec.max %}
+        if (vals.length > {{q.spec.max}})
+            return "You must choose at most {{q.spec.max}} options.";
+        {% endif %}
+        return undefined;
+    }
+    function on_input_changed(handler) {
+      form.find('input').click(handler);
+    }
+    function disable_input_controls(disabled) {
+      $("#question input[type=\"checkbox\"]").prop('disabled', disabled);
+    }
+    function user_has_entered_clearable_answer() {
+      return form.find('input[type="checkbox"]:checked').length > 0;
+    }
+
+
     {% elif q.spec.type == "file" %}
 
     function validate_answer() {
@@ -933,8 +979,15 @@ $(function() {
         // ...and for a file field...
         // data.append('value', $('#inputctrl')[0].files[0]);
         //
-        // But there's a constructor that does this for us:
+        // But web browsers provides a constructor called 'FormData' to
+        // help develpers manipulate form data prior to submission:
         var data = new FormData(form[0]);
+
+        {% if q.spec.type == "datagrid" %}
+        datagrid_data = $("#jsGrid").jsGrid("option", "data");
+        console.log('data jsGrid '+ JSON.stringify(datagrid_data));
+        data.append('value', JSON.stringify(datagrid_data));
+        {% endif %}
 
         {% if q.spec.type == "longtext" %}
         // Add the rich text.
@@ -1058,6 +1111,37 @@ $(function() {
   });
 });
 </script>
+
+<script>
+  // Prepare data for jsGrid data grid
+  var entries = [
+  {% for row in answer %}
+    {{row|safe}},
+  {% endfor %}
+  ];
+
+  var datagrid_cols = [
+    {% for choice in q.spec.choices %}
+      { name: "{{choice.key}}", type: "text", width: 100, validate: "required" },
+    {% endfor %}
+    { type: "control" }
+  ];
+
+  $("#jsGrid").jsGrid({
+      width: "98%",
+
+      inserting: true,
+      editing: true,
+      sorting: true,
+      paging: true,
+
+      data: entries,
+
+      fields: datagrid_cols
+
+  });
+</script>
+
 {% endif %}
 
 {% endblock %}

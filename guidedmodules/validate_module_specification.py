@@ -153,7 +153,19 @@ def validate_question(mspec, spec):
         if spec["max"] is not None:
             if not isinstance(spec["max"], int) or spec["max"] < 0:
                 invalid("max must be a positive integer")
-    
+
+    elif spec.get("type") == "datagrid":
+        # validate and type-convert min and max
+
+        spec["min"] = spec.get("min", 0)
+        if not isinstance(spec["min"], int) or spec["min"] < 0:
+            invalid("min must be a positive integer")
+
+        spec["max"] = None if ("max" not in spec) else spec["max"]
+        if spec["max"] is not None:
+            if not isinstance(spec["max"], int) or spec["max"] < 0:
+                invalid("max must be a positive integer")
+
     elif spec.get("type") in ("module", "module-set"):
         if "module-id" in spec:
             # Resolve the relative module ID to an absolute path relative

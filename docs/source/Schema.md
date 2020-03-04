@@ -375,6 +375,16 @@ The `multiple-choice` question type is similar to the `choice` question type exc
 
 Increasing the `min` or decreasing the `max` are incompatible changes (see Updating Modules).
 
+#### `datagrid`
+
+The `datagrid` question type is similar to the `multiple-choice` question type except that:
+
+* The choices actually define columns in a data grid.
+* To Be Updated with more information
+* `min` and `max` may be specified. If `min` is specified, it must be greater than or equal to zero and requires that the user choose at least that many choices. If `max` is specified, it must be greater than or equal to one (and if `min` is specified, it must be at least `min`) and requires that the user choose at most that number of choices.
+
+Increasing the `min` or decreasing the `max` are incompatible changes (see Updating Modules).
+
 #### `integer`
 
 This question type asks for a numeric, integer input.

@@ -56,3 +56,22 @@ questions:
         text: Serverless
       - key: Other
         text: Other flavor of operating system
+
+  - id: software_inventory
+    title: Software Inventory (datagrid)
+    prompt: |
+      List the primary software used in the system.
+
+      Add a row for each primary software package that is part of your IT System's stack.
+      List the name of the software, the software vendor, and a very brief description of the
+      software's function.
+    type: datagrid
+    choices:
+      - key: software
+        text: Software
+      - key: vendor
+        text: Vendor
+      - key: description
+        text: Description
+    min: 0
+    max: ~

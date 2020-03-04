@@ -556,6 +556,9 @@ class ModuleQuestion(models.Model):
         if self.spec["type"] == "multiple-choice":
             import json
             return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
+        if self.spec["type"] == "datagrid":
+            import json
+            return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
         return ""
 
 class Task(models.Model):
@@ -2121,13 +2124,15 @@ class TaskAnswerHistory(models.Model):
                 human_readable_text_key = "html"
                 human_readable_text = CommonMarkHtmlRenderer().render(CommonMarkParser().parse(value)).strip()
 
-            elif q.spec["type"] in ("choice", "multiple-choice"):
+            elif q.spec["type"] in ("choice", "multiple-choice", "datagrid"):
                 # Get the 'text' values for the choices.
                 human_readable_text_key = "text"
                 choices = { c["key"]: c["text"] for c in q.spec["choices"] }
                 if q.spec["type"] == "choice":
                     human_readable_text = choices.get(value)
                 elif q.spec["type"] == "multiple-choice":
+                    human_readable_text = [choices.get(v) for v in value]
+                elif q.spec["type"] == "datagrid":
                     human_readable_text = [choices.get(v) for v in value]
 
             elif q.spec["type"] == "yesno":
