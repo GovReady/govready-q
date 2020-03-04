@@ -185,6 +185,12 @@ API
                 <code>{{item.key}}</code> ({{item.text}})
                 {% if not forloop.last %}, {% endif %}
               {% endfor %}; or null. When uploading with the key-value POST method, repeat the key multiple times in the request to set multiple values
+            {% elif question.spec.type == "datagrid" %}
+              <p>Data type: array of strings; each element is one of
+              {% for item in question.spec.choices %}
+                <code>{{item.key}}</code> ({{item.text}})
+                {% if not forloop.last %}, {% endif %}
+              {% endfor %}; or null. When uploading with the key-value POST method, repeat the key multiple times in the request to set multiple values
             {% elif question.spec.type == "yesno" %}
               <p>Data type: string; either <code>yes</code> or <code>no</code>; or null.</p>
             {% elif question.spec.type == "integer" %}

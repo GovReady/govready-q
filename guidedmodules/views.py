@@ -245,6 +245,7 @@ def save_answer(request, task, answered, context, __):
         try:
             value = answer_validation.question_input_parser.parse(q, value)
             value = answer_validation.validator.validate(q, value)
+            print("DEBUG trying to save parse & validate {}".format(value))
         except ValueError as e:
             # client side validation should have picked this up
             return JsonResponse({ "status": "error", "message": str(e) })

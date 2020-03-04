@@ -41,6 +41,22 @@ questions:
         text: Choice 3
         help: This is some help text for choice 3.
 
+  - id: q_datagrid
+    title: datagrid
+    prompt: Complete some.
+    type: datagrid
+    # TODO: test min, max
+    choices:
+      - key: choice1
+        text: Choice 1
+        help: This is some help text for choice 1.
+      - key: choice2
+        text: Choice 2
+        help: This is some help text for choice 2.
+      - key: choice3
+        text: Choice 3
+        help: This is some help text for choice 3.
+
 output:
   - title: Your Answers
     format: markdown
@@ -48,3 +64,4 @@ output:
       {{q_choice}}
       {{q_yesno}}
       {{q_multiple_choice}}
+      {{q_datagrid}}

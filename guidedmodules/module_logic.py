@@ -707,6 +707,29 @@ class HtmlAnswerRenderer:
 
             wrappertag = "div"
 
+        elif question is not None and question.spec["type"] == "datagrid":
+            # Assuming that RenderedAnswer gives us string version of the stored datagrid object
+            # that is an Array of Dictionaries
+            import ast
+            datagrid_rows = ast.literal_eval(value)
+
+            # Build a table to display datagrid information
+            value = "<table class=\"table\">\n"
+            value += "<thead>\n<tr>"
+            # To get the correct order, get keys from question specification choices
+            for choice in question.spec["choices"]:
+                value += "<th>{}</th>".format(html.escape(str(choice["text"])))
+            value += "</tr>\n"
+            for item in datagrid_rows:
+                value += "<tr>"
+                # To get the correct order, get keys from question specification choices
+                for choice in question.spec["choices"]:
+                    value += "<td>{}</td>".format(html.escape(str(item[choice["key"]])))
+                value += "</tr>\n</thead>"
+            # value = html.escape(str(datagrid_rows))
+            value += "\n</table>"
+            wrappertag = "div"
+
         else:
             # Regular text fields just get escaped.
             value = html.escape(str(value))
@@ -1301,12 +1324,18 @@ class RenderedAnswer:
                 # an unanswered question is rendered.
                 raise ValueError("Attempt to render unanswered question {}.".format(self.question.key))
             value = "<%s>" % self.question.spec['title']
-        
+
         elif self.question_type == "multiple-choice":
             # Render multiple-choice as a comma+space-separated list
             # of the choice keys.
             value = ", ".join(self.answer)
-        
+
+        elif self.question_type == "datagrid":
+            # Render datagrid as a comma+space-separated list
+            # of the choice keys.
+            # value = ", ".join(self.answer)
+            value = str(self.answer)
+
         elif self.question_type == "file":
             # Pass something to the escapefunc that HTML rendering can
             # recognize as a file but non-HTML rendering sees as a string.
@@ -1316,7 +1345,7 @@ class RenderedAnswer:
                 def __str__(self):
                     return "<uploaded file: " + self.file_data['url'] + ">"
             value = FileValueWrapper(self.answer)
-        
+
         elif self.question_type in ("module", "module-set"):
             ans = self.answer # ModuleAnswers or list of ModuleAnswers
             if self.question_type == "module": ans = [ans] # make it a lsit
@@ -1369,6 +1398,11 @@ class RenderedAnswer:
                 choices = [get_question_choice(self.question, c)["text"] for c in self.answer] # get choice text
                 delim = "," if ("," not in "".join(choices)) else ";" # separate choices by commas unless there are commas in the choices, then use semicolons
                 value = (delim+" ").join(choices)
+        elif self.question_type == "datagrid":
+            if len(self.answer) == 0:
+                value = "<nothing chosen>"
+            else:
+                value = str(self.answer)
         elif self.question_type in ("integer", "real"):
             # Use a locale to generate nice human-readable numbers.
             # The locale is set on app startup using locale.setlocale in settings.py.
@@ -1522,7 +1556,30 @@ class RenderedAnswer:
                     self.answerobj,
                     ans, self.parent_context)
                 for ans in self.answer)
-        
+
+        elif self.question_type == "datagrid":
+            # Iterate by creating a RenderedAnswer for each selected choice,
+            # with a made-up temporary Question instance that has the same
+            # properties as the actual datagrid choice but whose
+            # type is a single "choice".
+            from .models import ModuleQuestion
+            return (
+                RenderedAnswer(
+                    self.task,
+                    ModuleQuestion(
+                        module=self.question.module,
+                        key=self.question.key,
+                        spec={
+                            "type": "choice",
+                            "title": self.question.spec['title'],
+                            "prompt": self.question.spec['prompt'],
+                            "choices": self.question.spec["choices"],
+                        }),
+                    self.is_answered,
+                    self.answerobj,
+                    ans, self.parent_context)
+                for ans in self.answer)
+
         elif self.question_type == "module-set":
             # Iterate over the sub-tasks' answers. Load each's answers + imputed answers.
             return (TemplateContext(
@@ -1534,6 +1591,10 @@ class RenderedAnswer:
 
     def __len__(self):
         if self.question_type in ("multiple-choice", "module-set"):
+            if self.answer is None: return 0
+            return len(self.answer)
+
+        if self.question_type in ("datagrid"):
             if self.answer is None: return 0
             return len(self.answer)
 

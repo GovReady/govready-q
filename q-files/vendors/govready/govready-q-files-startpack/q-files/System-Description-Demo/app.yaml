@@ -1,7 +1,7 @@
 id: app
 title: (Demo) Basic System Profile
 type: project
-version: 1.0.3
+version: 1.0.4
 icon: app.png
 protocol:
 - govready.com/apps/compliance/2018/basic-system-description
@@ -16,7 +16,7 @@ catalog:
   status: Operational
   vendor: GovReady PBC
   vendor_url: http://www.govready.com
-  version: 1.0.3
+  version: 1.0.4
 interstitial:
   format: markdown
   template: |
