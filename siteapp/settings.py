@@ -24,6 +24,8 @@ def make_secret_key():
 	from django.utils.crypto import get_random_string
 	return get_random_string(50, 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)')
 
+# Gather parameter settings from 'local/environment.json' file
+# NOTE: `environment` here refers to locally created environment data object and not OS level environment variables
 if os.path.exists(local("environment.json")):
         try:
                 environment = json.load(open(local("environment.json")))
@@ -44,6 +46,10 @@ else:
 	print("Please create a '%s' file containing something like this:" % local("environment.json"))
 	print(json.dumps(environment, sort_keys=True, indent=2))
 	print()
+
+# Load pre-specified admin users
+# Example: "govready_admins":[{"username": "First Last", "email":"first.last@example.com", "password": "REPLACEME"}]
+GOVREADY_ADMINS = environment.get("govready_admins") or []
 
 # DJANGO SETTINGS #
 ###################
