@@ -19,7 +19,7 @@ termcolor # MIT License
 xxhash # BSD License
 
 # Common Django Packages
-Django<2.2.5 # BSD License
+Django<2.2.11 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
