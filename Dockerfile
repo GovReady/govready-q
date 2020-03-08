@@ -9,6 +9,10 @@
 # Build on Docker's official CentOS 7 image.
 FROM centos:7
 
+# Default to uwsgi instead of gunicorn
+ARG SUPERVISORD_INI=deployment/docker/supervisord_uwsgi.ini
+ARG DOCKERFILE_EXEC_SH=deployment/docker/dockerfile_exec_uwsgi.sh
+
 # Expose the port that `manage.py runserver` uses by default.
 EXPOSE 8000
 
@@ -92,10 +96,10 @@ RUN chmod a+rwx /run /var/log
 RUN sed -i "s:/var/run/supervisor/:/var/run/:" /etc/supervisord.conf
 RUN sed -i "s:/var/log/supervisor/:/var/log/:" /etc/supervisord.conf
 RUN sed -i "s:^;childlogdir=/tmp:childlogdir=/var/log:" /etc/supervisord.conf
-COPY deployment/docker/supervisord.ini /etc/supervisord.d/application.ini
+COPY $SUPERVISORD_INI /etc/supervisord.d/application.ini
 
 # Add container startup and management scripts.
-COPY deployment/docker/dockerfile_exec.sh .
+COPY $DOCKERFILE_EXEC_SH dockerfile_exec.sh
 COPY deployment/docker/first_run.sh /usr/local/bin/first_run
 COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
 COPY deployment/docker/tail_logs.sh /usr/local/bin/tail_logs
