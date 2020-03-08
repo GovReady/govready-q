@@ -2,7 +2,15 @@
 
 set -euo pipefail
 
-VENDOR=siteapp/static/vendor
+# retrieve 'static' from local/environment.json
+if [ -f local/environment.json ] ; then
+  VENDOR=$(python -c "import json; f=open('local/environment.json', 'r'); env=json.load(f); print(env.get('static',''))")
+fi
+
+# if VENDOR not set above, use default
+if [ -z "$VENDOR" ] ; then
+  VENDOR=siteapp/static/vendor
+fi
 
 SHACMD="sha256sum"
 SHACMD_CHECK="$SHACMD --strict --check"

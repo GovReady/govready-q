@@ -221,8 +221,10 @@ function enableMouseCursorFollower()
     var target_pos = [$(elem).offset().left+$(elem).width()/2, $(elem).offset().top+$(elem).height()/2];
     function move_cursor(t) {
       // make the motion curved
-      var tx = t**1.5;
-      var ty = t**.5;
+      // var tx = t**1.5;
+      // var ty = t**.5;
+      var tx = Math.pow(t,1.5);
+      var ty = Math.pow(t,0.5);
 
       // move toward target
       var new_pos = [(1-tx)*current_pos[0] + tx*target_pos[0], (1-ty)*current_pos[1] + ty*target_pos[1]];
@@ -239,8 +241,10 @@ function enableMouseCursorFollower()
 
     // Adjust the animation duration so the mouse moves at
     // constant speed.
-    var distance = ((target_pos[0]-current_pos[0])**2 + (target_pos[1]-current_pos[1])**2)**.5;
-    var base_distance = ($(window).width()**2 + $(window).height()**2)**.5 / 2;
+    // var distance = ((target_pos[0]-current_pos[0])**2 + (target_pos[1]-current_pos[1])**2)**.5;
+    var distance = Math.pow((Math.pow((target_pos[0]-current_pos[0]),2) + Math.pow((target_pos[1]-current_pos[1]),2)),.5);
+    // var base_distance = ($(window).width()**2 + $(window).height()**2)**.5 / 2;
+    var base_distance = Math.pow(Math.pow(Math.pow($(window).width(),2) + $(window).height(),2),.5) / 2;
     animation_duration *= distance/base_distance;
 
     // Run an animation.

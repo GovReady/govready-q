@@ -38,7 +38,9 @@ if environment.get("trust-user-authentication-headers"):
     AUTHENTICATION_BACKENDS.append('siteapp.middleware.ProxyHeaderUserAuthenticationBackend') # add backend for this method
     PROXY_HEADER_AUTHENTICATION_HEADERS = environment["trust-user-authentication-headers"]
     print("Trusting authentication headers:", PROXY_HEADER_AUTHENTICATION_HEADERS)
- 
+    LOGOUT_REDIRECT_URL = "/sso-logout"
+    print("Setting LOGOUT_REDIRECT_URL to", LOGOUT_REDIRECT_URL)
+
 MIDDLEWARE += [
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
     'siteapp.middleware.ContentSecurityPolicyMiddleware',
