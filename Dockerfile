@@ -48,6 +48,8 @@ RUN safety check
 # Copy in the vendor resources and fetch them.
 COPY fetch-vendor-resources.sh ./
 RUN ./fetch-vendor-resources.sh
+# Confirm that sqlite3 command runs, for users who use it.
+RUN sqlite3 --version
 
 # Copy in remaining source code. (We put this last because these
 # change most frequently, so there is less to rebuild if we put
