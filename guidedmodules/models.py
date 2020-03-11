@@ -557,10 +557,9 @@ class ModuleQuestion(models.Model):
             import json
             return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
         if self.spec["type"] == "datagrid":
-            import json
+            # import json
             # return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
             return "datagrid self.spec"
-        return ""
 
 class Task(models.Model):
     project = models.ForeignKey(Project, related_name="tasks", on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")

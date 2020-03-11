@@ -1403,6 +1403,7 @@ class RenderedAnswer:
                 value = "<nothing chosen>"
             else:
                 value = str(self.answer)
+
         elif self.question_type in ("integer", "real"):
             # Use a locale to generate nice human-readable numbers.
             # The locale is set on app startup using locale.setlocale in settings.py.
