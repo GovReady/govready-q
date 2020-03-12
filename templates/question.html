@@ -133,12 +133,6 @@ label:hover .onhover { display: inline; }
 
 <div class="row">
 
-  <!--
-  <div class="col-spacer hidden-xs hidden-sm hidden-md col-lg-1">
-    &nbsp;
-  </div>
-  -->
-
   <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 ">
     {% if source_invitation %}
       <div style="margin-bottom: 2em">
@@ -580,7 +574,7 @@ label:hover .onhover { display: inline; }
     </div>
   </div> <!-- /focus-area-wrapper -->
 
-  <div class="col-spacer hidden-xs col-sm-1 col-md-1 col-lg-3 col-xl-2">
+  <div id="col-spacer" class="col-spacer hidden-xs col-sm-1 col-md-1 col-lg-3 col-xl-2">
     &nbsp;
   </div>
 
@@ -1113,6 +1107,15 @@ $(function() {
 </script>
 
 <script>
+  // Render datagrid question type
+  // Make focus-area-wrapper wider when question type is datagrid
+  {% if q.spec.type == "datagrid" %}
+  $("#col-spacer").removeClass("col-spacer hidden-xs col-sm-1 col-md-1 col-lg-3 col-xl-2");
+  $("#col-spacer").addClass("col-spacer hidden-xs col-sm-1 col-md-1 col-lg-1 col-xl-2");
+  $("#focus-area-wrapper").removeClass("col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5");
+  $("#focus-area-wrapper").addClass("col-xs-12 col-sm-9 col-md-8 col-lg-8 col-xl-7");
+  {% endif %}
+
   // Prepare data for jsGrid data grid
   var entries = [
   {% for row in answer %}
