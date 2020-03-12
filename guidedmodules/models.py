@@ -558,8 +558,9 @@ class ModuleQuestion(models.Model):
             return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
         if self.spec["type"] == "datagrid":
             # import json
-            # return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
+            # return "An array containing " + ", ".join(json.dumps(field['key']) for field in self.spec["fields"]) + "."
             return "datagrid self.spec"
+        return ""
 
 class Task(models.Model):
     project = models.ForeignKey(Project, related_name="tasks", on_delete=models.CASCADE, help_text="The Project that this Task is a part of, or empty for Tasks that are just directly owned by the user.")
@@ -2134,7 +2135,7 @@ class TaskAnswerHistory(models.Model):
                     human_readable_text = [choices.get(v) for v in value]
                 elif q.spec["type"] == "datagrid":
                     # human_readable_text = [choices.get(v) for v in value]
-                    human_readable_text = "datagrid human_readable_text"
+                    human_readable_text = "datagrid_fix human_readable_text"
 
             elif q.spec["type"] == "yesno":
                 human_readable_text_key = "text"

@@ -46,16 +46,16 @@ questions:
     prompt: Complete some.
     type: datagrid
     # TODO: test min, max
-    choices:
-      - key: choice1
-        text: Choice 1
-        help: This is some help text for choice 1.
-      - key: choice2
-        text: Choice 2
-        help: This is some help text for choice 2.
-      - key: choice3
-        text: Choice 3
-        help: This is some help text for choice 3.
+    fields:
+      - key: field1
+        text: Field 1
+        help: This is some help text for field 1.
+      - key: field2
+        text: Field 2
+        help: This is some help text for field 2.
+      - key: field3
+        text: Field 3
+        help: This is some help text for field 3.
 
 output:
   - title: Your Answers

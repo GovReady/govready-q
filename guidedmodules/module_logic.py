@@ -716,15 +716,15 @@ class HtmlAnswerRenderer:
             # Build a table to display datagrid information
             value = "<table class=\"table\">\n"
             value += "<thead>\n<tr>"
-            # To get the correct order, get keys from question specification choices
-            for choice in question.spec["choices"]:
-                value += "<th>{}</th>".format(html.escape(str(choice["text"])))
+            # To get the correct order, get keys from question specification fields
+            for field in question.spec["fields"]:
+                value += "<th>{}</th>".format(html.escape(str(field["text"])))
             value += "</tr>\n"
             for item in datagrid_rows:
                 value += "<tr>"
-                # To get the correct order, get keys from question specification choices
-                for choice in question.spec["choices"]:
-                    value += "<td>{}</td>".format(html.escape(str(item[choice["key"]])))
+                # To get the correct order, get keys from question specification fields
+                for field in question.spec["fields"]:
+                    value += "<td>{}</td>".format(html.escape(str(item[field["key"]])))
                 value += "</tr>\n</thead>"
             # value = html.escape(str(datagrid_rows))
             value += "\n</table>"
@@ -1326,14 +1326,11 @@ class RenderedAnswer:
             value = "<%s>" % self.question.spec['title']
 
         elif self.question_type == "multiple-choice":
-            # Render multiple-choice as a comma+space-separated list
-            # of the choice keys.
+            # Render multiple-choice as a comma+space-separated list of the choice keys.
             value = ", ".join(self.answer)
 
         elif self.question_type == "datagrid":
-            # Render datagrid as a comma+space-separated list
-            # of the choice keys.
-            # value = ", ".join(self.answer)
+            # Render datagrid as an array of dictionaries
             value = str(self.answer)
 
         elif self.question_type == "file":
@@ -1559,10 +1556,10 @@ class RenderedAnswer:
                 for ans in self.answer)
 
         elif self.question_type == "datagrid":
-            # Iterate by creating a RenderedAnswer for each selected choice,
+            # Iterate by creating a RenderedAnswer for each selected field,
             # with a made-up temporary Question instance that has the same
-            # properties as the actual datagrid choice but whose
-            # type is a single "choice".
+            # properties as the actual datagrid field but whose
+            # type is a single "datagrid".
             from .models import ModuleQuestion
             return (
                 RenderedAnswer(
@@ -1571,10 +1568,10 @@ class RenderedAnswer:
                         module=self.question.module,
                         key=self.question.key,
                         spec={
-                            "type": "choice",
+                            "type": "datagrid",
                             "title": self.question.spec['title'],
                             "prompt": self.question.spec['prompt'],
-                            "choices": self.question.spec["choices"],
+                            "fields": self.question.spec["fields"],
                         }),
                     self.is_answered,
                     self.answerobj,
