@@ -237,9 +237,9 @@ class validator:
         if not isinstance(value, list):
             raise ValueError("Invalid data type (%s)." % type(value))
         if len(value) < question.spec.get("min", 0):
-            raise ValueError("not enough choices")
+            raise ValueError("not enough rows")
         if question.spec.get("max") and len(value) > question.spec["max"]:
-            raise ValueError("too many choices")
+            raise ValueError("too many rows")
         return value
 
     def validate_integer(question, value):

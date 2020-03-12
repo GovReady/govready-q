@@ -354,15 +354,12 @@ label:hover .onhover { display: inline; }
             {% elif q.spec.type == "datagrid" %}
               <div id="jsGrid"></div>
               <div style="margin: 1em 0 1.5em 0;">
-              {% for choice in q.spec.choices %}
-              {% endfor %}
-
               {% if q.spec.min > 0 and q.spec.min == q.spec.max %}
                   <p class="help-block">You must choose exactly {{q.spec.min}} option{{q.spec.min|pluralize}}.</p>
               {% elif q.spec.min > 0 %}
-                  <p class="help-block">You must choose at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} option{{q.spec.max|pluralize}}.</p>
+                  <p class="help-block">You must add at least {{q.spec.min}} {% if q.spec.max %}and at most {{q.spec.max}}{% endif %} row{{q.spec.max|pluralize}}.</p>
               {% elif q.spec.max %}
-                  <p class="help-block">You may choose at most {{q.spec.max}} option{{q.spec.max|pluralize}}.</p>
+                  <p class="help-block">You may add at most {{q.spec.max}} row{{q.spec.max|pluralize}}.</p>
               {% endif %}
               </div>
 
@@ -1123,9 +1120,9 @@ $(function() {
   {% endfor %}
   ];
 
-  var datagrid_cols = [
-    {% for choice in q.spec.choices %}
-      { name: "{{choice.key}}", type: "text", width: 100, validate: "required" },
+  var datagrid_fields = [
+    {% for field in q.spec.fields %}
+      { name: "{{field.key}}", type: "text", width: 100, validate: "required" },
     {% endfor %}
     { type: "control" }
   ];
@@ -1140,8 +1137,7 @@ $(function() {
 
       data: entries,
 
-      fields: datagrid_cols
-
+      fields: datagrid_fields
   });
 </script>
 

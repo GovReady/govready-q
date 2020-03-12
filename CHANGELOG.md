@@ -1,6 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
+
+v0.9.1 (March 12, 2020)
+-----------------------
+
+GovReady-Q now supports Datagrid question typre for easy entry of tabular data.
+
+**UI changes**
+
+* Use datagrid (jsGrid) to support questions best answered with tabular data.
+
 v0.9.0.3.3 (February 23, 2020)
 --------------------------------
 

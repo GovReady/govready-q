@@ -379,9 +379,10 @@ Increasing the `min` or decreasing the `max` are incompatible changes (see Updat
 
 The `datagrid` question type is similar to the `multiple-choice` question type except that:
 
-* The choices actually define columns in a data grid.
-* To Be Updated with more information
-* `min` and `max` may be specified. If `min` is specified, it must be greater than or equal to zero and requires that the user choose at least that many choices. If `max` is specified, it must be greater than or equal to one (and if `min` is specified, it must be at least `min`) and requires that the user choose at most that number of choices.
+* An array of fields define columns for tabular data (AKA "datagrid").
+* Users can enter as many rows of data as desired.
+* Results are usually displayed as a table.
+* `min` and `max` may be specified. If `min` is specified, it must be greater than or equal to zero and requires that the user add at least that many rows. If `max` is specified, it must be greater than or equal to one (and if `min` is specified, it must be at least `min`) and prevents the user from adding more than that number rows.
 
 Increasing the `min` or decreasing the `max` are incompatible changes (see Updating Modules).
 

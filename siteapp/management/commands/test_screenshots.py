@@ -342,8 +342,8 @@ class Command(BaseCommand):
                             self.click_element("#question input[value=" + repr(choice) + "]") # TODO: Answer might not fit a valid CSS selector.
                     elif question.spec['type'] == 'datagrid':
                         assert isinstance(answer, list)
-                        for choice in answer:
-                            self.click_element("#question input[value=" + repr(choice) + "]") # TODO: Answer might not fit a valid CSS selector.
+                        for field in answer:
+                            self.click_element("#question input[value=" + repr(field) + "]") # TODO: Answer might not fit a valid CSS selector.
                     elif question.spec['type'] in ('file', 'module', 'module-set'):
                         raise Exception("not implemented")
                 else:

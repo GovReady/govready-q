@@ -66,7 +66,7 @@ questions:
       List the name of the software, the software vendor, and a very brief description of the
       software's function.
     type: datagrid
-    choices:
+    fields:
       - key: software
         text: Software
       - key: vendor
@@ -82,6 +82,8 @@ output:
     format: markdown
     template: >+
 
-      cloud_provider is {{cloud_provider}}
+      The cloud service provider is {{cloud_provider}}.
 
-      software_inventory is {{software_inventory}}
+
+      The software inventory includes:
+      {{software_inventory}}
