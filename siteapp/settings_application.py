@@ -33,7 +33,9 @@ if environment.get("trust-user-authentication-headers"):
     # you should ensure you'll be able to log in with the proxy using the
     # username of an admin account that is already registered.
     MIDDLEWARE.append('siteapp.middleware.ProxyHeaderUserAuthenticationMiddleware') # must be after AuthenticationMiddleware but before OrganizationSubdomainMiddleware
-    AUTHENTICATION_BACKENDS = ['siteapp.middleware.ProxyHeaderUserAuthenticationBackend'] # replace the standard login backends
+    AUTHENTICATION_BACKENDS.remove('django.contrib.auth.backends.ModelBackend') # disable the standard login backends
+    AUTHENTICATION_BACKENDS.remove('allauth.account.auth_backends.AuthenticationBackend')
+    AUTHENTICATION_BACKENDS.append('siteapp.middleware.ProxyHeaderUserAuthenticationBackend') # add backend for this method
     PROXY_HEADER_AUTHENTICATION_HEADERS = environment["trust-user-authentication-headers"]
     print("Trusting authentication headers:", PROXY_HEADER_AUTHENTICATION_HEADERS)
     LOGOUT_REDIRECT_URL = "/sso-logout"

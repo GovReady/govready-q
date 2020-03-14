@@ -1602,6 +1602,8 @@ def shared_static_pages(request, page):
         "project_form": ProjectForm(request.user),
     })
 
+# SINGLE SIGN ON
+
 def sso_logout(request):
     output = "You are logged out."
     html = "<html><body><pre>{}</pre></body></html>".format(output)
