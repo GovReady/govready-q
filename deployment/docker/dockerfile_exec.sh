@@ -51,7 +51,7 @@ cat > local/environment.json << EOF;
 	"syslog": $(echo ${SYSLOG-} | jq -R .),
 	"admins": ${ADMINS-[]},
 	"static": "static_root",
-	"db": $(echo ${DBURL-} | jq -R .)
+	"db": $(echo ${DBURL-} | jq -R .),
 	"trust-user-authentication-headers": {
 		"username": "ICAM_EMAIL_ADDRESS",
 		"email": "ICAM_EMAIL_ADDRESS"
