@@ -75,6 +75,24 @@ class Command(BaseCommand):
             )
             print("Adding AppSource for authoring.")
 
+        # Create GovReady admin users, if specified in local/environment.json
+        if len(settings.GOVREADY_ADMINS):
+            for admin_user in settings.GOVREADY_ADMINS:
+                username = admin_user["username"]
+                if not User.objects.filter(username=username).exists():
+                    user = User.objects.create(username=username, is_superuser=True, is_staff=True)
+                    user.set_password(admin_user["password"])
+                    user.email = admin_user["email"]
+                    user.save()
+                    print("Created administrator account: username '{}' with email '{}'.".format(
+                        user.username,
+                        user.email
+                    ))
+                else:
+                    print("\n[WARNING] Skipping create admin account '{}' - username already exists.\n".format(
+                        username
+                    ))
+
         # Create the first user.
         if not User.objects.filter(is_superuser=True).exists():
             if not options['non_interactive']:
@@ -100,7 +118,7 @@ class Command(BaseCommand):
             print("Created administrator portfolio {}".format(portfolio.title))
         else:
             # One or more superusers already exist
-            print("\n[WARNING] Superuser(s) already exist. Are you connecting to a persistent database?\n")
+            print("\n[WARNING] Superuser(s) already exist, not creating default admin superuser. Did you specify 'govready_admins' in 'local/environment.json'? Are you connecting to a persistent database?\n")
 
         # Create the first organization.
         if not Organization.objects.filter(slug="main").exists():

@@ -1037,7 +1037,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # so that we can select it again later.
         import urllib.parse
         s = urllib.parse.urlsplit(self.browser.current_url)
-        m = re.match(r"^/tasks/(\d+)/", s[2])
+        m = re.match(r"/tasks/(\d+)/a-simple-module", s[2])
         task_id = int(m.group(1))
 
         def do_submodule(answer_text):
