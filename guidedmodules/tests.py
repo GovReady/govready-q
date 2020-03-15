@@ -126,10 +126,10 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test("q_multiple_choice", ["choice1", "choice3"], "'choice2' in q_multiple_choice", False)
         test("q_multiple_choice", None, "q_multiple_choice", False) # skipped is falsey
 
-        test("q_datagrid", [], "q_datagrid", True) # answered is truthy even if answered with nothing chosen
-        test("q_datagrid", ["field1", "field3"], "'field1' in q_datagrid", True)
-        test("q_datagrid", ["field1", "field3"], "'field2' in q_datagrid", False)
-        test("q_datagrid", None, "q_datagrid", False) # skipped is falsey
+        # test("q_datagrid", [], "q_datagrid", True) # answered is truthy even if answered with nothing chosen
+        # test("q_datagrid", ["field1", "field3"], "'field1' in q_datagrid", True)
+        # test("q_datagrid", ["field1", "field3"], "'field2' in q_datagrid", False)
+        # test("q_datagrid", None, "q_datagrid", False) # skipped is falsey
 
     def test_impute_using_numeric_questions(self):
         test = lambda *args : self._test_condition_helper("question_types_numeric", *args)

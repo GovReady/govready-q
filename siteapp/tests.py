@@ -477,8 +477,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
-        # self.click_element("#show-project-invite")
-        # self.browser.execute_script("invite_user_into_project()") # See comment above.
+        #self.click_element("#show-project-invite")
+        self.browser.execute_script("invite_user_into_project()")
 
         # Test an invalid email address.
         # start_invitation("example")
@@ -486,14 +486,14 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
         # self.click_element("#global_modal button") # dismiss the warning.
         # var_sleep(.25)
-        # self.click_element("#show-project-invite") # Re-open the invite box.
+        # #self.click_element("#show-project-invite") # Re-open the invite box.
         # self.browser.execute_script("invite_user_into_project()") # See comment above.
 
         do_invitation(self.user2.username)
         self.fill_field("#id_login", self.user2.username)
         self.fill_field("#id_password", self.user2.clear_password)
         self.click_element("form button.primaryAction")
-
+       
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
         self.click_element('#question-simple_module') # go to the task page
         self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
@@ -501,7 +501,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
-        var_sleep(1) # wait for page to load
+        var_sleep(1)
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         self.click_element('#transfer-editorship')
         do_invitation(self.user3.username)
@@ -670,7 +670,11 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question-question_types_text')
 
         # Introduction screen.
-        # self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
+        # Click interstital "Got it" button
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -774,8 +778,12 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self._new_project()
         self.click_element('#question-question_types_choice')
 
+        # Introduction screen.
+        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # Click interstital "Got it" button
-        # self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -823,7 +831,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question-question_types_numeric')
 
         # Introduction screen.
-        # self.assertRegex(self.browser.title, "Next Question: Introduction")
+        self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 
