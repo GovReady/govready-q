@@ -151,6 +151,6 @@ Single-choice, multiple-choice, and yes-no fields also appear in human-readable 
 
 Long text fields have an HTML display form, in which the CommonMark is pre-rendered, in a parallel field with a `.html` suffix in the field's name. These fields cannot be used in the POST API.
 
-Datagrid fields appear in huma-readable form as tabular data.
+Datagrid fields appear in human-readable form as tabular data.
 
 More information about Q's data types can be found in [Modules, Questions, and Documents](Schema.html).
