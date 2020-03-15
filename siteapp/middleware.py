@@ -57,6 +57,7 @@ class ProxyHeaderUserAuthenticationMiddleware(django.contrib.auth.middleware.Rem
     else:
         # use as-is
         header = proxy_authentication_username
+
 class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUserBackend):
     def authenticate(self, request, remote_user):
         # Let the Django class get the user.
