@@ -153,6 +153,8 @@ def validate_question(mspec, spec):
         if spec["max"] is not None:
             if not isinstance(spec["max"], int) or spec["max"] < 0:
                 invalid("max must be a positive integer")
+            if not isinstance(spec["max"], int) or spec["max"] < min:
+                invalid("max must be an integer greater than or equal to min")
 
     elif spec.get("type") == "datagrid":
         # validate and type-convert min and max
@@ -165,6 +167,8 @@ def validate_question(mspec, spec):
         if spec["max"] is not None:
             if not isinstance(spec["max"], int) or spec["max"] < 0:
                 invalid("max must be a positive integer")
+            if not isinstance(spec["max"], int) or spec["max"] < min:
+                invalid("max must be an integer greater than or equal to min")
 
     elif spec.get("type") in ("module", "module-set"):
         if "module-id" in spec:

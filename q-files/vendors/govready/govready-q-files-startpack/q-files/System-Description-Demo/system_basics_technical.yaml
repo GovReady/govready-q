@@ -55,7 +55,7 @@ questions:
       - key: RDS
         text: AWS RDS
       - key: EKS
-        text: Amazon Elastic Kubernetes Service (EKS)
+        text: Amazon Elastic Kubernetes Service
       - key: Route 53
         text: Amazon Route 53
     min: 1
