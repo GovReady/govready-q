@@ -451,13 +451,14 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         def start_invitation(username):
             print("INFO: Entering '{}', '{}'".format('start_invitation(username)', username))
             # Fill out the invitation modal.
-            self.select_option_by_visible_text('#invite-user-select', username)
+            # self.select_option_by_visible_text('#invite-user-select', username) # This is for selecting user from dropdown list
+            self.fill_field("input#invite-user-email", username)
+            var_sleep(1)
             self.click_element("#invitation_modal button.btn-submit")
 
         def do_invitation(username):
             print("INFO: Entering '{}', '{}'".format('do_invitation(username)', username))
             start_invitation(username)
-
             var_sleep(1) # wait for invitation to be sent
 
             # Log out and accept the invitation as an anonymous user.
@@ -477,19 +478,23 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
-        # self.click_element("#show-project-invite")
-        # self.browser.execute_script("invite_user_into_project()")
+        self.click_element("#show-project-invite")
+        self.browser.execute_script("invite_user_into_project()")
+        # Toggle field to invite user by email
+        self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
 
         # Test an invalid email address.
-        # start_invitation("example")
-        # var_sleep(.5)
-        # self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
-        # self.click_element("#global_modal button") # dismiss the warning.
-        # var_sleep(.25)
-        # self.click_element("#show-project-invite") # Re-open the invite box.
-        # self.browser.execute_script("invite_user_into_project()") # See comment above.
+        start_invitation("example")
+        var_sleep(.5)
+        self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
+        self.click_element("#global_modal button") # dismiss the warning.
+        var_sleep(.25)
+        self.click_element("#show-project-invite") # Re-open the invite box.
+        self.browser.execute_script("invite_user_into_project()") # See comment above.
+        # Toggle field to invite user by email
+        self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
 
-        do_invitation(self.user2.username)
+        do_invitation(self.user2.email)
         self.fill_field("#id_login", self.user2.username)
         self.fill_field("#id_password", self.user2.clear_password)
         self.click_element("form button.primaryAction")
@@ -501,14 +506,16 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
-        var_sleep(1)
+        var_sleep(0.5)
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         self.click_element('#transfer-editorship')
-        do_invitation(self.user3.username)
+        # Toggle field to invite user by email
+        self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
+        do_invitation(self.user3.email)
         self.fill_field("#id_login", self.user3.username)
         self.fill_field("#id_password", self.user3.clear_password)
         self.click_element("form button.primaryAction")
-        var_sleep(1)
+        var_sleep(0.5)
         self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
 
         # reset_login()
