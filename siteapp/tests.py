@@ -489,14 +489,14 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.click_element("#show-project-invite") # Re-open the invite box.
         # self.browser.execute_script("invite_user_into_project()") # See comment above.
 
-        do_invitation(self.user2.username)
-        self.fill_field("#id_login", self.user2.username)
-        self.fill_field("#id_password", self.user2.clear_password)
-        self.click_element("form button.primaryAction")
+        # do_invitation(self.user2.username)
+        # self.fill_field("#id_login", self.user2.username)
+        # self.fill_field("#id_password", self.user2.clear_password)
+        # self.click_element("form button.primaryAction")
 
-        self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
-        self.click_element('#question-simple_module') # go to the task page
-        self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
+        # self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
+        # self.click_element('#question-simple_module') # go to the task page
+        # self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
 
         # reset_login()
 
@@ -671,11 +671,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question-question_types_text')
 
         # Introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
-        self.click_element("#save-button")
-        var_sleep(.5)
-
-        # Click interstital "Got it" button
+        # self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 
