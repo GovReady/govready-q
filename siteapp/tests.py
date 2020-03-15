@@ -654,9 +654,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         resp = self.client_get(
                 "/api/v1/projects/" + str(self.current_project.id) + "/answers",
                 HTTP_AUTHORIZATION=self.user.api_key_rw)
-        print('resp.json is: ', resp.json)
         resp = resp.json()
-        print('resp is: ', resp)
         self.assertTrue(isinstance(resp, dict))
         self.assertEqual(resp.get("schema"), "GovReady Q Project API 1.0")
         for p in ["project"]+path:
@@ -672,11 +670,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question-question_types_text')
 
         # Introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
-        self.click_element("#save-button")
-        var_sleep(.5)
-
-        # Click interstital "Got it" button
+        # self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -780,12 +774,8 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self._new_project()
         self.click_element('#question-question_types_choice')
 
-        # Introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
-        self.click_element("#save-button")
-        var_sleep(.5)
-
         # Click interstital "Got it" button
+        # self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -833,7 +823,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question-question_types_numeric')
 
         # Introduction screen.
-        self.assertRegex(self.browser.title, "Next Question: Introduction")
+        # self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
 

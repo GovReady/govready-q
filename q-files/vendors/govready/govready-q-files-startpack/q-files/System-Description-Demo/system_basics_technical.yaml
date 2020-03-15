@@ -42,6 +42,28 @@ questions:
     - condition: application_where_hosted != 'cloud'
       value: ~
 
+  - id: aws_services
+    title: AWS Services
+    prompt: |
+      What AWS Services are being used?
+    type: multiple-choice
+    choices:
+      - key: EC2
+        text: Amazon EC2
+      - key: Lambda
+        text: AWS Lambda 
+      - key: RDS
+        text: AWS RDS
+      - key: EKS
+        text: Amazon Elastic Kubernetes Service (EKS)
+      - key: Route 53
+        text: Amazon Route 53
+    min: 1
+    max: ~
+    impute:
+    - condition: cloud_provider != 'AWS'
+      value: ~
+
   - id: operating_system_flavor
     title: Primary OS type
     prompt: |

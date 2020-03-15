@@ -21,7 +21,7 @@ class question_input_parser:
             # A list of strings is what we want here.
             pass
 
-        if question.spec["type"] == "datagrid":
+        elif question.spec["type"] == "datagrid":
             # A list of strings is what we want here.
             pass
 
