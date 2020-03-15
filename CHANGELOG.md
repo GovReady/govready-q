@@ -1,6 +1,31 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.0.3.3 (February 23, 2020)
+--------------------------------
+
+**Bug fixes**
+
+* Use Math.pow in main.js to fix IE11 failing to display invite modal
+
+
+v0.9.0.3.2 (February 21, 2019)
+-------------------------------
+
+**Deployment changes**
+
+* Support environmental param for GovReady Admins in SSO context
+* Create portfolio for user account added by SSO
+* Adding in views.debug route and view
+* Remove deprecated upgrade app view
+
+**UI changes**
+
+* Fix IE11 not displaying assign and invite modals due to error parsing main.js
+
+**Other changes**
+
+* Add templates for Django performance debug toolbar
 
 v0.9.1 (March 12, 2020)
 -----------------------
