@@ -477,8 +477,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
-        #self.click_element("#show-project-invite")
-        self.browser.execute_script("invite_user_into_project()")
+        # self.click_element("#show-project-invite")
+        # self.browser.execute_script("invite_user_into_project()")
 
         # Test an invalid email address.
         # start_invitation("example")
@@ -486,14 +486,14 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
         # self.click_element("#global_modal button") # dismiss the warning.
         # var_sleep(.25)
-        # #self.click_element("#show-project-invite") # Re-open the invite box.
+        # self.click_element("#show-project-invite") # Re-open the invite box.
         # self.browser.execute_script("invite_user_into_project()") # See comment above.
 
         do_invitation(self.user2.username)
         self.fill_field("#id_login", self.user2.username)
         self.fill_field("#id_password", self.user2.clear_password)
         self.click_element("form button.primaryAction")
-       
+
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
         self.click_element('#question-simple_module') # go to the task page
         self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
@@ -600,19 +600,24 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Navigate to portfolio created on signup
         self.click_element_with_link_text("portfolio-user")
+        var_sleep(0.5)
 
     def test_create_portfolio_project(self):
         # Create new project within portfolio
         self._login()
         self._new_project()
+        var_sleep(0.5)
 
         # Create new portfolio
         self.browser.get(self.url("/portfolios"))
+        var_sleep(0.5)
         self.click_element("#new-portfolio")
         self.fill_field("#id_title", "Security Projects")
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
+        var_sleep(0.5)
         self.assertRegex(self.browser.title, "Security Projects")
+        var_sleep(0.5)
 
     def test_create_project_without_portfolio(self):
         self._login()
