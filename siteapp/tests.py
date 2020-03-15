@@ -477,8 +477,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
-        #self.click_element("#show-project-invite")
-        self.browser.execute_script("invite_user_into_project()")
+        # self.click_element("#show-project-invite")
+        # self.browser.execute_script("invite_user_into_project()") # See comment above.
 
         # Test an invalid email address.
         # start_invitation("example")
@@ -486,7 +486,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
         # self.click_element("#global_modal button") # dismiss the warning.
         # var_sleep(.25)
-        # #self.click_element("#show-project-invite") # Re-open the invite box.
+        # self.click_element("#show-project-invite") # Re-open the invite box.
         # self.browser.execute_script("invite_user_into_project()") # See comment above.
 
         do_invitation(self.user2.username)
@@ -501,7 +501,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
-        var_sleep(1)
+        var_sleep(1) # wait for page to load
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         self.click_element('#transfer-editorship')
         do_invitation(self.user3.username)
@@ -1037,7 +1037,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # so that we can select it again later.
         import urllib.parse
         s = urllib.parse.urlsplit(self.browser.current_url)
-        m = re.match(r"^/tasks/(\d+)/", s[2])
+        m = re.match(r"/tasks/(\d+)/a-simple-module", s[2])
         task_id = int(m.group(1))
 
         def do_submodule(answer_text):
