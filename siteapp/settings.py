@@ -31,6 +31,7 @@ if os.path.exists(local("environment.json")):
                 environment = json.load(open(local("environment.json")))
         except json.decoder.JSONDecodeError as e:
                 print("%s is not in JSON format" % local("environment.json"))
+                print(open(local("environment.json")).read())
                 exit(1)
 else:
 	# Make some defaults and show the user.
@@ -48,7 +49,7 @@ else:
 	print()
 
 # Load pre-specified admin users
-# Example: "govready_admins":[{"username": "First Last", "email":"first.last@example.com", "password": "REPLACEME"}]
+# Example: "govready_admins":[{"username": "username", "email":"first.last@example.com", "password": "REPLACEME"}]
 GOVREADY_ADMINS = environment.get("govready_admins") or []
 
 # DJANGO SETTINGS #
@@ -146,7 +147,7 @@ if not DEBUG:
 # email address before confirming ownership.
 AUTH_USER_MODEL = primary_app + '.User'
 LOGIN_REDIRECT_URL = "/"
-AUTHENTICATION_BACKENDS = [
+AUTHENTICATION_BACKENDS = [ # see settings_application.py for how this is possible changed later
 	'django.contrib.auth.backends.ModelBackend',
 	'allauth.account.auth_backends.AuthenticationBackend', # allauth
 	'guardian.backends.ObjectPermissionBackend',

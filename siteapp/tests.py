@@ -812,6 +812,15 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self._test_api_get(["question_types_choice", "q_multiple_choice"], ["choice1", "choice3"])
         self._test_api_get(["question_types_choice", "q_multiple_choice.text"], ["Choice 1", "Choice 3"])
 
+        # datagrid
+        # self.assertRegex(self.browser.title, "Next Question: datagrid")
+        # self.click_element('#question input[name="value"][value="field1"]')
+        # self.click_element('#question input[name="value"][value="field3"]')
+        # self.click_element("#save-button")
+        # var_sleep(.5)
+        # self._test_api_get(["question_types_field", "q_datagrid"], ["field1", "field3"])
+        # self._test_api_get(["question_types_field", "q_datagrid.text"], ["Field 1", "Field 3"])
+
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Choice Question Types - ")
 

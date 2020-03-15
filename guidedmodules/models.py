@@ -556,6 +556,10 @@ class ModuleQuestion(models.Model):
         if self.spec["type"] == "multiple-choice":
             import json
             return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
+        if self.spec["type"] == "datagrid":
+            # import json
+            # return "An array containing " + ", ".join(json.dumps(field['key']) for field in self.spec["fields"]) + "."
+            return "datagrid self.spec"
         return ""
 
 class Task(models.Model):
@@ -2039,7 +2043,7 @@ class TaskAnswerHistory(models.Model):
                 "thumbnail_url": thumbnail_url,
                 "thumbnail_dataurl": thumbnail_dataurl,
             }
-        
+
         # For all other question types, the value is stored in the stored_value
         # field.
         else:
@@ -2129,6 +2133,14 @@ class TaskAnswerHistory(models.Model):
                     human_readable_text = choices.get(value)
                 elif q.spec["type"] == "multiple-choice":
                     human_readable_text = [choices.get(v) for v in value]
+
+            elif q.spec["type"] in ("datagrid"):
+                # Get the 'text' values for the choices.
+                human_readable_text_key = "text"
+                fields = { c["key"]: c["text"] for c in q.spec["fields"] }
+                if q.spec["type"] == "datagrid":
+                    # human_readable_text = [fields.get(v) for v in value]
+                    human_readable_text = "datagrid_fix human_readable_text"
 
             elif q.spec["type"] == "yesno":
                 human_readable_text_key = "text"

@@ -385,9 +385,28 @@ def is_question_changed(mq, definition_order, spec):
         if rm_choices:
             return "One or more choices was removed: " + ", ".join(rm_choices) + "."
 
+    # Removal of a field in datagrid.
+    if mq.spec["type"] in ("datagrid"):
+        def get_field_keys(fields): return { c.get("key") for c in fields }
+        rm_fields = get_field_keys(mq.spec["fields"]) - get_field_keys(spec["fields"])
+        if rm_fields:
+            return "One or more fields was removed: " + ", ".join(rm_fields) + "."
+
     # Constriction of valid number of choices to a multiple-choice
     # (min is increased or max is newly set or decreased).
     if mq.spec["type"] == "multiple-choice":
+        if "min" not in mq.spec or "max" not in mq.spec:
+            return "min/max was missing."
+        if spec['min'] > mq.spec['min']:
+            return "min went up."
+        if mq.spec["max"] is None and spec["max"] is not None:
+            return "max was added."
+        if mq.spec["max"] is not None and spec["max"] is not None and spec["max"] < mq.spec["max"]:
+            return "max went down."
+
+    # Constriction of valid number of rows to a datagrid
+    # (min is increased or max is newly set or decreased).
+    if mq.spec["type"] == "datagrid":
         if "min" not in mq.spec or "max" not in mq.spec:
             return "min/max was missing."
         if spec['min'] > mq.spec['min']:

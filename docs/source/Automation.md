@@ -137,6 +137,8 @@ Each question defined by the app --- which it would ask an end-user when in a we
 
 * Multiple-choice fields: Encoded as a JSON array of strings, where each string is a programmatic identifier for a selected choice.
 
+* Datagrid fields: Encoded as a JSON array of dictionaries, where each dictionary describes the row of data fields.
+
 * Integer and real number fields: Encoded as a JSON number. Integer fields must contain integer values.
 
 * File fields: Encoded as a JSON object containing the properties `url` (a link to download the file content), `type` (the MIME type), and `size` (the size of the file in bytes).
@@ -145,6 +147,10 @@ Each question defined by the app --- which it would ask an end-user when in a we
 
 All fields can also hold `null`, which indicates the question has been explicitly "skipped." If a question is unanswered, it does not appear in the API.
 
-Single-choice, multiple-choice, and yes-no fields also appear in human-readable form as a second read-only field that uses a `.text` suffix in the field's name. Long text fields have an HTML display form, in which the CommonMark is pre-rendered, in a parallel field with a `.html` suffix in the field's name. These fields cannot be used in the POST API.
+Single-choice, multiple-choice, and yes-no fields also appear in human-readable form as a second read-only field that uses a `.text` suffix in the field's name.
+
+Long text fields have an HTML display form, in which the CommonMark is pre-rendered, in a parallel field with a `.html` suffix in the field's name. These fields cannot be used in the POST API.
+
+Datagrid fields appear in huma-readable form as tabular data.
 
 More information about Q's data types can be found in [Modules, Questions, and Documents](Schema.html).
