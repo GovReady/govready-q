@@ -2125,7 +2125,7 @@ class TaskAnswerHistory(models.Model):
                 human_readable_text_key = "html"
                 human_readable_text = CommonMarkHtmlRenderer().render(CommonMarkParser().parse(value)).strip()
 
-            elif q.spec["type"] in ("choice", "multiple-choice", "datagrid"):
+            elif q.spec["type"] in ("choice", "multiple-choice"):
                 # Get the 'text' values for the choices.
                 human_readable_text_key = "text"
                 choices = { c["key"]: c["text"] for c in q.spec["choices"] }
@@ -2133,8 +2133,13 @@ class TaskAnswerHistory(models.Model):
                     human_readable_text = choices.get(value)
                 elif q.spec["type"] == "multiple-choice":
                     human_readable_text = [choices.get(v) for v in value]
-                elif q.spec["type"] == "datagrid":
-                    # human_readable_text = [choices.get(v) for v in value]
+
+            elif q.spec["type"] in ("datagrid"):
+                # Get the 'text' values for the choices.
+                human_readable_text_key = "text"
+                fields = { c["key"]: c["text"] for c in q.spec["fields"] }
+                if q.spec["type"] == "datagrid":
+                    # human_readable_text = [fields.get(v) for v in value]
                     human_readable_text = "datagrid_fix human_readable_text"
 
             elif q.spec["type"] == "yesno":

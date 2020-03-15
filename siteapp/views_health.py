@@ -38,6 +38,7 @@ def load_base(request, args):
 
 def request_headers(request):
     from pprint import pformat
+
     if hasattr(request, 'headers'):
         # Django >= 2.2
         output = pformat({k:v for k,v in request.headers.items()})
@@ -50,6 +51,7 @@ def request_headers(request):
             dict((regex.sub('', header), value) for (header, value) in
             request.META.items() if header.startswith('HTTP_'))
         )
+
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
 
