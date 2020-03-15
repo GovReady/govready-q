@@ -79,6 +79,15 @@ unzip -d /tmp /tmp/bootstrap.zip
 mv /tmp/bootstrap-3.3.7-dist $VENDOR/bootstrap
 rm -f /tmp/bootstrap.zip
 
+# jsGrid (MIT License)
+download \
+  https://github.com/tabalinas/jsgrid/releases/download/v1.5.3/jsgrid-1.5.3.zip \
+  /tmp/jsgrid-1.5.3.zip \
+  '96ffe3ca777f6eec504af3bbc0d30951f8ebfdba8fac7cd52b42b3dbd5d54eef'
+unzip -d /tmp/jsgrid /tmp/jsgrid-1.5.3.zip
+mv /tmp/jsgrid $VENDOR/jsgrid
+rm -f /tmp/jsgrid-1.5.3.zip
+
 # Font Awesome (for the spinner on ajax calls, various icons; MIT License)
 download \
   https://use.fontawesome.com/releases/v5.0.12/js/all.js \
