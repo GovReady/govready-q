@@ -190,7 +190,7 @@
       {% endwith %}
 
       {% if can_review %}
-        <p><a href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
+        <p><a id="review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
           <em class="glyphicon glyphicon-list"></em>
           Review &raquo;
         </a></p>

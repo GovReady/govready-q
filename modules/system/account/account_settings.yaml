@@ -17,7 +17,7 @@ questions:
 
   - id: role
     title: Your Role
-    prompt: Which team is your position at **{{organization}}** most closely aligned with?
+    prompt: Which team is your position most closely aligned with?
     type: choice
     choices:
       - key: ceo_team
@@ -44,7 +44,7 @@ questions:
 
   - id: title
     title: Your Title
-    prompt: What is your title at **{{organization}}**?
+    prompt: What is your title?
     type: text
 
   - id: picture
@@ -80,7 +80,7 @@ output:
       ![Your Picture]({{picture.url}})
       {% endif %}
 
-      {{name}}, {{title}}, is a member of the {{role.text}} at {{organization}}.
+      {{name}}, {{title}}, is a member of the {{role.text}}.
 
       ---
 

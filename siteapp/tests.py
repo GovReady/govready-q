@@ -365,10 +365,10 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self._login()
 
         self.click_element('#user-menu-dropdown')
-        var_sleep(.25) # wait for menu to open
+        var_sleep(0.75) # wait for menu to open
 
         self.click_element('#user-menu-account-settings')
-        var_sleep(.5) # wait for page to open
+        var_sleep(1) # wait for page to open
         self.assertIn("Introduction | GovReady Account Settings", self.browser.title)
 
         # - The user is looking at the Introduction page.
@@ -422,12 +422,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "^A Simple Module - ")
 
         # Go to project page, then review page.
-        self.click_element("#return-to-project")
+        # self.click_element("#return-to-project")
         self.click_element("#review-answers")
 
         # Mark the answer as reviewed then test that it was saved.
+        var_sleep(2)
         self.click_element(".task-" + str(task.id) + "-answer-q1-review-1")
-        var_sleep(.5) # wait for ajax
+        var_sleep(2) # wait for ajax
         for question, answer in task.get_current_answer_records():
             if question.key == "q1":
                 self.assertEqual(answer.reviewed, 1)
@@ -500,22 +501,25 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element("form button.primaryAction")
 
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
+        var_sleep(2.5)
         self.click_element('#question-simple_module') # go to the task page
+        var_sleep(5)
         self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
 
         # reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
-        var_sleep(0.5)
+        var_sleep(2)
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         self.click_element('#transfer-editorship')
         # Toggle field to invite user by email
         self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
+        var_sleep(2)
         do_invitation(self.user3.email)
         self.fill_field("#id_login", self.user3.username)
         self.fill_field("#id_password", self.user3.clear_password)
         self.click_element("form button.primaryAction")
-        var_sleep(0.5)
+        var_sleep(1.5)
         self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
 
         # reset_login()
@@ -622,9 +626,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_title", "Security Projects")
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
-        var_sleep(0.5)
+        var_sleep(0.75)
         self.assertRegex(self.browser.title, "Security Projects")
-        var_sleep(0.5)
 
     def test_create_project_without_portfolio(self):
         self._login()
@@ -637,22 +640,24 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.browser.get(self.url("/portfolios"))
         self.click_element("#portfolio_{}".format(self.user.username))
         self.click_element("#grant-portfolio-access")
+        var_sleep(1.25)
         self.select_option_by_visible_text('#invite-user-select', 'me2')
+        var_sleep(0.75)
         self.click_element("#invitation_modal button.btn-submit")
-        var_sleep(1)
+        var_sleep(0.75)
         self.assertInNodeText("me2", "#portfolio-member-me2")
 
         # Grant another member ownership of portfolio
-        var_sleep(1)
+        var_sleep(0.5)
         self.click_element("#me2_grant_owner_permission")
-        var_sleep(1)
+        var_sleep(0.5)
         self.assertInNodeText("me2 (Owner)", "#portfolio-member-me2")
 
        # Grant another member access to portfolio
         self.click_element("#grant-portfolio-access")
         self.select_option_by_visible_text('#invite-user-select', 'me3')
         self.click_element("#invitation_modal button.btn-submit")
-        var_sleep(1)
+        var_sleep(0.5)
         self.assertInNodeText("me3", "#portfolio-member-me3")
 
         # Remove another member access to portfolio
