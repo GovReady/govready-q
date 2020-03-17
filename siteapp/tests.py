@@ -514,7 +514,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element('#transfer-editorship')
         # Toggle field to invite user by email
         self.browser.execute_script("$('#invite-user-email').parent().toggle(true)")
-        var_sleep(3)
+        var_sleep(2)
         do_invitation(self.user3.email)
         self.fill_field("#id_login", self.user3.username)
         self.fill_field("#id_password", self.user3.clear_password)

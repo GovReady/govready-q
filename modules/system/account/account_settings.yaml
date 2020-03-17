@@ -17,7 +17,7 @@ questions:
 
   - id: role
     title: Your Role
-    prompt: Which team is your position most closely aligned?
+    prompt: Which team is your position most closely aligned with?
     type: choice
     choices:
       - key: ceo_team
