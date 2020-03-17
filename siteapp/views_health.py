@@ -13,7 +13,7 @@ def index(request):
         '<li><a href="/health/load-base">load-base</a> - Load base page template with toggleable libraries. Use "all" or "none" link at bottom of page, or edit URL to change which libraries are loaded.</li>'
         '<li><a href="/health/request-headers">request-headers</a> - View HTTP headers present in request sent by web browser.</li>'
         '<li><a href="/health/request">request</a> - View entire request (must have DEBUG set).</li>'
-         '</body></html>' )
+        '</body></html>' )
     return HttpResponse(html)
 
 def check_system(request):
@@ -38,7 +38,20 @@ def load_base(request, args):
 
 def request_headers(request):
     from pprint import pformat
-    output = pformat({k:v for k,v in request.headers.items()})
+
+    if hasattr(request, 'headers'):
+        # Django >= 2.2
+        output = pformat({k:v for k,v in request.headers.items()})
+    else:
+        # Django < 2.2
+        # FYI, this code doesn't look for Content-Length and Content-Type, just HTTP_*
+        import re
+        regex = re.compile('^HTTP_')
+        output = pformat(
+            dict((regex.sub('', header), value) for (header, value) in
+            request.META.items() if header.startswith('HTTP_'))
+        )
+
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
 

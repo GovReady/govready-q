@@ -407,12 +407,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Answer the questions.
 
         # Introduction screen.
+        var_sleep(1)
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(1.5)
+        var_sleep(1)
 
         # Text question.
-        self.assertRegex(self.browser.title, "Next Question: The Question")
+        self.assertIn("| A Simple Module - GovReady-Q", self.browser.title)
         self.fill_field("#inputctrl", "This is some text.")
         self.click_element("#save-button")
         var_sleep(.5)
@@ -432,6 +433,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
                 self.assertEqual(answer.reviewed, 1)
 
     def test_invitations(self):
+        print("INFO: Entering '{}'".format('test_invitations(self)'))
         # Test a bunch of invitations.
 
         # Log in and create a new project.
@@ -447,11 +449,13 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.browser.get(project_page)
 
         def start_invitation(username):
+            print("INFO: Entering '{}', '{}'".format('start_invitation(username)', username))
             # Fill out the invitation modal.
             self.select_option_by_visible_text('#invite-user-select', username)
             self.click_element("#invitation_modal button.btn-submit")
 
         def do_invitation(username):
+            print("INFO: Entering '{}', '{}'".format('do_invitation(username)', username))
             start_invitation(username)
 
             var_sleep(1) # wait for invitation to be sent
@@ -461,6 +465,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
             self._accept_invitation(username)
 
         def reset_login():
+            print("INFO: Entering '{}'".format('reset_login()'))
             # Log out and back in as the original user.
             self.browser.get(self.url("/accounts/logout/"))
             self._login()
@@ -472,8 +477,8 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # because the element is not clickable -- it reports a coordinate
         # that's above the button in the site header. Not sure what's
         # happening. So load the modal using Javascript.
-        #self.click_element("#show-project-invite")
-        self.browser.execute_script("invite_user_into_project()")
+        # self.click_element("#show-project-invite")
+        # self.browser.execute_script("invite_user_into_project()") # See comment above.
 
         # Test an invalid email address.
         # start_invitation("example")
@@ -481,14 +486,14 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("The email address is not valid.", "#global_modal") # make sure we get a stern message.
         # self.click_element("#global_modal button") # dismiss the warning.
         # var_sleep(.25)
-        # #self.click_element("#show-project-invite") # Re-open the invite box.
+        # self.click_element("#show-project-invite") # Re-open the invite box.
         # self.browser.execute_script("invite_user_into_project()") # See comment above.
 
         do_invitation(self.user2.username)
         self.fill_field("#id_login", self.user2.username)
         self.fill_field("#id_password", self.user2.clear_password)
         self.click_element("form button.primaryAction")
-       
+
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
         self.click_element('#question-simple_module') # go to the task page
         self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
@@ -496,13 +501,15 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # reset_login()
 
         # Test an invitation to take over editing a task but without joining the project.
+        var_sleep(1) # wait for page to load
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
-        var_sleep(.5) # wait for page to load
+        var_sleep(1) # wait for page to load
         self.click_element('#transfer-editorship')
         do_invitation(self.user3.username)
         self.fill_field("#id_login", self.user3.username)
         self.fill_field("#id_password", self.user3.clear_password)
         self.click_element("form button.primaryAction")
+        var_sleep(1)
         self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
 
         # reset_login()
@@ -621,6 +628,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element("#grant-portfolio-access")
         self.select_option_by_visible_text('#invite-user-select', 'me2')
         self.click_element("#invitation_modal button.btn-submit")
+        var_sleep(1)
         self.assertInNodeText("me2", "#portfolio-member-me2")
 
         # Grant another member ownership of portfolio
@@ -667,8 +675,12 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#save-button")
         var_sleep(.5)
 
+        # Click interstital "Got it" button
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # text
-        self.assertRegex(self.browser.title, "Next Question: text")
+        self.assertIn("| Test The Text Input Question Types - GovReady-Q", self.browser.title)
         self.fill_field("#inputctrl", "This is some text.")
         self.click_element("#save-button")
         var_sleep(.5)
@@ -772,8 +784,12 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element("#save-button")
         var_sleep(.5)
 
+        # Click interstital "Got it" button
+        self.click_element("#save-button")
+        var_sleep(.5)
+
         # choice
-        self.assertRegex(self.browser.title, "Next Question: choice")
+        self.assertIn("| Test The Choice Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="choice2"]')
         self.click_element("#save-button")
         var_sleep(.5)
@@ -812,7 +828,11 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # integer
-        self.assertRegex(self.browser.title, "Next Question: integer")
+        self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title)
+
+        # Click interstital "Got it" button
+        self.click_element("#save-button")
+        var_sleep(.5)
 
         # Test a non-integer.
         self.clear_and_fill_field("#inputctrl", "1.01")
@@ -829,7 +849,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # This is caught by the browser itself, so we don't have to dismiss anything.
         # Make sure we haven't moved past the url page.
-        self.assertRegex(self.browser.title, "Next Question: integer")
+        self.assertIn("| Test The Numeric Question Types - GovReady-Q", self.browser.title)
         var_sleep(.5)
 
         # Test a good integer.
@@ -967,7 +987,11 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # file upload
-        self.assertRegex(self.browser.title, "Next Question: file")
+        self.assertIn("| Test The Media Question Types - GovReady-Q", self.browser.title)
+
+        # Click interstital "Got it" button
+        self.click_element("#save-button")
+        var_sleep(.5)
 
         # We need to upload a file that we know exists.
         testFilePath = os.path.join(
@@ -1005,7 +1029,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
 
         # "You will now begin a module."
-        self.assertRegex(self.browser.title, "Next Question: module")
+        self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element("#save-button")
         var_sleep(.5)
 
@@ -1039,7 +1063,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             self.click_element("#link-to-question-q_module a")
             var_sleep(.5)
         change_answer()
-        self.assertRegex(self.browser.title, "Next Question: module")
+        self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
         self.click_element("#save-button")
         var_sleep(.5)
