@@ -67,9 +67,9 @@ fi
 
 # jQuery (MIT License)
 download \
-  https://code.jquery.com/jquery-3.3.1.min.js \
+  https://code.jquery.com/jquery-3.4.1.min.js \
   $VENDOR/jquery.js \
-  '160a426ff2894252cd7cebbdd6d6b7da8fcd319c65b70468f10b6690c45d02ef'
+  '0925e8ad7bd971391a8b1e98be8e87a6971919eb5b60c196485941c3c1df089a'
 
 # Bootstrap (MIT License)
 download \
@@ -79,6 +79,15 @@ download \
 unzip -d /tmp /tmp/bootstrap.zip
 mv /tmp/bootstrap-3.3.7-dist $VENDOR/bootstrap
 rm -f /tmp/bootstrap.zip
+
+# jsGrid (MIT License)
+download \
+  https://github.com/tabalinas/jsgrid/releases/download/v1.5.3/jsgrid-1.5.3.zip \
+  /tmp/jsgrid-1.5.3.zip \
+  '96ffe3ca777f6eec504af3bbc0d30951f8ebfdba8fac7cd52b42b3dbd5d54eef'
+unzip -d /tmp/jsgrid /tmp/jsgrid-1.5.3.zip
+mv /tmp/jsgrid $VENDOR/jsgrid
+rm -f /tmp/jsgrid-1.5.3.zip
 
 # Font Awesome (for the spinner on ajax calls, various icons; MIT License)
 download \

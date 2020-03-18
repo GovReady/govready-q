@@ -1,163 +1,57 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.0.2.10 (February 23, 2020)
+
+v0.9.1 (March 12, 2020)
+-----------------------
+
+GovReady-Q now supports Datagrid question typre for easy entry of tabular data.
+
+**UI changes**
+
+* Use datagrid (jsGrid) to support questions best answered with tabular data.
+
+v0.9.0.3.3 (February 23, 2020)
 --------------------------------
 
 **Bug fixes**
 
 * Use Math.pow in main.js to fix IE11 failing to display invite modal
 
-v0.9.0.2.9.2-.8 (February 21, 2020)
-----------------------------------
 
-Synchronizing local GovReady-Q code with upstream 0.9.0.dev
-
-9.2
-Synchronizing various small files.
-Synchronizing guidedmodules.
-
-9.3
-Synchronizing siteapp directory.
-
-9.4
-Removing static file warning messages from previous missing file issue.
-
-9.5
-Removing unused templates
-Removing deprecated project_upgrade_app route that used separate page to upgrade app
-
-9.6
-Synching discussion directory
-
-9.7
-Fixing a couple poorly worded prompts in questions
-Fixing typo of slug name to correctly be 'cbp-big-q-apps'
-
-9.8
-Adding simple route, page for `/sso-logout`
-
-v0.9.0.2.9 (February 7, 2020)
-----------------------------------
-
-**Bug fixes**
-
-Apply fix for export bug TaskAnswerHistory.get_value() in certain conditions
-
-v0.9.0.2.8 (February 6, 2020)
-----------------------------------
-**Deployment changes**
-
-* Testing persistent database
-
-v.0.9.0.2.8.1 - Just bumping version to test database remains persistent
-
-v0.9.0.2.7.8 (January 26, 2020)
-----------------------------------
-
-**Configuration changes**
-
-* White list cookies from allowed hosts (Testing with explictly setting the domains)
-* Hard coding 'govready-cace-dev.cbp.dhs.gov' into ALLOWED_HOSTS for debugging CSRF_TOKEN
-
-**Deployment changes**
-
-* Adjusting username to be email header instead of display name
-* Setting gunicorn worker to 1 until we can set SECRETKEY
-* Add cbp-big-apps app source from local files automatically
-* Creating GOVREADY_ADMINS before creating app sources to make sure admins created in cases of problems with app sources
-
-
-
-v0.9.0.2.7 (January 20, 2020)
---------------------------------
-
-**Deployment changes**
-
-* Default portfolio created for user during SSO registration process
-* Small refactorings of extra lines and comments that should have no impact.
-
-v0.9.0.2.5.17 (January 17, 2020)
---------------------------------
-
-**Deployment changes**
-
-* Fix reading of SSO headers by using Green Unicorn (gunicorn) web server for WSGI service.
-* Add additional health pages for diagnostic
-
-v0.9.0.2.5.4 (December 16, 2019)
+v0.9.0.3.2 (February 21, 2019)
 -------------------------------
 
 **Deployment changes**
 
-Automatically create admin user accounts when defined in local/environment.json file.
+* Support environmental param for GovReady Admins in SSO context
+* Create portfolio for user account added by SSO
+* Adding in views.debug route and view
+* Remove deprecated upgrade app view
 
-v0.9.0.2.5.3 (December 9, 2019)
+**UI changes**
+
+* Fix IE11 not displaying assign and invite modals due to error parsing main.js
+
+**Other changes**
+
+* Add templates for Django performance debug toolbar
+
+v0.9.0.3 (November 21, 2019)
 -------------------------------
 
-**Deployment changes**
+**UX changes:**
 
-Add in "trust-user-authentication-headers" to `local/environment.json` file to support Single Sign On
-Add in alternate paths added for questionnsaire source.
-
-v0.9.0.2.5.3 (November 27, 2019)
---------------------------------
-
-**Deployment changes**
-
-Stop using uwsgi and return to `python manage.py runserver` as web server to correct problems serving static files in Mesosphere.
-
-v0.9.0.2.5.2 (November 21, 2019)
---------------------------------
-
-**Deployment changes:**
-
-Adding in health paths to examine static files.
-
-v0.9.0.2.5 (November 14, 2019)
-------------------------------
-
-Re-fetch and collect static files.
-
-v0.9.0.2.4 (November 13, 2019)
------------------------------
-
-Created a Dockerfile.mesosphere to have a local build/test of container for Mesosphere to test.
-
-v0.9.0.2.3 (November 8, 2019)
------------------------------
-
-For Mesosphere deployment, fetch and pre-collect the static files into `static_root`.
-Make sure vendor and siteapp/static/vendor files are no longer gitignored.
-
-v0.9.0.2.2 (November 7, 2019)
------------------------------
-
-For Mesosphere deployment, fetch and pre-collect the static files into `static_root`.
-
-v0.9.0.2.1.1 (October 24, 2019)
--------------------------------
+* Significantly improve performance of rendering questions and module review page (PR #774)
+* Fix failure to display list of questions in progress history in certain circumstances
 
 **Developer Change**
 
 * Create migrations for shortening varchar field length to 255 on siteapp.models
 
-v0.9.0.2.1 (October 18, 2019)
------------------------------
+**Deployment Change**
 
-Modifications to container deployment environmental variables to better support deployments in Mesosphere and other Docker orchestration environments.
-
-**WARNING - CONTAINER ENVIRONMENTAL VARIABLE CHANGES**
-
-The `HOST` and `PORT` container deployment environmental variables renamed to `GR_HOST` and `GR_PORT`. Update your container-based deployment configurations accordingly.
-
-**Developer changes:**
-
-* Change `HOST` and `PORT` container deployment environmental variable names to avoid name collision. Update container-based deployment configurations accordingly.
-
-**Documentation changes:**
-
-* Change `HOST` and `PORT` container deployment environmental variable names to avoid name collision in Mesosphere and other container orchestration tools.
+* Adding in health paths to examine static files.
 
 v0.9.0.2 (October 16, 2019)
 ---------------------------

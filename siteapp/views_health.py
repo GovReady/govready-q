@@ -63,4 +63,3 @@ def request(request):
     else:
         html = "<html><body><p>Please set DEBUG and try again.</p></body></html>"
     return HttpResponse(html)
-

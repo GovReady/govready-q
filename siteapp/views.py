@@ -898,6 +898,7 @@ def project_api(request, project):
             if q.spec["type"] == "choice": add_filter_field(q, "html", "Human-readable value")
             if q.spec["type"] == "yesno": add_filter_field(q, "html", "Human-readable value ('Yes' or 'No')")
             if q.spec["type"] == "multiple-choice": add_filter_field(q, "html", "Comma-separated human-readable value")
+            # if q.spec["type"] == "datagrid": add_filter_field(q, "html", "Comma-separated human-readable value")
 
         # Document the fields of the sub-modules together.
         for q, a in items:
