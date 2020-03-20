@@ -1,6 +1,12 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.1 (March 20, 2020)
+--------------------------
+
+**UI changes**
+
+* Conditionally add in route `accounts/logout` when SSO Proxy enabled.
 
 v0.9.1 (March 12, 2020)
 -----------------------
