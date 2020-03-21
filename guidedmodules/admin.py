@@ -59,13 +59,14 @@ class AppSourceSpecWidget(forms.Widget):
     def render(self, name, value, attrs=None, renderer=None):
     	# For some reason we get the JSON value as a string. Unless we override Form.clean(),
     	# and then strangely we get a dict.
+
     	if isinstance(value, (str, type(None))):
     		import json, collections
     		value = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(value or "{}")
 
     	# The 'url' key is represented by two different widgets
     	# depending on if the URL is an HTTP or SSH URL.
-    	if value.get("type") == "git" and isinstance(value.get("url"), str):
+    	if value is not None and value.get("type") == "git" and isinstance(value.get("url"), str):
 	    	import re
 	    	if value["url"].startswith("https:") or value["url"].startswith("http:"):
 	    		value["type"] = "git-web"
@@ -82,15 +83,17 @@ class AppSourceSpecWidget(forms.Widget):
 	    		del value["url"]
 	    	else:
 	    		raise ValueError(value)
+    	else:
+	    	raise ValueError(value)
 
     	def make_widget(key, label, widget, help_text, show_for_types):
     	    if key != "_remaining_":
-    	    	if key in value:
+    	    	if value is not None and key in value:
     	    		val = value[key]
     	    		del value[key] # only the unrecognized keys are left at the end
     	    	else:
     	    		val = ""
-    	    elif len(value) == 0:
+    	    elif value is None:
     	    	# Nothing unrecognized.
     	    	val = ""
     	    else:
@@ -146,7 +149,9 @@ class AppSourceSpecWidget(forms.Widget):
     			value[key] = val
 
     	# Map some data.
-    	if value.get("type") == "git-web":
+    	if value is None:
+    		value = ""
+    	elif value.get("type") == "git-web":
     		value["type"] = "git"
     		value["url"] = str(value.get("url-web"))
     		del value["url-web"]
@@ -154,6 +159,8 @@ class AppSourceSpecWidget(forms.Widget):
     		value["type"] = "git"
     		value["url"] = str(value.get("url-ssh"))
     		del value["url-ssh"]
+    	else:
+    		value = ""
 
     	return value
 
