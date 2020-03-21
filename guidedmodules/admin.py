@@ -83,8 +83,6 @@ class AppSourceSpecWidget(forms.Widget):
 	    		del value["url"]
 	    	else:
 	    		raise ValueError(value)
-    	else:
-	    	raise ValueError(value)
 
     	def make_widget(key, label, widget, help_text, show_for_types):
     	    if key != "_remaining_":
