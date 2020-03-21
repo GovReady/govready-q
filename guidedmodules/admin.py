@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django import forms
 from django.utils.html import escape as escape_html
+from django.contrib import messages
 
 from .models import \
 	AppSource, AppVersion, Module, ModuleQuestion, ModuleAsset, \
@@ -59,7 +60,6 @@ class AppSourceSpecWidget(forms.Widget):
     def render(self, name, value, attrs=None, renderer=None):
     	# For some reason we get the JSON value as a string. Unless we override Form.clean(),
     	# and then strangely we get a dict.
-
     	if isinstance(value, (str, type(None))):
     		import json, collections
     		value = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(value or "{}")
@@ -95,7 +95,7 @@ class AppSourceSpecWidget(forms.Widget):
     	    	# Nothing unrecognized.
     	    	val = ""
     	    else:
-    	    	# Serialize unrecognized keys in YAML.
+    	        # Serialize unrecognized keys in YAML.
     	        import rtyaml
     	        val = rtyaml.dump(value)
     	    return """
@@ -116,7 +116,7 @@ class AppSourceSpecWidget(forms.Widget):
 		            widget.render(name + "_" + key, val),
 		            escape_html(help_text or ""),
 		            )
-    	
+
     	# Widgets
     	ret = "\n\n".join(make_widget(*args) for args in self.fields)
 
@@ -135,8 +135,9 @@ class AppSourceSpecWidget(forms.Widget):
     	return ret
 
     def value_from_datadict(self, data, files, name):
+    	# Override Django Forms widget method `value_from_datadict`
     	# Start with the extra data.
-    	import rtyaml, collections
+    	import rtyaml, collections, json
     	value = rtyaml.load(data[name + "__remaining_"]) or collections.OrderedDict()
 
     	# Add other values.
@@ -157,10 +158,9 @@ class AppSourceSpecWidget(forms.Widget):
     		value["type"] = "git"
     		value["url"] = str(value.get("url-ssh"))
     		del value["url-ssh"]
-    	else:
-    		value = ""
 
-    	return value
+    	# Adjust for possible change in Django
+    	return json.dumps(value)
 
 class AppSourceAdminForm(forms.ModelForm):
 	class Meta:
@@ -222,7 +222,7 @@ class AppSourceAdmin(admin.ModelAdmin):
 
 		from django.contrib import messages
 		messages.add_message(request, messages.INFO, 'Compliance app added into the catalog.')
-		
+
 		return HttpResponseRedirect("/admin/guidedmodules/appsource/{}/change".format(appsourceid))
 
 class AppVersionAdmin(admin.ModelAdmin):
