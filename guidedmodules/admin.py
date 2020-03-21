@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django import forms
 from django.utils.html import escape as escape_html
-from django.contrib import messages
 
 from .models import \
 	AppSource, AppVersion, Module, ModuleQuestion, ModuleAsset, \
