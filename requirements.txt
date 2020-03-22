@@ -125,9 +125,9 @@ django-model-utils==4.0.0 \
 django-notifications-hq==1.4 \
     --hash=sha256:bbf1fbc7c7accfe79c1cf2da5fde96cd3e27e22d27108e6f368a91b26ef75450 \
     # via -r requirements.in
-django==2.2.4 \
-    --hash=sha256:16a5d54411599780ac9dfe3b9b38f90f785c51259a584e0b24b6f14a7f69aae8 \
-    --hash=sha256:9a2f98211ab474c710fcdad29c82f30fc14ce9917c7a70c3682162a624de4035 \
+django==2.2.10 \
+    --hash=sha256:1226168be1b1c7efd0e66ee79b0e0b58b2caa7ed87717909cd8a57bb13a7079a \
+    --hash=sha256:9a4635813e2d498a3c01b10c701fe4a515d76dd290aaa792ccb65ca4ccb6b038 \
     # via -r requirements.in, django-allauth, django-debug-toolbar, django-guardian, django-model-utils, django-notifications-hq, jsonfield
 dnspython==1.16.0 \
     --hash=sha256:36c5e8e38d4369a08b6780b7f27d790a292b2b08eea01607865bf0936c558e01 \
@@ -183,7 +183,20 @@ gevent==1.4.0 \
     --hash=sha256:ab4dc33ef0e26dc627559786a4fba0c2227f125db85d970abbf85b77506b3f51 \
     --hash=sha256:d1e6d1f156e999edab069d79d890859806b555ce4e4da5b6418616322f0a3df1 \
     --hash=sha256:d752bcf1b98174780e2317ada12013d612f05116456133a6acf3e17d43b71f05 \
-    --hash=sha256:e5bcc4270671936349249d26140c267397b7b4b1381f5ec8b13c53c5b53ab6e1
+    --hash=sha256:e5bcc4270671936349249d26140c267397b7b4b1381f5ec8b13c53c5b53ab6e1 \
+    # via -r requirements.in
+gitdb==4.0.2 \
+    --hash=sha256:284a6a4554f954d6e737cddcff946404393e030b76a282c6640df8efd6b3da5e \
+    --hash=sha256:598e0096bb3175a0aab3a0b5aedaa18a9a25c6707e0eca0695ba1a0baf1b2150 \
+    # via gitpython
+gitpython==3.1.0 \
+    --hash=sha256:43da89427bdf18bf07f1164c6d415750693b4d50e28fc9b68de706245147b9dd \
+    --hash=sha256:e426c3b587bd58c482f0b7fe6145ff4ac7ae6c82673fc656f489719abca6f4cb \
+    # via -r requirements.in, bandit
+graphviz==0.13.2 \
+    --hash=sha256:241fb099e32b8e8c2acca747211c8237e40c0b89f24b1622860075d59f4c4b25 \
+    --hash=sha256:60acbeee346e8c14555821eab57dbf68a169e6c10bce40e83c1bf44f63a62a01 \
+    # via -r requirements.in
 greenlet==0.4.15 \
     --hash=sha256:000546ad01e6389e98626c1367be58efa613fa82a1be98b0c6fc24b563acc6d0 \
     --hash=sha256:0d48200bc50cbf498716712129eef819b1729339e34c3ae71656964dac907c28 \
@@ -207,18 +220,7 @@ greenlet==0.4.15 \
     # via gevent
 gunicorn==20.0.4 \
     --hash=sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626 \
-    --hash=sha256:cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c
-gitdb==4.0.2 \
-    --hash=sha256:284a6a4554f954d6e737cddcff946404393e030b76a282c6640df8efd6b3da5e \
-    --hash=sha256:598e0096bb3175a0aab3a0b5aedaa18a9a25c6707e0eca0695ba1a0baf1b2150 \
-    # via gitpython
-gitpython==3.1.0 \
-    --hash=sha256:43da89427bdf18bf07f1164c6d415750693b4d50e28fc9b68de706245147b9dd \
-    --hash=sha256:e426c3b587bd58c482f0b7fe6145ff4ac7ae6c82673fc656f489719abca6f4cb \
-    # via -r requirements.in, bandit
-graphviz==0.13.2 \
-    --hash=sha256:241fb099e32b8e8c2acca747211c8237e40c0b89f24b1622860075d59f4c4b25 \
-    --hash=sha256:60acbeee346e8c14555821eab57dbf68a169e6c10bce40e83c1bf44f63a62a01 \
+    --hash=sha256:cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c \
     # via -r requirements.in
 html5lib==1.0.1 \
     --hash=sha256:20b159aa3badc9d5ee8f5c647e5efd02ed2a66ab8d354930bd9ff139fc1dc0a3 \

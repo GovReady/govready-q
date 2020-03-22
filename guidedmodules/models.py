@@ -74,14 +74,19 @@ class AppSource(models.Model):
 
     def get_available_apps(self):
         # TODO need to include already loaded apps
-        with self.open() as src:
-            for app in src.list_apps():
-                yield {
-                    "name": app.name,
-                    "new_version_number": app.get_new_version_number(),
-                    "versions_in_catalog": app.get_appversions(),
-                    "hidden_versions": app.get_hidden_appversions(),
-                }
+        try:
+            with self.open() as src:
+                for app in src.list_apps():
+                    yield {
+                        "name": app.name,
+                        "new_version_number": app.get_new_version_number(),
+                        "versions_in_catalog": app.get_appversions(),
+                        "hidden_versions": app.get_hidden_appversions(),
+                    }
+        except:
+            # If we cannot get any apps, return nothing so Admin page will not
+            # try and render widget displaying available apps
+            return
 
     def add_app_to_catalog(self, appname):
         from .app_loading import load_app_into_database

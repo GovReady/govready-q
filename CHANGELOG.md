@@ -2,14 +2,23 @@ GovReady-Q Release Notes
 ========================
 
 
+v.0.9.1.1 (March 20, 2020)
+--------------------------
+
+**UI changes**
+
+* Conditionally add in route `accounts/logout` when SSO Proxy enabled.
+
+
 v0.9.1 (March 12, 2020)
 -----------------------
 
-GovReady-Q now supports Datagrid question typre for easy entry of tabular data.
+GovReady-Q now supports Datagrid question type for easy entry of tabular data.
 
 **UI changes**
 
 * Use datagrid (jsGrid) to support questions best answered with tabular data.
+
 
 v0.9.0.3.3 (February 23, 2020)
 --------------------------------
@@ -37,6 +46,7 @@ v0.9.0.3.2 (February 21, 2019)
 
 * Add templates for Django performance debug toolbar
 
+
 v0.9.0.3 (November 21, 2019)
 -------------------------------
 
@@ -52,6 +62,7 @@ v0.9.0.3 (November 21, 2019)
 **Deployment Change**
 
 * Adding in health paths to examine static files.
+
 
 v0.9.0.2 (October 16, 2019)
 ---------------------------

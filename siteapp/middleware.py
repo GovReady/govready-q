@@ -50,13 +50,16 @@ def QTemplateContextProcessor(request):
 # is not called.
 
 class ProxyHeaderUserAuthenticationMiddleware(django.contrib.auth.middleware.RemoteUserMiddleware):
+    #header = "HTTP_" + re.sub(r"[-_]", "_", getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', {}).get('username', '').upper())
     proxy_authentication_username = getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', {}).get('username', '')
     if re.match(r"^http_", proxy_authentication_username, re.I):
         # munge as web servers do -- replace dash with underscore, and make uppercase
         header = re.sub(r"[-_]", "_", proxy_authentication_username.upper())
     else:
         # use as-is
-        header = proxy_authentication_username
+        # header = proxy_authentication_username
+        header = "HTTP_" + re.sub(r"[-_]", "_", getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', {}).get('username', '').upper())
+
 
 class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUserBackend):
     def authenticate(self, request, remote_user):

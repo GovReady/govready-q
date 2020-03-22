@@ -8,6 +8,7 @@ import siteapp.views as views
 import siteapp.views_landing as views_landing
 import siteapp.views_health as views_health
 from .good_settings_helpers import signup_wrapper
+from .settings import *
 
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
@@ -102,4 +103,14 @@ if settings.DEBUG: # also in urls_landing
     import debug_toolbar
     urlpatterns += [
         url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
+    ]
+
+# Enterprise Single Sign On
+# if SSO Proxy enabled, add-in route to `/accounts/logout/` which comes from Django's account
+# module but is not present from Django when SSO Proxy enabled
+if environment.get("trust-user-authentication-headers"):
+    print("settings.PROXY_AUTHENTICATION_USER_HEADER enabled. Catching route accounts/logout/")
+    import debug_toolbar
+    urlpatterns += [
+        url(r'^accounts/logout/$', views.sso_logout, name="sso-logout")
     ]
