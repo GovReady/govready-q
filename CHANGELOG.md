@@ -2,6 +2,14 @@ GovReady-Q Release Notes
 ========================
 
 
+v.0.9.1.2 (March 22, 2020)
+--------------------------
+
+**Deployment changes**
+
+* Upgrade requirements
+
+
 v.0.9.1.1 (March 20, 2020)
 --------------------------
 
