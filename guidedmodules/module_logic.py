@@ -711,7 +711,18 @@ class HtmlAnswerRenderer:
             # Assuming that RenderedAnswer gives us string version of the stored datagrid object
             # that is an Array of Dictionaries
             import ast
-            datagrid_rows = ast.literal_eval(value)
+            try:
+                # Get datagrid data if datagrid question has been answered with information
+                datagrid_rows = ast.literal_eval(value)
+            except:
+                if value == "<nothing chosen>":
+                    # Datagrid question has been visited and instantiated but no answer given
+                    # No data was entered into data grid
+                    datagrid_rows = []
+                else:
+                    # Datagrid question has not been visited and not yet instantiated
+                    # `value` is set to "<Software Inventory (datagrid)>"
+                    datagrid_rows = []
 
             # Build a table to display datagrid information
             value = "<table class=\"table\">\n"
