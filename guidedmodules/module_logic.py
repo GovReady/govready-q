@@ -712,7 +712,7 @@ class HtmlAnswerRenderer:
             # that is an Array of Dictionaries
             import ast
             try:
-                # Get datagrid data if datgrid question has been answered with information
+                # Get datagrid data if datagrid question has been answered with information
                 datagrid_rows = ast.literal_eval(value)
             except:
                 if value == "<nothing chosen>":
