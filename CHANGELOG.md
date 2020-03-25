@@ -9,10 +9,6 @@ v.0.9.1.2 (March 22, 2020)
 
 * Upgrade requirements
 
-**Bug fixes**
-
-* Gracefully handle empty datagrid question type in output templates
-
 
 v.0.9.1.1 (March 20, 2020)
 --------------------------
