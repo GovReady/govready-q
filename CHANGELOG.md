@@ -2,12 +2,16 @@ GovReady-Q Release Notes
 ========================
 
 
-v.0.9.1.2 (March 22, 2020)
+v.0.9.1.3 (March 25, 2020)
 --------------------------
 
 **Deployment changes**
 
 * Upgrade requirements
+
+**Bug fixes**
+
+* Gracefully handle empty datagrid question type in output templates
 
 
 v.0.9.1.1 (March 20, 2020)
