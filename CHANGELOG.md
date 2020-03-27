@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.3.1 (March 27, 2020)
+--------------------------
+
+**Deployment changes**
+
+* Remove build gcc-c build lib from build
+* Remove uwsgi from requrirements
+* Refactor Dockerfile for clarity
 
 v.0.9.1.3 (March 25, 2020)
 --------------------------

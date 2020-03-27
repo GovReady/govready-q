@@ -157,8 +157,9 @@ filelock==3.0.12 \
 filemagic==1.6 \
     --hash=sha256:e684359ef40820fe406f0ebc5bf8a78f89717bdb7fed688af68082d991d6dbf3 \
     # via django-database-storage-backend
-fpdf2==2.0.3 \
-    --hash=sha256:b65ff24608e64898529db14fa816f31ad3aed4ca423cd7e979a3ce96cb52e26e \
+fpdf2==2.0.4 \
+    --hash=sha256:9feed25cf2b066f047efa46d9c1ac0a6758b0300952c0bc7b73a3276936880fb \
+    --hash=sha256:ea6b15e79fd68c178f18f918aa4b7c046efcc4ab79449d89190ea451b5d27adb \
     # via -r requirements.in
 fs==2.4.11 \
     --hash=sha256:cc99d476b500f993df8ef697b96dc70928ca2946a455c396a566efe021126767 \
@@ -244,9 +245,9 @@ imagesize==1.2.0 \
     --hash=sha256:6965f19a6a2039c7d48bca7dba2473069ff854c36ae6f19d2cde309d998228a1 \
     --hash=sha256:b1f6b5a4eab1f73479a50fb79fcf729514a900c341d8503d62a62dbc4127a2b1 \
     # via sphinx
-importlib-metadata==1.5.0 \
-    --hash=sha256:06f5b3a99029c7134207dd882428a66992a9de2bef7c2b699b5641f9886c3302 \
-    --hash=sha256:b97607a1a18a5100839aec1dc26a1ea17ee0d93b20b0f008d80a5a050afb200b \
+importlib-metadata==1.6.0 \
+    --hash=sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f \
+    --hash=sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e \
     # via -r requirements.in
 importlib-resources==1.4.0 \
     --hash=sha256:4019b6a9082d8ada9def02bece4a76b131518866790d58fdda0b5f8c603b36c2 \
@@ -543,16 +544,13 @@ urllib3==1.25.8 \
     --hash=sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc \
     --hash=sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc \
     # via requests, selenium
-uwsgi==2.0.18 \
-    --hash=sha256:4972ac538800fb2d421027f49b4a1869b66048839507ccf0aa2fda792d99f583 \
-    # via -r requirements.in
-virtualenv-clone==0.5.3 \
-    --hash=sha256:532f789a5c88adf339506e3ca03326f20ee82fd08ee5586b44dc859b5b4468c5 \
-    --hash=sha256:c88ae171a11b087ea2513f260cdac9232461d8e9369bcd1dc143fc399d220557 \
+virtualenv-clone==0.5.4 \
+    --hash=sha256:07e74418b7cc64f4fda987bf5bc71ebd59af27a7bc9e8a8ee9fd54b1f2390a27 \
+    --hash=sha256:665e48dd54c84b98b71a657acb49104c54e7652bce9c1c4f6c6976ed4c827a29 \
     # via pipenv
-virtualenv==20.0.13 \
-    --hash=sha256:87831f1070534b636fea2241dd66f3afe37ac9041bcca6d0af3215cdcfbf7d82 \
-    --hash=sha256:f3128d882383c503003130389bf892856341c1da12c881ae24d6358c82561b55 \
+virtualenv==20.0.15 \
+    --hash=sha256:4e399f48c6b71228bf79f5febd27e3bbb753d9d5905776a86667bc61ab628a25 \
+    --hash=sha256:9e81279f4a9d16d1c0654a127c2c86e5bca2073585341691882c1e66e31ef8a5 \
     # via pipenv
 w3lib==1.21.0 \
     --hash=sha256:847704b837b2b973cddef6938325d466628e6078266bc2e1f7ac49ba85c34823 \

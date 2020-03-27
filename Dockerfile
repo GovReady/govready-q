@@ -9,9 +9,11 @@
 # Build on Docker's official CentOS 7 image.
 FROM centos:7
 
-# Default to uwsgi instead of gunicorn
-ARG SUPERVISORD_INI=deployment/docker/supervisord_uwsgi.ini
-ARG DOCKERFILE_EXEC_SH=deployment/docker/dockerfile_exec_uwsgi.sh
+# Default to gunicorn instead of uwsgi
+ARG SUPERVISORD_INI=deployment/docker/supervisord_gunicorn.ini
+ARG DOCKERFILE_EXEC_SH=deployment/docker/dockerfile_exec_gunicorn.sh
+# ARG SUPERVISORD_INI=deployment/docker/supervisord_uwsgi.ini
+# ARG DOCKERFILE_EXEC_SH=deployment/docker/dockerfile_exec_uwsgi.sh
 
 # Expose the port that `manage.py runserver` uses by default.
 EXPOSE 8000
@@ -31,20 +33,37 @@ RUN \
    yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
 && yum -y update \
 && yum -y install \
-	python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 \
-	unzip git2u jq nmap-ncat \
-	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
-	supervisor \
-	mysql-devel \
-	&& yum clean all && rm -rf /var/cache/yum
+    python36u python36u-pip \
+    unzip git2u jq nmap-ncat \
+    graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
+    supervisor \
+    && yum clean all && rm -rf /var/cache/yum
 
 # Copy in the Python module requirements and install them.
-# Manually install database drivers which aren't in our requirements
 # file because they're not commonly used in development.
 COPY requirements.txt ./
-COPY requirements_mysql.txt ./
 RUN pip3.6 install --no-cache-dir -r requirements.txt
+# RUN pip3.6 install --no-cache-dir --user -r requirements.txt
+
+# Install database drivers which aren't in our requirements.
+RUN \
+   yum -y install \
+   python36u-devel.x86_64 gcc-c++.x86_64 \
+   mysql-devel \
+   && yum clean all && rm -rf /var/cache/yum
+COPY requirements_mysql.txt ./
 RUN pip3.6 install --no-cache-dir -r requirements_mysql.txt
+
+# Remove build libraries needed only for installing packages
+RUN \
+   yum -y remove \
+   python36u-devel.x86_64 python3-devel.x86_64 gcc-c++.x86_64
+RUN yum clean all && rm -rf /var/cache/yum
+
+# Remove unneeded Python libraries
+# Remove `pipev` and it's extra copies of `requests` and `urllib3` that scanners see
+# Safety only needed for preparing requirements files, not operating GovReady
+pip3.6 uninstall -y pipenv safety
 
 # Run pyup.io's python package vulnerability check.
 RUN safety check
@@ -101,7 +120,8 @@ COPY $SUPERVISORD_INI /etc/supervisord.d/application.ini
 # Add container startup and management scripts.
 COPY $DOCKERFILE_EXEC_SH dockerfile_exec.sh
 COPY deployment/docker/first_run.sh /usr/local/bin/first_run
-COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
+# COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
+# COPY deployment/docker/gunicorn_stats.sh /usr/local/bin/gunicorn_stats
 COPY deployment/docker/tail_logs.sh /usr/local/bin/tail_logs
 COPY deployment/docker/add_data.sh /usr/local/bin/add_data
 
