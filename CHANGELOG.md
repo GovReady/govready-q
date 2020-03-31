@@ -2,6 +2,13 @@ GovReady-Q Release Notes
 ========================
 
 
+v.0.9.1.3.1 (March 31, 2020)
+--------------------------
+
+**UI changes**
+
+* Add `render` key to datagrid question type to force vertical rendering of tabular data
+
 v.0.9.1.3 (March 25, 2020)
 --------------------------
 
