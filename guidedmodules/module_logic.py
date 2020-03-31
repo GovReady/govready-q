@@ -724,21 +724,32 @@ class HtmlAnswerRenderer:
                     # `value` is set to "<Software Inventory (datagrid)>"
                     datagrid_rows = []
 
-            # Build a table to display datagrid information
-            value = "<table class=\"table\">\n"
-            value += "<thead>\n<tr>"
-            # To get the correct order, get keys from question specification fields
-            for field in question.spec["fields"]:
-                value += "<th>{}</th>".format(html.escape(str(field["text"])))
-            value += "</tr>\n"
-            for item in datagrid_rows:
-                value += "<tr>"
+            if "render" in question.spec and question.spec["render"] == "vertical":
+                # Build a vertical table to display datagrid information
+                value = ""
+                for item in datagrid_rows:
+                    # Start a new table
+                    value += "<table class=\"table\">\n"
+                    # Create a row for each field
+                    for field in question.spec["fields"]:
+                        value += "<tr><td class=\"td_datagrid_vertical\">{}</td><td>{}</td></tr>".format(html.escape(str(field["text"])), html.escape(str(item[field["key"]])))
+                    value += "\n</table>"
+            else:
+                # Build a standard table to display datagrid information
+                value = "<table class=\"table\">\n"
+                value += "<thead>\n<tr>"
                 # To get the correct order, get keys from question specification fields
                 for field in question.spec["fields"]:
-                    value += "<td>{}</td>".format(html.escape(str(item[field["key"]])))
-                value += "</tr>\n</thead>"
-            # value = html.escape(str(datagrid_rows))
-            value += "\n</table>"
+                    value += "<th>{}</th>".format(html.escape(str(field["text"])))
+                value += "</tr>\n"
+                for item in datagrid_rows:
+                    value += "<tr>"
+                    # To get the correct order, get keys from question specification fields
+                    for field in question.spec["fields"]:
+                        value += "<td>{}</td>".format(html.escape(str(item[field["key"]])))
+                    value += "</tr>\n</thead>"
+                # value = html.escape(str(datagrid_rows))
+                value += "\n</table>"
             wrappertag = "div"
 
         else:
