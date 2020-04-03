@@ -4,6 +4,11 @@ GovReady-Q Release Notes
 v.0.9.1.3.2 (April 03, 2020)
 --------------------------
 
+**Deployment changes**
+
+* Upgrade to Django 2.2.12 LTS to address issue noted by pyup.io safety
+* Update various Python libraries
+
 **Bug fixes**
 
 * Fixed issue where only users who could use the editing tool could see the datagrid questions render
