@@ -1,6 +1,12 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.3.2 (April 03, 2020)
+--------------------------
+
+**Bug fixes**
+
+* Fixed issue where only users who could use the editing tool could see the datagrid questions render
 
 v.0.9.1.3.1 (March 31, 2020)
 --------------------------

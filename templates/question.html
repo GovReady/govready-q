@@ -1077,32 +1077,6 @@ function record_interaction() {
 }
 </script>
 
-{% if authoring_tool_enabled %}
-<script src="{% static 'vendor/js-yaml.min.js' %}"></script>
-<script src="{% static 'js/authoring_tool.js' %}"></script>
-<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
-<script>
-$(function() {
-  init_authoring_tool({
-    task: {{task.id}},
-    module: {{task.module.spec|json}},
-    questions: {
-      {{q.key}}: {
-        spec: {{q.spec|json}},
-        choices: "{{q.choices_as_csv|escapejs}}",
-        answer_type_module_id: {% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}
-      }
-    },
-    answer_type_modules: [{% for m in q.module.get_referenceable_modules %}
-      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
-      {% endfor %}],
-    autocomplete_questions: { {% for q in q.module.get_questions %}
-      "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}
-    }
-  });
-});
-</script>
-
 <script>
   // Render datagrid question type
   // Make focus-area-wrapper wider when question type is datagrid
@@ -1139,6 +1113,32 @@ $(function() {
 
       fields: datagrid_fields
   });
+</script>
+
+{% if authoring_tool_enabled %}
+<script src="{% static 'vendor/js-yaml.min.js' %}"></script>
+<script src="{% static 'js/authoring_tool.js' %}"></script>
+<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+<script>
+$(function() {
+  init_authoring_tool({
+    task: {{task.id}},
+    module: {{task.module.spec|json}},
+    questions: {
+      {{q.key}}: {
+        spec: {{q.spec|json}},
+        choices: "{{q.choices_as_csv|escapejs}}",
+        answer_type_module_id: {% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}
+      }
+    },
+    answer_type_modules: [{% for m in q.module.get_referenceable_modules %}
+      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+      {% endfor %}],
+    autocomplete_questions: { {% for q in q.module.get_questions %}
+      "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}
+    }
+  });
+});
 </script>
 
 {% endif %}
