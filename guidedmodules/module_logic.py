@@ -386,7 +386,6 @@ def render_content(content, answers, output_format, source, additional_context={
 
             template_format = "html"
             template_body = q_renderer().render(CommonMarkParser().parse(template_body))
-
             # Put the Jinja2 template tags back that we removed prior to running
             # the CommonMark renderer.
             def replace(m):
@@ -465,7 +464,6 @@ def render_content(content, answers, output_format, source, additional_context={
         else:
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
-
     elif template_format in ("text", "markdown", "html"):
         # The plain-text and HTML template types are rendered using Jinja2.
         #
@@ -485,7 +483,7 @@ def render_content(content, answers, output_format, source, additional_context={
             def errorfunc(message, short_message, long_message, **format_vars):
                 # Wrap in jinja2.Markup to prevent auto-escaping.
                 return jinja2.Markup("<" + message.format(**format_vars) + ">")
-    
+
         elif template_format == "html":
             escapefunc = HtmlAnswerRenderer(show_metadata=show_answer_metadata, use_data_urls=use_data_urls)
             def errorfunc(message, short_message, long_message, **format_vars):
@@ -554,7 +552,6 @@ def render_content(content, answers, output_format, source, additional_context={
             # a big error message for the output as a whole or silently ignoring it.
             for varname in get_jinja2_template_vars(template_body):
                 context.setdefault(varname, UndefinedReference(varname, errorfunc, [source]))
-
             # Now really render.
             output = template.render(context)
         except Exception as e:
@@ -1026,6 +1023,7 @@ class ModuleAnswers(object):
         # documents are lazy-rendered because not all of them may
         # be used by the caller.
         output_formats = ("html", "text", "markdown")
+
         class LazyRenderedDocument:
             def __init__(self, module_answers, document, index, use_data_urls):
                 self.module_answers = module_answers
@@ -1033,6 +1031,7 @@ class ModuleAnswers(object):
                 self.index = index
                 self.rendered_content = { }
                 self.use_data_urls = use_data_urls
+
             def __iter__(self):
                 # Yield all of the keys that are in the output document
                 # specification, plus all of the output formats which are
@@ -1089,6 +1088,7 @@ class ModuleAnswers(object):
             def get(self, key, default=None):
                 if key in output_formats or key in self.document:
                     return self[key]
+
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
 
@@ -1175,6 +1175,20 @@ class TemplateContext(Mapping):
                 if self.parent_context is not None: # use parent's cache
                     return self.parent_context[item]
                 return RenderedOrganization(self.module_answers.task, parent_context=self)
+            if item == "control_catalog":
+                # Retrieve control catalog(s) for project
+                # Temporarily assume controls are 800-53 for the moment
+                # Retrieve a Django dictionary of dictionaries object of full control catalog
+                # Example:
+                #   controls_and_enhancements_all["AC-2 (3)"]
+                #   {'id': 'AC-2 (3)', 'title': 'DISABLE INACTIVE ACCOUNTS', 'family': '',
+                #   'description': 'The information system automatically disables inactive accounts after [Assignment: organization-defined time period].',
+                #   'control_enhancements': 'N/A', 'supplemental_guidance': ''}
+                import json
+                from controls.seccontrol import SecControlsAll
+                sca = SecControlsAll()
+                control_catalog = sca.controls_and_enhancements_all
+                return control_catalog
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
                 # call the method here because that leads to infinite
@@ -1224,13 +1238,14 @@ class TemplateContext(Mapping):
             yield q.key
 
         # special values
+        # List the name of variables that are available in the templatecontext `getitem`
         if self.module_answers and self.module_answers.task:
             # Attributes that are only available if there is a task.
             if not self.is_computing_title or not self.root:
                 # 'title' isn't available if we're in the process of
                 # computing it
                 yield "title"
-            for attribute in ("task_link", "project", "organization"):
+            for attribute in ("task_link", "project", "organization", "control_catalog"):
                 if attribute not in seen_keys:
                     yield attribute
 
