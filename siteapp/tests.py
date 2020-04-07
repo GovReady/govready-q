@@ -682,7 +682,9 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def test_questions_text(self):
         # Log in and create a new project.
+        var_sleep(.5)
         self._login()
+        var_sleep(.5)
         self._new_project()
         self.click_element('#question-question_types_text')
 
@@ -753,7 +755,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Next Question: longtext")
         self.fill_field("#inputctrl .ql-editor", "This is a paragraph.\n\nThis is another paragraph.")
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1.0)
         self._test_api_get(["question_types_text", "q_longtext"], 'This is a paragraph\\.\n\n\n\nThis is another paragraph\\.')
         self._test_api_get(["question_types_text", "q_longtext.html"], "<p>This is a paragraph.</p>\n<p>This is another paragraph.</p>")
 
@@ -1044,7 +1046,9 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
     def test_questions_module(self):
         # Log in and create a new project.
+        var_sleep(.5)
         self._login()
+        var_sleep(.5)
         self._new_project()
         self.click_element('#question-question_types_module')
 
@@ -1061,6 +1065,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # We're now at the intro screen for the simple sub-module.
         # Grab the page URL here so we can figure out the ID of this task
         # so that we can select it again later.
+        var_sleep(3.0)
         import urllib.parse
         s = urllib.parse.urlsplit(self.browser.current_url)
         m = re.match(r"/tasks/(\d+)/a-simple-module", s[2])
@@ -1082,11 +1087,10 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         do_submodule("My first answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
-
         # Go back to the question and start a second answer.
         def change_answer():
+            print("change_answer() - self.click_element(\"#link-to-question-q_module a\")") #debug
             self.click_element("#link-to-question-q_module a")
-            var_sleep(.5)
         change_answer()
         self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
