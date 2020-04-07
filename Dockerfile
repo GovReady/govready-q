@@ -61,12 +61,13 @@ RUN \
 RUN yum clean all && rm -rf /var/cache/yum
 
 # Remove unneeded Python libraries
-# Remove `pipev` and it's extra copies of `requests` and `urllib3` that scanners see
+# Remove `pipenv` and its extra copies of `requests` and `urllib3` that scanners see
 # Safety only needed for preparing requirements files, not operating GovReady
-pip3.6 uninstall -y pipenv safety
+RUN pip3.6 uninstall -y pipenv safety
 
-# Run pyup.io's python package vulnerability check.
-RUN safety check
+# Safety only needed for preparing requirements files, not operating GovReady
+## Run pyup.io's python package vulnerability check.
+#RUN safety check
 
 # Copy in the vendor resources and fetch them.
 COPY fetch-vendor-resources.sh ./
