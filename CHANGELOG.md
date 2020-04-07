@@ -19,6 +19,19 @@ Previously versions embedded controls within output templates.
 * Add a new item type to module_logic.TemplateContext called `control_catalog` to enable iterable dictionary of control catalog.
 
 
+v.0.9.1.3.2 (April 03, 2020)
+--------------------------
+
+**Deployment changes**
+
+* Upgrade to Django 2.2.12 LTS to address issue noted by pyup.io safety
+* Update various Python libraries
+
+**Bug fixes**
+
+* Fixed issue where only users who could use the editing tool could see the datagrid questions render
+
+
 v0.9.1.3.1 (March 31, 2020)
 ---------------------------
 
