@@ -976,7 +976,7 @@ $(function() {
 
         {% if q.spec.type == "datagrid" %}
         datagrid_data = $("#jsGrid").jsGrid("option", "data");
-        console.log('data jsGrid '+ JSON.stringify(datagrid_data));
+        // console.log('data jsGrid '+ JSON.stringify(datagrid_data));
         data.append('value', JSON.stringify(datagrid_data));
         {% endif %}
 
@@ -1077,15 +1077,15 @@ function record_interaction() {
 }
 </script>
 
+{% if q.spec.type == "datagrid" %}
 <script>
   // Render datagrid question type
   // Make focus-area-wrapper wider when question type is datagrid
-  {% if q.spec.type == "datagrid" %}
   $("#col-spacer").removeClass("col-spacer hidden-xs col-sm-1 col-md-1 col-lg-3 col-xl-2");
   $("#col-spacer").addClass("col-spacer hidden-xs col-sm-1 col-md-1 col-lg-1 col-xl-2");
   $("#focus-area-wrapper").removeClass("col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5");
   $("#focus-area-wrapper").addClass("col-xs-12 col-sm-9 col-md-8 col-lg-8 col-xl-7");
-  {% endif %}
+
 
   // Prepare data for jsGrid data grid
   var entries = [
@@ -1114,6 +1114,7 @@ function record_interaction() {
       fields: datagrid_fields
   });
 </script>
+{% endif %}
 
 {% if authoring_tool_enabled %}
 <script src="{% static 'vendor/js-yaml.min.js' %}"></script>

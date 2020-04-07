@@ -1065,6 +1065,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # We're now at the intro screen for the simple sub-module.
         # Grab the page URL here so we can figure out the ID of this task
         # so that we can select it again later.
+        var_sleep(3.0)
         import urllib.parse
         s = urllib.parse.urlsplit(self.browser.current_url)
         m = re.match(r"/tasks/(\d+)/a-simple-module", s[2])
@@ -1086,11 +1087,10 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         do_submodule("My first answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
-
         # Go back to the question and start a second answer.
         def change_answer():
+            print("change_answer() - self.click_element(\"#link-to-question-q_module a\")") #debug
             self.click_element("#link-to-question-q_module a")
-            var_sleep(.5)
         change_answer()
         self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
