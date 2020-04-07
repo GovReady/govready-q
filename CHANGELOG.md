@@ -1,11 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
-v.0.9.1.3.2 (April 03, 2020)
+v0.9.1.3.3 (April 07, 2020)
 --------------------------
 
 **Deployment changes**
 
+* Remove build gcc-c build lib from build
+* Remove uwsgi from requrirements
+* Refactor Dockerfile for clarity
 * Upgrade to Django 2.2.12 LTS to address issue noted by pyup.io safety
 * Update various Python libraries
 
@@ -13,14 +16,15 @@ v.0.9.1.3.2 (April 03, 2020)
 
 * Fixed issue where only users who could use the editing tool could see the datagrid questions render
 
-v.0.9.1.3.1 (March 31, 2020)
+
+v0.9.1.3.1 (March 31, 2020)
 --------------------------
 
 **UI changes**
 
 * Add `render` key to datagrid question type to force vertical rendering of tabular data
 
-v.0.9.1.3 (March 25, 2020)
+v0.9.1.3 (March 25, 2020)
 --------------------------
 
 **Deployment changes**
@@ -32,7 +36,7 @@ v.0.9.1.3 (March 25, 2020)
 * Gracefully handle empty datagrid question type in output templates
 
 
-v.0.9.1.1 (March 20, 2020)
+v0.9.1.1 (March 20, 2020)
 --------------------------
 
 **UI changes**
