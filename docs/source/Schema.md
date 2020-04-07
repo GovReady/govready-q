@@ -383,6 +383,7 @@ The `datagrid` question type is similar to the `multiple-choice` question type e
 * Users can enter as many rows of data as desired.
 * Results are usually displayed as a table.
 * `min` and `max` may be specified. If `min` is specified, it must be greater than or equal to zero and requires that the user add at least that many rows. If `max` is specified, it must be greater than or equal to one (and if `min` is specified, it must be at least `min`) and prevents the user from adding more than that number rows.
+* `render` key can be added and set to `vertical` to force the tabular data to render in a vertical format with the fields listed vertically on the side instead of horizontally. This is good for rendering information about a single, multi-field entry such as an address or Point of Contact.
 
 Increasing the `min` or decreasing the `max` are incompatible changes (see Updating Modules).
 
