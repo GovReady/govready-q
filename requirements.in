@@ -42,7 +42,7 @@ django-database-storage-backend # CC0, requires libmagic (libmagic1 in Debian)
 commonmarkextensions # BSD 3
 
 # Only needed in common production deployment configurations
-uwsgi # GPL2
+# uwsgi # GPL2 # Needed only if using uwsgi instead of gunicorn
 gunicorn # MIT License
 gevent # MIT License
 psycopg2-binary # LGPL

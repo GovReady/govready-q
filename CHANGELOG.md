@@ -1,8 +1,9 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.4 (April 5, 2020)
-------------------------
+
+v0.9.1.4 (April 08, 2020)
+-------------------------
 
 This release exposes control catalog to end users for search.
 
@@ -19,11 +20,14 @@ Previously versions embedded controls within output templates.
 * Add a new item type to module_logic.TemplateContext called `control_catalog` to enable iterable dictionary of control catalog.
 
 
-v.0.9.1.3.2 (April 03, 2020)
+v0.9.1.3.3 (April 07, 2020)
 --------------------------
 
 **Deployment changes**
 
+* Remove build gcc-c build lib from build
+* Remove uwsgi from requrirements
+* Refactor Dockerfile for clarity
 * Upgrade to Django 2.2.12 LTS to address issue noted by pyup.io safety
 * Update various Python libraries
 
