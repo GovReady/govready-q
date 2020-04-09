@@ -30,6 +30,18 @@ CONTROLS_800_53 = "controls/assets/vendors/nist/control_catalogs/800-53-controls
 
 class SecControlsAll(object):
     "represent ALL 800-53 security controls in one object"
+
+    # Create a singleton instance of this class. GetInstance returns
+    # that singleton instance. Instead of doing `sec = SecControlsAll()`,
+    # do `sec = SecControlsAll.GetInstance()`.
+    @staticmethod
+    def GetInstance():
+        # Create a new instance of SecControlsAll() the first time
+        # this method is called. Keep it in memory indefinitely.
+        if not hasattr(SecControlsAll, '_cached_instance'):
+            SecControlsAll._cached_instance = SecControlsAll()
+        return SecControlsAll._cached_instance
+
     # TODO: Add Try Except handling
     def __init__(self):
         self.id = id

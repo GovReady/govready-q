@@ -1186,7 +1186,7 @@ class TemplateContext(Mapping):
                 #   'control_enhancements': 'N/A', 'supplemental_guidance': ''}
                 import json
                 from controls.seccontrol import SecControlsAll
-                sca = SecControlsAll()
+                sca = SecControlsAll.GetInstance()
                 control_catalog = sca.controls_and_enhancements_all
                 return control_catalog
             if item in ("is_started", "is_finished"):
