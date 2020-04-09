@@ -1097,7 +1097,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
         self.click_element("#save-button")
-        var_sleep(1.4)
+        var_sleep(1.8)
         do_submodule("My second answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 
