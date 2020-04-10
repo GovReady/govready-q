@@ -27,6 +27,7 @@ import subprocess
 import re
 
 CONTROLS_800_53 = "controls/assets/vendors/nist/control_catalogs/800-53-controls.xml"
+CONTROLS_800_53_REV4_J = "controls/assets/vendors/nist/control_catalogs/NIST_SP-800-53_rev4_catalog.json"
 
 class SecControlsAll(object):
     "represent ALL 800-53 security controls in one object"
@@ -42,8 +43,13 @@ class SecControlsAll(object):
             SecControlsAll._cached_instance = SecControlsAll()
         return SecControlsAll._cached_instance
 
-    # TODO: Add Try Except handling
     def __init__(self):
+        self.id = id
+        # Load all controls
+        self._load_all_controls_from_json()
+        self.controls_and_enhancements_all = self.controls_all
+
+    def init_orig(self):
         self.id = id
         # Load all controls
         self._load_all_controls_from_xml()
@@ -51,6 +57,13 @@ class SecControlsAll(object):
         self._load_all_control_enhancements_from_xml()
         # combine controls and control enhancements
         self.controls_and_enhancements_all = {**self.controls_all, **self.controlenhancements_all}
+
+    def _load_all_controls_from_json(self):
+        "load all controls from 800-53 json"
+        with open(CONTROLS_800_53_REV4_J, 'r') as catalog_file:
+            catalog_data = catalog_file.read()
+        self.controls_all = json.loads(catalog_data)
+        # catalog groups > controls > {id, title, properties {name: label, value}, parts: {ac-1_smt { prose, parts {}}, ac-1_gnd {prose}} }
 
     def _load_all_controls_from_xml(self):
         "load all controls from 800-53 xml"
