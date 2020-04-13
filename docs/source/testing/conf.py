@@ -18,7 +18,7 @@
 # import recommonmark
 # from recommonmark.parser import CommonMarkParser
 # from recommonmark.transform import AutoStructify
-import m2r # Used to convert .md files into .rst files when Sphinx is building docs
+# import m2r # Used to convert .md files into .rst files when Sphinx is building docs
 
 # -- Project information -----------------------------------------------------
 
