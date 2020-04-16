@@ -20,7 +20,7 @@ from django.test import TestCase
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
-from controls.seccontrol import SecControl
+from controls.oscal import Catalogs, Catalog
 
 
 def var_sleep(duration):
@@ -170,15 +170,16 @@ class SampleTest(TestCase):
     def test_tests(self):
         self.assertEqual(1,1)
 
-class SecControl80053Tests(TestCase):
+class Oscal80053Tests(TestCase):
     # Test 
-    def test_seccontrol_load_control(self):
-        control = SecControl("AU-2")
-        output = "SEC Control\n {}".format(control.get_control_json())
-        self.assertEqual(control.id.upper(), "AU-2")
+    def test_catalog_load_control(self):
+        cg = Catalog.GetInstance()
+        cg_flat = cg.get_flattended_controls_all_as_dict()
+        control = cg_flat['au-2']
+        self.assertEqual(control['id'].upper(), "AU-2")
         # self.assertEqual(control.class, "NIST.800.53")
         # TODO: ADD Class into object
-        self.assertEqual(control.title.upper(), "AUDIT EVENTS")
+        self.assertEqual(control['title'].upper(), "AUDIT EVENTS")
 
 #####################################################################
 
@@ -190,16 +191,16 @@ class ControlUITests(SeleniumTest):
     def test_control_lookup(self):
         self.browser.get(self.url("/controls/800-53/AU-2/"))
         self.assertInNodeText("AU-2", "#control-heading")
-        self.assertInNodeText("AUDIT EVENTS", "#control-heading")
+        self.assertInNodeText("Audit Events", "#control-heading")
 
     def test_control_enhancement_lookup(self):
         self.browser.get(self.url("/controls/800-53/AC-2 (4)/"))
         self.assertInNodeText("AC-2 (4)", "#control-heading")
-        self.assertInNodeText("AUTOMATED AUDIT ACTIONS", "#control-heading")
+        self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
-    def test_control_lookup_no_matching_id(self):
-        self.browser.get(self.url("/controls/800-53/XX-2/"))
-        self.assertInNodeText("XX-2", "#control-heading")
-        self.assertInNodeText("The control XX-2 was not found in the control catalog.", "#control-message")
+    # def test_control_lookup_no_matching_id(self):
+    #     self.browser.get(self.url("/controls/800-53/XX-2/"))
+    #     self.assertInNodeText("XX-2", "#control-heading")
+    #     self.assertInNodeText("The control XX-2 was not found in the control catalog.", "#control-message")
 
 

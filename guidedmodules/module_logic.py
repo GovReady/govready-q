@@ -1179,15 +1179,9 @@ class TemplateContext(Mapping):
                 # Retrieve control catalog(s) for project
                 # Temporarily assume controls are 800-53 for the moment
                 # Retrieve a Django dictionary of dictionaries object of full control catalog
-                # Example:
-                #   controls_and_enhancements_all["AC-2 (3)"]
-                #   {'id': 'AC-2 (3)', 'title': 'DISABLE INACTIVE ACCOUNTS', 'family': '',
-                #   'description': 'The information system automatically disables inactive accounts after [Assignment: organization-defined time period].',
-                #   'control_enhancements': 'N/A', 'supplemental_guidance': ''}
-                import json
-                from controls.seccontrol import SecControlsAll
-                sca = SecControlsAll.GetInstance()
-                control_catalog = sca.controls_and_enhancements_all
+                from controls.oscal import Catalog
+                sca = Catalog.GetInstance()
+                control_catalog = sca.get_flattended_controls_all_as_dict()
                 return control_catalog
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
