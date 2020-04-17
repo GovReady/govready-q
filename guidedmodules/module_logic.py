@@ -1,5 +1,8 @@
 from django.conf import settings
 from jinja2.sandbox import SandboxedEnvironment
+from pyinstrument import Profiler
+
+
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
@@ -100,7 +103,8 @@ def evaluate_module_state(current_answers, parent_context=None):
     # To figure this out, we walk the dependency tree of questions
     # until we arrive at questions that have no unanswered dependencies.
     # Such questions can be put forth to the user.
-
+    # profiler = Profiler()
+    # profiler.start()
     # Build a list of ModuleQuestions that the user may answer now.
     can_answer = set()
 
@@ -210,6 +214,8 @@ def evaluate_module_state(current_answers, parent_context=None):
     ret.was_imputed = was_imputed
     ret.unanswered = unanswered
     ret.can_answer = can_answer
+    # profiler.stop()
+    # print(profiler.output_text(unicode=True, color=True))
     return ret
 
 
@@ -760,12 +766,13 @@ def clear_module_question_cache():
 
 
 def get_all_question_dependencies(module):
+    print("****def get_all_question_dependencies")
     # Initialize cache, query cache.
     if not hasattr(get_all_question_dependencies, 'cache'):
         get_all_question_dependencies.cache = { }
     if module.id in get_all_question_dependencies.cache:
         return get_all_question_dependencies.cache[module.id]
-
+    print("X after the cache")
     # Pre-load all of the questions by their key so that the dependency
     # evaluation is fast.
     all_questions = { }
@@ -842,6 +849,24 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
          if qid in get_from_question_id
        ]
 
+jinja2_expression_compile_cache = { }
+
+def compile_jinja2_expression(expr):
+    # If the expression has already been compiled and is in the cache,
+    # return the compiled expression.
+    if expr in jinja2_expression_compile_cache:
+        return jinja2_expression_compile_cache[expr]
+
+    # The expression is not in the cache. Compile it.
+    env = Jinja2Environment()
+    compiled = env.compile_expression(expr)
+
+    # Save it to the cache.
+    jinja2_expression_compile_cache[expr] = compiled
+
+    # Return it.
+    return compiled
+
 def run_impute_conditions(conditions, context):
     # Check if any of the impute conditions are met based on
     # the questions that have been answered so far and return
@@ -851,7 +876,7 @@ def run_impute_conditions(conditions, context):
     env = Jinja2Environment()
     for rule in conditions:
         if "condition" in rule:
-            condition_func = env.compile_expression(rule["condition"])
+            condition_func = compile_jinja2_expression(rule["condition"])
             try:
                 value = condition_func(context)
             except:
@@ -865,7 +890,7 @@ def run_impute_conditions(conditions, context):
                 # Imputed value is the raw YAML value.
                 value = rule["value"]
             elif rule.get("value-mode", "raw") == "expression":
-                value = env.compile_expression(rule["value"])(context)
+                value = compile_jinja2_expression(rule["value"])(context)
                 if isinstance(value, RenderedAnswer):
                     # Unwrap.
                     value =  value.answer

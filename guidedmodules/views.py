@@ -86,6 +86,9 @@ def download_module_asset(request, taskid, taskslug, asset_path):
 def task_view(view_func):
     @login_required
     def new_view_func(request, taskid, taskslug, pagepath, question_key, *args):
+        from pyinstrument import Profiler
+        profiler = Profiler()
+        profiler.start()
         # Get the Task.
         task = get_object_or_404(Task, id=taskid)
 
@@ -164,9 +167,13 @@ def task_view(view_func):
             "source_invitation": task.get_source_invitation(request.user),
             "previous_page_type": request.GET.get("previous"),
         }
+        view_func_var = view_func(request, task, answered, context, question, *args)
+
+        profiler.stop()
+        print(profiler.output_text(unicode=True, color=True))
 
         # Render the view.
-        return view_func(request, task, answered, context, question, *args)
+        return view_func_var
     return new_view_func
 
 @task_view
@@ -184,6 +191,30 @@ def next_question(request, task, answered, *unused_args):
         q = answered.can_answer[0]
         return HttpResponseRedirect(task.get_absolute_url_to_question(q) + previous)
 
+def get_next_question(current_question, task):
+    # get context of questions in module
+    answers = task.get_answers().with_extended_info()
+
+    # if there are no more questions to answer, return None
+    if len(answers.can_answer) == 0:
+        return None
+
+    # Find the 'best' next question among the answerable questions.
+    # If the next question is answerable, go there. But if that question is not answerable,
+    # go to the next one that is. If there are no subsequent questions to answer, go to the
+    # first one that is answerable.
+    can_answer = list(answers.can_answer)
+    can_answer.sort(key = lambda q : (
+        # Prefer questions that are after this question.
+        q.definition_order > current_question.definition_order,
+
+        # Prefer questions that are earlier.
+        q.definition_order
+    ))
+
+    # Return the first question after sorting, which is the preferable one to answer next.
+    return can_answer[0]
+
 @task_view
 def save_answer(request, task, answered, context, __):
     if request.method != "POST":
@@ -193,14 +224,17 @@ def save_answer(request, task, answered, context, __):
     if not task.has_write_priv(request.user):
         return HttpResponseForbidden()
 
-    # normal redirect - load next linear question if possible
-    if request.POST.get("next_linear_question"):
-        redirect_to = request.POST["next_linear_question"] + "?previous=nquestion"
-    else:
-        redirect_to = task.get_absolute_url() + "?previous=nquestion"
-
     # validate question
     q = task.module.questions.get(id=request.POST.get("question"))
+
+    # make a function that gets the URL to the next page
+    def redirect_to():
+        next_q = get_next_question(q, task)
+        if next_q:
+            # Redirect to the next question.
+            return task.get_absolute_url_to_question(next_q) + "?previous=nquestion"
+        # Redirect to the module finished page because there are no more questions to answer.
+        return task.get_absolute_url() + "/finished?previous=nquestion"
 
     # validate and parse value
     if request.POST.get("method") == "clear":
@@ -232,7 +266,7 @@ def save_answer(request, task, answered, context, __):
             # clear it is to use Skip.) If the user submits nothing,
             # just return immediately.
             if value is None:
-                return JsonResponse({ "status": "ok", "redirect": redirect_to })
+                return JsonResponse({ "status": "ok", "redirect": redirect_to() })
 
         else:
             # All other values come in as string fields. Because
@@ -287,7 +321,12 @@ def save_answer(request, task, answered, context, __):
                 module=q.answer_type_module)
 
             answered_by_tasks = [t]
-            redirect_to = t.get_absolute_url() + "?previous=parent"
+
+            # Don't redirect to the next question. Redirect to the new Task.
+            # Replace the redirect_to() function with a new function that
+            # returns the URL to the new Task.
+            def redirect_to():
+                return t.get_absolute_url() + "?previous=parent"
 
         elif value == None:
             # User is skipping this question.
@@ -370,7 +409,7 @@ def save_answer(request, task, answered, context, __):
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.
-    response = JsonResponse({ "status": "ok", "redirect": redirect_to })
+    response = JsonResponse({ "status": "ok", "redirect": redirect_to() })
 
     # Return the response.
     return response
@@ -705,12 +744,6 @@ def show_question(request, task, answered, context, q):
 
     # get context of questions in module
     context_sorted = module_logic.get_question_context(answered, q)
-    # determine next linear question
-    current_q_index = next((index for (index, d) in enumerate(context_sorted) if d["is_this_question"] == True), None)
-    if current_q_index < len(context_sorted) - 1:
-        next_linear_question = context_sorted[current_q_index + 1]
-    else:
-        next_linear_question = None
 
     # Split the `context.update` into smaller parts so it is possible to add in timing code
     # to examine performance of certain embedded calls.
@@ -751,8 +784,6 @@ def show_question(request, task, answered, context, q):
     })
     context.update({
         "context": context_sorted,
-
-        "next_linear_question": next_linear_question,
 
         # task_progress_project_list parameters
         "root_task_answers": root_task_answers,
