@@ -55,11 +55,8 @@ Remove contextbar from top of page
         <form id="control_lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
           <input type="text" value="" name="id" placeholder="Enter control id"/>
               <button type="submit" class="btn btn-success">Look up</button>
-              <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              <a href="/">families</a> -->
         </form>
     </div>
-
 
     {% if control.title is not None %}
     <h2 id="control-heading" class="">
@@ -68,9 +65,7 @@ Remove contextbar from top of page
     </h2>
     <div>
       <div id="control-description" class="control-text"><h3>Description</h3>{{ control.description }}</div>
-      <!-- <div id="control-responsible"  class="control-text"><h3>Responsible</h3>The <i>{{ control.responsible }}</i> is reponsible for implementing this control.</div> -->
       <div id="control-guidance"  class="control-text"><h3>Guidance</h3>{{ control.guidance }}</div>
-      <!-- <div id="control-enhancements"  class="control-text"><h3>Control Enhancements</h3>{{ control.control_enhancements }}</div> -->
     </div>
     {% else %}
     <h2 id="control-heading" class="">

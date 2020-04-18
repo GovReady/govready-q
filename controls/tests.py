@@ -11,7 +11,7 @@
 # environment variable and the options.binary_location field below.
 
 import os
-import os.path
+# import os.path
 import re
 from unittest import skip
 
@@ -20,7 +20,30 @@ from django.test import TestCase
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
-from controls.oscal import Catalogs, Catalog
+# from controls.oscal import Catalogs, Catalog
+
+# ####### siteapp.test
+# import os
+# import os.path
+# import re
+# from unittest import skip
+
+# from django.conf import settings
+# from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+# from django.utils.crypto import get_random_string
+
+# from siteapp.models import (Organization, Portfolio, Project,
+#                             ProjectMembership, User)
+
+# ######guidedmodules.test
+# from django.test import TestCase
+# from django.conf import settings
+
+# from siteapp.models import Organization, Project, User
+# from guidedmodules.models import Module, Task, TaskAnswer
+# from guidedmodules.module_logic import *
+# from guidedmodules.app_loading import load_app_into_database
+
 
 
 def var_sleep(duration):
@@ -190,6 +213,7 @@ class ControlUITests(SeleniumTest):
 
     def test_control_lookup(self):
         self.browser.get(self.url("/controls/800-53/AU-2/"))
+        var_sleep(2)
         self.assertInNodeText("AU-2", "#control-heading")
         self.assertInNodeText("Audit Events", "#control-heading")
 
@@ -203,4 +227,18 @@ class ControlUITests(SeleniumTest):
     #     self.assertInNodeText("XX-2", "#control-heading")
     #     self.assertInNodeText("The control XX-2 was not found in the control catalog.", "#control-message")
 
+# class ControlUIControlEditorTests(SeleniumTest):
+#     def test_homepage(self):
+#         self.browser.get(self.url("/controls/editor"))
+#         self.assertInNodeText("Test works", "p")
+
+    # def test_control_lookup(self):
+    #     self.browser.get(self.url("/controls/800-53/AU-2/"))
+    #     self.assertInNodeText("AU-2", "#control-heading")
+    #     self.assertInNodeText("Audit Events", "#control-heading")
+
+    # def test_control_enhancement_lookup(self):
+    #     self.browser.get(self.url("/controls/800-53/AC-2 (4)/"))
+    #     self.assertInNodeText("AC-2 (4)", "#control-heading")
+    #     self.assertInNodeText("Automated Audit Actions", "#control-heading")
 

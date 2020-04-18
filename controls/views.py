@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .oscal import Catalog
+from .oscal import Catalog, Catalogs
 import json
 import re
+from .utilities import *
+from .models import CommonControl, CommonControlProvider
 
 
 def test(request):
@@ -14,25 +16,11 @@ def test(request):
 def control1(request, cl_id):
     """Control detail view"""
 
-    # Handle improperly formatted control id
-    # Recognize only properly formmated control id:
-    #   at-1, at-01, ac-2.3, ac-02.3, ac-2 (3), ac-02 (3), ac-2(3), ac-02 (3)
-    pattern = re.compile("^[A-Za-z][A-Za-z]-[0-9() .]*$")
-    if not pattern.match(cl_id):
-        return render(request, "controls/detail.html", { "control": {} })
+    cl_id = oscalize_control_id(cl_id)
 
     # Get catalog
     catalog = Catalog()
     cg_flat = catalog.get_flattended_controls_all_as_dict()
-
-    # Handle properly formatted existing id
-    # Transform various patterns of control ids into OSCAL format
-    # Fix leading zero in at-01, ac-02.3, ac-02 (3)
-    cl_id = cl_id = re.sub(r'^([A-Za-z][A-Za-z]-)0(.*)$', r'\1\2', cl_id)
-    # Change paranthesis into a dot
-    cl_id = re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)([ ]*)\(([0-9]*)\)$', r'\1\2.\4', cl_id)
-    # Remove trailing space
-    cl_id = cl_id.strip(" ")
 
     # Handle properly formatted control id that does not exist
     if cl_id.lower() not in cg_flat:
@@ -43,3 +31,31 @@ def control1(request, cl_id):
         "control": cg_flat[cl_id.lower()]
     }
     return render(request, "controls/detail.html", context)
+
+def editor(request, cl_id):
+    """Control detail view"""
+
+    cl_id = oscalize_control_id(cl_id)
+
+    # Get catalog
+    catalog = Catalog()
+    cg_flat = catalog.get_flattended_controls_all_as_dict()
+
+    # Handle properly formatted control id that does not exist
+    if cl_id.lower() not in cg_flat:
+        return render(request, "controls/detail.html", { "control": {} })
+
+    # Retrieve any related CommonControls
+    common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
+    ccp_name = None
+    if common_controls:
+        cc = common_controls[0]
+        ccp_name = cc.common_control_provider.name
+    # Get and return the control
+    context = {
+        "control": cg_flat[cl_id.lower()],
+        "common_controls": common_controls,
+        "ccp_name": ccp_name
+
+    }
+    return render(request, "controls/editor.html", context)

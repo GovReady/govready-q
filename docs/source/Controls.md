@@ -45,7 +45,6 @@ The control catalog is a dictionary of dictionaries. The ID of the controls is t
 * Create a new directory `controls` into which we add a class for listing a security control catalog.
 * Add a new item type to module_logic.TemplateContext called `control_catalog` to enable iterable dictionary of control catalog.
 
-
 ## Code discussion
 
 Output templates are Jinja templates within Django template and are rendered within `guidedmodules/module_logic.py`
@@ -63,4 +62,38 @@ Better way is back to putting in view
             for attribute in ("task_link", "project", "organization", "control_catalog_t"):
                 if attribute not in seen_keys:
                     yield attribute
+
+## Control Utilities
+
+Developers should see `controls/utilities.py` for useful functionality that can be imported our used with `from contols.utilities import *` statement in Python scripts.
+
+The function `oscalize_control_id`outputs an oscal standard control id from various common formats for control ids.
+
+The Class `CliControlImporter` is a command line importer into controls from an `.xlsx` file and loading those files into Common Control or Control models. **Note this class currently needs to be customized for the structure of importing data.**
+
+Below is a snippet of code for Django Shell leveraging `CliControlImporter` to import Common Controls from a spreadsheet of controls
+
+        from controls.utilities import CliControlImporter
+        fp = "~/Downloads/Copy of Controls_Implementation_Securit.xlsx"
+        cci = CliControlImporter(fp)
+
+        field_map = {'oscal_ctl_id': 'Paragraph/ReqID', 'legacy_imp_smt': 'Private Implementation'}
+        r = cci.rows[33]
+        cci.build_common_control_from_row(r, field_map)
+        x = cci.build_common_control_from_row(r, field_map)
+        cci.create_common_control(x)
+
+        r = cci.rows[37]
+        x = cci.create_common_control(cci.build_common_control_from_row(r, field_map), field_map)
+        cci.create_common_control(x)
+
+        # Loop through rows
+        # Rows to be imported from this spreadsheet with CommonControls have long strings in 'Private Implementation' column
+        field_map = {'oscal_ctl_id': 'Paragraph/ReqID', 'legacy_imp_smt': 'Private Implementation'}
+        for r in cci.rows:
+            if len(r['Private Implementation']) < 10:
+                continue
+            x = cci.build_common_control_from_row(r, field_map)
+            x['oscal_ctl_id']
+            cci.create_common_control(x)
 

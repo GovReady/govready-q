@@ -1,0 +1,4 @@
+xlrd==1.2.0 \
+    --hash=sha256:546eb36cee8db40c3eaa46c351e67ffee6eeb5fa2650b71bc4c758a29a1b29b2 \
+    --hash=sha256:e551fb498759fa3a5384a94ccd4c3c02eb7c00ea424426e212ac0c57be9dfbde \
+    # via -r requirements_util.in

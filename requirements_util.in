@@ -1,0 +1,7 @@
+# This is our master file of Utility requirements. Use ./requirements_txt_updater.sh
+# to generate the requirements_utilities.txt file that is used in deployments to install
+# Python libraries.
+
+# Reading data from .xls files
+# xlrd https://github.com/python-excel/xlrd 
+xlrd # CUSTOM (Reproduce Copyright for Distribution)

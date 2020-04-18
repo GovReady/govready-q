@@ -1,17 +1,13 @@
 from django.db import models
 
-# Create your models here.
 
+class CommonControlProvider(models.Model):
+    name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=True)
+    description = models.CharField(max_length=255, help_text="Brief description of the CommonControlProvider", unique=False)
 
-# class Control(models.Model):
-#     ctlid = models.CharField(max_length=75, help_text="The ID of this control.", unique=True)
-#     ctlclass = models.CharField(max_length=75, help_text="The class (e.g. framework) of this control.", unique=True)
-#     title = models.CharField(max_length=255, help_text="The title of this control.", unique=True)
-
-#     def test_method(self):
-#         return "Control test method"
-
-#     def sspout(self):
-#         output = "CONTROL TITLE: {}".format(self.title)
-#         return output
-
+class CommonControl(models.Model):
+    name = models.CharField(max_length=150, help_text="Name of the CommonControl", unique=True, blank=True, null=True)
+    description = models.CharField(max_length=255, help_text="Brief description of the CommonControlProvider", unique=False)
+    oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)
+    legacy_imp_smt = models.TextField(help_text="Legacy large implementation statement", unique=False, blank=True, null=True,)
+    common_control_provider =  models.ForeignKey(CommonControlProvider, on_delete=models.CASCADE)

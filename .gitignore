@@ -3,6 +3,7 @@ __pycache__/
 /local
 /modules/local
 siteapp/static/vendor
+siteapp/static
 apps/
 
 # generated files

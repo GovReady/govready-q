@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Control
+{% endblock %}
+
+{% block head %}
+<style>
+  .project-image {
+    width: 20px;
+    float: left;
+    margin: 4px 0 5px 8px;
+  }
+
+  .inline {
+    display: inline;
+  }
+
+  h3 {
+    color: #888;
+    #font-weight: bold;
+    margin-top: 20px;
+  }
+
+  .control-text {
+    white-space: pre-wrap;
+    font-size: 12pt;
+    max-width: 700px;
+    font-family: trebuchet ms, sans-serif;
+    /*text-align: justify;
+    text-justify: inter-word;*/
+  }
+
+  #control_lookup input {
+    width: 130px;
+  }
+
+</style>
+{% endblock %}
+
+Remove contextbar from top of page
+{% block contextbar %}{% endblock %}
+
+% block body-wide %
+{% block body %}
+
+
+<div style="margin-top: 30px">
+
+  <div class="row" style="">
+    <div style="float: right; margin: 0 0.5em 0em 5em;">
+        <form id="control_lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
+          <input type="text" value="" name="id" placeholder="Enter control id"/>
+              <button type="submit" class="btn btn-success">Look up</button>
+              <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <a href="/">families</a> -->
+        </form>
+    </div>
+  </div><!--/row-->
+
+    <div class="row" style="">
+
+      <div id="control_info" class="col-xs-5 col-sm-5 col-md-5 col-lg-4 col-xl-3" style="border-right:1px solid gray;">
+            {% if control.title is not None %}
+            <h2 id="control-heading" class="">
+              <small style="color: #888;">NIST SP 800-53 Rev 4</small><br>
+              {{ control.id_display|upper }} {{ control.title }}
+            </h2>
+            <div>
+              <div id="control-description" class="control-text"><h3>Description</h3>{{ control.description }}</div>
+              <div id="control-guidance"  class="control-text"><h3>Guidance</h3>{{ control.guidance }}</div>
+            </div>
+            {% else %}
+            <h2 id="control-heading" class="">
+              <small style="color: #888;">NIST SP 800-53</small><br>
+              {{ control.id }}
+            </h2>
+            <div id="control-message">
+              <p>The control {{ control.id }} was not found in the control catalog.</p>
+            </div>
+            {% endif %}
+      </div>
+
+      <div id="control_info2" class="col-xs-5 col-sm-5 col-md-5 col-lg-4 col-xl-3" style="border-right:1px solid gray;">
+        {% if control.title is not None %}
+        <h2 id="control-heading" class="">
+          <small style="color: #888;">NIST SP 800-53 Rev 4 <i>Editor</i></small><br>
+        </h2>
+        <div>
+          <form>
+               <div class="form-group">
+                <label for="component">Provider</label>
+                <div id="component">{{ccp_name}}</div>
+              </div>
+
+              <div class="form-group">
+                <label for="src_control_content">Control Content</label>
+                <textarea class="form-control" id="src_control_content" placeholder="Paste control text here" rows="5" cols="50">{% if common_controls|length > 0 %}{% for control in common_controls %}{{control.legacy_imp_smt}}{% endfor %}{% endif %}
+                </textarea>
+              </div>
+          </form>
+        </div>
+        {% else %}
+        <h2 id="control-heading" class="">
+          <small style="color: #888;">NIST SP 800-53</small><br>
+          {{ control.id }}
+        </h2>
+        <div id="control-message">
+          <p>The control {{ control.id }} was not found in the control catalog.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <div id="control_info4" class="col-xs-5 col-sm-5 col-md-5 col-lg-4 col-xl-3" style="border-right:1px solid gray;">
+        {% if control.title is not None %}
+        <h2 id="control-heading" class="">
+          <small style="color: #888;">NIST SP 800-53 Rev 4 <i>Editor</i></small><br>
+        </h2>
+        <div>
+          <form>
+              <div class="form-group">
+                <label for="compoment">Component</label>
+                <input type="text" class="form-control" id="component" placeholder="Name of component">
+              </div>
+              <div class="form-group">
+                <label for="statement">Control Statement</label>
+                <textarea class="form-control" id="statement" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="app_remarks">Remarks</label>
+                <textarea class="form-control" id="app_remarks" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+              </div>
+          </form>
+        </div>
+        {% else %}
+        <h2 id="control-heading" class="">
+          <small style="color: #888;">NIST SP 800-53</small><br>
+          {{ control.id }}
+        </h2>
+        <div id="control-message">
+          <p>The control {{ control.id }} was not found in the control catalog.</p>
+        </div>
+        {% endif %}
+      </div>
+
+    </div><!--/row-->
+
+</div>
+
+      {{ block.super }}
+      {% endblock %}
+
+      {% block scripts %}
+      <script>
+        // Submits control id for Control look up box
+        function show_control_by_id() {
+          var control_id = $('#control_lookup').find('input[name="id"]').val();
+          var url = "/controls/"+"800-53"+"/"+control_id+"/editor";
+          window.location.href = url;
+        }
+      </script>
+      {% endblock %}
