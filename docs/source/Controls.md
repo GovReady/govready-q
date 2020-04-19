@@ -69,6 +69,9 @@ Developers should see `controls/utilities.py` for useful functionality that can 
 
 The function `oscalize_control_id`outputs an oscal standard control id from various common formats for control ids.
 
+
+### CliControlImporter
+
 The Class `CliControlImporter` is a command line importer into controls from an `.xlsx` file and loading those files into Common Control or Control models. **Note this class currently needs to be customized for the structure of importing data.**
 
 Below is a snippet of code for Django Shell leveraging `CliControlImporter` to import Common Controls from a spreadsheet of controls
@@ -96,4 +99,37 @@ Below is a snippet of code for Django Shell leveraging `CliControlImporter` to i
             x = cci.build_common_control_from_row(r, field_map)
             x['oscal_ctl_id']
             cci.create_common_control(x)
+
+### StatementParser_TaggedTextWithElementsInBrackets
+
+The `StatementParser_TaggedTextWithElementsInBrackets` class is a utility to parse statements from a text file with serially listed controls where control ids and elements are enclosed in brackets.
+
+* Goal is to save statement of whatever length and list of system elements involved with process
+* Ignore multiple intervening lines
+* System name must be entered manually
+* Script makes one pass to build search dictionary with bracketed strings then uses dictionary to find all instances of strings in statements. This makes it unnecessary to place all instances of elements regardless of brackets.
+
+The source text file to be parsed should be in the following format:
+
+       meta:
+          system_name:  My IT System
+          system_id:    id_in_my_database_if_importing
+
+       [AU-2]
+
+
+       The [CloudOps ISSO] has access to the audit logs in [Kibana] however responses are based on artifacts provided
+       by the [LMO team].
+
+
+       (b) The [LMO Team] and the [ISSO] coordinates the security audit function with other organizational entities 
+       requiring audit-related information to enhance mutual support and to help guide the selection of auditable events;
+
+Below is a snippet of code for Django Shell leveraging `StatementParser_TaggedTextWithElementsInBrackets` to parse control implementatation statements from a text of controls
+
+       from controls.utilities import StatementParser_TaggedTextWithElementsInBrackets
+       fp = "/Users/greg/Downloads/TaggedTextWithElementsInBrackets_example.txt"
+       par = StatementParser_TaggedTextWithElementsInBrackets(fp)
+       par.statements[0]['sid'], par.statements[0]['elements']
+
 

@@ -156,3 +156,118 @@ class CliControlImporter(object):
 
     # Notes
 
+class StatementParser_TaggedTextWithElementsInBrackets(object):
+    """Parses statements from a text file with serially listed controls where control ids and elements are enclosed in brackets"""
+
+    # Example text file format to be parsed
+    #    meta:
+    #       system_name:  My IT System
+    #       system_id:    id_in_my_database_if_importing
+    #
+    #    [AU-2]
+    #
+    #
+    #    The [CloudOps ISSO] has access to the audit logs in [Kibana] however responses are based on artifacts provided
+    #    by the [LMO team].
+    #
+    #
+    #    (b) The [LMO Team] and the [ISSO] coordinates the security audit function with other organizational entities 
+    #    requiring audit-related information to enhance mutual support and to help guide the selection of auditable events;
+    #
+    # Notes:
+    #    - Goal is to save statement of whatever length and list of system elements involved with process
+    #    - Ignore multiple intervening lines
+    #    - System name must be entered manually
+    #    - Script makes one pass to build search dictionary with bracketed strings
+    #      then uses dictionary to find all instances of strings in statements. This makes it
+    #    - unnecessary to place all instances of elements regardless of brackets.
+    #
+
+    # Example snippet of code using this Class
+    # Note how the field_map must be defined and probably some customization of the class itself
+    #
+    #    # Run from root directory of GovReady project
+    #    # Start Django shell with `python manage.py shell`
+    #
+    #    from controls.utilities import StatementParser_TaggedTextWithElementsInBrackets
+    #    fp = "controls/data/test_data/TaggedTextWithElementsInBrackets_example.txt"
+    #    par = StatementParser_TaggedTextWithElementsInBrackets(fp)
+    #
+    #    par.statements[0]['sid'], par.statements[0]['elements']
+    #
+    # from controls.utilities import StatementParser_TaggedTextWithElementsInBrackets;fp = "controls/data/test_data/TaggedTextWithElementsInBrackets_example.txt"; par = StatementParser_TaggedTextWithElementsInBrackets(fp)
+    # from controls.utilities import StatementParser_TaggedTextWithElementsInBrackets;fp = "controls/data/test_data/TaggedTextWithElementsInBrackets_example.txt"; par = StatementParser_TaggedTextWithElementsInBrackets(fp); s = par.statements_by_control_id(); s.keys()
+    # par.create_statement_dict("[AC-2]", s["[AC-2]"])
+
+
+    def __init__(self, file_path):
+        self.file_path = file_path
+        # self.catalog = None
+        self.text = self._read_file()
+        self.elements = self.all_terms_in_brackets_distinct()
+        self.statements = []
+        statements = self.statements_by_control_id()
+        for sid in statements.keys():
+            self.statements.append(self.create_statement_dict(sid,statements[sid]))
+
+    def _read_file(self):
+        # does file exist?
+        # TODO Handle missing file
+        with open(self.file_path, 'r') as filehandle:
+            filecontent = filehandle.read()
+        return filecontent
+
+    def all_terms_in_brackets(self):
+        import re
+        # Non-gready pattern match for bracket items
+        bracketed_terms = re.findall(r'\[(.*?)\]', self.text)
+        return bracketed_terms
+
+    def all_terms_in_brackets_distinct(self):
+        import re
+        # Non-gready pattern match for bracket items
+        bracketed_terms = set(re.findall(r'\[(.*?)\]', self.text))
+        return bracketed_terms
+
+    def statements_by_control_id(self):
+        """Split text into separate statements by control ids from a catalog"""
+
+        # Temporary catalog
+        control_ids = ["[AC-2]", "[AU-2]", "[CM-5]"]
+
+        cnt = 0
+        statements = {}
+        statement = ""
+        cur_id = "[XX-0]"
+        # Read text line by line and aggregate content by control_id
+        lines = self.text.split("\n")
+
+        for line in lines:
+            cnt += 1
+            # print("{}|{}|".format(cnt, line))
+            # is this  control_id on this line?
+            if line in control_ids and line != cur_id:
+                # Add current statement to statements dictionary
+                # Start new statement and update cur_id
+                cur_id = line
+                statements[cur_id] = ""
+                # statements[cur_id] = {"sid": cur_id, "statement": "", "elements": [], "element_counts": {}}
+            else:
+                if len(statements.keys()) > 0 :
+                    statements[cur_id] += "\n" + line
+        return statements
+
+    def create_statement_dict(self, sid, statement):
+        """Creates a proper statement dictionary profiling the statement by element terms"""
+        # {"sid": cur_id, "statement": "", "elements": [], "element_counts": {}}
+
+        sd = {"sid": sid, "statement": statement, "elements": [], "element_counts": {}}
+        import re
+        # Count matches of bracketed terms
+        for t in self.all_terms_in_brackets_distinct():
+            t_found = re.findall(r'{}'.format(t), statement)
+            if len(t_found) > 0:
+                sd['elements'].append(t)
+                sd['element_counts'][t] = len(t_found)
+        return sd
+
