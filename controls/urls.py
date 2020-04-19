@@ -15,4 +15,7 @@ urlpatterns = [
     url(r'^$', views.test),
     url(r'^800-53/(?P<cl_id>.*)/$', views.control1, name="control_info"),
     url(r'^800-53/(?P<cl_id>.*)/editor$', views.editor, name="control_editor"),
+
+    url(r'^smt/_save/$', views.save_smt),
+
 ]

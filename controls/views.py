@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from .oscal import Catalog, Catalogs
 import json
 import re
@@ -59,3 +59,56 @@ def editor(request, cl_id):
 
     }
     return render(request, "controls/editor.html", context)
+
+# @task_view
+def save_smt(request):
+    """Save a statement"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    else:
+    # does user have write privs?
+    # if not task.has_write_priv(request.user):
+    #     return HttpResponseForbidden()
+
+    # validate question
+    # q = task.module.questions.get(id=request.POST.get("question"))
+
+    # validate and parse value
+    # if request.POST.get("method") == "clear":
+    #     # Clear means that the question returns to an unanswered state.
+    #     # This method is only offered during debugging to make it easier
+    #     # to test the application's behavior when questions are unanswered.
+    #     value = None
+    #     cleared = True
+    #     skipped_reason = None
+    #     unsure = False
+
+    # elif request.POST.get("method") == "skip":
+    #     # The question is being skipped, i.e. answered with a null value,
+    #     # because the user doesn't know the answer, it doesn't apply to
+    #     # the user's circumstances, or they want to return to it later.
+    #     value = None
+    #     cleared = False
+    #     skipped_reason = request.POST.get("skipped_reason") or None
+    #     unsure = bool(request.POST.get("unsure"))
+        print(request.POST)
+        value = request.POST.getlist("value")
+        print("received POST data: ", value) # DEBUG
+
+    # elif request.POST.get("method") == "save":
+    #     # load the statement from the HTTP request
+    #     value = request.POST.getlist("value")
+    #     print("received POST data: ", value) # DEBUG
+
+    #     # parse & validate
+    #     try:
+    #         pass
+    #     except ValueError as e:
+    #         # client side validation should have picked this up
+    #         return JsonResponse({ "status": "error", "message": str(e) })
+
+    return JsonResponse({ "status": "success", "message": str(value) })
+
+
