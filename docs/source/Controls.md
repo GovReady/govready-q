@@ -63,9 +63,9 @@ Better way is back to putting in view
                 if attribute not in seen_keys:
                     yield attribute
 
-## Control Utilities
+## Control Parsers
 
-Developers should see `controls/utilities.py` for useful functionality that can be imported our used with `from contols.utilities import *` statement in Python scripts.
+Developers should see `controls/parsers.py` for useful functionality that can be imported our used with `from controls.parsers import *` statement in Python scripts.
 
 The function `oscalize_control_id`outputs an oscal standard control id from various common formats for control ids.
 
@@ -76,7 +76,7 @@ The Class `CliControlImporter` is a command line importer into controls from an 
 
 Below is a snippet of code for Django Shell leveraging `CliControlImporter` to import Common Controls from a spreadsheet of controls
 
-        from controls.utilities import CliControlImporter
+        from controls.parsers import CliControlImporter
         fp = "~/Downloads/Copy of Controls_Implementation_Securit.xlsx"
         cci = CliControlImporter(fp)
 
@@ -127,7 +127,7 @@ The source text file to be parsed should be in the following format:
 
 Below is a snippet of code for Django Shell leveraging `StatementParser_TaggedTextWithElementsInBrackets` to parse control implementatation statements from a text of controls
 
-       from controls.utilities import StatementParser_TaggedTextWithElementsInBrackets
+       from controls.parsers import StatementParser_TaggedTextWithElementsInBrackets
        fp = "/Users/greg/Downloads/TaggedTextWithElementsInBrackets_example.txt"
        par = StatementParser_TaggedTextWithElementsInBrackets(fp)
        par.statements[0]['sid'], par.statements[0]['elements']
