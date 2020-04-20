@@ -224,6 +224,7 @@ Remove contextbar from top of page
                 <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
 
               <div class="modal-footer">
+                <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
                 <button type="button" name="submit" value="delete" class="btn btn-xs btn-danger" onclick="authoring_tool_delete_question()">Delete</button>
                 <button type="button" name="submit" value="cancel" class="btn btn-xs btn-default" data-dismiss="modal">Cancel</button>
                 <button type="submit" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false">Save</button>
@@ -263,7 +264,15 @@ Remove contextbar from top of page
               keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
               success: function(res) {
                 console.log('success');
-                console.log(res)
+                console.log(res);
+                if (res['status'] == "success") {
+                  $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
+                } else {
+                  $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
+                }
+                setTimeout(function() {
+                  $('#success-msg-'+smt_panel_num).fadeOut("fast");
+                }, 1000 );
               }
           });
 
