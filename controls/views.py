@@ -4,7 +4,7 @@ from .oscal import Catalog, Catalogs
 import json
 import re
 from .utilities import *
-from .models import CommonControl, CommonControlProvider
+from .models import Statement, Element, CommonControl, CommonControlProvider
 
 
 def test(request):
@@ -68,47 +68,91 @@ def save_smt(request):
         return HttpResponseNotAllowed(["POST"])
 
     else:
-    # does user have write privs?
-    # if not task.has_write_priv(request.user):
-    #     return HttpResponseForbidden()
+        # does user have write privs?
+        # if not task.has_write_priv(request.user):
+        #     return HttpResponseForbidden()
 
-    # validate question
-    # q = task.module.questions.get(id=request.POST.get("question"))
+        # validate question
+        # q = task.module.questions.get(id=request.POST.get("question"))
 
-    # validate and parse value
-    # if request.POST.get("method") == "clear":
-    #     # Clear means that the question returns to an unanswered state.
-    #     # This method is only offered during debugging to make it easier
-    #     # to test the application's behavior when questions are unanswered.
-    #     value = None
-    #     cleared = True
-    #     skipped_reason = None
-    #     unsure = False
+        # validate and parse value
+        # if request.POST.get("method") == "clear":
+        #     # Clear means that the question returns to an unanswered state.
+        #     # This method is only offered during debugging to make it easier
+        #     # to test the application's behavior when questions are unanswered.
+        #     value = None
+        #     cleared = True
+        #     skipped_reason = None
+        #     unsure = False
 
-    # elif request.POST.get("method") == "skip":
-    #     # The question is being skipped, i.e. answered with a null value,
-    #     # because the user doesn't know the answer, it doesn't apply to
-    #     # the user's circumstances, or they want to return to it later.
-    #     value = None
-    #     cleared = False
-    #     skipped_reason = request.POST.get("skipped_reason") or None
-    #     unsure = bool(request.POST.get("unsure"))
-        print(request.POST)
-        value = request.POST.getlist("value")
-        print("received POST data: ", value) # DEBUG
+        # elif request.POST.get("method") == "skip":
+        #     # The question is being skipped, i.e. answered with a null value,
+        #     # because the user doesn't know the answer, it doesn't apply to
+        #     # the user's circumstances, or they want to return to it later.
+        #     value = None
+        #     cleared = False
+        #     skipped_reason = request.POST.get("skipped_reason") or None
+        #     unsure = bool(request.POST.get("unsure"))
 
-    # elif request.POST.get("method") == "save":
-    #     # load the statement from the HTTP request
-    #     value = request.POST.getlist("value")
-    #     print("received POST data: ", value) # DEBUG
+        #print(dict(request.POST))
+        form_dict = dict(request.POST)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+        print(form_values)
 
-    #     # parse & validate
-    #     try:
-    #         pass
-    #     except ValueError as e:
-    #         # client side validation should have picked this up
-    #         return JsonResponse({ "status": "error", "message": str(e) })
+        # Save Statement
+        try:
+            statement = Statement(  sid=form_values['sid'], # need to make oscalized?
+                                    sid_class=form_values['sid_class'],
+                                    body=form_values['body'],
+                                    statement_type=form_values['statement_type'],
+                                    remarks=form_values['remarks'],
+                                 )
+            statement.save()
+            statement_status = "ok"
+            statement_msg = "Statement saved."
+        except Exception as e:
+            statement_status = "error"
+            statement_msg = "Statement save failed. Error reported {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg })
 
-    return JsonResponse({ "status": "success", "message": str(value) })
+        # Save element (e.g., component) if received
+        if 'element' in form_values and form_values['element'] is not None:
+            if Element.objects.filter(name=form_values['element']).exists():
+                # Does Element already exist?
+                # TODO need better filtering -- should pick element in form with auto complete
+                elements = Element.objects.filter(name=form_values['element'])
+                element = elements[0]
+                element_status = "ok"
+                element_msg = "Element exists."
+            else:
+                # Create Element
+                try:
+                    element = Element(name=form_values['element'])
+                    element.save()
+                    print(element)
+                    element_status = "ok"
+                    element_msg = "Element saved."
+                except Exception as e:
+                    element_status = "error"
+                    element_msg = "Element save failed. Error reported {}".format(e)
+                    return JsonResponse({ "status": "error", "message":  statement_msg + " " + element_msg })
+        else:
+            print("problem with element")
+
+        print("element", element)
+        # Associate element with statement
+        try:
+            statement.elements.add(element)
+            statement_element_status = "ok"
+            statement_element_msg = "Statement associated with element."
+        except Exception as e:
+            statement_element_status = "error"
+            statement_element_msg = "Failed to associate statement with element {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg + " " + element_msg + " " +statement_element_msg })
+
+
+    return JsonResponse({ "status": "success", "message": statement_msg + " " + element_msg + " " +statement_element_msg })
 
 

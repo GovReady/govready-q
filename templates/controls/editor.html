@@ -126,7 +126,7 @@ Remove contextbar from top of page
                     <textarea class="form-control" id="statement" placeholder="Paste control text here" rows="5" cols="50">{{control.legacy_imp_smt}}</textarea>
                   </div>
                   <div class="form-group">
-                    <label for="app_remarks">Remarks</label>
+                    <label for="remarks">Remarks</label>
                     <textarea class="form-control" id="app_remarks" placeholder="Paste control text here" rows="5" cols="50"></textarea>
                   </div>
                 </form>
@@ -194,7 +194,7 @@ Remove contextbar from top of page
             <div class="panel-heading" role="tabx" id="document-panel_num-title">
               <h4 id="panel-panel_num-title" class="panel-title">
                 <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body">
-                  <span id="component-panel_num-title">Other</span> {{ control.id|upper }} Component Implementation
+                  <span id="element-panel_num-title">Other</span> {{ control.id|upper }} Component Implementation
                 </a>
               </h4>
             </div>
@@ -205,20 +205,23 @@ Remove contextbar from top of page
               <form id="smt_panel_num">
                 <div class="form-group">
                   <label for="compoment">Component</label>
-                  <input type="text" class="form-control" id="component" name="component" placeholder="Name of component"
-                    onchange="$('#component-panel_num-title').text($(this).val());">
+                  <input type="text" class="form-control" id="element" name="element" placeholder="Name of component"
+                    onchange="$('#element-panel_num-title').text($(this).val());">
                 </div>
                 <div class="form-group">
                   <label for="statement">Statement</label>
-                  <textarea class="form-control" id="statement" name="statement" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+                  <textarea class="form-control" id="body" name="body" placeholder="Paste control text here" rows="5" cols="50"></textarea>
                 </div>
                 <div class="form-group">
-                  <label for="app_remarks">Remarks</label>
-                  <textarea class="form-control" id="app_remarks" name="app_remarks" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+                  <label for="remarks">Remarks</label>
+                  <textarea class="form-control" id="remarks" name="remarks" placeholder="Paste control text here" rows="5" cols="50"></textarea>
                 </div>
 
                 <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                 <input type="hidden" id="system_id" name="system_id" value="1">
+                <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
+                <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
+                <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
 
               <div class="modal-footer">
                 <button type="button" name="submit" value="delete" class="btn btn-xs btn-danger" onclick="authoring_tool_delete_question()">Delete</button>
@@ -264,7 +267,7 @@ Remove contextbar from top of page
               }
           });
 
-          // don't do an actual <form> submit
+          // Stop <form> submit
           return false;
 
         }; // /save_smt
