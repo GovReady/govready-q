@@ -18,7 +18,7 @@ The code is open source, and [available on GitHub](https://github.com/GovReady/g
    :glob:
    :caption: Contents:
 
-   introduction
+introduction
    Deploy.rst
    Environment
    Permissions
@@ -29,12 +29,10 @@ The code is open source, and [available on GitHub](https://github.com/GovReady/g
    version.0.9.0
    migration_guide_086_09x.rst
 
-
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
 

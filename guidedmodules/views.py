@@ -980,7 +980,6 @@ def task_finished(request, task, answered, context, *unused_args):
         "project": task.project,
         "can_upgrade_app": task.project.root_task.module.app.has_upgrade_priv(request.user),
         "authoring_tool_enabled": task.project.root_task.module.is_authoring_tool_enabled(request.user),
-
         # task_progress_project_list parameters
         "root_task_answers": root_task_answers,
         "task_progress_project_list": task_progress_project_list,
@@ -989,9 +988,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "next_group": next_group,
         "next_module": next_module,
         "next_module_spec": next_module_spec,
-        # "context": context,
         "project_form": ProjectForm(request.user, initial={'portfolio': task.project.portfolio.id}) if task.project.portfolio else ProjectForm(request.user)
-
     })
     return render(request, "task-finished.html", context)
 

@@ -29,6 +29,7 @@ urlpatterns = [
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),
+    url(r"^controls/", include("controls.urls")),
 
     # app store
     url(r'^store$', views.apps_catalog, name="store"),

@@ -31,6 +31,7 @@ jobs:
         command: |
             pip install --user -r requirements.txt
             pip install --user -r requirements_mysql.txt
+            pip install --user -r requirements_util.txt
             ./fetch-vendor-resources.sh
 
     # This is adapted from https://github.com/circleci/circleci-images/blob/master/shared/images/Dockerfile-browsers.template
