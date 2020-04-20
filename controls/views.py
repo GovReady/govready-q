@@ -7,11 +7,44 @@ from .utilities import *
 from .models import Statement, Element, CommonControl, CommonControlProvider
 
 
+
 def test(request):
     # Simple test page of routing for controls
     output = "Test works."
     html = "<html><body><p>{}</p></body></html>".format(output)
     return HttpResponse(html)
+
+def index(request):
+    # Temporary index page for controls
+    output = "Temporary index page for controls. Please <a href='800-53/ac-1/'>view AC-1</a> to start."
+    html = "<html><body><p>{}</p></body></html>".format(output)
+    # return HttpResponse(html)
+
+    # cl_id = oscalize_control_id(cl_id)
+
+    # Get catalog
+    catalog = Catalog()
+    cg_flat = catalog.get_flattended_controls_all_as_dict()
+
+    # # Handle properly formatted control id that does not exist
+    # if cl_id.lower() not in cg_flat:
+    #     return render(request, "controls/detail.html", { "control": {} })
+
+    # Retrieve any related CommonControls
+    # common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
+    # ccp_name = None
+    # if common_controls:
+    #     cc = common_controls[0]
+    #     ccp_name = cc.common_control_provider.name
+    # Get and return the control
+
+    context = {
+        "control": None,
+        "common_controls": None,
+    }
+    return render(request, "controls/index.html", context)
+
+
 
 def control1(request, cl_id):
     """Control detail view"""

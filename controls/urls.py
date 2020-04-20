@@ -12,7 +12,7 @@ from siteapp.settings import *
 
 urlpatterns = [
     url(r'^test$', views.test),
-    url(r'^$', views.test),
+    url(r'^$', views.index),
     url(r'^800-53/(?P<cl_id>.*)/$', views.control1, name="control_info"),
     url(r'^800-53/(?P<cl_id>.*)/editor$', views.editor, name="control_editor"),
 
