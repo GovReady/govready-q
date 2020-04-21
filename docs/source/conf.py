@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -18,20 +18,20 @@
 # import recommonmark
 # from recommonmark.parser import CommonMarkParser
 # from recommonmark.transform import AutoStructify
-import m2r # Used to convert .md files into .rst files when Sphinx is building docs
+# import m2r # Used to convert .md files into .rst files when Sphinx is building docs
 
 # -- Project information -----------------------------------------------------
 
 project = 'GovReady-Q Compliance Server'
-copyright = '2019, GovReady PBC'
+copyright = '2019, 2020, GovReady PBC'
 author = 'Josh Tauberer, Greg Elin, Peter Kaminski, Ethan Kaminski'
 
 github_doc_root = 'https://github.com/GovReady/govready-q/tree/master/docs'
 
 # The short X.Y version
-version = '0.8.6'
+version = '0.9.1.3'
 # The full version, including alpha/beta/rc tags
-release = '0.8.6'
+release = '0.9.1.3'
 
 
 # -- General configuration ---------------------------------------------------
@@ -51,7 +51,6 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'm2r',
     'sphinxcontrib.contentui',
 ]
 
@@ -62,7 +61,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = ['.rst', '.md']
+source_suffix = ['.rst']
 
 # Parsers
 # source_parsers = {
@@ -214,26 +213,3 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
-#
-# Moved away from recommonmark b/c or errors with markdown
-# Using https://github.com/miyakogi/m2r instead - https://github.com/sphinx-doc/sphinx/issues/3800#issuecomment-355887410
-# https://github.com/rtfd/recommonmark/issues/93
-# https://github.com/rtfd/recommonmark/issues/73
-# 
-# Configuration to enable proper conversion of Markdown link syntax and TOC
-# def setup(app):
-#     app.add_config_value('recommonmark_config', {
-#         'url_resolver': lambda url: github_doc_root + url,
-#         'auto_toc_tree_section': 'Contents',
-#         }, True)
-#     app.add_transform(AutoStructify)
-
-# app setup hook
-# def setup(app):
-#     app.add_config_value('recommonmark_config', {
-#         'url_resolver': lambda url: github_doc_root + url,
-#         'auto_toc_tree_section': 'Contents',
-#         'enable_eval_rst': True,
-#         'enable_auto_doc_ref': True,
-#     }, True)
-#     app.add_transform(AutoStructify)

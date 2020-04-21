@@ -501,9 +501,9 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.click_element("form button.primaryAction")
 
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
-        var_sleep(2.5)
+        var_sleep(1.5)
         self.click_element('#question-simple_module') # go to the task page
-        var_sleep(5)
+        var_sleep(1.5)
         self.assertRegex(self.browser.title, "Next Question: Introduction") # user is on the task page
 
         # reset_login()
@@ -723,7 +723,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         # test a bad address
         self.fill_field("#inputctrl", "a@a")
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1.0)
         self.assertInNodeText("is not valid.", "#global_modal p") # make sure we get a stern message.
         self.click_element("#global_modal button") # dismiss the warning.
         var_sleep(.5)
@@ -1050,17 +1050,19 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self._login()
         var_sleep(.5)
         self._new_project()
+        # start "Test The Module Question Types"
         self.click_element('#question-question_types_module')
+        var_sleep(.75)
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(.75)
 
         # "You will now begin a module."
         self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(.75)
 
         # We're now at the intro screen for the simple sub-module.
         # Grab the page URL here so we can figure out the ID of this task
@@ -1095,7 +1097,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
         self.click_element("#save-button")
-        var_sleep(.5)
+        var_sleep(1.8)
         do_submodule("My second answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 

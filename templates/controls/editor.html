@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Control
+{% endblock %}
+
+{% block head %}
+<style>
+  .project-image {
+    width: 20px;
+    float: left;
+    margin: 4px 0 5px 8px;
+  }
+
+  .inline {
+    display: inline;
+  }
+
+  h3 {
+    color: #888;
+    #font-weight: bold;
+    margin-top: 20px;
+  }
+
+  .control-text {
+    white-space: pre-wrap;
+    font-size: 11pt;
+    /*max-width: 700px;*/
+    font-family: trebuchet ms, sans-serif;
+    text-align: justify;
+    /*text-justify: inter-word;*/
+  }
+
+  #control-lookup input {
+    width: 130px;
+  }
+
+</style>
+{% endblock %}
+
+Remove contextbar from top of page
+{% block contextbar %}{% endblock %}
+
+% block body-wide %
+{% block body %}
+
+
+<div style="margin-top: 30px">
+
+  <div class="row" style="">
+    <div style="float: left; padding: 0 0 0 1em;">
+        {% if control.title is not None %}
+        <h2 class="control-heading" style="">
+          <small style="color: #888;">NIST SP 800-53 Rev 4</small><br>
+          System Name - {{ control.id_display|upper }} {{ control.title }}
+        </h2>
+        {% else %}
+        <h2 class="control-heading" style="">
+          <small style="color: #888;">NIST SP 800-53</small><br>
+          {{ control.id }}
+        </h2>
+        <div id="control-message">
+          <p>The control {{ control.id }} was not found in the control catalog.</p>
+        </div>
+        {% endif %}
+    </div>
+    <div style="float: right; padding: 0 0.5em 0em 5em;">
+        <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
+          <input type="text" value="" name="id" placeholder="Enter control id"/>
+              <button type="submit" class="btn btn-success">Look up</button>
+              <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <a href="/">families</a> -->
+        </form>
+    </div>
+  </div><!--/row-->
+
+  <div id="page-content" class="row" style="">
+
+      <div id="control-info" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+        {% if control.title is not None %}
+        <div class="row" style="width:90%; padding: 0 0 0 1em;">
+          <div id="control-description" class="control-text"><h3>Control Description</h3>{{ control.description }}</div>
+          <div id="control-guidance"  class="control-text"><h3>Control Guidance</h3>{{ control.guidance }}</div>
+        </div>
+        {% else %}
+        <div id="control-message">
+          <p>The control {{ control.id }} was not found in the control catalog.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <div id="" class="col-spacer col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+
+        <div class="row">
+          <div id="control-description" class="control-text"><h3>Common Control Implementations</h3></div>
+        </div>
+
+        <div class="row" style="width:90%;">
+          {% if control.title is not None %}
+
+        {% if common_controls|length > 0 %}
+        {% for control in common_controls %}
+        <div class="panel panel-default">
+          <div class="panel-heading" role="tabx" id="document-cc-panel_num-title">
+            <h4 class="panel-title">
+              <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-cc-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-cc-panel_num-body">
+                {{control.name}} Common Control Implementation
+              </a>
+            </h4>
+          </div>
+          <div id="document-cc-panel_num-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-cc-panel_num-title">
+            <div class="panel-body output-document">
+
+              <div>
+                <form>
+                  <div class="form-group">
+                    <label for="compoment">Component</label>
+                    <input type="text" class="form-control" id="component" placeholder="Name of component" value="{{control.name}}">
+                  </div>
+                  <div class="form-group">
+                    <label for="statement">Statement</label>
+                    <textarea class="form-control" id="statement" placeholder="Paste control text here" rows="5" cols="50">{{control.legacy_imp_smt}}</textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="remarks">Remarks</label>
+                    <textarea class="form-control" id="app_remarks" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+          {% endif %}
+        </div>
+      </div>
+
+      <div id="smt-block" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4" style="">
+
+        <div class="row">
+          <div id="" class="control-text"><h3>Other Implementations <button type="submit" class="small btn btn-xs btn-success" style="color: white;" onclick="add_smt()">Add</button></h3></div>
+          <div id="smt-list" class="" style="width: 90%">
+
+          </div><!--/smt-list-->
+        </div>
+
+         <!-- <div class="row">
+          <div id="smt-add-link" class="" style="">
+            As the customer of this Common Control, you may have responsibilities. <button type="submit" class="btn btn-link" onclick="add_smt()">Add implementation now.</button>
+          </div>
+        </div> -->
+
+      </div><!--/smt-block-->
+
+</div><!--/page content-->
+
+      {{ block.super }}
+      {% endblock %}
+
+      {% block scripts %}
+      <script>
+        // Submits control id for Control look up box
+        function show_control_by_id() {
+          var control_id = $('#control-lookup').find('input[name="id"]').val();
+          var url = "/controls/"+"800-53"+"/"+control_id+"/editor";
+          window.location.href = url;
+        }
+      </script>
+
+      <script>
+        function show_module_smt_editor() {
+          // Initialize form state for the compliance app catalog information
+          // field and the module specification field.
+          // $('#authoring_tool_catalog_metadata').parents('.form-group').toggle(typeof window.q_authoring_tool_state.catalog_yaml != "undefined");
+          // $('#authoring_tool_catalog_metadata').val(window.q_authoring_tool_state.catalog_yaml);
+          // $('#authoring_tool_mspec').val(window.q_authoring_tool_state.module_yaml);
+
+          // Show modal.
+          $('#module_smt_editor').modal();
+        }
+
+        // Submits control id for Control look up box
+        function add_smt() {
+          var panel_num = $('.panel').length + 1
+          var smt_form = `
+            <div id="panel-panel_num" class="panel panel-default">
+            <div class="panel-heading" role="tabx" id="document-panel_num-title">
+              <h4 id="panel-panel_num-title" class="panel-title">
+                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body">
+                  <span id="element-panel_num-title">Other</span> {{ control.id|upper }} Component Implementation
+                </a>
+              </h4>
+            </div>
+            <div id="document-panel_num-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-panel_num-title">
+              <div class="panel-body output-document">
+
+            <div>
+              <form id="smt_panel_num">
+                <div class="form-group">
+                  <label for="compoment">Component</label>
+                  <input type="text" class="form-control" id="element" name="element" placeholder="Name of component"
+                    onchange="$('#element-panel_num-title').text($(this).val());">
+                </div>
+                <div class="form-group">
+                  <label for="statement">Statement</label>
+                  <textarea class="form-control" id="body" name="body" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="remarks">Remarks</label>
+                  <textarea class="form-control" id="remarks" name="remarks" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+                </div>
+
+                <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                <input type="hidden" id="system_id" name="system_id" value="1">
+                <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
+                <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
+                <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
+
+              <div class="modal-footer">
+                <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
+                <button type="button" name="submit" value="delete" class="btn btn-xs btn-danger" onclick="authoring_tool_delete_question()">Delete</button>
+                <button type="button" name="submit" value="cancel" class="btn btn-xs btn-default" data-dismiss="modal">Cancel</button>
+                <button type="submit" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false">Save</button>
+              </div>
+
+              </form>
+            </div>
+
+              </div>
+            </div>
+          </div>`.replace(/panel_num/g, panel_num);
+          $( "#smt-list" ).append(smt_form);
+          console.log("add_smt()");
+        }
+
+        function edit_smt() {
+          console.log("Edit statement - open modal");
+          show_module_smt_editor();
+        }
+      </script>
+
+      <script>
+        // Manage statement Ajax submissions
+
+        function save_smt(smt_panel_num) {
+          // Save a statement
+          // console.log("smt_panel_num is "+smt_panel_num);
+          // serialize data from the identified statement form
+          var data = $( '#'+smt_panel_num  ).serialize()
+
+          // send data via ajax to be saved
+          ajax_with_indicator({
+              url: "/controls/smt/_save/",
+              method: "POST",
+              data: data,
+              indicator_parent: $('#page-content'),
+              keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+              success: function(res) {
+                console.log('success');
+                console.log(res);
+                if (res['status'] == "success") {
+                  $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
+                } else {
+                  $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
+                }
+                setTimeout(function() {
+                  $('#success-msg-'+smt_panel_num).fadeOut("fast");
+                }, 1000 );
+              }
+          });
+
+          // Stop <form> submit
+          return false;
+
+        }; // /save_smt
+
+      </script>
+
+      {% endblock %}

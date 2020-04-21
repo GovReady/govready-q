@@ -1,7 +1,26 @@
 GovReady-Q Release Notes
 ========================
 
-v.0.9.1.3.2 (April 03, 2020)
+v0.9.1.4 (April 08, 2020)
+-------------------------
+
+This release exposes control catalog to end users for search.
+
+Previously versions embedded controls within output templates.
+
+v0.9.1.3.3 (April 07, 2020)
+--------------------------
+
+**Deployment changes**
+
+* Remove build gcc-c build lib from build
+* Remove uwsgi from requrirements
+* Refactor Dockerfile for clarity
+* Upgrade to Django 2.2.12 LTS to address issue noted by pyup.io safety
+* Update various Python libraries
+
+
+v0.9.1.3.2 (April 03, 2020)
 --------------------------
 
 **Deployment changes**
@@ -13,14 +32,20 @@ v.0.9.1.3.2 (April 03, 2020)
 
 * Fixed issue where only users who could use the editing tool could see the datagrid questions render
 
-v.0.9.1.3.1 (March 31, 2020)
+v0.9.1.3.1 (March 31, 2020)
 --------------------------
 
-**UI changes**
+* Create new `control` pages for looking up control catalog guidance.
 
+**Developer changes**
+
+* Add 800-53 control catalog via classes `SecControlsAll` and `SecControl`
+* Create a new directory `controls` into which we add a class for listing a security control catalog.
+* Add a new item type to module_logic.TemplateContext called `control_catalog` to enable iterable dictionary of control catalog.
 * Add `render` key to datagrid question type to force vertical rendering of tabular data
 
-v.0.9.1.3 (March 25, 2020)
+
+v0.9.1.3 (March 25, 2020)
 --------------------------
 
 **Deployment changes**
@@ -32,13 +57,14 @@ v.0.9.1.3 (March 25, 2020)
 * Gracefully handle empty datagrid question type in output templates
 
 
-v.0.9.1.1 (March 20, 2020)
+v0.9.1.1 (March 20, 2020)
 --------------------------
+* Upgrade requirements
 
-**UI changes**
+**Bug fixes**
 
 * Conditionally add in route `accounts/logout` when SSO Proxy enabled.
-
+* Gracefully handle empty datagrid question type in output templates
 
 v0.9.1 (March 12, 2020)
 -----------------------
@@ -80,16 +106,16 @@ v0.9.0.3.2 (February 21, 2019)
 v0.9.0.3 (November 21, 2019)
 -------------------------------
 
-**UX changes:**
+**UX changes**
 
 * Significantly improve performance of rendering questions and module review page (PR #774)
 * Fix failure to display list of questions in progress history in certain circumstances
 
-**Developer Change**
+**Developer changes**
 
 * Create migrations for shortening varchar field length to 255 on siteapp.models
 
-**Deployment Change**
+**Deployment changes**
 
 * Adding in health paths to examine static files.
 
@@ -99,12 +125,12 @@ v0.9.0.2 (October 16, 2019)
 
 Minor patches to v0.9.0.
 
-**UX changes:**
+**UX changes**
 
 * Permissions added to settings modal. Permissions removed from settings. (#761)
 * Correctly display database type SQLite on /settings (#764)
 
-**Documentation changes:**
+**Documentation changes**
 
 * Minor typo corrections. (#762)
 
@@ -137,17 +163,17 @@ We have developed migration script and guide to support 0.8.6 to 0.9.0 upgrades.
 
 New manage.py commands help populate 0.8.6 test data to test migration scripts.
 
-**Security enhancements:**
+**Security enhancements**
 
 * Upgrade to Django 2.2.x to address multiple security vulnerabilities in Django prior to 2.2.
 
-**Catalog changes:**
+**Catalog changes**
 
 * Compliance apps catalog (blank projects/assessments) read from the database rather than going to remote repositories App Source. Performance significantly improved.
 * Delete app catalog cache because the page loads fast.
 * New versions of the compliance apps are added to the catalog at the bottom of the Guidedmodules > AppSource page in the Django admin interface.
 
-**Multitenancy and subdomains removed:**
+**Multitenancy and subdomains removed**
 
 * Remove multitenancy and subdomains.
 * Serve all pages on the same domain.
@@ -156,7 +182,7 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 * Single apps catalog for all users. (In future we will use new permissions model to restrict access to compliance apps in catalog.)
 * [WIP] Remove link to legacy organization project in settings page.
 
-**Portfolios added:**
+**Portfolios added**
 
 * Portfolio feature to organize and manage related projects (assessments).
 * Projects exist in only one portfolio.
@@ -164,7 +190,7 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 * Any user can create a portfolio and add projects to the portfolio.
 * Users can be invited to a Portfolio by Portfolio owners and granted ownership by Portfolio owners.
 
-**Permission changes:**
+**Permission changes**
 
 * Added popular, mature Django-Guardian permission framework to enable better management of permissions on indivdidual instances of objects.
 * New Permissions object primarily applied to portfolios in this release, with some overlap into projects.
@@ -174,7 +200,7 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 * Display username instead of email address for user string.
 * Use plane language for names of top-level questionnaire stage columns: To Do, In Progress, Submitted, Approved.
 
-**Authoring tool improvements:**
+**Authoring tool improvements**
 
 * Superusers can create whole new questionnaire files.
 * Edit question modular dialog moved from large center screen popup to right-hand sidebar.
@@ -185,7 +211,7 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 * TEMPORARY correction of admin access to get tests to run. MUST FIX.
 * Upgrade assessment no longer requires loading intermediary page; Upgrade routine begins directly with action button.
 
-**UX changes:**
+**UX changes**
 
 * Clean up reactive styling to operate across multi-size screens.
 * Register/login page simplified by putting register and sign in inside a tabs and replacing jumbotron look and feel with minimal sign up and join links.
@@ -197,7 +223,7 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 * Nav bar icons for "Analytics" and "Settings"; Remove of dropdown "MENU" item.
 * Django messages indicating successful logins/logouts now ignored in base template. Change will hide any Django message of level "Success". Hiding success messages removes the need to dismiss messages or fade them out.
 
-**Developer changes:**
+**Developer changes**
 
 *Organization related*
 
@@ -234,7 +260,7 @@ New manage.py commands help populate 0.8.6 test data to test migration scripts.
 * Fix various SonarQube reported issues to use preferred HTML tags for stong and em
 * Testmocking scripts for populating test data into application.
 
-**Deployment changes:**
+**Deployment changes**
 
 * Remove multi-tenancy and serves all pages from the on the same domain. Previosuly, requests to Q came in on subdomains and the subdomain determined which Organization in the database the request would be associated with and individuals had to re-login across subdomains. Multitenancy increased install complexity and we were not seeing use of the multitenancy feature. Deployment is now simpler.
 * Add deployment scripts of multi-container GovReady-Q and NGINX via Docker-compose.
