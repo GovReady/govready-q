@@ -52,6 +52,32 @@ class ElementControl(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
+    # Notes
+    # from controls.oscal import *;from controls.models import *;
+    #     e = Element.objects.get(id=8);
+    #     e.name;
+    #     ecq = ElementControl.objects.filter(element=e);
+    #     ec = ecq[0]
+    #     ec.oscal_catalog_key
+    #     cg = Catalog(ec.oscal_catalog_key)
+    #     print(cg.get_flattened_control_as_dict(cg.get_control_by_id(ec.oscal_ctl_id)))
+    #
+    #     # Get the flattened oscal control information
+    #     ec.get_flattened_oscal_control_as_dict()
+    #     # Get Implementation statement if it exists
+    #     ec.get_flattened_impl_smt_as_dict()
+    #
+    #     # Get an element/system by it's element id
+    #     e = Element.objects.get(id=8);
+    #     e.name;
+    #     # Get all ElementControls for the Element
+    #     ec_list = ElementControl.objects.filter(element=e);
+    #     for ec in ec_list:
+    #       print("OSCAL CONTROL")
+    #       print(ec.get_flattened_oscal_control_as_dict())
+    #       print("Implementation Statement")
+    #       print(ec.get_flattened_impl_smt_as_dict())
+
     class Meta:
         unique_together = [('element', 'oscal_ctl_id', 'oscal_catalog_key')]
 
@@ -73,6 +99,13 @@ class ElementControl(models.Model):
         from .oscal import Catalogs, Catalog
         cg = Catalog.GetInstance(catalog_key=self.oscal_catalog_key)
         return cg.get_flattened_control_as_dict(cg.get_control_by_id(self.oscal_ctl_id))
+
+    def get_flattened_impl_smt_as_dict(self):
+        """Return the implementation statement for this ElementControl combination"""
+        # For development let's hardcode what we return
+        impl_smt = {"sid": "impl_smt sid", "body": "This is the statement itself"}
+        # Error checking
+        return impl_smt
 
 class System(models.Model):
     root_element = models.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")

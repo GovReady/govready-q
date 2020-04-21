@@ -85,6 +85,10 @@ def editor(request, cl_id):
         cc = common_controls[0]
         ccp_name = cc.common_control_provider.name
     # Get and return the control
+
+    # Retrieve any related Implementation Statements
+    impl_smts = Statements.objects.filter(sid=cl_id)
+    print("impl_smts: \n", impl_smts) # DEBUG
     context = {
         "control": cg_flat[cl_id.lower()],
         "common_controls": common_controls,
@@ -101,30 +105,31 @@ def save_smt(request):
         return HttpResponseNotAllowed(["POST"])
 
     else:
-        # does user have write privs?
-        # if not task.has_write_priv(request.user):
-        #     return HttpResponseForbidden()
+        # EXAMPLE CODE FOR GUARDIAN PERMISSIONS
+        # # does user have write privs?
+        # # if not task.has_write_priv(request.user):
+        # #     return HttpResponseForbidden()
 
-        # validate question
-        # q = task.module.questions.get(id=request.POST.get("question"))
+        # # validate question
+        # # q = task.module.questions.get(id=request.POST.get("question"))
 
-        # validate and parse value
-        # if request.POST.get("method") == "clear":
-        #     # Clear means that the question returns to an unanswered state.
-        #     # This method is only offered during debugging to make it easier
-        #     # to test the application's behavior when questions are unanswered.
-        #     value = None
-        #     cleared = True
-        #     skipped_reason = None
-        #     unsure = False
+        # # validate and parse value
+        # # if request.POST.get("method") == "clear":
+        # #     # Clear means that the question returns to an unanswered state.
+        # #     # This method is only offered during debugging to make it easier
+        # #     # to test the application's behavior when questions are unanswered.
+        # #     value = None
+        # #     cleared = True
+        # #     skipped_reason = None
+        # #     unsure = False
 
-        # elif request.POST.get("method") == "skip":
-        #     # The question is being skipped, i.e. answered with a null value,
-        #     # because the user doesn't know the answer, it doesn't apply to
-        #     # the user's circumstances, or they want to return to it later.
-        #     value = None
-        #     cleared = False
-        #     skipped_reason = request.POST.get("skipped_reason") or None
+        # # elif request.POST.get("method") == "skip":
+        # #     # The question is being skipped, i.e. answered with a null value,
+        # #     # because the user doesn't know the answer, it doesn't apply to
+        # #     # the user's circumstances, or they want to return to it later.
+        # #     value = None
+        # #     cleared = False
+        # #     skipped_reason = request.POST.get("skipped_reason") or None
         #     unsure = bool(request.POST.get("unsure"))
 
         #print(dict(request.POST))
