@@ -1,6 +1,130 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.5 (April 21, 2020)
+-------------------------
+
+Build on control catalog search to begin to represent
+controls in the database for each system.
+
+Control Guidance using OSCAL (#833)
+
+* Small metadata changes to models
+
+* Add 800-53 control catalog to output templates
+
+First effort to add control catalogs (e.g., control guidance)
+to the output templates using OSCAL and to create an editor
+for adding and editing control statements stored in the database.
+
+Initial use story is as a user/developer wanting to import
+a spreadsheet of common controls to have a better interface for
+reading the common controls against the control statement and
+drafting the application layer controls for hybrid controls.
+The user wants an easier way to do this than a spreadsheet because
+spreadsheets are hard to read.
+
+Begin a parser library to have code to input variously formatted
+source material into the database.
+
+** Developer changes **
+
+Replace SecControl library and parsing older XML version
+of 800-53 catalog with pure python parsing of modern
+OSCAL version of catalogs.
+
+We also add a new item type to module_logic.TemplateContext called
+`control_catalog`. When includeing `{{control_catalog}}` in output
+template we now have access to a dictionary of controls where
+each control is listed as a dictionary.
+
+Create a new script `oscal.py` and a `Catalog` class
+and create look ups of controls.
+
+Because OSCAL is hierarchal and recursive, we also generate
+a flattened, simplified version of our control catalog.
+
+* Add simple CommonControl model
+
+Add simple CommonControl and CommonControlProvider models.
+
+We are creating CommonControl model as first step to being able
+to manage control implementation statements in GovReady.
+
+We also want a way to import CommonControls into GovReady database.
+
+We create `CliControlImporter` as first cut tool for reading
+an excel spreadsheet with xlrd, converting the rows to simple
+control object and importing into the database. Code snippets
+included. Class and snippets only work for one spreadsheet format,
+but some abstraction exists to make customization easier for other
+formats.
+
+Refactor implementation editor to use panels and have
+interactivity for adding additional implementation statements
+using Boostrap 3.3. panel model.
+
+In models, sketch out the "statement" model for implementation attestations
+but leave commented out for present.
+
+Add Ajax calls to save implementation statements
+
+This commit puts in the Django and Javascript to save a statement
+to the server via Ajax.
+
+Each implementation statement panel and form is given a unique id
+when added to the page to make sure the correct statment information
+is passed to the server.
+
+When component name is update, the panel title updates.
+
+Add hidden fields to send the control id and the system name as part
+of the form.
+
+[WIP] Add utility class to parse statements with tagged elements
+
+Create utility `StatementParser_TaggedTextWithElementsInBrackets` class
+to parse collection of statements in a text file with serially listed
+controls where control ids and elements are enclosed in brackets.
+
+The idea is that common controls or other controls can be extracted
+and put into a long text file separated by control ids. Brackets are put around
+proper entities (e.g., system "elements") that mentioned in the implementation
+statement. By identifying system elements, it is possible to build a basic
+entity identification tool and create a specific listing of elements involved
+in each implementation statement. This is an initial step to create
+component-to-control mappings.
+
+* Goal is to save statement of whatever length and list of system elements
+  involved with process
+* Ignore multiple intervening lines
+* System name must be entered manually
+* Script makes one pass to build search dictionary with bracketed strings
+  then uses dictionary to find all instances of strings in statements.
+  This makes it unnecessary to place all instances of elements regardless of brackets.
+
+Like other parse and import utility classes, this basic code may need modifications
+for specific situations.
+
+* Add Statement, Element models; Save implementation statements
+
+This commits finishes work started in commit 4e77ba531069832d0a2507ebfd32a0e41f2bf8df
+
+This commit adds Statement and Element models as the core feature
+to track component-to-control statements. The more general terms of
+"Statement" and "Element" are used instead of "Control"and "Component".
+
+An "implementation statement" is a statement (and attestation).
+
+A many to many relationship is supported for Statements and Elements.
+
+This commit finishes in the Django and Javascript to save a statement
+to the server via Ajax.
+
+To Do:
+- Delete statements
+- Tests written
+
 
 v0.9.1.4 (April 08, 2020)
 -------------------------
