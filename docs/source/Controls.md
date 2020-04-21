@@ -39,11 +39,24 @@ The control catalog is a dictionary of dictionaries. The ID of the controls is t
 }
 ```
 
-**Developer changes**
+GovReady treats a System as a subclass of an Element. An Element is any person, process, or thing.
+All Elements have element_type. A System is one type of an element.
 
-* Add 800-53 control catalog via classes `SecControlsAll` and `SecControl`
-* Create a new directory `controls` into which we add a class for listing a security control catalog.
-* Add a new item type to module_logic.TemplateContext called `control_catalog` to enable iterable dictionary of control catalog.
+A control is just a statement that comes from an OSCAL-formatted Control Catalog.
+
+An ElementControl represents the selected control list for a system. An ElementControl associates a control catalog id with an element.
+A unique "control" statement is identified by unique combination of Element, OSCAL Control Id, and OSCAL Catalog Key.
+
+Relationships exist between ElementControl and read-only oscal.Catalog model.
+
+Also put parser classes into separate file `parsers.py` and `parsers_i.py` with the
+latter `*_i.py` representing a standalone version of the parser classes that do not
+require GovReady Django models to run.
+
+Controls can be displayed in output templates via the `module_logic.TemplateContext` item type called `control_catalog`. When `control_catalog`
+is mentioned in an output template, GovReady retrieves the entire catalog of controls in a flattened format for easy manipulation. For performance,
+the `control_catalog` is called as a static instance.
+
 
 ## Code discussion
 

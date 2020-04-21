@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Statement, Element, CommonControlProvider, CommonControl
+from .models import Statement, Element, ElementControl, System, CommonControlProvider, CommonControl
 
 
 class StatementAdmin(admin.ModelAdmin):
@@ -7,6 +7,12 @@ class StatementAdmin(admin.ModelAdmin):
 
 class ElementAdmin(admin.ModelAdmin):
     list_display = ('name', 'full_name', 'id')
+
+class ElementControlAdmin(admin.ModelAdmin):
+    list_display = ('id', 'element', 'oscal_ctl_id', 'oscal_catalog_key')
+
+class SystemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'root_element')
 
 class CommonControlProviderAdmin(admin.ModelAdmin):
     list_display = ('name', 'id')
@@ -17,5 +23,8 @@ class CommonControlAdmin(admin.ModelAdmin):
 
 admin.site.register(Statement, StatementAdmin)
 admin.site.register(Element, ElementAdmin)
+admin.site.register(ElementControl, ElementControlAdmin)
+admin.site.register(System, SystemAdmin)
 admin.site.register(CommonControlProvider, CommonControlProviderAdmin)
 admin.site.register(CommonControl, CommonControlAdmin)
+

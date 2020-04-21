@@ -21,6 +21,12 @@ class Catalogs (object):
             'NIST_SP-800-53_rev5_catalog.json'
         ]
 
+    def _list_catalog_keys(self):
+        return [
+            'NIST_SP-800-53_rev4',
+            'NIST_SP-800-53_rev5'
+        ]
+
     def _load_catalog_json(self, file):
         from compliancelib import Catalog
         catalog = Catalog(file)
@@ -45,20 +51,31 @@ class Catalog (object):
     # that singleton instance. Instead of doing `cg = Catalog()`,
     # do `cg = Catalog.GetInstance()`.
     @staticmethod
-    def GetInstance():
+    def GetInstance(catalog_key='NIST_SP-800-53_rev4'):
         # Create a new instance of Catalog() the first time
         # this method is called. Keep it in memory indefinitely.
         if not hasattr(Catalog, '_cached_instance'):
-            Catalog._cached_instance = Catalog()
+            Catalog._cached_instance = Catalog(catalog_key=catalog_key)
         return Catalog._cached_instance
 
-    def __init__(self, catalog_file='NIST_SP-800-53_rev4_catalog.json'):
+    def __init__(self, catalog_key='NIST_SP-800-53_rev4'):
         global CATALOG_PATH
         self.catalog_path = CATALOG_PATH
-        self.catalog_file = catalog_file
-        self.oscal = self._load_catalog_json()
-        self.info = {}
-        self.info['groups'] = self.get_groups()
+        self.catalog_file = catalog_key + "_catalog.json"
+        try: 
+            self.oscal = self._load_catalog_json()
+            self.status = "ok"
+            self.status_message = "Success loading catalog"
+            self.catalog_id = self.oscal['id']
+            self.info = {}
+            self.info['groups'] = self.get_groups()
+        except Exception as e:
+            self.oscal = None
+            self.status = "error"
+            self.status_message = "Error loading catalog"
+            self.catalog_id = None
+            self.info = None
+            self.info['groups'] = None
 
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
@@ -133,9 +150,9 @@ class Catalog (object):
         # Concatenate the prose text of all of the 'parts' of this control
         # in Markdown. Filter out the parts that are not wanted.
         # Example 'statement'
-        #   python3 -c "import compliancelib; cg = compliancelib.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6')))"
+        #   python3 -c "import oscal; cg = oscal.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6')))"
         # Example 'guidance'
-        #   python3 -c "import compliancelib; cg = compliancelib.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6'), part_types={'guidance'}))"
+        #   python3 -c "import oscal; cg = oscal.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6'), part_types={'guidance'}))"
 
         return self.format_part_as_markdown(control_data, filter_name=part_types)
 
@@ -219,6 +236,8 @@ class Catalog (object):
             "class": control['class'],
             "description": self.get_control_prose_as_markdown(control, part_types={ "statement" }),
             "guidance": self.get_control_prose_as_markdown(control, part_types={ "guidance" }),
+            "catalog_file": self.catalog_file,
+            "catalog_id": self.catalog_id
         }
         # cl_dict = {"id": "te-1", "title": "Test Control"}
         return cl_dict

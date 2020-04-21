@@ -12,7 +12,8 @@ class Statement(models.Model):
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
     parent = models.ForeignKey('self', help_text="Optional version number", on_delete=models.SET_NULL, blank=True, null=True)
-    elements = models.ManyToManyField('Element', related_name='statements', blank=True, null=True)
+    referenced_elements = models.ManyToManyField('Element', related_name='statement_referencing', blank=True)
+    described_element = models.ForeignKey('Element', related_name='statement_describing', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return "'%s %s %s id=%d'" % (self.sid, self.sid_class, self.statement_type, self.id)
@@ -29,12 +30,53 @@ class Element(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    # Notes
+    # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)
+    #    element_id = 8
+    #    e = Element.objects.get(id=element_id);
+    #    e.controls.all()
+    #    # returns <QuerySet ['ac-2 id=1', 'ac-3 id=2', 'au-2 id=3']>
+    #
+
     def __str__(self):
         return "'%s id=%d'" % (self.name, self.id)
 
     def __repr__(self):
         # For debugging.
         return "'%s id=%d'" % (self.name, self.id)
+
+class ElementControl(models.Model):
+    element = models.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")
+    oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)
+    oscal_catalog_key = models.CharField(max_length=100, help_text="Catalog key from which catalog file can be derived (e.g., 'NIST_SP-800-53_rev4')", blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        unique_together = [('element', 'oscal_ctl_id', 'oscal_catalog_key')]
+
+    def __str__(self):
+        return "'%s id=%d'" % (self.oscal_ctl_id, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s id=%d'" % (self.oscal_ctl_id, self.id)
+
+    def get_controls_by_element(self, element):
+        query_set = self.objects.filter(element=element)
+        selected_controls = {}
+        for cl in query_set:
+            selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'], 'oscal_catalog_key': cl['oscal_catalog_key']}
+        return selected_controls
+
+    def get_flattened_oscal_control_as_dict(self):
+        from .oscal import Catalogs, Catalog
+        cg = Catalog.GetInstance(catalog_key=self.oscal_catalog_key)
+        return cg.get_flattened_control_as_dict(cg.get_control_by_id(self.oscal_ctl_id))
+
+class System(models.Model):
+    root_element = models.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
+    fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=False, null=False)
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)
