@@ -1,6 +1,5 @@
 # Utility functions
 import re
-import xlrd
 import json
 
 from .models import CommonControlProvider, CommonControl
