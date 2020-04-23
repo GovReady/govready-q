@@ -15,12 +15,7 @@ def test(request):
     return HttpResponse(html)
 
 def index(request):
-    # Temporary index page for controls
-    output = "Temporary index page for controls. Please <a href='800-53/ac-1/'>view AC-1</a> to start."
-    html = "<html><body><p>{}</p></body></html>".format(output)
-    # return HttpResponse(html)
-
-    # cl_id = oscalize_control_id(cl_id)
+    """Index page for controls"""
 
     # Get catalog
     catalog = Catalog()
@@ -38,13 +33,38 @@ def index(request):
     #     ccp_name = cc.common_control_provider.name
     # Get and return the control
 
+    # control_groups = [{"id": "ac", "title": "Access Control"}, {"id": "at", "title": "Awareness and Training"}]
+    control_groups = catalog.get_groups()
     context = {
+        "catalog": catalog,
         "control": None,
         "common_controls": None,
+        "control_groups": control_groups
     }
     return render(request, "controls/index.html", context)
 
+def group(request, g_id):
+    """Temporary index page for catalog control group"""
 
+     # Get catalog
+    catalog = Catalog()
+    cg_flat = catalog.get_flattended_controls_all_as_dict()
+
+    control_groups = catalog.get_groups()
+    group =  None
+    for g in control_groups:
+        if g['id'].lower() == g_id:
+            group = g
+            break
+
+    context = {
+        "catalog": catalog,
+        "control": None,
+        "common_controls": None,
+        "control_groups": control_groups,
+        "group": group
+    }
+    return render(request, "controls/index-group.html", context)
 
 def control1(request, cl_id):
     """Control detail view"""
@@ -184,7 +204,6 @@ def save_smt(request):
             statement_element_status = "error"
             statement_element_msg = "Failed to associate statement with element {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg + " " + element_msg + " " +statement_element_msg })
-
 
     return JsonResponse({ "status": "success", "message": statement_msg + " " + element_msg + " " +statement_element_msg })
 
