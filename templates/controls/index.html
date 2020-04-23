@@ -9,42 +9,7 @@
 {% endblock %}
 
 {% block head %}
-<style>
-  .project-image {
-    width: 20px;
-    float: left;
-    margin: 4px 0 5px 8px;
-  }
-
-  .inline {
-    display: inline;
-  }
-
-  h3 {
-    color: #888;
-    #font-weight: bold;
-    margin-top: 20px;
-  }
-
-  .control-text {
-    white-space: pre-wrap;
-    font-size: 12pt;
-    max-width: 700px;
-    font-family: trebuchet ms, sans-serif;
-    /*text-align: justify;
-    text-justify: inter-word;*/
-  }
-
-  #control_lookup input {
-    width: 130px;
-  }
-
-  ul {
-    list-style: none;
-    padding-left: 0;
-  }
-
-</style>
+{% include "controls/_style-controls.html" %}
 {% endblock %}
 
 Remove contextbar from top of page

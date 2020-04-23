@@ -22,7 +22,6 @@ class Catalogs (object):
         ]
 
     def _load_catalog_json(self, file):
-        from compliancelib import Catalog
         catalog = Catalog(file)
         return catalog._load_catalog_json()
 

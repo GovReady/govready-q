@@ -20,20 +20,6 @@ def index(request):
     # Get catalog
     catalog = Catalog()
     cg_flat = catalog.get_flattended_controls_all_as_dict()
-
-    # # Handle properly formatted control id that does not exist
-    # if cl_id.lower() not in cg_flat:
-    #     return render(request, "controls/detail.html", { "control": {} })
-
-    # Retrieve any related CommonControls
-    # common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
-    # ccp_name = None
-    # if common_controls:
-    #     cc = common_controls[0]
-    #     ccp_name = cc.common_control_provider.name
-    # Get and return the control
-
-    # control_groups = [{"id": "ac", "title": "Access Control"}, {"id": "at", "title": "Awareness and Training"}]
     control_groups = catalog.get_groups()
     context = {
         "catalog": catalog,
@@ -43,15 +29,23 @@ def index(request):
     }
     return render(request, "controls/index.html", context)
 
+def catalogs(request):
+    """Index page for catalogs"""
+
+    context = {
+        "catalogs": Catalogs(),
+    }
+    return render(request, "controls/index-catalogs.html", context)
+
 def group(request, g_id):
     """Temporary index page for catalog control group"""
 
      # Get catalog
     catalog = Catalog()
     cg_flat = catalog.get_flattended_controls_all_as_dict()
-
     control_groups = catalog.get_groups()
     group =  None
+    # Get group/family of controls
     for g in control_groups:
         if g['id'].lower() == g_id:
             group = g
@@ -93,6 +87,9 @@ def editor(request, cl_id):
     # Get catalog
     catalog = Catalog()
     cg_flat = catalog.get_flattended_controls_all_as_dict()
+
+    # Get Element representing the System
+    # we might hard code this for testing
 
     # Handle properly formatted control id that does not exist
     if cl_id.lower() not in cg_flat:
