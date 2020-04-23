@@ -86,9 +86,6 @@ def download_module_asset(request, taskid, taskslug, asset_path):
 def task_view(view_func):
     @login_required
     def new_view_func(request, taskid, taskslug, pagepath, question_key, *args):
-        from pyinstrument import Profiler
-        profiler = Profiler()
-        profiler.start()
         # Get the Task.
         task = get_object_or_404(Task, id=taskid)
 
@@ -167,13 +164,9 @@ def task_view(view_func):
             "source_invitation": task.get_source_invitation(request.user),
             "previous_page_type": request.GET.get("previous"),
         }
-        view_func_var = view_func(request, task, answered, context, question, *args)
-
-        profiler.stop()
-        print(profiler.output_text(unicode=True, color=True))
 
         # Render the view.
-        return view_func_var
+        return view_func(request, task, answered, context, question, *args)
     return new_view_func
 
 @task_view

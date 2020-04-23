@@ -72,6 +72,10 @@
                         <a href="{{a.taskanswer.get_absolute_url}}">
                           {{q.spec.title}}
                         </a>
+                      {% elif authoring_tool_enabled %}
+                        <a href="{{task.get_absolute_url}}/questions/{{q.key}}">
+                          {{q.spec.title}}
+                        </a>
                       {% else %}
                         {{q.spec.title}}
                       {% endif %}

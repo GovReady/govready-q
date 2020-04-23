@@ -1,8 +1,5 @@
 from django.conf import settings
 from jinja2.sandbox import SandboxedEnvironment
-from pyinstrument import Profiler
-
-
 
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
@@ -103,8 +100,6 @@ def evaluate_module_state(current_answers, parent_context=None):
     # To figure this out, we walk the dependency tree of questions
     # until we arrive at questions that have no unanswered dependencies.
     # Such questions can be put forth to the user.
-    # profiler = Profiler()
-    # profiler.start()
 
     # Build a list of ModuleQuestion that the are not unanswerable
     # because they are imputed or unavailable to the user. These
@@ -230,8 +225,6 @@ def evaluate_module_state(current_answers, parent_context=None):
     ret.unanswered = unanswered
     ret.can_answer = can_answer
     ret.answerable = answerable
-    # profiler.stop()
-    # print(profiler.output_text(unicode=True, color=True))
     return ret
 
 
@@ -782,13 +775,12 @@ def clear_module_question_cache():
 
 
 def get_all_question_dependencies(module):
-    print("****def get_all_question_dependencies")
     # Initialize cache, query cache.
     if not hasattr(get_all_question_dependencies, 'cache'):
         get_all_question_dependencies.cache = { }
     if module.id in get_all_question_dependencies.cache:
         return get_all_question_dependencies.cache[module.id]
-    print("X after the cache")
+
     # Pre-load all of the questions by their key so that the dependency
     # evaluation is fast.
     all_questions = { }
