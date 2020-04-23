@@ -203,17 +203,20 @@ def get_next_question(current_question, task):
     # If the next question is answerable, go there. But if that question is not answerable,
     # go to the next one that is. If there are no subsequent questions to answer, go to the
     # first one that is answerable.
-    can_answer = list(answers.can_answer)
-    can_answer.sort(key = lambda q : (
+    answerable = list(answers.answerable)
+    # Avoid going to the current question as the computed available next question to answer
+    if current_question in answerable:
+        answerable.remove(current_question)
+    answerable.sort(key = lambda q : (
         # Prefer questions that are after this question.
-        q.definition_order > current_question.definition_order,
+        q.definition_order < current_question.definition_order,
 
         # Prefer questions that are earlier.
         q.definition_order
     ))
 
     # Return the first question after sorting, which is the preferable one to answer next.
-    return can_answer[0]
+    return answerable[0]
 
 @task_view
 def save_answer(request, task, answered, context, __):

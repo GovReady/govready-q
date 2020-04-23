@@ -105,7 +105,14 @@ def evaluate_module_state(current_answers, parent_context=None):
     # Such questions can be put forth to the user.
     # profiler = Profiler()
     # profiler.start()
-    # Build a list of ModuleQuestions that the user may answer now.
+
+    # Build a list of ModuleQuestion that the are not unanswerable
+    # because they are imputed or unavailable to the user. These
+    # questions may have no answer or can be updatd with a new answer.
+    answerable = set()
+
+    # Build a list of ModuleQuestions that the user may answer now
+    # excluding questions that the have already been answered.
     can_answer = set()
 
     # Build a list of ModuleQuestions that still need an answer,
@@ -144,12 +151,18 @@ def evaluate_module_state(current_answers, parent_context=None):
         # a state in which it wasn't imputed, but now it is), the
         # user's answer is overridden with the imputed value for
         # consistency with the Module's logic.
-        
-        # Create an evaluation context for evaluating impute conditions
-        # that only sees the answers of this question's dependencies,
-        # which are in state because we return the answers from this
-        # method and they are collected as the walk continues up the
-        # dependency tree. 
+
+        # Before running impute conditions below, we need a TemplateContext
+        # which provides the functionality of resolving variables mentioned
+        # in the impute condition. The TemplateContext that we use here is 
+        # different from the one we normally use to render output documents
+        # because an impute condition in a question should not be able to see
+        # the answers to questions that come later in the module. The purpose
+        # of evaluate_module_state is, in part, to get the answers to questions,
+        # included imputed answers, and so the answers to later questions are not
+        # yet know. Therefore, we construct a TemplateContext that only includes
+        # the answers to questions that we've computed so far.
+
         impute_context = TemplateContext(
             ModuleAnswers(current_answers.module, current_answers.task, state),
             impute_context_parent.escapefunc, parent_context=impute_context_parent, root=True)
@@ -162,9 +175,10 @@ def evaluate_module_state(current_answers, parent_context=None):
             was_imputed.add(q.key)
 
         elif q.key in current_answers.as_dict():
-            # The user has provided an answer to this question.
+            # The user has provided an answer to this question. Question can be updated.
             answerobj = current_answers.get(q.key)
             v = current_answers.as_dict()[q.key]
+            answerable.add(q)
 
         elif current_answers.module.spec.get("type") == "project" and q.key == "_introduction":
             # Projects have an introduction but it isn't displayed as a question.
@@ -181,6 +195,7 @@ def evaluate_module_state(current_answers, parent_context=None):
             #
             # But we can remember that this question *can* be answered
             # by the user, and that it's not answered yet.
+            answerable.add(q)
             can_answer.add(q)
             unanswered.add(q)
             answertuples[q.key] = (q, False, None, None)
@@ -214,6 +229,7 @@ def evaluate_module_state(current_answers, parent_context=None):
     ret.was_imputed = was_imputed
     ret.unanswered = unanswered
     ret.can_answer = can_answer
+    ret.answerable = answerable
     # profiler.stop()
     # print(profiler.output_text(unicode=True, color=True))
     return ret
