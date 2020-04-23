@@ -9,10 +9,13 @@ from . import views
 
 from siteapp.settings import *
 
-
 urlpatterns = [
     url(r'^test$', views.test),
+    
     url(r'^$', views.index),
+    url(r'^catalogs$', views.catalogs),
+    
+    url(r'^800-53/family/(?P<g_id>.*)', views.group, name="control_group"),
     url(r'^800-53/(?P<cl_id>.*)/$', views.control1, name="control_info"),
     url(r'^800-53/(?P<cl_id>.*)/editor$', views.editor, name="control_editor"),
 
