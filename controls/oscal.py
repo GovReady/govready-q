@@ -13,6 +13,7 @@ class Catalogs (object):
         global CATALOG_PATH
         self.catalog_path = CATALOG_PATH
         # self.catalog = None
+        self.catalog_keys = self._list_catalog_keys()
         self.index = self._build_index()
 
     def _list_catalog_files(self):
@@ -27,16 +28,17 @@ class Catalogs (object):
             'NIST_SP-800-53_rev5'
         ]
 
-    def _load_catalog_json(self, file):
-        catalog = Catalog(file)
+    def _load_catalog_json(self, catalog_key):
+        catalog = Catalog(catalog_key)
+        # print(catalog_key, catalog._load_catalog_json())
         return catalog._load_catalog_json()
 
     def _build_index(self):
         """Build a small catalog_index from metada"""
         index = []
-        for src in self._list_catalog_files():
-            catalog = self._load_catalog_json(src)
-            index.append( { 'id': catalog['id'], 'file': src, 'metadata': catalog['metadata'] } )
+        for catalog_key in self._list_catalog_keys():
+            catalog = self._load_catalog_json(catalog_key)
+            index.append( { 'id': catalog['id'], 'catalog_key': catalog_key, 'catalog_key_display': catalog_key.replace("_", " "), 'metadata': catalog['metadata'] } )
         return index
 
     def list(self):
@@ -59,6 +61,8 @@ class Catalog (object):
 
     def __init__(self, catalog_key='NIST_SP-800-53_rev4'):
         global CATALOG_PATH
+        self.catalog_key = catalog_key
+        self.catalog_key_display = catalog_key.replace("_", " ")
         self.catalog_path = CATALOG_PATH
         self.catalog_file = catalog_key + "_catalog.json"
         try: 
@@ -73,7 +77,7 @@ class Catalog (object):
             self.status = "error"
             self.status_message = "Error loading catalog"
             self.catalog_id = None
-            self.info = None
+            self.info = {}
             self.info['groups'] = None
 
     def _load_catalog_json(self):

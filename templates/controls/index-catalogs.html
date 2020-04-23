@@ -28,12 +28,12 @@ Remove contextbar from top of page
     </div>
 
     <h2 id="control-heading" class="">
-      Catalogs
+      Control Catalogs
     </h2>
     <div>
       <ul>
       {% for catalog in catalogs.index %}
-        <li><a href="800-53/family/{{ group.id }}">View</a> - {{ catalog.metadata.title }}</li>
+        <li><a href="./catalogs/{{ catalog.catalog_key }}">{{ catalog.catalog_key_display }}</a> - {{ catalog.metadata.title }}</li>
       {% endfor %}
       </ul>
     </div>
@@ -52,4 +52,3 @@ Remove contextbar from top of page
   }
 </script>
 {% endblock %}
-

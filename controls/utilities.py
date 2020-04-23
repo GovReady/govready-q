@@ -46,7 +46,7 @@ def oscalize_control_id(cl_id):
     #   at-1, at-01, ac-2.3, ac-02.3, ac-2 (3), ac-02 (3), ac-2(3), ac-02 (3)
     pattern = re.compile("^[A-Za-z][A-Za-z]-[0-9() .]*$")
     if not pattern.match(cl_id):
-        return render(request, "controls/detail.html", { "control": {} })
+        return ""
 
     # Handle properly formatted existing id
     # Transform various patterns of control ids into OSCAL format

@@ -37,11 +37,27 @@ def catalogs(request):
     }
     return render(request, "controls/index-catalogs.html", context)
 
-def group(request, g_id):
+
+def catalog(request, catalog_key):
+    """Index page for controls"""
+
+    # Get catalog
+    catalog = Catalog(catalog_key)
+    cg_flat = catalog.get_flattended_controls_all_as_dict()
+    control_groups = catalog.get_groups()
+    context = {
+        "catalog": catalog,
+        "control": None,
+        "common_controls": None,
+        "control_groups": control_groups
+    }
+    return render(request, "controls/index.html", context)
+
+def group(request, catalog_key, g_id):
     """Temporary index page for catalog control group"""
 
      # Get catalog
-    catalog = Catalog()
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattended_controls_all_as_dict()
     control_groups = catalog.get_groups()
     group =  None
@@ -60,13 +76,13 @@ def group(request, g_id):
     }
     return render(request, "controls/index-group.html", context)
 
-def control1(request, cl_id):
+def control(request, catalog_key, cl_id):
     """Control detail view"""
 
     cl_id = oscalize_control_id(cl_id)
 
     # Get catalog
-    catalog = Catalog()
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattended_controls_all_as_dict()
 
     # Handle properly formatted control id that does not exist
@@ -75,17 +91,18 @@ def control1(request, cl_id):
 
     # Get and return the control
     context = {
+        "catalog": catalog,
         "control": cg_flat[cl_id.lower()]
     }
     return render(request, "controls/detail.html", context)
 
-def editor(request, cl_id):
+def editor(request, catalog_key, cl_id):
     """Control detail view"""
 
     cl_id = oscalize_control_id(cl_id)
 
     # Get catalog
-    catalog = Catalog()
+    catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattended_controls_all_as_dict()
 
     # Get Element representing the System
@@ -104,9 +121,9 @@ def editor(request, cl_id):
     # Get and return the control
 
     # Retrieve any related Implementation Statements
-    impl_smts = Statements.objects.filter(sid=cl_id)
-    print("impl_smts: \n", impl_smts) # DEBUG
+    impl_smts = Statement.objects.filter(sid=cl_id)
     context = {
+        "catalog": catalog,
         "control": cg_flat[cl_id.lower()],
         "common_controls": common_controls,
         "ccp_name": ccp_name
@@ -154,7 +171,6 @@ def save_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-        print(form_values)
 
         # Save Statement
         try:
@@ -196,7 +212,7 @@ def save_smt(request):
         else:
             print("problem with element")
 
-        print("element", element)
+        # print("element", element)
         # Associate element with statement
         try:
             statement.elements.add(element)
@@ -208,5 +224,3 @@ def save_smt(request):
             return JsonResponse({ "status": "error", "message": statement_msg + " " + element_msg + " " +statement_element_msg })
 
     return JsonResponse({ "status": "success", "message": statement_msg + " " + element_msg + " " +statement_element_msg })
-
-

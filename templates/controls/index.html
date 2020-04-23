@@ -28,13 +28,13 @@ Remove contextbar from top of page
     </div>
 
     <h2 id="control-heading" class="">
-      Controls
+      <small style="color: #888;">{{ catalog.catalog_key_display }}</small><br>
+      Control Groupings
     </h2>
-    <h3>{{ catalog.oscal.metadata.title }}</h3>
     <div>
       <ul>
       {% for group in control_groups %}
-        <li><a href="800-53/family/{{ group.id }}">{{ group.id|upper }}</a> - {{ group.title }}</li>
+        <li><a href="/controls/catalogs/{{ catalog.catalog_key }}/group/{{ group.id }}">{{ group.id|upper }}</a> - {{ group.title }}</li>
       {% endfor %}
       </ul>
     </div>
@@ -53,4 +53,3 @@ Remove contextbar from top of page
   }
 </script>
 {% endblock %}
-
