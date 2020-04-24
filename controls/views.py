@@ -4,7 +4,7 @@ from .oscal import Catalog, Catalogs
 import json
 import re
 from .utilities import *
-from .models import Statement, Element, CommonControl, CommonControlProvider
+from .models import Statement, Element, System, CommonControl, CommonControlProvider
 
 
 
@@ -36,7 +36,6 @@ def catalogs(request):
         "catalogs": Catalogs(),
     }
     return render(request, "controls/index-catalogs.html", context)
-
 
 def catalog(request, catalog_key):
     """Index page for controls"""
@@ -96,10 +95,15 @@ def control(request, catalog_key, cl_id):
     }
     return render(request, "controls/detail.html", context)
 
-def editor(request, catalog_key, cl_id):
-    """Control detail view"""
+def editor(request, system_id, catalog_key, cl_id):
+    """System Control detail view"""
 
     cl_id = oscalize_control_id(cl_id)
+
+    # Retrieve identified System if user has permission
+    # TODO check permissions
+    system = System.objects.get(id=system_id)
+    print("system", system)
 
     # Get catalog
     catalog = Catalog(catalog_key)
@@ -123,11 +127,12 @@ def editor(request, catalog_key, cl_id):
     # Retrieve any related Implementation Statements
     impl_smts = Statement.objects.filter(sid=cl_id)
     context = {
+        "system": system,
         "catalog": catalog,
         "control": cg_flat[cl_id.lower()],
         "common_controls": common_controls,
-        "ccp_name": ccp_name
-
+        "ccp_name": ccp_name,
+        "impl_smts": impl_smts
     }
     return render(request, "controls/editor.html", context)
 
@@ -215,7 +220,7 @@ def save_smt(request):
         # print("element", element)
         # Associate element with statement
         try:
-            statement.elements.add(element)
+            statement.referenced_elements.add(element)
             statement_element_status = "ok"
             statement_element_msg = "Statement associated with element."
         except Exception as e:

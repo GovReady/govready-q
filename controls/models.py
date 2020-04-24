@@ -109,7 +109,7 @@ class ElementControl(models.Model):
 
 class System(models.Model):
     root_element = models.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
-    fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=False, null=False)
+    fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True, null=True)
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)

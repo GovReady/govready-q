@@ -21,4 +21,8 @@ urlpatterns = [
     url(r'^catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)', views.control, name="control_info"),
  
     url(r'^smt/_save/$', views.save_smt),
+
+    # Systems
+    url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/editor$', views.editor, name="control_editor"),
+
 ]
