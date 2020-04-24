@@ -177,14 +177,29 @@ def save_smt(request):
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
 
-        # Save Statement
-        try:
+        # Updating or saving a new statement?
+        if 'smt_id' in form_values:
+            # Look up existing Statement object
+            statement = Statement.objects.get(pk=form_values['smt_id'])
+            if statement is None:
+                # Statement from received has an id no longer in the database.
+                # Report error. Alternatively, in future save as new Statement object
+                statement_status = "error"
+                statement_msg = "The id for this statement is no longer valid in the database."
+                return JsonResponse({ "status": "error", "message": statement_msg })
+            # Update existing Statement object with received info
+            statement.body = form_values['body']
+            statement.remarks = form_values['remarks']
+        else:
+            # Create new Statement object
             statement = Statement(  sid=form_values['sid'], # need to make oscalized?
-                                    sid_class=form_values['sid_class'],
-                                    body=form_values['body'],
-                                    statement_type=form_values['statement_type'],
-                                    remarks=form_values['remarks'],
-                                 )
+                sid_class=form_values['sid_class'],
+                body=form_values['body'],
+                statement_type=form_values['statement_type'],
+                remarks=form_values['remarks'],
+                )
+        # Save Statement object
+        try:
             statement.save()
             statement_status = "ok"
             statement_msg = "Statement saved."
@@ -228,4 +243,11 @@ def save_smt(request):
             statement_element_msg = "Failed to associate statement with element {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg + " " + element_msg + " " +statement_element_msg })
 
-    return JsonResponse({ "status": "success", "message": statement_msg + " " + element_msg + " " +statement_element_msg })
+    # Serialize saved data object(s) to send back to update web page
+    # The submitted form needs to be updated with the object primary keys (ids)
+    # in order that future saves will be treated as updates.
+    from django.core import serializers
+    serialized_obj = serializers.serialize('json', [ statement, ])
+
+    # Return successful save result to web page's Ajax request
+    return JsonResponse({ "status": "success", "message": statement_msg + " " + element_msg + " " +statement_element_msg, "statement": serialized_obj })

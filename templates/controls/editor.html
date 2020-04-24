@@ -164,7 +164,7 @@ Remove contextbar from top of page
                   <div class="form-group">
                     <label for="compoment">Component</label>
                     <input type="text" class="form-control" id="element" name="element" placeholder="Name of component"
-                      onchange="$('#element-{{ forloop.counter }}-title').text($(this).val());" value="{{ smt }}">
+                      onchange="$('#element-{{ forloop.counter }}-title').text($(this).val());" value="{{ smt.described_element.name }}">
                   </div>
                   <div class="form-group">
                     <label for="statement">Statement</label>
@@ -176,7 +176,10 @@ Remove contextbar from top of page
                   </div>
 
                   <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
-                  <input type="input" id="system_id" name="system_id" value="{{ system.id }}">
+                  <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+                  <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
+                  <br>smt.described_element.name &gt;
+                  <input type="input" id="element_id" name="element_id" value="{{ smt.described_element.id }}">
                   <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
                   <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
                   <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
@@ -267,7 +270,11 @@ Remove contextbar from top of page
                 </div>
 
                 <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
-                <input type="input" id="system_id" name="system_id" value="{{ system.id }}">
+                <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+                <br>smt.id &gt;
+                <input type="hidden" id="smt_id" name="smt_id" value="">
+                <br>smt.described_element.id &gt;
+                <input type="input" id="element_id" name="element_id" value="">
                 <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
                 <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
                 <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
@@ -301,7 +308,7 @@ Remove contextbar from top of page
           // Save a statement
           // console.log("smt_panel_num is "+smt_panel_num);
           // serialize data from the identified statement form
-          var data = $( '#'+smt_panel_num  ).serialize()
+          var data = $( '#'+smt_panel_num ).serialize()
 
           // send data via ajax to be saved
           ajax_with_indicator({
@@ -314,6 +321,13 @@ Remove contextbar from top of page
                 console.log('success');
                 console.log(res);
                 if (res['status'] == "success") {
+                  // Update field values from saved
+                  // Initially update a few fields
+                  smt_saved = JSON.parse(res['statement']);
+                  console.log("printing smt_saved");
+                  console.log(smt_saved);
+                  $( '#'+smt_panel_num+" input[name=smt_id]" ).val(smt_saved[0]['pk']);
+                  $( '#'+smt_panel_num+" input[name=element_id]" ).val(smt_saved[0]['fields']['referenced_elements'][0]);
                   $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
                 } else {
                   $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
