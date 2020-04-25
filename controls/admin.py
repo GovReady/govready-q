@@ -3,7 +3,7 @@ from .models import Statement, Element, ElementControl, System, CommonControlPro
 
 
 class StatementAdmin(admin.ModelAdmin):
-    list_display = ('sid', 'sid_class', 'parent', 'id')
+    list_display = ('id', 'sid', 'sid_class', 'parent')
 
 class ElementAdmin(admin.ModelAdmin):
     list_display = ('name', 'full_name', 'id')

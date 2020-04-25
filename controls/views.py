@@ -178,7 +178,7 @@ def save_smt(request):
             form_values[key] = form_dict[key][0]
 
         # Updating or saving a new statement?
-        if 'smt_id' in form_values:
+        if len(form_values['smt_id']) > 0:
             # Look up existing Statement object
             statement = Statement.objects.get(pk=form_values['smt_id'])
             if statement is None:
@@ -208,40 +208,43 @@ def save_smt(request):
             statement_msg = "Statement save failed. Error reported {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg })
 
-        # Save element (e.g., component) if received
-        if 'element' in form_values and form_values['element'] is not None:
-            if Element.objects.filter(name=form_values['element']).exists():
-                # Does Element already exist?
-                # TODO need better filtering -- should pick element in form with auto complete
-                elements = Element.objects.filter(name=form_values['element'])
-                element = elements[0]
-                element_status = "ok"
-                element_msg = "Element exists."
-            else:
-                # Create Element
-                try:
-                    element = Element(name=form_values['element'])
-                    element.save()
-                    print(element)
-                    element_status = "ok"
-                    element_msg = "Element saved."
-                except Exception as e:
-                    element_status = "error"
-                    element_msg = "Element save failed. Error reported {}".format(e)
-                    return JsonResponse({ "status": "error", "message":  statement_msg + " " + element_msg })
+        # Updating or saving a new producer_element?
+        if len(form_values['producer_element_id']) > 0:
+            # Look up existing producer_element object
+            producer_element = Element.objects.get(pk=form_values['producer_element_id'])
+            if producer_element is None:
+                # Producer_element received has an id no longer in the database.
+                # Report error. Alternatively, in future save as new Statement object
+                producer_element_status = "error"
+                producer_element_msg = "The id for this Producer Element is no longer valid in the database."
+                return JsonResponse({ "status": "error", "message": producer_element_msg })
+            # Update existing producer_element object with received info
+            producer_element.name = form_values['producer_element_name']
         else:
-            print("problem with element")
-
-        # print("element", element)
-        # Associate element with statement
+            # Create new producer_element object
+            producer_element = Element(  name=form_values['producer_element_name'], )
+            # ONLY save produce_element when creating a new producer element
+            producer_element.save()
+        # Save producer_element object
         try:
-            statement.referenced_elements.add(element)
+            producer_element_status = "ok"
+            producer_element_msg = "Producer Element saved."
+        except Exception as e:
+            producer_element_status = "error"
+            producer_element_msg = "Producer Element save failed. Error reported {}".format(e)
+            return JsonResponse({ "status": "error", "message": producer_element_msg })
+
+        # Associate Statement and Producer Element
+        # TODO Only associate if we have created new statement object.
+        try:
+            statement.producer_element = producer_element
+            statement.save()
             statement_element_status = "ok"
-            statement_element_msg = "Statement associated with element."
+            statement_element_msg = "Statement associated with Producer Element."
         except Exception as e:
             statement_element_status = "error"
-            statement_element_msg = "Failed to associate statement with element {}".format(e)
-            return JsonResponse({ "status": "error", "message": statement_msg + " " + element_msg + " " +statement_element_msg })
+            statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
 
     # Serialize saved data object(s) to send back to update web page
     # The submitted form needs to be updated with the object primary keys (ids)
@@ -250,4 +253,64 @@ def save_smt(request):
     serialized_obj = serializers.serialize('json', [ statement, ])
 
     # Return successful save result to web page's Ajax request
-    return JsonResponse({ "status": "success", "message": statement_msg + " " + element_msg + " " +statement_element_msg, "statement": serialized_obj })
+    return JsonResponse({ "status": "success", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg, "statement": serialized_obj })
+
+def delete_smt(request):
+    """Delete a statement"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    else:
+        # check permissions
+        # EXAMPLE CODE FOR GUARDIAN PERMISSIONS
+        # # does user have write privs?
+        # # if not task.has_write_priv(request.user):
+        # #     return HttpResponseForbidden()
+
+        # # validate question
+        # # q = task.module.questions.get(id=request.POST.get("question"))
+
+        # # validate and parse value
+        # # if request.POST.get("method") == "clear":
+        # #     # Clear means that the question returns to an unanswered state.
+        # #     # This method is only offered during debugging to make it easier
+        # #     # to test the application's behavior when questions are unanswered.
+        # #     value = None
+        # #     cleared = True
+        # #     skipped_reason = None
+        # #     unsure = False
+
+        # # elif request.POST.get("method") == "skip":
+        # #     # The question is being skipped, i.e. answered with a null value,
+        # #     # because the user doesn't know the answer, it doesn't apply to
+        # #     # the user's circumstances, or they want to return to it later.
+        # #     value = None
+        # #     cleared = False
+        # #     skipped_reason = request.POST.get("skipped_reason") or None
+        #     unsure = bool(request.POST.get("unsure"))
+
+        #print(dict(request.POST))
+        form_dict = dict(request.POST)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+
+        # Delete statement?
+        statement = Statement.objects.get(pk=form_values['smt_id'])
+        if statement is None:
+            # Statement from received has an id no longer in the database.
+            # Report error. Alternatively, in future save as new Statement object
+            statement_status = "error"
+            statement_msg = "The id for this statement is no longer valid in the database."
+            return JsonResponse({ "status": "error", "message": statement_msg })
+        # Save Statement object
+        try:
+            statement.delete()
+            statement_status = "ok"
+            statement_msg = "Statement deleted."
+        except Exception as e:
+            statement_status = "error"
+            statement_msg = "Statement delete failed. Error reported {}".format(e)
+            
+        return JsonResponse({ "status": "error", "message": statement_msg }) 

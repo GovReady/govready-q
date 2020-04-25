@@ -12,9 +12,10 @@ class Statement(models.Model):
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
 
     parent = models.ForeignKey('self', help_text="Optional version number", on_delete=models.SET_NULL, blank=True, null=True)
-    referenced_elements = models.ManyToManyField('Element', related_name='statement_referencing', blank=True)
-    described_element = models.ForeignKey('Element', related_name='statement_describing', on_delete=models.SET_NULL, blank=True, null=True)
-
+    producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement. ")
+    consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about. ")
+    mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
+    
     def __str__(self):
         return "'%s %s %s id=%d'" % (self.sid, self.sid_class, self.statement_type, self.id)
 

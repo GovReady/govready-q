@@ -152,7 +152,7 @@ Remove contextbar from top of page
               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
                 <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{ forloop.counter }}-body">
-                    {{ smt.described_element.name }} {{ control.id|upper }} Component Implementation
+                    <span id="producer_element-panel_num-title">{{ smt.producer_element.name }} {{ control.id|upper }}</span> Component Implementation
                   </a>
                 </h4>
               </div>
@@ -162,33 +162,32 @@ Remove contextbar from top of page
               <div>
                 <form id="smt_{{ forloop.counter }}">
                   <div class="form-group">
-                    <label for="compoment">Component</label>
-                    <input type="text" class="form-control" id="element" name="element" placeholder="Name of component"
-                      onchange="$('#element-{{ forloop.counter }}-title').text($(this).val());" value="{{ smt.described_element.name }}">
+                    <!-- Never change name of the producer element already associated with a statement -->
+                     <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                    <label for="compoment">Component (Producer Element)</label>
+                    <div>{{ smt.producer_element.name }}</div>
+                    <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" value="{{ smt.producer_element.name }}">
                   </div>
                   <div class="form-group">
+                    <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
                     <label for="statement">Statement</label>
-                    <textarea class="form-control" id="body" name="body" placeholder="Paste control text here" rows="5" cols="50">{{ smt.body }}</textarea>
+                    <textarea class="form-control" id="body" name="body" placeholder="How component contributes to control" rows="5" cols="50">{{ smt.body }}</textarea>
                   </div>
                   <div class="form-group">
                     <label for="remarks">Remarks</label>
-                    <textarea class="form-control" id="remarks" name="remarks" placeholder="Paste control text here" rows="5" cols="50">{{ smt.remarks }}</textarea>
+                    <textarea class="form-control" id="remarks" name="remarks" placeholder="Add remarks for team" rows="5" cols="50">{{ smt.remarks }}</textarea>
                   </div>
 
                   <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                   <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-                  <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
-                  <br>smt.described_element.name &gt;
-                  <input type="input" id="element_id" name="element_id" value="{{ smt.described_element.id }}">
                   <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
                   <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
                   <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
 
                 <div class="modal-footer">
                   <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
-                  <button type="button" name="submit" value="delete" class="btn btn-xs btn-danger" onclick="authoring_tool_delete_question()">Delete</button>
-                  <button type="button" name="submit" value="cancel" class="btn btn-xs btn-default" data-dismiss="modal">Cancel</button>
-                  <button type="submit" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false">Save</button>
+                  <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
+                  <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
                 </div>
 
                 </form>
@@ -246,7 +245,7 @@ Remove contextbar from top of page
             <div class="panel-heading" role="tabx" id="document-panel_num-title">
               <h4 id="panel-panel_num-title" class="panel-title">
                 <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body">
-                  <span id="element-panel_num-title">Other</span> {{ control.id|upper }} Component Implementation
+                  <span id="producer_element-panel_num-title">Other</span> {{ control.id|upper }} Component Implementation
                 </a>
               </h4>
             </div>
@@ -256,34 +255,31 @@ Remove contextbar from top of page
             <div>
               <form id="smt_panel_num">
                 <div class="form-group">
-                  <label for="compoment">Component</label>
-                  <input type="text" class="form-control" id="element" name="element" placeholder="Name of component"
-                    onchange="$('#element-panel_num-title').text($(this).val());">
+                  <input type="hidden" id="producer_element_id" name="producer_element_id" value="">
+                  <label for="compoment">Producer Component</label>
+                  <input type="text" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
+                    onchange="$('#producer_element-panel_num-title').text($(this).val());">
                 </div>
                 <div class="form-group">
+                  <input type="hidden" id="smt_id" name="smt_id" value="">
                   <label for="statement">Statement</label>
-                  <textarea class="form-control" id="body" name="body" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+                  <textarea class="form-control" id="body" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
                 </div>
                 <div class="form-group">
                   <label for="remarks">Remarks</label>
-                  <textarea class="form-control" id="remarks" name="remarks" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+                  <textarea class="form-control" id="remarks" name="remarks" placeholder="Add remarks for team" rows="5" cols="50"></textarea>
                 </div>
 
                 <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                 <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-                <br>smt.id &gt;
-                <input type="hidden" id="smt_id" name="smt_id" value="">
-                <br>smt.described_element.id &gt;
-                <input type="input" id="element_id" name="element_id" value="">
                 <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
                 <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
                 <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
 
               <div class="modal-footer">
                 <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
-                <button type="button" name="submit" value="delete" class="btn btn-xs btn-danger" onclick="authoring_tool_delete_question()">Delete</button>
-                <button type="button" name="submit" value="cancel" class="btn btn-xs btn-default" data-dismiss="modal">Cancel</button>
-                <button type="submit" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false">Save</button>
+                <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_panel_num');return false;">Delete</button>
+                <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false;">Save</button>
               </div>
 
               </form>
@@ -295,47 +291,45 @@ Remove contextbar from top of page
           $( "#smt-list" ).append(smt_form);
         }
 
-        function edit_smt() {
-          console.log("Edit statement - open modal");
-          show_module_smt_editor();
-        }
-      </script>
-
-      <script>
-        // Manage statement Ajax submissions
-
         function save_smt(smt_panel_num) {
           // Save a statement
-          // console.log("smt_panel_num is "+smt_panel_num);
           // serialize data from the identified statement form
           var data = $( '#'+smt_panel_num ).serialize()
 
           // send data via ajax to be saved
           ajax_with_indicator({
-              url: "/controls/smt/_save/",
-              method: "POST",
-              data: data,
-              indicator_parent: $('#page-content'),
-              keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
-              success: function(res) {
-                console.log('success');
-                console.log(res);
-                if (res['status'] == "success") {
-                  // Update field values from saved
-                  // Initially update a few fields
-                  smt_saved = JSON.parse(res['statement']);
-                  console.log("printing smt_saved");
-                  console.log(smt_saved);
-                  $( '#'+smt_panel_num+" input[name=smt_id]" ).val(smt_saved[0]['pk']);
-                  $( '#'+smt_panel_num+" input[name=element_id]" ).val(smt_saved[0]['fields']['referenced_elements'][0]);
-                  $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
-                } else {
-                  $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
-                }
-                setTimeout(function() {
-                  $('#success-msg-'+smt_panel_num).fadeOut("fast");
-                }, 1000 );
+            url: "/controls/smt/_save/",
+            method: "POST",
+            data: data,
+            indicator_parent: $('#page-content'),
+            keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+            success: function(res) {
+              console.log('success');
+              console.log(res);
+              if (res['status'] == "success") {
+                // Update field values from saved
+                // Initially update a few fields
+                smt_saved = JSON.parse(res['statement']);
+                console.log("printing smt_saved");
+                console.log(smt_saved);
+                $( '#'+smt_panel_num+' input[name=smt_id]' ).val(smt_saved[0]['pk']);
+
+
+                // If saving first time remove producer_element_name input field
+                if ($( '#'+smt_panel_num+' input[name=producer_element_id]' ).val().length == 0) {
+
+                  $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
+                } 
+
+                $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
+                $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
+              } else {
+                $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
               }
+              setTimeout(function() {
+                $('#success-msg-'+smt_panel_num).fadeOut("fast");
+              }, 1000 );
+            }
           });
 
           // Stop <form> submit
@@ -343,6 +337,44 @@ Remove contextbar from top of page
 
         }; // /save_smt
 
+        function delete_smt(smt_panel_num) {
+          console.log("Deleting statement button pressed "+smt_panel_num);
+          // Confirm deletion
+          var result = confirm("Delete statement?");
+          if (result) {
+              // Delete statement object in database if it exists
+              if ($( '#'+smt_panel_num+' input[name=producer_element_id]' ).val().length > 0) {
+                console.log("deleting db object")
+                // serialize data from the identified statement form
+                var data = $( '#'+smt_panel_num ).serialize()
+                // send data via ajax to delete object
+                ajax_with_indicator({
+                  url: "/controls/smt/_delete/",
+                  method: "POST",
+                  data: data,
+                  indicator_parent: $('#page-content'),
+                  keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+                  success: function(res) {
+                    console.log('success');
+                    console.log(res);
+                    if (res['status'] == "success") {
+                      // Update field values from saved
+                      // Initially update a few fields
+                      console.log("smt_deleted");
+                    }
+                    // Remove statement accordian from page
+                    console.log("removing from page "+'#panel-'+smt_panel_num)
+                    $( '#panel-'+smt_panel_num.replace("smt_","") ).remove()
+                  }
+                });
+              } else {
+                // Remove statement accordian from page
+                console.log("removing from page "+'#panel-'+smt_panel_num)
+                $( '#panel-'+smt_panel_num.replace("smt_","") ).remove()
+              }
+               
+          }
+        }
       </script>
 
       {% endblock %}
