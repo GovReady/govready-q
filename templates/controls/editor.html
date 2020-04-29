@@ -47,6 +47,11 @@
     /* display: none; */
   }
 
+  textarea {
+    overflow-y: scroll;
+    resize: vertical;
+  }
+
 </style>
 {% endblock %}
 
@@ -64,7 +69,8 @@ Remove contextbar from top of page
         {% if control.title is not None %}
         <h2 class="control-heading" style="">
           <small style="color: #888;">NIST SP 800-53 Rev 4</small><br>
-          {{ system.root_element.name }} > {{ control.id_display|upper }} {{ control.title }}
+          {{ control.id_display|upper }} {{ control.title }}<br>
+          {{ system.root_element.name }} 
         </h2>
         {% else %}
         <h2 class="control-heading" style="">
@@ -78,7 +84,7 @@ Remove contextbar from top of page
     </div>
     <div style="float: right; padding: 0 0.5em 0em 5em;">
         <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-          <input type="text" value="" name="id" placeholder="Enter control id"/>
+          <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
               <button type="submit" class="btn btn-success">Look up</button>
               <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
               <a href="/">families</a> -->
@@ -131,11 +137,11 @@ Remove contextbar from top of page
                   </div>
                   <div class="form-group">
                     <label for="statement">Statement</label>
-                    <textarea class="form-control" id="statement" placeholder="Paste control text here" rows="5" cols="50">{{control.legacy_imp_smt}}</textarea>
+                    <textarea class="form-control" id="statement" placeholder="Place control text here" rows="8" cols="50">{{control.legacy_imp_smt}}</textarea>
                   </div>
                   <div class="form-group">
                     <label for="remarks">Remarks</label>
-                    <textarea class="form-control" id="app_remarks" placeholder="Paste control text here" rows="5" cols="50"></textarea>
+                    <textarea class="form-control" id="app_remarks" placeholder="Place control text here" cols="50"></textarea>
                   </div>
                 </form>
               </div>
@@ -153,9 +159,11 @@ Remove contextbar from top of page
       <div id="smt-block" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4" style="">
 
         <div class="row">
-          <div id="" class="control-text"><h3>Implementation Statement <button type="submit" class="small btn btn-xs btn-success" style="color: white;" onclick="view_combined_smt()">View combined</button></h3></div>
+          <div id="" class="control-text"><h3>Implementation Statement <button type="submit" class="small btn btn-xs btn-success" style="color: white;" onclick="update_combined_smt();$( '#combined_smt' ).toggle();return false;">View combined</button></h3></div>
           
-          <div id="combined_smt" class="control-text">{% for smt in impl_smts %}{{ smt.body }}
+          <div id="combined_smt" class="control-text">The combined implementation statement reads:
+
+{% for smt in impl_smts %}{{ smt.body }}
 
 {% endfor %}</div>{% comment %}Leave left justified for proper formatting of text{% endcomment %}
           <div id="smt-list" class="" style="width: 90%">
@@ -164,7 +172,7 @@ Remove contextbar from top of page
               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
                 <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{ forloop.counter }}-body">
-                    <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>
+                    <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;...
                   </a>
                 </h4>
               </div>
@@ -183,11 +191,11 @@ Remove contextbar from top of page
                   <div class="form-group">
                     <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
                     <label for="statement">Statement</label>
-                    <textarea class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control" rows="5" cols="50">{{ smt.body }}</textarea>
+                    <textarea style="min-height:300px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
                   </div>
                   <div class="form-group">
                     <label for="remarks">Remarks</label>
-                    <textarea class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" rows="5" cols="50">{{ smt.remarks }}</textarea>
+                    <textarea style="min-height:100px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
                   </div>
 
                   <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
@@ -250,15 +258,12 @@ Remove contextbar from top of page
         }
 
         // View combined implementation statement
-        function view_combined_smt() {
+        
+        function update_combined_smt() {
           // Read through existing statements and combine into single statement
           combined_smt = $( ".smt_form textarea[name=body]" ).map(function(){return this.value}).get().join("\n\n");
-
           // Add combined statement to #combined_smt
-          $( "#combined_smt" ).html("<p>The combined implementation statement reads:</p>"+combined_smt);
-
-          // Show #combined_smt
-          $( "#combined_smt" ).toggle();
+          $( "#combined_smt" ).html("<p>The combined implementation statement reads:</p><textarea style=\"border: none; min-height:300px;overflow-y: scroll;\" class=\"form-control\" cols=\"50\" onkeypress=\"$(this).keypress(function(e) {return false});\">"+combined_smt+"</textarea>");
         }
         // Adds statement form to page
         function add_smt() {
@@ -276,7 +281,7 @@ Remove contextbar from top of page
               <div class="panel-body output-document">
 
             <div>
-              <form id="smt_panel_num">
+              <form id="smt_panel_num" class="smt_form">
                 <div class="form-group">
                   <input type="hidden" id="producer_element_id" name="producer_element_id" value="">
                   <label for="compoment">Producer Component</label>
@@ -290,7 +295,7 @@ Remove contextbar from top of page
                 </div>
                 <div class="form-group">
                   <label for="remarks">Remarks</label>
-                  <textarea class="form-control" id="remarks" name="remarks" placeholder="Add remarks for team" rows="5" cols="50"></textarea>
+                  <textarea class="form-control" id="remarks" name="remarks" placeholder="Add remarks for team"  rows="4" cols="50"></textarea>
                 </div>
 
                 <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
@@ -337,15 +342,15 @@ Remove contextbar from top of page
                 console.log(smt_saved);
                 $( '#'+smt_panel_num+' input[name=smt_id]' ).val(smt_saved[0]['pk']);
 
-
                 // If saving first time remove producer_element_name input field
                 if ($( '#'+smt_panel_num+' input[name=producer_element_id]' ).val().length == 0) {
-
                   $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
                 } 
 
                 $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
                 $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
+                // Update combined statement
+                update_combined_smt();
               } else {
                 $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
               }
@@ -397,6 +402,12 @@ Remove contextbar from top of page
               }
           }
         }
+      </script>
+      <script>
+        $( document ).ready(function() {
+            //console.log("document ready");
+        });
+
       </script>
 
       {% endblock %}

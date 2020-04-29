@@ -209,24 +209,15 @@ def save_smt(request):
             return JsonResponse({ "status": "error", "message": statement_msg })
 
         # Updating or saving a new producer_element?
-        if len(form_values['producer_element_id']) > 0:
-            # Look up existing producer_element object
-            producer_element = Element.objects.get(pk=form_values['producer_element_id'])
-            if producer_element is None:
-                # Producer_element received has an id no longer in the database.
-                # Report error. Alternatively, in future save as new Statement object
-                producer_element_status = "error"
-                producer_element_msg = "The id for this Producer Element is no longer valid in the database."
-                return JsonResponse({ "status": "error", "message": producer_element_msg })
-            # Update existing producer_element object with received info
-            producer_element.name = form_values['producer_element_name']
-        else:
-            # Create new producer_element object
-            producer_element = Element(  name=form_values['producer_element_name'], )
-            # ONLY save produce_element when creating a new producer element
-            producer_element.save()
-        # Save producer_element object
         try:
+            # Does the name match and existing element? (Element names are unique.)
+            # TODO: Sanitize data entered in form?
+            producer_element, created = Element.objects.get_or_create(name=form_values['producer_element_name'])
+            # producer_element = Element(  name=form_values['producer_element_name'], )
+            # ONLY save produce_element when creating a new producer element
+            print("get_or_create result ", producer_element, created)
+            # if (created == True):
+            #     producer_element.save()
             producer_element_status = "ok"
             producer_element_msg = "Producer Element saved."
         except Exception as e:
