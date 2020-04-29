@@ -20,6 +20,8 @@ from django.test import TestCase
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
+from .oscal import Catalogs, Catalog
+
 # from controls.oscal import Catalogs, Catalog
 
 # ####### siteapp.test
@@ -196,7 +198,7 @@ class SampleTest(TestCase):
 class Oscal80053Tests(TestCase):
     # Test 
     def test_catalog_load_control(self):
-        cg = Catalog.GetInstance()
+        cg = Catalog.GetInstance('NIST_SP-800-53_rev4')
         cg_flat = cg.get_flattended_controls_all_as_dict()
         control = cg_flat['au-2']
         self.assertEqual(control['id'].upper(), "AU-2")
@@ -209,16 +211,15 @@ class Oscal80053Tests(TestCase):
 class ControlUITests(SeleniumTest):
     def test_homepage(self):
         self.browser.get(self.url("/controls/"))
-        self.assertInNodeText("Test works", "p")
 
     def test_control_lookup(self):
-        self.browser.get(self.url("/controls/800-53/AU-2/"))
+        self.browser.get(self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/au-2"))
         var_sleep(2)
         self.assertInNodeText("AU-2", "#control-heading")
         self.assertInNodeText("Audit Events", "#control-heading")
 
     def test_control_enhancement_lookup(self):
-        self.browser.get(self.url("/controls/800-53/AC-2 (4)/"))
+        self.browser.get(self.url("/controls/catalogs/NIST_SP-800-53_rev4/control/AC-2 (4)"))
         self.assertInNodeText("AC-2 (4)", "#control-heading")
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 

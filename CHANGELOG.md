@@ -1,6 +1,18 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.6 (April 29, 2020)
+-------------------------
+
+Continue to improve control editor.
+
+Enforce unique Name field on Element model.
+Match Component (Producer Element) by unique name to existing
+Producer Element in the database when creating a new Statement.
+    
+Improve the combining of component statements.
+Temporarily put result into a textarea to make easier to copy manually.
+
 v0.9.1.5 (April 21, 2020)
 -------------------------
 
