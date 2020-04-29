@@ -53,7 +53,7 @@ each control is listed as a dictionary.
 Create a new script `oscal.py` and a `Catalog` class
 and create look ups of controls.
 
-Because OSCAL is hierarchal and recursive, we also generate
+Because OSCAL is hierarchical and recursive, we also generate
 a flattened, simplified version of our control catalog.
 
 * Add simple CommonControl model
@@ -88,7 +88,7 @@ Each implementation statement panel and form is given a unique id
 when added to the page to make sure the correct statment information
 is passed to the server.
 
-When component name is update, the panel title updates.
+When component name is updated, the panel title updates.
 
 Add hidden fields to send the control id and the system name as part
 of the form.
