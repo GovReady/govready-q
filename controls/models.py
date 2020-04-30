@@ -17,11 +17,11 @@ class Statement(models.Model):
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     
     def __str__(self):
-        return "'%s %s %s id=%d'" % (self.sid, self.sid_class, self.statement_type, self.id)
+        return "'%s %s %s id=%d'" % (self.statement_type, self.sid, self.sid_class, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "'%s %s %s id=%d'" % (self.sid, self.sid_class, self.statement_type, self.id)
+        return "'%s %s %s id=%d'" % (self.statement_type, self.sid, self.sid_class, self.id)
 
 class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
