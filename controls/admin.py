@@ -1,24 +1,51 @@
+import csv
 from django.contrib import admin
+from django.http import HttpResponse
 from .models import Statement, Element, ElementControl, System, CommonControlProvider, CommonControl
 
 
-class StatementAdmin(admin.ModelAdmin):
+class ExportCsvMixin:
+    # From https://books.agiliq.com/projects/django-admin-cookbook/en/latest/export.html
+    def export_as_csv(self, request, queryset):
+
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
+
+    export_as_csv.short_description = "Export Selected as CSV"
+
+class StatementAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('id', 'sid', 'sid_class', 'parent')
+    actions = ["export_as_csv"]
 
-class ElementAdmin(admin.ModelAdmin):
+class ElementAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('name', 'full_name', 'id')
+    actions = ["export_as_csv"]
 
-class ElementControlAdmin(admin.ModelAdmin):
+class ElementControlAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('id', 'element', 'oscal_ctl_id', 'oscal_catalog_key')
+    actions = ["export_as_csv"]
 
-class SystemAdmin(admin.ModelAdmin):
+class SystemAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('id', 'root_element')
+    actions = ["export_as_csv"]
 
-class CommonControlProviderAdmin(admin.ModelAdmin):
+class CommonControlProviderAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('name', 'id')
+    actions = ["export_as_csv"]
 
-class CommonControlAdmin(admin.ModelAdmin):
+class CommonControlAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('name', 'oscal_ctl_id', 'id')
+    actions = ["export_as_csv"]
 
 
 admin.site.register(Statement, StatementAdmin)
