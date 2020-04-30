@@ -362,6 +362,13 @@ class Portfolio(models.Model):
             ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission'),
         ]
 
+    def __str__(self):
+        return "'Portfolio %s id=%d'" % (self.title, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'Portfolio %s id=%d'" % (self.title, self.id)
+
     def get_absolute_url(self):
         return "/portfolios/%s/projects" % (self.id)
 
