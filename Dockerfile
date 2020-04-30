@@ -83,6 +83,7 @@ RUN sqlite3 --version
 # that often has local development files. But *do* include fixtures
 # so that tests can be run.
 COPY VERSION ./VERSION
+COPY controls ./controls
 COPY discussion ./discussion
 COPY guidedmodules ./guidedmodules
 COPY modules ./modules

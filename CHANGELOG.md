@@ -1,6 +1,18 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.6 (April 29, 2020)
+-------------------------
+
+Continue to improve control editor.
+
+Enforce unique Name field on Element model.
+Match Component (Producer Element) by unique name to existing
+Producer Element in the database when creating a new Statement.
+    
+Improve the combining of component statements.
+Temporarily put result into a textarea to make easier to copy manually.
+
 v0.9.1.5 (April 21, 2020)
 -------------------------
 
@@ -41,7 +53,11 @@ each control is listed as a dictionary.
 Create a new script `oscal.py` and a `Catalog` class
 and create look ups of controls.
 
+<<<<<<< HEAD
 Because OSCAL is hierarchal and recursive, we also generate
+=======
+Because OSCAL is hierarchical and recursive, we also generate
+>>>>>>> cc49f992d72cee67d0142f6ec36a07d3ba2bca1e
 a flattened, simplified version of our control catalog.
 
 * Add simple CommonControl model
@@ -76,7 +92,7 @@ Each implementation statement panel and form is given a unique id
 when added to the page to make sure the correct statment information
 is passed to the server.
 
-When component name is update, the panel title updates.
+When component name is updated, the panel title updates.
 
 Add hidden fields to send the control id and the system name as part
 of the form.

@@ -29,15 +29,16 @@ Remove contextbar from top of page
 
     <h2 id="control-heading" class="">
       <small style="color: #888;">{{ catalog.catalog_key_display }}</small><br>
-      Control Groupings
+      {{ group.id|upper }} - {{ group.title }} Controls
     </h2>
     <div>
       <ul>
-      {% for group in control_groups %}
-        <li><a href="/controls/catalogs/{{ catalog.catalog_key }}/group/{{ group.id }}">{{ group.id|upper }}</a> - {{ group.title }}</li>
+      {% for cl in group.controls %}
+        <li><a href="/controls/catalogs/{{ catalog.catalog_key }}/control/{{ cl.id }}">{{ cl.id|upper }}</a> - {{ cl.title }}</li>
       {% endfor %}
       </ul>
     </div>
+
   </div>
 </div>
 
@@ -53,3 +54,4 @@ Remove contextbar from top of page
   }
 </script>
 {% endblock %}
+
