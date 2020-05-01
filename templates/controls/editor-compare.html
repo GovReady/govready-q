@@ -35,6 +35,23 @@
     /*text-justify: inter-word;*/
   }
 
+  #control-info {
+    border-left:0px solid #aaa;padding-left:20px; border-radius:0px;
+    padding-right:-30px;
+    min-height: 800px;
+  }
+
+  #facility-from-block {
+    border-left:1px solid #aaa;padding-left:40px; border-radius:0px;
+    padding-right:-30px;
+    min-height: 800px;
+  }
+
+  #smt-block {
+    border-left:1px solid #aaa;padding-left:40px; border-radius:0px;
+    min-height: 800px;
+  }
+
   #control-lookup input {
     width: 130px;
   }
@@ -52,6 +69,8 @@
     resize: vertical;
   }
 
+
+
 </style>
 {% endblock %}
 
@@ -65,10 +84,31 @@ Remove contextbar from top of page
 <div style="margin-top: 30px">
 
   <div class="row" style="">
-    <div style="float: left; padding: 0 0 0 1em;">
+    <div style="float: left; padding: 0 0 0 0em;">
+        <h2 class="control-heading" style="">
+            Cloud Migration - Control Comparison
+        </h2>
+    </div>
+
+    <!-- Control Lookup-->
+    <div style="float: right; padding: 0 0.5em 0em 5em;">
+        <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
+          <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
+              <button type="submit" class="btn btn-success">Look up</button>
+              <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <a href="/">families</a> -->
+        </form>
+    </div>
+  </div><!--/row-->
+
+  <div id="page-content" class="row" style="">
+
+    <div id="control-info" class="row col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+
+    <div style="padding: 0 0 0 -1em;">
         {% if control.title is not None %}
         <h2 class="control-heading" style="">
-          <small style="color: #888;">NIST SP 800-53 Rev 4</small><br>
+          <small style="color: #888;">NIST SP 800-53 Rev 4 (Compare)</small><br>
           {{ control.id_display|upper }} {{ control.title }}<br>
           {{ system.root_element.name }} 
         </h2>
@@ -82,153 +122,188 @@ Remove contextbar from top of page
         </div>
         {% endif %}
     </div>
-    <div style="float: right; padding: 0 0.5em 0em 5em;">
-        <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-          <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
-              <button type="submit" class="btn btn-success">Look up</button>
-              <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              <a href="/">families</a> -->
-        </form>
+    
+    {% if control.title is not None %}
+    <div class="row" style="width:90%; padding: 0 0 0 1em;">
+        
+        
+        
+        <div id="control-description" class="control-text"><h3>Control Description</h3>{{ control.description }}</div>
+        <div id="control-guidance"  class="control-text"><h3>Control Guidance</h3>{{ control.guidance }}</div>
     </div>
-  </div><!--/row-->
+    {% else %}
+    <div id="control-message">
+        <p>The control {{ control.id }} was not found in the control catalog.</p>
+    </div>
+    {% endif %}
+    </div>
 
-  <div id="page-content" class="row" style="">
-
-      <div id="control-info" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
-        {% if control.title is not None %}
-        <div class="row" style="width:90%; padding: 0 0 0 1em;">
-          <div id="control-description" class="control-text"><h3>Control Description</h3>{{ control.description }}</div>
-          <div id="control-guidance"  class="control-text"><h3>Control Guidance</h3>{{ control.guidance }}</div>
-        </div>
-        {% else %}
-        <div id="control-message">
-          <p>The control {{ control.id }} was not found in the control catalog.</p>
-        </div>
-        {% endif %}
-      </div>
-
-      <div id="" class="col-spacer col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
-
+    <div id="facility-from-block" class="row col-spacer col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4" style="">
+    
         <div class="row">
-          <div id="control-description" class="control-text"><h3>Common Control Implementations</h3></div>
+        <div id="control-description" class="control-text"><h2>Migrating From:</h2></div>
+        <div id="control-description" class="control-text"><h3>DC1</h3></div>
+        </div>
+        <div class="row">
+        <div id="control-description" class="control-text"><h3>Implementation Statement(s)</h3></div>
         </div>
 
         <div class="row" style="width:90%;">
-          {% if control.title is not None %}
+        {% if control.title is not None %}
 
         {% if common_controls|length > 0 %}
         {% for control in common_controls %}
         <div class="panel panel-default">
-          <div class="panel-heading" role="tabx" id="document-cc-panel_num-title">
+        <div class="panel-heading" role="tabx" id="document-cc-panel_num-title">
             <h4 class="panel-title">
-              <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-cc-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-cc-panel_num-body">
-                {{control.name}} Common Control Implementation
-              </a>
+            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-cc-panel_num-body" aria-expanded="false" aria-controls="document-cc-panel_num-body">
+                DC1 <!--{{control.name}}--> ...
+            </a>
             </h4>
-          </div>
-          <div id="document-cc-panel_num-body" class="panel-collapse collapse output-document" role="tabpanel" aria-labelledby="document-cc-panel_num-title">
+        </div>
+        <div id="document-cc-panel_num-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-cc-panel_num-title">
             <div class="panel-body output-document">
 
-              <div>
+            <div>
                 <form>
-                  <div class="form-group">
+                <div class="form-group">
                     <label for="compoment">Component</label>
                     <input type="text" class="form-control" id="component" placeholder="Name of component" value="{{control.name}}">
-                  </div>
-                  <div class="form-group">
+                </div>
+                <div class="form-group">
                     <label for="statement">Statement</label>
                     <textarea class="form-control" id="statement" placeholder="Place control text here" rows="8" cols="50">{{control.legacy_imp_smt}}</textarea>
-                  </div>
-                  <div class="form-group">
+                </div>
+                <div class="form-group">
                     <label for="remarks">Remarks</label>
                     <textarea class="form-control" id="app_remarks" placeholder="Place control text here" cols="50"></textarea>
-                  </div>
+                </div>
                 </form>
-              </div>
+            </div>
 
             </div>
-          </div>
+        </div>
         </div>
         {% endfor %}
         {% endif %}
-
-          {% endif %}
+        <!-- Fake item -->
+        <div class="panel-ff panel-default">
+        <div class="panel-heading" role="tabx" id="document-ff-panel_num-title">
+            <h4 class="panel-title">
+            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-ff-panel_num-body" aria-expanded="false" aria-controls="document-ff-panel_num-body">
+                CBP ICAM Single Sign On <!--{{control.name}}--> ...
+            </a>
+            </h4>
         </div>
-      </div>
+        <div id="document-ff-panel_num-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-ff-panel_num-title">
+            <div class="panel-body output-document">
 
-      <div id="smt-block" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4" style="">
+            <div>
+                <form>
+                <div class="form-group">
+                    <label for="compoment">Component</label>
+                    <input type="text" class="form-control" id="component" placeholder="Name of component" value="{{control.name}}">
+                </div>
+                <div class="form-group">
+                    <label for="statement">Statement</label>
+                    <textarea class="form-control" id="statement" placeholder="Place control text here" rows="8" cols="50">{{control.legacy_imp_smt}}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="remarks">Remarks</label>
+                    <textarea class="form-control" id="app_remarks" placeholder="Place control text here" cols="50"></textarea>
+                </div>
+                </form>
+            </div>
 
-        <div class="row">
-          <div id="" class="control-text"><h3>Implementation Statement <button type="submit" class="small btn btn-xs btn-success" style="color: white;" onclick="update_combined_smt();$( '#combined_smt' ).toggle();return false;">View combined</button></h3></div>
-          
-          <div id="combined_smt" class="control-text">The combined implementation statement reads:
+            </div>
+        </div>
+        </div>
+
+        {% endif %}
+        </div>
+    </div>
+
+      
+      
+    <div id="smt-block" class="row col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4" style="">
+    <div class="row">
+        <div id="control-description" class="control-text"><h2>Migrating To:</h2></div>
+        <div id="control-description" class="control-text"><h3>Cloud Factory 2 <button type="submit" class="small btn btn-xs btn-success" style="color: white;" onclick="alert('This will let you change facilities.');return false;">Change</button></h3></div>
+    </div>
+
+    <div class="row">
+        <div id="" class="control-text"><h3>Implementation Statement(s) <button type="submit" class="small btn btn-xs btn-success" style="color: white;" onclick="update_combined_smt();$( '#combined_smt' ).toggle();return false;">View combined</button></h3></div>
+        
+        <!-- combined_smt
+        <div id="combined_smt" class="control-text">The combined implementation statement reads:
 
 {% for smt in impl_smts %}{{ smt.body }}
 
 {% endfor %}</div>{% comment %}Leave left justified for proper formatting of text{% endcomment %}
-          <div id="smt-list" class="" style="width: 90%">
-            {% for smt in impl_smts %}
-            <div id="panel-{{ forloop.counter }}" class="panel panel-default">
-              <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
-                <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
-                  <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{ forloop.counter }}-body">
-                    <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;...
-                  </a>
-                </h4>
-              </div>
-              <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse output-document" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
-                <div class="panel-body output-document">
+        -->
+        <div id="smt-list" class="" style="width: 90%">
+        {% for smt in impl_smts %}
+        <div id="panel-{{ forloop.counter }}" class="panel panel-default">
+            <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
+            <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
+                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{ forloop.counter }}-body">
+                <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;...
+                </a>
+            </h4>
+            </div>
+            <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse output-document" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
+            <div class="panel-body output-document">
 
-              <div>
-                <form id="smt_{{ forloop.counter }}" class="smt_form">
-                  <div class="form-group">
-                    <!-- Never change name of the producer element already associated with a statement -->
-                     <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                    <label for="compoment">Component (Producer Element)</label>
-                    <div>{{ smt.producer_element.name }}</div>
-                    <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
-                  </div>
-                  <div class="form-group">
-                    <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
-                    <label for="statement">Statement</label>
-                    <textarea style="min-height:300px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
-                  </div>
-                  <div class="form-group">
-                    <label for="remarks">Remarks</label>
-                    <textarea style="min-height:100px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
-                  </div>
-
-                  <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
-                  <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-                  <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
-                  <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
-                  <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
-
-                <div class="modal-footer">
-                  <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
-                  <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
-                  <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
+            <div>
+            <form id="smt_{{ forloop.counter }}" class="smt_form">
+                <div class="form-group">
+                <!-- Never change name of the producer element already associated with a statement -->
+                    <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                <label for="compoment">Component (Producer Element)</label>
+                <div>{{ smt.producer_element.name }}</div>
+                <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
+                </div>
+                <div class="form-group">
+                <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
+                <label for="statement">Statement</label>
+                <textarea style="min-height:300px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
+                </div>
+                <div class="form-group">
+                <label for="remarks">Remarks</label>
+                <textarea style="min-height:100px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
                 </div>
 
-                </form>
-              </div>
+                <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+                <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
+                <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
+                <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
 
-                </div>
-              </div>
+            <div class="modal-footer">
+                <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
+                <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
+                <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
             </div>
 
-            {% endfor %}
-          </div><!--/smt-list-->
-          <div><h3><button type="submit" class="small btn btn-xs btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+            </form>
+            </div>
+
+            </div>
+            </div>
         </div>
 
-         <!-- <div class="row">
-          <div id="smt-add-link" class="" style="">
-            As the customer of this Common Control, you may have responsibilities. <button type="submit" class="btn btn-link" onclick="add_smt()">Add implementation now.</button>
-          </div>
-        </div> -->
+        {% endfor %}
+        </div><!--/smt-list-->
+        <div><h3><button type="submit" class="small btn btn-xs btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+    </div>
 
-      </div><!--/smt-block-->
+        <!-- <div class="row">
+        <div id="smt-add-link" class="" style="">
+        As the customer of this Common Control, you may have responsibilities. <button type="submit" class="btn btn-link" onclick="add_smt()">Add implementation now.</button>
+        </div>
+    </div> -->
+
+    </div><!--/smt-block-->
 
 </div><!--/page content-->
 
@@ -240,7 +315,7 @@ Remove contextbar from top of page
         // Submits control id for Control look up box
         function show_control_by_id() {
           var control_id = $('#control-lookup').find('input[name="id"]').val();
-          var url = "/systems/{{ system.id }}/controls/catalogs/{{ catalog.catalog_key }}/control/"+control_id+"/editor";
+          var url = "/systems/{{ system.id }}/controls/catalogs/{{ catalog.catalog_key }}/control/"+control_id+"/editor/compare";
           window.location.href = url;
         }
       </script>

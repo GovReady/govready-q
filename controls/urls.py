@@ -25,5 +25,6 @@ urlpatterns = [
 
     # Systems
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/editor$', views.editor, name="control_editor"),
+    url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/editor/compare$', views.editor_compare, name="control_editor_compare"),
 
 ]

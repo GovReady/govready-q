@@ -134,6 +134,45 @@ def editor(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
+def editor_compare(request, system_id, catalog_key, cl_id):
+    """System Control detail view"""
+
+    cl_id = oscalize_control_id(cl_id)
+
+    # Get control catalog
+    catalog = Catalog(catalog_key)
+    cg_flat = catalog.get_flattended_controls_all_as_dict()
+    # If control id does not exist in catalog
+    if cl_id.lower() not in cg_flat:
+        return render(request, "controls/detail.html", { "control": {} })
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related statements if owner has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve any related CommonControls
+        common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
+        ccp_name = None
+        if common_controls:
+            cc = common_controls[0]
+            ccp_name = cc.common_control_provider.name
+        # Get and return the control
+
+        # Retrieve any related Implementation Statements
+        impl_smts = Statement.objects.filter(sid=cl_id)
+        context = {
+            "system": system,
+            "catalog": catalog,
+            "control": cg_flat[cl_id.lower()],
+            "common_controls": common_controls,
+            "ccp_name": ccp_name,
+            "impl_smts": impl_smts
+        }
+        return render(request, "controls/editor-compare.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
 # @task_view
 def save_smt(request):
     """Save a statement"""
