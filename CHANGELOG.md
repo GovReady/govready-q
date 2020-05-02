@@ -6,15 +6,15 @@ v0.9.1.7 (May 02, 2020)
 
 Turn off PDF generation and thumbnails are turned off by default for
 security reasons. Change PDF and custom thumbnail generation for uploaded
-files to optional. Requre Admins to separately isntall the `wkkhtmltopdf` library.
+files to optional. Require Admins to separately install the `wkhtmltopdf` library.
 
 PDF generator library ``wkhtmltopdf`` has security issues wherein individuals could add
 HTML references such as links or file references inside the documents
-they are creating which the PDF Generator blindly interpets. This leads
+they are creating which the PDF Generator blindly interprets. This leads
 to SSRF (Server Side Request Forgery) in which data is retrieved from
 server and added to PDF by the PDG Generator. An issue also exists
 with the sub-dependency of `libxslt` before CentOS 8.x raising CVE vulnerability
-with scanners. For these reasons, PDF Generation is being a configurable setting.
+with scanners. For these reasons, PDF Generation is now a configurable setting.
 
 v0.9.1.6 (April 29, 2020)
 -------------------------
@@ -24,7 +24,7 @@ Continue to improve control editor.
 Enforce unique Name field on Element model.
 Match Component (Producer Element) by unique name to existing
 Producer Element in the database when creating a new Statement.
-    
+
 Improve the combining of component statements.
 Temporarily put result into a textarea to make easier to copy manually.
 
