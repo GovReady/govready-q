@@ -988,6 +988,7 @@ def task_finished(request, task, answered, context, *unused_args):
         "next_group": next_group,
         "next_module": next_module,
         "next_module_spec": next_module_spec,
+        "gr_pdf_generator": settings.GR_PDF_GENERATOR,
         "project_form": ProjectForm(request.user, initial={'portfolio': task.project.portfolio.id}) if task.project.portfolio else ProjectForm(request.user)
     })
     return render(request, "task-finished.html", context)

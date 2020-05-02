@@ -1,6 +1,21 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.7 (May 02, 2020)
+-----------------------
+
+Turn off PDF generation and thumbnails are turned off by default for
+security reasons. Change PDF and custom thumbnail generation for uploaded
+files to optional. Requre Admins to separately isntall the `wkkhtmltopdf` library.
+
+PDF generator library ``wkhtmltopdf`` has security issues wherein individuals could add
+HTML references such as links or file references inside the documents
+they are creating which the PDF Generator blindly interpets. This leads
+to SSRF (Server Side Request Forgery) in which data is retrieved from
+server and added to PDF by the PDG Generator. An issue also exists
+with the sub-dependency of `libxslt` before CentOS 8.x raising CVE vulnerability
+with scanners. For these reasons, PDF Generation is being a configurable setting.
+
 v0.9.1.6 (April 29, 2020)
 -------------------------
 

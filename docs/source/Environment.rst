@@ -44,6 +44,10 @@ launching a container with GovReady-Q.
 -  ``secret-key`` - used to make instance more secure by contributing a
    salt value to generating various random strings and hashes. Do not
    share.
+-  ``gr-pdf-generator`` - specifies the library/process used to generate PDFs,
+   options are `None` and `wkhtmltopdf` and default is `None`.
+-  ``gr-img-generator`` - specifies the library/process used to generate images and thumbnails,
+   options are `None` and `wkhtmltoimage` and default is `None`.
 -  ``single-organization``: used to enforce single organization mode
    with “main” as subdomain of default organization instead of
    multi-tenant with different subdomains for different organizations.
@@ -95,6 +99,38 @@ GovReady-Q must be run at a private address that cannot be accessed
 except through the proxy server. The proxy server must be configured to
 proxy to GovReady-Q’s private address. See `Enterprise Single-Sign On /
 Login`_ for additional details.
+
+PDF and Image Generation Environment Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GovReady-Q optionally supports generating PDFs and custom thumbnails for
+uploaded files using ``wkhtmltopdf`` and ``wkhtmltoimage``. Admins must
+make sure the `wkkhtmltopdf` library is installed properly for operating
+system being used.
+
+GovReady-Q PDF generation and thumbnails are turned off by default for
+security reasons.
+
+PDF generator library ``wkhtmltopdf`` has security issues wherein individuals could add
+HTML references such as links or file references inside the documents
+they are creating which the PDF Generator blindly interpets. This leads
+to SSRF (Server Side Request Forgery) in which data is retrieved from
+server and added to PDF by the PDG Generator. An issue also exists
+with the sub-dependency of `libxslt` before CentOS 8.x raising CVE vulnerability
+with scanners. For these reasons, PDF Generation is being a configurable setting.
+
+To activate PDF and thumbnail generation, add ``gr-pdf-generation`` and
+``gr-img-generation`` environmental parameters to your ``local/environment.json``, e.g.:
+
+::
+
+   {
+      ...
+      "gr-pdf-generation": "wkhtmltopdf",
+      "gr-img-generation": "`wkhtmltoimage",
+      ...
+   }
+
 
 Custom Branding Environment Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

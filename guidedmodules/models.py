@@ -1165,26 +1165,35 @@ class Task(models.Model):
             blob = doc["html"].encode("utf8")
 
         elif download_format == "pdf":
-            # Render to HTML and convert to PDF using wkhtmltopdf.
-            
-            # Mark the encoding explicitly, to match the html.encode() argument below.
-            html = doc["html"]
-            html = '<meta charset="UTF-8" />' + html
+            # Render PDF as per PDF Generator settings
+            if settings.GR_PDF_GENERATOR is 'wkhtmltopdf':
+                # Render to HTML and convert to PDF using wkhtmltopdf.
+                # Mark the encoding explicitly, to match the html.encode() argument below.
+                html = doc["html"]
+                html = '<meta charset="UTF-8" />' + html
 
-            import subprocess # nosec
-            cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
-                   "-q", # else errors go to stdout
-                   "--disable-javascript",
-                   "--encoding", "UTF-8",
-                   "-s", "Letter", # page size
-                   "-", "-"]
-            with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
-                stdout, stderr = proc.communicate(
-                      html.encode("utf8"),
-                      timeout=10)
-                if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
+                import subprocess # nosec
+                cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
+                    "-q", # else errors go to stdout
+                    "--disable-javascript",
+                    "--encoding", "UTF-8",
+                    "-s", "Letter", # page size
+                    "-", "-"]
+                with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+                    stdout, stderr = proc.communicate(
+                        html.encode("utf8"),
+                        timeout=10)
+                    if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
 
-            blob = stdout
+                blob = stdout
+            else:
+                # GR_PDF_GENERATOR is set to None or other issue
+                # Generate text or markdown instead with error message
+                blob = doc["markdown"].encode("utf8")
+                # PDF Generation is turned off, so send plain text
+                blob = "PDF Generation is not configured."
+                filename = filename + 'txt'
+                mime_type = "text/plain"
 
         else:
             # Render to HTML and convert using pandoc.
@@ -1207,7 +1216,6 @@ class Task(models.Model):
                 # return the content of the temporary file
                 with open(outfn, "rb") as f:
                     blob = f.read()
-
         return blob, filename, mime_type
 
     def render_snippet(self):
@@ -2002,37 +2010,41 @@ class TaskAnswerHistory(models.Model):
             thumbnail_dataurl = None
             if not self.thumbnail:
                 # Try to construct a thumbnail.
-                if sf.mime_type == "text/html":
-                    # Use wkhtmltoimage.
-                    import subprocess # nosec
-                    try:
-                        # Pipe to subprocess.
-                        # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
-                        cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltoimage",
-                                "-q", # else errors go to stdout
-                                "--disable-javascript",
-                                "-f", "png",
-                                # "--disable-smart-width", - generates a warning on stdout that qt is unpatched, which happens in headless mode
-                                "--zoom", ".7",
-                                "--width", "700",
-                                "--height", str(int(700*9/16)),
-                                "-", "-"]
-                        with subprocess.Popen(cmd,
-                            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                            ) as proc:
-                            stdout, stderr = proc.communicate(
-                                self.answered_by_file.read(),
-                                timeout=10)
-                            if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
+                if settings.GR_IMG_GENERATOR == 'wkhtmltopdf':
+                    if sf.mime_type == "text/html":
+                        # Use wkhtmltoimage.
+                        import subprocess # nosec
+                        try:
+                            # Pipe to subprocess.
+                            # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
+                            cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltoimage",
+                                    "-q", # else errors go to stdout
+                                    "--disable-javascript",
+                                    "-f", "png",
+                                    # "--disable-smart-width", - generates a warning on stdout that qt is unpatched, which happens in headless mode
+                                    "--zoom", ".7",
+                                    "--width", "700",
+                                    "--height", str(int(700*9/16)),
+                                    "-", "-"]
+                            with subprocess.Popen(cmd,
+                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                ) as proc:
+                                stdout, stderr = proc.communicate(
+                                    self.answered_by_file.read(),
+                                    timeout=10)
+                                if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
 
-                        # Store PNG.
-                        from django.core.files.base import ContentFile
-                        value = ContentFile(stdout)
-                        value.name = "thumbnail.png" # needs a name for the storage backend?
-                        self.thumbnail = value
-                        self.save(update_fields=["thumbnail"])
-                    except subprocess.CalledProcessError as e:
-                        print(e)
+                            # Store PNG.
+                            from django.core.files.base import ContentFile
+                            value = ContentFile(stdout)
+                            value.name = "thumbnail.png" # needs a name for the storage backend?
+                            self.thumbnail = value
+                            self.save(update_fields=["thumbnail"])
+                        except subprocess.CalledProcessError as e:
+                            print(e)
+                else:
+                    # No image generator set, cannot create thumbnail
+                    pass
 
             if self.thumbnail:
                 # If we have a thumbnail, indicate so by returning a URL to it.

@@ -35,9 +35,14 @@ RUN \
 && yum -y install \
     python36u python36u-pip \
     unzip git2u jq nmap-ncat \
-    graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
+    graphviz pandoc \
     supervisor \
     && yum clean all && rm -rf /var/cache/yum
+
+# install wkhtmltopdf for generating PDFs, thumbnails
+# TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
+RUN \
+   yum -y install xorg-x11-server-Xvfb wkhtmltopdf && rm -rf /var/cache/yum
 
 # Copy in the Python module requirements and install them.
 # file because they're not commonly used in development.

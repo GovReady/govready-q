@@ -42,6 +42,26 @@ if environment.get("trust-user-authentication-headers"):
     LOGOUT_REDIRECT_URL = "/sso-logout"
     print("Setting LOGOUT_REDIRECT_URL to", LOGOUT_REDIRECT_URL)
 
+# PDF Generation settings
+GR_PDF_GENERATOR = environment.get("gr-pdf-generator", None)
+# Validate pdf generator is supported
+GR_PDF_GENERATOR_SUPPORTED = [None, "wkhtmltopdf"]
+if GR_PDF_GENERATOR not in GR_PDF_GENERATOR_SUPPORTED:
+    # Log error
+    print("WARNING: Specified PDF generator is not supported. Setting generator to 'None'.")
+    # Set pdf generator to None
+    GR_PDF_GENERATOR = None
+
+# PDF Generation settings
+GR_IMG_GENERATOR = environment.get("gr-img-generator", None)
+# Validate img generator is supported
+GR_IMG_GENERATOR_SUPPORTED = [None, "wkhtmltoimage"]
+if GR_IMG_GENERATOR not in GR_IMG_GENERATOR_SUPPORTED:
+    # Log error
+    print("WARNING: Specified IMG generator is not supported. Setting generator to 'None'.")
+    # Set img generator to None
+    GR_IMG_GENERATOR = None
+
 MIDDLEWARE += [
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
     'siteapp.middleware.ContentSecurityPolicyMiddleware',
