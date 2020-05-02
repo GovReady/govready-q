@@ -51,6 +51,8 @@ if GR_PDF_GENERATOR not in GR_PDF_GENERATOR_SUPPORTED:
     print("WARNING: Specified PDF generator is not supported. Setting generator to 'None'.")
     # Set pdf generator to None
     GR_PDF_GENERATOR = None
+else:
+    print("INFO: GR_PDF_GENERATOR set to {}".format(GR_PDF_GENERATOR))
 
 # PDF Generation settings
 GR_IMG_GENERATOR = environment.get("gr-img-generator", None)
@@ -61,6 +63,8 @@ if GR_IMG_GENERATOR not in GR_IMG_GENERATOR_SUPPORTED:
     print("WARNING: Specified IMG generator is not supported. Setting generator to 'None'.")
     # Set img generator to None
     GR_IMG_GENERATOR = None
+else:
+    print("INFO: GR_IMG_GENERATOR set to {}".format(GR_IMG_GENERATOR))
 
 MIDDLEWARE += [
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
