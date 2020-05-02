@@ -4,7 +4,7 @@ GovReady-Q Release Notes
 v0.9.1.7 (May 02, 2020)
 -----------------------
 
-Turn off PDF generation and thumbnails are turned off by default for
+PDF generation and thumbnails are turned off by default for
 security reasons. Change PDF and custom thumbnail generation for uploaded
 files to optional. Require Admins to separately install the `wkhtmltopdf` library.
 

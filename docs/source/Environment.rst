@@ -119,15 +119,15 @@ server and added to PDF by the PDF Generator. An issue also exists
 with the sub-dependency of `libxslt` before CentOS 8.x raising CVE vulnerability
 with scanners. For these reasons, PDF Generation is being a configurable setting.
 
-To activate PDF and thumbnail generation, add ``gr-pdf-generation`` and
-``gr-img-generation`` environmental parameters to your ``local/environment.json``, e.g.:
+To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
+``gr-img-generator`` environmental parameters to your ``local/environment.json``, e.g.:
 
 ::
 
    {
       ...
-      "gr-pdf-generation": "wkhtmltopdf",
-      "gr-img-generation": "`wkhtmltoimage",
+      "gr-pdf-generator": "wkhtmltopdf",
+      "gr-img-generator": "`wkhtmltoimage",
       ...
    }
 

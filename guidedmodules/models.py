@@ -161,7 +161,7 @@ class AppVersion(models.Model):
         # In the database, we allow AppVersions to be shared across many Projects.
         # (The system AppVersion which holds e.g. the user profile module is
         # shared across many user projects, but that AppVersion is blacklisted
-        # from upgrades below.) 
+        # from upgrades below.)
         if self.system_app: return False
         projects = Task.objects.filter(module__app=self).values_list("project", flat=True).distinct()
         if len(projects) == 0:
@@ -334,10 +334,10 @@ class Module(models.Model):
                         label=edge_type,
                         )
                     stack.append(n)
-        
+
         if not seen_nodes:
             return None
-        
+
         svg = g.pipe(format='svg')
 
         # strip off <? xml ... <!DOCTYPE ...
@@ -1166,7 +1166,7 @@ class Task(models.Model):
 
         elif download_format == "pdf":
             # Render PDF as per PDF Generator settings
-            if settings.GR_PDF_GENERATOR is 'wkhtmltopdf':
+            if settings.GR_PDF_GENERATOR == 'wkhtmltopdf':
                 # Render to HTML and convert to PDF using wkhtmltopdf.
                 # Mark the encoding explicitly, to match the html.encode() argument below.
                 html = doc["html"]
@@ -1190,8 +1190,8 @@ class Task(models.Model):
                 # GR_PDF_GENERATOR is set to None or other issue
                 # Generate text or markdown instead with error message
                 blob = doc["markdown"].encode("utf8")
-                # PDF Generation is turned off, so send plain text
-                blob = "PDF Generation is not configured."
+                # PDF Generator is turned off, so send plain text
+                blob = "PDF Generator is not configured."
                 filename = filename + 'txt'
                 mime_type = "text/plain"
 
@@ -1570,7 +1570,7 @@ class Task(models.Model):
             # If any sub-task data was updated, don't warn about this task not being updated.
             if subtasks_updated:
                 did_update_any_questions = True
-            
+
         if not did_update_any_questions:
             deserializer.log("There were no new answers to save.")
 
@@ -1657,7 +1657,7 @@ class TaskAnswer(models.Model):
                 "type": "event",
                 "date": answer.created,
                 "html":
-                    ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> " 
+                    ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> "
                     % html.escape(who['name']))
                     + vp + ".",
                 "user": who,
@@ -2107,11 +2107,11 @@ class TaskAnswerHistory(models.Model):
             if q.spec["type"] == "module":
                 # It's a ModuleAnswers instance -- serialize the Task itself.
                 value = value.task.export_json(serializer)
-            
+
             elif q.spec["type"] == "module-set":
                 # It's an array of ModuleAnswers instances.
                 value = [x.task.export_json(serializer) for x in value]
-            
+
             elif q.spec["type"] == "file":
                 # Although self.get_value() returns useful data, it's not the export
                 # format because it doesn't include the file content (only a URL to it).
@@ -2270,7 +2270,7 @@ class TaskAnswerHistory(models.Model):
 
                     deserializer.log_nesting_level -= 1
                     deserializer.log("Finished importing '{}'.".format(taskanswer.question.spec['title']))
-                    
+
 
             # Reset this variable so stored_value is set to None.
             value = None
