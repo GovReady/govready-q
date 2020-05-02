@@ -12,7 +12,7 @@ PDF generator library ``wkhtmltopdf`` has security issues wherein individuals co
 HTML references such as links or file references inside the documents
 they are creating which the PDF Generator blindly interprets. This leads
 to SSRF (Server Side Request Forgery) in which data is retrieved from
-server and added to PDF by the PDG Generator. An issue also exists
+server and added to PDF by the PDF Generator. An issue also exists
 with the sub-dependency of `libxslt` before CentOS 8.x raising CVE vulnerability
 with scanners. For these reasons, PDF Generation is now a configurable setting.
 
