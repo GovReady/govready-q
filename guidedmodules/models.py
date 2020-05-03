@@ -1166,7 +1166,7 @@ class Task(models.Model):
 
         elif download_format == "pdf":
             # Render PDF as per PDF Generator settings
-            if settings.GR_PDF_GENERATOR is 'wkhtmltopdf':
+            if settings.GR_PDF_GENERATOR == 'wkhtmltopdf':
                 # Render to HTML and convert to PDF using wkhtmltopdf.
                 # Mark the encoding explicitly, to match the html.encode() argument below.
                 html = doc["html"]
@@ -2010,7 +2010,7 @@ class TaskAnswerHistory(models.Model):
             thumbnail_dataurl = None
             if not self.thumbnail:
                 # Try to construct a thumbnail.
-                if settings.GR_IMG_GENERATOR == 'wkhtmltopdf':
+                if settings.GR_IMG_GENERATOR == 'wkhtmltoimage':
                     if sf.mime_type == "text/html":
                         # Use wkhtmltoimage.
                         import subprocess # nosec
