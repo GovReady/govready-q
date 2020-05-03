@@ -18,7 +18,7 @@ launching a container with GovReady-Q.
 -  ``debug``: should be ``false`` or absent in production environments.
    If set to ``true``, turns on certain debug/development settings.
 -  ``email``: used to configure access to a mail server for sending and
-   receiving email. Ojbect has the following format:
+   receiving email. Object has the following format:
    ``{"host": "smtp.server.com", "port": "587", "user": "...", "pw": "....",   "domain": "webserver.hostname.com"}``.
    See `Configuring email`_ and `Other Configuration Settings`_. },.
 -  ``govready_cms_api_auth``: used to store API key to interact with
@@ -105,7 +105,7 @@ PDF and Image Generation Environment Settings
 
 GovReady-Q optionally supports generating PDFs and custom thumbnails for
 uploaded files using ``wkhtmltopdf`` and ``wkhtmltoimage``. Admins must
-make sure the `wkkhtmltopdf` library is installed properly for operating
+make sure the `wkhtmltopdf` library is installed properly for operating
 system being used.
 
 GovReady-Q PDF generation and thumbnails are turned off by default for
@@ -113,21 +113,21 @@ security reasons.
 
 PDF generator library ``wkhtmltopdf`` has security issues wherein individuals could add
 HTML references such as links or file references inside the documents
-they are creating which the PDF Generator blindly interpets. This leads
+they are creating which the PDF Generator blindly interprets. This leads
 to SSRF (Server Side Request Forgery) in which data is retrieved from
-server and added to PDF by the PDG Generator. An issue also exists
+server and added to PDF by the PDF Generator. An issue also exists
 with the sub-dependency of `libxslt` before CentOS 8.x raising CVE vulnerability
 with scanners. For these reasons, PDF Generation is being a configurable setting.
 
-To activate PDF and thumbnail generation, add ``gr-pdf-generation`` and
-``gr-img-generation`` environmental parameters to your ``local/environment.json``, e.g.:
+To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
+``gr-img-generator`` environmental parameters to your ``local/environment.json``, e.g.:
 
 ::
 
    {
       ...
-      "gr-pdf-generation": "wkhtmltopdf",
-      "gr-img-generation": "`wkhtmltoimage",
+      "gr-pdf-generator": "wkhtmltopdf",
+      "gr-img-generator": "`wkhtmltoimage",
       ...
    }
 
