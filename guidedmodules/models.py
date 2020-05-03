@@ -2010,7 +2010,7 @@ class TaskAnswerHistory(models.Model):
             thumbnail_dataurl = None
             if not self.thumbnail:
                 # Try to construct a thumbnail.
-                if settings.GR_IMG_GENERATOR == 'wkhtmltoimage':
+                if settings.GR_IMG_GENERATOR == 'wkhtmltopdf':
                     if sf.mime_type == "text/html":
                         # Use wkhtmltoimage.
                         import subprocess # nosec

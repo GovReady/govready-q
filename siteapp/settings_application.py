@@ -45,24 +45,24 @@ if environment.get("trust-user-authentication-headers"):
 # PDF Generation settings
 GR_PDF_GENERATOR = environment.get("gr-pdf-generator", None)
 # Validate pdf generator is supported
-GR_PDF_GENERATOR_SUPPORTED = [None, "wkhtmltopdf"]
+GR_PDF_GENERATOR_SUPPORTED = ["off", "wkhtmltopdf"]
 if GR_PDF_GENERATOR not in GR_PDF_GENERATOR_SUPPORTED:
     # Log error
-    print("WARNING: Specified PDF generator is not supported. Setting generator to 'None'.")
+    print("WARNING: Specified PDF generator is not supported. Setting generator to 'off'.")
     # Set pdf generator to None
-    GR_PDF_GENERATOR = None
+    GR_PDF_GENERATOR = "off"
 else:
     print("INFO: GR_PDF_GENERATOR set to {}".format(GR_PDF_GENERATOR))
 
 # PDF Generation settings
 GR_IMG_GENERATOR = environment.get("gr-img-generator", None)
 # Validate img generator is supported
-GR_IMG_GENERATOR_SUPPORTED = [None, "wkhtmltoimage"]
+GR_IMG_GENERATOR_SUPPORTED = ["off", "wkhtmltopdf"]
 if GR_IMG_GENERATOR not in GR_IMG_GENERATOR_SUPPORTED:
     # Log error
-    print("WARNING: Specified IMG generator is not supported. Setting generator to 'None'.")
+    print("WARNING: Specified IMG generator is not supported. Setting generator to 'off'.")
     # Set img generator to None
-    GR_IMG_GENERATOR = None
+    GR_IMG_GENERATOR = "off"
 else:
     print("INFO: GR_IMG_GENERATOR set to {}".format(GR_IMG_GENERATOR))
 

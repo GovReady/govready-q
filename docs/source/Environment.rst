@@ -12,7 +12,7 @@ launching a container with GovReady-Q.
 -  ``admins``: used to configure a display point of contact
    “Administrator” on site and unrelated to the configuration of actual
    administrators configured in the database.
--  ``branding``: used for `custom branding`_
+-  ``branding``: used for `custom branding`_.
 -  ``db``: if supplied, this is the DB connection used. See `DB
    configuration`_.
 -  ``debug``: should be ``false`` or absent in production environments.
@@ -45,9 +45,9 @@ launching a container with GovReady-Q.
    salt value to generating various random strings and hashes. Do not
    share.
 -  ``gr-pdf-generator`` - specifies the library/process used to generate PDFs,
-   options are `None` and `wkhtmltopdf` and default is `None`.
+   options are `off` and `wkhtmltopdf` and default is `None`.
 -  ``gr-img-generator`` - specifies the library/process used to generate images and thumbnails,
-   options are `None` and `wkhtmltoimage` and default is `None`.
+   options are `off` and `wkhtmltopdf` and default is `None`.
 -  ``single-organization``: used to enforce single organization mode
    with “main” as subdomain of default organization instead of
    multi-tenant with different subdomains for different organizations.
@@ -127,7 +127,7 @@ To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
    {
       ...
       "gr-pdf-generator": "wkhtmltopdf",
-      "gr-img-generator": "`wkhtmltoimage",
+      "gr-img-generator": "`wkhtmltopdf",
       ...
    }
 
