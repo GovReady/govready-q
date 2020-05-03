@@ -1,6 +1,89 @@
 GovReady-Q Release Notes
 ========================
 
+## v0.8.6.5 (May 3, 2020)
+
+Better jinja2_expression_compile_cache and next-page redirect
+
+This commit is a back port of performance improvements in 0.9.x to 0.8.6.
+
+This performance improvement commit creates a cache for Jinja `expression_compile` routine.
+This new cache is `jinja2_expression_compile_cache` and seems to have a noticable improvement
+on maintaining a regular amount of time to render questions.
+
+Also addressed are several page reloads that were the result of page redirects being handled
+based through interactions with the browser based content of the next page inside the question
+save form. Calculating the next page to display, which accounts for skipping computed pages,
+is now handled server side as a function that can be called.
+
+Also removed links to imputed pages from the module finished page. The links were not working
+so it did not make sense to display them as links.
+
+Modification to calculate next question needs to be tested more in 8.6.
+
+The following PROBLEM note was noticed in 0.9.0, but may or may not exist in 0.8.6. In 0.9.0,
+navigation to next question is based on a linear algorithm to allow users to linearly move
+through questions starting at any point in the questionnaire. The PROBLEM note is included in
+this commit note for completeness.
+
+PROBLEM: Since the current new routing skips pages with imputed results, it becomes impossible
+to navigate through completed questions. If you jump from the finished page to an imputed question
+you come back to the finish page. If you jump from the finished page to an answered question in
+order to change the answer, you can change the answer, but you do not proceed to the next already
+answered question linearly. Instead, the application logic tries to send you to the next answerable
+question, which could take you back to the finished page.
+
+RE-ESTABLISHING 0.8.6 ON MACOS with PYTHON 3.8 NOTES
+Difficulties were encountered re-establishing an environemnt for development of 0.8.6 on MacOS with
+Python 3.8 for this commit.
+
+Basic strategy is to comment out packages having problems in `requirements.txt`, install
+as much as possible with `pip install -r requirements.txt`. Install additional packages
+as errors are reported for non-existing modules/packages.
+
+Create a virtual environment using Python3 (3.8) and activate.
+
+```
+python3 -m venv /path/to/venv860
+source /path/to/venv860/bin/activate
+```
+
+numpy was having difficulty installing, so comment out numpy lines in `requirements.txt`.
+
+Install requirements.txt file and various other modules.
+This avoids having to get all the way through `requirements.txt`.
+
+```
+pip install -r requirements.txt 
+
+pip install rtyaml
+pip install fs
+pip install jinja2
+pip install whitenoise
+pip install xxhash
+pip install html5lib
+pip install pillow
+pip install python-dateutil
+```
+
+Configure GovReady database...
+
+```
+python manage.py migrate
+python manage.py load_modules
+python manage.py first_run
+
+./fetch-vendor-resources.sh
+
+python manage.py runserver 9000
+python manage.py runserver 9000
+
+Notes for whitenoise module
+# django.core.exceptions.ImproperlyConfigured: WSGI application 'siteapp.wsgi.application' could not be loaded; Error importing module.
+# ^C(venv860) Gregs-MacBook-Pro:govready-q-8.6 greg$ pip install whitenoise
+# see: https://stackoverflow.com/questions/47800726/django-improperlyconfigured-wsgi-application-myproject-wsgi-application-could
+
+
 ## v0.8.6.4 (October 9, 2019)
 
 * Added security advisory banner to `docs/source/index.md` to upgrade to v0.9.0 or later as soon as possible.

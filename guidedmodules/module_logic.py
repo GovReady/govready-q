@@ -837,6 +837,24 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
          if qid in get_from_question_id
        ]
 
+jinja2_expression_compile_cache = { }
+
+def compile_jinja2_expression(expr):
+    # If the expression has already been compiled and is in the cache,
+    # return the compiled expression.
+    if expr in jinja2_expression_compile_cache:
+        return jinja2_expression_compile_cache[expr]
+
+    # The expression is not in the cache. Compile it.
+    env = Jinja2Environment()
+    compiled = env.compile_expression(expr)
+
+    # Save it to the cache.
+    jinja2_expression_compile_cache[expr] = compiled
+
+    # Return it.
+    return compiled
+
 def run_impute_conditions(conditions, context):
     # Check if any of the impute conditions are met based on
     # the questions that have been answered so far and return
@@ -846,7 +864,7 @@ def run_impute_conditions(conditions, context):
     env = Jinja2Environment()
     for rule in conditions:
         if "condition" in rule:
-            condition_func = env.compile_expression(rule["condition"])
+            condition_func = compile_jinja2_expression(rule["condition"])
             try:
                 value = condition_func(context)
             except:
@@ -860,7 +878,7 @@ def run_impute_conditions(conditions, context):
                 # Imputed value is the raw YAML value.
                 value = rule["value"]
             elif rule.get("value-mode", "raw") == "expression":
-                value = env.compile_expression(rule["value"])(context)
+                value = compile_jinja2_expression(rule["value"])(context)
                 if isinstance(value, RenderedAnswer):
                     # Unwrap.
                     value =  value.answer
