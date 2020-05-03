@@ -7,7 +7,6 @@ from .utilities import *
 from .models import Statement, Element, System, CommonControl, CommonControlProvider
 
 
-
 def test(request):
     # Simple test page of routing for controls
     output = "Test works."
@@ -77,7 +76,6 @@ def group(request, catalog_key, g_id):
 
 def control(request, catalog_key, cl_id):
     """Control detail view"""
-
     cl_id = oscalize_control_id(cl_id)
 
     # Get catalog
