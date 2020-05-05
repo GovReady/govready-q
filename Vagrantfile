@@ -35,7 +35,7 @@ Vagrant.configure(2) do |config|
 
     # install wkhtmltopdf for generating PDFs, thumbnails
     # TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
-    yum install -y xorg-x11-server-Xvfb wkhtmltopdf
+    # yum install -y xorg-x11-server-Xvfb wkhtmltopdf
 
     pip3 install --upgrade pip
 
