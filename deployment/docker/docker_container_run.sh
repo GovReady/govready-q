@@ -68,6 +68,16 @@ EMAIL_USER=
 EMAIL_PW=
 EMAIL_DOMAIN=
 
+# If set, GR_PDF_GENERATOR value will be passed
+# to determine the generator used for PDFs
+# NOTE: container must be configured with appropriate OS libraries
+GR_PDF_GENERATOR=
+
+# If set, GR_IMG_GENERATOR value will be passed
+# to determine the generator used for PDFs
+# NOTE: container must be configured with appropriate OS libraries
+GR_IMG_GENERATOR=
+
 # If set, any existing container named $NAME will be killed
 # with "docker container rm -f" first.
 KILLEXISTING=
@@ -132,6 +142,13 @@ while [ $# -gt 0 ]; do
       shift 2 ;;
     --email-domain)
       EMAIL_DOMAIN="$2"
+      shift 2 ;;
+
+    --gr-pdf-generator)
+      GR_PDF_GENERATOR="$2"
+      shift 2 ;;
+    --gr-img-generator)
+      GR_IMG_GENERATOR="$2"
       shift 2 ;;
 
     --relaunch)
@@ -204,6 +221,7 @@ PORTMAP="-p $BIND:8000"
 # Set environment variables for the Django process to use.
 ENVS="-e HOST=$HOST -e PORT=$PORT -e HTTPS=$HTTPS -e DBURL=$DBURL -e DEBUG=$DEBUG"
 ENVS="$ENVS -e EMAIL_HOST=$EMAIL_HOST -e EMAIL_PORT=$EMAIL_PORT -e EMAIL_USER=$EMAIL_USER -e EMAIL_PW=$EMAIL_PW -e EMAIL_DOMAIN=$EMAIL_DOMAIN"
+ENVS="$ENVS -e GR_PDF_GENERATOR=$GR_PDF_GENERATOR -e GR_IMG_GENERATOR=$GR_IMG_GENERATOR"
 
 # Add a mount argument for having the Sqlite database stored on the host.
 # The path must be absolute (Docker mount requires absolute paths).

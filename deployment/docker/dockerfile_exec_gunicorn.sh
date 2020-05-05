@@ -83,6 +83,16 @@ if [ ! -z "${PROXY_AUTHENTICATION_USER_HEADER-}" ]; then
 	set_env_setting '["trust-user-authentication-headers"].email' "$PROXY_AUTHENTICATION_EMAIL_HEADER"
 fi
 
+# PDF Generator settings.
+if [ ! -z "${GR_PDF_GENERATOR-}" ]; then
+	set_env_setting '["gr-pdf-generator"]' "$GR_PDF_GENERATOR"
+fi
+
+# Image Generator settings.
+if [ ! -z "${GR_IMG_GENERATOR-}" ]; then
+	set_env_setting '["gr-img-generator"]' "$GR_IMG_GENERATOR"
+fi
+
 # Write out the settings that indicate where we think the site is running at.
 echo "Starting at ${ADDRESS} with HTTPS ${HTTPS-false}."
 

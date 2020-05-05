@@ -59,6 +59,8 @@ Click one of the tab belows to see quickstart for indicated platform.
 
            # install other packages: 
            brew install unzip graphviz pandoc selenium-server-standalone
+           # install wkhtmltopdf for generating PDFs, thumbnails
+           # TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
            brew cask install wkhtmltopdf
 
        .. rubric:: Installing GovReady-Q
@@ -118,8 +120,11 @@ Click one of the tab belows to see quickstart for indicated platform.
            # install dependencies
            sudo yum install \
            unzip python36-pip python36-devel \
-           graphviz \
-           pandoc xorg-x11-server-Xvfb wkhtmltopdf \
+           graphviz pandoc
+
+           # install wkhtmltopdf for generating PDFs, thumbnails
+           # TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
+           sudo yum install xorg-x11-server-Xvfb wkhtmltopdf
 
            # optional install gcc to build the uWSGI Python package.
            sudo yum install gcc
