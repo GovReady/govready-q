@@ -449,6 +449,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
             print("INFO: Entering '{}', '{}'".format('start_invitation(username)', username))
             # Fill out the invitation modal.
             # self.select_option_by_visible_text('#invite-user-select', username) # This is for selecting user from dropdown list
+            var_sleep(1)
             self.fill_field("input#invite-user-email", username)
             var_sleep(1)
             self.click_element("#invitation_modal button.btn-submit")
