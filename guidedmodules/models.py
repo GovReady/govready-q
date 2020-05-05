@@ -1204,12 +1204,12 @@ class Task(models.Model):
             with tempfile.TemporaryDirectory() as tempdir:
                 # convert from HTML to something else, writing to a temporary file
                 outfn = os.path.join(tempdir, filename)
-                with subprocess.Popen(
+                # Append '# nose' to below line to tell Bandit to ignore the low risk problem
+                # with not specifying the entre path to the pandoc. We are hardcoding 'pandoc' rather than var
+                with subprocess.Popen(# nosec
                     ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
                     stdin=subprocess.PIPE
-                    ) as proc: # nosec
-                    # Append '# nose' to above line to tell Bandit to ignore the low risk problem
-                    # with not specifying the entre path to the pandoc. We are hardcoding 'pandoc' rather than var
+                    ) as proc:
                     proc.communicate(
                         doc["html"].encode("utf8"),
                         timeout=10)
