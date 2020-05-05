@@ -1205,9 +1205,11 @@ class Task(models.Model):
                 # convert from HTML to something else, writing to a temporary file
                 outfn = os.path.join(tempdir, filename)
                 with subprocess.Popen(
-                    ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn], # nosec - OK to accept hardcoded reference to pandoc
+                    ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
                     stdin=subprocess.PIPE
-                    ) as proc:
+                    ) as proc: # nosec
+                    # Append '# nose' to above line to tell Bandit to ignore the low risk problem
+                    # with not specifying the entre path to the pandoc. We are hardcoding 'pandoc' rather than var
                     proc.communicate(
                         doc["html"].encode("utf8"),
                         timeout=10)
