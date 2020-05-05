@@ -622,7 +622,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_title", "Security Projects")
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
-        var_sleep(0.75)
+        var_sleep(1.25)
         self.assertRegex(self.browser.title, "Security Projects")
 
     def test_create_project_without_portfolio(self):
