@@ -30,9 +30,13 @@ Vagrant.configure(2) do |config|
     yum install -y git2u jq
     yum install -y --disablerepo=ius \
         unzip gcc python34-pip python34-devel \
-        graphviz \
-        pandoc xorg-x11-server-Xvfb wkhtmltopdf \
+        graphviz pandoc \
         postgresql mysql-devel
+
+    # install wkhtmltopdf for generating PDFs, thumbnails
+    # TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
+    # yum install -y xorg-x11-server-Xvfb wkhtmltopdf
+
     pip3 install --upgrade pip
 
     # Install Python packages and fetch other dependencies.
