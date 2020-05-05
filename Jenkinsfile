@@ -9,7 +9,8 @@ pipeline {
     stage('OS Setup') {
       steps {
         sh 'apt-get update && apt-get install -y graphviz unzip pandoc jq locales && apt-get clean'
-        sh 'apt-get update && apt-get install -y wkhtmltopdf && apt-get clean'
+        // don't install wkhtmltopdf by default, because of security concerns
+        // sh 'apt-get update && apt-get install -y wkhtmltopdf && apt-get clean'
         sh 'sed -i "s/^[# ]*en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen'
         sh '/usr/sbin/locale-gen'
       }
