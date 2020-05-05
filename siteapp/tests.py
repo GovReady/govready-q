@@ -58,14 +58,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         import selenium.webdriver
         from selenium.webdriver.chrome.options import Options as ChromeOptions
         options = selenium.webdriver.ChromeOptions()
-        if os.path.exists("/usr/bin/chromium-browser"):
-            options.binary_location = "/usr/bin/chromium-browser"
-        options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
-            options.add_argument("start-maximized") # too small screens make clicking some things difficult
+            options.add_argument("--start-maximized") # too small screens make clicking some things difficult
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
-        options.add_argument("--incognito")
         cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
 
@@ -453,6 +449,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
             print("INFO: Entering '{}', '{}'".format('start_invitation(username)', username))
             # Fill out the invitation modal.
             # self.select_option_by_visible_text('#invite-user-select', username) # This is for selecting user from dropdown list
+            var_sleep(1)
             self.fill_field("input#invite-user-email", username)
             var_sleep(1)
             self.click_element("#invitation_modal button.btn-submit")
@@ -626,7 +623,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_title", "Security Projects")
         self.fill_field("#id_description", "Project Description")
         self.click_element("#create-portfolio-button")
-        var_sleep(0.75)
+        var_sleep(1.75)
         self.assertRegex(self.browser.title, "Security Projects")
 
     def test_create_project_without_portfolio(self):
@@ -1074,18 +1071,19 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         task_id = int(m.group(1))
 
         def do_submodule(answer_text):
+            var_sleep(1.25)
             self.assertRegex(self.browser.title, "Next Question: Introduction")
             self.click_element("#save-button")
-            var_sleep(.5)
+            var_sleep(1.25)
             self.assertRegex(self.browser.title, "Next Question: The Question")
             self.fill_field("#inputctrl", answer_text)
             self.click_element("#save-button")
-            var_sleep(.5)
+            var_sleep(1.25)
             self.assertRegex(self.browser.title, "^A Simple Module - ")
 
             # Return to the main module.
             self.click_element("#return-to-supertask")
-            var_sleep(.5)
+            var_sleep(1.25)
 
         do_submodule("My first answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
@@ -1097,7 +1095,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
         self.click_element("#save-button")
-        var_sleep(1.8)
+        var_sleep(2.25)
         do_submodule("My second answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 

@@ -78,6 +78,7 @@ class DiscussionTests(SeleniumTest):
         # Log in and create a new project.
         self._login()
         self._new_project()
+        var_sleep(.5) # wait for page to reload
         self._start_task()
 
         # Move past the introduction screen.
