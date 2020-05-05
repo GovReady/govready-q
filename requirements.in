@@ -59,7 +59,6 @@ parsel # BSD License
 # Documentation only
 m2r # MIT License
 sphinxcontrib-contentui # MIT License
-
 # Temporarily pinned.
 
 # markupsafe is pinned here because tests crash with version 1.1.0.
