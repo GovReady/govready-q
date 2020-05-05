@@ -1071,9 +1071,10 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         task_id = int(m.group(1))
 
         def do_submodule(answer_text):
+            var_sleep(1.25)
             self.assertRegex(self.browser.title, "Next Question: Introduction")
             self.click_element("#save-button")
-            var_sleep(.5)
+            var_sleep(1.25)
             self.assertRegex(self.browser.title, "Next Question: The Question")
             self.fill_field("#inputctrl", answer_text)
             self.click_element("#save-button")
@@ -1094,7 +1095,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.assertIn("| Test The Module Question Types - GovReady-Q", self.browser.title)
         self.click_element('#question input[name="value"][value="__new"]')
         self.click_element("#save-button")
-        var_sleep(1.8)
+        var_sleep(2.25)
         do_submodule("My second answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
 
