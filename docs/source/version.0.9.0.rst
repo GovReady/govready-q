@@ -290,6 +290,9 @@ Click one of the tab belows to see quickstart for indicated platform.
 
            # install other packages: 
            brew install unzip graphviz pandoc selenium-server-standalone magic libmagic
+
+           # install wkhtmltopdf for generating PDFs, thumbnails
+           # TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
            brew cask install wkhtmltopdf
 
        .. rubric:: Installing GovReady-Q

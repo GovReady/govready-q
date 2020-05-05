@@ -15,6 +15,10 @@ ARG DOCKERFILE_EXEC_SH=deployment/docker/dockerfile_exec_gunicorn.sh
 # ARG SUPERVISORD_INI=deployment/docker/supervisord_uwsgi.ini
 # ARG DOCKERFILE_EXEC_SH=deployment/docker/dockerfile_exec_uwsgi.sh
 
+# Default to "off"
+ARG GR_PDF_GENERATOR=off
+#ARG GR_PDF_GENERATOR=wkhtmltopdf
+
 # Expose the port that `manage.py runserver` uses by default.
 EXPOSE 8000
 
@@ -35,9 +39,13 @@ RUN \
 && yum -y install \
     python36u python36u-pip \
     unzip git2u jq nmap-ncat \
-    graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
+    graphviz pandoc \
     supervisor \
     && yum clean all && rm -rf /var/cache/yum
+
+# install wkhtmltopdf for generating PDFs, thumbnails
+# TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
+RUN if [ "$GR_PDF_GENERATOR" = "wkhtmltopdf" ] ; then (yum -y install xorg-x11-server-Xvfb wkhtmltopdf && yum clean all && rm -rf /var/cache/yum) ; fi
 
 # Copy in the Python module requirements and install them.
 # file because they're not commonly used in development.
