@@ -19,7 +19,8 @@ class Catalogs (object):
     def _list_catalog_files(self):
         return [
             'NIST_SP-800-53_rev4_catalog.json',
-            'NIST_SP-800-53_rev5_catalog.json'
+            'NIST_SP-800-53_rev5_catalog.json',
+            'NIST_SP-800-171_rev1_catalog.json'
         ]
 
     def _list_catalog_keys(self):

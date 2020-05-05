@@ -15,6 +15,11 @@
     margin-top: 20px;
   }
 
+  #above-tab-content, #tab-content {
+    max-width: 950px;
+    margin: auto;
+  }
+
   .control-text {
     white-space: pre-wrap;
     font-size: 12pt;
@@ -28,8 +33,42 @@
     width: 130px;
   }
 
+#combined_smt {
+    width: 80%;
+    /*margin: 12px 0 16px 0px;*/
+    padding: 8px;
+    /*display: none;*/
+  }
+
+  textarea {
+    overflow-y: scroll;
+    resize: vertical;
+  }
+  
   ul {
     list-style: none;
     padding-left: 0;
+  }
+
+  .rows-header {
+    padding:8px;
+    border:0.5px solid #bbb;
+    background-color: #eee;
+    border-radius: 4px 4px 0px 0px;
+    
+  }
+
+  .row-control {
+    padding:8px;
+    border-bottom:0.5px solid #bbb;
+    border-left:0.5px solid #bbb;
+    border-right:0.5px solid #bbb;
+  }
+
+  .item-count {
+    color: #999;
+    background-color: #bbb;
+    border-radius: 10px;
+    border: 1px solid green;
   }
 </style>

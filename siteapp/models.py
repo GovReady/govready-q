@@ -10,6 +10,7 @@ from django.utils import crypto, timezone
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
+from controls.models import System
 from jsonfield import JSONField
 
 
@@ -475,6 +476,7 @@ class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
     organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
     portfolio = models.ForeignKey(Portfolio, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Portfolio that this Project belongs to.")
+    system = models.ForeignKey(System, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The System that this Project is about.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
 
     is_account_project = models.BooleanField(default=False, help_text="Each User has one Project for account Tasks.")
@@ -744,7 +746,6 @@ class Project(models.Model):
         self.root_task = task
         self.save()
 
-
     def set_system_task(self, app, editor):
         from guidedmodules.models import Module
         module = Module.objects.get(
@@ -752,7 +753,6 @@ class Project(models.Model):
             app__system_app=True,
             module_name="app")
         self.set_root_task(module, editor, expected_module_type="system-project")
-
 
     def render_snippet(self):
         return self.root_task.render_snippet()
