@@ -1205,7 +1205,7 @@ class Task(models.Model):
                 # convert from HTML to something else, writing to a temporary file
                 outfn = os.path.join(tempdir, filename)
                 with subprocess.Popen(
-                    ["/usr/bin/pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+                    ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
                     stdin=subprocess.PIPE
                     ) as proc:
                     proc.communicate(
