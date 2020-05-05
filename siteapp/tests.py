@@ -1076,12 +1076,12 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             self.assertRegex(self.browser.title, "Next Question: The Question")
             self.fill_field("#inputctrl", answer_text)
             self.click_element("#save-button")
-            var_sleep(.5)
+            var_sleep(1.25)
             self.assertRegex(self.browser.title, "^A Simple Module - ")
 
             # Return to the main module.
             self.click_element("#return-to-supertask")
-            var_sleep(.5)
+            var_sleep(1.25)
 
         do_submodule("My first answer.")
         self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
