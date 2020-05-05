@@ -28,13 +28,12 @@ Remove contextbar from top of page
     </div>
 
     <h2 id="control-heading" class="">
-      <small style="color: #888;">{{ catalog.catalog_key_display }}</small><br>
-      Control Groupings
+      Control Catalogs
     </h2>
     <div>
       <ul>
-      {% for group in control_groups %}
-        <li><a href="/controls/catalogs/{{ catalog.catalog_key }}/group/{{ group.id }}">{{ group.id|upper }}</a> - {{ group.title }}</li>
+      {% for catalog in catalogs.index %}
+        <li><a href="./catalogs/{{ catalog.catalog_key }}">{{ catalog.catalog_key_display }}</a> - {{ catalog.metadata.title }}</li>
       {% endfor %}
       </ul>
     </div>
