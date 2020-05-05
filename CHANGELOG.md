@@ -68,11 +68,7 @@ each control is listed as a dictionary.
 Create a new script `oscal.py` and a `Catalog` class
 and create look ups of controls.
 
-<<<<<<< HEAD
-Because OSCAL is hierarchal and recursive, we also generate
-=======
 Because OSCAL is hierarchical and recursive, we also generate
->>>>>>> cc49f992d72cee67d0142f6ec36a07d3ba2bca1e
 a flattened, simplified version of our control catalog.
 
 * Add simple CommonControl model
