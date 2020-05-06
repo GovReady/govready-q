@@ -83,6 +83,7 @@ INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 # Allow run-time disabling of the Django Debug Toolbar.
 DISABLE_DJANGO_DEBUG_TOOLBAR = False
 def DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK(r):
+    # return True # Force debug toolbar to be true regrdless of INTERNAL_IPS settings
     import debug_toolbar.middleware
     return debug_toolbar.middleware.show_toolbar(r) and not DISABLE_DJANGO_DEBUG_TOOLBAR
 DEBUG_TOOLBAR_CONFIG = {

@@ -1,4 +1,7 @@
 from django.db import models
+from guardian.shortcuts import (assign_perm, get_objects_for_user,
+                                get_perms_for_model, get_user_perms,
+                                get_users_with_perms, remove_perm)
 
 
 class Statement(models.Model):
@@ -16,12 +19,20 @@ class Statement(models.Model):
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about. ")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     
+    class Meta:
+        permissions = [
+            ('can_grant_smt_owner_permission', 'Grant a user statement owner permission'),
+        ]
+
     def __str__(self):
-        return "'%s %s %s id=%d'" % (self.sid, self.sid_class, self.statement_type, self.id)
+        return "'%s %s %s id=%d'" % (self.statement_type, self.sid, self.sid_class, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "'%s %s %s id=%d'" % (self.sid, self.sid_class, self.statement_type, self.id)
+        return "'%s %s %s id=%d'" % (self.statement_type, self.sid, self.sid_class, self.id)
+
+    # TODO:
+    #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
 class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
@@ -111,6 +122,13 @@ class ElementControl(models.Model):
 class System(models.Model):
     root_element = models.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True, null=True)
+
+    def __str__(self):
+        return "'System %s id=%d'" % (self.root_element.name, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'System %s id=%d'" % (self.root_element.name, self.id)
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)

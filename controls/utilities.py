@@ -42,9 +42,11 @@ def oscalize_control_id(cl_id):
     """ output an oscal standard control id from various common formats for control ids """
 
     # Handle improperly formatted control id
-    # Recognize only properly formmated control id:
+    # Recognize properly formatted control 800-53 id:
     #   at-1, at-01, ac-2.3, ac-02.3, ac-2 (3), ac-02 (3), ac-2(3), ac-02 (3)
-    pattern = re.compile("^[A-Za-z][A-Za-z]-[0-9() .]*$")
+    # Recognize 800-171 control id:
+    #   3.1.1, 3.2.4
+    pattern = re.compile("^[A-Za-z][A-Za-z]-[0-9() .]*$|^3\.[0-9]{1,2}\.[0-9]{1,2}$")
     if not pattern.match(cl_id):
         return ""
 

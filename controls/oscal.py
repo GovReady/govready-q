@@ -19,13 +19,15 @@ class Catalogs (object):
     def _list_catalog_files(self):
         return [
             'NIST_SP-800-53_rev4_catalog.json',
-            'NIST_SP-800-53_rev5_catalog.json'
+            'NIST_SP-800-53_rev5_catalog.json',
+            'NIST_SP-800-171_rev1_catalog.json'
         ]
 
     def _list_catalog_keys(self):
         return [
             'NIST_SP-800-53_rev4',
-            'NIST_SP-800-53_rev5'
+            'NIST_SP-800-53_rev5',
+            'NIST_SP-800-171_rev1'
         ]
 
     def _load_catalog_json(self, catalog_key):
@@ -111,7 +113,21 @@ class Catalog (object):
 
     def get_group_title_by_id(self, id):
         group = self.find_dict_by_value(self.get_groups(), 'id', id)
+        if group is None:
+            return None
         return group['title']
+
+    def get_group_id_by_control_id(self, control_id):
+        """Return group id given id of a control"""
+
+        # For 800-53, 800-171, we can match by first few characters of control ID
+        group_ids = self.get_group_ids()
+        for group_id in group_ids:
+            if group_id.lower() in control_id.lower():
+                return group_id
+
+        # Group ID was not matched
+        return None
 
     def get_controls(self):
         controls = []
@@ -230,12 +246,13 @@ class Catalog (object):
 
     def get_flattened_control_as_dict(self, control):
         """Return a control as a simplified, flattened Python dictionary"""
+        family_id = self.get_group_id_by_control_id(control['id'])
         cl_dict = {
             "id": control['id'],
             "id_display": re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$',r'\1\2 (\3)', control['id']),
             "title": control['title'],
-            "family_id": control['id'].split("-")[0],
-            "family_title": self.get_group_title_by_id(control['id'].split("-")[0]),
+            "family_id": family_id,
+            "family_title": self.get_group_title_by_id(family_id),
             "class": control['class'],
             "description": self.get_control_prose_as_markdown(control, part_types={ "statement" }),
             "guidance": self.get_control_prose_as_markdown(control, part_types={ "guidance" }),

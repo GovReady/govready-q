@@ -7,7 +7,6 @@ from .utilities import *
 from .models import Statement, Element, System, CommonControl, CommonControlProvider
 
 
-
 def test(request):
     # Simple test page of routing for controls
     output = "Test works."
@@ -37,8 +36,13 @@ def catalogs(request):
     }
     return render(request, "controls/index-catalogs.html", context)
 
-def catalog(request, catalog_key):
+def catalog(request, catalog_key, system_id=None):
     """Index page for controls"""
+
+    if system_id is None:
+        system = None
+    else:
+        system = System.objects.get(pk=system_id)
 
     # Get catalog
     catalog = Catalog(catalog_key)
@@ -48,6 +52,7 @@ def catalog(request, catalog_key):
         "catalog": catalog,
         "control": None,
         "common_controls": None,
+        "system": system,
         "control_groups": control_groups
     }
     return render(request, "controls/index.html", context)
@@ -77,7 +82,6 @@ def group(request, catalog_key, g_id):
 
 def control(request, catalog_key, cl_id):
     """Control detail view"""
-
     cl_id = oscalize_control_id(cl_id)
 
     # Get catalog
@@ -95,46 +99,116 @@ def control(request, catalog_key, cl_id):
     }
     return render(request, "controls/detail.html", context)
 
+def controls_selected(request, system_id):
+    """Display System's selected controls view"""
+    
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+        
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "controls": controls,
+        }
+        return render(request, "systems/controls_selected.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
 def editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
     cl_id = oscalize_control_id(cl_id)
 
-    # Retrieve identified System if user has permission
-    # TODO check permissions
-    system = System.objects.get(id=system_id)
-    print("system", system)
-
-    # Get catalog
+    # Get control catalog
     catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattended_controls_all_as_dict()
-
-    # Get Element representing the System
-    # we might hard code this for testing
-
-    # Handle properly formatted control id that does not exist
+    # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
         return render(request, "controls/detail.html", { "control": {} })
 
-    # Retrieve any related CommonControls
-    common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
-    ccp_name = None
-    if common_controls:
-        cc = common_controls[0]
-        ccp_name = cc.common_control_provider.name
-    # Get and return the control
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related statements if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        # if len(projects) > 0:
+        #     project = projects[0]
+        # Retrieve any related CommonControls
+        common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
+        ccp_name = None
+        if common_controls:
+            cc = common_controls[0]
+            ccp_name = cc.common_control_provider.name
+        # Get and return the control
 
-    # Retrieve any related Implementation Statements
-    impl_smts = Statement.objects.filter(sid=cl_id)
-    context = {
-        "system": system,
-        "catalog": catalog,
-        "control": cg_flat[cl_id.lower()],
-        "common_controls": common_controls,
-        "ccp_name": ccp_name,
-        "impl_smts": impl_smts
-    }
-    return render(request, "controls/editor.html", context)
+        # Retrieve any related Implementation Statements
+        impl_smts = Statement.objects.filter(sid=cl_id)
+        context = {
+            "system": system,
+            "project": project, 
+            "catalog": catalog,
+            "control": cg_flat[cl_id.lower()],
+            "common_controls": common_controls,
+            "ccp_name": ccp_name,
+            "impl_smts": impl_smts
+        }
+        return render(request, "controls/editor.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+def editor_compare(request, system_id, catalog_key, cl_id):
+    """System Control detail view"""
+
+    cl_id = oscalize_control_id(cl_id)
+
+    # Get control catalog
+    catalog = Catalog(catalog_key)
+    cg_flat = catalog.get_flattended_controls_all_as_dict()
+    # If control id does not exist in catalog
+    if cl_id.lower() not in cg_flat:
+        return render(request, "controls/detail.html", { "control": {} })
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related statements if owner has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        # Retrieve any related CommonControls
+        common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
+        ccp_name = None
+        if common_controls:
+            cc = common_controls[0]
+            ccp_name = cc.common_control_provider.name
+        # Get and return the control
+
+        # Retrieve any related Implementation Statements
+        impl_smts = Statement.objects.filter(sid=cl_id)
+        context = {
+            "system": system,
+            "project": project, 
+            "catalog": catalog,
+            "control": cg_flat[cl_id.lower()],
+            "common_controls": common_controls,
+            "ccp_name": ccp_name,
+            "impl_smts": impl_smts
+        }
+        return render(request, "controls/compare.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
 
 # @task_view
 def save_smt(request):
@@ -236,6 +310,19 @@ def save_smt(request):
             statement_element_status = "error"
             statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
+
+        # Associate Statement and System's root_element
+        # TODO Only associate if we have created new statement object.
+        print("** System.objects.get(pk=form_values['system_id']).root_element", System.objects.get(pk=form_values['system_id']).root_element)
+        try:
+            statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
+            statement.save()
+            statement_consumer_status = "ok"
+            statement_consumer_msg = "Statement associated with System/Consumer Element."
+        except Exception as e:
+            statement_consumer_status = "error"
+            statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_consumer_msg })
 
     # Serialize saved data object(s) to send back to update web page
     # The submitted form needs to be updated with the object primary keys (ids)
