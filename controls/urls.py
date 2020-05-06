@@ -9,13 +9,22 @@ from . import views
 
 from siteapp.settings import *
 
-
 urlpatterns = [
     url(r'^test$', views.test),
-    url(r'^$', views.index),
-    url(r'^800-53/(?P<cl_id>.*)/$', views.control1, name="control_info"),
-    url(r'^800-53/(?P<cl_id>.*)/editor$', views.editor, name="control_editor"),
+    
+    # Catalogs
+    url(r'^$', views.catalogs),
+    url(r'^catalogs$', views.catalogs),
+    url(r'^catalogs/(?P<catalog_key>.*)/$', views.catalog),
 
+    # Systems
+    url(r'^(?P<system_id>.*)/controls/selected$', views.controls_selected, name="controls_selected"),
+    url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
+    url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^smt/_save/$', views.save_smt),
+    url(r'^smt/_delete/$', views.delete_smt),
 
+    # Controls
+    url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
+    url(r'^catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)', views.control, name="control_info"),
 ]

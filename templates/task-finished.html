@@ -229,7 +229,7 @@
   function download_document(document_id) {
     var dom = $("<div><p>Select download format:</p>"
       + "<select class=form-control>"
-      + "<option value=pdf>PDF</option>"
+      {% if gr_pdf_generator == 'wkhtmltopdf' %}+ "<option value=pdf>PDF</option>"{% endif %}
       + "<option value=docx>Word Document</option>"
       + "<option value=odt>OpenOffice Document</option>"
       + "<option value=html>HTML Page</option>"

@@ -13,25 +13,34 @@ class Catalogs (object):
         global CATALOG_PATH
         self.catalog_path = CATALOG_PATH
         # self.catalog = None
+        self.catalog_keys = self._list_catalog_keys()
         self.index = self._build_index()
 
     def _list_catalog_files(self):
         return [
             'NIST_SP-800-53_rev4_catalog.json',
-            'NIST_SP-800-53_rev5_catalog.json'
+            'NIST_SP-800-53_rev5_catalog.json',
+            'NIST_SP-800-171_rev1_catalog.json'
         ]
 
-    def _load_catalog_json(self, file):
-        from compliancelib import Catalog
-        catalog = Catalog(file)
+    def _list_catalog_keys(self):
+        return [
+            'NIST_SP-800-53_rev4',
+            'NIST_SP-800-53_rev5',
+            'NIST_SP-800-171_rev1'
+        ]
+
+    def _load_catalog_json(self, catalog_key):
+        catalog = Catalog(catalog_key)
+        # print(catalog_key, catalog._load_catalog_json())
         return catalog._load_catalog_json()
 
     def _build_index(self):
         """Build a small catalog_index from metada"""
         index = []
-        for src in self._list_catalog_files():
-            catalog = self._load_catalog_json(src)
-            index.append( { 'id': catalog['id'], 'file': src, 'metadata': catalog['metadata'] } )
+        for catalog_key in self._list_catalog_keys():
+            catalog = self._load_catalog_json(catalog_key)
+            index.append( { 'id': catalog['id'], 'catalog_key': catalog_key, 'catalog_key_display': catalog_key.replace("_", " "), 'metadata': catalog['metadata'] } )
         return index
 
     def list(self):
@@ -45,20 +54,33 @@ class Catalog (object):
     # that singleton instance. Instead of doing `cg = Catalog()`,
     # do `cg = Catalog.GetInstance()`.
     @staticmethod
-    def GetInstance():
+    def GetInstance(catalog_key='NIST_SP-800-53_rev4'):
         # Create a new instance of Catalog() the first time
         # this method is called. Keep it in memory indefinitely.
         if not hasattr(Catalog, '_cached_instance'):
-            Catalog._cached_instance = Catalog()
+            Catalog._cached_instance = Catalog(catalog_key=catalog_key)
         return Catalog._cached_instance
 
-    def __init__(self, catalog_file='NIST_SP-800-53_rev4_catalog.json'):
+    def __init__(self, catalog_key='NIST_SP-800-53_rev4'):
         global CATALOG_PATH
+        self.catalog_key = catalog_key
+        self.catalog_key_display = catalog_key.replace("_", " ")
         self.catalog_path = CATALOG_PATH
-        self.catalog_file = catalog_file
-        self.oscal = self._load_catalog_json()
-        self.info = {}
-        self.info['groups'] = self.get_groups()
+        self.catalog_file = catalog_key + "_catalog.json"
+        try: 
+            self.oscal = self._load_catalog_json()
+            self.status = "ok"
+            self.status_message = "Success loading catalog"
+            self.catalog_id = self.oscal['id']
+            self.info = {}
+            self.info['groups'] = self.get_groups()
+        except Exception as e:
+            self.oscal = None
+            self.status = "error"
+            self.status_message = "Error loading catalog"
+            self.catalog_id = None
+            self.info = {}
+            self.info['groups'] = None
 
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
@@ -91,7 +113,21 @@ class Catalog (object):
 
     def get_group_title_by_id(self, id):
         group = self.find_dict_by_value(self.get_groups(), 'id', id)
+        if group is None:
+            return None
         return group['title']
+
+    def get_group_id_by_control_id(self, control_id):
+        """Return group id given id of a control"""
+
+        # For 800-53, 800-171, we can match by first few characters of control ID
+        group_ids = self.get_group_ids()
+        for group_id in group_ids:
+            if group_id.lower() in control_id.lower():
+                return group_id
+
+        # Group ID was not matched
+        return None
 
     def get_controls(self):
         controls = []
@@ -133,9 +169,9 @@ class Catalog (object):
         # Concatenate the prose text of all of the 'parts' of this control
         # in Markdown. Filter out the parts that are not wanted.
         # Example 'statement'
-        #   python3 -c "import compliancelib; cg = compliancelib.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6')))"
+        #   python3 -c "import oscal; cg = oscal.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6')))"
         # Example 'guidance'
-        #   python3 -c "import compliancelib; cg = compliancelib.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6'), part_types={'guidance'}))"
+        #   python3 -c "import oscal; cg = oscal.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6'), part_types={'guidance'}))"
 
         return self.format_part_as_markdown(control_data, filter_name=part_types)
 
@@ -210,15 +246,18 @@ class Catalog (object):
 
     def get_flattened_control_as_dict(self, control):
         """Return a control as a simplified, flattened Python dictionary"""
+        family_id = self.get_group_id_by_control_id(control['id'])
         cl_dict = {
             "id": control['id'],
             "id_display": re.sub(r'^([A-Za-z][A-Za-z]-)([0-9]*)\.([0-9]*)$',r'\1\2 (\3)', control['id']),
             "title": control['title'],
-            "family_id": control['id'].split("-")[0],
-            "family_title": self.get_group_title_by_id(control['id'].split("-")[0]),
+            "family_id": family_id,
+            "family_title": self.get_group_title_by_id(family_id),
             "class": control['class'],
             "description": self.get_control_prose_as_markdown(control, part_types={ "statement" }),
             "guidance": self.get_control_prose_as_markdown(control, part_types={ "guidance" }),
+            "catalog_file": self.catalog_file,
+            "catalog_id": self.catalog_id
         }
         # cl_dict = {"id": "te-1", "title": "Test Control"}
         return cl_dict

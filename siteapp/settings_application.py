@@ -42,6 +42,30 @@ if environment.get("trust-user-authentication-headers"):
     LOGOUT_REDIRECT_URL = "/sso-logout"
     print("Setting LOGOUT_REDIRECT_URL to", LOGOUT_REDIRECT_URL)
 
+# PDF Generation settings
+GR_PDF_GENERATOR = environment.get("gr-pdf-generator", None)
+# Validate pdf generator is supported
+GR_PDF_GENERATOR_SUPPORTED = ["off", "wkhtmltopdf"]
+if GR_PDF_GENERATOR not in GR_PDF_GENERATOR_SUPPORTED:
+    # Log error
+    print("WARNING: Specified PDF generator is not supported. Setting generator to 'off'.")
+    # Set pdf generator to None
+    GR_PDF_GENERATOR = "off"
+else:
+    print("INFO: GR_PDF_GENERATOR set to {}".format(GR_PDF_GENERATOR))
+
+# PDF Generation settings
+GR_IMG_GENERATOR = environment.get("gr-img-generator", None)
+# Validate img generator is supported
+GR_IMG_GENERATOR_SUPPORTED = ["off", "wkhtmltopdf"]
+if GR_IMG_GENERATOR not in GR_IMG_GENERATOR_SUPPORTED:
+    # Log error
+    print("WARNING: Specified IMG generator is not supported. Setting generator to 'off'.")
+    # Set img generator to None
+    GR_IMG_GENERATOR = "off"
+else:
+    print("INFO: GR_IMG_GENERATOR set to {}".format(GR_IMG_GENERATOR))
+
 MIDDLEWARE += [
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
     'siteapp.middleware.ContentSecurityPolicyMiddleware',
@@ -59,6 +83,7 @@ INTERNAL_IPS = ['127.0.0.1'] # for django_debug_toolbar
 # Allow run-time disabling of the Django Debug Toolbar.
 DISABLE_DJANGO_DEBUG_TOOLBAR = False
 def DEBUG_TOOLBAR_SHOW_TOOLBAR_CALLBACK(r):
+    # return True # Force debug toolbar to be true regrdless of INTERNAL_IPS settings
     import debug_toolbar.middleware
     return debug_toolbar.middleware.show_toolbar(r) and not DISABLE_DJANGO_DEBUG_TOOLBAR
 DEBUG_TOOLBAR_CONFIG = {

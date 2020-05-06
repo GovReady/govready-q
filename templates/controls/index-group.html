@@ -17,13 +17,10 @@
     margin: auto;
   }
 </style>
-
 {% endblock %}
 
-Remove contextbar from top of page
 {% block contextbar %}{% endblock %}
 
-% block body-wide %
 {% block body %}
 
 <div style="margin-top: 30px">
@@ -33,13 +30,13 @@ Remove contextbar from top of page
       <div id="above-tab-content" class="row">
         <!-- Page Title-->
         <div style="float: left;">
-          {% if control.title is not None %}
           <h2 id="control-heading" class="">
-            {{ control.id_display|upper }} {{ control.title }}
+            {% if "SP-800-53" in catalog.catalog_key_display %}
+              Control Families {{system.root_element.name}} > {{ group.id|upper }} - {{ group.title }} Controls
+            {% else %}
+              Control Groupings {{system.root_element.name}} > {{ group.id|upper }} - {{ group.title }} Controls
+            {% endif %}
           </h2>
-          {% else %}
-            Control was not found in the catalog.
-          {% endif %}
         </div>
         <!-- Control Lookup-->
         <div style="float: right;">
@@ -55,35 +52,32 @@ Remove contextbar from top of page
     <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Official Control Text</div>
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">{{ catalog.catalog_key_display }}</div>
     </div>
-
-    <div id="tab-content" class="row">
-      {% if control.title is not None %}
-      <div id="tab-content" class="row row-control" style="">
-        <div id="" class="col-xs-11 col-sm-11 col-md-11 col-lg-11 col-xl-11">
-          <div id="control-description" class="control-text"><h3>Description</h3>{{ control.description }}</div>
-          <div id="control-guidance"  class="control-text"><h3>Guidance</h3>{{ control.guidance }}</div>
+   {% for cl in group.controls %}
+    <div id="tab-content" class="row row-control" style="">
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+            <a href="/controls/catalogs/{{ catalog.catalog_key }}/control/{{ cl.id }}">{{ cl.id|upper }}</a>
         </div>
-      </div>
-      {% else %}
-      <div id="control-message">
-        <p>Control is not found in the control catalog.</p>
-      </div>
-      {% endif %}
+        <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+            {{ cl.title }}
+        </div>
     </div>
+    {% endfor %}
 
   </div>
 </div>
-      {{ block.super }}
-      {% endblock %}
 
-      {% block scripts %}
-      <script>
-        function show_control_by_id() {
-          var control_id = $('#control_lookup').find('input[name="id"]').val();
-          var url = "/controls/catalogs/{{ catalog.catalog_key }}/control/"+control_id;
-          window.location.href = url;
-        }
-      </script>
-      {% endblock %}
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function show_control_by_id() {
+    var control_id = $('#control_lookup').find('input[name="id"]').val();
+    var url = "/controls/"+"800-53"+"/"+control_id+"/";
+    window.location.href = url;
+  }
+</script>
+{% endblock %}
+
