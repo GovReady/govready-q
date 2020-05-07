@@ -18,8 +18,8 @@ The code is open source, and [available on GitHub](https://github.com/GovReady/g
    :glob:
    :caption: Contents:
 
-introduction
-   Deploy.rst
+   introduction
+   Deploy
    Environment
    Permissions
    Authoring
