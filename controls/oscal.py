@@ -244,6 +244,17 @@ class Catalog (object):
 
         return md
 
+    def substitute_parameter_text(self, control, text, parameter_values):
+        # Fill in parameter_values with control parameter labels for any
+        # parameters that are not specified.
+        parameter_values = dict(parameter_values) # clone so that we don't modify the caller's dict
+        for parameter in control['parameters']:
+            if parameter["id"] not in parameter_values:
+                parameter_values[parameter["id"]] = "[" + parameter["label"] + "]"
+        for parameter_key, parameter_value in parameter_values.items():
+            text = re.sub(r"{{ " + re.escape(parameter_key) + " }}", parameter_value, text)
+        return text
+
     def get_flattened_control_as_dict(self, control):
         """Return a control as a simplified, flattened Python dictionary"""
         family_id = self.get_group_id_by_control_id(control['id'])
