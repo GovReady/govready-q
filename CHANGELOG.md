@@ -1,6 +1,11 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.7.1 (May 07, 2020)
+-----------------------
+
+Add full draft of 800-171_rev1_catalog.json in OSCAL.
+
 v0.9.1.7 (May 02, 2020)
 -----------------------
 
