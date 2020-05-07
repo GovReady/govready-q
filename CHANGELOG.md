@@ -1,6 +1,11 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.8.1 (May 07, 2020)
+-----------------------
+
+Add full draft of 800-171_rev1_catalog.json in OSCAL.
+
 v0.9.1.8 (May 06, 2020)
 -----------------------
 
@@ -23,6 +28,7 @@ In the future as the store expands, more tests might be needed to
 make sure only certain top level apps are creating systems. Right now
 we use the existing tests of adding a Project to the "Started Apps"
 folder as indication the Project is a top level app requiring a system.
+
 
 v0.9.1.7 (May 02, 2020)
 -----------------------
