@@ -1,10 +1,34 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.7.1 (May 07, 2020)
+v0.9.1.8.1 (May 07, 2020)
 -----------------------
 
 Add full draft of 800-171_rev1_catalog.json in OSCAL.
+
+v0.9.1.8 (May 06, 2020)
+-----------------------
+
+Create new projects and systems in pairs. When a Project is created by adding a
+questionnaire (e.g., compliance app) from the store, create the linked System, too.
+
+Projects and systems are now also given a unique name via the appending of the
+project's unique ID to the name.
+
+**Developer changes**
+
+When a root Project App object is added from the store automatically
+create the Project's linked System object consisting of a Element object
+and a System object with the Element as the System's root_element.
+
+When user updates the Project name, also update the name of the
+System's root_element to keep names synchronized.
+
+In the future as the store expands, more tests might be needed to
+make sure only certain top level apps are creating systems. Right now
+we use the existing tests of adding a Project to the "Started Apps"
+folder as indication the Project is a top level app requiring a system.
+
 
 v0.9.1.7 (May 02, 2020)
 -----------------------

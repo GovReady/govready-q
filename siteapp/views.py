@@ -18,6 +18,7 @@ from guardian.shortcuts import get_perms_for_model
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
+from controls.models import Element, System
 
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
@@ -452,8 +453,28 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         # Save and add to folder
         project.save()
         project.set_root_task(appver.modules.get(module_name="app"), user)
+        # Update default name to be unique by using project.id
+        project.root_task.title_override = project.title + " " + str(project.id)
+        project.root_task.save()
         if folder:
             folder.projects.add(project)
+
+        # Create a new System element and link to project?
+        # Top level apps should be linked to a system
+        # Repeat folder test so we can easily refactor this code later
+        if folder:
+            # Create element to serve as system's root_element
+            # Element names must be unique. Use unique project title set above.
+            element = Element()
+            element.name = project.title
+            element.element_type = "system"
+            element.save()
+            # Create system
+            system = System(root_element=element)
+            system.save()
+            # Link system to project
+            project.system = system
+            project.save()
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -979,6 +1000,10 @@ def rename_project(request, project):
     title = request.POST.get("title", "").strip() or None
     project.root_task.title_override = title
     project.root_task.save()
+    # Update name of linked System root.element if exists
+    if project.system is not None:
+        project.system.root_element.name = title
+        project.system.root_element.save()
     project.root_task.on_answer_changed()
     return JsonResponse({ "status": "ok" })
 

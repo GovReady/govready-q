@@ -847,6 +847,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question-question_types_numeric')
 
         # Introduction screen.
+        var_sleep(0.75)
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
         var_sleep(.5)
@@ -1023,6 +1024,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             'fixtures',
             'testimage.png'
         )
+        var_sleep(1)
         self.fill_field("#inputctrl", testFilePath)
 
         self.click_element("#save-button")
@@ -1049,7 +1051,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self._new_project()
         # start "Test The Module Question Types"
         self.click_element('#question-question_types_module')
-        var_sleep(.75)
+        var_sleep(1.5)
 
         # Introduction screen.
         self.assertRegex(self.browser.title, "Next Question: Introduction")
