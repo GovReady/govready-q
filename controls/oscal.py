@@ -50,16 +50,17 @@ class Catalogs (object):
 class Catalog (object):
     """Represent a catalog"""
 
-    # Create a singleton instance of this class. GetInstance returns
-    # that singleton instance. Instead of doing `cg = Catalog()`,
-    # do `cg = Catalog.GetInstance()`.
+    # Create a singleton instance of this class per catalog. GetInstance returns
+    # that singleton instance. Instead of doing `cg = Catalog(catalog_key='NIST_SP-800-53_rev4')`,
+    # do `cg = Catalog.GetInstance(catalog_key='NIST_SP-800-53_rev4')`.
     @staticmethod
     def GetInstance(catalog_key='NIST_SP-800-53_rev4'):
-        # Create a new instance of Catalog() the first time
+        # Create a new instance of Catalog() the first time for each catalog key
         # this method is called. Keep it in memory indefinitely.
-        if not hasattr(Catalog, '_cached_instance'):
-            Catalog._cached_instance = Catalog(catalog_key=catalog_key)
-        return Catalog._cached_instance
+        # Clear cache only if a catalog itself changes
+        if not hasattr(Catalog, '_cached_instance_' + catalog_key):
+            setattr(Catalog, '_cached_instance_' + catalog_key, Catalog(catalog_key=catalog_key))
+        return getattr(Catalog, '_cached_instance_' + catalog_key)
 
     def __init__(self, catalog_key='NIST_SP-800-53_rev4'):
         global CATALOG_PATH
