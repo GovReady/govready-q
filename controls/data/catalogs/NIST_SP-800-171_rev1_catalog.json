@@ -1736,7 +1736,7 @@
             {
                 "id": "3.5.3",
                 "class": "SP800-171",
-                "title": "Use multifactor authentication22 for local and network access23 to privileged accounts and for network access to non-privileged accounts.",
+                "title": "Use multifactor authentication for local and network access to privileged accounts and for network access to non-privileged accounts.",
                 "parameters": [],
                 "properties": [
                     {
@@ -1753,7 +1753,7 @@
                     {
                         "id": "3.5.3_smt",
                         "name": "statement",
-                        "prose": "Use multifactor authentication22 for local and network access23 to privileged accounts and for network access to non-privileged accounts.",
+                        "prose": "Use multifactor authentication for local and network access to privileged accounts and for network access to non-privileged accounts.",
                         "parts": []
                     },
                     {

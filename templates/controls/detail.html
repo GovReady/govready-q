@@ -80,8 +80,9 @@ Remove contextbar from top of page
 
       {% block scripts %}
       <script>
+        // Submits control id for Control look up box
         function show_control_by_id() {
-          var control_id = $('#control_lookup').find('input[name="id"]').val();
+          var control_id = $('#control-lookup').find('input[name="id"]').val();
           var url = "/controls/catalogs/{{ catalog.catalog_key }}/control/"+control_id;
           window.location.href = url;
         }
