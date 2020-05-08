@@ -173,7 +173,11 @@ class Catalog (object):
         # Example 'guidance'
         #   python3 -c "import oscal; cg = oscal.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6'), part_types={'guidance'}))"
 
-        return self.format_part_as_markdown(control_data, filter_name=part_types)
+        text = self.format_part_as_markdown(control_data, filter_name=part_types)
+        parameter_values = {} # Eventually replace with organizational defined parameters when we have them
+        text_params_replaced = self.substitute_parameter_text(control_data, text, parameter_values)
+
+        return text_params_replaced
 
     def format_part_as_markdown(self, part, indentation_level=-1, indentation_string="    ", filter_name=None, hide_first_label=True):
         # Format part, which is either a control or a part, as Markdown.
@@ -248,9 +252,11 @@ class Catalog (object):
         # Fill in parameter_values with control parameter labels for any
         # parameters that are not specified.
         parameter_values = dict(parameter_values) # clone so that we don't modify the caller's dict
+        if "parameters" not in control:
+            return text
         for parameter in control['parameters']:
             if parameter["id"] not in parameter_values:
-                parameter_values[parameter["id"]] = "[" + parameter["label"] + "]"
+                parameter_values[parameter["id"]] = "[" + parameter.get("label", parameter["id"]) + "]"
         for parameter_key, parameter_value in parameter_values.items():
             text = re.sub(r"{{ " + re.escape(parameter_key) + " }}", parameter_value, text)
         return text

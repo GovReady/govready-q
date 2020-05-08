@@ -71,7 +71,7 @@ RUN yum clean all && rm -rf /var/cache/yum
 # Remove unneeded Python libraries
 # Remove `pipenv` and its extra copies of `requests` and `urllib3` that scanners see
 # Safety only needed for preparing requirements files, not operating GovReady
-RUN pip3.6 uninstall -y pipenv safety
+# RUN pip3.6 uninstall -y pipenv safety || true
 
 # Safety only needed for preparing requirements files, not operating GovReady
 ## Run pyup.io's python package vulnerability check.
