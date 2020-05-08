@@ -127,3 +127,17 @@ To stop and remove containers:
 ```bash
 docker-compose down
 ```
+
+## Cleaing up
+
+**Caution!**
+
+The following notes describe how to delete every Docker container on your machine.
+
+```
+# Must be run first because images are attached to containers
+docker rm -f $(docker ps -a -q)
+
+# Delete every Docker image
+docker rmi -f $(docker images -q)
+```
