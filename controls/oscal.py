@@ -160,6 +160,13 @@ class Catalog (object):
         result_dict = next((sub for sub in search_array if sub[search_key] == search_value), None)
         return result_dict
 
+    def get_control_property_by_name(self, control, property_name):
+        """Return value of a propery of a control by name of property"""
+        prop = self.find_dict_by_value(control['properties'], "name", property_name)
+        if prop is None:
+            return None
+        return prop['value']
+
     def get_control_parameter_label_by_id(self, control, param_id):
         """Return value of a parameter of a control by id of parameter"""
         param = self.find_dict_by_value(control['parameters'], "id", param_id)
@@ -172,6 +179,11 @@ class Catalog (object):
         #   python3 -c "import oscal; cg = oscal.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6')))"
         # Example 'guidance'
         #   python3 -c "import oscal; cg = oscal.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6'), part_types={'guidance'}))"
+
+        # Is this control withdrawn?
+        status = self.get_control_property_by_name(control_data, 'status')
+        if status == "Withdrawn":
+            return "Withdrawn"
 
         text = self.format_part_as_markdown(control_data, filter_name=part_types)
         parameter_values = {} # Eventually replace with organizational defined parameters when we have them
