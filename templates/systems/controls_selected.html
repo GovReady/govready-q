@@ -40,11 +40,15 @@
   </div><!--/row-->
     <p>&nbsp;</p>
 
-
     <div id="tab-content" class="row rows-header" style="">
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">information</div>
         <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">&nbsp;</div>
-        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1"><a href="selected/export/xacta/xlsx">export</a></div>
+        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+          <!--a href="selected/export/xacta/xlsx">export</a-->
+          <span class="glyphicon glyphicon-download-alt pull-right"
+                style="cursor: pointer;"
+                onclick="download_document('{{document.id|escapejs}}')"></span>
+        </div>
     </div>
    {% for control in controls %}
     <div id="tab-content" class="row row-control" style="">
@@ -70,5 +74,19 @@
     var url = "/controls/"+"800-53"+"/"+control_id+"/";
     window.location.href = url;
   }
+
+  // The download button shows a modal to ask what file format to download in.
+  function download_document(document_id) {
+    var dom = $("<div><p>Select download format:</p>"
+      + "<select class=form-control>"
+      + "<option value='xacta'>Xacta Import Spreadsheet</option>"
+      + "</select>"
+      + "</div>");
+    show_modal_confirm("Download Document", dom, "Download", function() {
+      var format = dom.find("select").val();
+      window.location = "selected/export/" + format + "/xlsx";
+    });
+  }
 </script>
+
 {% endblock %}
