@@ -1,8 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.8.1 (May 07, 2020)
+v0.9.1.9 (May 08, 2020)
 -----------------------
+
+Add export to Xacta Control Implementation Excel file format.
+
+v0.9.1.8.1 (May 07, 2020)
+-------------------------
 
 Add full draft of 800-171_rev1_catalog.json in OSCAL.
 
