@@ -6,37 +6,37 @@ Click one of the tab belows to see quickstart for indicated platform.
 
 .. container:: content-tabs
 
-    .. tab-container:: docker
-        :title: Docker
+   .. tab-container:: docker
+      :title: Docker
 
-       .. rubric:: Installing with Docker
+      .. rubric:: Installing with Docker
 
-       Make sure you first install Docker (https://docs.docker.com/engine/installation/) and, if appropriate, grant non-root users access to run Docker containers (https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
+      Make sure you first install Docker (https://docs.docker.com/engine/installation/) and, if appropriate, grant non-root users access to run Docker containers (https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user) (or else use `sudo` when invoking Docker below).
 
-       .. rubric:: Start
+      .. rubric:: Start
 
-       .. code-block:: bash
+      .. code-block:: bash
 
-           # Run the docker container in detached mode
-           docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
+         # Run the docker container in detached mode
+         docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
 
-           # Create admin account and organization data
-           docker container exec -it govready-q first_run
+         # Create admin account and organization data
+         docker container exec -it govready-q first_run
 
-           # Stop, start container (when needed)
-           docker container stop govready-q
-           docker container start govready-q
+         # Stop, start container (when needed)
+         docker container stop govready-q
+         docker container start govready-q
 
-           # View logs - useful if site does not appear
-           docker container logs govready-q
+         # View logs - useful if site does not appear
+         docker container logs govready-q
 
-           # To destroy the container and all user data entered into Q
-           docker container rm -f govready-q
+         # To destroy the container and all user data entered into Q
+         docker container rm -f govready-q
 
 
-       Visit your GovReady-Q site in your web browser at:
+      Visit your GovReady-Q site in your web browser at:
 
-           http://localhost:8000/
+         http://localhost:8000/
 
    .. tab-container:: macos
        :title: macOS
@@ -287,7 +287,11 @@ Click one of the tab belows to see quickstart for indicated platform.
 Additional deployment details and configuration options are documented
 for each platform.
 
-.. toctree:: :maxdepth: 1
+.. toctree::
+   :maxdepth: 1
 
-deploy_docker.md deploy_macos.md deploy_rhel7_centos7.md
-deploy_ubuntu.md deploy_windows.md
+   deploy_docker
+   deploy_macos
+   deploy_rhel7_centos7
+   deploy_ubuntu
+   deploy_windows
