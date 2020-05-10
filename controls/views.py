@@ -357,8 +357,6 @@ def controls_selected_export_xacta_xslx(request, system_id):
             c = ws.cell(row=1, column=17, value="History")
             c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
-        wb.save('export.xlsx')
-
         with NamedTemporaryFile() as tmp:
             wb.save(tmp.name)
             tmp.seek(0)
@@ -371,14 +369,6 @@ def controls_selected_export_xacta_xslx(request, system_id):
         resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
         return resp
-
-        # Return the controls
-        context = {
-            "system": system,
-            "project": project,
-            "controls": controls,
-        }
-        return render(request, "systems/controls_selected_export_xacta_scr.html", context)
     else:
         # User does not have permission to this system
         raise Http404
