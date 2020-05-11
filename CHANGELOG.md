@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.8.2 (May 10, 2020)
+-------------------------
+
+Update Documentation. Organization installation documentation inside of `Installation Guide` directory.
+Clean up singe pages for installation notes on each Operating System flavor.
+Rename 0.9.0 mentions to 0.9.x. Remove installation instructions from 0.9.x directory.
+
 v0.9.1.9 (May 08, 2020)
 -----------------------
 
