@@ -1,7 +1,7 @@
-Deploying on RHEL 7 / CentOS 7 / Amazon Linux 2
-===============================================
+Deploying on RHEL 7 or CentOS 7
+================================
 
-*Instructions applicable for RHEL 7, CentOS 7 and Amazon Linux 2. Tested
+*Instructions applicable for RHEL 7 and CentOS 7. Tested
 on a*
 `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__
 *of 2020-05-04.*

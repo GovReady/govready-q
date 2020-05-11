@@ -3,7 +3,7 @@
 .. _govready-q_server_installation:
 
 Installing GovReady-Q server
-===========================
+============================
 
 The GovReady-Q server can be installed on any Unix-like operating system. It is most commonly installed on Linux.
 
@@ -31,7 +31,6 @@ Consult the table below and choose how to proceed:
     .. toctree::
         :maxdepth: 1
 
-        linux/amazon/index
         linux/centos/index
         linux/ubuntu/index
         unix/macos/index

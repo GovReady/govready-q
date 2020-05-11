@@ -2,14 +2,14 @@
 
 .. _govready-q_server_sources_centos_rhel:
 
-CentOS / RHEL 7 / Amazon Linux 2 from sources
-==============================================
+CentOS / RHEL 7 from sources
+============================
 
 This guide describes how to install the GovReady-Q server for CentOS 7 or greater from source code.
 
 
 .. note::
-    Instructions applicable for RHEL 7, CentOS 7 and Amazon Linux 2. 
+    Instructions applicable for RHEL 7 and CentOS 7.
     Tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__ on 2020-05-04.
 
 Installing required OS packages

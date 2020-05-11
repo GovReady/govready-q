@@ -108,7 +108,7 @@ Click one of the tab belows to see quickstart for indicated platform.
 
        .. rubric:: Installing on RHEL/CentOS 7
        
-       *Instructions  applicable RHEL 7, CentOS 7 and Amazon Linux 2.*
+       *Instructions applicable to RHEL 7 and CentOS 7*
 
        GovReady-Q calls requires Python 3.6 or higher to run and several Linux packages to provide full functionality.
 
