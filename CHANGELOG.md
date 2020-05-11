@@ -1,8 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.8.2 (May 10, 2020)
--------------------------
+v0.9.1.10 (May 10, 2020)
+------------------------
+
+**Feature changes**
+
+Add in baselines listings for 800-53 Rev 4 (low, moderate, high) and 800-171 Rev 1.
+
+Assigning baselines only available from Django commandline shell at momement (no UI).
+
+**Documentation changes**
 
 Update Documentation. Organization installation documentation inside of `Installation Guide` directory.
 Clean up singe pages for installation notes on each Operating System flavor.
