@@ -14,7 +14,7 @@ Once the required OS packages have been installed, installing GovReady-Q server 
 Consult the table below and choose how to proceed:
 
 +-------------------------------+---------------------------------------------------------------+
-| Operative system              | Version                                                       |
+| Operating system              | Version                                                       |
 +-------------------------------+---------------------------------------------------------------+
 | CentOS / RHEL                 | :ref:`7 or greater <govready-q_server_centos>`                |
 +-------------------------------+---------------------------------------------------------------+
