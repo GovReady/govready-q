@@ -1,13 +1,19 @@
-Deploying on RHEL 7 or CentOS 7
-================================
+.. Copyright (C) 2020 GovReady PBC
 
-*Instructions applicable for RHEL 7 and CentOS 7. Tested
-on a*
-`CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__
-*of 2020-05-04.*
+.. _govready-q_server_sources_centos_rhel:
 
-Installation on RHEL/CentOS 7
------------------------------
+CentOS / RHEL 7 from sources
+============================
+
+This guide describes how to install the GovReady-Q server for CentOS 7 or greater from source code.
+
+
+.. note::
+    Instructions applicable for RHEL 7 and CentOS 7.
+    Tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__ on 2020-05-04.
+
+Installing required OS packages
+-------------------------------
 
 GovReady-Q requires Python 3.6 or higher and several Linux packages to
 provide full functionality. Execute the following commands:
@@ -42,8 +48,19 @@ Switch it to version 2+ by using the IUS package:
    # install git2u
    sudo yum install git2u
 
-Install GovReady
-~~~~~~~~~~~~~~~~
+
+Upgrading pip on RHEL 7
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Upgrade ``pip`` because the RHEL package version is out of date (we need
+>=9.1 to properly process hashes in ``requirements.txt``)
+
+.. code:: bash
+
+   pip3 install --upgrade pip
+
+Installing GovReady-Q
+~~~~~~~~~~~~~~~~~~~~~
 
 Clone the GovReady source code and install packages.
 
@@ -60,8 +77,8 @@ Clone the GovReady source code and install packages.
    # (sudo needed only for the embedded 'yum install' command)
    sudo ./fetch-vendor-resources.sh
 
-Set up GovReady
-~~~~~~~~~~~~~~~
+Setting up GovReady-Q
+~~~~~~~~~~~~~~~~~~~~~
 
 Run the final setup commands to initialize a local SQLite database in
 local/db.sqlite to make sure everything is OK so far.
@@ -82,8 +99,8 @@ The following warning message is expected and okay:
    # create superuser with initial account
    python3 manage.py first_run
 
-Start GovReady
-~~~~~~~~~~~~~~
+Starting GovReady-Q
+~~~~~~~~~~~~~~~~~~~
 
 .. code:: bash
 
@@ -94,40 +111,40 @@ Visit your GovReady-Q site in your web browser at:
 
 http://localhost:8000/
 
-Additional Details
-------------------
 
-Manual installation on a Docker container
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you have experience with Docker and want to try this manual
-installation without affecting your own computer, you can run a CentOS 7
-container with these commands.
+It is not necessary to specify a port. GovReady-Q will read the `local/enviroment.json` file to determine
+host name and port.
 
 .. code:: bash
 
-   # start a container, forward port 8000 for GovReady
-   docker run -it --name govready-q -p8000:8000 centos:7.8.2003 bash
+   # run the server
+   python3 manage.py runserver
 
-You will start in a root shell. Create a non-root user:
+.. note::
+    Depending on host configuration both ``python3`` and ``python`` commands will work.
+
+    GovReady-Q can run on ports other than ``8000``. Port ``8000`` is selected for convenience.
+
+    GovReady-Q defaults to `localhost:8000` when launched with ``python manage.py runserver``.
+
+    Tested on a ``CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>``__ on 2020-05-04.
+
+
+(Optional) Installing Postgres, MySQL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GovReady-Q can optionally be configured to work with Postgress or MySQL database engines instead of the default SQLITE3.
 
 .. code:: bash
 
-   # create user and set password
-   adduser testuser
-   passwd testuser
+   # optional install of postgres and/or mysql
+   sudo yum install postgresql mysql-devel
 
-   # give test user sudo privileges
-   usermod -aG wheel testuser
+.. code:: bash
 
-   # add 'sudo' command
-   yum install sudo
-
-   # switch to the testuser account
-   su - testuser
-
-Then you can proceed from the top of this document as the non-root user
-``testuser``.
+   # if you intend to use optional configurations, such as the MySQL adapter, you
+   # may need to run additional `pip3 install` commands, such as:
+   pip3 install --user -r requirements_mysql.txt
 
 Creating “environment.json” configuration file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -148,8 +165,8 @@ Create a file there and include values like these:
      "secret-key": "...something here..."
    }
 
-Enabling PDF export
-~~~~~~~~~~~~~~~~~~~
+(Optional) Enabling PDF export
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
 ``gr-img-generator`` environment variables to your
@@ -164,14 +181,14 @@ To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
       ...
    }
 
-Deployment utilities
-~~~~~~~~~~~~~~~~~~~~
+(Optional) Deployment utilities
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sample ``apache.conf``, ``superviser.ini``, and ``update.sh`` files can
 be found in the source code directory ``deployment/rhel``.
 
-Creating a dedicated GovReady UNIX user
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(Optional) Creating a dedicated GovReady UNIX user
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You may find it useful to create a user specifically for GovReady-Q. Do
 this before installing GovReady-Q.
@@ -183,31 +200,3 @@ this before installing GovReady-Q.
 
    # Change permissions so that the webserver can read static files.
    chmod a+rx /home/govready-q
-
-Optional install of database engine
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code:: bash
-
-   # optional install of postgres and/or mysql
-   sudo yum install postgresql mysql-devel
-
-Installing drivers for Postgres, MySQL
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code:: bash
-
-   # if you intend to use optional configurations, such as the MySQL adapter, you
-   # may need to run additional `pip3 install` commands, such as:
-   # pip3 install --user -r requirements_mysql.txt
-
-Upgrading pip
-~~~~~~~~~~~~~
-
-Upgrade ``pip`` because the RHEL package version is out of date (we need
->=9.1 to properly process hashes in ``requirements.txt``)
-
-.. code:: bash
-
-   pip3 install --upgrade pip
-

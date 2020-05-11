@@ -20,14 +20,13 @@ The code is open source, and `available on GitHub
    :caption: Contents:
 
    introduction
-   Deploy
-   Environment
+   installation-guide/index
    Permissions
    Authoring
    Automation
    DataDesign
    testing/index.rst
-   version.0.9.0
+   version.0.9.x
    migration_guide_086_09x.rst
 
 Indices and tables
