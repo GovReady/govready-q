@@ -46,6 +46,12 @@ Any `docker-compose` commands will need the `docker-compose.yml` file to know wh
 
 **Be aware to increase the vm.max_map_count setting, as detailed in [the Wazuh documentation](https://documentation.wazuh.com/2.1/docker/wazuh-container.html).**  Otherwise, the elasticsearch container will likely not run correctly.
 
+The `docker-compose.yml` file specifies a memory limit of 2G for the `elasticsearch` service.  When used with Docker Compose, this will result in this message being displayed:
+
+> WARNING: Some services (elasticsearch) use the 'deploy' key, which will be ignored. Compose does not support 'deploy' configuration - use `docker stack deploy` to deploy to a swarm.
+
+This is expected behavior and can be ignored for the purposes of this document.
+
 To start the containers:
 
 ```bash
