@@ -91,7 +91,7 @@ Visit your GovReady-Q site in your web browser at:
 http://localhost:8000/
 
 
-It is not necessary to specify a port. GovReady-Q will read the `local/enviroment.json` file to determine
+It is not necessary to specify a port. GovReady-Q will read the `local/environment.json` file to determine
 host name and port.
 
 .. code:: bash

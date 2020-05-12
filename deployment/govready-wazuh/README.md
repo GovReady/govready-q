@@ -79,7 +79,7 @@ export GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
 
 After setting the variables, continue with the "Run GovReady-Q + Wazuh Multi-container App" section above.
 
-If you don't set enviroment variables, these defaults are used:
+If you don't set environment variables, these defaults are used:
 
 ```bash
 export GOVREADY_Q_HOST=test.example.com
