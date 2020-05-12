@@ -2,7 +2,7 @@
 
 ## Overview
 
-This directory contains configuration files that run TKTK
+This directory contains configuration files that run containers for GovReady-Q and Wazuh in a single deployment.
 
 Use [Docker Compose](https://docs.docker.com/compose/) to manage the multi-container app.
 
