@@ -22,7 +22,9 @@ Consult the table below and choose how to proceed:
 +-------------------------------+---------------------------------------------------------------+
 | macOS                         | :ref:`10.10 or greater <govready-q_server_macos>`             |
 +-------------------------------+---------------------------------------------------------------+
-| Docker (Unix OS)              | :ref:`<govready-q_server_docker>`                             |
+| Docker (Unix)                 | :ref:`<govready-q_server_docker>`                             |
++-------------------------------+---------------------------------------------------------------+
+| Docker GovReady+Wazuh (Unix)  | :ref:`<govready-q_server_wazuh_docker>`                       |
 +-------------------------------+---------------------------------------------------------------+
 
 
@@ -35,3 +37,4 @@ Consult the table below and choose how to proceed:
         linux/ubuntu/index
         unix/macos/index
         containers/docker/index
+        containers/docker-govready-wazuh/index

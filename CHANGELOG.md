@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.11 (May 11, 2020)
+-------------------------
+
+**Deployment changes**
+
+Add docker compose file for deploying GovReady and Wazuh together.
+
 v0.9.1.8.2 (May 10, 2020)
 -------------------------
 
