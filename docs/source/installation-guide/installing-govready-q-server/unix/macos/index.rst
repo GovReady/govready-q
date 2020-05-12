@@ -14,7 +14,7 @@ This guide describes how to install the GovReady-Q server for macOS 10.10 or gre
 Installing required OS packages
 -------------------------------
 
- GovReady-Q calls requires Python 3.6 or higher to run and several Unix packages to provide full functionality. Install the Homebrew package manager (https://brew.sh) to easily install Unix packages on macOS. Homebrew will install all packages in your userspace and not change native macOS Python or other libraries. Execute the following commands:
+ GovReady-Q requires Python 3.6 or higher to run and several Unix packages to provide full functionality. Install the Homebrew package manager (https://brew.sh) to easily install Unix packages on macOS. Homebrew will install all packages in your userspace and not change native macOS Python or other libraries. Execute the following commands:
 
 .. code:: bash
 
@@ -35,8 +35,6 @@ Now install Python3 and the required Unix packages.
     # WARNING: wkhtmltopdf can expose you to security risks. For more information,
     # search the web for "wkhtmltopdf Server-Side Request Forgery"
     read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then brew cask install wkhtmltopdf ; fi
-
-.. Is it necessary to install git2 on macOS to use Git?
 
 Installing GovReady-Q
 ~~~~~~~~~~~~~~~~~~~~~
