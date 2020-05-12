@@ -104,9 +104,9 @@ Check the logs by specifying the service name:
 
 ```bash
 docker-compose logs govready-q
-```
-
-```bash
+docker-compose logs wazuh
+docker-compose logs elasticsearch
+docker-compose logs kibana
 docker-compose logs nginx
 ```
 
