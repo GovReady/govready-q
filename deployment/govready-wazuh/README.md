@@ -6,11 +6,11 @@ This directory contains configuration files that run containers for GovReady-Q a
 
 The containers that are run are:
 
-govready-q: The GovReady-Q server, that assists teams through the compliance process.
-wazuh: It runs the Wazuh manager, Wazuh API and Filebeat (for integration with Elastic Stack)
-wazuh-kibana: Provides a web user interface to browse through alerts data. It includes Wazuh plugin for Kibana, that allows you to visualize agents configuration and status.
-wazuh-nginx: Proxies the Kibana container, adding HTTPS (via self-signed SSL certificate) and Basic authentication.
-wazuh-elasticsearch: An Elasticsearch container (working as a single-node cluster) using Elastic Stack Docker images. Be aware to increase the vm.max_map_count setting, as it's detailed in the Wazuh documentation.
+* govready-q: The GovReady-Q server, that assists teams through the compliance process.
+  wazuh: It runs the Wazuh manager, Wazuh API and Filebeat (for integration with Elastic Stack)
+* wazuh-kibana: Provides a web user interface to browse through alerts data. It includes Wazuh plugin for Kibana, that allows you to visualize agents configuration and status.
+* wazuh-nginx: Proxies the Kibana container, adding HTTPS (via self-signed SSL certificate) and Basic authentication.
+* wazuh-elasticsearch: An Elasticsearch container (working as a single-node cluster) using Elastic Stack Docker images. **Be aware to increase the vm.max_map_count setting, as detailed in the Wazuh documentation.**
 
 Use [Docker Compose](https://docs.docker.com/compose/) to manage the multi-container app.
 
@@ -43,6 +43,8 @@ cd govready-q/deployment/govready-wazuh/
 Any `docker-compose` commands will need the `docker-compose.yml` file to know which containers to operate on.
 
 ## Run GovReady-Q + Wazuh Multi-container App
+
+**Be aware to increase the vm.max_map_count setting, as detailed in the Wazuh documentation.**  Otherwise, the elasticsearch container will likely not run correctly.
 
 To start the containers:
 
@@ -136,7 +138,7 @@ To stop and remove containers:
 docker-compose down
 ```
 
-## Cleaing up
+## Cleaning up
 
 **Caution!**
 
