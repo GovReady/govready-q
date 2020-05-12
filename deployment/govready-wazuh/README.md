@@ -38,7 +38,7 @@ git clone https://github.com/GovReady/govready-q.git
 cd govready-q/deployment/govready-wazuh/
 ```
 
-**Make sure you are in the `docker-compose-nginx` directory.**
+**Make sure you are in the `govready-wazuh` directory.**
 
 Any `docker-compose` commands will need the `docker-compose.yml` file to know which containers to operate on.
 
