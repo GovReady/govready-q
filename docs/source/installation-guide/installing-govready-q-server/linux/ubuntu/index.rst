@@ -5,44 +5,37 @@
 Ubuntu from sources
 ===================
 
-This guide describes how to install the GovReady-Q server for CentOS 7 or greater from source code.
+This guide describes how to install the GovReady-Q server for Ubuntu 20.04 or greater from source code.
 
 
 .. note::
-    Instructions provide basic guidance on setting up GovReady-Q on an Ubuntu 16.04 server with Nginx. 
-    
-    These instructions have not been recently tested.
+    Instructions applicable for Ubuntu 20.04 LTS (Focal Fossa)
+    Tested on an `Ubuntu focal-20200423 Docker image <https://hub.docker.com/_/ubuntu>`__.
 
 Installing required OS packages
 -------------------------------
 
-These commands should be run from the root directory of the GovReady-Q code repository.
-
-GovReady-Q calls requires Python 3.6 or higher to run and several Linux packages to provide full functionality.
-
-Execute the following commands:
+GovReady-Q requires Python 3.6 or higher and several Linux packages to
+provide full functionality. Execute the following commands:
 
 .. code:: bash
 
-   # upgrade apt-get
-    apt-get update && apt-get upgrade -y
+   # update package list
+   sudo apt-get update
 
-    # install dependencies
-    apt-get install -y \
-        unzip \
-        python3 python-virtualenvpython3-pip \
-        python3-yaml \
-        nginx uwsgi-plugin-python3supervisor \
-        memcached \
-        graphviz
+   # install dependencies
+   DEBIAN_FRONTEND=noninteractive \
+       sudo -E apt-get install \
+       unzip git curl \
+       python3 python3-pip \
+       python3-yaml \
+       graphviz pandoc \
+       language-pack-en-base language-pack-en
 
    # to generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
    # search the web for "wkhtmltopdf Server-Side Request Forgery"
-   read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then apt-get install -y wkhtmltopdf ; fi
-
-    # optional install gcc to build the uWSGI Python package.
-    sudo yum install gcc
+   read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then sudo apt-get install wkhtmltopdf ; fi
 
 Installing GovReady-Q
 ~~~~~~~~~~~~~~~~~~~~~
@@ -59,8 +52,7 @@ Clone the GovReady source code and install packages.
    pip3 install --user -r requirements.txt
 
    # install Bootstrap and other vendor resources locally
-   # (sudo needed only for the embedded 'yum install' command)
-   sudo ./fetch-vendor-resources.sh
+   ./fetch-vendor-resources.sh
 
 Setting up GovReady-Q
 ~~~~~~~~~~~~~~~~~~~~~
@@ -112,7 +104,7 @@ host name and port.
 
     GovReady-Q defaults to `localhost:8000` when launched with ``python manage.py runserver``.
 
-    Tested on a ``CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>``__ on 2020-05-04.
+    Tested on an `Ubuntu focal-20200423 Docker image <https://hub.docker.com/_/ubuntu>`__.
 
 
 (Optional) Installing Postgres, MySQL
@@ -122,8 +114,8 @@ GovReady-Q can optionally be configured to work with Postgress or MySQL database
 
 .. code:: bash
 
-    # optional insall of postgress and/or mysql
-    apt-get install -y postgresql mysql-devel
+   # optional install of postgres and/or mysql
+   sudo apt-get install postgresql mysql-server mysql-client
 
 .. code:: bash
 
@@ -162,15 +154,15 @@ To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
    {
       ...
       "gr-pdf-generator": "wkhtmltopdf",
-      "gr-img-generator": "`wkhtmltopdf",
+      "gr-img-generator": "wkhtmltopdf",
       ...
    }
 
 (Optional) Deployment utilities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sample ``apache.conf``, ``superviser.ini``, and ``update.sh`` files can
-be found in the source code directory ``deployment/rhel``.
+Sample ``nginx.conf``, ``supervisor.confg``, and ``update.sh`` files can
+be found in the source code directory ``deployment/ubuntu``.
 
 (Optional) Creating a dedicated GovReady UNIX user
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -181,7 +173,7 @@ this before installing GovReady-Q.
 .. code:: bash
 
    # Create user.
-   useradd govready-q -c "govready-q"
+   useradd govready-q -m -c "govready-q"
 
    # Change permissions so that the webserver can read static files.
    chmod a+rx /home/govready-q
