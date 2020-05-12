@@ -50,16 +50,17 @@ class Catalogs (object):
 class Catalog (object):
     """Represent a catalog"""
 
-    # Create a singleton instance of this class. GetInstance returns
-    # that singleton instance. Instead of doing `cg = Catalog()`,
-    # do `cg = Catalog.GetInstance()`.
+    # Create a singleton instance of this class per catalog. GetInstance returns
+    # that singleton instance. Instead of doing `cg = Catalog(catalog_key='NIST_SP-800-53_rev4')`,
+    # do `cg = Catalog.GetInstance(catalog_key='NIST_SP-800-53_rev4')`.
     @staticmethod
     def GetInstance(catalog_key='NIST_SP-800-53_rev4'):
-        # Create a new instance of Catalog() the first time
+        # Create a new instance of Catalog() the first time for each catalog key
         # this method is called. Keep it in memory indefinitely.
-        if not hasattr(Catalog, '_cached_instance'):
-            Catalog._cached_instance = Catalog(catalog_key=catalog_key)
-        return Catalog._cached_instance
+        # Clear cache only if a catalog itself changes
+        if not hasattr(Catalog, '_cached_instance_' + catalog_key):
+            setattr(Catalog, '_cached_instance_' + catalog_key, Catalog(catalog_key=catalog_key))
+        return getattr(Catalog, '_cached_instance_' + catalog_key)
 
     def __init__(self, catalog_key='NIST_SP-800-53_rev4'):
         global CATALOG_PATH
@@ -160,6 +161,13 @@ class Catalog (object):
         result_dict = next((sub for sub in search_array if sub[search_key] == search_value), None)
         return result_dict
 
+    def get_control_property_by_name(self, control, property_name):
+        """Return value of a propery of a control by name of property"""
+        prop = self.find_dict_by_value(control['properties'], "name", property_name)
+        if prop is None:
+            return None
+        return prop['value']
+
     def get_control_parameter_label_by_id(self, control, param_id):
         """Return value of a parameter of a control by id of parameter"""
         param = self.find_dict_by_value(control['parameters'], "id", param_id)
@@ -173,7 +181,16 @@ class Catalog (object):
         # Example 'guidance'
         #   python3 -c "import oscal; cg = oscal.Catalog(); print(cg.get_control_prose_as_markdown(cg.get_control_by_id('ac-6'), part_types={'guidance'}))"
 
-        return self.format_part_as_markdown(control_data, filter_name=part_types)
+        # Is this control withdrawn?
+        status = self.get_control_property_by_name(control_data, 'status')
+        if status == "Withdrawn":
+            return "Withdrawn"
+
+        text = self.format_part_as_markdown(control_data, filter_name=part_types)
+        parameter_values = {} # Eventually replace with organizational defined parameters when we have them
+        text_params_replaced = self.substitute_parameter_text(control_data, text, parameter_values)
+
+        return text_params_replaced
 
     def format_part_as_markdown(self, part, indentation_level=-1, indentation_string="    ", filter_name=None, hide_first_label=True):
         # Format part, which is either a control or a part, as Markdown.
@@ -248,9 +265,11 @@ class Catalog (object):
         # Fill in parameter_values with control parameter labels for any
         # parameters that are not specified.
         parameter_values = dict(parameter_values) # clone so that we don't modify the caller's dict
+        if "parameters" not in control:
+            return text
         for parameter in control['parameters']:
             if parameter["id"] not in parameter_values:
-                parameter_values[parameter["id"]] = "[" + parameter["label"] + "]"
+                parameter_values[parameter["id"]] = "[" + parameter.get("label", parameter["id"]) + "]"
         for parameter_key, parameter_value in parameter_values.items():
             text = re.sub(r"{{ " + re.escape(parameter_key) + " }}", parameter_value, text)
         return text
