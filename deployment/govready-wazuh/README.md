@@ -104,21 +104,19 @@ docker-compose logs govready-q
 docker-compose logs nginx
 ```
 
-## GovReady-Q Is Up
+## GovReady-Q, Kibana, and Wazuh Are Up
 
-GovReady-Q will boot up, and be ready to answer web requests in 20-30 seconds.
+The containers will boot up, and be ready to answer web requests in 20-60 seconds.
 
-It will answer HTTP on the standard port, 80, and HTTPS on the standard port, 443.
+GovReady-Q will answer via HTTP on port 8000.
 
-Visit https://localhost/.  (Or `http://localhost`, which will be redirected to https by `nginx`.)
+For GovReady-Q, visit http://localhost:8000/. You will be able to sign in after run the `first_run` script in the next section.
 
-The default hostname used for this project is `test.example.com`.  To check it, put this entry in your `/etc/hosts` file:
+Kibana will answer via HTTP on the standard port, 80, and HTTPS on the standard port, 443.  Use username "foo" and password "bar" to sign in.
 
-```
-127.0.0.1       test.example.com
-```
+For Kibana, visit https://localhost/.  (Or `http://localhost`, which will be redirected to https.)
 
-When you have `/etc/hosts` set up, visit https://test.example.com/
+You will need to bypass browser warnings about the untrusted self-signed certificate.
 
 ## Execute A Script In A Container
 
@@ -140,9 +138,19 @@ docker-compose down
 
 ## Cleaning up
 
+### To remove the Docker images installed in this document
+
+To remove the Govready and Wazuh images downloaded by following the instructions above:
+
+```bash
+docker-compose down --rmi all
+```
+
+### To delete all Docker containers and images
+
 **Caution!**
 
-The following notes describe how to delete every Docker container on your machine.
+The following notes describe how to delete every Docker container and every Docker image on your machine.
 
 ```
 # Must be run first because images are attached to containers
