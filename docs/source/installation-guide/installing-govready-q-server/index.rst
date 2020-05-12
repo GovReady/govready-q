@@ -16,16 +16,18 @@ Consult the table below and choose how to proceed:
 +-------------------------------+---------------------------------------------------------------+
 | Operating system              | Version                                                       |
 +-------------------------------+---------------------------------------------------------------+
-| CentOS / RHEL                 | :ref:`7 or greater <govready-q_server_centos>`                |
+| CentOS / RHEL                 | :ref:`7 or greater <govready-q_server_sources_centos_rhel>`   |
 +-------------------------------+---------------------------------------------------------------+
-| Ubuntu                        | :ref:`16.04 or greater <govready-q_server_ubuntu>`            |
+| Ubuntu                        | :ref:`16.04 or greater <govready-q_server_sources_ubuntu>`    |
 +-------------------------------+---------------------------------------------------------------+
-| macOS                         | :ref:`10.10 or greater <govready-q_server_macos>`             |
+| macOS                         | :ref:`10.10 or greater <govready-q_server_sources_macos>`     |
 +-------------------------------+---------------------------------------------------------------+
-| Docker (Unix)                 | :ref:`<govready-q_server_docker>`                             |
+| Docker (Unix)                 | :ref:`17 or greater <govready-q_server_sources_docker>`       |
 +-------------------------------+---------------------------------------------------------------+
-| Docker GovReady+Wazuh (Unix)  | :ref:`<govready-q_server_wazuh_docker>`                       |
-+-------------------------------+---------------------------------------------------------------+
+
+.. GovReady+Wazuh docs not ready yet
+   | Docker GovReady+Wazuh (Unix)  | :ref:`<govready-q_server_wazuh_docker>`                       |
+   +-------------------------------+---------------------------------------------------------------+
 
 
 .. topic:: Contents
@@ -37,4 +39,5 @@ Consult the table below and choose how to proceed:
         linux/ubuntu/index
         unix/macos/index
         containers/docker/index
+.. GovReady+Wazuh docs not ready yet
         containers/docker-govready-wazuh/index
