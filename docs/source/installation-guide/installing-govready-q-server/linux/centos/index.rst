@@ -10,7 +10,7 @@ This guide describes how to install the GovReady-Q server for CentOS 7 or greate
 
 .. note::
     Instructions applicable for RHEL 7 and CentOS 7.
-    Tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__ on 2020-05-04.
+    Tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__.
 
 Installing required OS packages
 -------------------------------
@@ -177,14 +177,14 @@ To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
    {
       ...
       "gr-pdf-generator": "wkhtmltopdf",
-      "gr-img-generator": "`wkhtmltopdf",
+      "gr-img-generator": "wkhtmltopdf",
       ...
    }
 
 (Optional) Deployment utilities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sample ``apache.conf``, ``superviser.ini``, and ``update.sh`` files can
+Sample ``apache.conf``, ``supervisor.ini``, and ``update.sh`` files can
 be found in the source code directory ``deployment/rhel``.
 
 (Optional) Creating a dedicated GovReady UNIX user
