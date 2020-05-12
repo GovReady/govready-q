@@ -1,6 +1,6 @@
 .. Copyright (C) 2020 GovReady PBC
 
-.. _govready-q_server_sources_ubuntu:
+.. _govready-q_server_sources_docker:
 
 Docker
 ======
