@@ -4,6 +4,14 @@
 
 This directory contains configuration files that run containers for GovReady-Q and Wazuh in a single deployment.
 
+The containers that are run are:
+
+govready-q: The GovReady-Q server, that assists teams through the compliance process.
+wazuh: It runs the Wazuh manager, Wazuh API and Filebeat (for integration with Elastic Stack)
+wazuh-kibana: Provides a web user interface to browse through alerts data. It includes Wazuh plugin for Kibana, that allows you to visualize agents configuration and status.
+wazuh-nginx: Proxies the Kibana container, adding HTTPS (via self-signed SSL certificate) and Basic authentication.
+wazuh-elasticsearch: An Elasticsearch container (working as a single-node cluster) using Elastic Stack Docker images. Be aware to increase the vm.max_map_count setting, as it's detailed in the Wazuh documentation.
+
 Use [Docker Compose](https://docs.docker.com/compose/) to manage the multi-container app.
 
 Docker Compose commands are similar to, but different from, regular Docker commands.  Read the Docker Compose docs for more details.
@@ -46,15 +54,15 @@ Using the `-d` detaches the containers and runs them in the background.
 
 If you prefer, you can omit `-d`, and then output will be printed to your console window.  If you hit `^C`, the containers will shut down gracefully.  If you hit `^C^C` they will be terminated immediately.
 
-TKTK Two containers will be created, one for each "service" (as they're called in Docker Compose).
-
-TKTK Docker Compose gives these containers names like `docker-compose-nginx_govready-q_1` and `docker-compose-nginx_nginx_1`.  These are three-part names, with the parts separated by underscores.  `docker-compose-nginx` comes from the name of this project (the directory it's in). The second element is the service name (`govready-q` or `nginx`). The third element is a serial number (ascending from 1) for multiple instances of the same service.  The `docker-compose.yml` file here only specifies one instance, so the number will always be `1`.
+Multiple containers will be created, one for each "service" (as they're called in Docker Compose).
 
 You can check the status of the containers:
 
 ```bash
 docker-compose ps
 ```
+
+For additional information on wazuh containers, including configuration information, see: [https://github.com/wazuh/wazuh-docker](https://github.com/wazuh/wazuh-docker)
 
 ## Specify Parameters
 
