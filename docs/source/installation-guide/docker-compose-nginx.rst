@@ -145,7 +145,7 @@ your own values):
 After setting the variables, continue with the “Run GovReady-Q + NGINX
 Multi-container App” section above.
 
-If you don’t set enviroment variables, these defaults are used:
+If you don’t set environment variables, these defaults are used:
 
 .. code:: bash
 
