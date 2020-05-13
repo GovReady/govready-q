@@ -24,10 +24,8 @@ Consult the table below and choose how to proceed:
 +-------------------------------+---------------------------------------------------------------+
 | Docker (Unix)                 | :ref:`17 or greater <govready-q_server_sources_docker>`       |
 +-------------------------------+---------------------------------------------------------------+
-
-.. GovReady+Wazuh docs not ready yet
-   | Docker GovReady+Wazuh (Unix)  | :ref:`<govready-q_server_wazuh_docker>`                       |
-   +-------------------------------+---------------------------------------------------------------+
+| Docker GovReady+Wazuh (Unix)  | :ref:`<govready-q_server_wazuh_docker>`                       |
++-------------------------------+---------------------------------------------------------------+
 
 
 .. topic:: Contents
@@ -39,5 +37,4 @@ Consult the table below and choose how to proceed:
         linux/ubuntu/index
         unix/macos/index
         containers/docker/index
-.. GovReady+Wazuh docs not ready yet
         containers/docker-govready-wazuh/index

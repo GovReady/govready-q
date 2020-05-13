@@ -1,6 +1,6 @@
 .. Copyright (C) 2020 GovReady PBC
 
-.. _govready-q_server_wazuh_docker:
+.. _govready-q_server_wazuh_docker_alternate:
 
 GovReady-Q and Wazuh via Docker Compose
 =======================================
