@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.12 (May 16, 2020)
+-------------------------
+
+**Deployment changes**
+
+Gracefully handle AttributeError in siteapp migration 0030 possibly related to dangling discussion objects.
+
 v.0.9.1.11 (May 11, 2020)
 -------------------------
 
