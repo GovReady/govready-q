@@ -5,14 +5,14 @@
 Ubuntu from sources
 ===================
 
-This guide describes how to install the GovReady-Q server for Ubuntu 20.04 or greater from source code.
+This guide describes how to install the GovReady-Q server for Ubuntu 16.04 or greater from source code.
 
 
 .. note::
     Instructions applicable for Ubuntu 20.04 LTS (Focal Fossa)
     Tested on an `Ubuntu focal-20200423 Docker image <https://hub.docker.com/_/ubuntu>`__.
 
-Installing required OS packages
+1. Installing required OS packages
 -------------------------------
 
 GovReady-Q requires Python 3.6 or higher and several Linux packages to
@@ -37,7 +37,7 @@ provide full functionality. Execute the following commands:
    # search the web for "wkhtmltopdf Server-Side Request Forgery"
    read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then sudo apt-get install wkhtmltopdf ; fi
 
-Installing desired database
+2. Installing desired database
 ---------------------------
 
 GovReady-Q requires a relational database. You can choose:
@@ -46,19 +46,19 @@ GovReady-Q requires a relational database. You can choose:
 * MySQL
 * PostgreSQL
 
-Installing SQLITE3 (default)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2 (option a). Installing SQLITE3 (default)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 GovReady-Q will automatically install a local SQLITE3 database by default.
 
 The SQLITE3 file will be installed within the GovReady-Q directory structure as
 ``local/db.sqlite3``.
 
-.. note::
+.. warning::
    SQLITE3 is not recommended for production. SQLITE3 database -- AND YOUR DATA -- will be destroyed when you delete the virtual machine (or container) running GovReady-Q.
 
-Installing MySQL (optional)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2 (option b). Installing MySQL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On the database server, install MySQL OS packages:
 
@@ -67,14 +67,13 @@ On the database server, install MySQL OS packages:
    # Install of MySQL OS packages
    sudo apt-get install -y mysql-server mysql-client
 
-.. note::
+.. warning::
    MySQL can be installed locally on the same host as GovReady-Q or on a separate host.
-   
    Your MySQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
 
 
-Installing PostgreSQL (optional)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2 (option c). Installing PostgreSQL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On the database server, install PostgreSQL OS packages:
 
@@ -83,9 +82,8 @@ On the database server, install PostgreSQL OS packages:
    sudo apt install postgresql postgresql-contrib
    postgresql-setup initdb
 
-.. note::
-   PostgreSQL can be installed locally on the same host as GovReady-Q or on a separate host.
-   
+.. warning::
+   PostgreSQL can be installed locally on the same host as GovReady-Q or on a separate host.  
    Your PostgreSQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
 
 Then set up the user and database (both named ``govready_q``):
@@ -100,10 +98,10 @@ Then set up the user and database (both named ``govready_q``):
 Postgres’s default permissions automatically grant users access to a
 database of the same name.
 
-**Optional PostgreSQL TLS connection**
+**Encrypting your connection to PostgreSQL running on a separate database server**
 
-.. note::
-   If PostgreSQL is running on a separate host, it is highly recommended you configure a secure connection between GovReady-Q and PostgreSQL.
+If PostgreSQL is running on a separate host, it is highly recommended you follow the below instructions
+to configure a secure connection between GovReady-Q and PostgreSQL.
 
 In ``/var/lib/pgsql/data/postgresql.conf``, enable TLS connections by
 changing the ``ssl`` option to
@@ -144,13 +142,13 @@ make trusted connections to the database server:
    cat /var/lib/pgsql/data/server.crt
    # Place on webapp server at /home/govready-q/pgsql.crt
 
-Then restart the database:
+Restart the PostgreSQL:
 
 ::
 
    service postgresql restart
 
-And if necessary, open the Postgres port:
+And if necessary, open the PostgreSQL port:
 
 ::
 
@@ -158,8 +156,10 @@ And if necessary, open the Postgres port:
    firewall-cmd --reload
 
 
-Installing GovReady-Q
----------------------
+3. Installing GovReady-Q
+------------------------
+
+With the OS packages and database installed and configured, you are now ready to install GovReady-Q server.
 
 .. note::
    You may find it useful to create a Linux user specifically for GovReady-Q. Do
@@ -169,9 +169,13 @@ Installing GovReady-Q
 
       # Create user
       useradd govready-q -m -c "govready-q"
+      chsh -s /bin/bash govready-q
+      cp /etc/skel/.bashrc /home/govready-q/.
+      chown govready-q:govready-q /home/govready-q/.bashrc
 
       # Change permissions so that the webserver can read static files
       chmod a+rx /home/govready-q
+
 
       # Switch to the govready-q user
       cd /home/govready-q
@@ -255,8 +259,8 @@ This is the same command regardless of which backend database being used.
 
    Finally, it is possible to create a Superadmin account via the Django shell interface.
 
-Starting GovReady-Q
--------------------
+4. Starting GovReady-Q
+-----------------------
 
 .. code:: bash
 
@@ -283,8 +287,18 @@ host name and port.
 
     GovReady-Q defaults to `localhost:8000` when launched with ``python manage.py runserver``.
 
-(Optional) Enabling PDF export
-------------------------------
+
+5. Stopping GovReady-Q
+----------------------
+
+Press ``CTL-c`` in the terminal window running GovReady-Q to stop the server. 
+
+6. Additional options
+---------------------
+
+
+Enabling PDF export
+~~~~~~~~~~~~~~~~~~~
 
 To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
 ``gr-img-generator`` environment variables to your
@@ -299,9 +313,13 @@ To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
       ...
    }
 
-(Optional) Deployment utilities
--------------------------------
+Deployment utilities
+~~~~~~~~~~~~~~~~~~~~
+
+GovReady-Q can be optionally deployed with NGINX and Supervisor. There's also a script for updating GovReady-Q.
 
 Sample ``nginx.conf``, ``supervisor.confg``, and ``update.sh`` files can
 be found in the source code directory ``deployment/ubuntu``.
+
+
 
