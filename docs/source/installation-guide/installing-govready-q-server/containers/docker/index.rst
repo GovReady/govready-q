@@ -25,8 +25,13 @@ Installing GovReady-Q server
     # Run the docker container in detached mode
     docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
 
-    # Create admin account and organization data
-    docker container exec -it govready-q first_run
+    # Create GovReady-Q Django Superuser account and organization non-interactively
+    # Account information will be outputted to standard out
+    docker container exec -it govready-q first_run --non-interactive
+
+    # Alternatively create GovReady-Q Django Superuser account and organization interactively on the commandline
+    # docker container exec -it govready-q first_run
+    
 
     # Stop, start container (when needed)
     docker container stop govready-q
