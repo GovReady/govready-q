@@ -25,12 +25,12 @@ provide full functionality. Execute the following commands:
 
    # Install dependencies
    DEBIAN_FRONTEND=noninteractive \
-       sudo -E apt-get install \
-       unzip git curl \
-       python3 python3-pip \
-       python3-yaml \
-       graphviz pandoc \
-       language-pack-en-base language-pack-en
+   sudo -E apt-get install -y \
+   unzip git curl \
+   python3 python3-pip \
+   python3-yaml \
+   graphviz pandoc \
+   language-pack-en-base language-pack-en
 
    # To optionally generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
@@ -60,15 +60,12 @@ The SQLITE3 file will be installed within the GovReady-Q directory structure as
 Installing MySQL (optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On the database server, install PostgreSQL OS packages:
+On the database server, install MySQL OS packages:
 
 .. code:: bash
 
    # Install of MySQL OS packages
-   sudo apt-get install mysql-server mysql-client
-
-   # Install of MySQL Python libraries
-   pip3 install --user -r requirements_mysql.txt
+   sudo apt-get install -y mysql-server mysql-client
 
 .. note::
    MySQL can be installed locally on the same host as GovReady-Q or on a separate host.
@@ -177,7 +174,9 @@ Installing GovReady-Q
       chmod a+rx /home/govready-q
 
       # Switch to the govready-q user
+      cd /home/govready-q
       su govready-q
+      
 
 Clone the GovReady source code and install packages.
 
