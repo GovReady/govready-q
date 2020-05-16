@@ -50,7 +50,7 @@ def assign_portfolio_owner_permissions(apps, portfolio, user):
     permissions = [portfolio_owner, view_portfolio, change_portfolio, add_portfolio, delete_portfolio]
     user_lookup = User.objects.get(id=user.id)
     for perm in permissions:
-        print(portfolio)
+        print(portfolio, portfolio.title)
         UserObjectPermission.objects.get_or_create(
             permission=perm, user=user_lookup, object_pk=portfolio.pk, content_type_id=portfolio_type.id)
 
@@ -65,7 +65,7 @@ def assign_portfolio_edit_permissions(apps, portfolio, user):
     permissions = [view_portfolio, change_portfolio, add_portfolio]
     user_lookup = User.objects.get(id=user.id)
     for perm in permissions:
-        print(portfolio)
+        print(portfolio, portfolio.title)
         UserObjectPermission.objects.get_or_create(
             permission=perm, user=user_lookup, object_pk=portfolio.pk, content_type_id=portfolio_type.id)
 
@@ -109,8 +109,15 @@ def forwards(apps, schema_editor):
                 assign_portfolio_edit_permissions(apps, task.project.portfolio, user)
         discussions = Discussion.objects.filter(guests=user)
         for discussion in discussions:
-            assign_project_edit_permissions(apps, discussion.attached_to.task.project, user)
-            assign_portfolio_edit_permissions(apps, discussion.attached_to.task.project.portfolio, user)
+            try:
+                taskanswer = discussion.attached_to
+            except AttributeError:
+                # We got "AttributeError: 'Discussion' object has no attribute 'attached_to'"
+                # for some discussions, which may mean that the Discussion is no longer attached
+                # to anything.
+                continue
+            assign_project_edit_permissions(apps, taskanswer.task.project, user)
+            assign_portfolio_edit_permissions(apps, taskanswer.task.project.portfolio, user)
 
 class Migration(migrations.Migration):
 
