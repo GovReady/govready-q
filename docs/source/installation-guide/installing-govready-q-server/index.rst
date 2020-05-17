@@ -13,21 +13,19 @@ Once the required OS packages have been installed, installing GovReady-Q server 
 
 Consult the table below and choose how to proceed:
 
-+-------------------------------+---------------------------------------------------------------+
-| Operating system              | Version                                                       |
-+-------------------------------+---------------------------------------------------------------+
-| CentOS / RHEL                 | :ref:`7 or greater <govready-q_server_sources_centos_rhel>`   |
-+-------------------------------+---------------------------------------------------------------+
-| Ubuntu                        | :ref:`16.04 or greater <govready-q_server_sources_ubuntu>`    |
-+-------------------------------+---------------------------------------------------------------+
-| macOS                         | :ref:`10.10 or greater <govready-q_server_sources_macos>`     |
-+-------------------------------+---------------------------------------------------------------+
-| Docker (Unix)                 | :ref:`17 or greater <govready-q_server_sources_docker>`       |
-+-------------------------------+---------------------------------------------------------------+
-| Docker (Unix) Advanced Config | :ref:`Advanced config <advanced_container_configuration>`     |
-+-------------------------------+---------------------------------------------------------------+
-| Docker GovReady+Wazuh (Unix)  | :ref:`Docker GovReady+Wazuh <govready-q_server_wazuh_docker>` |
-+-------------------------------+---------------------------------------------------------------+
++-------------------------------+-------------------------------------------------------------------------+
+| Install                       | Guide                                                                   |
++===============================+=========================================================================+
+| CentOS / RHEL                 | :ref:`CentOS/RHEL 7 or greater <govready-q_server_sources_centos_rhel>` |
++-------------------------------+-------------------------------------------------------------------------+
+| Ubuntu                        | :ref:`Ubuntu 16.04 or greater <govready-q_server_sources_ubuntu>`       |
++-------------------------------+-------------------------------------------------------------------------+
+| macOS                         | :ref:`macOS 10.10 or greater <govready-q_server_sources_macos>`         |
++-------------------------------+-------------------------------------------------------------------------+
+| Docker (Unix)                 | :ref:`Docker 17 or greater <govready-q_server_docker>`                  |
++-------------------------------+-------------------------------------------------------------------------+
+| Docker GovReady+Wazuh (Unix)  | :ref:`Docker GovReady+Wazuh <govready-q_server_wazuh_docker>`           |
++-------------------------------+-------------------------------------------------------------------------+
 
 
 .. topic:: Contents
@@ -39,5 +37,4 @@ Consult the table below and choose how to proceed:
         linux/ubuntu/index
         unix/macos/index
         containers/docker/index
-        containers/docker/advanced-container-config
         containers/docker-govready-wazuh/index
