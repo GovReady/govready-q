@@ -1,101 +1,12 @@
-Deploying with Docker
-=====================
+.. Copyright (C) 2020 GovReady PBC
 
-+------------+---------------------------------------------------------+
-| Container  | Where                                                   |
-+============+=========================================================+
-| Current    | https://hub.docker.com/r/govready/govready-q/           |
-| Release on |                                                         |
-| Docker     |                                                         |
-+------------+---------------------------------------------------------+
-| Release    | `http                                                   |
-| 0.9.0.dev  | s://hub.docker.com/r/govready/govready-0.9.0.dev/ <http |
-| on Docker  | s://hub.docker.com/r/govready/govready-q-0.9.0.dev/>`__ |
-+------------+---------------------------------------------------------+
-| Nightly    | https://hub.docker.com/r/govready/govready-q-nightly/   |
-| Build on   |                                                         |
-| Docker     |                                                         |
-+------------+---------------------------------------------------------+
+.. _advanced_container_configuration:
 
-Installing GovReady-Q server
-----------------------------
+Advanced Container Configuration Options
+========================================
 
-.. rubric:: Start
-
-.. code-block:: bash
-
-   # Run the docker container in detached mode
-   docker container run --name govready-q --detach -p 8000:8000 govready/govready-q
-
-   # Create GovReady-Q Django Superuser account and organization interactively on the commandline
-   docker container exec -it govready-q first_run
-
-   # Alternatively create GovReady-Q Django Superuser account and organization interactively on the commandline
-   # docker container exec -it govready-q first_run --non-interative
-
-   # Stop, start container (when needed)
-   docker container stop govready-q
-   docker container start govready-q
-
-   # View logs - useful if site does not appear
-   docker container logs govready-q
-
-   # To destroy the container and all user data entered into Q
-   docker container rm -f govready-q
-
-
-Visit your GovReady-Q site in your web browser at:
-
-   http://localhost:8000/
-
-.. note::
-   The command ``docker container exec -it govready-q first_run`` creates the Superuser interactively allowing you to specify username and password.
-
-   The command ``docker container exec -it govready-q first_run --non-interactive`` creates the Superuser automatically for installs where you do
-   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to
-   to the standout log. When running the Docker containter in the detached (``-d``) mode, you can access the standout log with the command ``docker container logs govready-q``.
-
-
-Additional options
-------------------
-
-Notes and Common Issues
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Your GovReady-Q site will not load immediately, as GovReady-Q
-initializes your database for the first time. Wait for the site to
-become available.
-
-Because of HTTP Host header checking, you must use ``localhost`` to
-access the site, or another hostname if configured using the
-``--address`` option documented below.
-
-If the site does not come up, check the container logs for an error
-message:
-
-::
-
-   docker container logs govready-q
-
-The GovReady-Q default SQLite database created within a Docker container
-exists only for the duration of the container’s lifetime. The database
-will persist between
-``docker container stop``/``docker container start`` commands, but when
-the container is removed from Docker (i.e. using
-``docker container rm``) the database will be destroyed. See the
-*Persistent database* section below for connecting to a database outside
-of the container for production data.
-
-The default Govready-Q instance cannot send email or receive comment
-replies until it is configured to use a transactional mail provider like
-Mailgun – see below.
-
-The default Govready-Q instance is configured to non-debug mode (Django
-``DEBUG=false``), which is the recommended setting for a public website.
-The instance can be set to debug mode at runtime – see below.
-
-Advanced configuration of GovReady-Q inside Docker
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The docker_container_run.sh script
+----------------------------------
 
 For more complex setups, using our run script instead will be easier:
 
@@ -113,7 +24,7 @@ container run script:
    ./docker_container_run.sh ...GovReady-Q arguments... -- ...Docker arguments...
 
 Changing the hostname and port
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 The public address (as users see it)
 ''''''''''''''''''''''''''''''''''''
@@ -155,7 +66,7 @@ GovReady-Q container.
    ./docker_container_run.sh --bind 10.0.0.5:6543
 
 Persistent database
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 In a production environment it is important to have GovReady-Q connect
 to a persistent database instead of the database stored inside the
@@ -225,11 +136,15 @@ You can also use a MySQL or MariaDB server using the syntax
 ``mysql://USER:PASSWORD@HOST:PORT/NAME``.
 
 Configuring email
-~~~~~~~~~~~~~~~~~
+-----------------
 
 GovReady-Q sends outbound emails for notifications about invitations and
 discussions. It also receives inbound emails — replies to discussion
 notifications can be used to post discussion comments by email.
+
+The default Govready-Q instance cannot send email or receive comment
+replies until it is configured to use a transactional mail provider like
+Mailgun.
 
 To configure outbound email, use:
 
@@ -247,7 +162,7 @@ incoming notification hook from Mailgun, and it is not yet configurable
 for the docker deployment. TODO
 
 Container management and other options
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------
 
 Other options that can be passed on the command-line are:
 
@@ -271,7 +186,7 @@ GovReady-Q parameters with ``--``, such as:
    ./docker_container_run.sh --address q.mydomain.com:80 -- -e VAR=VALUE
 
 Adding and developing compliance apps
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 If you are using the Docker image to develop your own compliance apps,
 then you will need to bind-mount a directory on your (host) system as a
@@ -327,7 +242,7 @@ container:
    docker container restart govready-q
 
 Logs for Debugging
-~~~~~~~~~~~~~~~~~~
+------------------
 
 The container’s console shows the output of container’s start-up
 commands including database migrations and process startup. The
@@ -379,14 +294,14 @@ Docker bind-mount or as a volume (and that’s the only way to see the
 logs if ``docker container exec`` cannot be used in your environment).
 
 Production deployment of the Docker container
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------
 
 The GovReady-Q container runs several processes, including an
 HTTP/application server and a background process for sending
 notification emails.
 
 Secure deployments
-~~~~~~~~~~~~~~~~~~
+------------------
 
 The container’s processes run exclusively as a non-root user with UID
 1000 and GID 1000.
@@ -408,7 +323,7 @@ without our script, it is recommended to use tempfs for ``/run`` and
 ``/tmp`` and to mount ``/var/log`` to a volume.
 
 Other management commands
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 See the `uWSGI <http://uwsgi-docs.readthedocs.io/>`__ application server
 JSON process stats:
@@ -418,7 +333,7 @@ JSON process stats:
    docker container exec govready-q uwsgi_stats
 
 Updating to a new release of GovReady-Q
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------
 
 Periodically there will be a new release of GovReady-Q as an new image
 on the Docker Hub. Updating is easy by re-running the same commands
@@ -455,7 +370,7 @@ For example:
    ./docker_container_run.sh --relaunch [your same command-line arguments]
 
 Environment variables for launching the container without our run script
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------------------------------------
 
 The following environment variables are used to configure the container
 when launching GovReady-Q using ``docker run`` or a container service
@@ -545,7 +460,7 @@ variables correspond to the settings documented in `Enterprise
 Login <Environment.html#proxy-authentication-server>`__.
 
 Running tests
-~~~~~~~~~~~~~
+-------------
 
 GovReady-Q’s unit tests can be run within the Docker container. After
 building the image:
@@ -578,7 +493,7 @@ command-line flags (``--no-sandbox --disable-gpu``).
    selenium.common.exceptions.WebDriverException: Message: unknown error: Chrome failed to start: exited abnormally
 
 Populating sample data for manual testing and verification
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------------------------
 
 If you wish to add sample data for testing purposes to your GovReady-Q
 image, run the following command (after ``first_run`` has completed):
@@ -591,3 +506,5 @@ This will run a quickstart command to generate data in your GovReady-Q
 instance, as described in more detail in the
 `Testing <Test.html#populating-sample-data-for-manual-testing-and-verification>`__
 section of this documentation.
+
+

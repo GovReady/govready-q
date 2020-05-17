@@ -63,9 +63,9 @@ fi
 # indicate mode
 if [ $NONINTERACTIVE ];
 then
-	echo "Running in non-interactive mode"
+	echo "Installing GovReady-Q in non-interactive mode..."
 else
-	echo "Running in interactive mode (default)"
+	echo "Installing GovReady-Q in interactive mode (default)..."
 fi
 
 # install basic requirements either in venv or as the local user
@@ -137,7 +137,7 @@ else
 	# functional line of the script
 	while true;
 	do
-		read -p "Do you want to run the webserver now, in the foreground? [y/n] " answer
+		read -p "Do you want to run the GovReady-Q now, in the foreground? [y/n] " answer
 		case $answer in
 			[Yy]* ) python3 manage.py runserver; break;;
 			[Nn]* ) break;;

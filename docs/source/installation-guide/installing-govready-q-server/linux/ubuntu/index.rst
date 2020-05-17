@@ -16,16 +16,16 @@ This guide describes how to install the GovReady-Q server for Ubuntu 16.04 or gr
 -------------------------------
 
 GovReady-Q requires Python 3.6 or higher and several Linux packages to
-provide full functionality. Execute the following commands:
+provide full functionality. Execute the following commands as root:
 
 .. code:: bash
 
    # Update package list
-   sudo apt-get update
+   apt-get update
 
    # Install dependencies
    DEBIAN_FRONTEND=noninteractive \
-   sudo -E apt-get install -y \
+   apt-get install -y \
    unzip git curl \
    python3 python3-pip \
    python3-yaml \
@@ -35,7 +35,7 @@ provide full functionality. Execute the following commands:
    # To optionally generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
    # search the web for "wkhtmltopdf Server-Side Request Forgery"
-   read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then sudo apt-get install wkhtmltopdf ; fi
+   read -p "Are you sure you need to generate PDF files (yes/no)? " ; if [ "$REPLY" = "yes" ]; then apt-get install wkhtmltopdf ; fi
 
 2. Cloning the GovReady-Q repository
 ------------------------------------
@@ -69,7 +69,6 @@ Clone the GovReady-Q repository from GitHub into the desired directory on your U
       # Clone GovReady-Q
       git clone https://github.com/govready/govready-q
       cd govready-q
-
 
 3. Installing desired database
 ---------------------------
@@ -258,21 +257,13 @@ Visit your GovReady-Q site in your web browser at:
 
 http://localhost:8000/
 
-
-It is not necessary to specify a port. GovReady-Q will read the ``local/environment.json`` file to determine
-host name and port.
-
-.. code:: bash
-
-   # Run the server
-   python3 manage.py runserver
-
 .. note::
-    Depending on host configuration both ``python3`` and ``python`` commands will work.
+   Depending on host configuration both ``python3`` and ``python`` commands will work.
 
-    GovReady-Q can run on ports other than ``8000``. Port ``8000`` is selected for convenience.
+   GovReady-Q can run on ports other than the default ``8000``. GovReady-Q will read the ``local/environment.json`` file to determine
+   host name and port.
 
-    GovReady-Q defaults to `localhost:8000` when launched with ``python manage.py runserver``.
+   GovReady-Q defaults to `localhost:8000` when launched with ``python manage.py runserver``.
 
 
 6. Stopping GovReady-Q
