@@ -16,10 +16,15 @@ In this scenario it is necessary to correctly set a variety of networking-relate
 1. Installing Docker
 --------------------
 
-Make sure you first install Docker (https://docs.docker.com/engine/installation/) and,
-if appropriate, grant non-root users access to run Docker containers
-(https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user)
-(or else use `sudo` when invoking Docker below).
+Make sure you first install Docker.
+
+* https://docs.docker.com/engine/installation/
+* https://docs.docker.com/engine/install/centos/
+* https://docs.docker.com/engine/install/ubuntu/
+
+If appropriate, grant non-root users access to run Docker containers
+
+* https://docs.docker.com/engine/installation/linux/linux-postinstall/#manage-docker-as-a-non-root-user
 
 
 2. Running GovReady-Q server container
@@ -35,13 +40,12 @@ The following commands will launch GovReady-Q using the default SQLITE database.
     HOSTNAME=<HOSTNAME_OR_IP_ADDRESS>
     export HOSTNAME
 
-    # Run the docker container using the docker_container-run.sh script in non-interactive mode
-    ./docker_container_run.sh --address $HOSTNAME:80 --bind $HOSTNAME:80 -- -e FIRST_RUN=1 \
-    -e HOST=$HOSTNAME -e PORT=80 -e DEBUG=true
+    # Run the docker command to launch GovReady-Q's container
+    sudo docker container run --detach --name govready-q  -p 80:8000 -e HOST="$HOSTNAME" -e PORT=80 \
+    -e HTTPS=false -e DBURL= -e DEBUG=false  -e FIRST_RUN=1 -e DEBUG=true govready/govready-q
 
     # View the Docker log to get the automatically generated Superuser account information if you are initializing the database
-    docker container logs govready-q
-
+    sudo docker container logs govready-q
 
 Visit your GovReady-Q site in your web browser at:
 
@@ -50,6 +54,26 @@ Visit your GovReady-Q site in your web browser at:
 Your GovReady-Q site will not load immediately, as GovReady-Q
 initializes your database for the first time. Wait for the site to
 become available.
+
+Alternatively, you can use GovReady-Q's ``docker_container_run.sh`` script.
+
+.. code-block:: bash
+    wget https://raw.githubusercontent.com/GovReady/govready-q/master/deployment/docker/docker_container_run.sh
+    chmod +x docker_container_run.sh
+
+.. code-block:: bash
+
+    # Set relevant network Host Name / Domain / IP Address of server hosting GovReady-Q Docker container
+    HOSTNAME=<HOSTNAME_OR_IP_ADDRESS>
+    export HOSTNAME
+
+    # Run the docker container using the docker_container-run.sh script in non-interactive mode
+    sudo ./docker_container_run.sh --address $HOSTNAME:80 --bind $HOSTNAME:80 -- -e FIRST_RUN=1 \
+    -e HOST=$HOSTNAME -e PORT=80 -e DEBUG=true
+
+    # View the Docker log to get the automatically generated Superuser account information if you are initializing the database
+    sudo docker container logs govready-q
+
 
 The default Govready-Q instance is configured to non-debug mode (Django
 ``DEBUG=false``), which is the recommended setting for a public website.
