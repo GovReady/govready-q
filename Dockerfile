@@ -102,6 +102,8 @@ COPY q-files ./q-files
 COPY testmocking ./testmocking
 COPY system_settings ./system_settings
 COPY manage.py .
+COPY install-govready-q.sh .
+COPY quickstart.sh .
 
 # Flatten static files. Create a local/environment.json file that
 # has the static directory set and only setting necessary for collectstatic
