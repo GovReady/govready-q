@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.13 (May 17, 2020)
+-------------------------
+
+**Bug fixes**
+
+* Correct control look up errors on the control catalog group page.
+* Remove control lookup from catalog listing page.
+
 v.0.9.1.12 (May 16, 2020)
 -------------------------
 
