@@ -37,7 +37,41 @@ provide full functionality. Execute the following commands:
    # search the web for "wkhtmltopdf Server-Side Request Forgery"
    read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then sudo apt-get install wkhtmltopdf ; fi
 
-2. Installing desired database
+2. Cloning the GovReady-Q repository
+------------------------------------
+
+Clone the GovReady-Q repository from GitHub into the desired directory on your Ubuntu server.
+
+.. code:: bash
+
+   # Clone GovReady-Q
+   git clone https://github.com/govready/govready-q
+   cd govready-q
+
+.. note::
+   You may find it useful to create a Linux user specifically for GovReady-Q before cloning GovReady-Q.
+
+   .. code:: bash
+
+      # Create user
+      useradd govready-q -m -c "govready-q"
+      chsh -s /bin/bash govready-q
+      cp /etc/skel/.bashrc /home/govready-q/.
+      chown govready-q:govready-q /home/govready-q/.bashrc
+
+      # Change permissions so that the webserver can read static files
+      chmod a+rx /home/govready-q
+
+      # Switch to the govready-q user
+      cd /home/govready-q
+      su govready-q
+
+      # Clone GovReady-Q
+      git clone https://github.com/govready/govready-q
+      cd govready-q
+
+
+3. Installing desired database
 ---------------------------
 
 GovReady-Q requires a relational database. You can choose:
@@ -46,7 +80,7 @@ GovReady-Q requires a relational database. You can choose:
 * MySQL
 * PostgreSQL
 
-2 (option a). Installing SQLITE3 (default)
+3 (option a). Installing SQLITE3 (default)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 GovReady-Q will automatically install a local SQLITE3 database by default.
@@ -57,7 +91,7 @@ The SQLITE3 file will be installed within the GovReady-Q directory structure as
 .. warning::
    SQLITE3 is not recommended for production. SQLITE3 database -- AND YOUR DATA -- will be destroyed when you delete the virtual machine (or container) running GovReady-Q.
 
-2 (option b). Installing MySQL
+3 (option b). Installing MySQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On the database server, install MySQL OS packages:
@@ -67,12 +101,26 @@ On the database server, install MySQL OS packages:
    # Install of MySQL OS packages
    sudo apt-get install -y mysql-server mysql-client
 
+You must specify the database connection string in GovReady-Q's configuration file at ``local/environment.json``.
+
+.. code:: json
+
+   {
+   "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+   "debug": false,
+   "host": "localhost:8000",
+   "https": false,
+   "secret-key": "...something here..."
+   }
+
+.. note::
+   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
+
 .. warning::
    MySQL can be installed locally on the same host as GovReady-Q or on a separate host.
    Your MySQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
 
-
-2 (option c). Installing PostgreSQL
+3 (option c). Installing PostgreSQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On the database server, install PostgreSQL OS packages:
@@ -97,6 +145,25 @@ Then set up the user and database (both named ``govready_q``):
 
 Postgres’s default permissions automatically grant users access to a
 database of the same name.
+
+You must specify the database connection string in GovReady-Q's configuration file at ``local/environment.json``.
+
+.. code:: json
+
+   {
+   "db": "postgres://USER:PASSWORD@HOST/DATABASE",
+   "debug": false,
+   "host": "localhost:8000",
+   "https": false,
+   "secret-key": "...something here..."
+   }
+
+.. note::
+   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
+
+.. warning::
+   MySQL can be installed locally on the same host as GovReady-Q or on a separate host.
+   Your MySQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
 
 **Encrypting your connection to PostgreSQL running on a separate database server**
 
@@ -155,111 +222,29 @@ And if necessary, open the PostgreSQL port:
    firewall-cmd --zone=public --add-port=5432/tcp --permanent
    firewall-cmd --reload
 
-
-3. Installing GovReady-Q
+4. Installing GovReady-Q
 ------------------------
 
-With the OS packages and database installed and configured, you are now ready to install GovReady-Q server.
+At this point, you have installed required OS packages, cloned the GovReady-Q repository and configured your preferred database option of SQLITE3, MySQL, or PostgreSQL.
 
-.. note::
-   You may find it useful to create a Linux user specifically for GovReady-Q. Do
-   this before installing GovReady-Q.
+Make sure you are in the base directory of the GovReady-Q repository.
 
-   .. code:: bash
-
-      # Create user
-      useradd govready-q -m -c "govready-q"
-      chsh -s /bin/bash govready-q
-      cp /etc/skel/.bashrc /home/govready-q/.
-      chown govready-q:govready-q /home/govready-q/.bashrc
-
-      # Change permissions so that the webserver can read static files
-      chmod a+rx /home/govready-q
-
-
-      # Switch to the govready-q user
-      cd /home/govready-q
-      su govready-q
-      
-
-Clone the GovReady source code and install packages.
+Run the install script to install required Python libraries, initialize GovReady-Q's database and create a superuser. This is the same command for all database backends.
 
 .. code:: bash
 
-   # Clone GovReady-Q
-   git clone https://github.com/govready/govready-q
-   cd govready-q
-
-   # Cnstall Python 3 packages
-   pip3 install --user -r requirements.txt
-
-   # Install Bootstrap and other vendor resources locally
-   ./fetch-vendor-resources.sh
-
-If you are using MySQL or PostgreSQL, you must specify the database connection string in GovReady-Q's configuration file at ``local/environment.json``.
-(SQLITE3 does not need to be specified.) Enter your database credentials for the ``db`` connection string.
-
-**MySQL**
-
-.. code:: json
-
-   {
-     "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-     "debug": false,
-     "host": "localhost:8000",
-     "https": false,
-     "secret-key": "...something here..."
-   }
-
-**PostgreSQL**
-
-.. code:: json
-
-   {
-     "db": "postgres://USER:PASSWORD@HOST/DATABASE",
-     "debug": false,
-     "host": "localhost:8000",
-     "https": false,
-     "secret-key": "...something here..."
-   }
-
-.. note::
-   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
-
-**Initialize the GovReady-Q database**
-
-Run the final setup commands to initialize GovReady-Q's database.
-This is the same command regardless of which backend database being used.
-
-.. code:: bash
-
-   # Run database migrations (sqlite3 database used by default)
-   python3 manage.py migrate
-
-   # Load a few critical modules
-   python3 manage.py load_modules
-
-   # Create superuser with initial account interactively with prompts
-   python3 manage.py first_run
-   # Reply to prompts interactively
-
-   # Alternatively, create superuser with initial account non-interactively
-   # python3 manage.py first_run --non-interactive
-   # Find superuser name and password in output log
+   # Run the install script to install Python libraries,
+   # intialize database, and create Superuser
+   ./install-govready-q
    
 .. note::
-   A Superuser and Organization needs to be created as part of initialization. The Superuser provides
-   access to the GovReady-Q Django Admin interface to configure compliance questionnaires and other admin settings.
+   The command ``install-govready-q.sh`` creates the Superuser interactively allowing you to specify username and password.
 
-   The command ``python3 manage.py first_run`` creates the Superuser interactively allowing you to specify username and password.
+   The command ``install-govready-q.sh --non-interactive`` creates the Superuser automatically for installs where you do
+   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to the standout log.
 
-   The command ``python3 manage.py first_run --non-interactive`` creates the Superuser automatically for installs where you do
-   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to
-   to the standout log.
 
-   Finally, it is possible to create a Superadmin account via the Django shell interface.
-
-4. Starting GovReady-Q
+5. Starting GovReady-Q
 -----------------------
 
 .. code:: bash
@@ -288,14 +273,51 @@ host name and port.
     GovReady-Q defaults to `localhost:8000` when launched with ``python manage.py runserver``.
 
 
-5. Stopping GovReady-Q
+6. Stopping GovReady-Q
 ----------------------
 
 Press ``CTL-c`` in the terminal window running GovReady-Q to stop the server. 
 
-6. Additional options
+7. Additional options
 ---------------------
 
+Installing GovReady-Q Server command-by-command
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For situations in which more granular control over the install process is required, use the below sequence of commands for installing GovReady-Q.
+
+.. code:: bash
+
+   # Clone GovReady-Q
+   git clone https://github.com/govready/govready-q
+   cd govready-q
+
+   # Install Python 3 packages
+   pip3 install --user -r requirements.txt
+
+   # Install Bootstrap and other vendor resources locally
+   ./fetch-vendor-resources.sh
+
+   # Initialize the database by running database migrations (sqlite3 database used by default)
+   python3 manage.py migrate
+
+   # Load a few critical modules
+   python3 manage.py load_modules
+
+   # Create superuser with initial account interactively with prompts
+   python3 manage.py first_run
+   # Reply to prompts interactively
+
+   # Alternatively, create superuser with initial account non-interactively
+   # python3 manage.py first_run --non-interactive
+   # Find superuser name and password in output log
+
+.. note::
+   The command ``python3 manage.py first_run`` creates the Superuser interactively allowing you to specify username and password.
+
+   The command ``python3 manage.py first_run --non-interactive`` creates the Superuser automatically for installs where you do
+   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to
+   to the standout log.
 
 Enabling PDF export
 ~~~~~~~~~~~~~~~~~~~
