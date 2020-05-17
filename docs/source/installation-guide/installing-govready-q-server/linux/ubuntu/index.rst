@@ -101,6 +101,12 @@ On the database server, install MySQL OS packages:
    # Install of MySQL OS packages
    sudo apt-get install -y mysql-server mysql-client
 
+.. code:: bash
+
+   # If you intend to use optional configurations, such as the MySQL adapter, you
+   # may need to run additional `pip3 install` commands, such as:
+   pip3 install --user -r requirements_mysql.txt
+
 You must specify the database connection string in GovReady-Q's configuration file at ``local/environment.json``.
 
 .. code:: json
@@ -125,18 +131,14 @@ You must specify the database connection string in GovReady-Q's configuration fi
 
 On the database server, install PostgreSQL OS packages:
 
-::
+.. code:: bash
 
    sudo apt install postgresql postgresql-contrib
    postgresql-setup initdb
 
-.. warning::
-   PostgreSQL can be installed locally on the same host as GovReady-Q or on a separate host.  
-   Your PostgreSQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
-
 Then set up the user and database (both named ``govready_q``):
 
-::
+.. code:: bash
 
    sudo -iu postgres createuser -P govready_q
    # Paste a long random password when prompted
@@ -162,8 +164,8 @@ You must specify the database connection string in GovReady-Q's configuration fi
    See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
 
 .. warning::
-   MySQL can be installed locally on the same host as GovReady-Q or on a separate host.
-   Your MySQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
+   PostgreSQL can be installed locally on the same host as GovReady-Q or on a separate host.
+   Your PostgreSQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
 
 **Encrypting your connection to PostgreSQL running on a separate database server**
 
@@ -173,13 +175,13 @@ to configure a secure connection between GovReady-Q and PostgreSQL.
 In ``/var/lib/pgsql/data/postgresql.conf``, enable TLS connections by
 changing the ``ssl`` option to
 
-::
+.. code:: bash
 
    ssl = on 
 
 and enable remote connections by binding to all interfaces:
 
-::
+.. code:: bash
 
    listen_addresses = '*'
 
@@ -188,14 +190,14 @@ and *only* encrypted with TLS by editing
 ``/var/lib/pgsql/data/pg_hba.conf`` and adding the line (replacing the
 hostname with the hostname of the Q webapp server):
 
-::
+.. code:: bash
 
    hostssl all all webserver.hostname.com md5
 
 Generate a self-signed certificate (replace ``db.govready-q.internal``
 with the database server’s hostname if possible):
 
-::
+.. code:: bash
 
    openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /var/lib/pgsql/data/server.key -out /var/lib/pgsql/data/server.crt -subj '/CN=db.govready-q.internal'
    chmod 600 /var/lib/pgsql/data/server.{key,crt}
@@ -204,20 +206,20 @@ with the database server’s hostname if possible):
 Copy the certificate to the webapp server so that the webapp server can
 make trusted connections to the database server:
 
-::
+.. code:: bash
 
    cat /var/lib/pgsql/data/server.crt
    # Place on webapp server at /home/govready-q/pgsql.crt
 
 Restart the PostgreSQL:
 
-::
+.. code:: bash
 
    service postgresql restart
 
 And if necessary, open the PostgreSQL port:
 
-::
+.. code:: bash
 
    firewall-cmd --zone=public --add-port=5432/tcp --permanent
    firewall-cmd --reload
@@ -342,6 +344,3 @@ GovReady-Q can be optionally deployed with NGINX and Supervisor. There's also a 
 
 Sample ``nginx.conf``, ``supervisor.confg``, and ``update.sh`` files can
 be found in the source code directory ``deployment/ubuntu``.
-
-
-
