@@ -417,10 +417,9 @@ pygithub==1.51 \
     --hash=sha256:8375a058ec651cc0774244a3bc7395cf93617298735934cdd59e5bcd9a1df96e \
     --hash=sha256:d2d17d1e3f4474e070353f201164685a95b5a92f5ee0897442504e399c7bc249 \
     # via -r requirements.in
-pygments==2.2.0 \
-    --hash=sha256:78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d \
-    --hash=sha256:dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc \
-    # via -r requirements.in, sphinx
+pygments==2.6.1 \
+    --hash=sha256:647344a061c249a3b74e230c739f434d7ea4d8b1d5f3721bc0f3558049b38f44 \
+    --hash=sha256:ff7a40b4860b727ab48fad6360eb351cc1b33cbf9b15a0f689ca5353e9463324    # via -r requirements.in, sphinx
 pyjwt==1.7.1 \
     --hash=sha256:5c6eca3c2940464d106b99ba83b00c6add741c9becaec087fb7ccdefea71350e \
     --hash=sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96 \
