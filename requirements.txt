@@ -85,10 +85,9 @@ defusedxml==0.6.0 \
     --hash=sha256:6687150770438374ab581bb7a1b327a847dd9c5749e396102de3fad4e8a3ef93 \
     --hash=sha256:f684034d135af4c6cbb949b8a4d2ed61634515257a67299e5f940fbaa34377f5 \
     # via python3-openid
-deprecated==1.2.9 \
-    --hash=sha256:0cf37d293a96805c6afd8b5fc525cb40f23a2cac9b2d066ac3bd4b04e72ceccc \
-    --hash=sha256:55b41a15bda04c6a2c0d27dd4c2b7b81ffa6348c9cad8f077ac1978c59927ab9 \
-    # via pygithub
+deprecated==1.2.10 \
+    --hash=sha256:525ba66fb5f90b07169fdd48b6373c18f1ee12728ca277ca44567a367d9d7f74 \
+    --hash=sha256:a766c1dccb30c5f6eb2b203f87edd1d8588847709c78589e1521d769addc8218    # via pygithub
 dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9 \
