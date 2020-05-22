@@ -354,5 +354,8 @@ if environment.get("branding"):
 	TEMPLATES[0].setdefault('DIRS', [])\
 		.insert(0, os.path.join(environment["branding"], 'templates'))
 
+# Load logging configuration from settings_logging.py.
+from .settings_logging import *
+
 # Load all additional settings from settings_application.py.
 from .settings_application import *

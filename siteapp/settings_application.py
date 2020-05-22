@@ -2,6 +2,7 @@
 
 import re
 from .settings import *
+from .settings_logging import *
 
 INSTALLED_APPS += [
     #'debug_toolbar',

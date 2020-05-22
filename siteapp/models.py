@@ -6,6 +6,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models, transaction
+from django.db.models.signals import post_init
 from django.utils import crypto, timezone
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -13,6 +14,8 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
 from controls.models import System
 from jsonfield import JSONField
 
+import logging
+logger = logging.getLogger(__name__)
 
 class User(AbstractUser):
     # Additional user profile data.
@@ -412,6 +415,13 @@ class Portfolio(models.Model):
 
     def can_invite_others(self, user):
         return user.has_perm('can_grant_portfolio_owner_permission', self)
+
+def portfolio_created(**kwargs):
+    instance = kwargs.get('instance')
+    logger.info("Portfolio created: '{title}', {id}.".format(title=instance.title, id=instance.id))
+    logger.error("Portfolio created: '{title}', {id}.".format(title=instance.title, id=instance.id))
+
+post_init.connect(portfolio_created, Portfolio)
 
 class Folder(models.Model):
     """A folder is a collection of Projects."""
