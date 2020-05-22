@@ -26,6 +26,9 @@ from .good_settings_helpers import \
 from .models import Folder, Invitation, Portfolio, Project, User, Organization
 from .notifications_helpers import *
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def homepage(request):
     # If the user is logged in, then redirect them to the projects page.
@@ -1176,6 +1179,17 @@ def new_portfolio(request):
       if form.is_valid():
         form.save()
         portfolio = form.instance
+        # Log creation of portfolio
+        logger.error("action=create object=portfolio username={username} portfolio_title={portfolio_title}".format(
+            username=request.user.username,
+            portfolio_title=portfolio.title
+            #result=("user:%d" % ret.id) if ret else "fail"
+        ))
+        logger.info("action=create object=portfolio username={username} portfolio_title={portfolio_title}".format(
+            username=request.user.username,
+            portfolio_title=portfolio.title
+            #result=("user:%d" % ret.id) if ret else "fail"
+        ))
         portfolio.assign_owner_permissions(request.user)
         return redirect('portfolio_projects', pk=portfolio.pk)
     else:

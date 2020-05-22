@@ -12,6 +12,9 @@ from urllib.parse import urlsplit, urlencode
 from .models import Organization
 from .models import Portfolio
 
+import logging
+logger = logging.getLogger(__name__)
+
 allowed_paths = None
 account_login_url = None
 
@@ -83,7 +86,7 @@ class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUs
             # Log.
             import logging
             logger = logging.getLogger(__name__)
-            logger.error("login ip={ip} username={username} result={result}".format(
+            logger.error("action=create object=user login ip={ip} username={username} result={result}".format(
                     ip=request.META.get("REMOTE_ADDR"),
                     username=remote_user,
                     result=("user:%d" % user.id) if user else "fail"
@@ -101,6 +104,17 @@ class ProxyHeaderUserAuthenticationBackend(django.contrib.auth.backends.RemoteUs
                 # Create user default portfolio
                 user_portfolio = Portfolio(title="{}".format(user.username), description="Default portfolio of {}".format(user.username))
                 user_portfolio.save()
+                # Log creation of portfolio
+                logger.error("action=create object=portfolio username={username} portfolio_title={portfolio_title}".format(
+                    username=user.username,
+                    portfolio_title=user_portfolio.title
+                    #result=("user:%d" % ret.id) if ret else "fail"
+                ))
+                logger.info("action=create object=portfolio username={username} portfolio_title={portfolio_title}".format(
+                    username=user.username,
+                    portfolio_title=user_portfolio.title
+                    #result=("user:%d" % ret.id) if ret else "fail"
+                ))
                 # Grant owner permissions on new portfolio to user
                 user_portfolio.assign_owner_permissions(user)
 

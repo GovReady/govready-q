@@ -416,12 +416,12 @@ class Portfolio(models.Model):
     def can_invite_others(self, user):
         return user.has_perm('can_grant_portfolio_owner_permission', self)
 
-def portfolio_created(**kwargs):
-    instance = kwargs.get('instance')
-    logger.info("Portfolio created: '{title}', {id}.".format(title=instance.title, id=instance.id))
-    logger.error("Portfolio created: '{title}', {id}.".format(title=instance.title, id=instance.id))
+# def portfolio_created(**kwargs):
+#     instance = kwargs.get('instance')
+#     logger.info("Portfolio created: '{title}', {id}.".format(title=instance.title, id=instance.id))
+#     logger.error("Portfolio created: '{title}', {id}.".format(title=instance.title, id=instance.id))
 
-post_init.connect(portfolio_created, Portfolio)
+# post_init.connect(portfolio_created, Portfolio)
 
 class Folder(models.Model):
     """A folder is a collection of Projects."""

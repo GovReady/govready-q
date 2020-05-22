@@ -1,5 +1,7 @@
 from django.conf import settings
 from allauth.account.adapter import DefaultAccountAdapter
+import logging
+logger = logging.getLogger(__name__)
 
 class AllauthAccountAdapter(DefaultAccountAdapter):
     # Override save_user.
@@ -25,8 +27,6 @@ class AllauthAccountAdapter(DefaultAccountAdapter):
         ret = super(AllauthAccountAdapter, self).authenticate(request, **credentials)
 
         # Log login attempts.
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error("login ip={ip} username={username} result={result}".format(
                 ip=request.META.get("REMOTE_ADDR"),
                 username=credentials.get("username"),
