@@ -1180,7 +1180,7 @@ def new_portfolio(request):
         form.save()
         portfolio = form.instance
         # Log creation of portfolio
-        logger.error("action=create object=portfolio username={username} portfolio_title={portfolio_title}".format(
+        logger.warning("action=create object=portfolio username={username} portfolio_title={portfolio_title}".format(
             username=request.user.username,
             portfolio_title=portfolio.title
             #result=("user:%d" % ret.id) if ret else "fail"

@@ -32,7 +32,7 @@ logging.config.dictConfig({
             'handlers': ['console'],
         },
         # Our application code
-        'app': {
+        'siteapp': {
             'level': LOGLEVEL,
             'handlers': ['console'],
             # Avoid double logging because of root logger
