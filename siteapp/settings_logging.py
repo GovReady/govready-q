@@ -13,7 +13,7 @@ logging.config.dictConfig({
     'formatters': {
         'default': {
             # exact format is not important, this is the minimum information
-            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+            'format': '{"datetime": "%(asctime)s", "name": "%(name)s", "level": "%(levelname)s", %(message)s}',
         },
         'django.server': DEFAULT_LOGGING['formatters']['django.server'],
     },
@@ -28,7 +28,7 @@ logging.config.dictConfig({
     'loggers': {
         # default for all undefined Python modules
         '': {
-            'level': 'WARNING',
+            'level': 'INFO',
             'handlers': ['console'],
         },
         # Our application code
@@ -46,6 +46,6 @@ logging.config.dictConfig({
 ##            'propagate': False,
 ##        },
         # Default runserver request logging
-        'django.server': DEFAULT_LOGGING['loggers']['django.server'],
+        # 'django.server': DEFAULT_LOGGING['loggers']['django.server'],
     },
 })

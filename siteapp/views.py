@@ -1158,6 +1158,12 @@ def update_permissions(request):
         portfolio.remove_permissions(user)
       elif permission == 'grant_owner_permission':
         portfolio.assign_owner_permissions(user)
+        # Log permission escalation
+        logger.info('"username": "{username}", "action": "make_owner", "object": "portfolio", "subject_username": "{subject_username}", "portfolio_title": "{portfolio_title}"'.format(
+            username=request.user.username,
+            subject_username=user.username,
+            portfolio_title=portfolio.title
+        ))
       elif permission == 'remove_owner_permissions':
           portfolio.remove_owner_permissions(user)
     next = request.POST.get('next', '/')
@@ -1180,12 +1186,7 @@ def new_portfolio(request):
         form.save()
         portfolio = form.instance
         # Log creation of portfolio
-        logger.warning("action=create object=portfolio username={username} portfolio_title={portfolio_title}".format(
-            username=request.user.username,
-            portfolio_title=portfolio.title
-            #result=("user:%d" % ret.id) if ret else "fail"
-        ))
-        logger.info("action=create object=portfolio username={username} portfolio_title={portfolio_title}".format(
+        logger.info('"action": "create", "object": "portfolio", "username": "{username}", "portfolio_title": "{portfolio_title}"'.format(
             username=request.user.username,
             portfolio_title=portfolio.title
             #result=("user:%d" % ret.id) if ret else "fail"
