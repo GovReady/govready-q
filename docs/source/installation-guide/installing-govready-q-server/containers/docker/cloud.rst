@@ -200,5 +200,5 @@ See the next section `Advanced container configuration <advanced-container-confi
     .. toctree::
         :maxdepth: 1
 
-        advanced-container-config-example
+        advanced-container-config-examples
         advanced-container-config

@@ -110,5 +110,5 @@ See the next section `Advanced container configuration <advanced-container-confi
         :maxdepth: 1
 
         cloud
-        advanced-container-config-example
+        advanced-container-config-examples
         advanced-container-config
