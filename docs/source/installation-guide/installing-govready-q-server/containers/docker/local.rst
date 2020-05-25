@@ -104,10 +104,11 @@ for production deployments.
 See the next section `Advanced container configuration <advanced-container-config.html>`__  for further details.
 
 
-.. topic:: Contents
+.. topic:: Next
 
     .. toctree::
         :maxdepth: 1
 
         cloud
+        advanced-container-config-example
         advanced-container-config

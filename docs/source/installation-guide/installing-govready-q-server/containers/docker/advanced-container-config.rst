@@ -5,6 +5,9 @@
 Advanced Container Configuration Options
 ========================================
 
+Deploying GovReady-Q's advanced configuration options supports a variety of architectures
+for enterprise deployments.
+
 The docker_container_run.sh script
 ----------------------------------
 
