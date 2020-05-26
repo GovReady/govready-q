@@ -1657,7 +1657,7 @@
         {
           "id": "3.5",
           "class": "family",
-          "title": "Identification and Austhentication",
+          "title": "Identification and Authentication",
           "controls": [
             {
                 "id": "3.5.1",
