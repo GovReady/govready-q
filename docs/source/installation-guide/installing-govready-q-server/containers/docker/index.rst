@@ -45,4 +45,5 @@ Choose the Docker install guide that best fits your needs.
 
         local
         cloud
+        advanced-container-config-examples
         advanced-container-config

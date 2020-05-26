@@ -20,11 +20,11 @@ And then edit the file replacing ``q.govready.com`` and
 ``*.govready.com`` with your hostnames.
 
 If you don’t have a TLS certificate ready to use, create a self-signed
-certificate (replacing ``webserver.hostname.com`` with your hostname):
+certificate (replacing ``webserver.example.com`` with your hostname):
 
 ::
 
-   openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /home/govready-q/ssl_certificate.key -out /home/govready-q/ssl_certificate.crt -subj '/CN=webserver.hostname.com'
+   openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /home/govready-q/ssl_certificate.key -out /home/govready-q/ssl_certificate.crt -subj '/CN=webserver.example.com'
    chmod 600 /home/govready-q/ssl_certificate.{key,crt}
    chown apache.apache /home/govready-q/ssl_certificate.{key,crt}
 
@@ -81,7 +81,7 @@ a real certificate, install and run ``certbot``:
 ::
 
    yum install -y python-certbot-apache
-   certbot --apache -d webserver.hostname.com
+   certbot --apache -d webserver.example.com
    # and follow the prompts
 
 Then set it to automatically renew certificates as needed:
