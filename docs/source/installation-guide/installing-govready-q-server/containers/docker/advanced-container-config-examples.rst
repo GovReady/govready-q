@@ -32,24 +32,24 @@ HTTPS communications, and persistent database.
         "GovReady-Q\ngovready.example.com" -- "PostgreSQL\n(MySQL)" [label="HTTP B"];
     }
 
-From left to right, this diagram shows the User browser connecting to the Green Unicorn ("gunicorn")WSGI (Web Server Gateway Interface)
+From left to right, this diagram shows the User browser connecting to the Green Unicorn ("gunicorn") WSGI (Web Server Gateway Interface)
 running in the GovReady container via the encrypted link "HTTPS A". Green Unicorn terminates the HTTPS connection,
-serves static assets, and forwards request GovReady-Q application. Both Green Unicorn and GovReady-Q are running in the
-GovReady container. The domain that users perceive as the address of GovReady-Q (e.g., govready.example.com) points to GovReady container.
+serves static assets, and forwards requests to the GovReady-Q application. Both Green Unicorn and GovReady-Q are running in the
+GovReady container. The domain that users perceive as the address of GovReady-Q (e.g., govready.example.com) points to the GovReady container.
 
 GovReady-Q communicates with its persistent database over connection "HTTP B" which is unencrypted because the
-database is configured to only accepts connections from the IP address of the GovReady container.
+database is configured to only accept connections from the IP address of the GovReady container.
 
-To operate correctly in this configuration, the following options would need to be set via environmental parameters,
-the ``local/environment.json`` file or hardcoding into your container's customized source code files.
+To operate correctly in this configuration, the following options would need to be set via environment variables,
+the ``local/environment.json`` file, or by hardcoding your container's customized source code files.
 
 -  ``HOST = govready.example.com`` - This tells GovReady-Q to set ``ALLOWED_HOSTS`` value in ``settings.py`` to ``govready.example.com`` permitting GovReady-Q to respond to requests made to that domain.
--  ``HTTPS = true`` - This tells GovReady-Q to re-write URLs to start with ``https://`` instead of ``http://``.
+-  ``HTTPS = true`` - This tells GovReady-Q to rewrite URLs to start with ``https://`` instead of ``http://``.
 -  ``DBURL = "postgresql://db_username:db_password@db_server.hostname.com/db_name",`` - This tells GovReady-Q how to connect to the database.
 -  ``DEBUG = false`` - This tells GovReady-Q to not dump debug output to the browser.
 
-You will need to copy the TLS certificates into the GovReady container (or made available via a mounted volume)
-and  ``gunicorn.conf.py`` would need the following values (adjusted correctly for the path to the certificates):
+You will need to copy the TLS certificates into the GovReady container (or make them available via a mounted volume)
+and ``gunicorn.conf.py`` would need the following values (adjusted correctly for the path to the certificates):
 
 ::
 
@@ -72,7 +72,7 @@ Below is a diagram of an advanced configuration of GovReady-Q regularly used in 
    :scale: 100 %
    :alt: Deployment architecture behind enterprise Single Sign On proxy
 
-.. 
+..
     vizgraph for the diagram
     graph G {
     rankdir=LR;
@@ -92,10 +92,10 @@ Below is a diagram of an advanced configuration of GovReady-Q regularly used in 
     }
 
 From left to right, this diagram shows the User browser connecting to a enterprise SSO (Single Sign On) proxy
-which connects to the GovReady-Q container. The connection "HTTPS A" is between the user browser and the SSO proxy. 
+which connects to the GovReady-Q container. The connection "HTTPS A" is between the user browser and the SSO proxy.
 The domain that users perceive as the address of GovReady-Q (e.g., govready.example.com) points to the SSO proxy.
 
-The SSO poxy next connects to the Green Unicorn ("gunicorn") WSGI (Web Server Gateway Interface)
+The SSO proxy next connects to the Green Unicorn ("gunicorn") WSGI (Web Server Gateway Interface)
 running in the GovReady container via the encrypted link "HTTPS B". Green Unicorn terminates the HTTPS connection,
 serves static assets, and forwards request GovReady-Q application. Both Green Unicorn and GovReady-Q are running in the
 GovReady container. Green Unicorn / GovReady-Q is assigned a domain users never see (e.g., govready-prod.example.com).
@@ -106,20 +106,20 @@ Also represented in the diagram is a connection between GovReady-Q and the enter
 
 Depending on your deployment configuration, it may not be necessary to HTTPS encrypt connections "B" and "C".
 
-To operate correctly in this configuration, the following options would need to be set via environmental parameters,
-the ``local/environment.json`` file or hardcoding into your container's customized source code files.
+To operate correctly in this configuration, the following options would need to be set via environment variables,
+the ``local/environment.json`` file, or by hardcoding your container's customized source code files.
 
 -  ``HOST = govready.example.com`` - This tells GovReady-Q to set ``ALLOWED_HOSTS`` value in ``settings.py`` to ``govready.example.com`` permitting GovReady-Q to respond to requests made to that domain.
--  ``HTTPS = true`` - This tells GovReady-Q to re-write URLs to start with ``https://`` instead of ``http://``.
+-  ``HTTPS = true`` - This tells GovReady-Q to rewrite URLs to start with ``https://`` instead of ``http://``.
 -  ``DBURL = "postgresql://db_username:db_password@db_server.hostname.com/db_name?sslmode=verify-full&sslrootcert=/path/to/pgsql.crt",`` - This tells GovReady-Q how to connect to the database securely.
--  ``email-host = smtp.company.org`` - This tells GovReady-Q how the email host. 
--  ``email-port = 587`` - This tells GovReady-Q how the email port. 
--  ``email-user = username`` - This tells GovReady-Q how the email user. 
--  ``email-pw = email_password`` - This tells GovReady-Q how the email password. 
--  ``email-domain = q.company.org`` - This tells GovReady-Q how the email domain for messages. 
+-  ``email-host = smtp.company.org`` - This tells GovReady-Q the email host.
+-  ``email-port = 587`` - This tells GovReady-Q the email port.
+-  ``email-user = username`` - This tells GovReady-Q the email user.
+-  ``email-pw = email_password`` - This tells GovReady-Q the email password.
+-  ``email-domain = q.company.org`` - This tells GovReady-Q the email domain for messages.
 -  ``DEBUG = false`` - This tells GovReady-Q to not dump debug output to the browser.
 
-You will need to copy the TLS certificates into the GovReady container (or made available via a mounted volume)
+You will need to copy the TLS certificates into the GovReady container (or make them available via a mounted volume)
 and  ``gunicorn.conf.py`` would need the following values (adjusted correctly for the path to the certificates):
 
 ::
