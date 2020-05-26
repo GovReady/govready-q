@@ -45,7 +45,7 @@ the ``local/environment.json`` file, or by hardcoding your container's customize
 
 -  ``HOST = govready.example.com`` - This tells GovReady-Q to set ``ALLOWED_HOSTS`` value in ``settings.py`` to ``govready.example.com`` permitting GovReady-Q to respond to requests made to that domain.
 -  ``HTTPS = true`` - This tells GovReady-Q to rewrite URLs to start with ``https://`` instead of ``http://``.
--  ``DBURL = "postgresql://db_username:db_password@db_server.hostname.com/db_name",`` - This tells GovReady-Q how to connect to the database.
+-  ``DBURL = "postgresql://db_username:db_password@db_server.example.com/db_name",`` - This tells GovReady-Q how to connect to the database.
 -  ``DEBUG = false`` - This tells GovReady-Q to not dump debug output to the browser.
 
 You will need to copy the TLS certificates into the GovReady container (or make them available via a mounted volume)
@@ -111,7 +111,7 @@ the ``local/environment.json`` file, or by hardcoding your container's customize
 
 -  ``HOST = govready.example.com`` - This tells GovReady-Q to set ``ALLOWED_HOSTS`` value in ``settings.py`` to ``govready.example.com`` permitting GovReady-Q to respond to requests made to that domain.
 -  ``HTTPS = true`` - This tells GovReady-Q to rewrite URLs to start with ``https://`` instead of ``http://``.
--  ``DBURL = "postgresql://db_username:db_password@db_server.hostname.com/db_name?sslmode=verify-full&sslrootcert=/path/to/pgsql.crt",`` - This tells GovReady-Q how to connect to the database securely.
+-  ``DBURL = "postgresql://db_username:db_password@db_server.example.com/db_name?sslmode=verify-full&sslrootcert=/path/to/pgsql.crt",`` - This tells GovReady-Q how to connect to the database securely.
 -  ``email-host = smtp.company.org`` - This tells GovReady-Q the email host.
 -  ``email-port = 587`` - This tells GovReady-Q the email port.
 -  ``email-user = username`` - This tells GovReady-Q the email user.

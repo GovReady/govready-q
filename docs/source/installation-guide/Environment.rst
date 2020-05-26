@@ -19,7 +19,7 @@ launching a container with GovReady-Q.
    If set to ``true``, turns on certain debug/development settings.
 -  ``email``: used to configure access to a mail server for sending and
    receiving email. Object has the following format:
-   ``{"host": "smtp.server.com", "port": "587", "user": "...", "pw": "....",   "domain": "webserver.hostname.com"}``.
+   ``{"host": "smtp.server.com", "port": "587", "user": "...", "pw": "....",   "domain": "webserver.example.com"}``.
    See `Configuring email`_ and `Other Configuration Settings`_. },.
 -  ``govready_cms_api_auth``: used to store API key to interact with
    GovReady’s CMS agent and dashboard. Not relevant to most users. See
