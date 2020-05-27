@@ -16,36 +16,38 @@ Then run the test suite with:
 
 .. code-block:: bash
 
-    ./manage.py test
+    python manage.py test
 
 _NOTE: Depending on your Python3 configuration, you may need to run:_
 
 .. code-block:: bash
     python3 manage.py test
 
-
 To selectively run tests from individual modules:
 
 .. code-block:: bash
 
     # test rendering of guided modules
-    ./manage.py test guidedmodules
+    python manage.py test guidedmodules
     
     # test general siteapp logic
-    ./manage.py test siteapp
+    python manage.py test siteapp
     
     # test discussion functionality
-    ./manage.py test discussion
+    python manage.py test discussion
 
 Or to selectively run tests from individual classes or methods:
 
 .. code-block:: bash
 
     # run tests from individual test class
-    ./manage.py test siteapp.tests.GeneralTests
+    python manage.py test siteapp.tests.GeneralTests
     
     # run tests from individual test method
-    ./manage.py test siteapp.tests.GeneralTests.test_login
+    python manage.py test siteapp.tests.GeneralTests.test_login
+
+    # run tests from different apps in sequence
+    python manage.py test siteapp.tests.GeneralTests.test_create_portfolios discussion.tests.DiscussionTests
 
 To produce a code coverage report, run the tests with `coverage`:
 
