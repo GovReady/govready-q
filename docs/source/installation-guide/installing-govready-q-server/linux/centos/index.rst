@@ -208,7 +208,7 @@ hostname with the hostname of the Q webapp server):
 
 ::
 
-   hostssl all all webserver.hostname.com md5
+   hostssl all all webserver.example.com md5
 
 Generate a self-signed certificate (replace ``db.govready-q.internal``
 with the database server’s hostname if possible):

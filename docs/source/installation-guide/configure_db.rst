@@ -43,7 +43,7 @@ hostname with the hostname of the Q webapp server):
 
 ::
 
-   hostssl all all webserver.hostname.com md5
+   hostssl all all webserver.example.com md5
 
 Generate a self-signed certificate (replace ``db.govready-q.internal``
 with the database server’s hostname if possible):
@@ -94,7 +94,7 @@ On the webapp server, now check that secure connections can be made:
 
 ::
 
-   psql "postgresql://govready_q@dbserver.hostname.com/govready_q?sslmode=verify-full&sslrootcert=/home/govready-q/pgsql.crt"
+   psql "postgresql://govready_q@dbserver.example.com/govready_q?sslmode=verify-full&sslrootcert=/home/govready-q/pgsql.crt"
 
 (It should fail if the TLS certificate file is not provided, if sslmode
 is set to ``disable``, if a different user or database is given, or if
@@ -105,7 +105,7 @@ database (replace ``THEPASSWORDHERE``) by setting the following key:
 
 ::
 
-       "db": "postgresql://govready_q:THEPASSWORDHERE@dbserver.hostname.com/govready_q?sslmode=verify-full&sslrootcert=/home/govready-q/pgsql.crt",
+       "db": "postgresql://govready_q:THEPASSWORDHERE@dbserver.example.com/govready_q?sslmode=verify-full&sslrootcert=/home/govready-q/pgsql.crt",
 
 Then initialize the database content:
 

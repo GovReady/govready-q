@@ -18,10 +18,12 @@ Then run the test suite with:
 
     python manage.py test
 
-_NOTE: Depending on your Python3 configuration, you may need to run:_
+.. note::
+   Depending on your Python3 configuration, you may need to run
 
-.. code-block:: bash
-    python3 manage.py test
+   .. code:: bash
+
+      python3 manage.py test
 
 To selectively run tests from individual modules:
 
@@ -52,5 +54,34 @@ Or to selectively run tests from individual classes or methods:
 To produce a code coverage report, run the tests with `coverage`:
 
 .. code-block:: bash
+
     coverage run --source='.' --branch manage.py test
     coverage report
+
+Selenium Troubleshooting
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+**500 Internal Server Error**
+
+Receiving an **500 Internal Server Error** in Selenium's Chromium web browser during
+testing indicates an error serving the page.
+
+If error is received only on some tests, the testing framework has located a legitimate problem
+rendering that page that needs to be corrected.
+
+If the error occurs rendering every page, the probable cause is missing static files. Correct this problem
+by re-fetch vendor resources, check your ``static`` setting in the ``local/environment.json`` file
+and re-run Django ``collectstatic`` admin command.
+
+.. code-block:: bash
+
+    ./fetch-vendor-resources.sh
+    python manage.py collectstatic
+
+To debug further, set the verbosity of the tests to level 3 for increased log output and
+look for ``Missing staticfiles manifest entry for`` or other error messages detailing problems
+with serving the page.
+
+.. code-block:: bash
+
+    python manage.py test -v 3
