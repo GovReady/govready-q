@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.16 (May 18, 2020)
+-------------------------
+
+**Development changes**
+
+* Correct setup of tests in discussions app to avoid failing due to missing system modules.
+
 v.0.9.1.15 (May 18, 2020)
 -------------------------
 
