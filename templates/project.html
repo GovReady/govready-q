@@ -150,6 +150,11 @@ h3.question-group-title {
         <em class="glyphicon glyphicon-book"></em> Controls</a>
       </button>
     {% endif %}
+    {% if project.system is not None %}
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
+        <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
+      </button>
+    {% endif %}
     {% if not project.is_account_project or project.is_deletable %}
       <button class="btn btn-sm btn-default" onclick="$('#project_settings').modal();">
         <em class="glyphicon glyphicon-cog"></em> Settings</a>

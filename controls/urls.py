@@ -23,8 +23,13 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^smt/_save/$', views.save_smt),
     url(r'^smt/_delete/$', views.delete_smt),
+    url(r'^(?P<system_id>.*)/components/selected$', views.components_selected, name="components_selected"),
+    url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
 
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
     url(r'^catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)', views.control, name="control_info"),
+
+    # Components
+
 ]
