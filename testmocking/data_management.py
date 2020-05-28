@@ -153,6 +153,10 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
             choices = question.spec['choices']
             amount = randint(question.spec['min'], len(choices))
             answer = [x['key'] for x in sample(choices, amount)]
+        elif type == 'datagrid':
+            choices = question.spec['fields']
+            amount = randint(question.spec['min'], len(fields))
+            answer = [x['key'] for x in sample(fields, amount)]
         elif type == 'module' and 'module-id' in question.spec:
             subtask = task.get_or_create_subtask(dummy_user, question, create=True)
             log("doing subtask")

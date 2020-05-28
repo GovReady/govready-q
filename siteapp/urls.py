@@ -6,7 +6,9 @@ admin.autodiscover()
 
 import siteapp.views as views
 import siteapp.views_landing as views_landing
+import siteapp.views_health as views_health
 from .good_settings_helpers import signup_wrapper
+from .settings import *
 
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
@@ -18,12 +20,19 @@ urlpatterns = [
     # incoming email hook for responses to notifications
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
 
+    # Enterprise Single Sign On
+    url(r'^sso-logout$', views.sso_logout, name="sso-logout"),
+
     # Django admin site
     url(r'^admin/', admin.site.urls),
 
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),
+
+    # Controls and Systems
+    url(r"^controls/", include("controls.urls")),
+    url(r"^systems/", include("controls.urls")),
 
     # app store
     url(r'^store$', views.apps_catalog, name="store"),
@@ -67,6 +76,16 @@ urlpatterns = [
     # administration
     url(r'^settings$', views.organization_settings),
     url(r'^settings/_save$', views.organization_settings_save),
+
+    # health
+    url(r'^health/$', views_health.index),
+    url(r'^health/check-system$', views_health.check_system),
+    url(r'^health/check-vendor-resources$', views_health.check_vendor_resources),
+    url(r'^health/list-vendor-resources$', views_health.list_vendor_resources),
+    url(r'^health/load-base/(?P<args>.*)$', views_health.load_base),
+    url(r'^health/request-headers$', views_health.request_headers),
+    url(r'^health/request$', views_health.request),
+    url(r'^health/debug$', views.debug, name="debug"),
 ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
@@ -88,4 +107,14 @@ if settings.DEBUG: # also in urls_landing
     import debug_toolbar
     urlpatterns += [
         url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
+    ]
+
+# Enterprise Single Sign On
+# if SSO Proxy enabled, add-in route to `/accounts/logout/` which comes from Django's account
+# module but is not present from Django when SSO Proxy enabled
+if environment.get("trust-user-authentication-headers"):
+    print("settings.PROXY_AUTHENTICATION_USER_HEADER enabled. Catching route accounts/logout/")
+    import debug_toolbar
+    urlpatterns += [
+        url(r'^accounts/logout/$', views.sso_logout, name="sso-logout")
     ]

@@ -18,6 +18,7 @@ from guardian.shortcuts import get_perms_for_model
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
+from controls.models import Element, System
 
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
@@ -28,6 +29,15 @@ from .notifications_helpers import *
 
 def homepage(request):
     # If the user is logged in, then redirect them to the projects page.
+    if request.user.is_authenticated:
+        return HttpResponseRedirect("/projects")
+
+    from .views_landing import homepage
+    return homepage(request)
+
+def debug(request):
+    # Raise Exception to see session information
+    raise Exception()
     if request.user.is_authenticated:
         return HttpResponseRedirect("/projects")
 
@@ -443,8 +453,28 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         # Save and add to folder
         project.save()
         project.set_root_task(appver.modules.get(module_name="app"), user)
+        # Update default name to be unique by using project.id
+        project.root_task.title_override = project.title + " " + str(project.id)
+        project.root_task.save()
         if folder:
             folder.projects.add(project)
+
+        # Create a new System element and link to project?
+        # Top level apps should be linked to a system
+        # Repeat folder test so we can easily refactor this code later
+        if folder:
+            # Create element to serve as system's root_element
+            # Element names must be unique. Use unique project title set above.
+            element = Element()
+            element.name = project.title
+            element.element_type = "system"
+            element.save()
+            # Create system
+            system = System(root_element=element)
+            system.save()
+            # Link system to project
+            project.system = system
+            project.save()
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -889,6 +919,7 @@ def project_api(request, project):
             if q.spec["type"] == "choice": add_filter_field(q, "html", "Human-readable value")
             if q.spec["type"] == "yesno": add_filter_field(q, "html", "Human-readable value ('Yes' or 'No')")
             if q.spec["type"] == "multiple-choice": add_filter_field(q, "html", "Comma-separated human-readable value")
+            if q.spec["type"] == "datagrid": add_filter_field(q, "html", "Array of dictionaries for Datagrid")
 
         # Document the fields of the sub-modules together.
         for q, a in items:
@@ -969,6 +1000,10 @@ def rename_project(request, project):
     title = request.POST.get("title", "").strip() or None
     project.root_task.title_override = title
     project.root_task.save()
+    # Update name of linked System root.element if exists
+    if project.system is not None:
+        project.system.root_element.name = title
+        project.system.root_element.save()
     project.root_task.on_answer_changed()
     return JsonResponse({ "status": "ok" })
 
@@ -1105,32 +1140,6 @@ def project_start_apps(request, *args):
                 return JsonResponse({ "status": "error", "message": message })
 
     return viewfunc(request, *args)
-
-@project_read_required
-def project_upgrade_app(request, project):
-    # Upgrade the AppVersion that the project is linked to. The
-    # AppVersion is updated in place, so this updates all projects
-    # using the AppVersion. The work is done in guidedmodules.views.upgrade_app.
-
-    # Get the app's catalog information just for display purposes.
-    # We're not using the catalog to fetch newer app info - just to
-    # show the page title etc.
-    error = False
-    for app in get_compliance_apps_catalog_for_user(request.user):
-        if app['appsource_id'] == project.root_task.module.app.source.id:
-            if app['key'].endswith("/" + project.root_task.module.app.appname):
-                break
-    else:
-        error = "App cannot be upgraded because it is no longer in the compliance apps catalog."
-
-    # Show information about the app.
-    return render(request, "project-upgrade-app.html", {
-        "page_title": "Upgrade App",
-        "project": project,
-        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
-        "error": error,
-        "app": app,
-    })
 
 # PORTFOLIOS
 
@@ -1618,3 +1627,10 @@ def shared_static_pages(request, page):
         "password_hash_method": password_hash_method,
         "project_form": ProjectForm(request.user),
     })
+
+# SINGLE SIGN ON
+
+def sso_logout(request):
+    output = "You are logged out."
+    html = "<html><body><pre>{}</pre></body></html>".format(output)
+    return HttpResponse(html)

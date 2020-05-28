@@ -36,13 +36,11 @@ Any `docker-compose` commands will need the `docker-compose.yml` file to know wh
 
 ## SSL/TLS Certificates for HTTPS
 
-There are self-signed certs including in the `nginx` directory.  They are copied into the `nginx` container for `nginx` to refer to.
+The build process creates a self-signed cert in the `nginx` container, for `nginx` to use for HTTPS connections.
 
 Self-signed certs are sufficient to allow GovReady-Q and nginx to work together with your browser.  However, you will get a security exception notice from your browser, and you will have to approve the "unsafe" exception to proceed.
 
-To use real certs issued against a CA your browser will recognize, you can replace the `cert.pem` and `key.pem` files and issue the `docker-compose build` file, or you can mount a data volume with your certs in it to `/etc/pki/tls/certs/` .
-
-Later versions of this project may include more documentation about the volume method, or other ways to include certs, such as [Let's Encrypt](https://letsencrypt.org/).
+Later versions of this project may include more documentation about using a real cert issued against a CA your browser will recognize, or other ways, such as [Let's Encrypt](https://letsencrypt.org/), to set up a cert.
 
 ## Build Images
 
@@ -91,7 +89,7 @@ export GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
 
 After setting the variables, continue with the "Run GovReady-Q + NGINX Multi-container App" section above.
 
-If you don't set enviroment variables, these defaults are used:
+If you don't set environment variables, these defaults are used:
 
 ```bash
 export GOVREADY_Q_HOST=test.example.com

@@ -19,6 +19,8 @@
         <link rel="stylesheet" href="{% static "vendor/google-fonts.css" %}">
         <link rel="stylesheet" href="{% static "css/govready-q.css" %}">
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
+        <link rel="stylesheet" href="{% static "vendor/jsgrid/jsgrid.min.css" %}">
+        <link rel="stylesheet" href="{% static "vendor/jsgrid/jsgrid-theme.min.css" %}">
         <script defer src="{% static "vendor/fontawesome.js" %}"></script>
         {% include "head.html" %}
 
@@ -149,6 +151,7 @@
     <script src="{% static "js/discussion.js" %}"></script>
     <script src="{% static "js/main.js" %}"></script>
     <script src="{% static "vendor/bootstrap-helpers.js" %}"></script>
+    <script src="{% static "vendor/jsgrid/jsgrid.min.js" %}"></script>
     <script>
     $(document).ajaxSend(function(event, xhr, settings) { if (!/^https?:.*/.test(settings.url)) xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); });
     </script>

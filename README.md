@@ -27,7 +27,7 @@ There's nothing to install. [Q.GovReady.com](https://q.govready.com) is the host
 3. Don't worry about the Service Levels -- everything's available to everyone during the Beta phase
 4. We'll contact you to help you get started
 
-The hosted version is an excellent solution if have one project/system you are trying to get through NIST SP 800-53 or NIST SP 800-171 compliance, or you are have just trying to pull together a few specific compliance documents like your Privacy Policy or Rules of Behaivor. The hosted service operated by GovReady&reg; PBC, the company behind GovReady-Q Compliance Server.
+The hosted version is an excellent solution if have one project/system you are trying to get through NIST SP 800-53 or NIST SP 800-171 compliance, or you are have just trying to pull together a few specific compliance documents like your Privacy Policy or Rules of Behavior. The hosted service operated by GovReady&reg; PBC, the company behind GovReady-Q Compliance Server.
 
 If you have questions about if hosted version, email <a href="mailto:info@govready.com">info@govready.com</a>.
 

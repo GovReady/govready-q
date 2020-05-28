@@ -4,6 +4,8 @@ set -euf -o pipefail # abort script on error
 
 WARNINGS=0
 
+# TODO: Take an argument to build with Gunicorn instead of the default uWSGI.
+
 if [ ! -f Dockerfile ]; then
 	echo "This should be run from the root of the GovReady-Q repository."
 	exit 1

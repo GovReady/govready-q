@@ -401,7 +401,6 @@ def render_content(content, answers, output_format, source, additional_context={
 
             template_format = "html"
             template_body = q_renderer().render(CommonMarkParser().parse(template_body))
-
             # Put the Jinja2 template tags back that we removed prior to running
             # the CommonMark renderer.
             def replace(m):
@@ -480,7 +479,6 @@ def render_content(content, answers, output_format, source, additional_context={
         else:
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
-
     elif template_format in ("text", "markdown", "html"):
         # The plain-text and HTML template types are rendered using Jinja2.
         #
@@ -500,7 +498,7 @@ def render_content(content, answers, output_format, source, additional_context={
             def errorfunc(message, short_message, long_message, **format_vars):
                 # Wrap in jinja2.Markup to prevent auto-escaping.
                 return jinja2.Markup("<" + message.format(**format_vars) + ">")
-    
+
         elif template_format == "html":
             escapefunc = HtmlAnswerRenderer(show_metadata=show_answer_metadata, use_data_urls=use_data_urls)
             def errorfunc(message, short_message, long_message, **format_vars):
@@ -569,7 +567,6 @@ def render_content(content, answers, output_format, source, additional_context={
             # a big error message for the output as a whole or silently ignoring it.
             for varname in get_jinja2_template_vars(template_body):
                 context.setdefault(varname, UndefinedReference(varname, errorfunc, [source]))
-
             # Now really render.
             output = template.render(context)
         except Exception as e:
@@ -720,6 +717,51 @@ class HtmlAnswerRenderer:
                     label,
                 )
 
+            wrappertag = "div"
+
+        elif question is not None and question.spec["type"] == "datagrid":
+            # Assuming that RenderedAnswer gives us string version of the stored datagrid object
+            # that is an Array of Dictionaries
+            import ast
+            try:
+                # Get datagrid data if datagrid question has been answered with information
+                datagrid_rows = ast.literal_eval(value)
+            except:
+                if value == "<nothing chosen>":
+                    # Datagrid question has been visited and instantiated but no answer given
+                    # No data was entered into data grid
+                    datagrid_rows = []
+                else:
+                    # Datagrid question has not been visited and not yet instantiated
+                    # `value` is set to "<Software Inventory (datagrid)>"
+                    datagrid_rows = []
+
+            if "render" in question.spec and question.spec["render"] == "vertical":
+                # Build a vertical table to display datagrid information
+                value = ""
+                for item in datagrid_rows:
+                    # Start a new table
+                    value += "<table class=\"table\">\n"
+                    # Create a row for each field
+                    for field in question.spec["fields"]:
+                        value += "<tr><td class=\"td_datagrid_vertical\">{}</td><td>{}</td></tr>".format(html.escape(str(field["text"])), html.escape(str(item[field["key"]])))
+                    value += "\n</table>"
+            else:
+                # Build a standard table to display datagrid information
+                value = "<table class=\"table\">\n"
+                value += "<thead>\n<tr>"
+                # To get the correct order, get keys from question specification fields
+                for field in question.spec["fields"]:
+                    value += "<th>{}</th>".format(html.escape(str(field["text"])))
+                value += "</tr>\n"
+                for item in datagrid_rows:
+                    value += "<tr>"
+                    # To get the correct order, get keys from question specification fields
+                    for field in question.spec["fields"]:
+                        value += "<td>{}</td>".format(html.escape(str(item[field["key"]])))
+                    value += "</tr>\n</thead>"
+                # value = html.escape(str(datagrid_rows))
+                value += "\n</table>"
             wrappertag = "div"
 
         else:
@@ -1014,6 +1056,7 @@ class ModuleAnswers(object):
         # documents are lazy-rendered because not all of them may
         # be used by the caller.
         output_formats = ("html", "text", "markdown")
+
         class LazyRenderedDocument:
             def __init__(self, module_answers, document, index, use_data_urls):
                 self.module_answers = module_answers
@@ -1021,6 +1064,7 @@ class ModuleAnswers(object):
                 self.index = index
                 self.rendered_content = { }
                 self.use_data_urls = use_data_urls
+
             def __iter__(self):
                 # Yield all of the keys that are in the output document
                 # specification, plus all of the output formats which are
@@ -1077,6 +1121,7 @@ class ModuleAnswers(object):
             def get(self, key, default=None):
                 if key in output_formats or key in self.document:
                     return self[key]
+
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
 
@@ -1163,6 +1208,14 @@ class TemplateContext(Mapping):
                 if self.parent_context is not None: # use parent's cache
                     return self.parent_context[item]
                 return RenderedOrganization(self.module_answers.task, parent_context=self)
+            if item == "control_catalog":
+                # Retrieve control catalog(s) for project
+                # Temporarily assume controls are 800-53 for the moment
+                # Retrieve a Django dictionary of dictionaries object of full control catalog
+                from controls.oscal import Catalog
+                sca = Catalog.GetInstance()
+                control_catalog = sca.get_flattended_controls_all_as_dict()
+                return control_catalog
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
                 # call the method here because that leads to infinite
@@ -1212,13 +1265,14 @@ class TemplateContext(Mapping):
             yield q.key
 
         # special values
+        # List the name of variables that are available in the templatecontext `getitem`
         if self.module_answers and self.module_answers.task:
             # Attributes that are only available if there is a task.
             if not self.is_computing_title or not self.root:
                 # 'title' isn't available if we're in the process of
                 # computing it
                 yield "title"
-            for attribute in ("task_link", "project", "organization"):
+            for attribute in ("task_link", "project", "organization", "control_catalog"):
                 if attribute not in seen_keys:
                     yield attribute
 
@@ -1334,12 +1388,15 @@ class RenderedAnswer:
                 # an unanswered question is rendered.
                 raise ValueError("Attempt to render unanswered question {}.".format(self.question.key))
             value = "<%s>" % self.question.spec['title']
-        
+
         elif self.question_type == "multiple-choice":
-            # Render multiple-choice as a comma+space-separated list
-            # of the choice keys.
+            # Render multiple-choice as a comma+space-separated list of the choice keys.
             value = ", ".join(self.answer)
-        
+
+        elif self.question_type == "datagrid":
+            # Render datagrid as an array of dictionaries
+            value = str(self.answer)
+
         elif self.question_type == "file":
             # Pass something to the escapefunc that HTML rendering can
             # recognize as a file but non-HTML rendering sees as a string.
@@ -1349,7 +1406,7 @@ class RenderedAnswer:
                 def __str__(self):
                     return "<uploaded file: " + self.file_data['url'] + ">"
             value = FileValueWrapper(self.answer)
-        
+
         elif self.question_type in ("module", "module-set"):
             ans = self.answer # ModuleAnswers or list of ModuleAnswers
             if self.question_type == "module": ans = [ans] # make it a lsit
@@ -1402,6 +1459,12 @@ class RenderedAnswer:
                 choices = [get_question_choice(self.question, c)["text"] for c in self.answer] # get choice text
                 delim = "," if ("," not in "".join(choices)) else ";" # separate choices by commas unless there are commas in the choices, then use semicolons
                 value = (delim+" ").join(choices)
+        elif self.question_type == "datagrid":
+            if len(self.answer) == 0:
+                value = "<nothing chosen>"
+            else:
+                value = str(self.answer)
+
         elif self.question_type in ("integer", "real"):
             # Use a locale to generate nice human-readable numbers.
             # The locale is set on app startup using locale.setlocale in settings.py.
@@ -1555,7 +1618,30 @@ class RenderedAnswer:
                     self.answerobj,
                     ans, self.parent_context)
                 for ans in self.answer)
-        
+
+        elif self.question_type == "datagrid":
+            # Iterate by creating a RenderedAnswer for each selected field,
+            # with a made-up temporary Question instance that has the same
+            # properties as the actual datagrid field but whose
+            # type is a single "datagrid".
+            from .models import ModuleQuestion
+            return (
+                RenderedAnswer(
+                    self.task,
+                    ModuleQuestion(
+                        module=self.question.module,
+                        key=self.question.key,
+                        spec={
+                            "type": "datagrid",
+                            "title": self.question.spec['title'],
+                            "prompt": self.question.spec['prompt'],
+                            "fields": self.question.spec["fields"],
+                        }),
+                    self.is_answered,
+                    self.answerobj,
+                    ans, self.parent_context)
+                for ans in self.answer)
+
         elif self.question_type == "module-set":
             # Iterate over the sub-tasks' answers. Load each's answers + imputed answers.
             return (TemplateContext(
@@ -1567,6 +1653,10 @@ class RenderedAnswer:
 
     def __len__(self):
         if self.question_type in ("multiple-choice", "module-set"):
+            if self.answer is None: return 0
+            return len(self.answer)
+
+        if self.question_type in ("datagrid"):
             if self.answer is None: return 0
             return len(self.answer)
 

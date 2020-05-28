@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Control
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+Remove contextbar from top of page
+{% block contextbar %}{% endblock %}
+
+% block body-wide %
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+
+    <div class="row" style="">
+      <div id="above-tab-content" class="row">
+        <!-- Page Title-->
+        <div style="float: left;">
+          <h2 id="control-heading" class="">
+            Control Catalogs
+          </h2>
+        </div>
+      </div>
+    </div><!--/row-->
+    <p>&nbsp;</p>
+
+    <div id="tab-content" class="row rows-header" style="">
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Catalogs</div>
+    </div>
+   {% for catalog in catalogs.index %}
+    <div id="tab-content" class="row row-control" style="">
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+            <a href="./catalogs/{{ catalog.catalog_key }}">{{ catalog.catalog_key_display }}</a>
+        </div>
+        <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">
+            {{ catalog.metadata.title }}
+        </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+      <script>
+        // Submits control id for Control look up box
+        function show_control_by_id() {
+          var control_id = $('#control-lookup').find('input[name="id"]').val();
+          var url = "/controls/catalogs/{{ catalog.catalog_key }}/control/"+control_id;
+          window.location.href = url;
+        }
+      </script>
+{% endblock %}

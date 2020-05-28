@@ -17,9 +17,12 @@ GitPython # BSD License
 Pygments==2.2.0 # BSD License
 termcolor # MIT License
 xxhash # BSD License
+importlib-metadata<2,>=0.12 # Apache License
+importlib-resources<2,>=1.0 # Apache License
+
 
 # Common Django Packages
-Django<2.2.5 # BSD License
+Django==2.2.12 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
@@ -39,7 +42,9 @@ django-database-storage-backend # CC0, requires libmagic (libmagic1 in Debian)
 commonmarkextensions # BSD 3
 
 # Only needed in common production deployment configurations
-uwsgi # GPL2
+# uwsgi # GPL2 # Needed only if using uwsgi instead of gunicorn
+gunicorn # MIT License
+gevent # MIT License
 psycopg2-binary # LGPL
 rfc5424-logging-handler # BSD License
 
@@ -54,9 +59,11 @@ parsel # BSD License
 # Documentation only
 m2r # MIT License
 sphinxcontrib-contentui # MIT License
-
 # Temporarily pinned.
 
 # markupsafe is pinned here because tests crash with version 1.1.0.
 # Can probably unpin when https://github.com/pallets/markupsafe/issues/108 is resolved.
-markupsafe==1.0 # BSD 3.
+markupsafe==1.1.1 # BSD 3.
+
+# pin gevent to working version; we're getting Docker build errors with gevent==20.5.0
+gevent==1.4.0

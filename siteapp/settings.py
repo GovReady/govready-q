@@ -24,11 +24,14 @@ def make_secret_key():
 	from django.utils.crypto import get_random_string
 	return get_random_string(50, 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)')
 
+# Gather parameter settings from 'local/environment.json' file
+# NOTE: `environment` here refers to locally created environment data object and not OS level environment variables
 if os.path.exists(local("environment.json")):
         try:
                 environment = json.load(open(local("environment.json")))
         except json.decoder.JSONDecodeError as e:
                 print("%s is not in JSON format" % local("environment.json"))
+                print(open(local("environment.json")).read())
                 exit(1)
 else:
 	# Make some defaults and show the user.
@@ -44,6 +47,10 @@ else:
 	print("Please create a '%s' file containing something like this:" % local("environment.json"))
 	print(json.dumps(environment, sort_keys=True, indent=2))
 	print()
+
+# Load pre-specified admin users
+# Example: "govready_admins":[{"username": "username", "email":"first.last@example.com", "password": "REPLACEME"}]
+GOVREADY_ADMINS = environment.get("govready_admins") or []
 
 # DJANGO SETTINGS #
 ###################
@@ -140,7 +147,7 @@ if not DEBUG:
 # email address before confirming ownership.
 AUTH_USER_MODEL = primary_app + '.User'
 LOGIN_REDIRECT_URL = "/"
-AUTHENTICATION_BACKENDS = [
+AUTHENTICATION_BACKENDS = [ # see settings_application.py for how this is possible changed later
 	'django.contrib.auth.backends.ModelBackend',
 	'allauth.account.auth_backends.AuthenticationBackend', # allauth
 	'guardian.backends.ObjectPermissionBackend',

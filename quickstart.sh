@@ -31,7 +31,10 @@ if test -f env/bin/activate
 then
 	source env/bin/activate;
 	pip3 install -r requirements.txt;
-else
+elif [ -v $VIRTUALENV_ENV ]
+then
+	pip3 install -r requirements.txt;
+else 
 	pip3 install --user -r requirements.txt;
 fi
 echo $SPACER
@@ -48,11 +51,11 @@ then
 	# need to use a <<- heredoc if we want to have tabs be ignored
 	cat <<- ENDJSON > local/environment.json
 	{
-	  "debug": true,
-	  "host": "localhost:8000",
-	  "https": false,
-	  "organization-parent-domain": "localhost",
-	$SECRET_KEY_LINE
+		"debug": true,
+		"host": "localhost:8000",
+		"https": false,
+		"organization-parent-domain": "localhost",
+		$SECRET_KEY_LINE
 	}
 	ENDJSON
 else

@@ -74,14 +74,19 @@ class AppSource(models.Model):
 
     def get_available_apps(self):
         # TODO need to include already loaded apps
-        with self.open() as src:
-            for app in src.list_apps():
-                yield {
-                    "name": app.name,
-                    "new_version_number": app.get_new_version_number(),
-                    "versions_in_catalog": app.get_appversions(),
-                    "hidden_versions": app.get_hidden_appversions(),
-                }
+        try:
+            with self.open() as src:
+                for app in src.list_apps():
+                    yield {
+                        "name": app.name,
+                        "new_version_number": app.get_new_version_number(),
+                        "versions_in_catalog": app.get_appversions(),
+                        "hidden_versions": app.get_hidden_appversions(),
+                    }
+        except:
+            # If we cannot get any apps, return nothing so Admin page will not
+            # try and render widget displaying available apps
+            return
 
     def add_app_to_catalog(self, appname):
         from .app_loading import load_app_into_database
@@ -156,7 +161,7 @@ class AppVersion(models.Model):
         # In the database, we allow AppVersions to be shared across many Projects.
         # (The system AppVersion which holds e.g. the user profile module is
         # shared across many user projects, but that AppVersion is blacklisted
-        # from upgrades below.) 
+        # from upgrades below.)
         if self.system_app: return False
         projects = Task.objects.filter(module__app=self).values_list("project", flat=True).distinct()
         if len(projects) == 0:
@@ -329,10 +334,10 @@ class Module(models.Model):
                         label=edge_type,
                         )
                     stack.append(n)
-        
+
         if not seen_nodes:
             return None
-        
+
         svg = g.pipe(format='svg')
 
         # strip off <? xml ... <!DOCTYPE ...
@@ -556,6 +561,10 @@ class ModuleQuestion(models.Model):
         if self.spec["type"] == "multiple-choice":
             import json
             return "An array containing " + ", ".join(json.dumps(choice['key']) for choice in self.spec["choices"]) + "."
+        if self.spec["type"] == "datagrid":
+            # import json
+            # return "An array containing " + ", ".join(json.dumps(field['key']) for field in self.spec["fields"]) + "."
+            return "datagrid self.spec"
         return ""
 
 class Task(models.Model):
@@ -1156,26 +1165,35 @@ class Task(models.Model):
             blob = doc["html"].encode("utf8")
 
         elif download_format == "pdf":
-            # Render to HTML and convert to PDF using wkhtmltopdf.
-            
-            # Mark the encoding explicitly, to match the html.encode() argument below.
-            html = doc["html"]
-            html = '<meta charset="UTF-8" />' + html
+            # Render PDF as per PDF Generator settings
+            if settings.GR_PDF_GENERATOR == 'wkhtmltopdf':
+                # Render to HTML and convert to PDF using wkhtmltopdf.
+                # Mark the encoding explicitly, to match the html.encode() argument below.
+                html = doc["html"]
+                html = '<meta charset="UTF-8" />' + html
 
-            import subprocess # nosec
-            cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
-                   "-q", # else errors go to stdout
-                   "--disable-javascript",
-                   "--encoding", "UTF-8",
-                   "-s", "Letter", # page size
-                   "-", "-"]
-            with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
-                stdout, stderr = proc.communicate(
-                      html.encode("utf8"),
-                      timeout=10)
-                if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
+                import subprocess # nosec
+                cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
+                    "-q", # else errors go to stdout
+                    "--disable-javascript",
+                    "--encoding", "UTF-8",
+                    "-s", "Letter", # page size
+                    "-", "-"]
+                with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+                    stdout, stderr = proc.communicate(
+                        html.encode("utf8"),
+                        timeout=10)
+                    if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
 
-            blob = stdout
+                blob = stdout
+            else:
+                # GR_PDF_GENERATOR is set to None or other issue
+                # Generate text or markdown instead with error message
+                blob = doc["markdown"].encode("utf8")
+                # PDF Generator is turned off, so send plain text
+                blob = "PDF Generator is not configured."
+                filename = filename + 'txt'
+                mime_type = "text/plain"
 
         else:
             # Render to HTML and convert using pandoc.
@@ -1186,8 +1204,10 @@ class Task(models.Model):
             with tempfile.TemporaryDirectory() as tempdir:
                 # convert from HTML to something else, writing to a temporary file
                 outfn = os.path.join(tempdir, filename)
-                with subprocess.Popen(
-                    ["/usr/bin/pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+                # Append '# nosec' to line below to tell Bandit to ignore the low risk problem
+                # with not specifying the entire path to pandoc.
+                with subprocess.Popen(# nosec
+                    ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
                     stdin=subprocess.PIPE
                     ) as proc:
                     proc.communicate(
@@ -1198,7 +1218,6 @@ class Task(models.Model):
                 # return the content of the temporary file
                 with open(outfn, "rb") as f:
                     blob = f.read()
-
         return blob, filename, mime_type
 
     def render_snippet(self):
@@ -1553,7 +1572,7 @@ class Task(models.Model):
             # If any sub-task data was updated, don't warn about this task not being updated.
             if subtasks_updated:
                 did_update_any_questions = True
-            
+
         if not did_update_any_questions:
             deserializer.log("There were no new answers to save.")
 
@@ -1640,7 +1659,7 @@ class TaskAnswer(models.Model):
                 "type": "event",
                 "date": answer.created,
                 "html":
-                    ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> " 
+                    ("<a href='javascript:alert(\"Profile link here.\")'>%s</a> "
                     % html.escape(who['name']))
                     + vp + ".",
                 "user": who,
@@ -1921,10 +1940,16 @@ class TaskAnswerHistory(models.Model):
         # instance, an array of instances, that will lazy-load the answers
         # when needed.
         if q.spec["type"] in ("module", "module-set"):
-            value = [
-                ModuleAnswers(t.module, t, None)
-                for t in self.answered_by_task.all()
+            if self.id is not None:
+                # this is in the database
+                value = [
+                    ModuleAnswers(t.module, t, None)
+                    for t in self.answered_by_task.all()
                 ]
+            else:
+                # this is _not_ in the database, and the answer is stored_value
+                # see Task.build_answers() regarding imputed answers
+                return self.stored_value
             if q.spec["type"] == "module":
                 if len(value) == 0:
                     # The question is skipped.
@@ -1987,37 +2012,41 @@ class TaskAnswerHistory(models.Model):
             thumbnail_dataurl = None
             if not self.thumbnail:
                 # Try to construct a thumbnail.
-                if sf.mime_type == "text/html":
-                    # Use wkhtmltoimage.
-                    import subprocess # nosec
-                    try:
-                        # Pipe to subprocess.
-                        # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
-                        cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltoimage",
-                                "-q", # else errors go to stdout
-                                "--disable-javascript",
-                                "-f", "png",
-                                # "--disable-smart-width", - generates a warning on stdout that qt is unpatched, which happens in headless mode
-                                "--zoom", ".7",
-                                "--width", "700",
-                                "--height", str(int(700*9/16)),
-                                "-", "-"]
-                        with subprocess.Popen(cmd,
-                            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                            ) as proc:
-                            stdout, stderr = proc.communicate(
-                                self.answered_by_file.read(),
-                                timeout=10)
-                            if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
+                if settings.GR_IMG_GENERATOR == 'wkhtmltopdf':
+                    if sf.mime_type == "text/html":
+                        # Use wkhtmltoimage.
+                        import subprocess # nosec
+                        try:
+                            # Pipe to subprocess.
+                            # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
+                            cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltoimage",
+                                    "-q", # else errors go to stdout
+                                    "--disable-javascript",
+                                    "-f", "png",
+                                    # "--disable-smart-width", - generates a warning on stdout that qt is unpatched, which happens in headless mode
+                                    "--zoom", ".7",
+                                    "--width", "700",
+                                    "--height", str(int(700*9/16)),
+                                    "-", "-"]
+                            with subprocess.Popen(cmd,
+                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                ) as proc:
+                                stdout, stderr = proc.communicate(
+                                    self.answered_by_file.read(),
+                                    timeout=10)
+                                if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
 
-                        # Store PNG.
-                        from django.core.files.base import ContentFile
-                        value = ContentFile(stdout)
-                        value.name = "thumbnail.png" # needs a name for the storage backend?
-                        self.thumbnail = value
-                        self.save(update_fields=["thumbnail"])
-                    except subprocess.CalledProcessError as e:
-                        print(e)
+                            # Store PNG.
+                            from django.core.files.base import ContentFile
+                            value = ContentFile(stdout)
+                            value.name = "thumbnail.png" # needs a name for the storage backend?
+                            self.thumbnail = value
+                            self.save(update_fields=["thumbnail"])
+                        except subprocess.CalledProcessError as e:
+                            print(e)
+                else:
+                    # No image generator set, cannot create thumbnail
+                    pass
 
             if self.thumbnail:
                 # If we have a thumbnail, indicate so by returning a URL to it.
@@ -2033,7 +2062,7 @@ class TaskAnswerHistory(models.Model):
                 "thumbnail_url": thumbnail_url,
                 "thumbnail_dataurl": thumbnail_dataurl,
             }
-        
+
         # For all other question types, the value is stored in the stored_value
         # field.
         else:
@@ -2080,11 +2109,11 @@ class TaskAnswerHistory(models.Model):
             if q.spec["type"] == "module":
                 # It's a ModuleAnswers instance -- serialize the Task itself.
                 value = value.task.export_json(serializer)
-            
+
             elif q.spec["type"] == "module-set":
                 # It's an array of ModuleAnswers instances.
                 value = [x.task.export_json(serializer) for x in value]
-            
+
             elif q.spec["type"] == "file":
                 # Although self.get_value() returns useful data, it's not the export
                 # format because it doesn't include the file content (only a URL to it).
@@ -2123,6 +2152,14 @@ class TaskAnswerHistory(models.Model):
                     human_readable_text = choices.get(value)
                 elif q.spec["type"] == "multiple-choice":
                     human_readable_text = [choices.get(v) for v in value]
+
+            elif q.spec["type"] in ("datagrid"):
+                # Get the 'text' values for the choices.
+                human_readable_text_key = "text"
+                fields = { c["key"]: c["text"] for c in q.spec["fields"] }
+                if q.spec["type"] == "datagrid":
+                    # human_readable_text = [fields.get(v) for v in value]
+                    human_readable_text = "datagrid_fix human_readable_text"
 
             elif q.spec["type"] == "yesno":
                 human_readable_text_key = "text"
@@ -2235,7 +2272,7 @@ class TaskAnswerHistory(models.Model):
 
                     deserializer.log_nesting_level -= 1
                     deserializer.log("Finished importing '{}'.".format(taskanswer.question.spec['title']))
-                    
+
 
             # Reset this variable so stored_value is set to None.
             value = None
