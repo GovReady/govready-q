@@ -1,6 +1,27 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.17 (May 29, 2020)
+------------------------
+
+**UX changes:**
+
+Performance improvements to improve rendering questions faster.
+
+A major change in this commit is to create a cache for Jinja `expression_compile` routine.
+This new cache is `jinja2_expression_compile_cache` and seems to have a noticable improvement
+on maintaining a regular amount of time to render questions.
+
+Several page reloads were the result of page redirects being handled
+based on content of the next page inside the question save form. Calculating the next page
+to display while accounting for skipping computed pages is now handled server side as a function
+that can be called.
+
+Removed links to imputed pages from the module finished page. It does not make sense to
+link to imputed questions when users cannot visit imputed question pages.
+
+Improve caching of OSCAL control catalogs.
+
 v.0.9.1.16 (May 18, 2020)
 -------------------------
 
@@ -320,7 +341,7 @@ v0.9.0.3.3 (February 23, 2020)
 * Use Math.pow in main.js to fix IE11 failing to display invite modal
 
 
-v0.9.0.3.2 (February 21, 2019)
+v0.9.0.3.2 (February 21, 2020)
 -------------------------------
 
 **Deployment changes**
@@ -340,7 +361,7 @@ v0.9.0.3.2 (February 21, 2019)
 
 
 v0.9.0.3 (November 21, 2019)
--------------------------------
+----------------------------
 
 **UX changes**
 
