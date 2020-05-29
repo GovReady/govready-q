@@ -2,60 +2,35 @@
 
 .. _govready-q_server_sources_centos_rhel:
 
-<<<<<<< HEAD
-CentOS / RHEL 7 / Amazon Linux 2 from sources
-==============================================
-=======
 CentOS / RHEL 7 from sources
 ============================
->>>>>>> master
 
 This guide describes how to install the GovReady-Q server for CentOS 7 or greater from source code.
 
 
 .. note::
-<<<<<<< HEAD
-    Instructions applicable for RHEL 7, CentOS 7 and Amazon Linux 2. 
-    Tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__ on 2020-05-04.
-
-Installing required OS packages
--------------------------------
-=======
     Instructions applicable for RHEL 7 and CentOS 7.
     Tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__.
 
 1. Installing required OS packages
 ----------------------------------
->>>>>>> master
 
 GovReady-Q requires Python 3.6 or higher and several Linux packages to
 provide full functionality. Execute the following commands:
 
 .. code:: bash
 
-<<<<<<< HEAD
-   # enable IUS repository
-   sudo yum install https://centos7.iuscommunity.org/ius-release.rpm
-   sudo yum update
-
-   # install dependencies
-=======
    # Enable IUS repository
    sudo yum install https://centos7.iuscommunity.org/ius-release.rpm
    sudo yum update
 
    # Install dependencies
->>>>>>> master
    sudo yum install \
    python36u python36u-pip \
    unzip git2u jq nmap-ncat \
    graphviz pandoc
 
-<<<<<<< HEAD
-   # to generate thumbnails and PDFs for export, you must install wkhtmltopdf
-=======
    # To generate thumbnails and PDFs for export, you must install wkhtmltopdf
->>>>>>> master
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
    # search the web for "wkhtmltopdf Server-Side Request Forgery"
    read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then sudo yum install xorg-x11-server-Xvfb wkhtmltopdf ; fi
@@ -67,17 +42,10 @@ Switch it to version 2+ by using the IUS package:
 
 .. code:: bash
 
-<<<<<<< HEAD
-   # if necessary, remove any git currently installed
-   sudo yum remove git
-
-   # install git2u
-=======
    # If necessary, remove any git currently installed
    sudo yum remove git
 
    # Install git2u
->>>>>>> master
    sudo yum install git2u
 
 
@@ -91,55 +59,6 @@ Upgrade ``pip`` because the RHEL package version is out of date (we need
 
    pip3 install --upgrade pip
 
-<<<<<<< HEAD
-Installing GovReady-Q
-~~~~~~~~~~~~~~~~~~~~~
-
-Clone the GovReady source code and install packages.
-
-.. code:: bash
-
-   # clone GovReady-Q
-   git clone https://github.com/govready/govready-q
-   cd govready-q
-
-   # install Python 3 packages
-   pip3 install --user -r requirements.txt
-
-   # install Bootstrap and other vendor resources locally
-   # (sudo needed only for the embedded 'yum install' command)
-   sudo ./fetch-vendor-resources.sh
-
-Setting up GovReady-Q
-~~~~~~~~~~~~~~~~~~~~~
-
-Run the final setup commands to initialize a local SQLite database in
-local/db.sqlite to make sure everything is OK so far.
-
-The following warning message is expected and okay:
-
-   **WARNING: Specified PDF generator is not supported. Setting generator
-   to ‘off’.**
-
-.. code:: bash
-
-   # run database migrations (sqlite3 database used by default)
-   python3 manage.py migrate
-
-   # load a few critical modules
-   python3 manage.py load_modules
-
-   # create superuser with initial account
-   python3 manage.py first_run
-
-Starting GovReady-Q
-~~~~~~~~~~~~~~~~~~~
-
-.. code:: bash
-
-   # run the server
-   python3 manage.py runserver 0.0.0.0:8000
-=======
 2. Cloning the GovReady-Q repository
 ------------------------------------
 
@@ -350,27 +269,18 @@ Run the install script to install required Python libraries, initialize GovReady
 
    # Run the server
    python3 manage.py runserver
->>>>>>> master
 
 Visit your GovReady-Q site in your web browser at:
 
 http://localhost:8000/
 
 
-<<<<<<< HEAD
-It is not necessary to specify a port. GovReady-Q will read the `local/enviroment.json` file to determine
-=======
 It is not necessary to specify a port. GovReady-Q will read the ``local/environment.json`` file to determine
->>>>>>> master
 host name and port.
 
 .. code:: bash
 
-<<<<<<< HEAD
-   # run the server
-=======
    # Run the server
->>>>>>> master
    python3 manage.py runserver
 
 .. note::
@@ -380,48 +290,6 @@ host name and port.
 
     GovReady-Q defaults to `localhost:8000` when launched with ``python manage.py runserver``.
 
-<<<<<<< HEAD
-    Tested on a ``CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>``__ on 2020-05-04.
-
-
-(Optional) Installing Postgres, MySQL
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-GovReady-Q can optionally be configured to work with Postgress or MySQL database engines instead of the default SQLITE3.
-
-.. code:: bash
-
-   # optional install of postgres and/or mysql
-   sudo yum install postgresql mysql-devel
-
-.. code:: bash
-
-   # if you intend to use optional configurations, such as the MySQL adapter, you
-   # may need to run additional `pip3 install` commands, such as:
-   pip3 install --user -r requirements_mysql.txt
-
-Creating “environment.json” configuration file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-GovReady uses a configuration file stored at ``local/environment.json``.
-
-See `Environment Settings <Environment.html>`__ for a complete list of variables you can
-configure.
-
-Create a file there and include values like these:
-
-.. code:: json
-
-   {
-     "debug": false,
-     "host": "localhost:8000",
-     "https": false,
-     "secret-key": "...something here..."
-   }
-
-(Optional) Enabling PDF export
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-=======
 
 6. Stopping GovReady-Q
 ----------------------
@@ -472,46 +340,16 @@ For situations in which more granular control over the install process is requir
 
 Enabling PDF export
 ~~~~~~~~~~~~~~~~~~~
->>>>>>> master
 
 To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
 ``gr-img-generator`` environment variables to your
 ``local/environment.json`` configuration file:
 
-<<<<<<< HEAD
-::
-=======
 .. code:: json
->>>>>>> master
 
    {
       ...
       "gr-pdf-generator": "wkhtmltopdf",
-<<<<<<< HEAD
-      "gr-img-generator": "`wkhtmltopdf",
-      ...
-   }
-
-(Optional) Deployment utilities
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Sample ``apache.conf``, ``superviser.ini``, and ``update.sh`` files can
-be found in the source code directory ``deployment/rhel``.
-
-(Optional) Creating a dedicated GovReady UNIX user
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You may find it useful to create a user specifically for GovReady-Q. Do
-this before installing GovReady-Q.
-
-.. code:: bash
-
-   # Create user.
-   useradd govready-q -c "govready-q"
-
-   # Change permissions so that the webserver can read static files.
-   chmod a+rx /home/govready-q
-=======
       "gr-img-generator": "wkhtmltopdf",
       ...
    }
@@ -523,4 +361,3 @@ GovReady-Q can be optionally deployed with NGINX and Supervisor. There's also a 
 
 Sample ``nginx.conf``, ``supervisor.confg``, and ``update.sh`` files can
 be found in the source code directory ``deployment/ubuntu``.
->>>>>>> master
