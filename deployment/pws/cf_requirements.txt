@@ -1,4 +1,4 @@
 gunicorn
 whitenoise==1.0.6
 newrelic
-dj_database_url
+dj_database_url==0.5.0
