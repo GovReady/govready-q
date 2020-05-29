@@ -22,11 +22,12 @@ importlib-resources<2,>=1.0 # Apache License
 
 
 # Common Django Packages
-Django==2.2.12 # BSD License
+# Django==2.2.12 # BSD License
+Django==3.0.6 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
-django-notifications-hq==1.4 # MIT License
+django-notifications-hq==1.6 # MIT License
 jsonfield # MIT License
 dj_database_url # BSD License
 whitenoise # MIT License
