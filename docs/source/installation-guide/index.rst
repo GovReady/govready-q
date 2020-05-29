@@ -13,6 +13,10 @@ This document will guide you through the GovReady-Q installation process.
 Setting up GovReady-Q involves installing the GovReady-Q server, a database, a WSGI server to run the Python code, and optionally connecting GovReady-Q to a mailserver to send invitations and notifications.
 
 .. note::
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
   This is a note.
 
 .. topic:: Contents

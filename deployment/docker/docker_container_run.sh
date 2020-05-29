@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # This script simplifies what users need to know in
-# order to launch our Docker container.
+# order to launch our Docker container for local development.
+
+# This script is not recommended for use in orchestrated environment.
 
 set -euf -o pipefail # abort script on error
 

@@ -34,7 +34,7 @@ ENV LANGUAGE en_US:en
 # git2u: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
 # jq: we use it to assemble the local/environment.json file
 RUN \
-   yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
+   yum -y install https://repo.ius.io/ius-release-el7.rpm \
 && yum -y update \
 && yum -y install \
     python36u python36u-pip \
@@ -102,6 +102,8 @@ COPY q-files ./q-files
 COPY testmocking ./testmocking
 COPY system_settings ./system_settings
 COPY manage.py .
+COPY install-govready-q.sh .
+COPY quickstart.sh .
 
 # Flatten static files. Create a local/environment.json file that
 # has the static directory set and only setting necessary for collectstatic

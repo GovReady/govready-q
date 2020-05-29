@@ -21,8 +21,9 @@ class Command(BaseCommand):
         parser.add_argument('--non-interactive', action='store_true')
 
     def handle(self, *args, **options):
-        # Sanity check that the database is ready --- make sure the system
+        # Sanity check that the database is available and ready --- make sure the system
         # modules exist (since we need them before creating an Organization).
+        # Also useful in container deployments to make sure container fully deployed.
         try:
             if not Module.objects.filter(
                 app__source__is_system_source=True, app__appname="organization",
