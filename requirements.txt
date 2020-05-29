@@ -35,10 +35,9 @@ colour==0.1.5 \
     --hash=sha256:33f6db9d564fadc16e59921a56999b79571160ce09916303d35346dddc17978c \
     --hash=sha256:af20120fefd2afede8b001fbef2ea9da70ad7d49fafdb6489025dae8745c3aee \
     # via mondrianish
-commonmark==0.8.1 \
-    --hash=sha256:9f6dda7876b2bb88dd784440166f4bc8e56cb2b2551264051123bacb0b6c1d8a \
-    --hash=sha256:abcbc854e0eae5deaf52ae5e328501b78b4a0758bf98ac8bb792fce993006084 \
-    # via -r requirements.in, commonmarkextensions, django-html-emailer
+commonmark==0.9.1 \
+    --hash=sha256:452f9dc859be7f06631ddcb328b6919c67984aca654e5fefb3914d54691aed60 \
+    --hash=sha256:da2f38c92590f83de410ba1a3cbceafbc74fee9def35f9251ba9a971d6d66fd9    # via -r requirements.in, commonmarkextensions, django-html-emailer
 commonmarkextensions==0.0.5 \
     --hash=sha256:35cb6f5fc42f7f36834371c857bc34e29599ff329438bd715f3081c6b8ec0fbb \
     --hash=sha256:be1fe5562a81051fd3e06e23cd2300bd4506ac0041d91189508e1627fd5cd846 \
