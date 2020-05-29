@@ -1,42 +1,26 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.17 (May 28 2020)
------------------------
+v0.9.1.17 (May 29, 2020)
+------------------------
 
 **UX changes:**
 
 Performance improvements to improve rendering questions faster.
 
-This interim performance profiling improvement incorporates pyinstrument library
-in the guidedmodules/views.task_view to help see what is going in viewing a question.
-This inclusion requires pip install pyinstrument.
-
 A major change in this commit is to create a cache for Jinja `expression_compile` routine.
 This new cache is `jinja2_expression_compile_cache` and seems to have a noticable improvement
 on maintaining a regular amount of time to render questions.
 
-We also noticed several page reloads that were the result of page redirects being handled
+Several page reloads were the result of page redirects being handled
 based on content of the next page inside the question save form. Calculating the next page
-to display, which accounts for skipping computed pages, is now handled server side as a function
+to display while accounting for skipping computed pages is now handled server side as a function
 that can be called.
 
-PROBLEM: Since the current new routing skips pages with imputed results, it becomes impossible
-to navigate through completed questions. If you jump from the finished page to an imputed question
-you come back to the finish page. If you jump from the finished page to an answered question in
-order to change the answer, you can change the answer, but you do not proceed to the next already
-answered question linearly. Instead, the application logic tries to send you to the next answerable
-question, which could take you back to the finished page.
+Removed links to imputed pages from the module finished page. It does not make sense to
+link to imputed questions when users cannot visit imputed question pages.
 
-Also removed links to imputed pages from the module finished page. The links were not working
-so it deid not make sense to display them as links.
-
-Fixes a calculation problem in previous commit a6e7a13 in which next question calculation
-skipped questions with answered. This created an odd user experience of not
-being able to answer/update a question and then proceed linearly. New calculation
-includes all "answerable" questions while excluding the current question just
-answered as an answerable question.
-
+Improve caching of OSCAL control catalogs.
 
 v.0.9.1.16 (May 18, 2020)
 -------------------------

@@ -1214,7 +1214,7 @@ class TemplateContext(Mapping):
                 # Retrieve a Django dictionary of dictionaries object of full control catalog
                 from controls.oscal import Catalog
                 sca = Catalog.GetInstance()
-                control_catalog = sca.get_flattended_controls_all_as_dict()
+                control_catalog = sca.flattended_controls_all_as_dict
                 return control_catalog
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't

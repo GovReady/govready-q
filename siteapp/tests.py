@@ -369,7 +369,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # - The user is looking at the Introduction page.
         self.click_element("#save-button")
-        var_sleep(.5) # wait for page to load
+        var_sleep(1.0) # wait for page to load
 
         # - Now at the what is your name page?
         self.fill_field("#inputctrl", "John Doe")
@@ -406,7 +406,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(1)
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(1)
+        var_sleep(1.75)
 
         # Text question.
         self.assertIn("| A Simple Module - GovReady-Q", self.browser.title)
