@@ -19,3 +19,4 @@ GovReady includes utilities for automated testing of the GovReady Code, User Int
         code-analysis
         supply-chain
         sample-data
+        performance-profiling-pyinstrument
