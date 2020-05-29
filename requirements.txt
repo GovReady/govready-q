@@ -360,10 +360,9 @@ packaging==20.3 \
     --hash=sha256:3c292b474fda1671ec57d46d739d072bfd495a4f51ad01a055121d81e952b7a3 \
     --hash=sha256:82f77b9bee21c1bafbf35a84905d604d5d1223801d639cf3ed140bd651c08752 \
     # via dparse, safety, sphinx
-parsel==1.5.2 \
-    --hash=sha256:4da4262ba4605573b6b72a5f557616a2fc9dee7a47a1efad562752a28d366723 \
-    --hash=sha256:74f8e9d3b345b14cb1416bd777a03982cde33a74d8b32e0c71e651d07d41d40a \
-    # via -r requirements.in
+parsel==1.6.0 \
+    --hash=sha256:70efef0b651a996cceebc69e55a85eb2233be0890959203ba7c3a03c72725c79 \
+    --hash=sha256:9e1fa8db1c0b4a878bf34b35c043d89c9d1cbebc23b4d34dbc3c0ec33f2e087d    # via -r requirements.in
 pbr==5.4.5 \
     --hash=sha256:07f558fece33b05caf857474a366dfcc00562bca13dd8b47b2b3e22d9f9bf55c \
     --hash=sha256:579170e23f8e0c2f24b0de612f71f648eccb79fb1322c814ae6b3c07b5ba23e8 \
