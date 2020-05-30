@@ -7,11 +7,6 @@ CentOS / RHEL 7 from sources
 
 This guide describes how to install the GovReady-Q server for CentOS 7 or greater from source code.
 
-
-.. note::
-    Instructions applicable for RHEL 7 and CentOS 7.
-    Tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__.
-
 1. Installing required OS packages
 ----------------------------------
 
@@ -29,6 +24,9 @@ provide full functionality. Execute the following commands:
    python36u python36u-pip \
    unzip git2u jq nmap-ncat \
    graphviz pandoc
+
+   # Upgrade pip to version 20.1+
+   python3 -m pip install --upgrade pip
 
    # To generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
@@ -62,55 +60,77 @@ Upgrade ``pip`` because the RHEL package version is out of date (we need
 2. Cloning the GovReady-Q repository
 ------------------------------------
 
-Clone the GovReady-Q repository from GitHub into the desired directory on your CentOS server.
+You now need to decide where to install the GovReady-Q files and whether to run GovReady-Q as root or as a dedicated
+Linux user. Installing as root is convenient for initial testing and some circumstances. Creating a dedicated user and installing as that user is considered better practice.
+
+2 (option a). Installing as root
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+   These steps assume your are installing into the ``/opt/`` directory as root.
+
+Clone the GovReady-Q repository from GitHub into the desired directory on your Ubuntu server.
 
 .. code:: bash
+
+   cd /opt
+
+   # Clone GovReady-Q
+   git clone https://github.com/govready/govready-q /path/to/govready-q
+   cd govready-q
+
+   # GovReady-Q files are now installed in /opt/govready-q and owned by root
+
+2 (option b). Installing as Linux user "govready-q"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+   These steps assume your are installing into the ``/home/govready-q`` directory as user ``govready-q``.
+
+While you are still root, create a dedicated Linux user ``govready-q`` and home directory. Change directory into the
+created user's home directory and switch users to ``govready-q``. Clone the GovReady-Q repository from GitHub.
+
+.. code:: bash
+
+   # Create user
+   useradd govready-q -m -c "govready-q"
+   chsh -s /bin/bash govready-q
+   cp /etc/skel/.bashrc /home/govready-q/.
+   chown govready-q:govready-q /home/govready-q/.bashrc
+
+   # Change permissions so that the webserver can read static files
+   chmod a+rx /home/govready-q
+
+   # Switch to the govready-q user
+   cd /home/govready-q
+   su govready-q
 
    # Clone GovReady-Q
    git clone https://github.com/govready/govready-q
    cd govready-q
 
-.. note::
-   You may find it useful to create a Linux user specifically for GovReady-Q before cloning GovReady-Q.
-
-   .. code:: bash
-
-      # Create user
-      useradd govready-q -m -c "govready-q"
-      chsh -s /bin/bash govready-q
-      cp /etc/skel/.bashrc /home/govready-q/.
-      chown govready-q:govready-q /home/govready-q/.bashrc
-
-      # Change permissions so that the webserver can read static files
-      chmod a+rx /home/govready-q
-
-      # Switch to the govready-q user
-      cd /home/govready-q
-      su govready-q
-
-      # Clone GovReady-Q
-      git clone https://github.com/govready/govready-q
-      cd govready-q
+   # GovReady-Q files are now installed in /home/govready-q/govready-q and owned govready-q
 
 3. Installing desired database
 ------------------------------
 
 GovReady-Q requires a relational database. You can choose:
 
-* SQLITE3 (default)
+* SQLITE3
 * MySQL
 * PostgreSQL
+
+GovReady-Q will automatically default to and use a SQLITE3 database installed at ``local/db.sqlite3``
+if you do not specify a database connection string in ``local/environment.json``.
 
 3 (option a). Installing SQLITE3 (default)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GovReady-Q will automatically install a local SQLITE3 database by default.
+There is no setup necessary to use SQLITE3. GovReady-Q will automatically install a local SQLITE3 database
+``local/db.sqlite3`` by default if no ``db`` parameter is set in ``local/environment.json``.
 
-The SQLITE3 file will be installed within the GovReady-Q directory structure as
-``local/db.sqlite3``.
-
-.. warning::
-   SQLITE3 is not recommended for production. SQLITE3 database -- AND YOUR DATA -- will be destroyed when you delete the virtual machine (or container) running GovReady-Q.
+.. note::
+   All files in ``govready-q/local`` are git ignored so that you can safely pull git updates.
 
 3 (option b). Installing MySQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -122,23 +142,15 @@ On the database server, install MySQL OS packages:
    # Install of MySQL OS packages
     sudo yum install mysql-devel
 
-You must specify the database connection string in GovReady-Q's configuration file at ``local/environment.json``.
+Make a note of the MySQL's host, port, database name, user and password to add to GovReady-Q's configuration file at ``local/environment.json``.
 
 .. code:: json
 
    {
+      ...
       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-      "govready-url": "http://localhost:8000",
-      "debug": false,
-      "secret-key": "...something here..."
+      ...
    }
-
-.. note::
-   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
-
-.. warning::
-   MySQL can be installed locally on the same host as GovReady-Q or on a separate host.
-   Your MySQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
 
 
 3 (option c). Installing PostgreSQL
@@ -165,48 +177,15 @@ database of the same name.
 
 You must specify the database connection string in GovReady-Q's configuration file at ``local/environment.json``.
 
+Make a note of the Postgres host, port, database name, user and password to add to GovReady-Q's configuration file at ``local/environment.json``.
+
 .. code:: json
 
-      {
+   {
+      ...
       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-      "govready-url": "http://localhost:8000",
-      "debug": false,
-      "secret-key": "long_random_string_here"
+      ...
    }
-
-.. note::
-   As of 0.9.1.20, the "govready-url" environment parameter is preferred way to set Django internal security, url,
-   ALLOWED_HOST, and other settings instead of deprecated environment parameters "host" and "https".
-   The "host" and "https" deprecated parameters will continue to be support for reasonable period for legacy installs.
-
-   Deprecated (but supported for a reasonable period):
-
-   .. code:: json
-
-      {
-         "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-         "host": "localhost:8000",
-         "http": false,
-         "debug": false,
-         "secret-key": "long_random_string_here"
-      }
-
-   Preferred:
-
-   .. code:: json
-
-      {
-         "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-         "govready-url": "http://localhost:8000",
-         "debug": false,
-         "secret-key": "long_random_string_here"
-      }
-
-   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
-
-.. warning::
-   PostgreSQL can be installed locally on the same host as GovReady-Q or on a separate host.
-   Your PostgreSQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
 
 **Encrypting your connection to PostgreSQL running on a separate database server**
 
@@ -386,3 +365,8 @@ GovReady-Q can be optionally deployed with NGINX and Supervisor. There's also a 
 
 Sample ``nginx.conf``, ``supervisor.confg``, and ``update.sh`` files can
 be found in the source code directory ``deployment/ubuntu``.
+
+Notes
+=====
+
+Instructions applicable for RHEL 7 and CentOS 7 and tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__.

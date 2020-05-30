@@ -7,11 +7,6 @@ Ubuntu from sources
 
 This guide describes how to install the GovReady-Q server for Ubuntu 16.04 or greater from source code.
 
-
-.. note::
-    Instructions applicable for Ubuntu 20.04 LTS (Focal Fossa)
-    Tested on an `Ubuntu focal-20200423 Docker image <https://hub.docker.com/_/ubuntu>`__.
-
 1. Installing required OS packages
 -------------------------------
 
@@ -32,87 +27,101 @@ provide full functionality. Execute the following commands as root:
    graphviz pandoc \
    language-pack-en-base language-pack-en
 
+   # Upgrade pip to version 20.1+
+   python3 -m pip install --upgrade pip
+
    # To optionally generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
    # search the web for "wkhtmltopdf Server-Side Request Forgery"
    read -p "Are you sure you need to generate PDF files (yes/no)? " ; if [ "$REPLY" = "yes" ]; then apt-get install wkhtmltopdf ; fi
 
+.. warning::
+   The default version 9.0.x of pip installed on Ubuntu (May 2020) correctly installs Python packages when run as root, but fails when run as non-root user and does not report the error clearly. (Pip 9.0.x fails to create the user's ``.local`` directory for installing the packages.)
+   Upgrading pip to version 20.x solves this problem. Pip must be upgraded to 20.x for the ``./install-govready-q`` script to properly install the
+   Python packages.
+
 2. Cloning the GovReady-Q repository
 ------------------------------------
+
+You now need to decide where to install the GovReady-Q files and whether to run GovReady-Q as root or as a dedicated
+Linux user. Installing as root is convenient for initial testing and some circumstances. Creating a dedicated user and installing as that user is considered better practice.
+
+2 (option a). Installing as root
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+   These steps assume your are installing into the ``/opt/`` directory as root.
 
 Clone the GovReady-Q repository from GitHub into the desired directory on your Ubuntu server.
 
 .. code:: bash
 
+   cd /opt
+
+   # Clone GovReady-Q
+   git clone https://github.com/govready/govready-q /path/to/govready-q
+   cd govready-q
+
+   # GovReady-Q files are now installed in /opt/govready-q and owned by root
+
+2 (option b). Installing as Linux user "govready-q"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+   These steps assume your are installing into the ``/home/govready-q`` directory as user ``govready-q``.
+
+While you are still root, create a dedicated Linux user ``govready-q`` and home directory. Change directory into the
+created user's home directory and switch users to ``govready-q``. Clone the GovReady-Q repository from GitHub.
+
+.. code:: bash
+
+   # Create user
+   useradd govready-q -m -c "govready-q"
+   chsh -s /bin/bash govready-q
+   cp /etc/skel/.bashrc /home/govready-q/.
+   chown govready-q:govready-q /home/govready-q/.bashrc
+
+   # Change permissions so that the webserver can read static files
+   chmod a+rx /home/govready-q
+
+   # Switch to the govready-q user
+   cd /home/govready-q
+   su govready-q
+
    # Clone GovReady-Q
    git clone https://github.com/govready/govready-q
    cd govready-q
 
-.. note::
-   You may find it useful to create a Linux user specifically for GovReady-Q before cloning GovReady-Q.
-
-   .. code:: bash
-
-      # Create user
-      useradd govready-q -m -c "govready-q"
-      chsh -s /bin/bash govready-q
-      cp /etc/skel/.bashrc /home/govready-q/.
-      chown govready-q:govready-q /home/govready-q/.bashrc
-
-      # Change permissions so that the webserver can read static files
-      chmod a+rx /home/govready-q
-
-      # Switch to the govready-q user
-      cd /home/govready-q
-      su govready-q
-
-      # Clone GovReady-Q
-      git clone https://github.com/govready/govready-q
-      cd govready-q
-
-      # Upgrade to latest pip3 to properly install Python packages under Linux user
-      python3 -m pip install --upgrade pip
-
-.. warning::
-   It is important to upgrade ``pip`` when installing and operating GovReady-Q under a dedicated Linux user instead of root.
-
-   The default version of ``pip`` installed with Python3 on Ubuntu is version 9.0.x (tested May 2020). Version 9.0.x installs Python
-   packages correctly when run as root, but fails to install the Python packages when run as non-root user and does not report this error well.
-   This default version of ``pip`` fails to create the ``/home/govready_q/.local/`` directory to which the required Python packages are installed.
-
-   Upgrading ``pip`` to version 20.x corrects this problem and allows the ``./install-govready-q`` script to properly installed the
-   Python packages under the Linux user.
-
-   .. code:: bash
-
-      # Upgrade to latest pip3 to properly install Python packages under Linux user
-      python3 -m pip install --upgrade pip
-
+   # GovReady-Q files are now installed in /home/govready-q/govready-q and owned govready-q
 
 3. Installing desired database
----------------------------
+------------------------------
 
 GovReady-Q requires a relational database. You can choose:
 
-* SQLITE3 (default)
+* SQLITE3
 * MySQL
 * PostgreSQL
 
+GovReady-Q will automatically default to and use a SQLITE3 database
+if you do not specify a database connection string in ``local/environment.json``.
+
+
+
 3 (option a). Installing SQLITE3 (default)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GovReady-Q will automatically install a local SQLITE3 database by default.
+There is no setup necessary to use SQLITE3. GovReady-Q will automatically install a local SQLITE3 database
+``local/db.sqlite3`` by default if no ``db`` parameter is set in ``local/environment.json``.
 
-The SQLITE3 file will be installed within the GovReady-Q directory structure as
-``local/db.sqlite3``.
+.. note::
+   All files in ``govready-q/local`` are git ignored so that you can safely pull git updates.
 
-.. warning::
-   SQLITE3 is not recommended for production. SQLITE3 database -- AND YOUR DATA -- will be destroyed when you delete the virtual machine (or container) running GovReady-Q.
 
 3 (option b). Installing MySQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On the database server, install MySQL OS packages:
+Install MySQL OS packages either the same server as GovReady-Q or on a different database server.
 
 .. code:: bash
 
@@ -125,28 +134,20 @@ On the database server, install MySQL OS packages:
    # may need to run additional `pip3 install` commands, such as:
    pip3 install --user -r requirements_mysql.txt
 
-You must specify the database connection string in GovReady-Q's configuration file at ``local/environment.json``.
+Make a note of the MySQL's host, port, database name, user and password to add to GovReady-Q's configuration file at ``local/environment.json``.
 
 .. code:: json
 
    {
+      ...
       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-      "govready-url": "http://localhost:8000",
-      "debug": false,
-      "secret-key": "long_random_string_here"
+      ...
    }
-
-.. note::
-   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
-
-.. warning::
-   MySQL can be installed locally on the same host as GovReady-Q or on a separate host.
-   Your MySQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
 
 3 (option c). Installing PostgreSQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On the database server, install PostgreSQL OS packages:
+Install PostgreSQL OS packages either the same server as GovReady-Q or on a different database server.
 
 .. code:: bash
 
@@ -165,50 +166,15 @@ Then set up the user and database (both named ``govready_q``):
 Postgres’s default permissions automatically grant users access to a
 database of the same name.
 
-You must specify the database connection string in GovReady-Q's configuration file at ``local/environment.json``.
+Make a note of the Postgres host, port, database name, user and password to add to GovReady-Q's configuration file at ``local/environment.json``.
 
 .. code:: json
 
    {
+      ...
       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-      "govready-url": "http://localhost:8000",
-      "debug": false,
-      "secret-key": "long_random_string_here"
+      ...
    }
-
-.. note::
-   As of 0.9.1.20, the "govready-url" environment parameter is preferred way to set Django internal security, url,
-   ALLOWED_HOST, and other settings instead of deprecated environment parameters "host" and "https".
-   The "host" and "https" deprecated parameters will continue to be support for reasonable period for legacy installs.
-
-   Deprecated (but supported for a reasonable period):
-
-   .. code:: json
-
-      {
-         "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-         "host": "localhost:8000",
-         "http": false,
-         "debug": false,
-         "secret-key": "long_random_string_here"
-      }
-
-   Preferred:
-
-   .. code:: json
-
-      {
-         "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-         "govready-url": "http://localhost:8000",
-         "debug": false,
-         "secret-key": "long_random_string_here"
-      }
-
-   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
-
-.. warning::
-   PostgreSQL can be installed locally on the same host as GovReady-Q or on a separate host.
-   Your PostgreSQL database -- AND YOUR DATA -- will be destroyed on same-host installs when you delete the virtual machine (or container) running GovReady-Q.
 
 **Encrypting your connection to PostgreSQL running on a separate database server**
 
@@ -288,6 +254,36 @@ Run the install script to install required Python libraries, initialize GovReady
    The command ``install-govready-q.sh --non-interactive`` creates the Superuser automatically for installs where you do
    not have access to interactive access to the commandline. The auto-generated username and password will be generated once to the standout log.
 
+
+.. note::
+   As of 0.9.1.20, the "govready-url" environment parameter is preferred way to set Django internal security, url,
+   ALLOWED_HOST, and other settings instead of deprecated environment parameters "host" and "https".
+   The "host" and "https" deprecated parameters will continue to be support for reasonable period for legacy installs.
+
+   Deprecated (but supported for a reasonable period):
+
+   .. code:: json
+
+      {
+         "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+         "host": "localhost:8000",
+         "http": false,
+         "debug": false,
+         "secret-key": "long_random_string_here"
+      }
+
+   Preferred:
+
+   .. code:: json
+
+      {
+         "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+         "govready-url": "http://localhost:8000",
+         "debug": false,
+         "secret-key": "long_random_string_here"
+      }
+
+   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
 
 5. Starting GovReady-Q
 -----------------------
@@ -379,3 +375,8 @@ GovReady-Q can be optionally deployed with NGINX and Supervisor. There's also a 
 
 Sample ``nginx.conf``, ``supervisor.confg``, and ``update.sh`` files can
 be found in the source code directory ``deployment/ubuntu``.
+
+Notes
+=====
+
+Instructions tested in May 2020 on Ubuntu 20.04 on a Digital Ocean droplet and on LTS (Focal Fossa) `Ubuntu focal-20200423 Docker image <https://hub.docker.com/_/ubuntu>`__.
