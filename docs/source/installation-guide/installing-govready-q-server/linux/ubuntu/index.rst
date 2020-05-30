@@ -111,11 +111,10 @@ You must specify the database connection string in GovReady-Q's configuration fi
 .. code:: json
 
    {
-   "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
-   "debug": false,
-   "host": "localhost:8000",
-   "https": false,
-   "secret-key": "...something here..."
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "govready-url": "http://localhost:8000",
+      "debug": false,
+      "secret-key": "long_random_string_here"
    }
 
 .. note::
@@ -152,14 +151,40 @@ You must specify the database connection string in GovReady-Q's configuration fi
 .. code:: json
 
    {
-   "db": "postgres://USER:PASSWORD@HOST/DATABASE",
-   "debug": false,
-   "host": "localhost:8000",
-   "https": false,
-   "secret-key": "...something here..."
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "govready-url": "http://localhost:8000",
+      "debug": false,
+      "secret-key": "long_random_string_here"
    }
 
 .. note::
+   As of 0.9.1.20, the "govready-url" environment parameter is preferred way to set Django internal security, url,
+   ALLOWED_HOST, and other settings instead of deprecated environment parameters "host" and "https".
+   The "host" and "https" deprecated parameters will continue to be support for reasonable period for legacy installs.
+
+   Deprecated (but supported for a reasonable period):
+
+   .. code:: json
+
+      {
+         "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+         "host": "localhost:8000",
+         "http": false,
+         "debug": false,
+         "secret-key": "long_random_string_here"
+      }
+
+   Preferred:
+
+   .. code:: json
+
+      {
+         "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+         "govready-url": "http://localhost:8000",
+         "debug": false,
+         "secret-key": "long_random_string_here"
+      }
+
    See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
 
 .. warning::

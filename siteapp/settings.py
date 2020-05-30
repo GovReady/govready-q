@@ -62,9 +62,19 @@ SECRET_KEY = environment.get("secret-key") or make_secret_key()
 DEBUG = bool(environment.get("debug"))
 ADMINS = environment.get("admins") or []
 
-# Set Django's ALLOWED_HOSTS parameter from the host environment. If it has a port, strip it.
-# The port is used in SITE_ROOT_URL must must be removed from ALLOWED_HOSTS.
+# Set GOVREADY_URL if 'govready-url' set in environment.json.
+from urllib.parse import urlparse
+GOVREADY_URL = urlparse(environment.get("govready-url",""))
+
+# Set Django's ALLOWED_HOSTS parameter.
+# Use the deprecated 'host' environment parameter and preferred 'govready-url'.
+# The port is used in SITE_ROOT_URL must be removed from ALLOWED_HOSTS.
 ALLOWED_HOSTS = [environment["host"].split(':')[0]]
+if environment["host"]:
+	print("WARNING: Use of 'host' environment paramenter deprecated. Please use 'govready-url' environment parameter in future.")
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
+	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
+print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 
 # allauth requires the use of the sites framework.
 SITE_ID = 1
@@ -308,10 +318,12 @@ if environment.get("email", {}).get("host"):
 	EMAIL_HOST_PASSWORD = environment["email"]["pw"]
 	EMAIL_USE_TLS = True
 
-# If the "https" environment setting is true, set the settings
-# that keep sessions and cookies secure and redirect any non-HTTPS
+# If the deprecated "https" environment setting is true or preferred 'govready-url' includes "https",
+# set the settings that keep sessions and cookies secure and redirect any non-HTTPS
 # requests to HTTPS.
-if environment["https"]:
+# Give GOVREADY_URL.scheme from 'govready-url' precedence.
+if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and environment["https"]):
+	print("INFO: Connection scheme is 'https'.")
 	SESSION_COOKIE_HTTPONLY = True
 	SESSION_COOKIE_SECURE = True
 	CSRF_COOKIE_HTTPONLY = True
@@ -320,6 +332,7 @@ if environment["https"]:
 	SECURE_HSTS_SECONDS = 31536000
 	SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 else:
+	print("INFO: Connection scheme is 'http'.")
 	# Silence some checks about HTTPS.
 	SILENCED_SYSTEM_CHECKS += [
 		'security.W004', # SECURE_HSTS_SECONDS not set
@@ -327,6 +340,8 @@ else:
 		'security.W012', # SESSION_COOKIE_SECURE not set
 		'security.W016', # CSRF_COOKIE_SECURE not set
 	]
+if environment["https"]:
+	print("WARNING: Use of 'https' environment paramenter deprecated. Please use 'govready-url' environment parameter in future.")
 
 # Other security headers.
 SECURE_BROWSER_XSS_FILTER = True
@@ -342,10 +357,16 @@ if environment.get("static"):
 	STATIC_ROOT = environment["static"]
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
-# Add a convenience setting "SITE_ROOT_URL" that stores the root URL
-# of the website, constructed from the "https" and "host" environment
-# settings
-SITE_ROOT_URL = "%s://%s" % (("http" if not environment["https"] else "https"), environment["host"])
+# Add a convenience setting "SITE_ROOT_URL" that stores the root URL of the website.
+# Construct value from preferred "govready-url" environment parameter and temporarily
+# support the deprecated "https" and "host" environment settings.
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+	SITE_ROOT_URL = "{}://{}".format(GOVREADY_URL.scheme, GOVREADY_URL.netloc)
+elif environment["host"]:
+	SITE_ROOT_URL = "%s://%s" % (("http" if not environment["https"] else "https"), environment["host"])
+else:
+	"CRITICAL: No parameters set to determine SITE_ROOT_URL."
+print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
 
 # Enable custom branding. If "branding" is set, it's the name of an
 # app to add and whose templates supersede the built-in templates.

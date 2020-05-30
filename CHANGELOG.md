@@ -1,6 +1,39 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.20 (May 30, 2020)
+------------------------
+
+**Deployment Changes**
+
+The `govready_url` environment parameter as a replacement for multiple params of `host`, `port`, and `https`.
+
+For example, in the `local/environment.json` file the single `govready-url` parameter:
+
+```
+    {
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "govready-url": "http://localhost:8000",
+      "debug": false,
+      "secret-key": "long_random_string_here"
+    }
+```
+
+replaces the legacy format that contains two parameters:
+
+```
+      {
+         "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+         "host": "localhost:8000",
+         "http": false,
+         "debug": false,
+         "secret-key": "long_random_string_here"
+      }
+```
+
+During the transition period `govready-url` parameter overrides any setting of `host`, `port`, and `https`
+parameters.
+
 v0.9.1.17 (May 29, 2020)
 ------------------------
 
