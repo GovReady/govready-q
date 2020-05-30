@@ -70,6 +70,25 @@ Clone the GovReady-Q repository from GitHub into the desired directory on your U
       git clone https://github.com/govready/govready-q
       cd govready-q
 
+      # Upgrade to latest pip3 to properly install Python packages under Linux user
+      python3 -m pip install --upgrade pip
+
+.. warning::
+   It is important to upgrade ``pip`` when installing and operating GovReady-Q under a dedicated Linux user instead of root.
+
+   The default version of ``pip`` installed with Python3 on Ubuntu is version 9.0.x (tested May 2020). Version 9.0.x installs Python
+   packages correctly when run as root, but fails to install the Python packages when run as non-root user and does not report this error well.
+   This default version of ``pip`` fails to create the ``/home/govready_q/.local/`` directory to which the required Python packages are installed.
+
+   Upgrading ``pip`` to version 20.x corrects this problem and allows the ``./install-govready-q`` script to properly installed the
+   Python packages under the Linux user.
+
+   .. code:: bash
+
+      # Upgrade to latest pip3 to properly install Python packages under Linux user
+      python3 -m pip install --upgrade pip
+
+
 3. Installing desired database
 ---------------------------
 
