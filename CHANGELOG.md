@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.18 (May 30, 2020)
+------------------------
+
+**Documentation changes:**
+
+* Ubuntu from source installation docs updated to include upgrading pip to solve problem of Ubuntu's defualt pip not installing Python packages under Linux user installs.
+
 v0.9.1.17 (May 29, 2020)
 ------------------------
 
