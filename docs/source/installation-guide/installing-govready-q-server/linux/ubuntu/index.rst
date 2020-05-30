@@ -288,22 +288,22 @@ Run the install script to install required Python libraries, initialize GovReady
 5. Starting GovReady-Q
 -----------------------
 
+You can now start GovReady-Q Server. GovReady-Q defaults to listening on localhost:8000, but can easily be run to listen on other host domains and ports.
+
 .. code:: bash
 
-   # Run the server
+   # Run the server on the default localhost and port 8000
    python3 manage.py runserver
 
-Visit your GovReady-Q site in your web browser at:
+Visit your GovReady-Q site in your web browser at: http://localhost:8000/
 
-http://localhost:8000/
+.. code:: bash
 
-.. note::
-   Depending on host configuration both ``python3`` and ``python`` commands will work.
-
-   GovReady-Q can run on ports other than the default ``8000``. GovReady-Q will read the ``local/environment.json`` file to determine
-   host name and port.
-
-   GovReady-Q defaults to `localhost:8000` when launched with ``python manage.py runserver``.
+   # Run the server to listen at a different specific host and port
+   # python manage.py runserver host:port
+   python3 manage.py runserver 0.0.0.0:8000
+   python3 manage.py runserver 67.205.167.168:8000
+   python3 manage.py runserver example.com:8000
 
 
 6. Stopping GovReady-Q
