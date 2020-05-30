@@ -45,7 +45,9 @@ commonmarkextensions # BSD 3
 # Only needed in common production deployment configurations
 # uwsgi # GPL2 # Needed only if using uwsgi instead of gunicorn
 gunicorn # MIT License
-gevent # MIT License
+# Pin gevent to avoid Docker build errors with gevent==20.5.0
+# gevent==20.5.0 requires c compiler and build tools
+gevent==1.4.0 # MIT License
 psycopg2-binary # LGPL
 rfc5424-logging-handler # BSD License
 
@@ -65,6 +67,3 @@ sphinxcontrib-contentui # MIT License
 # markupsafe is pinned here because tests crash with version 1.1.0.
 # Can probably unpin when https://github.com/pallets/markupsafe/issues/108 is resolved.
 markupsafe==1.1.1 # BSD 3.
-
-# pin gevent to working version; we're getting Docker build errors with gevent==20.5.0
-gevent==1.4.0

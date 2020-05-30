@@ -41,7 +41,7 @@ v.0.9.1.14 (May 17, 2020)
 
 **Deployment changes**
 
-* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive`` flag.
+* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive` flag.
 * Create install-govready-q.sh script (based on quickstart.sh) to have an easy single script for installing GovReady-Q.
 * Update Dockerfile to copy over new install-govready-q.sh script and quickstart.sh script.
 * Use docker_container_run.sh script in instructions for installing in the cloud.
