@@ -164,7 +164,6 @@ AUTHENTICATION_BACKENDS = [ # see settings_application.py for how this is possib
 	'guardian.backends.ObjectPermissionBackend',
 	]
 
-
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
 if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in environment and environment["https"]):
 	ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
@@ -316,8 +315,16 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 # If the "email" environment setting is present, it is a dictionary
 # providing an SMTP server to send outbound emails to. TLS is
 # always turned on.
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+	EMAIL_SUBJECT_PREFIX = '[' + GOVREADY_URL.hostname + '] '
+elif "host" in environment:
+	EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
+else:
+	EMAIL_SUBJECT_PREFIX = '[' + 'localhost' + '] '
+	print("WARNING: host not properly defined to set EMAIL_SUBJECT_PREFIX")
+
 if environment.get("email", {}).get("host"):
 	EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 	EMAIL_HOST = environment["email"]["host"]
