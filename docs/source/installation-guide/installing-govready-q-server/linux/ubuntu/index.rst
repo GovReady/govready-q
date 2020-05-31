@@ -151,7 +151,7 @@ Install PostgreSQL OS packages either the same server as GovReady-Q or on a diff
 
 .. code:: bash
 
-   sudo apt install postgresql postgresql-contrib
+   sudo apt install -y postgresql postgresql-contrib
    postgresql-setup initdb
 
 Then set up the user and database (both named ``govready_q``):
@@ -172,7 +172,7 @@ Make a note of the Postgres host, port, database name, user and password to add 
 
    {
       ...
-      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "db": "postgres://USER:PASSWORD@HOST:PORT/NAME",
       ...
    }
 
@@ -233,26 +233,43 @@ And if necessary, open the PostgreSQL port:
    firewall-cmd --zone=public --add-port=5432/tcp --permanent
    firewall-cmd --reload
 
-4. Installing GovReady-Q
-------------------------
 
-At this point, you have installed required OS packages, cloned the GovReady-Q repository and configured your preferred database option of SQLITE3, MySQL, or PostgreSQL.
+4. Create the local/environment.json file
+-----------------------------------------
 
-Make sure you are in the base directory of the GovReady-Q repository.
+Create the ``local/environment.json`` file with appropriate parameters. (Order of the key value pairs is not significant.)
 
-Run the install script to install required Python libraries, initialize GovReady-Q's database and create a superuser. This is the same command for all database backends.
+**SQLITE (default)**
 
-.. code:: bash
+.. code:: json
 
-   # Run the install script to install Python libraries,
-   # intialize database, and create Superuser
-   ./install-govready-q
-   
-.. note::
-   The command ``install-govready-q.sh`` creates the Superuser interactively allowing you to specify username and password.
+      {
+         "govready-url": "http://localhost:8000",
+         "debug": false,
+         "secret-key": "long_random_string_here"
+      }
 
-   The command ``install-govready-q.sh --non-interactive`` creates the Superuser automatically for installs where you do
-   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to the standout log.
+**MySQL**
+
+.. code:: json
+
+      {
+         "db": "mysql://USER:PASSWORD@localhost:PORT/NAME",
+         "govready-url": "http://localhost:8000",
+         "debug": false,
+         "secret-key": "long_random_string_here"
+      }
+
+**PostgreSQL**
+
+.. code:: json
+
+      {
+         "db": "postgres://govready_q:PASSWORD@localhost:5432/govready_q",
+         "govready-url": "http://localhost:8000",
+         "debug": false,
+         "secret-key": "long_random_string_here"
+      }
 
 
 .. note::
@@ -267,7 +284,7 @@ Run the install script to install required Python libraries, initialize GovReady
       {
          "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
          "host": "localhost:8000",
-         "http": false,
+         "https": false,
          "debug": false,
          "secret-key": "long_random_string_here"
       }
@@ -285,7 +302,33 @@ Run the install script to install required Python libraries, initialize GovReady
 
    See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
 
-5. Starting GovReady-Q
+
+5. Installing GovReady-Q
+------------------------
+
+At this point, you have installed required OS packages; cloned the GovReady-Q repository; configured your preferred database option of SQLITE3, MySQL, or PostgreSQL; and created the ``local/environment.json`` file with appropriate settings.
+
+Make sure you are in the base directory of the GovReady-Q repository. (Execute the following commands as the dedicated Linux user if you set one up.)
+
+Run the install script to install required Python libraries, initialize GovReady-Q's database and create a superuser. This is the same command for all database backends.
+
+.. code:: git st
+
+   # If you created a dedicated Linux user, be sure to switch to that user to install GovReady-Q
+   # su govready-q
+   # cd /home/govready-q/govready-q
+
+   # Run the install script to install Python libraries,
+   # intialize database, and create Superuser
+   ./install-govready-q
+
+.. note::
+   The command ``install-govready-q.sh`` creates the Superuser interactively allowing you to specify username and password.
+
+   The command ``install-govready-q.sh --non-interactive`` creates the Superuser automatically for installs where you do
+   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to the standout log.
+
+6. Starting GovReady-Q
 -----------------------
 
 You can now start GovReady-Q Server. GovReady-Q defaults to listening on localhost:8000, but can easily be run to listen on other host domains and ports.
@@ -306,12 +349,12 @@ Visit your GovReady-Q site in your web browser at: http://localhost:8000/
    python3 manage.py runserver example.com:8000
 
 
-6. Stopping GovReady-Q
+7. Stopping GovReady-Q
 ----------------------
 
 Press ``CTL-c`` in the terminal window running GovReady-Q to stop the server. 
 
-7. Additional options
+8. Additional options
 ---------------------
 
 Installing GovReady-Q Server command-by-command
