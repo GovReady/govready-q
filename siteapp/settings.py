@@ -367,6 +367,7 @@ X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
 # where "collectstatic" will put static files. The ManifestStaticFilesStorage
 # is activated.
 STATIC_URL = '/static/'
+STATIC_ROOT = 'siteapp/static/'
 if environment.get("static"):
 	STATIC_ROOT = environment["static"]
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'

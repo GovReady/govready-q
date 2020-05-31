@@ -22,7 +22,7 @@ provide full functionality. Execute the following commands:
    # Install dependencies
    sudo yum install \
    python36u python36u-pip \
-   unzip git2u jq nmap-ncat \
+   unzip git2u jq \
    graphviz pandoc
 
    # Upgrade pip to version 20.1+

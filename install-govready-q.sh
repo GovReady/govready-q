@@ -85,6 +85,9 @@ echo $SPACER
 # retrieve static assets
 ./fetch-vendor-resources.sh
 
+# collect files into static directory
+python3 manage.py collectstatic --no-input
+
 # create the local/environment.json file, if it is missing (it generally will be)
 if [ ! -e local/environment.json ];
 then

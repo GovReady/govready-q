@@ -21,7 +21,7 @@ provide full functionality. Execute the following commands as root:
    # Install dependencies
    DEBIAN_FRONTEND=noninteractive \
    apt-get install -y \
-   unzip git curl \
+   unzip git curl jq \
    python3 python3-pip \
    python3-yaml \
    graphviz pandoc \
