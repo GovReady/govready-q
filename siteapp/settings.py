@@ -69,8 +69,8 @@ GOVREADY_URL = urlparse(environment.get("govready-url",""))
 # Set Django's ALLOWED_HOSTS parameter.
 # Use the deprecated 'host' environment parameter and preferred 'govready-url'.
 # The port is used in SITE_ROOT_URL must be removed from ALLOWED_HOSTS.
-ALLOWED_HOSTS = [environment["host"].split(':')[0]]
 if environment["host"]:
+	ALLOWED_HOSTS = [environment["host"].split(':')[0]]
 	print("WARNING: Use of 'host' environment paramenter deprecated. Please use 'govready-url' environment parameter in future.")
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
 	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
