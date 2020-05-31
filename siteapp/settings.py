@@ -163,12 +163,19 @@ AUTHENTICATION_BACKENDS = [ # see settings_application.py for how this is possib
 	'allauth.account.auth_backends.AuthenticationBackend', # allauth
 	'guardian.backends.ObjectPermissionBackend',
 	]
+
+
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
+if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in environment and environment["https"]):
+	ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+if "https" in environment:
+	print("WARNING: Use of 'https' environment paramenter deprecated. Please use 'govready-url' environment parameter in future.")
+
 ACCOUNT_ADAPTER = primary_app + '.good_settings_helpers.AllauthAccountAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_UNIQUE_EMAIL = False # otherwise unconfirmed addresses may block real users
 ACCOUNT_EMAIL_REQUIRED = True # otherwise password resets are not possible
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = ("http" if not environment["https"] else "https")
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 15 # default of 5 is too low!
 ACCOUNT_LOGOUT_ON_GET = True # allow simplified logout link
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
@@ -323,7 +330,8 @@ if environment.get("email", {}).get("host"):
 # set the settings that keep sessions and cookies secure and redirect any non-HTTPS
 # requests to HTTPS.
 # Give GOVREADY_URL.scheme from 'govready-url' precedence.
-if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and environment["https"]):
+
+if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in environment and environment["https"]):
 	print("INFO: Connection scheme is 'https'.")
 	SESSION_COOKIE_HTTPONLY = True
 	SESSION_COOKIE_SECURE = True
@@ -341,8 +349,6 @@ else:
 		'security.W012', # SESSION_COOKIE_SECURE not set
 		'security.W016', # CSRF_COOKIE_SECURE not set
 	]
-if environment["https"]:
-	print("WARNING: Use of 'https' environment paramenter deprecated. Please use 'govready-url' environment parameter in future.")
 
 # Other security headers.
 SECURE_BROWSER_XSS_FILTER = True
