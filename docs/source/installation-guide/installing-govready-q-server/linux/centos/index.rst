@@ -344,7 +344,7 @@ Run the install script to install required Python libraries, initialize GovReady
    # cd /home/govready-q/govready-q
 
    # Run the install script to install Python libraries,
-   # intialize database, and create Superuser
+   # initialize database, and create Superuser
    ./install-govready-q
 
 .. note::
@@ -356,7 +356,7 @@ Run the install script to install required Python libraries, initialize GovReady
 6. Starting and stopping GovReady-Q
 -----------------------------------
 
-**Starting GovrReady-Q**
+**Starting GovReady-Q**
 
 You can now start GovReady-Q Server. GovReady-Q defaults to listening on localhost:8000, but can easily be run to listen on other host domains and ports.
 
@@ -460,7 +460,7 @@ Deployment utilities
 
 GovReady-Q can be optionally deployed with NGINX and Supervisor. There's also a script for updating GovReady-Q.
 
-Sample ``nginx.conf``, ``supervisor.confg``, and ``update.sh`` files can
+Sample ``nginx.conf``, ``supervisor.conf``, and ``update.sh`` files can
 be found in the source code directory ``deployment/ubuntu``.
 
 Notes

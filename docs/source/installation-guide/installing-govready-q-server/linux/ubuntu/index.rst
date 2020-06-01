@@ -332,7 +332,7 @@ Run the install script to install required Python libraries, initialize GovReady
    # cd /home/govready-q/govready-q
 
    # Run the install script to install Python libraries,
-   # intialize database, and create Superuser
+   # initialize database, and create Superuser
    ./install-govready-q
 
 .. note::
@@ -344,7 +344,7 @@ Run the install script to install required Python libraries, initialize GovReady
 6. Starting and stopping GovReady-Q
 -----------------------------------
 
-**Starting GovrReady-Q**
+**Starting GovReady-Q**
 
 You can now start GovReady-Q Server. GovReady-Q defaults to listening on localhost:8000, but can easily be run to listen on other host domains and ports.
 
@@ -425,7 +425,7 @@ Press ``Ctrl-C`` in the terminal window running gunicorn to stop the server.
 ----------------------------------------
 
 In this step, you will configure your deployment to use Supervisor to start, monitor, and automatically restart Gunicorn (and GovReady-Q) as long running process. In this configuration Supervisord is the effective server daemon running in the background
-and managing the gunicorn web server process handling requests to GovReady-Q. If Gunicorn or GovReady-Q unexpectely crash, the Supervisord daemon will automatically restart Gunicorn and GovReady-Q.
+and managing the gunicorn web server process handling requests to GovReady-Q. If Gunicorn or GovReady-Q unexpectedly crash, the Supervisord daemon will automatically restart Gunicorn and GovReady-Q.
 
 Create the Supervisor ``/etc/supervisor/conf.d/application.conf`` conf file for gunicorn to run GovReady-Q.
 Supervisor on Ubuntu automatically reads the configuration files in ``/etc/supervisor/conf.d/`` when started.
@@ -543,7 +543,7 @@ Deployment utilities
 
 GovReady-Q can be optionally deployed with NGINX and Supervisor. There's also a script for updating GovReady-Q.
 
-Sample ``nginx.conf``, ``supervisor.confg``, and ``update.sh`` files can
+Sample ``nginx.conf``, ``supervisor.conf``, and ``update.sh`` files can
 be found in the source code directory ``deployment/ubuntu``.
 
 Notes
