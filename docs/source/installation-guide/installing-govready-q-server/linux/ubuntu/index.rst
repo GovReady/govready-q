@@ -378,7 +378,7 @@ You will start gunicorn server using a configuration file.
 
 First, create the ``local/gunicorn.conf.py`` file that tells gunicorn how to start.
 
-.. code:: txt
+.. code:: python
 
    import multiprocessing
    command = 'gunicorn'
