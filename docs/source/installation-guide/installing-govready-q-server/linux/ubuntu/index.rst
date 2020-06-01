@@ -445,30 +445,19 @@ Supervisor on Ubuntu automatically reads the configuration files in ``/etc/super
    stderr_logfile = /var/log/notificationemails-stderr.log
    stdout_logfile = /var/log/notificationemails-stdout.log
 
+
 .. note::
-   We have provided a sample ``supervisor-govready-q.conf` file you can copy
    A sample ``supervisor-govready-q.conf`` is provided in ``local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``local/gunicorn.conf.py``.
 
-   cp local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/supervisor-govready-q.conf \
-   /etc/supervisor/conf.d/supervisor-govready-q.conf
+   .. code:: bash
 
-Next, configure the log directories. On Ubuntu, Supervisor configuration file is ``/etc/supervisor/supervisord.conf``.
+      cp local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/supervisor-govready-q.conf \
+      /etc/supervisor/conf.d/supervisor-govready-q.conf
 
-.. code:: bash
+Supervisor will write its socket file to ``/run/supervisor`` and its log files to ``/var/log/supervisor/``.
 
-   # Configure supervisord.
-   # b) Make /var/{run,log} world-writable because when we start the container with
-   #    the non-root user it will need permission to write there.
-   # c) Move the supervisor log from /var/log/supervisor and the child process logs
-   #    from /tmp to /var/log to make them all easily accessible if /var/log is mounted
-   #    to a volume, and similarly the run socket from /var/run/supervisor.
-   #    Otherwise we have to mess with file permissions so the inner directories are
-   #    writable, and I couldn't get that to work. Even if the directories had chmod 777
-   #    the non-root user could not create files inside them.
-   chmod a+rwx /run /var/log
-   sed -i "s:/var/run/supervisor/:/var/run/:" /etc/supervisor/supervisord.conf
-   sed -i "s:/var/log/supervisor/:/var/log/:" /etc/supervisor/supervisord.conf
-   sed -i "s:^;childlogdir=/tmp:childlogdir=/var/log:" /etc/supervisor/supervisord.conf
+.. note::
+   Adjust delivery of Supervisor logs on Ubuntu in the Supervisor configuration file ``/etc/supervisor/supervisord.conf``.
 
 **Starting GovReady-Q with Supervisor**
 
