@@ -6,9 +6,21 @@ Ubuntu from sources
 ===================
 
 This guide describes how to install the GovReady-Q server for Ubuntu 16.04 or greater from source code.
+This guide will take you through the following steps:
 
 1. Installing required OS packages
--------------------------------
+2. Cloning the GovReady-Q repository
+3. Installing desired database
+4. Creating the local/environment.json file
+5. Installing GovReady-Q
+6. Starting and stopping GovReady-Q
+7. Running GovReady-Q with Gunicorn HTTP WSGI
+8. Monitoring GovReady-Q with Supervisor
+9. Using NGINX as a reverse proxy
+10. Additional options
+
+1. Installing required OS packages
+----------------------------------
 
 GovReady-Q requires Python 3.6 or higher and several Linux packages to
 provide full functionality. Execute the following commands as root:
@@ -29,6 +41,10 @@ provide full functionality. Execute the following commands as root:
 
    # Upgrade pip to version 20.1+
    python3 -m pip install --upgrade pip
+
+   # Optionally install supervisord for monitoring and restarting GovReady-q; and NGINX as a reverse proxy
+   DEBIAN_FRONTEND=noninteractive \
+   apt-get install -y supervisor nginx
 
    # To optionally generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
@@ -233,9 +249,8 @@ And if necessary, open the PostgreSQL port:
    firewall-cmd --zone=public --add-port=5432/tcp --permanent
    firewall-cmd --reload
 
-
-4. Create the local/environment.json file
------------------------------------------
+4. Creating the local/environment.json file
+-------------------------------------------
 
 Create the ``local/environment.json`` file with appropriate parameters. (Order of the key value pairs is not significant.)
 
@@ -302,7 +317,6 @@ Create the ``local/environment.json`` file with appropriate parameters. (Order o
 
    See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
 
-
 5. Installing GovReady-Q
 ------------------------
 
@@ -328,8 +342,10 @@ Run the install script to install required Python libraries, initialize GovReady
    The command ``install-govready-q.sh --non-interactive`` creates the Superuser automatically for installs where you do
    not have access to interactive access to the commandline. The auto-generated username and password will be generated once to the standout log.
 
-6. Starting GovReady-Q
------------------------
+6. Starting and stopping GovReady-Q
+-----------------------------------
+
+**Starting GovrReady-Q**
 
 You can now start GovReady-Q Server. GovReady-Q defaults to listening on localhost:8000, but can easily be run to listen on other host domains and ports.
 
@@ -348,14 +364,137 @@ Visit your GovReady-Q site in your web browser at: http://localhost:8000/
    python3 manage.py runserver 67.205.167.168:8000
    python3 manage.py runserver example.com:8000
 
+**Stopping GovReady-Q**
 
-7. Stopping GovReady-Q
+Press ``CTL-c`` in the terminal window running GovReady-Q to stop the server.
+
+7. Running GovReady-Q with Gunicorn HTTP WSGI
+---------------------------------------------
+
+In this step, you will configure your deployment to use a higher performing, multi-threaded gunicorn (Green Unicorn) HTTP WSGI server
+to handle web requests instead of GovReady-Q using Django's built-in server.
+This will serve you pages faster, with greater scalability.
+You will start gunicorn server using a configuration file.
+
+First, create the ``local/gunicorn.conf.py`` file that tells gunicorn how to start.
+
+.. code:: txt
+
+   import multiprocessing
+   command = 'gunicorn'
+   pythonpath = '/home/govready-q/govready-q'
+   # bind = 'localhost:8000'
+   bind = '0.0.0.0:8000'
+   workers = multiprocessing.cpu_count() * 2 + 1 # recommended for high-traffic sites
+   worker_class = 'gevent'
+   user = 'govready-q'
+   keepalive = 10
+
+.. note::
+   Alternatively set ``workers = 1`` if secret key is being auto-generated and not defined
+   in local/environment.json. Auto-generated keys cause login session for users to
+   drop when request routed to a different worker.
+
+.. note::
+   A sample ``gunicorn.conf.py`` is provided in ``local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/gunicorn``.
+   You can copy the contents of this file to ``local/gunicorn.conf.py``.
+
+   .. code:: bash
+
+      cp local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/gunicorn.conf.py \
+      local/gunicorn.conf.py
+
+**Starting GovReady-Q with Gunicorn**
+
+You can now start Gunicorn web server from GovReady-Q install directory. You can run the command to start
+gunicorn as root or as the govready-q user.
+
+.. code:: bash
+
+   su govready-q
+   cd /home/govready-q/govready-q/
+   gunicorn -c /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
+
+   # Gunicorn is now running at serving GovReady-Q at the `govready-url` address.
+
+**Stopping GovReady-Q with Gunicorn**
+
+Press ``CTL-c`` in the terminal window running gunicorn to stop the server.
+
+
+8. Monitoring GovReady-Q with Supervisor
+----------------------------------------
+
+In this step, you will configure your deployment to use Supervisor start, monitor and automatically restart Gunicorn (and GovReady-Q) as long running process. In this configuration Supervisord is the effective server daemon running in the background
+and managing the gunicorn web server process handling requests to GovReady-Q. If Gunicorn or GovReady-Q unexpectely crash, the Supervisord daemon will automatically restart Gunicorn and GovReady-Q.
+
+Create the Supervisor ``/etc/supervisor/conf.d/application.conf`` conf file for gunicorn to run GovReady-Q.
+Supervisor on Ubuntu automatically reads the configuration files in ``/etc/supervisor/conf.d/`` when started.
+
+.. code:: ini
+
+   [program:application]
+   command = gunicorn --config /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
+   directory = /home/govready-q/govready-q
+   stderr_logfile = /var/log/application-stderr.log
+   stdout_logfile = /var/log/application-stdout.log
+
+   [program:notificationemails]
+   command = python3.6 manage.py send_notification_emails forever
+   directory = /home/govready-q/govready-q
+   stderr_logfile = /var/log/notificationemails-stderr.log
+   stdout_logfile = /var/log/notificationemails-stdout.log
+
+.. note::
+   We have provided a sample ``supervisor-govready-q.conf` file you can copy
+   A sample ``supervisor-govready-q.conf`` is provided in ``local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``local/gunicorn.conf.py``.
+
+   cp local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/supervisor-govready-q.conf \
+   /etc/supervisor/conf.d/supervisor-govready-q.conf
+
+Next, configure the log directories. On Ubuntu, Supervisor configuration file is ``/etc/supervisor/supervisord.conf``.
+
+.. code:: bash
+
+   # Configure supervisord.
+   # b) Make /var/{run,log} world-writable because when we start the container with
+   #    the non-root user it will need permission to write there.
+   # c) Move the supervisor log from /var/log/supervisor and the child process logs
+   #    from /tmp to /var/log to make them all easily accessible if /var/log is mounted
+   #    to a volume, and similarly the run socket from /var/run/supervisor.
+   #    Otherwise we have to mess with file permissions so the inner directories are
+   #    writable, and I couldn't get that to work. Even if the directories had chmod 777
+   #    the non-root user could not create files inside them.
+   chmod a+rwx /run /var/log
+   sed -i "s:/var/run/supervisor/:/var/run/:" /etc/supervisor/supervisord.conf
+   sed -i "s:/var/log/supervisor/:/var/log/:" /etc/supervisor/supervisord.conf
+   sed -i "s:^;childlogdir=/tmp:childlogdir=/var/log:" /etc/supervisor/supervisord.conf
+
+**Starting GovReady-Q with Supervisor**
+
+Use supervisor to start gunicorn and GovReady-Q.
+
+.. code:: bash
+
+   # Start supervisor as root
+   service supervisor restart
+
+**Stopping GovReady-Q with Supervisor**
+
+Use Supervisor to stop GovReady-Q.
+
+.. code:: bash
+
+   # Stop supervisor as root
+   service supervisor stop
+
+9. Using NGINX as a reverse proxy
+---------------------------------
+
+In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security. 
+
+10. Additional options
 ----------------------
-
-Press ``CTL-c`` in the terminal window running GovReady-Q to stop the server. 
-
-8. Additional options
----------------------
 
 Installing GovReady-Q Server command-by-command
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

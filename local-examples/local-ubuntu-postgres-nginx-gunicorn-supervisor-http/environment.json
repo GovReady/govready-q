@@ -1,7 +1,7 @@
 {
-  "debug": false,
-  "govready-url": "http://localhost:8000",
   "db": "postgres://govready_q:PASSWORD@localhost:5432/govready_q",
+  "govready-url": "http://localhost:8000",
+  "debug": false,
   "secret-key": "-8=7$%xri9_279=lop8+22zd7a1gb+ff5^oyi1s-#2drd_=sk=",
   "static": "siteapp/static"
 }

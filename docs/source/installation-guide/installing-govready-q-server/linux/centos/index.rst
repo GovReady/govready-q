@@ -6,6 +6,18 @@ CentOS / RHEL 7 from sources
 ============================
 
 This guide describes how to install the GovReady-Q server for CentOS 7 or greater from source code.
+This guide will take you through the following steps:
+
+1. Installing required OS packages
+2. Cloning the GovReady-Q repository
+3. Installing desired database
+4. Creating the local/environment.json file
+5. Installing GovReady-Q
+6. Starting and stopping GovReady-Q
+7. Running GovReady-Q with Gunicorn HTTP WSGI
+8. Monitoring GovReady-Q with Supervisor
+9. Using NGINX as a reverse proxy
+10. Additional options
 
 1. Installing required OS packages
 ----------------------------------
@@ -27,6 +39,10 @@ provide full functionality. Execute the following commands:
 
    # Upgrade pip to version 20.1+
    python3 -m pip install --upgrade pip
+
+   # Optionally install supervisord for monitoring and restarting GovReady-q; and NGINX as a reverse proxy
+   DEBIAN_FRONTEND=noninteractive \
+   apt-get install -y supervisor nginx
 
    # To generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
@@ -244,8 +260,8 @@ And if necessary, open the PostgreSQL port:
    firewall-cmd --zone=public --add-port=5432/tcp --permanent
    firewall-cmd --reload
 
-4. Create the local/environment.json file
------------------------------------------
+4. Creating the local/environment.json file
+-------------------------------------------
 
 Create the ``local/environment.json`` file with appropriate parameters. (Order of the key value pairs is not significant.)
 
@@ -337,8 +353,10 @@ Run the install script to install required Python libraries, initialize GovReady
    The command ``install-govready-q.sh --non-interactive`` creates the Superuser automatically for installs where you do
    not have access to interactive access to the commandline. The auto-generated username and password will be generated once to the standout log.
 
-6. Starting GovReady-Q
------------------------
+6. Starting and stopping GovReady-Q
+-----------------------------------
+
+**Starting GovrReady-Q**
 
 You can now start GovReady-Q Server. GovReady-Q defaults to listening on localhost:8000, but can easily be run to listen on other host domains and ports.
 
@@ -357,13 +375,30 @@ Visit your GovReady-Q site in your web browser at: http://localhost:8000/
    python3 manage.py runserver 67.205.167.168:8000
    python3 manage.py runserver example.com:8000
 
-7. Stopping GovReady-Q
+**Stopping GovReady-Q**
+
+Press ``CTL-c`` in the terminal window running GovReady-Q to stop the server.
+
+7. Running GovReady-Q with Gunicorn HTTP WSGI
+---------------------------------------------
+
+In this step, you will configure your deployment to use a higher performing, multi-threaded gunicorn (Green Unicorn) HTTP WSGI server
+instead of GovReady-Q using Django's built-in server. This will serve you pages faster, with greater scalability.
+You will start gunicorn server using a config file which has settings to start GovReady-Q.
+
+8. Monitoring GovReady-Q with Supervisor
+----------------------------------------
+
+In this step, you will configure your deployment to use Supervisor to monitor and restart Gunicorn automatically if GovReady-Q
+should unexpectedly crash.
+
+9. Using NGINX as a reverse proxy
+---------------------------------
+
+In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security. 
+
+10. Additional options
 ----------------------
-
-Press ``CTL-c`` in the terminal window running GovReady-Q to stop the server. 
-
-8. Additional options
----------------------
 
 Installing GovReady-Q Server command-by-command
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

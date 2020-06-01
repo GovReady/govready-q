@@ -86,7 +86,12 @@ echo $SPACER
 ./fetch-vendor-resources.sh
 
 # collect files into static directory
-python3 manage.py collectstatic --no-input
+if [ $NONINTERACTIVE ];
+then
+    python3 manage.py collectstatic --no-input
+else
+    python3 manage.py collectstatic
+fi
 
 # create the local/environment.json file, if it is missing (it generally will be)
 if [ ! -e local/environment.json ];
