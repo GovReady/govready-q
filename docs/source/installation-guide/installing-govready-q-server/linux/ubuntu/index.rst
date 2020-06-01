@@ -136,7 +136,7 @@ There is no setup necessary to use SQLite3. GovReady-Q will automatically instal
 3 (option b). Installing MySQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install MySQL OS packages either the same server as GovReady-Q or on a different database server.
+Install MySQL OS packages either on the same server as GovReady-Q or on a different database server.
 
 .. code:: bash
 
