@@ -162,7 +162,7 @@ Make a note of the MySQL's host, port, database name, user and password to add t
 3 (option c). Installing PostgreSQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install PostgreSQL OS packages either the same server as GovReady-Q or on a different database server.
+Install PostgreSQL OS packages either on the same server as GovReady-Q or on a different database server.
 
 .. code:: bash
 
