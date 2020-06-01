@@ -151,7 +151,7 @@ Install MySQL OS packages either on the same server as GovReady-Q or on a differ
 
 Make a note of the MySQL's host, port, database name, user and password to add to GovReady-Q's configuration file at ``local/environment.json``.
 
-.. code:: json
+.. code:: text
 
    {
       ...
@@ -183,7 +183,7 @@ database of the same name.
 
 Make a note of the Postgres host, port, database name, user and password to add to GovReady-Q's configuration file at ``local/environment.json``.
 
-.. code:: json
+.. code:: text
 
    {
       ...
@@ -529,7 +529,7 @@ To activate PDF and thumbnail generation, add ``gr-pdf-generator`` and
 ``gr-img-generator`` environment variables to your
 ``local/environment.json`` configuration file:
 
-.. code:: json
+.. code:: text
 
    {
       ...
