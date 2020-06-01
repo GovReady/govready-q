@@ -66,7 +66,7 @@ Linux user. Installing as root is convenient for initial testing and some circum
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
-   These steps assume your are installing into the ``/opt/`` directory as root.
+   These steps assume you are installing into the ``/opt/`` directory as root.
 
 Clone the GovReady-Q repository from GitHub into the desired directory on your Ubuntu server.
 
@@ -84,7 +84,7 @@ Clone the GovReady-Q repository from GitHub into the desired directory on your U
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
-   These steps assume your are installing into the ``/home/govready-q`` directory as user ``govready-q``.
+   These steps assume you are installing into the ``/home/govready-q`` directory as user ``govready-q``.
 
 While you are still root, create a dedicated Linux user ``govready-q`` and home directory. Change directory into the
 created user's home directory and switch users to ``govready-q``. Clone the GovReady-Q repository from GitHub.
@@ -115,19 +115,19 @@ created user's home directory and switch users to ``govready-q``. Clone the GovR
 
 GovReady-Q requires a relational database. You can choose:
 
-* SQLITE3
+* SQLite3
 * MySQL
 * PostgreSQL
 
-GovReady-Q will automatically default to and use a SQLITE3 database
+GovReady-Q will automatically default to and use a SQLite3 database
 if you do not specify a database connection string in ``local/environment.json``.
 
 
 
-3 (option a). Installing SQLITE3 (default)
+3 (option a). Installing SQLite3 (default)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is no setup necessary to use SQLITE3. GovReady-Q will automatically install a local SQLITE3 database
+There is no setup necessary to use SQLite3. GovReady-Q will automatically install a local SQLite3 database
 ``local/db.sqlite3`` by default if no ``db`` parameter is set in ``local/environment.json``.
 
 .. note::
@@ -194,7 +194,7 @@ Make a note of the Postgres host, port, database name, user and password to add 
 
 **Encrypting your connection to PostgreSQL running on a separate database server**
 
-If PostgreSQL is running on a separate host, it is highly recommended you follow the below instructions
+If PostgreSQL is running on a separate host, it is highly recommended you follow the instructions below
 to configure a secure connection between GovReady-Q and PostgreSQL.
 
 In ``/var/lib/pgsql/data/postgresql.conf``, enable TLS connections by
@@ -202,7 +202,7 @@ changing the ``ssl`` option to
 
 .. code:: bash
 
-   ssl = on 
+   ssl = on
 
 and enable remote connections by binding to all interfaces:
 
@@ -236,7 +236,7 @@ make trusted connections to the database server:
    cat /var/lib/pgsql/data/server.crt
    # Place on webapp server at /home/govready-q/pgsql.crt
 
-Restart the PostgreSQL:
+Restart PostgreSQL:
 
 .. code:: bash
 
@@ -252,9 +252,9 @@ And if necessary, open the PostgreSQL port:
 4. Creating the local/environment.json file
 -------------------------------------------
 
-Create the ``local/environment.json`` file with appropriate parameters. (Order of the key value pairs is not significant.)
+Create the ``local/environment.json`` file with appropriate parameters. (Order of the key-value pairs is not significant.)
 
-**SQLITE (default)**
+**SQLite (default)**
 
 .. code:: json
 
@@ -289,8 +289,8 @@ Create the ``local/environment.json`` file with appropriate parameters. (Order o
 
 .. note::
    As of 0.9.1.20, the "govready-url" environment parameter is preferred way to set Django internal security, url,
-   ALLOWED_HOST, and other settings instead of deprecated environment parameters "host" and "https".
-   The "host" and "https" deprecated parameters will continue to be support for reasonable period for legacy installs.
+   ALLOWED_HOST, and other settings, instead of the deprecated environment parameters "host" and "https".
+   The deprecated "host" and "https" parameters will continue to be supported for a reasonable period for legacy installs.
 
    Deprecated (but supported for a reasonable period):
 
@@ -340,7 +340,7 @@ Run the install script to install required Python libraries, initialize GovReady
    The command ``install-govready-q.sh`` creates the Superuser interactively allowing you to specify username and password.
 
    The command ``install-govready-q.sh --non-interactive`` creates the Superuser automatically for installs where you do
-   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to the standout log.
+   not have access to interactive access to the command line. The auto-generated username and password will be output (only once) to the stdout log.
 
 6. Starting and stopping GovReady-Q
 -----------------------------------
@@ -361,12 +361,12 @@ Visit your GovReady-Q site in your web browser at: http://localhost:8000/
    # Run the server to listen at a different specific host and port
    # python manage.py runserver host:port
    python3 manage.py runserver 0.0.0.0:8000
-   python3 manage.py runserver 67.205.167.168:8000
+   python3 manage.py runserver 10.0.167.168:8000
    python3 manage.py runserver example.com:8000
 
 **Stopping GovReady-Q**
 
-Press ``CTL-c`` in the terminal window running GovReady-Q to stop the server.
+Press ``Ctrl-C`` in the terminal window running GovReady-Q to stop the server.
 
 7. Running GovReady-Q with Gunicorn HTTP WSGI
 ---------------------------------------------
@@ -392,8 +392,8 @@ First, create the ``local/gunicorn.conf.py`` file that tells gunicorn how to sta
 
 .. note::
    Alternatively set ``workers = 1`` if secret key is being auto-generated and not defined
-   in local/environment.json. Auto-generated keys cause login session for users to
-   drop when request routed to a different worker.
+   in local/environment.json. Auto-generated keys cause user login sessions to
+   drop when their request is handled by a different worker.
 
 .. note::
    A sample ``gunicorn.conf.py`` is provided in ``local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/gunicorn``.
@@ -406,12 +406,12 @@ First, create the ``local/gunicorn.conf.py`` file that tells gunicorn how to sta
 
 **Starting GovReady-Q with Gunicorn**
 
-You can now start Gunicorn web server from GovReady-Q install directory. You can run the command to start
-gunicorn as root or as the govready-q user.
+You can now start Gunicorn web server from the GovReady-Q install directory. You can run the command to start
+gunicorn as ``root`` or as the ``govready-q`` user.
 
 .. code:: bash
 
-   su govready-q
+   su - govready-q
    cd /home/govready-q/govready-q/
    gunicorn -c /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
 
@@ -419,13 +419,13 @@ gunicorn as root or as the govready-q user.
 
 **Stopping GovReady-Q with Gunicorn**
 
-Press ``CTL-c`` in the terminal window running gunicorn to stop the server.
+Press ``Ctrl-C`` in the terminal window running gunicorn to stop the server.
 
 
 8. Monitoring GovReady-Q with Supervisor
 ----------------------------------------
 
-In this step, you will configure your deployment to use Supervisor start, monitor and automatically restart Gunicorn (and GovReady-Q) as long running process. In this configuration Supervisord is the effective server daemon running in the background
+In this step, you will configure your deployment to use Supervisor to start, monitor, and automatically restart Gunicorn (and GovReady-Q) as long running process. In this configuration Supervisord is the effective server daemon running in the background
 and managing the gunicorn web server process handling requests to GovReady-Q. If Gunicorn or GovReady-Q unexpectely crash, the Supervisord daemon will automatically restart Gunicorn and GovReady-Q.
 
 Create the Supervisor ``/etc/supervisor/conf.d/application.conf`` conf file for gunicorn to run GovReady-Q.
@@ -480,7 +480,7 @@ Use Supervisor to stop GovReady-Q.
 9. Using NGINX as a reverse proxy
 ---------------------------------
 
-In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security. 
+In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security.
 
 10. Additional options
 ----------------------
@@ -488,7 +488,7 @@ In this step, you will configure your deployment to use NGINX as a reverse proxy
 Installing GovReady-Q Server command-by-command
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For situations in which more granular control over the install process is required, use the below sequence of commands for installing GovReady-Q.
+For situations in which more granular control over the install process is required, use the commands below to install GovReady-Q.
 
 .. code:: bash
 
@@ -520,8 +520,8 @@ For situations in which more granular control over the install process is requir
    The command ``python3 manage.py first_run`` creates the Superuser interactively allowing you to specify username and password.
 
    The command ``python3 manage.py first_run --non-interactive`` creates the Superuser automatically for installs where you do
-   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to
-   to the standout log.
+   not have access to interactive access to the command line. The auto-generated username and password will be output (only once) to
+   to the stdout log.
 
 Enabling PDF export
 ~~~~~~~~~~~~~~~~~~~

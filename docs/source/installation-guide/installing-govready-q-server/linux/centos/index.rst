@@ -132,17 +132,17 @@ created user's home directory and switch users to ``govready-q``. Clone the GovR
 
 GovReady-Q requires a relational database. You can choose:
 
-* SQLITE3
+* SQLite3
 * MySQL
 * PostgreSQL
 
-GovReady-Q will automatically default to and use a SQLITE3 database installed at ``local/db.sqlite3``
+GovReady-Q will automatically default to and use a SQLite3 database installed at ``local/db.sqlite3``
 if you do not specify a database connection string in ``local/environment.json``.
 
-3 (option a). Installing SQLITE3 (default)
+3 (option a). Installing SQLite3 (default)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is no setup necessary to use SQLITE3. GovReady-Q will automatically install a local SQLITE3 database
+There is no setup necessary to use SQLite3. GovReady-Q will automatically install a local SQLite3 database
 ``local/db.sqlite3`` by default if no ``db`` parameter is set in ``local/environment.json``.
 
 .. note::
@@ -205,7 +205,7 @@ Make a note of the Postgres host, port, database name, user and password to add 
 
 **Encrypting your connection to PostgreSQL running on a separate database server**
 
-If PostgreSQL is running on a separate host, it is highly recommended you follow the below instructions
+If PostgreSQL is running on a separate host, it is highly recommended you follow the instructions below
 to configure a secure connection between GovReady-Q and PostgreSQL.
 
 In ``/var/lib/pgsql/data/postgresql.conf``, enable TLS connections by
@@ -213,7 +213,7 @@ changing the ``ssl`` option to
 
 ::
 
-   ssl = on 
+   ssl = on
 
 and enable remote connections by binding to all interfaces:
 
@@ -265,7 +265,7 @@ And if necessary, open the PostgreSQL port:
 
 Create the ``local/environment.json`` file with appropriate parameters. (Order of the key value pairs is not significant.)
 
-**SQLITE (default)**
+**SQLite (default)**
 
 .. code:: json
 
@@ -351,7 +351,7 @@ Run the install script to install required Python libraries, initialize GovReady
    The command ``install-govready-q.sh`` creates the Superuser interactively allowing you to specify username and password.
 
    The command ``install-govready-q.sh --non-interactive`` creates the Superuser automatically for installs where you do
-   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to the standout log.
+   not have access to interactive access to the command line. The auto-generated username and password will be output (only once) to the stdout log.
 
 6. Starting and stopping GovReady-Q
 -----------------------------------
@@ -377,7 +377,7 @@ Visit your GovReady-Q site in your web browser at: http://localhost:8000/
 
 **Stopping GovReady-Q**
 
-Press ``CTL-c`` in the terminal window running GovReady-Q to stop the server.
+Press ``Ctrl-C`` in the terminal window running GovReady-Q to stop the server.
 
 7. Running GovReady-Q with Gunicorn HTTP WSGI
 ---------------------------------------------
@@ -395,7 +395,7 @@ should unexpectedly crash.
 9. Using NGINX as a reverse proxy
 ---------------------------------
 
-In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security. 
+In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security.
 
 10. Additional options
 ----------------------
@@ -403,7 +403,7 @@ In this step, you will configure your deployment to use NGINX as a reverse proxy
 Installing GovReady-Q Server command-by-command
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For situations in which more granular control over the install process is required, use the below sequence of commands for installing GovReady-Q.
+For situations in which more granular control over the install process is required, use the commands below for installing GovReady-Q.
 
 .. code:: bash
 
@@ -435,8 +435,8 @@ For situations in which more granular control over the install process is requir
    The command ``python3 manage.py first_run`` creates the Superuser interactively allowing you to specify username and password.
 
    The command ``python3 manage.py first_run --non-interactive`` creates the Superuser automatically for installs where you do
-   not have access to interactive access to the commandline. The auto-generated username and password will be generated once to
-   to the standout log.
+   not have access to interactive access to the command line. The auto-generated username and password will be output (only once) to
+   to the stdout log.
 
 
 Enabling PDF export

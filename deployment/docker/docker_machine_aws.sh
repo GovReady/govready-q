@@ -82,7 +82,7 @@ while [ $# -gt 0 ]; do
       echo "  --dc-name     Name to give the Docker container, defaults to '$DC_NAME'."
       echo "  --help        Show this help text."
       echo " "
-      echo "Example SQLITE:"
+      echo "Example SQLite:"
       echo ""$(basename "$0")" --aws-region $AWS_REGION --dm-name $DM_NAME --image $IMAGE --dc-name $DC_NAME --address govready-q.myorg.com"
       echo ""
       exit 1 ;;
@@ -147,7 +147,7 @@ export GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR)
 echo "Setting GOVREADY_Q_IMAGENAME=$IMAGE"
 export GOVREADY_Q_IMAGENAME=$IMAGE
 # export GOVREADY_Q_DBURL=postgres://govready_q:my_private_password@grq-002.cog63arfw9bib.us-east-1.rds.amazonaws.com/govready_q
-echo "Set GOVREADY_Q_DBURL to default (blank for SQLITE)"
+echo "Set GOVREADY_Q_DBURL to default (blank for SQLite)"
 
 echo "Bring containers up using: docker run commands..."
 # Pull and run GovReady-Q 0.9.0 container making site available on port 80 with no https
