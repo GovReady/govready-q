@@ -331,7 +331,7 @@ Create the ``local/environment.json`` file with appropriate parameters. (Order o
 5. Installing GovReady-Q
 ------------------------
 
-At this point, you have installed required OS packages; cloned the GovReady-Q repository; configured your preferred database option of SQLITE3, MySQL, or PostgreSQL; and created the ``local/environment.json`` file with appropriate settings.
+At this point, you have installed required OS packages; cloned the GovReady-Q repository; configured your preferred database option of SQLite3, MySQL, or PostgreSQL; and created the ``local/environment.json`` file with appropriate settings.
 
 Make sure you are in the base directory of the GovReady-Q repository. (Execute the following commands as the dedicated Linux user if you set one up.)
 
