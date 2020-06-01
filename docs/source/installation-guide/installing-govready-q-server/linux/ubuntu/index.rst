@@ -326,7 +326,7 @@ Make sure you are in the base directory of the GovReady-Q repository. (Execute t
 
 Run the install script to install required Python libraries, initialize GovReady-Q's database and create a superuser. This is the same command for all database backends.
 
-.. code:: git st
+.. code:: bash
 
    # If you created a dedicated Linux user, be sure to switch to that user to install GovReady-Q
    # su govready-q

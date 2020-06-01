@@ -140,7 +140,7 @@ GovReady-Q will automatically default to and use a SQLITE3 database installed at
 if you do not specify a database connection string in ``local/environment.json``.
 
 3 (option a). Installing SQLITE3 (default)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There is no setup necessary to use SQLITE3. GovReady-Q will automatically install a local SQLITE3 database
 ``local/db.sqlite3`` by default if no ``db`` parameter is set in ``local/environment.json``.
