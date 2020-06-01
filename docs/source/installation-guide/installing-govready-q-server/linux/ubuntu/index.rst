@@ -43,7 +43,6 @@ provide full functionality. Execute the following commands as root:
    python3 -m pip install --upgrade pip
 
    # Optionally install supervisord for monitoring and restarting GovReady-q; and NGINX as a reverse proxy
-   DEBIAN_FRONTEND=noninteractive \
    apt-get install -y supervisor nginx
 
    # To optionally generate thumbnails and PDFs for export, you must install wkhtmltopdf
