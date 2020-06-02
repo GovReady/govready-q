@@ -130,7 +130,7 @@ export GOVREADY_Q_HOST=ec2-$(echo $PUBLIC_IP | tr . "-").$(echo $AWS_REGION_STR)
 echo "Setting GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0"
 export GOVREADY_Q_IMAGENAME=govready/govready-q-0.9.0
 # export GOVREADY_Q_DBURL=postgres://govready_q:my_private_password@grq-002.cog63arfw9bib.us-east-1.rds.amazonaws.com/govready_q
-echo "Set GOVREADY_Q_DBURL to default (blank for SQLITE)"
+echo "Set GOVREADY_Q_DBURL to default (blank for SQLite)"
 
 echo "Build images (on active docker machine)"
 docker-compose build

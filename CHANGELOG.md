@@ -1,6 +1,46 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.20 (May 31, 2020)
+------------------------
+
+**Documentation changes**
+
+* Re-wrote Ubuntu from Source instructions to explain deployment in much greater detail.
+* Extend Ubuntu from Source instructions to include Gunicorn, Supervisor, and NGINX
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+
+**Deployment changes**
+
+* Introduce the ``govready_url`` environment parameter as a replacement for multiple params of ``host``, ``port``, and ``https``. During transition period ``govready-url`` parameter overrides any setting of ``host``, ``port``, and ``https`` parameters. Example below shows the ``local/environment.json`` file using the single ``govready-url`` parameter replacing legacy parameters:
+
+```
+    # Preferred local/environment.json file using govready-url parameter
+
+    {
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "govready-url": "http://localhost:8000",
+      "debug": false,
+      "secret-key": "long_random_string_here",
+      ...
+    }
+
+
+    # Legacy version local/environment.json file using deprecated host, https parameter
+
+    {
+       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+       "host": "localhost:8000",
+       "https": false,
+       "debug": false,
+       "secret-key": "long_random_string_here",
+       ...
+    }
+```
+
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+* The ``install-govready-q.sh`` script now reads the ``govready-url`` parameter from ``local/environment.json`` and uses the values to start GovReady-Q on the indicated host and port.
+
 v.0.9.1.19 (June 02, 2020)
 -------------------------
 
