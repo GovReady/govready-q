@@ -7,7 +7,7 @@
 # Usage:
 #   ./install-os-packages.sh
 
-OS="Ubunto"
+OS="Ubuntu"
 
 echo "Installing required $OS packages for GovReady-Q..."
 
