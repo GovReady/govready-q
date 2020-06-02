@@ -17,6 +17,7 @@ Simple Static Code Analysis
 To run a static code analysis with our typical settings:
 
 .. code-block:: bash
+
     bandit -s B101,B110,B603 -r discussion/ guidedmodules/ siteapp/
 
 We use ``-s`` on the command-line and ``nosec`` in limited places in the source code to disable some checks that are determined after review to be false positives.

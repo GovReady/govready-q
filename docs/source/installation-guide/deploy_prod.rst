@@ -27,7 +27,7 @@ recommended settings:
 
    {
      "debug": false,
-     "host": "webserver.hostname.com",
+     "host": "webserver.example.com",
      "https": true,
      "secret-key": "generate random string using e.g. https://www.miniwebtool.com/django-secret-key-generator/",
      "static": "/home/govready-q/public_html/static"
@@ -35,8 +35,8 @@ recommended settings:
 
 Because of host header checking, to test the site again using
 ``python3 manage.py runserver`` you will need to visit it using
-``webserver.hostname.com`` and not ``localhost``. (Be sure to replace
-``webserver.hostname.com`` with your hostname.)
+``webserver.example.com`` and not ``localhost``. (Be sure to replace
+``webserver.example.com`` with your hostname.)
 
 Remember to Define Your ``host``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -97,7 +97,7 @@ Set up email by adding to ``local/environment.json``:
      "admins": [["Your Name", "you@company.com"]],
      "email": {
        "host": "smtp.server.com", "port": "587", "user": "...", "pw": "....",
-       "domain": "webserver.hostname.com"
+       "domain": "webserver.example.com"
      },
      "mailgun_api_key": "...",
 
