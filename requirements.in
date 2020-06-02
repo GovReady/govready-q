@@ -17,7 +17,7 @@ GitPython # BSD License
 Pygments==2.2.0 # BSD License
 termcolor # MIT License
 xxhash # BSD License
-importlib-metadata<2,>=0.12 # Apache License
+importlib-metadata<1.2,>=0.12 # Apache License
 importlib-resources<2,>=1.0 # Apache License
 
 
