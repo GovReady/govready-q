@@ -41,6 +41,14 @@ v0.9.1.20 (May 31, 2020)
 * Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
 * The ``install-govready-q.sh`` script now reads the ``govready-url`` parameter from ``local/environment.json`` and uses the values to start GovReady-Q on the indicated host and port.
 
+v.0.9.1.19 (June 02, 2020)
+-------------------------
+
+**UI Changes**
+
+* Intially collapse component controls so it is easier see all components.
+* Add full text of implementation statement to accordian panel header to make it easier to read controls.
+* Create routes and templates for displaying components (e.g., elements) associated with a system.
 
 v0.9.1.18 (May 30, 2020)
 ------------------------
@@ -128,6 +136,11 @@ v0.9.1.8.2 (May 10, 2020)
 Update Documentation. Organization installation documentation inside of `Installation Guide` directory.
 Clean up singe pages for installation notes on each Operating System flavor.
 Rename 0.9.0 mentions to 0.9.x. Remove installation instructions from 0.9.x directory.
+
+v0.9.1.9 (May 08, 2020)
+-----------------------
+
+Add export to Xacta Control Implementation Excel file format.
 
 v0.9.1.8.1 (May 07, 2020)
 -------------------------

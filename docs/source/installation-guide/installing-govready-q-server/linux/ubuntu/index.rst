@@ -121,8 +121,6 @@ GovReady-Q requires a relational database. You can choose:
 GovReady-Q will automatically default to and use a SQLite3 database
 if you do not specify a database connection string in ``local/environment.json``.
 
-
-
 3 (option a). Installing SQLite3 (default)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -131,7 +129,6 @@ There is no setup necessary to use SQLite3. GovReady-Q will automatically instal
 
 .. note::
    All files in ``govready-q/local`` are git ignored so that you can safely pull git updates.
-
 
 3 (option b). Installing MySQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -325,7 +322,11 @@ Make sure you are in the base directory of the GovReady-Q repository. (Execute t
 
 Run the install script to install required Python libraries, initialize GovReady-Q's database and create a superuser. This is the same command for all database backends.
 
-.. code:: bash
+.. code:: git st
+
+   # If you created a dedicated Linux user, be sure to switch to that user to install GovReady-Q
+   # su govready-q
+   # cd /home/govready-q/govready-q
 
    # If you created a dedicated Linux user, be sure to switch to that user to install GovReady-Q
    # su govready-q
@@ -418,6 +419,7 @@ gunicorn as ``root`` or as the ``govready-q`` user.
 .. code:: bash
 
    su - govready-q
+
    cd /home/govready-q/govready-q/
    gunicorn -c /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
 
@@ -426,7 +428,6 @@ gunicorn as ``root`` or as the ``govready-q`` user.
 **Stopping GovReady-Q with Gunicorn**
 
 Press ``Ctrl-C`` in the terminal window running gunicorn to stop the server.
-
 
 8. Monitoring GovReady-Q with Supervisor
 ----------------------------------------
