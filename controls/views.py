@@ -375,14 +375,6 @@ def controls_selected_export_xacta_xslx(request, system_id):
         resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
         return resp
-
-        # Return the controls
-        context = {
-            "system": system,
-            "project": project,
-            "controls": controls,
-        }
-        return render(request, "systems/controls_selected_export_xacta_scr.html", context)
     else:
         # User does not have permission to this system
         raise Http404
