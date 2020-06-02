@@ -16,7 +16,6 @@ apt-get update
 # Install dependencies
 sudo apt install -y postgresql postgresql-contrib
 
-
 # Create the database user account for GovReady-Q
 sudo -iu postgres createuser -P $DBUSER
 # Paste a long random password when prompted
