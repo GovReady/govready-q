@@ -18,7 +18,7 @@ class Statement(models.Model):
     producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement. ")
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about. ")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
-    
+
     class Meta:
         permissions = [
             ('can_grant_smt_owner_permission', 'Grant a user statement owner permission'),
@@ -129,6 +129,16 @@ class System(models.Model):
     def __repr__(self):
         # For debugging.
         return "'System %s id=%d'" % (self.root_element.name, self.id)
+
+    def get_producer_elements(self):
+        smts = self.root_element.statements_consumed.all()
+        components = set()
+        for smt in smts:
+            if smt.producer_element:
+                components.add(smt.producer_element)
+        return components
+
+    producer_elements = property(get_producer_elements)
 
 class CommonControlProvider(models.Model):
     name = models.CharField(max_length=150, help_text="Name of the CommonControlProvider", unique=False)

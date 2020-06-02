@@ -1,6 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.19 (June 02, 2020)
+-------------------------
+
+**UI Changes**
+
+* Intially collapse component controls so it is easier see all components.
+* Add full text of implementation statement to accordian panel header to make it easier to read controls.
+* Create routes and templates for displaying components (e.g., elements) associated with a system.
+
 v0.9.1.18 (May 30, 2020)
 ------------------------
 
