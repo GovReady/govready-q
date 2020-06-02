@@ -383,12 +383,19 @@ First, create the ``local/gunicorn.conf.py`` file that tells gunicorn how to sta
    import multiprocessing
    command = 'gunicorn'
    pythonpath = '/home/govready-q/govready-q'
-   # bind = 'localhost:8000'
-   bind = '0.0.0.0:8000'
+   # serve GovReady-Q locally on server to use nginx as a reverse proxy
+   bind = 'localhost:8000'
    workers = multiprocessing.cpu_count() * 2 + 1 # recommended for high-traffic sites
+   # set workers to 1 for now, because the secret key won't be shared if it was auto-generated,
+   # which causes the login session for users to drop as soon as they hit a different worker
+   # workers = 1
    worker_class = 'gevent'
    user = 'govready-q'
    keepalive = 10
+
+# start command
+# gunicorn -c /home/govready-q/govready-q/gunicorn.config.py siteapp.wsgi
+
 
 .. note::
    Alternatively set ``workers = 1`` if secret key is being auto-generated and not defined
@@ -428,23 +435,22 @@ Press ``CTL-c`` in the terminal window running gunicorn to stop the server.
 In this step, you will configure your deployment to use Supervisor start, monitor and automatically restart Gunicorn (and GovReady-Q) as long running process. In this configuration Supervisord is the effective server daemon running in the background
 and managing the gunicorn web server process handling requests to GovReady-Q. If Gunicorn or GovReady-Q unexpectely crash, the Supervisord daemon will automatically restart Gunicorn and GovReady-Q.
 
-Create the Supervisor ``/etc/supervisor/conf.d/application.conf`` conf file for gunicorn to run GovReady-Q.
+Create the Supervisor ``/etc/supervisor/conf.d/supervisor-govready-q.conf`` conf file for gunicorn to run GovReady-Q.
 Supervisor on Ubuntu automatically reads the configuration files in ``/etc/supervisor/conf.d/`` when started.
 
 .. code:: ini
 
-   [program:application]
+   [program:govready-q]
    command = gunicorn --config /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
    directory = /home/govready-q/govready-q
-   stderr_logfile = /var/log/application-stderr.log
-   stdout_logfile = /var/log/application-stdout.log
+   stderr_logfile = /var/log/govready-q-stderr.log
+   stdout_logfile = /var/log/govready-q-stdout.log
 
    [program:notificationemails]
    command = python3.6 manage.py send_notification_emails forever
    directory = /home/govready-q/govready-q
    stderr_logfile = /var/log/notificationemails-stderr.log
    stdout_logfile = /var/log/notificationemails-stdout.log
-
 
 .. note::
    A sample ``supervisor-govready-q.conf`` is provided in ``local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``local/gunicorn.conf.py``.
@@ -480,7 +486,80 @@ Use Supervisor to stop GovReady-Q.
 9. Using NGINX as a reverse proxy
 ---------------------------------
 
-In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security. 
+.. warning::
+   These instructions for NGINX are still a work in progress as of June 2, 2020.
+
+In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security.
+
+.. code::
+   web client <-> NGINX reverse proxy <-> gunicorn web server <-> GovReady-Q (Django)
+
+First, adjust the ``local/environment.json`` file to serve GovReady at the domain that will end-users will see in the browser.
+We will use ``example.com`` in the documentation. Replace ``example.com`` with your domain (or IP address).
+
+.. code:: json
+
+      {
+         ...
+         "govready-url": "http://example.com:8000",
+         ...
+      }
+
+Next, create the NGINX conf ``/etc/nginx/sites-available/nginx-govready-q.conf`` file for GovReady-Q.
+
+.. code::
+
+   server {
+      listen 8888;
+      server_name example.com;
+      access_log  /var/log/nginx/govready-q.log;
+
+      location / {
+         proxy_pass http://localhost:8000;
+         proxy_set_header Host $host;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+   }
+
+.. note::
+   A sample ``nginx-govready-q.conf`` is provided in ``local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``/etc/nginx/sites-available/nginx-govready-q.conf``.
+
+   .. code:: bash
+
+      cp local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/nginx-govready-q.conf \
+      /etc/nginx/sites-available/nginx-govready-q.conf
+
+
+Create a soft link in ``/etc/nginx/sites-enabled/nginx-govready-q.conf`` to the config file in ``/etc/nginx/sites-available/nginx-govready-q.conf``.
+
+.. code:: bash
+
+   ln -s /etc/nginx/sites-available/nginx-govready-q.conf /etc/nginx/sites-enabled/nginx-govready-q.conf
+
+Start NGINX.
+
+.. code:: bash
+
+   # Restart NGINX
+   sudo /etc/init.d/nginx stop
+
+   # Also
+   # service nginx stop
+
+.. note::
+   NGINX will answer requests on ``http://example.com:8888`` and forward to gunicorn that is running on ``http://localhost:8000`` and gunicorn will pass to GovReady-Q via a unix socket. The ``govready-url`` domain name in ``local/envrionment.json`` must match the NGINX ``server_name`` in ``/etc/nginx/sites-available/nginx-govready-q.conf``.
+
+Stop NGINX.
+
+.. code:: bash
+
+   # Restart NGINX
+   sudo /etc/init.d/nginx start
+
+   # Also
+   # service nginx restart
+
+Stopping NGINX only stops the reverse proxy. Use previously described Supervisor commands to stop and start gunicorn (and GovReady-Q).
 
 10. Additional options
 ----------------------

@@ -1,9 +1,8 @@
 import multiprocessing
 command = 'gunicorn'
 pythonpath = '/home/govready-q/govready-q'
-# bind = 'localhost:8000'
-bind = '0.0.0.0:8000'
-# bind = 'localhost:8000'
+# serve GovReady-Q locally on server to use nginx as a reverse proxy
+bind = 'localhost:8000'
 # Only set workers higher than 1 if `secret-key` is defined in local/environment.json
 # If secret-key is auto-generated instead of shared, key will not be shared with gunicorn
 # which causes the login session for users to drop as soon as they hit a different worker
