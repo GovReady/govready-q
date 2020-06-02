@@ -101,7 +101,13 @@ def evaluate_module_state(current_answers, parent_context=None):
     # until we arrive at questions that have no unanswered dependencies.
     # Such questions can be put forth to the user.
 
-    # Build a list of ModuleQuestions that the user may answer now.
+    # Build a list of ModuleQuestion that the are not unanswerable
+    # because they are imputed or unavailable to the user. These
+    # questions may have no answer or can be updatd with a new answer.
+    answerable = set()
+
+    # Build a list of ModuleQuestions that the user may answer now
+    # excluding questions that the have already been answered.
     can_answer = set()
 
     # Build a list of ModuleQuestions that still need an answer,
@@ -140,12 +146,18 @@ def evaluate_module_state(current_answers, parent_context=None):
         # a state in which it wasn't imputed, but now it is), the
         # user's answer is overridden with the imputed value for
         # consistency with the Module's logic.
-        
-        # Create an evaluation context for evaluating impute conditions
-        # that only sees the answers of this question's dependencies,
-        # which are in state because we return the answers from this
-        # method and they are collected as the walk continues up the
-        # dependency tree. 
+
+        # Before running impute conditions below, we need a TemplateContext
+        # which provides the functionality of resolving variables mentioned
+        # in the impute condition. The TemplateContext that we use here is 
+        # different from the one we normally use to render output documents
+        # because an impute condition in a question should not be able to see
+        # the answers to questions that come later in the module. The purpose
+        # of evaluate_module_state is, in part, to get the answers to questions,
+        # included imputed answers, and so the answers to later questions are not
+        # yet know. Therefore, we construct a TemplateContext that only includes
+        # the answers to questions that we've computed so far.
+
         impute_context = TemplateContext(
             ModuleAnswers(current_answers.module, current_answers.task, state),
             impute_context_parent.escapefunc, parent_context=impute_context_parent, root=True)
@@ -158,9 +170,10 @@ def evaluate_module_state(current_answers, parent_context=None):
             was_imputed.add(q.key)
 
         elif q.key in current_answers.as_dict():
-            # The user has provided an answer to this question.
+            # The user has provided an answer to this question. Question can be updated.
             answerobj = current_answers.get(q.key)
             v = current_answers.as_dict()[q.key]
+            answerable.add(q)
 
         elif current_answers.module.spec.get("type") == "project" and q.key == "_introduction":
             # Projects have an introduction but it isn't displayed as a question.
@@ -177,6 +190,7 @@ def evaluate_module_state(current_answers, parent_context=None):
             #
             # But we can remember that this question *can* be answered
             # by the user, and that it's not answered yet.
+            answerable.add(q)
             can_answer.add(q)
             unanswered.add(q)
             answertuples[q.key] = (q, False, None, None)
@@ -210,6 +224,7 @@ def evaluate_module_state(current_answers, parent_context=None):
     ret.was_imputed = was_imputed
     ret.unanswered = unanswered
     ret.can_answer = can_answer
+    ret.answerable = answerable
     return ret
 
 
@@ -884,6 +899,24 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
          if qid in get_from_question_id
        ]
 
+jinja2_expression_compile_cache = { }
+
+def compile_jinja2_expression(expr):
+    # If the expression has already been compiled and is in the cache,
+    # return the compiled expression.
+    if expr in jinja2_expression_compile_cache:
+        return jinja2_expression_compile_cache[expr]
+
+    # The expression is not in the cache. Compile it.
+    env = Jinja2Environment()
+    compiled = env.compile_expression(expr)
+
+    # Save it to the cache.
+    jinja2_expression_compile_cache[expr] = compiled
+
+    # Return it.
+    return compiled
+
 def run_impute_conditions(conditions, context):
     # Check if any of the impute conditions are met based on
     # the questions that have been answered so far and return
@@ -893,7 +926,7 @@ def run_impute_conditions(conditions, context):
     env = Jinja2Environment()
     for rule in conditions:
         if "condition" in rule:
-            condition_func = env.compile_expression(rule["condition"])
+            condition_func = compile_jinja2_expression(rule["condition"])
             try:
                 value = condition_func(context)
             except:
@@ -907,7 +940,7 @@ def run_impute_conditions(conditions, context):
                 # Imputed value is the raw YAML value.
                 value = rule["value"]
             elif rule.get("value-mode", "raw") == "expression":
-                value = env.compile_expression(rule["value"])(context)
+                value = compile_jinja2_expression(rule["value"])(context)
                 if isinstance(value, RenderedAnswer):
                     # Unwrap.
                     value =  value.answer
@@ -1181,7 +1214,7 @@ class TemplateContext(Mapping):
                 # Retrieve a Django dictionary of dictionaries object of full control catalog
                 from controls.oscal import Catalog
                 sca = Catalog.GetInstance()
-                control_catalog = sca.get_flattended_controls_all_as_dict()
+                control_catalog = sca.flattended_controls_all_as_dict
                 return control_catalog
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
