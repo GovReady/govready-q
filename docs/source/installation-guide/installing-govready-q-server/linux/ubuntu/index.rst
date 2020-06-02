@@ -164,7 +164,6 @@ Install PostgreSQL OS packages either on the same server as GovReady-Q or on a d
 .. code:: bash
 
    sudo apt install -y postgresql postgresql-contrib
-   postgresql-setup initdb
 
 Then set up the user and database (both named ``govready_q``):
 
