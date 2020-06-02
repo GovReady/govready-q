@@ -148,6 +148,8 @@ def controls_selected_export_xacta_xslx(request, system_id):
             if control.oscal_ctl_id in impl_smts_by_sid:
                 setattr(control, 'impl_smts', impl_smts_by_sid[control.oscal_ctl_id])
                 # print(control.oscal_ctl_id, control.impl_smts)
+            else:
+                setattr(control, 'impl_smts', None)
 
         from openpyxl import Workbook
         from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
@@ -294,9 +296,11 @@ def controls_selected_export_xacta_xslx(request, system_id):
             c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
             # Private Implementation
+            print("DEBUG", control)
             smt_combined = ""
-            for smt in control.impl_smts:
-                smt_combined += smt.body
+            if control.impl_smts:
+                for smt in control.impl_smts:
+                    smt_combined += smt.body
             c = ws.cell(row=row, column=3, value=smt_combined)
             c.alignment = Alignment(vertical='top', wrapText=True)
             c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
