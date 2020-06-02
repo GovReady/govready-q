@@ -66,7 +66,7 @@ fi
 
 # jQuery (MIT License)
 download \
-  https://code.jquery.com/jquery-3.4.1.min.js \
+  https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
   $VENDOR/jquery.js \
   '0925e8ad7bd971391a8b1e98be8e87a6971919eb5b60c196485941c3c1df089a'
 
