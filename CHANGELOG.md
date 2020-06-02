@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.18 (May 30, 2020)
+------------------------
+
+**Documentation changes:**
+
+* Ubuntu from source installation docs updated to include upgrading pip to solve problem of Ubuntu's defualt pip not installing Python packages under Linux user installs.
+
 v0.9.1.17 (May 29, 2020)
 ------------------------
 
@@ -41,7 +48,7 @@ v.0.9.1.14 (May 17, 2020)
 
 **Deployment changes**
 
-* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive`` flag.
+* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive` flag.
 * Create install-govready-q.sh script (based on quickstart.sh) to have an easy single script for installing GovReady-Q.
 * Update Dockerfile to copy over new install-govready-q.sh script and quickstart.sh script.
 * Use docker_container_run.sh script in instructions for installing in the cloud.
