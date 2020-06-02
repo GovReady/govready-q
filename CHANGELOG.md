@@ -88,6 +88,11 @@ Update Documentation. Organization installation documentation inside of `Install
 Clean up singe pages for installation notes on each Operating System flavor.
 Rename 0.9.0 mentions to 0.9.x. Remove installation instructions from 0.9.x directory.
 
+v0.9.1.9 (May 08, 2020)
+-----------------------
+
+Add export to Xacta Control Implementation Excel file format.
+
 v0.9.1.8.1 (May 07, 2020)
 -------------------------
 
