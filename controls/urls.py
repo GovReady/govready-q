@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^catalogs/(?P<catalog_key>.*)/$', views.catalog),
 
     # Systems
+    url(r'^(?P<system_id>.*)/controls/selected/export/xacta/xlsx$', views.controls_selected_export_xacta_xslx, name="controls_selected"),
     url(r'^(?P<system_id>.*)/controls/selected$', views.controls_selected, name="controls_selected"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),

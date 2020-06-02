@@ -66,4 +66,10 @@ sphinxcontrib-contentui # MIT License
 
 # markupsafe is pinned here because tests crash with version 1.1.0.
 # Can probably unpin when https://github.com/pallets/markupsafe/issues/108 is resolved.
-markupsafe==1.1.1 # BSD 3.
+markupsafe==1.1.1 # BSD 3
+
+# Excel exports
+openpyxl # MIT License
+
+# pin gevent to working version; we're getting Docker build errors with gevent==20.5.0
+gevent==1.4.0
