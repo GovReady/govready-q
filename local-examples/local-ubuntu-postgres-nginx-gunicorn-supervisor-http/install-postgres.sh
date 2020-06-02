@@ -7,7 +7,7 @@
 # Usage:
 #   ./install-os-packages.sh
 
-OS="Ubunto"
+OS="Ubuntu"
 DBUSER="govready_q"
 DATABASE=$DBUSER
 
