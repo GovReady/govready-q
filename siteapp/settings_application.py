@@ -92,7 +92,15 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 LOGIN_REDIRECT_URL = "/projects"
-EMAIL_DOMAIN = environment.get("email", {}).get("domain", environment["host"].split(":")[0])
+
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+    EMAIL_DOMAIN = environment.get("email", {}).get("domain", GOVREADY_URL.hostname)
+elif "host" in environment:
+    EMAIL_DOMAIN = environment.get("email", {}).get("domain", environment["host"].split(":")[0])
+else:
+    EMAIL_DOMAIN = environment.get("email", {}).get("domain", environment["host"].split(":")[0])
+    print("WARNING: host not properly defined to set EMAIL_DOMAIN")
+
 SERVER_EMAIL = ("GovReady Q <q@%s>" % EMAIL_DOMAIN)
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 NOTIFICATION_FROM_EMAIL_PATTERN = "%s via GovReady Q <q@" + EMAIL_DOMAIN + ">"

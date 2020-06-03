@@ -1,6 +1,90 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.20 (May 31, 2020)
+------------------------
+
+**Documentation changes**
+
+* Re-wrote Ubuntu from Source instructions to explain deployment in much greater detail.
+* Extend Ubuntu from Source instructions to include Gunicorn, Supervisor, and NGINX
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+
+**Deployment changes**
+
+* Introduce the ``govready_url`` environment parameter as a replacement for multiple params of ``host``, ``port``, and ``https``. During transition period ``govready-url`` parameter overrides any setting of ``host``, ``port``, and ``https`` parameters. Example below shows the ``local/environment.json`` file using the single ``govready-url`` parameter replacing legacy parameters:
+
+```
+    # Preferred local/environment.json file using govready-url parameter
+
+    {
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "govready-url": "http://localhost:8000",
+      "debug": false,
+      "secret-key": "long_random_string_here",
+      ...
+    }
+
+
+    # Legacy version local/environment.json file using deprecated host, https parameter
+
+    {
+       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+       "host": "localhost:8000",
+       "https": false,
+       "debug": false,
+       "secret-key": "long_random_string_here",
+       ...
+    }
+```
+
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+* The ``install-govready-q.sh`` script now reads the ``govready-url`` parameter from ``local/environment.json`` and uses the values to start GovReady-Q on the indicated host and port.
+
+v.0.9.1.19 (June 02, 2020)
+-------------------------
+
+**UI Changes**
+
+* Intially collapse component controls so it is easier see all components.
+* Add full text of implementation statement to accordian panel header to make it easier to read controls.
+* Create routes and templates for displaying components (e.g., elements) associated with a system.
+
+v0.9.1.18 (May 30, 2020)
+------------------------
+
+**Documentation changes:**
+
+* Ubuntu from source installation docs updated to include upgrading pip to solve problem of Ubuntu's defualt pip not installing Python packages under Linux user installs.
+
+v0.9.1.17 (May 29, 2020)
+------------------------
+
+**UX changes:**
+
+Performance improvements to improve rendering questions faster.
+
+A major change in this commit is to create a cache for Jinja `expression_compile` routine.
+This new cache is `jinja2_expression_compile_cache` and seems to have a noticable improvement
+on maintaining a regular amount of time to render questions.
+
+Several page reloads were the result of page redirects being handled
+based on content of the next page inside the question save form. Calculating the next page
+to display while accounting for skipping computed pages is now handled server side as a function
+that can be called.
+
+Removed links to imputed pages from the module finished page. It does not make sense to
+link to imputed questions when users cannot visit imputed question pages.
+
+Improve caching of OSCAL control catalogs.
+
+v.0.9.1.16 (May 18, 2020)
+-------------------------
+
+**Development changes**
+
+* Correct setup of tests in discussions app to avoid failing due to missing system modules.
+
 v.0.9.1.15 (May 18, 2020)
 -------------------------
 
@@ -13,7 +97,7 @@ v.0.9.1.14 (May 17, 2020)
 
 **Deployment changes**
 
-* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive`` flag.
+* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive` flag.
 * Create install-govready-q.sh script (based on quickstart.sh) to have an easy single script for installing GovReady-Q.
 * Update Dockerfile to copy over new install-govready-q.sh script and quickstart.sh script.
 * Use docker_container_run.sh script in instructions for installing in the cloud.
@@ -52,6 +136,11 @@ v0.9.1.8.2 (May 10, 2020)
 Update Documentation. Organization installation documentation inside of `Installation Guide` directory.
 Clean up singe pages for installation notes on each Operating System flavor.
 Rename 0.9.0 mentions to 0.9.x. Remove installation instructions from 0.9.x directory.
+
+v0.9.1.9 (May 08, 2020)
+-----------------------
+
+Add export to Xacta Control Implementation Excel file format.
 
 v0.9.1.8.1 (May 07, 2020)
 -------------------------
@@ -313,7 +402,7 @@ v0.9.0.3.3 (February 23, 2020)
 * Use Math.pow in main.js to fix IE11 failing to display invite modal
 
 
-v0.9.0.3.2 (February 21, 2019)
+v0.9.0.3.2 (February 21, 2020)
 -------------------------------
 
 **Deployment changes**
@@ -333,7 +422,7 @@ v0.9.0.3.2 (February 21, 2019)
 
 
 v0.9.0.3 (November 21, 2019)
--------------------------------
+----------------------------
 
 **UX changes**
 

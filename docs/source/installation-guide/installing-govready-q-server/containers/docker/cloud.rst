@@ -32,7 +32,7 @@ If appropriate, grant non-root users access to run Docker containers
 
 We recommend you launch GovReady-Q container in the detached mode.
 
-The following commands will launch GovReady-Q using the default SQLITE database.
+The following commands will launch GovReady-Q using the default SQLite database.
 
 .. code-block:: bash
 
@@ -93,17 +93,17 @@ The instance can be set to debug mode at runtime.
         GovReady-Q is starting...
         Container Name: govready-q
         Container ID: 6448d84ce6c7270e4f25cc830ddaf7839b5839e813a3632143a5362651cf193e
-        Version: v0.9.1.12 
+        Version: v0.9.1.12
         Waiting for GovReady-Q to come online...
         Waiting for GovReady-Q to come online...
-        
+
         ...
 
         GovReady-Q has been started!
         Listening on: 174.138.37.213:80
         URL: http://174.138.37.213
         For additional information run: docker container logs govready-q
-        root@ubuntu-s-2vcpu-4gb-nyc1-01:~# docker container logs govready-q 
+        root@ubuntu-s-2vcpu-4gb-nyc1-01:~# docker container logs govready-q
         This is GovReady-Q.
         v0.9.1.12
 
@@ -195,9 +195,10 @@ for production deployments.
 
 See the next section `Advanced container configuration <advanced-container-config.html>`__  for further details.
 
-.. topic:: Contents
+.. topic:: Next
 
     .. toctree::
         :maxdepth: 1
 
+        advanced-container-config-examples
         advanced-container-config
