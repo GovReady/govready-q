@@ -129,16 +129,20 @@ class SeleniumTest(StaticLiveServerTestCase):
         from selenium.webdriver.support.select import Select
         e = self.browser.find_element_by_css_selector(css_selector)
         Select(e).select_by_visible_text(text)
+        var_sleep(1.5)
 
     def _getNodeText(self, css_selector):
         node_text = self.browser.find_element_by_css_selector(css_selector).text
         node_text = re.sub(r"\s+", " ", node_text) # normalize whitespace
         return node_text
+        var_sleep(1.0)
 
     def assertInNodeText(self, search_text, css_selector):
         self.assertIn(search_text, self._getNodeText(css_selector))
+
     def assertNotInNodeText(self, search_text, css_selector):
         self.assertNotIn(search_text, self._getNodeText(css_selector))
+        var_sleep(0.75)
 
     def assertNodeNotVisible(self, css_selector):
         from selenium.common.exceptions import NoSuchElementException
@@ -282,12 +286,12 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
         self.click_element("#select_portfolio_submit")
-        var_sleep(2)
+        var_sleep(1.5)
 
         # Click Add Button
         self.click_element(".app[data-app='project/simple_project'] .start-app")
 
-        var_sleep(2)
+        var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
 
         m = re.match(r"http://.*?/projects/(\d+)/", self.browser.current_url)
@@ -369,7 +373,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # - The user is looking at the Introduction page.
         self.click_element("#save-button")
-        var_sleep(.5) # wait for page to load
+        var_sleep(1.25) # wait for page to load
 
         # - Now at the what is your name page?
         self.fill_field("#inputctrl", "John Doe")
@@ -496,6 +500,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_login", self.user2.username)
         self.fill_field("#id_password", self.user2.clear_password)
         self.click_element("form button.primaryAction")
+        var_sleep(1.5)
 
         self.assertRegex(self.browser.title, "I want to answer some questions on Q") # user is on the project page
         var_sleep(1.5)
@@ -641,7 +646,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.select_option_by_visible_text('#invite-user-select', 'me2')
         var_sleep(0.75)
         self.click_element("#invitation_modal button.btn-submit")
-        var_sleep(0.75)
+        var_sleep(15.25)
         self.assertInNodeText("me2", "#portfolio-member-me2")
 
         # Grant another member ownership of portfolio

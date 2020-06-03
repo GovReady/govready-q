@@ -1,7 +1,16 @@
 from django.conf import settings
 from allauth.account.adapter import DefaultAccountAdapter
+# import logging
+# logger = logging.getLogger(__name__)
 import logging
-logger = logging.getLogger(__name__)
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
 
 class AllauthAccountAdapter(DefaultAccountAdapter):
     # Override save_user.
@@ -27,11 +36,22 @@ class AllauthAccountAdapter(DefaultAccountAdapter):
         ret = super(AllauthAccountAdapter, self).authenticate(request, **credentials)
 
         # Log login attempts.
-        logger.error("login ip={ip} username={username} result={result}".format(
+        # logger.error("login ip={ip} username={username} result={result}".format(
+        #         ip=request.META.get("REMOTE_ADDR"),
+        #         username=credentials.get("username"),
+        #         result=("user:%d" % ret.id) if ret else "fail"
+        #     ))
+        if ret:
+            logger.info(
+                event="authenticate successful",
+                user={"id": ret.id, "username": credentials.get("username")}
+            )
+        else:
+            logger.error(
+                event="authenticate fail",
                 ip=request.META.get("REMOTE_ADDR"),
-                username=credentials.get("username"),
-                result=("user:%d" % ret.id) if ret else "fail"
-            ))
+                user={"id": None, "username": credentials.get("username")}
+            )
 
         return ret
 

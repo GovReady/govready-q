@@ -11,9 +11,9 @@ logging.config.dictConfig({
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'default': {
+        'console': {
             # exact format is not important, this is the minimum information
-            'format': '{"datetime": "%(asctime)s", "name": "%(name)s", "level": "%(levelname)s", %(message)s}',
+            'format': '%(asctime)s %(name)s level %(levelname)s %(message)s',
         },
         'django.server': DEFAULT_LOGGING['formatters']['django.server'],
     },
@@ -21,7 +21,7 @@ logging.config.dictConfig({
         # console logs to stderr
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'default',
+            'formatter': 'console',
         },
         'django.server': DEFAULT_LOGGING['handlers']['django.server'],
     },

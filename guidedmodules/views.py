@@ -17,6 +17,16 @@ from siteapp.forms import ProjectForm
 
 import fs, fs.errors
 
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+
+
 @login_required
 def new_task(request):
     # Create a new task by answering a module question of a project rook task.
@@ -1219,6 +1229,12 @@ def upgrade_app(request):
     # data may have changed, clear all cached Task state.
     Task.clear_state(Task.objects.filter(module__app=appver))
 
+    # log app upgrade
+    logger.info(
+        event="upgrade_app",
+        object={"object": "app", "id": appver.id, "to_email": appver.appname},
+        user={"id": request.user.id, "username": request.user.username}
+    )
     from django.contrib import messages
     messages.add_message(request, messages.INFO, 'App upgraded.')
 
@@ -1604,6 +1620,12 @@ def delete_task(request):
                 skipped_reason=ans.skipped_reason, # preserve this
                 unsure=ans.unsure, # preserve this
             )
+        # Log task deletion
+        logger.info(
+            event="delete_task",
+            object={"object": "task", "id": task.id, "uuid": task.uuid, "slug": task.get_slug()},
+            user={"id": request.user.id, "username": request.user.username}
+        )
 
     return HttpResponse("ok")
 
