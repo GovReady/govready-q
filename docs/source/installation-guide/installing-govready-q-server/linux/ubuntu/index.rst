@@ -560,7 +560,33 @@ Stop NGINX.
 
 Stopping NGINX only stops the reverse proxy. Use previously described Supervisor commands to stop and start gunicorn (and GovReady-Q).
 
-10. Additional options
+10. NGINX with HTTPS
+---------------------
+
+.. code:: bash
+   
+   apt-get install -y ufw
+   ufw allow https
+   ufw enable
+
+   
+
+   mkdir -p /etc/pki/tls/private/
+   mkdir -p /etc/pki/tls/certs
+
+   HOST=67.205.167.168
+   export HOST
+   openssl req -newkey rsa:4096 \
+      -x509 \
+      -sha256 \
+      -days 3650 \
+      -nodes \
+      -out /etc/pki/tls/certs/cert.pem \
+      -keyout /etc/pki/tls/private/key.pem \
+      -subj "/C=US/ST=State/L=Locality/O=Organization/OU=Organizational Unit/CN=$HOST"
+
+
+11. Additional options
 ----------------------
 
 Installing GovReady-Q Server command-by-command
