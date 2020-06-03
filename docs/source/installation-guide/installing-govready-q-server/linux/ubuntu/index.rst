@@ -95,6 +95,8 @@ created user's home directory and switch users to ``govready-q``. Clone the GovR
    chsh -s /bin/bash govready-q
    cp /etc/skel/.bashrc /home/govready-q/.
    chown govready-q:govready-q /home/govready-q/.bashrc
+   adduser govready-q sudo
+   passwd govready-q
 
    # Change permissions so that the webserver can read static files
    chmod a+rx /home/govready-q
@@ -310,7 +312,7 @@ Create the ``local/environment.json`` file with appropriate parameters. (Order o
          "secret-key": "long_random_string_here"
       }
 
-   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
+   See `Environment Settings <../../../Environment.html>`__ for a complete list of configuration options.
 
 5. Installing GovReady-Q
 ------------------------
@@ -333,7 +335,7 @@ Run the install script to install required Python libraries, initialize GovReady
 
    # Run the install script to install Python libraries,
    # initialize database, and create Superuser
-   ./install-govready-q
+   ./install-govready-q.sh
 
 .. note::
    The command ``install-govready-q.sh`` creates the Superuser interactively allowing you to specify username and password.
