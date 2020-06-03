@@ -95,6 +95,8 @@ created user's home directory and switch users to ``govready-q``. Clone the GovR
    chsh -s /bin/bash govready-q
    cp /etc/skel/.bashrc /home/govready-q/.
    chown govready-q:govready-q /home/govready-q/.bashrc
+   adduser govready-q sudo
+   passwd govready-q
 
    # Change permissions so that the webserver can read static files
    chmod a+rx /home/govready-q
@@ -310,7 +312,7 @@ Create the ``local/environment.json`` file with appropriate parameters. (Order o
          "secret-key": "long_random_string_here"
       }
 
-   See `Environment Settings <Environment.html>`__ for a complete list of configuration options.
+   See `Environment Settings <../../../Environment.html>`__ for a complete list of configuration options.
 
 5. Installing GovReady-Q
 ------------------------
@@ -321,7 +323,7 @@ Make sure you are in the base directory of the GovReady-Q repository. (Execute t
 
 Run the install script to install required Python libraries, initialize GovReady-Q's database and create a superuser. This is the same command for all database backends.
 
-.. code:: git st
+.. code::
 
    # If you created a dedicated Linux user, be sure to switch to that user to install GovReady-Q
    # su govready-q
@@ -333,7 +335,7 @@ Run the install script to install required Python libraries, initialize GovReady
 
    # Run the install script to install Python libraries,
    # initialize database, and create Superuser
-   ./install-govready-q
+   ./install-govready-q.sh
 
 .. note::
    The command ``install-govready-q.sh`` creates the Superuser interactively allowing you to specify username and password.
@@ -490,13 +492,14 @@ Use Supervisor to stop GovReady-Q.
 
 In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security.
 
-.. code::
+.. code:: text
+
    web client <-> NGINX reverse proxy <-> gunicorn web server <-> GovReady-Q (Django)
 
 First, adjust the ``local/environment.json`` file to serve GovReady at the domain that will end-users will see in the browser.
 We will use ``example.com`` in the documentation. Replace ``example.com`` with your domain (or IP address).
 
-.. code:: json
+.. code:: text
 
       {
          ...
@@ -506,7 +509,7 @@ We will use ``example.com`` in the documentation. Replace ``example.com`` with y
 
 Next, create the NGINX conf ``/etc/nginx/sites-available/nginx-govready-q.conf`` file for GovReady-Q.
 
-.. code::
+.. code:: nginx
 
    server {
       listen 8888;
@@ -546,7 +549,7 @@ Start NGINX.
    # service nginx stop
 
 .. note::
-   NGINX will answer requests on ``http://example.com:8888`` and forward to gunicorn that is running on ``http://localhost:8000`` and gunicorn will pass to GovReady-Q via a unix socket. The ``govready-url`` domain name in ``local/envrionment.json`` must match the NGINX ``server_name`` in ``/etc/nginx/sites-available/nginx-govready-q.conf``.
+   NGINX will answer requests on ``http://example.com:8888`` and forward to gunicorn that is running on ``http://localhost:8000`` and gunicorn will pass to GovReady-Q via a unix socket. The ``govready-url`` domain name in ``local/environment.json`` must match the NGINX ``server_name`` in ``/etc/nginx/sites-available/nginx-govready-q.conf``.
 
 Stop NGINX.
 
