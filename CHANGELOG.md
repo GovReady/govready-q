@@ -23,7 +23,7 @@ The following logged events have been added:
 "project_list" - vew list of projects
 "start_app" - start a questionnaire/compliance app
 "new_project" - create a new project (e.g., questionnaire/compliance app that is a project)
-"new_element new_system" - create a new element (e.g., system component) that represents a new system\
+"new_element new_system" - create a new element (e.g., system component) that represents a new system
 
 **Documentation changes**
 
