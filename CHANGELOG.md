@@ -1,6 +1,34 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22 (June 03, 2020)
+------------------------
+
+**Feature changes**
+
+Improve application logging. Add `structlog` library. Log permission escalations.
+See documentation for a description of the event log formats.
+The following logged events have been added:
+
+"update_permissions portfolio assign_owner_permissions" - assign portfolio owner permissions
+"update_permissions portfolio remove_owner_permissions" - remove portfolio owner permissions
+"portfolio_list" - view list of portfolios
+"new_portfolio" - create new portfolio
+"new_portfolio assign_owner_permissions" - assign portfolio owner permissions of newly created portfolio to creator
+"send_invitation portfolio assign_edit_permissions" - assign portfolio edit permissions of newly created portfolio to creator
+"send_invitation project assign_edit_permissions" - assign edit permissions to a project and send invitation
+"cancel_invitation" - cancel invitation to a project
+"accept_invitation" - accept invitation to a project
+"sso_logout" - Single Sign On logout
+"project_list" - vew list of projects
+"start_app" - start a questionnaire/compliance app
+"new_project" - create a new project (e.g., questionnaire/compliance app that is a project)
+"new_element new_system" - create a new element (e.g., system component) that represents a new system
+
+**Documentation changes**
+
+* Added documentation section on logging.
+
 v0.9.1.20 (May 31, 2020)
 ------------------------
 
