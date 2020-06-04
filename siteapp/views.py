@@ -26,6 +26,16 @@ from .good_settings_helpers import \
 from .models import Folder, Invitation, Portfolio, Project, User, Organization
 from .notifications_helpers import *
 
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
+
 
 def homepage(request):
     # If the user is logged in, then redirect them to the projects page.
@@ -124,6 +134,12 @@ def project_list(request):
 
         # Put the project into the lifecycle's appropriate stage.
         project.lifecycle_stage[1].setdefault("projects", []).append(project)
+
+    # Log listing
+    logger.info(
+        event="project_list",
+        user={"id": request.user.id, "username": request.user.username}
+    )
 
     return render(request, "projects.html", {
         "lifecycles": lifecycles,
@@ -459,6 +475,18 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         if folder:
             folder.projects.add(project)
 
+        # Log start app / new project
+        logger.info(
+            event="start_app",
+            object={"task": "project", "id": project.root_task.id, "title": project.root_task.title_override},
+            user={"id": user.id, "username": user.username}
+        )
+        logger.info(
+            event="new_project",
+            object={"object": "project", "id": project.id, "title":project.title},
+            user={"id": user.id, "username": user.username}
+        )
+
         # Create a new System element and link to project?
         # Top level apps should be linked to a system
         # Repeat folder test so we can easily refactor this code later
@@ -475,6 +503,12 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             # Link system to project
             project.system = system
             project.save()
+            # Log start app / new project
+            logger.info(
+                event="new_element new_system",
+                object={"object": "element", "id": element.id, "name":element.name},
+                user={"id": user.id, "username": user.username}
+            )
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -1155,14 +1189,34 @@ def update_permissions(request):
         portfolio.remove_permissions(user)
       elif permission == 'grant_owner_permission':
         portfolio.assign_owner_permissions(user)
+        # Log permission escalation
+        logger.info(
+            event="update_permissions portfolio assign_owner_permissions",
+            object={"id": portfolio.id, "title":portfolio.title},
+            receiving_user={"id": user.id, "username": user.username},
+            user={"id": request.user.id, "username": request.user.username}
+        )
       elif permission == 'remove_owner_permissions':
-          portfolio.remove_owner_permissions(user)
+        portfolio.remove_owner_permissions(user)
+        # Log permission removal
+        logger.info(
+            event="update_permissions portfolio remove_owner_permissions",
+            object={"id": portfolio.id, "title":portfolio.title},
+            receiving_user={"id": user.id, "username": user.username},
+            user={"id": request.user.id, "username": request.user.username}
+        )
     next = request.POST.get('next', '/')
     return HttpResponseRedirect(next)
 
 @login_required
 def portfolio_list(request):
     """List portfolios"""
+
+    logger.info(
+        event="portfolio_list",
+        user={"id": request.user.id, "username": request.user.username}
+    )
+
     return render(request, "portfolios/index.html", {
         "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
         "project_form": ProjectForm(request.user),
@@ -1176,7 +1230,18 @@ def new_portfolio(request):
       if form.is_valid():
         form.save()
         portfolio = form.instance
+        logger.info(
+            event="new_portfolio",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         portfolio.assign_owner_permissions(request.user)
+        logger.info(
+            event="new_portfolio assign_owner_permissions",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            receiving_user={"id": request.user.id, "username": request.user.username},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         return redirect('portfolio_projects', pk=portfolio.pk)
     else:
         form = PortfolioForm()
@@ -1251,6 +1316,12 @@ def send_invitation(request):
           from_portfolio = Portfolio.objects.filter(id=request.POST["portfolio"]).first()
           if len(request.POST.get("user_id")) > 0:
             from_portfolio.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation portfolio assign_edit_permissions",
+                object={"object": "portfolio", "id": from_portfolio.id, "title": from_portfolio.title},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
 
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
@@ -1258,6 +1329,12 @@ def send_invitation(request):
           from_project = Project.objects.filter(id=request.POST["project"]).first()
           if len(request.POST.get("user_id")) > 0:
             from_project.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation project assign_edit_permissions",
+                object={"object": "project", "id": from_project.id, "title":from_project.title},
+                receiving_user={"id": to_user.user.id, "username": to_user.user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -1341,6 +1418,11 @@ def cancel_invitation(request):
     inv = get_object_or_404(Invitation, id=request.POST['id'], from_user=request.user)
     inv.revoked_at = timezone.now()
     inv.save(update_fields=['revoked_at'])
+    logger.info(
+        event="cancel_invitation",
+        object={"object": "invitation", "id": inv.id, "to_email": inv.to_email},
+        user={"id": request.user.id, "username": request.user.username}
+    )
     return JsonResponse({ "status": "ok" })
 
 def accept_invitation(request, code=None):
@@ -1352,6 +1434,11 @@ def accept_invitation(request, code=None):
         return response
 
     # The invitation has been accepted by a logged in user.
+    logger.info(
+        event="accept_invitation",
+        object={"object": "invitation", "id": inv.id, "to_email": inv.to_email},
+        user={"id": request.user.id, "username": request.user.username}
+    )
 
     # Some invitations create an interstitial before redirecting.
     inv.from_user.preload_profile()
@@ -1631,6 +1718,11 @@ def shared_static_pages(request, page):
 # SINGLE SIGN ON
 
 def sso_logout(request):
+    # Log sso_logout
+    logger.info(
+        event="sso_logout",
+        user={"id": request.user.id, "username": request.user.username}
+    )
     output = "You are logged out."
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)

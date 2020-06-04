@@ -392,3 +392,6 @@ if environment.get("branding"):
 
 # Load all additional settings from settings_application.py.
 from .settings_application import *
+
+# Load logging configuration from settings_logging.py.
+from .settings_logging import *

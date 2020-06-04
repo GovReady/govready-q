@@ -25,6 +25,7 @@ The code is open source, and `available on GitHub
    Authoring
    Automation
    DataDesign
+   logs/index
    testing/index.rst
    version.0.9.x
    migration_guide_086_09x.rst
