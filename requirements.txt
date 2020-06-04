@@ -132,7 +132,8 @@ django-notifications-hq==1.6 \
     # via -r requirements.in
 django==3.0.7 \
     --hash=sha256:5052b34b34b3425233c682e0e11d658fd6efd587d11335a0203d827224ada8f2 \
-    --hash=sha256:e1630333248c9b3d4e38f02093a26f1e07b271ca896d73097457996e0fae12e8    # via -r requirements.in, django-allauth, django-debug-toolbar, django-guardian, django-model-utils, django-notifications-hq, jsonfield
+    --hash=sha256:e1630333248c9b3d4e38f02093a26f1e07b271ca896d73097457996e0fae12e8  \
+    # via -r requirements.in, django-allauth, django-debug-toolbar, django-guardian, django-model-utils, django-notifications-hq, jsonfield
 dnspython==1.16.0 \
     --hash=sha256:36c5e8e38d4369a08b6780b7f27d790a292b2b08eea01607865bf0936c558e01 \
     --hash=sha256:f69c21288a962f4da86e56c4905b49d11aba7938d3d740e80d9e366ee4f1632d \
