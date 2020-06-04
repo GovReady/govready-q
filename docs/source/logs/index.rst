@@ -18,9 +18,9 @@ GovReady-Q logging depends upon the configuration of your system.
 GovReady-Q Application Logs
 ---------------------------
 
-As of version 0.9.1.21, GovReady-Q Application logs in a hyprid format with the datetime,
+As of version 0.9.1.21, GovReady-Q Application logs in a hybrid format with the datetime,
 source and level information space delimited and the log message in a JSON object format.
-The end goal is to use JSON object format as the default format for the entire log messsage.
+The end goal is to use JSON object format as the default format for the entire log message.
 The following events are currently logged in this hybrid format.
 
 **"update_permissions portfolio assign_owner_permissions"**
