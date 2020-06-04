@@ -30,7 +30,7 @@ Now install Python3 and the required Unix packages.
 
     # install other packages:
     brew install unzip graphviz pandoc selenium-server-standalone magic libmagic
-   
+
     # to generate thumbnails and PDFs for export, you must install wkhtmltopdf
     # WARNING: wkhtmltopdf can expose you to security risks. For more information,
     # search the web for "wkhtmltopdf Server-Side Request Forgery"
@@ -110,7 +110,7 @@ host name and port.
 (Optional) Installing Postgres, MySQL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GovReady-Q can optionally be configured to work with Postgress or MySQL database engines instead of the default SQLITE3.
+GovReady-Q can optionally be configured to work with Postgres or MySQL database engines instead of the default SQLite3.
 
 .. code:: bash
 

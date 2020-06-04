@@ -24,11 +24,13 @@ launching a container with GovReady-Q.
 -  ``govready_cms_api_auth``: used to store API key to interact with
    GovReady’s CMS agent and dashboard. Not relevant to most users. See
    `GovReady-CMS-API`_.
--  ``host``: this is the domain name (HTTP ``Host`` header) used for
-   root-level GovReady-Q pages. See also ``organization-parent-domain``,
-   which is used to construct organization subdomains (if using a
-   different base domain).
--  ``https``: set to true to generate HTTPS headers and urls when site
+-  ``govready-url``: this is the fully qualified URL that would appear
+   in public URLS to navigate to the GovReady instance. This is the preferred parameter
+   for determining settings related to 'http' or 'https', site root, and port.
+   ``govready-url`` setting will take precedence over deprecated ``host`` and ``http`` settings.
+-  ``host`` (deprecated): this is the domain name (HTTP ``Host`` header) used for
+   root-level GovReady-Q pages.
+-  ``https`` (deprecated): set to true to generate HTTPS headers and urls when site
    is running behind a proxy terminating HTTPS connections. See
    `Configuring a Reverse Proxy Webserver for Production Use`_.
 -  ``mailgun_api_key``: used to hold API key for using mailgun to

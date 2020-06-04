@@ -26,17 +26,17 @@ if appropriate, grant non-root users access to run Docker containers
 
 We recommend you launch GovReady-Q container in the detached mode.
 
-The following commands will launch GovReady-Q using the default SQLITE database.
+The following commands will launch GovReady-Q using the default SQLite database.
 
 .. code-block:: bash
 
     # Run the docker container in detached mode
     docker container run -d --name govready-q -p 8000:8000 govready/govready-q
 
-    # Create GovReady-Q Django Superuser account and organization interactively on the commandline
+    # Create GovReady-Q Django Superuser account and organization interactively on the command line
     docker container exec -it govready-q first_run
 
-    # Alternatively create GovReady-Q Django Superuser account and organization interactively on the commandline
+    # Alternatively create GovReady-Q Django Superuser account and organization interactively on the command line
     # docker container exec -it govready-q first_run --non-interative
 
 Visit your GovReady-Q site in your web browser at:
@@ -55,7 +55,7 @@ The instance can be set to debug mode at runtime.
     The command ``docker container exec -it govready-q first_run`` creates the Superuser interactively allowing you to specify username and password.
 
     The command ``docker container exec -it govready-q first_run --non-interactive`` creates the Superuser automatically for installs where you do
-    not have access to interactive access to the commandline. The auto-generated username and password will be generated once to
+    not have access to interactive access to the command line. The auto-generated username and password will be generated once to
     to the standout log. When running the Docker containter in the detached (``-d``) mode, you can access the standout log with the command ``docker container logs govready-q``.
 
 .. warning::

@@ -110,7 +110,7 @@ def controls_selected(request, system_id):
         # Temporarily assume only one project and get first project
         project = system.projects.all()[0]
         controls = system.root_element.controls.all()
-        
+
         # Return the controls
         context = {
             "system": system,
@@ -124,7 +124,7 @@ def controls_selected(request, system_id):
 
 def controls_selected_export_xacta_xslx(request, system_id):
     """Export System's selected controls compatible with Xacta 360"""
-    
+
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
@@ -375,17 +375,52 @@ def controls_selected_export_xacta_xslx(request, system_id):
         resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
         return resp
-
-        # Return the controls
-        context = {
-            "system": system,
-            "project": project,
-            "controls": controls,
-        }
-        return render(request, "systems/controls_selected_export_xacta_scr.html", context)
     else:
         # User does not have permission to this system
         raise Http404
+
+def components_selected(request, system_id):
+    """Display System's selected components view"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Return the components
+        context = {
+            "system": system,
+            "project": project,
+        }
+        return render(request, "systems/components_selected.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+def system_element(request, system_id, element_id):
+    """Display System's selected element detail view"""
+    
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+        
+        # Return the system's element information
+        context = {
+            "system": system,
+            "project": project,
+            "element": element,
+        }
+        return render(request, "systems/element_detail.html", context)
 
 def editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""

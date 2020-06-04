@@ -20,10 +20,9 @@ xxhash # BSD License
 importlib-metadata<1.2,>=0.12 # Apache License
 importlib-resources<2,>=1.0 # Apache License
 
-
 # Common Django Packages
 # Django==2.2.12 # BSD License
-Django==3.0.6 # BSD License
+Django==3.0.7 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
@@ -41,6 +40,7 @@ exclusiveprocess # CC0
 django-html-emailer # MIT License
 django-database-storage-backend # CC0, requires libmagic (libmagic1 in Debian)
 commonmarkextensions # BSD 3
+structlog # Apache License
 
 # Only needed in common production deployment configurations
 # uwsgi # GPL2 # Needed only if using uwsgi instead of gunicorn
