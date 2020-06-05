@@ -13,14 +13,14 @@ ENV LC_ALL en_US.UTF-8
 ENV LANGUAGE en_US:en
 
 # Install required system packages.
-# git2u: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
+# git222: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
 # jq: we use it to assemble the local/environment.json file
 RUN \
-   yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
+   yum -y install https://repo.ius.io/ius-release-el7.rpm \
 && yum -y update \
 && yum -y install \
 	python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 \
-	unzip git2u jq nmap-ncat \
+	unzip git222 jq nmap-ncat \
 	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
 	supervisor \
 	mysql-devel \
@@ -35,7 +35,7 @@ RUN pip3.6 install --no-cache-dir -r requirements.txt
 RUN pip3.6 install --no-cache-dir -r requirements_mysql.txt
 
 # Run pyup.io's python package vulnerability check.
-RUN safety check
+# RUN safety check
 
 # Copy in the vendor resources and fetch them.
 COPY fetch-vendor-resources.sh ./
