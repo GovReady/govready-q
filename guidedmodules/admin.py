@@ -65,7 +65,7 @@ class AppSourceSpecWidget(forms.Widget):
 
     	# The 'url' key is represented by two different widgets
     	# depending on if the URL is an HTTP or SSH URL.
-    	if value.get("type") == "git" and isinstance(value.get("url"), str):
+    	if value is not None and value.get("type") == "git" and isinstance(value.get("url"), str):
 	    	import re
 	    	if value["url"].startswith("https:") or value["url"].startswith("http:"):
 	    		value["type"] = "git-web"
@@ -85,12 +85,12 @@ class AppSourceSpecWidget(forms.Widget):
 
     	def make_widget(key, label, widget, help_text, show_for_types):
     	    if key != "_remaining_":
-    	    	if key in value:
+    	    	if value is not None and key in value:
     	    		val = value[key]
     	    		del value[key] # only the unrecognized keys are left at the end
     	    	else:
     	    		val = ""
-    	    elif len(value) == 0:
+    	    elif value is None:
     	    	# Nothing unrecognized.
     	    	val = ""
     	    else:
