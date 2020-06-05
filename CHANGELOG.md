@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.22 (June 03, 2020)
+v0.9.1.22 (June 05, 2020)
 ------------------------
 
 **Feature changes**
@@ -24,6 +24,10 @@ The following logged events have been added:
 "start_app" - start a questionnaire/compliance app
 "new_project" - create a new project (e.g., questionnaire/compliance app that is a project)
 "new_element new_system" - create a new element (e.g., system component) that represents a new system
+
+**Deployment changes**
+
+* Update name of git 2 CentOS package to git222 in Dockerfile.
 
 **Documentation changes**
 
