@@ -29,6 +29,7 @@ provide full functionality. Execute the following commands as root:
 
    # Update package list
    apt-get update
+   apt-get upgrade
 
    # Install dependencies
    DEBIAN_FRONTEND=noninteractive \
@@ -37,6 +38,7 @@ provide full functionality. Execute the following commands as root:
    python3 python3-pip \
    python3-yaml \
    graphviz pandoc \
+   gunicorn3 \
    language-pack-en-base language-pack-en
 
    # Upgrade pip to version 20.1+
@@ -94,9 +96,7 @@ created user's home directory and switch users to ``govready-q``. Clone the GovR
    useradd govready-q -m -c "govready-q"
    chsh -s /bin/bash govready-q
    cp /etc/skel/.bashrc /home/govready-q/.
-   chown govready-q:govready-q /home/govready-q/.bashrc
-   adduser govready-q sudo
-   passwd govready-q
+   chown -R govready-q:govready-q /home/govready-q/
 
    # Change permissions so that the webserver can read static files
    chmod a+rx /home/govready-q
@@ -394,23 +394,18 @@ First, create the ``local/gunicorn.conf.py`` file that tells gunicorn how to sta
    user = 'govready-q'
    keepalive = 10
 
-# start command
-# gunicorn -c /home/govready-q/govready-q/gunicorn.config.py siteapp.wsgi
-
-
 .. note::
    Alternatively set ``workers = 1`` if secret key is being auto-generated and not defined
    in local/environment.json. Auto-generated keys cause user login sessions to
    drop when their request is handled by a different worker.
 
 .. note::
-   A sample ``gunicorn.conf.py`` is provided in ``local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/gunicorn``.
+   A sample ``gunicorn.conf.py`` is provided in ``local-examples/local-ubuntu-postgres-nginx-gunicorn-supervisor-http/gunicorn``.
    You can copy the contents of this file to ``local/gunicorn.conf.py``.
 
    .. code:: bash
 
-      cp local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/gunicorn.conf.py \
-      local/gunicorn.conf.py
+      cp local-examples/local-ubuntu-postgres-nginx-gunicorn-supervisor-http/gunicorn.conf.py local/gunicorn.conf.py
 
 **Starting GovReady-Q with Gunicorn**
 
@@ -422,7 +417,7 @@ gunicorn as ``root`` or as the ``govready-q`` user.
    su - govready-q
 
    cd /home/govready-q/govready-q/
-   gunicorn -c /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
+   gunicorn3 -c /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
 
    # Gunicorn is now running at serving GovReady-Q at the `govready-url` address.
 
@@ -439,10 +434,15 @@ and managing the gunicorn web server process handling requests to GovReady-Q. If
 Create the Supervisor ``/etc/supervisor/conf.d/supervisor-govready-q.conf`` conf file for gunicorn to run GovReady-Q.
 Supervisor on Ubuntu automatically reads the configuration files in ``/etc/supervisor/conf.d/`` when started.
 
+.. note::
+   If running GovReady-Q as user ``govready-q`` be sure to uncomment the ``user = govready-q`` in the
+   ``supervisor-govready-q.conf`` file.
+
 .. code:: ini
 
    [program:govready-q]
-   command = gunicorn --config /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
+   # user = govready-q # uncomment if running as user govready-q
+   command = gunicorn3 --config /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
    directory = /home/govready-q/govready-q
    stderr_logfile = /var/log/govready-q-stderr.log
    stdout_logfile = /var/log/govready-q-stdout.log
@@ -454,11 +454,12 @@ Supervisor on Ubuntu automatically reads the configuration files in ``/etc/super
    stdout_logfile = /var/log/notificationemails-stdout.log
 
 .. note::
-   A sample ``supervisor-govready-q.conf`` is provided in ``local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``local/gunicorn.conf.py``.
+   A sample ``supervisor-govready-q.conf`` is provided in ``local-examples/local-ubuntu-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``local/gunicorn.conf.py``.
 
    .. code:: bash
 
-      cp local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/supervisor-govready-q.conf \
+      # run as root
+      cp local-examples/local-ubuntu-postgres-nginx-gunicorn-supervisor-http/supervisor-govready-q.conf \
       /etc/supervisor/conf.d/supervisor-govready-q.conf
 
 Supervisor will write its socket file to ``/run/supervisor`` and its log files to ``/var/log/supervisor/``.
@@ -524,11 +525,11 @@ Next, create the NGINX conf ``/etc/nginx/sites-available/nginx-govready-q.conf``
    }
 
 .. note::
-   A sample ``nginx-govready-q.conf`` is provided in ``local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``/etc/nginx/sites-available/nginx-govready-q.conf``.
+   A sample ``nginx-govready-q.conf`` is provided in ``local-examples/local-ubuntu-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``/etc/nginx/sites-available/nginx-govready-q.conf``.
 
    .. code:: bash
 
-      cp local-examples/local-centos-postgres-nginx-gunicorn-supervisor-http/nginx-govready-q.conf \
+      cp local-examples/local-ubuntu-postgres-nginx-gunicorn-supervisor-http/nginx-govready-q.conf \
       /etc/nginx/sites-available/nginx-govready-q.conf
 
 
@@ -564,15 +565,65 @@ Stop NGINX.
 Stopping NGINX only stops the reverse proxy. Use previously described Supervisor commands to stop and start gunicorn (and GovReady-Q).
 
 10. NGINX with HTTPS
----------------------
+--------------------
+
+Example ``/nginx/sites-available/nginx-govready-q.conf`` redirecting port 80 to 443.
+Good for testing, but we should not listen on both ports because we want logins to be encrypted.
+
+.. code:: text
+
+   server {
+      listen 80;
+      listen [::]:80;
+      server_name example.com;
+      return 301 https://example.com;
+   }
+
+   server {
+      listen [::]:443 ssl;
+      server_name example.com;
+
+      ssl_certificate /etc/ssl/ssl-bundle.crt;
+      ssl_certificate_key /path/to/your_private.key;
+
+      access_log  /var/log/nginx/example.com.log;
+
+      location / {
+         proxy_pass http://localhost:8000;
+         proxy_set_header Host $host;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+   }
+
+Example ``/nginx/sites-available/nginx-govready-q.conf`` listening on both port 80 and 443.
+Good for testing, but we should not listen on both ports because we want logins to be encrypted.
+
+.. code:: text
+   server {
+      listen 80;
+      listen 443 ssl;
+      server_name example.com;
+
+      ssl_certificate /etc/ssl/ssl-bundle.crt;
+      ssl_certificate_key /path/to/your_private.key;
+
+      access_log  /var/log/nginx/example.com.log;
+
+      location / {
+         proxy_pass http://localhost:8000;
+         proxy_set_header Host $host;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+   }
+
+
+Some code for creating and using a self-generated certificated
 
 .. code:: bash
    
-   apt-get install -y ufw
-   ufw allow https
-   ufw enable
-
-   
+   # apt-get install -y ufw
+   # ufw allow https
+   # ufw enable
 
    mkdir -p /etc/pki/tls/private/
    mkdir -p /etc/pki/tls/certs
