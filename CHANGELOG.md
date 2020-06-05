@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+## v0.8.6.5.1 (June 5, 2020)
+
+Back port fix to address bug in guidedmodules/admin.py
+appearing after moving to Python 3.
+This the PR #811 applied to 0.8.6.5.
+
+
 ## v0.8.6.5 (May 3, 2020)
 
 Better jinja2_expression_compile_cache and next-page redirect
