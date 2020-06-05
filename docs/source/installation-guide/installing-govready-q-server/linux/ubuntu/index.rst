@@ -488,9 +488,6 @@ Use Supervisor to stop GovReady-Q.
 9. Using NGINX as a reverse proxy
 ---------------------------------
 
-.. warning::
-   These instructions for NGINX are still a work in progress as of June 2, 2020.
-
 In this step, you will configure your deployment to use NGINX as a reverse proxy in front of Gunicorn as an extra layer of performance and security.
 
 .. code:: text
@@ -567,8 +564,18 @@ Stopping NGINX only stops the reverse proxy. Use previously described Supervisor
 10. NGINX with HTTPS
 --------------------
 
-Example ``/nginx/sites-available/nginx-govready-q.conf`` redirecting port 80 to 443.
-Good for testing, but we should not listen on both ports because we want logins to be encrypted.
+In this step, you will configure your deployment to use reverse proxy NGINX server with SSL to
+provide an encrypted connection (HTTPS) between the browser and your site. You will modify your
+``nginx-govready-q.conf`` to have a server listening on port 80 redirecting to a server listening
+on port 443 with SSL implemented.
+
+It is your responsibility to get the SSL/TLS certificates. And remember that ``example.com`` should
+be replaced with your domain.
+
+Example - HTTPS on 443 and HTTP on 80 redirecting to HTTPS on 443
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The below example shows a basic version of ``/nginx/sites-available/nginx-govready-q.conf`` redirecting port 80 to 443.
 
 .. code:: text
 
@@ -595,10 +602,19 @@ Good for testing, but we should not listen on both ports because we want logins 
       }
    }
 
-Example ``/nginx/sites-available/nginx-govready-q.conf`` listening on both port 80 and 443.
-Good for testing, but we should not listen on both ports because we want logins to be encrypted.
+.. note::
+   Be sure to remove NGINX's default configuration file listening on
+   port 80 from ``/etc/nginx/sites-enabled/``. Failure to remove the default configuration
+   file will create two conflicting NGINX servers listening on port 80.
+
+Example - Listening both HTTP on 80 and HTTPS on 443
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example ``/nginx/sites-available/nginx-govready-q.conf`` is simpler to understand and shows NGINIX listening on both port 80 and 443. This is good for testing, but we should not listen
+on both ports because we want logins to GovReady-Q to be encrypted.
 
 .. code:: text
+
    server {
       listen 80;
       listen 443 ssl;
@@ -616,29 +632,80 @@ Good for testing, but we should not listen on both ports because we want logins 
       }
    }
 
+.. note::
+   Getting a certificate can be hard. Let's Encrypt made it easy.
 
-Some code for creating and using a self-generated certificated
+   Visit https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx for using Let's Encrypt's
+   certbot to make installing your certs easy.
 
-.. code:: bash
-   
-   # apt-get install -y ufw
-   # ufw allow https
-   # ufw enable
+   The below example shows a basic version of ``/nginx/sites-available/nginx-govready-q.conf`` redirecting port 80 to 443, the path to Let's Encrypt's auto-installed certificates, and
+   a variety of SSL options to optimize and improve security of your HTTPS connection.
 
-   mkdir -p /etc/pki/tls/private/
-   mkdir -p /etc/pki/tls/certs
+   .. code:: text
 
-   HOST=67.205.167.168
-   export HOST
-   openssl req -newkey rsa:4096 \
-      -x509 \
-      -sha256 \
-      -days 3650 \
-      -nodes \
-      -out /etc/pki/tls/certs/cert.pem \
-      -keyout /etc/pki/tls/private/key.pem \
-      -subj "/C=US/ST=State/L=Locality/O=Organization/OU=Organizational Unit/CN=$HOST"
+     # Redirect HTTP port 80 requests to HTTPS port 443
+     server {
+       listen [::]:80;
+       server_name example.com;
+       return 301 https://example.com;
+     }
 
+     server {
+
+       listen [::]:443 ssl;
+
+       server_name example.com;
+
+       ssl on;
+
+       # Default SSL cert paths when using letsencript certbot
+       ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
+       ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+       # Common SSL cert path for NGINX
+       # ssl_certificate /etc/ssl/ssl-bundle.crt;
+       # ssl_certificate_key /path/to/your_private.key;
+
+       # Uncomment and edit for optional HTTPS SSL settings
+       # ssl_session_timeout 1d;
+       # ssl_session_cache shared:SSL:20m;
+       # ssl_session_tickets off;
+       # ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+       # ssl_prefer_server_ciphers on;
+       # ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384# :ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECD# HE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-R# SA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES# 128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-R# SA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK'; 
+       # ssl_stapling on;
+       # ssl_stapling_verify on;
+       # ssl_trusted_certificate /root/certs/APPNAME/APPNAME_nl.chained.crt;
+
+       access_log  /var/log/nginx/govready-q.log;
+
+       # Tell NINGX where to route the incoming coming request
+       # GovReady-Q's WSGI server must be serving on the "proxy pass" location
+       location / {
+           proxy_pass http://localhost:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       }
+     }
+
+
+.. note::
+   Some code for creating and using a self-generated certificated
+
+   .. code:: bash
+
+      mkdir -p /etc/pki/tls/private/
+      mkdir -p /etc/pki/tls/certs
+
+      HOST=67.205.167.168
+      export HOST
+      openssl req -newkey rsa:4096 \
+         -x509 \
+         -sha256 \
+         -days 3650 \
+         -nodes \
+         -out /etc/pki/tls/certs/cert.pem \
+         -keyout /etc/pki/tls/private/key.pem \
+         -subj "/C=US/ST=State/L=Locality/O=Organization/OU=Organizational Unit/CN=$HOST"
 
 11. Additional options
 ----------------------
