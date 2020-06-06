@@ -78,10 +78,10 @@ modules/dev
 modules/ssp
 modules/linked_modules
 modules/oirmfo
-notes/*
 
 # Local build/test files
 siteapp/staticfiles
+vendor
 .kitchen
 
 # Emacs
@@ -96,4 +96,10 @@ docs/build
 # scanners
 .scannerwork/
 sonar-project.properties
+
+# vscode
+.vscode/
+
+# notes
+_notes/
 
