@@ -1,6 +1,180 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22 (June 03, 2020)
+------------------------
+
+**Feature changes**
+
+Improve application logging. Add `structlog` library. Log permission escalations.
+See documentation for a description of the event log formats.
+The following logged events have been added:
+
+"update_permissions portfolio assign_owner_permissions" - assign portfolio owner permissions
+"update_permissions portfolio remove_owner_permissions" - remove portfolio owner permissions
+"portfolio_list" - view list of portfolios
+"new_portfolio" - create new portfolio
+"new_portfolio assign_owner_permissions" - assign portfolio owner permissions of newly created portfolio to creator
+"send_invitation portfolio assign_edit_permissions" - assign portfolio edit permissions of newly created portfolio to creator
+"send_invitation project assign_edit_permissions" - assign edit permissions to a project and send invitation
+"cancel_invitation" - cancel invitation to a project
+"accept_invitation" - accept invitation to a project
+"sso_logout" - Single Sign On logout
+"project_list" - vew list of projects
+"start_app" - start a questionnaire/compliance app
+"new_project" - create a new project (e.g., questionnaire/compliance app that is a project)
+"new_element new_system" - create a new element (e.g., system component) that represents a new system
+
+**Documentation changes**
+
+* Added documentation section on logging.
+
+v0.9.1.20 (May 31, 2020)
+------------------------
+
+**Documentation changes**
+
+* Re-wrote Ubuntu from Source instructions to explain deployment in much greater detail.
+* Extend Ubuntu from Source instructions to include Gunicorn, Supervisor, and NGINX
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+
+**Deployment changes**
+
+* Introduce the ``govready_url`` environment parameter as a replacement for multiple params of ``host``, ``port``, and ``https``. During transition period ``govready-url`` parameter overrides any setting of ``host``, ``port``, and ``https`` parameters. Example below shows the ``local/environment.json`` file using the single ``govready-url`` parameter replacing legacy parameters:
+
+```
+    # Preferred local/environment.json file using govready-url parameter
+
+    {
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "govready-url": "http://localhost:8000",
+      "debug": false,
+      "secret-key": "long_random_string_here",
+      ...
+    }
+
+
+    # Legacy version local/environment.json file using deprecated host, https parameter
+
+    {
+       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+       "host": "localhost:8000",
+       "https": false,
+       "debug": false,
+       "secret-key": "long_random_string_here",
+       ...
+    }
+```
+
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+* The ``install-govready-q.sh`` script now reads the ``govready-url`` parameter from ``local/environment.json`` and uses the values to start GovReady-Q on the indicated host and port.
+
+v.0.9.1.19 (June 02, 2020)
+-------------------------
+
+**UI Changes**
+
+* Intially collapse component controls so it is easier see all components.
+* Add full text of implementation statement to accordian panel header to make it easier to read controls.
+* Create routes and templates for displaying components (e.g., elements) associated with a system.
+
+v0.9.1.18 (May 30, 2020)
+------------------------
+
+**Documentation changes:**
+
+* Ubuntu from source installation docs updated to include upgrading pip to solve problem of Ubuntu's defualt pip not installing Python packages under Linux user installs.
+
+v0.9.1.17 (May 29, 2020)
+------------------------
+
+**UX changes:**
+
+Performance improvements to improve rendering questions faster.
+
+A major change in this commit is to create a cache for Jinja `expression_compile` routine.
+This new cache is `jinja2_expression_compile_cache` and seems to have a noticable improvement
+on maintaining a regular amount of time to render questions.
+
+Several page reloads were the result of page redirects being handled
+based on content of the next page inside the question save form. Calculating the next page
+to display while accounting for skipping computed pages is now handled server side as a function
+that can be called.
+
+Removed links to imputed pages from the module finished page. It does not make sense to
+link to imputed questions when users cannot visit imputed question pages.
+
+Improve caching of OSCAL control catalogs.
+
+v.0.9.1.16 (May 18, 2020)
+-------------------------
+
+**Development changes**
+
+* Correct setup of tests in discussions app to avoid failing due to missing system modules.
+
+v.0.9.1.15 (May 18, 2020)
+-------------------------
+
+**Deployment changes**
+
+* Set gunicorn worker number to 1. Multiple gunicorn workers without SECRET_KEY set causes issue where new session key is autogenerated, sent user, and user has to constantly re-login.
+
+v.0.9.1.14 (May 17, 2020)
+-------------------------
+
+**Deployment changes**
+
+* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive` flag.
+* Create install-govready-q.sh script (based on quickstart.sh) to have an easy single script for installing GovReady-Q.
+* Update Dockerfile to copy over new install-govready-q.sh script and quickstart.sh script.
+* Use docker_container_run.sh script in instructions for installing in the cloud.
+
+**Documentation changes**
+
+* Improvements to docker install, installation guides.
+* Improve sequencing of install steps in Ubuntu. Apply improved improved squence to installing on CentOS guide.
+* Breakout installation guide for Docker guides into "local", "cloud" and "advanced configuration options".
+
+v.0.9.1.13 (May 17, 2020)
+-------------------------
+
+**Bug fixes**
+
+* Correct control look up errors on the control catalog group page.
+* Remove control lookup from catalog listing page.
+
+v.0.9.1.12 (May 16, 2020)
+-------------------------
+
+**Deployment changes**
+
+Gracefully handle AttributeError in siteapp migration 0030 possibly related to dangling discussion objects.
+
+v.0.9.1.11 (May 11, 2020)
+-------------------------
+
+**Deployment changes**
+
+Add docker compose file for deploying GovReady and Wazuh together.
+
+v0.9.1.8.2 (May 10, 2020)
+-------------------------
+
+Update Documentation. Organization installation documentation inside of `Installation Guide` directory.
+Clean up singe pages for installation notes on each Operating System flavor.
+Rename 0.9.0 mentions to 0.9.x. Remove installation instructions from 0.9.x directory.
+
+v0.9.1.9 (May 08, 2020)
+-----------------------
+
+Add export to Xacta Control Implementation Excel file format.
+
+v0.9.1.8.1 (May 07, 2020)
+-------------------------
+
+Add full draft of 800-171_rev1_catalog.json in OSCAL.
+
 v0.9.1.8 (May 06, 2020)
 -----------------------
 
@@ -23,6 +197,7 @@ In the future as the store expands, more tests might be needed to
 make sure only certain top level apps are creating systems. Right now
 we use the existing tests of adding a Project to the "Started Apps"
 folder as indication the Project is a top level app requiring a system.
+
 
 v0.9.1.7 (May 02, 2020)
 -----------------------
@@ -175,12 +350,24 @@ To Do:
 - Delete statements
 - Tests written
 
+
 v0.9.1.4 (April 08, 2020)
 -------------------------
 
 This release exposes control catalog to end users for search.
 
 Previously versions embedded controls within output templates.
+
+**UI changes**
+
+* Create new `control` pages for looking up control catalog guidance.
+
+**Developer changes**
+
+* Add 800-53 control catalog via classes `SecControlsAll` and `SecControl`
+* Create a new directory `controls` into which we add a class for listing a security control catalog.
+* Add a new item type to module_logic.TemplateContext called `control_catalog` to enable iterable dictionary of control catalog.
+
 
 v0.9.1.3.3 (April 07, 2020)
 --------------------------
@@ -193,31 +380,17 @@ v0.9.1.3.3 (April 07, 2020)
 * Upgrade to Django 2.2.12 LTS to address issue noted by pyup.io safety
 * Update various Python libraries
 
-
-v0.9.1.3.2 (April 03, 2020)
---------------------------
-
-**Deployment changes**
-
-* Upgrade to Django 2.2.12 LTS to address issue noted by pyup.io safety
-* Update various Python libraries
-
 **Bug fixes**
 
 * Fixed issue where only users who could use the editing tool could see the datagrid questions render
 
+
 v0.9.1.3.1 (March 31, 2020)
---------------------------
+---------------------------
 
-* Create new `control` pages for looking up control catalog guidance.
+**UI changes**
 
-**Developer changes**
-
-* Add 800-53 control catalog via classes `SecControlsAll` and `SecControl`
-* Create a new directory `controls` into which we add a class for listing a security control catalog.
-* Add a new item type to module_logic.TemplateContext called `control_catalog` to enable iterable dictionary of control catalog.
 * Add `render` key to datagrid question type to force vertical rendering of tabular data
-
 
 v0.9.1.3 (March 25, 2020)
 --------------------------
@@ -233,12 +406,11 @@ v0.9.1.3 (March 25, 2020)
 
 v0.9.1.1 (March 20, 2020)
 --------------------------
-* Upgrade requirements
 
-**Bug fixes**
+**UI changes**
 
 * Conditionally add in route `accounts/logout` when SSO Proxy enabled.
-* Gracefully handle empty datagrid question type in output templates
+
 
 v0.9.1 (March 12, 2020)
 -----------------------
@@ -258,7 +430,7 @@ v0.9.0.3.3 (February 23, 2020)
 * Use Math.pow in main.js to fix IE11 failing to display invite modal
 
 
-v0.9.0.3.2 (February 21, 2019)
+v0.9.0.3.2 (February 21, 2020)
 -------------------------------
 
 **Deployment changes**
@@ -278,7 +450,7 @@ v0.9.0.3.2 (February 21, 2019)
 
 
 v0.9.0.3 (November 21, 2019)
--------------------------------
+----------------------------
 
 **UX changes**
 

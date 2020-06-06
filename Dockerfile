@@ -34,7 +34,7 @@ ENV LANGUAGE en_US:en
 # git2u: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
 # jq: we use it to assemble the local/environment.json file
 RUN \
-   yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
+   yum -y install https://repo.ius.io/ius-release-el7.rpm \
 && yum -y update \
 && yum -y install \
     python36u python36u-pip \
@@ -71,7 +71,7 @@ RUN yum clean all && rm -rf /var/cache/yum
 # Remove unneeded Python libraries
 # Remove `pipenv` and its extra copies of `requests` and `urllib3` that scanners see
 # Safety only needed for preparing requirements files, not operating GovReady
-RUN pip3.6 uninstall -y pipenv safety
+# RUN pip3.6 uninstall -y pipenv safety || true
 
 # Safety only needed for preparing requirements files, not operating GovReady
 ## Run pyup.io's python package vulnerability check.
@@ -102,6 +102,8 @@ COPY q-files ./q-files
 COPY testmocking ./testmocking
 COPY system_settings ./system_settings
 COPY manage.py .
+COPY install-govready-q.sh .
+COPY quickstart.sh .
 
 # Flatten static files. Create a local/environment.json file that
 # has the static directory set and only setting necessary for collectstatic
