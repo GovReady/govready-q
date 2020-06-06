@@ -82,7 +82,7 @@ while [ $# -gt 0 ]; do
       echo "  --dc-name     Name to give the Docker container, defaults to '$DC_NAME'."
       echo "  --help        Show this help text."
       echo " "
-      echo "Example SQLITE:"
+      echo "Example SQLite:"
       echo ""$(basename "$0")" --aws-region $AWS_REGION --dm-name $DM_NAME --image $IMAGE --dc-name $DC_NAME --address govready-q.myorg.com"
       echo ""
       exit 1 ;;
