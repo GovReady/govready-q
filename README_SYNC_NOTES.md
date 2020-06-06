@@ -46,8 +46,6 @@ git tag -a v0.9.1.x -m "version 0.9.1.x"
 git push origin --tags
 
 
-CHANGELog
-site
 
 # In Mesosphere Environment Repository
 
