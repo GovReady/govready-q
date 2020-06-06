@@ -8,7 +8,8 @@ The GovReady-Q Compliance Server is an open source GRC platform for highly autom
 
 GovReady-Q solves the painful compliance bottleneck of needing months to authorize applications that deploy and redeploy in minutes.
 
-The code is open source, and [available on GitHub](https://github.com/GovReady/govready-q).
+The code is open source, and `available on GitHub
+<https://github.com/GovReady/govready-q/>`_.
 
 .. ATTENTION::
    GovReady-Q is in Beta. Suggested for DevSecOps early adopters needing Compliance-as-Code.
@@ -18,15 +19,15 @@ The code is open source, and [available on GitHub](https://github.com/GovReady/g
    :glob:
    :caption: Contents:
 
-introduction
-   Deploy.rst
-   Environment
+   introduction
+   installation-guide/index
    Permissions
    Authoring
    Automation
    DataDesign
+   logs/index
    testing/index.rst
-   version.0.9.0
+   version.0.9.x
    migration_guide_086_09x.rst
 
 Indices and tables
