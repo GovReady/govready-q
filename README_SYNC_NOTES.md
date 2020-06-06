@@ -13,6 +13,7 @@ cp fetch-vendor-resources-mesosphere.sh fetch-vendor-resources-mesosphere.sh.pro
 cp ./CHANGELOG.md ./CHANGELOG.md.protected
 cp ./VERSION ./VERSION.protected
 
+cp .gitignore .gitignore.protected
 
 # 2. Files that will need editing because they have diverged
 
@@ -31,38 +32,40 @@ siteapp/settings.py
 siteapp/settings_application.py
 
 
-# 3. Run ./requirements_txt_checker.sh 
+# 3. Run ./requirements_txt_checker.sh
 
 Update requirements
 
 # 4 Get Static Files
 
+./fetch-vendor-resources.sh
 
 # 5. Update tags
 
-git tag -a v0.9.1.4 -m "version 0.9.1.4"
+git tag -a v0.9.1.x -m "version 0.9.1.x"
 git push origin --tags
 
-cp -r ../govready-q-0.9.1.4-mesosphere/guidedmodules ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/docs ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/templates ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/static_root ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/system_settings ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/fixtures ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/controls ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/discussion ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/modules ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/requirements* ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/VERSION ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/list-vendor-resources.sh ./.
-cp -r ../govready-q-0.9.1.4-mesosphere/siteapp/* ./siteapp/.
 
 CHANGELog
 site
 
 # In Mesosphere Environment Repository
 
-cp -r ../govready-q-0.9.1.4-mesosphere/guidedmodules ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/guidedmodules ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/docs ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/templates ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/static_root ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/system_settings ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/fixtures ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/controls ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/discussion ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/modules ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/requirements* ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/VERSION ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/list-vendor-resources.sh ./.
+cp -r ../govready-q-0.9.1.x-mesosphere/siteapp/* ./siteapp/.
+
+
 origin  (look up remote)
 
 
