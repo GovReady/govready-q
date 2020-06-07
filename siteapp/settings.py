@@ -375,13 +375,15 @@ if environment.get("static"):
 # Add a convenience setting "SITE_ROOT_URL" that stores the root URL of the website.
 # Construct value from preferred "govready-url" environment parameter and temporarily
 # support the deprecated "https" and "host" environment settings.
+SITE_ROOT_URL = None
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
 	SITE_ROOT_URL = "{}://{}".format(GOVREADY_URL.scheme, GOVREADY_URL.netloc)
-elif environment["host"]:
+	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
+elif "host" in environment and "https" in environment:
 	SITE_ROOT_URL = "%s://%s" % (("http" if not environment["https"] else "https"), environment["host"])
+	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
 else:
-	"CRITICAL: No parameters set to determine SITE_ROOT_URL."
-print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
+	print("CRITICAL: No parameters set to determine SITE_ROOT_URL.")
 
 # Enable custom branding. If "branding" is set, it's the name of an
 # app to add and whose templates supersede the built-in templates.
