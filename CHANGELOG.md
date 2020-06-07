@@ -1,6 +1,16 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.2 (June 07, 2020)
+---------------------------
+
+**Deployment changes**
+
+CRITICAL fix for deployment documentation and configuration files.
+
+* Remove all comments from `supervisor-govready-q.conf ` because trailing "# comments" cause line to be ignored. This caused a problem in Ubuntu deployment documentation leading to a situation where gunicorn was starting in wrong context and python packages not found.
+* Improved `settings.py` handling of deprecated `host` and `https` parameters for setting `SITE_ROOT_URL` value.
+
 v0.9.1.22 (June 05, 2020)
 ------------------------
 
