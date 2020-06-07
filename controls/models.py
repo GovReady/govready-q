@@ -49,6 +49,13 @@ class Element(models.Model):
     #    e.controls.all()
     #    # returns <QuerySet ['ac-2 id=1', 'ac-3 id=2', 'au-2 id=3']>
     #
+    # Retrieve statements
+    #    e.statements_consumed.all()
+    #
+    # Retrieve statements that are control implementations
+    #    e.statements_consumed.filter(statement_type="control_implementation")
+
+
 
     def __str__(self):
         return "'%s id=%d'" % (self.name, self.id)
@@ -123,12 +130,34 @@ class System(models.Model):
     root_element = models.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True, null=True)
 
+    # Notes
+    # Retrieve system implementation statements
+    #    system = System.objects.get(pk=2)
+    #    system.root_element.statements_consumed.filter(statement_type="control_implementation")
+    #
+
     def __str__(self):
         return "'System %s id=%d'" % (self.root_element.name, self.id)
 
     def __repr__(self):
         # For debugging.
         return "'System %s id=%d'" % (self.root_element.name, self.id)
+
+    # @property
+    # def statements_consumed(self):
+    #     smts = self.root_element.statements_consumed.all()
+    #     return smts
+
+    @property
+    def control_implementation_smts_as_dict(self):
+        smts = self.root_element.statements_consumed.filter(statement_type="control_implementation")
+        smts_as_dict = {}
+        for smt in smts:
+            if smt.sid in smts_as_dict:
+                smts_as_dict[smt.sid].append(smt)
+            else:
+                smts_as_dict[smt.sid] = [smt]
+        return smts_as_dict
 
     def get_producer_elements(self):
         smts = self.root_element.statements_consumed.all()

@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+
+v0.9.1.23 (June XX, 2020)
+------------------------
+
+System information, including controls implementation statements, that are directly
+stored in the database are now accessible to output templates via the {{ system }} tag.
+
+
 v0.9.1.22 (June 05, 2020)
 ------------------------
 
@@ -246,7 +254,7 @@ First effort to add control catalogs (e.g., control guidance)
 to the output templates using OSCAL and to create an editor
 for adding and editing control statements stored in the database.
 
-Initial use story is as a user/developer wanting to import
+Initial user story is as a user/developer wanting to import
 a spreadsheet of common controls to have a better interface for
 reading the common controls against the control statement and
 drafting the application layer controls for hybrid controls.
