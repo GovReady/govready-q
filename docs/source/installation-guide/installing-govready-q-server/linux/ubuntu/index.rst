@@ -645,15 +645,16 @@ on both ports because we want logins to GovReady-Q to be encrypted.
 
      # Redirect HTTP port 80 requests to HTTPS port 443
      server {
-       listen [::]:80;
+       # listen [::]:80;
+       listen 80;
        server_name example.com;
        return 301 https://example.com;
      }
 
      server {
 
-       listen [::]:443 ssl;
-
+       # listen [::]:443 ssl;
+       listen 443 ssl;
        server_name example.com;
 
        ssl on;
