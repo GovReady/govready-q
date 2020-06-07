@@ -114,10 +114,9 @@ django-debug-toolbar==2.2 \
     --hash=sha256:eabbefe89881bbe4ca7c980ff102e3c35c8e8ad6eb725041f538988f2f39a943 \
     --hash=sha256:ff94725e7aae74b133d0599b9bf89bd4eb8f5d2c964106e61d11750228c8774c \
     # via -r requirements.in
-django-guardian==2.2.0 \
-    --hash=sha256:8cacf49ebcc1e545f0a8997971eec0fe109f5ed31fc2a569a7bf5615453696e2 \
-    --hash=sha256:ac81e88372fdf1795d84ba065550e739b42e9c6d07cdf201cf5bbf9efa7f396c \
-    # via -r requirements.in
+django-guardian==2.3.0 \
+    --hash=sha256:0e70706c6cda88ddaf8849bddb525b8df49de05ba0798d4b3506049f0d95cbc8 \
+    --hash=sha256:ed2de26e4defb800919c5749fb1bbe370d72829fbd72895b6cf4f7f1a7607e1b    # via -r requirements.in
 django-html-emailer==0.0.8.1 \
     --hash=sha256:1ea72561355587952d2f6582bff14cc3cfd27aaac52a4bce83e57eb8a8d90f1e \
     --hash=sha256:4d9954d67005843be1768fa39b6e6f1d2eff1ac2353cec7c742aff81bb613a46 \
