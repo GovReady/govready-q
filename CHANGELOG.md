@@ -15,7 +15,7 @@ implementation statements that we began storing as distinct database
 objects in version 0.9.1.5 of GovReady-Q.
 
 The `system` object is injected into the Output Document context as
-an item in guidedmodules.module_logic.py. NOTE: if the context from
+an item in guidedmodules.module_logic. NOTE: if the context from
 the view already has a `system` item, it will not be overwritten.
 
 Exactly one Information System associated with the project (if one exists).
@@ -26,10 +26,10 @@ for a system.
 
     {
       "au-2": {
-                "control_impl_smts": [smt_obj_1, smt_obj_2], 
+                "control_impl_smts": [smt_obj_1, smt_obj_2],
                 "common_controls": [common_control_obj_1, common_control_obj_2],
                 "combined_smt": "Very long text combining statements into a single string..."
-              }, 
+              },
       "au-3": {
                 "control_impl_smts": [smt_obj_3, smt_obj_4, ...],
                 "common_controls": [],

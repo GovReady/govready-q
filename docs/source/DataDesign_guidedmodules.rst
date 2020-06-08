@@ -50,7 +50,7 @@ list <Schema.html>`__). Questions are grouped into questionnaires called
 versions of a compliance app that are loaded into the GovReady-Q
 database. AppVersions are loaded from AppSources, which define how to
 load compliance apps from remote sources such as GitHub or an
-on-premesis enterprise source control system.
+on-premises enterprise source control system.
 
 ``AppVersion``, ``Modules``, and ``Questions`` define the structure of a
 compliance app but do not store any user-submitted content. Separating
@@ -260,12 +260,12 @@ available to Output Documents.
 **{{ control_catalog }}**
 
 The ``control_catalog`` object provides access to a
-Catalog of Controls such as the NIST 800-53 and NIST 800-171. 
-The ``control_catalog`` object is a flattened, simplified 
+Catalog of Controls such as the NIST 800-53 and NIST 800-171.
+The ``control_catalog`` object is a flattened, simplified
 dictionary of the controls sourced from the OSCAL version of the control id
 as the key (e.g., "AC-2 (2)" is ``ac.2.2``).
 
-When you pass into and Output Document a list of control ids, you can use
+When you pass a list of control ids into an Output Document, you can use
 the control ids to access the text of the controls from the ``control_catalog`` object.
 
 The object has the following attributes:
@@ -278,7 +278,7 @@ The object has the following attributes:
 
 ``family_id`` - the ID of the control group or family to which the control belongs
 
-``family_title`` - The title of the control group or family to which the control belongs 
+``family_title`` - The title of the control group or family to which the control belongs
 
 ``class`` - the class of the control
 
@@ -291,7 +291,7 @@ The object has the following attributes:
 ``catalog_id`` - the UUID of the control catalog
 
 The below example demonstrates using the ``control_catalog`` object to generate a
-heading with for a control family's ID and Title. Notice how the ``control`` value,
+heading for a control family's ID and Title. Notice how the ``control`` value,
 passed in from the view method, is set to lowercase to conform to the OSCAL ID format.
 
 .. code::
@@ -313,8 +313,8 @@ statements that we began storing as distinct database objects in version 0.9.1.5
 We decided to additionally represent the control implementations statements in the database to
 help teams author control implementation statements by individual system components to support compliance as code.
 
-By using the ``control_catalog`` and the ``system`` object it is possible to
-express in documents both authoritative control descriptions and the control implementation statements of
+By using the ``control_catalog`` and the ``system`` object it is possible in documents to
+express both authoritative control descriptions and the control implementation statements of
 individual systems.
 
 As GovReady-Q builds out more functionality, the ``system`` object will be the gateway for accessing
@@ -326,16 +326,16 @@ The object has the following attributes:
 
 ``fisma_id`` - The FISMA ID of the system
 
-``control_implementation_as_dict`` - a dictionary of objects keyed to an OSCAL formatted control ID where each object contains an array for control implementation statements for that control, an array of common control statements for that control, and a combined statement. The object structure is:
+``control_implementation_as_dict`` - a dictionary of objects keyed to an OSCAL-formatted control ID where each object contains an array for control implementation statements for that control, an array of common control statements for that control, and a combined statement. The object structure is:
 
 .. code::
 
     {
       "au-2": {
-                "control_impl_smts": [smt_obj_1, smt_obj_2], 
+                "control_impl_smts": [smt_obj_1, smt_obj_2],
                 "common_controls": [common_control_obj_1, common_control_obj_2],
                 "combined_smt": "Very long text combining statements into a single string..."
-              }, 
+              },
       "au-3": {
                 "control_impl_smts": [smt_obj_3, smt_obj_4, ...],
                 "common_controls": [],
