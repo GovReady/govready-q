@@ -1,7 +1,7 @@
 import csv
 from django.contrib import admin
 from django.http import HttpResponse
-from .models import Statement, Element, ElementControl, System, CommonControlProvider, CommonControl
+from .models import Statement, Element, ElementControl, System, CommonControlProvider, CommonControl, ElementCommonControl
 from guardian.admin import GuardedModelAdmin
 
 class ExportCsvMixin:
@@ -47,6 +47,10 @@ class CommonControlAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('name', 'oscal_ctl_id', 'id')
     actions = ["export_as_csv"]
 
+class ElementCommonControlAdmin(admin.ModelAdmin, ExportCsvMixin):
+    list_display = ('element', 'common_control', 'oscal_ctl_id', 'id')
+    actions = ["export_as_csv"]
+
 
 admin.site.register(Statement, StatementAdmin)
 admin.site.register(Element, ElementAdmin)
@@ -54,4 +58,4 @@ admin.site.register(ElementControl, ElementControlAdmin)
 admin.site.register(System, SystemAdmin)
 admin.site.register(CommonControlProvider, CommonControlProviderAdmin)
 admin.site.register(CommonControl, CommonControlAdmin)
-
+admin.site.register(ElementCommonControl, ElementCommonControlAdmin)

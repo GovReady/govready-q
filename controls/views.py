@@ -4,7 +4,7 @@ from .oscal import Catalog, Catalogs
 import json
 import re
 from .utilities import *
-from .models import Statement, Element, System, CommonControl, CommonControlProvider
+from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl
 
 
 def test(request):
@@ -444,6 +444,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # if len(projects) > 0:
         #     project = projects[0]
         # Retrieve any related CommonControls
+        # CRITICAL TODO: Filter by sid and by system.root_element
         common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
         ccp_name = None
         if common_controls:
@@ -451,8 +452,8 @@ def editor(request, system_id, catalog_key, cl_id):
             ccp_name = cc.common_control_provider.name
         # Get and return the control
 
-        # Retrieve any related Implementation Statements
-        impl_smts = Statement.objects.filter(sid=cl_id)
+        # Retrieve any related Implementation Statements filtering by control and system.root_element
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element)
         context = {
             "system": system,
             "project": project, 

@@ -1,7 +1,59 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.22 (June 03, 2020)
+v0.9.1.22.3 (June 07, 2020)
+---------------------------
+
+**Feature changes**
+
+This version integrates the new implementation statements
+stored in GovReady-Q's database into the Output Docs.
+
+The implementation statements are accessed via a new `{{ system }}`
+object. The `system` object provides access to the component-to-control
+implementation statements that we began storing as distinct database
+objects in version 0.9.1.5 of GovReady-Q.
+
+The `system` object is injected into the Output Document context as
+an item in guidedmodules.module_logic. NOTE: if the context from
+the view already has a `system` item, it will not be overwritten.
+
+Exactly one Information System associated with the project (if one exists).
+
+The key attribute of `system` object is `control_implementation_as_dict`
+containing a dictionary of all implementations statements and common controls
+for a system.
+
+    {
+      "au-2": {
+                "control_impl_smts": [smt_obj_1, smt_obj_2],
+                "common_controls": [common_control_obj_1, common_control_obj_2],
+                "combined_smt": "Very long text combining statements into a single string..."
+              },
+      "au-3": {
+                "control_impl_smts": [smt_obj_3, smt_obj_4, ...],
+                "common_controls": [],
+                "combined_smt": "Very long text combining statements into a single string..."
+              },
+      ...
+    }
+
+**Documentation changes**
+
+* Add initial documentation describing the `{{ system }}` object and the previously created `{{ control_catalog }}` object.
+
+v0.9.1.22.2 (June 07, 2020)
+---------------------------
+
+**Deployment changes**
+
+CRITICAL fix for deployment documentation and configuration files.
+
+* Remove all comments from `supervisor-govready-q.conf ` because trailing "# comments" cause line to be ignored. This caused a problem in Ubuntu deployment documentation leading to a situation where gunicorn was starting in wrong context and python packages not found.
+* Improved `settings.py` handling of deprecated `host` and `https` parameters for setting `SITE_ROOT_URL` value.
+
+
+v0.9.1.22 (June 05, 2020)
 ------------------------
 
 **Feature changes**
@@ -24,6 +76,10 @@ The following logged events have been added:
 "start_app" - start a questionnaire/compliance app
 "new_project" - create a new project (e.g., questionnaire/compliance app that is a project)
 "new_element new_system" - create a new element (e.g., system component) that represents a new system
+
+**Deployment changes**
+
+* Update name of git 2 CentOS package to git222 in Dockerfile.
 
 **Documentation changes**
 
@@ -242,7 +298,7 @@ First effort to add control catalogs (e.g., control guidance)
 to the output templates using OSCAL and to create an editor
 for adding and editing control statements stored in the database.
 
-Initial use story is as a user/developer wanting to import
+Initial user story is as a user/developer wanting to import
 a spreadsheet of common controls to have a better interface for
 reading the common controls against the control statement and
 drafting the application layer controls for hybrid controls.
