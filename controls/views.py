@@ -4,7 +4,7 @@ from .oscal import Catalog, Catalogs
 import json
 import re
 from .utilities import *
-from .models import Statement, Element, System, CommonControl, CommonControlProvider
+from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl
 
 
 def test(request):

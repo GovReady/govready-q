@@ -30,13 +30,15 @@ relationships are summarized in the following diagram:
 
    Guidedmodules data model (not all tables represented)
 
-.. raw:: html
 
-   <!-- The image above was generated with:
+.. note::
+  The image above was generated with:
+
+  .. code::
 
         python3 manage.py graph_models guidedmodules --disable-sort-fields  -X InstrumentationEvent > diagram.dot
         dot diagram.dot -Tsvg > diagram.svg
-   -->
+
 
 Compliance Apps (Questions, Business Logic, and Templates)
 ----------------------------------------------------------
@@ -248,6 +250,102 @@ in the database because they are computed on-the-fly to ensure that the
 GovReady-Q always runs the template on the most recent, current set of
 answers to the Module’s questions. As a result, there is no database
 table for output documents.
+
+Output Document Special Values
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As of version 0.9.1.22.3, GovReady-Q makes the following special objects
+available to Output Documents.
+
+**{{ control_catalog }}**
+
+The ``control_catalog`` object provides access to a
+Catalog of Controls such as the NIST 800-53 and NIST 800-171. 
+The ``control_catalog`` object is a flattened, simplified 
+dictionary of the controls sourced from the OSCAL version of the control id
+as the key (e.g., "AC-2 (2)" is ``ac.2.2``).
+
+When you pass into and Output Document a list of control ids, you can use
+the control ids to access the text of the controls from the ``control_catalog`` object.
+
+The object has the following attributes:
+
+``id`` - the OSCAL-formatted control ID
+
+``id_display`` - the commonly used control ID format
+
+``title`` - title of the control
+
+``family_id`` - the ID of the control group or family to which the control belongs
+
+``family_title`` - The title of the control group or family to which the control belongs 
+
+``class`` - the class of the control
+
+``description`` - the combined description of the guidance of the control in markdown format
+
+``guidance`` - the discussion of guidance for the control in markdown format
+
+``catalog_file`` - the name of the catalog file used to generate the control catalog
+
+``catalog_id`` - the UUID of the control catalog
+
+The below example demonstrates using the ``control_catalog`` object to generate a
+heading with for a control family's ID and Title. Notice how the ``control`` value,
+passed in from the view method, is set to lowercase to conform to the OSCAL ID format.
+
+.. code::
+
+    {{control_catalog[control.lower()]['family_id']|upper}} - {{control_catalog[control.lower()]['family_title']}}
+
+
+The data for Control Catalogs can be found in the ``controls/catalogs`` directory.
+
+
+**{{ system }}**
+
+The ``system`` object provides access to additional information stored in the database
+about the Information System associated with the project (if one exists). Exactly
+one Information System is directly associated with a project.
+
+The ``system`` object provides access to the component-to-control implementation
+statements that we began storing as distinct database objects in version 0.9.1.5 of GovReady-Q.
+We decided to additionally represent the control implementations statements in the database to
+help teams author control implementation statements by individual system components to support compliance as code.
+
+By using the ``control_catalog`` and the ``system`` object it is possible to
+express in documents both authoritative control descriptions and the control implementation statements of
+individual systems.
+
+As GovReady-Q builds out more functionality, the ``system`` object will be the gateway for accessing
+that information in the Output Documents.
+
+The object has the following attributes:
+
+``root_element`` - the actual IT assess (element) that is the Information System
+
+``fisma_id`` - The FISMA ID of the system
+
+``control_implementation_as_dict`` - a dictionary of objects keyed to an OSCAL formatted control ID where each object contains an array for control implementation statements for that control, an array of common control statements for that control, and a combined statement. The object structure is:
+
+.. code::
+
+    {
+      "au-2": {
+                "control_impl_smts": [smt_obj_1, smt_obj_2], 
+                "common_controls": [common_control_obj_1, common_control_obj_2],
+                "combined_smt": "Very long text combining statements into a single string..."
+              }, 
+      "au-3": {
+                "control_impl_smts": [smt_obj_3, smt_obj_4, ...],
+                "common_controls": [],
+                "combined_smt": "Very long text combining statements into a single string..."
+              },
+      ...
+    }
+
+For more information examine the ``controls.models.System`` source code.
+
 
 Database Query Examples
 -----------------------
