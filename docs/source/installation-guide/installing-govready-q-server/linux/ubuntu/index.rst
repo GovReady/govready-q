@@ -441,20 +441,20 @@ Supervisor on Ubuntu automatically reads the configuration files in ``/etc/super
 .. code:: ini
 
    [program:govready-q]
-   # user = govready-q # uncomment if running as user govready-q
+   user = govready-q
    command = gunicorn3 --config /home/govready-q/govready-q/local/gunicorn.conf.py siteapp.wsgi
    directory = /home/govready-q/govready-q
    stderr_logfile = /var/log/govready-q-stderr.log
    stdout_logfile = /var/log/govready-q-stdout.log
 
    [program:notificationemails]
-   command = python3.6 manage.py send_notification_emails forever
+   command = python3 manage.py send_notification_emails forever
    directory = /home/govready-q/govready-q
    stderr_logfile = /var/log/notificationemails-stderr.log
    stdout_logfile = /var/log/notificationemails-stdout.log
 
 .. note::
-   A sample ``supervisor-govready-q.conf`` is provided in ``local-examples/local-ubuntu-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``local/gunicorn.conf.py``.
+   A sample ``supervisor-govready-q.conf`` is provided in ``local-examples/local-ubuntu-postgres-nginx-gunicorn-supervisor-http``. You can copy the contents of this file to ``/etc/supervisor/conf.d/supervisor-govready-q.conf``.
 
    .. code:: bash
 
@@ -581,13 +581,12 @@ The below example shows a basic version of ``/nginx/sites-available/nginx-govrea
 
    server {
       listen 80;
-      listen [::]:80;
       server_name example.com;
-      return 301 https://example.com;
+      return 302 https://example.com;
    }
 
    server {
-      listen [::]:443 ssl;
+      listen 443 ssl;
       server_name example.com;
 
       ssl_certificate /etc/ssl/ssl-bundle.crt;
