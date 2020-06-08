@@ -1216,6 +1216,10 @@ class TemplateContext(Mapping):
                 sca = Catalog.GetInstance()
                 control_catalog = sca.flattended_controls_all_as_dict
                 return control_catalog
+            if item == "system":
+                # Retrieve the system object associated with this project
+                # Returned value must be a python dictionary
+                return self.module_answers.task.project.system
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
                 # call the method here because that leads to infinite
@@ -1272,7 +1276,7 @@ class TemplateContext(Mapping):
                 # 'title' isn't available if we're in the process of
                 # computing it
                 yield "title"
-            for attribute in ("task_link", "project", "organization", "control_catalog"):
+            for attribute in ("task_link", "project", "organization", "control_catalog", "system"):
                 if attribute not in seen_keys:
                     yield attribute
 

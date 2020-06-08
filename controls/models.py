@@ -49,6 +49,12 @@ class Element(models.Model):
     #    e.controls.all()
     #    # returns <QuerySet ['ac-2 id=1', 'ac-3 id=2', 'au-2 id=3']>
     #
+    # Retrieve statements
+    #    e.statements_consumed.all()
+    #
+    # Retrieve statements that are control implementations
+    #    e.statements_consumed.filter(statement_type="control_implementation")
+
 
     def __str__(self):
         return "'%s id=%d'" % (self.name, self.id)
@@ -112,16 +118,27 @@ class ElementControl(models.Model):
         cg = Catalog.GetInstance(catalog_key=self.oscal_catalog_key)
         return cg.get_flattened_control_as_dict(cg.get_control_by_id(self.oscal_ctl_id))
 
-    def get_flattened_impl_smt_as_dict(self):
-        """Return the implementation statement for this ElementControl combination"""
-        # For development let's hardcode what we return
-        impl_smt = {"sid": "impl_smt sid", "body": "This is the statement itself"}
-        # Error checking
-        return impl_smt
+    # def get_flattened_impl_smt_as_dict(self):
+    #     """Return the implementation statement for this ElementControl combination"""
+    #     # For development let's hardcode what we return
+    #     impl_smt = {"sid": "impl_smt sid", "body": "This is the statement itself"}
+    #     # Error checking
+    #     return impl_smt
 
 class System(models.Model):
     root_element = models.ForeignKey(Element, related_name="system", on_delete=models.CASCADE, help_text="The Element that is this System. Element must be type [Application, General Support System]")
     fisma_id = models.CharField(max_length=40, help_text="The FISMA Id of the system", unique=False, blank=True, null=True)
+
+    # Notes
+    # Retrieve system implementation statements
+    #   system = System.objects.get(pk=2)
+    #   system.root_element.statements_consumed.filter(statement_type="control_implementation")
+    #
+    # Retrieve system common controls statements
+    #   system = System.objects.get(pk=2)
+    #   system.root_element.common_controls.all()[0].common_control.legacy_imp_smt
+    #   system.root_element.common_controls.all()[0].common_control.body
+    #
 
     def __str__(self):
         return "'System %s id=%d'" % (self.root_element.name, self.id)
@@ -129,6 +146,56 @@ class System(models.Model):
     def __repr__(self):
         # For debugging.
         return "'System %s id=%d'" % (self.root_element.name, self.id)
+
+    # @property
+    # def statements_consumed(self):
+    #     smts = self.root_element.statements_consumed.all()
+    #     return smts
+
+    @property
+    def smts_common_controls_as_dict(self):
+        common_controls = self.root_element.common_controls.all()
+        smts_as_dict = {}
+        for cc in common_controls:
+            if cc.common_control.oscal_ctl_id in smts_as_dict:
+                smts_as_dict[cc.common_control.oscal_ctl_id].append(cc)
+            else:
+                smts_as_dict[cc.common_control.oscal_ctl_id] = [cc]
+        return smts_as_dict
+
+    @property
+    def smts_control_implementation_as_dict(self):
+        smts = self.root_element.statements_consumed.filter(statement_type="control_implementation")
+        smts_as_dict = {}
+        for smt in smts:
+            if smt.sid in smts_as_dict:
+                smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
+            else:
+                smts_as_dict[smt.sid] = {"control_impl_smts": [smt], "common_controls": [], "combined_smt": ""}
+        return smts_as_dict
+
+    @property
+    def control_implementation_as_dict(self):
+        # Get the smts_control_implementations
+        smts = self.root_element.statements_consumed.filter(statement_type="control_implementation")
+        smts_as_dict = {}
+        for smt in smts:
+            if smt.sid in smts_as_dict:
+                smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
+            else:
+                smts_as_dict[smt.sid] = {"control_impl_smts": [smt], "common_controls": [], "combined_smt": ""}
+            # Build combined statement
+            smts_as_dict[smt.sid]['combined_smt'] += "{}\n{}\n\n".format(smt.producer_element.name, smt.body)
+
+        # Add in the common controls
+        for cc in self.root_element.common_controls.all():
+            if cc.common_control.oscal_ctl_id in smts_as_dict:
+                smts_as_dict[smt.sid]['common_controls'].append(cc)
+            else:
+                smts_as_dict[cc.common_control.oscal_ctl_id] = {"control_impl_smts": [], "common_controls": [cc], "combined_smt": ""}
+            # Build combined statement
+            smts_as_dict[cc.common_control.oscal_ctl_id]['combined_smt'] += "{}\n{}\n\n".format(cc.common_control.name, cc.common_control.body)
+        return smts_as_dict
 
     def get_producer_elements(self):
         smts = self.root_element.statements_consumed.all()
@@ -157,3 +224,24 @@ class CommonControl(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def body(self):
+        return self.legacy_imp_smt
+
+class ElementCommonControl(models.Model):
+    element = models.ForeignKey(Element, related_name="common_controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which common controls are associated.")
+    common_control = models.ForeignKey(CommonControl, related_name="element_common_control", on_delete=models.CASCADE, help_text="The Common Control for this association.")
+    oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)
+    oscal_catalog_key = models.CharField(max_length=100, help_text="Catalog key from which catalog file can be derived (e.g., 'NIST_SP-800-53_rev4')", blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        unique_together = [('element', 'common_control', 'oscal_ctl_id', 'oscal_catalog_key')]
+
+    def __str__(self):
+        return "'%s %s %s id=%d'" % (self.element, self.common_control, self.oscal_ctl_id, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'%s %s %s id=%d'" % (self.element, self.common_control, self.oscal_ctl_id, self.id)
