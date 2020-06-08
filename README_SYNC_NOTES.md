@@ -42,8 +42,11 @@ Update requirements
 
 # 5. Update tags
 
-git tag -a v0.9.1.x -m "version 0.9.1.x"
+git tag -a v0.9.1.x-mesosphere -m "version 0.9.1.x-mesosphere"
 git push origin --tags
+
+
+# 6 Copy down files and update GovReady.com
 
 
 
