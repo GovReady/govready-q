@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.5 (June 09, 2020)
+---------------------------
+
+**Bug fix**
+
+* Fix bug causing the starting of apps as answers to modules to fail. Reset start app form to pass a GET instead of a post to correctly pass question parameter to store.
+
+
 v0.9.1.22.4 (June 09, 2020)
 ---------------------------
 

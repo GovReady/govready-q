@@ -5,9 +5,8 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="invitation_modal_title">Select a Portfolio</h4>
       </div>
-      <form action="{% url 'store' %}" role="form" method="post">
+      <form action="{% url 'store' %}" role="form" method="get">
         <div class="modal-body">
-          {% csrf_token %}
           {{ project_form.portfolio }}
          </div>
          <div class="modal-footer">
