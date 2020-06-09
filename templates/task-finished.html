@@ -109,8 +109,14 @@
               </a>
               {% if document.id %}
                 <div class="pull-right">
+                  <span class="glyphicon glyphicon-refresh"
+                    style="cursor: pointer"
+                    alt="Refresh document"
+                    onclick="refresh_output_doc({{project.root_task.module.app.id}});"> </span>
+                    &nbsp;&nbsp;
                   <span class="glyphicon glyphicon-download-alt"
                     style="cursor: pointer"
+                    alt="Download document"
                     onclick="download_document('{{document.id|escapejs}}')"> </span>
                 </div>
               {% endif %}
@@ -286,5 +292,27 @@
       })
     }
   });
+
+  function refresh_output_doc(app_id) {
+      if (upgrade_app_option_confirm
+         {% if is_question_page %}
+         && !confirm("All instances of '{{task.project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
+         {% else %}
+         && !confirm("Force refresh of output document(s) in '{{project.root_task.title}}'?"))
+         {% endif %}
+        return;
+      ajax_with_indicator({
+          url: "/tasks/_refresh-output-doc",
+          method: "POST",
+          data: {
+            app: app_id,
+            force: upgrade_app_option_force ? "true" : "false"
+          },
+          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect or reload
+          success: function(res) {
+            location.reload();
+          }
+      })
+    }
   </script>
 {% endblock %}

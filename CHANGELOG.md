@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.4 (June 09, 2020)
+---------------------------
+
+**UI changes**
+
+* Added refresh icon to output documents to let user force refresh of output document. Useful for refreshing SSPs after implementation statements have changed.
+
 v0.9.1.22.3 (June 07, 2020)
 ---------------------------
 
