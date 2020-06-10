@@ -40,22 +40,47 @@
   </div><!--/row-->
     <p>&nbsp;</p>
 
-
     <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">information</div>
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">Selected controls</div>
         <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">&nbsp;</div>
-        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1"><a href="selected/export/xacta/xlsx">export</a></div>
-    </div>
-   {% for control in controls %}
-    <div id="tab-content" class="row row-control" style="">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-            <a href="/systems/{{ system.id }}/controls/catalogs/{{ control.oscal_catalog_key }}/control/{{ control.oscal_ctl_id }}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
-        </div>
-        <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
-            {{ control.get_flattened_oscal_control_as_dict.title }}
+        <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
+          <!--a href="selected/export/xacta/xlsx">export</a-->
+          <span class="glyphicon glyphicon-download-alt pull-right"
+                style="cursor: pointer;"
+                onclick="download_document('{{document.id|escapejs}}')"></span>
         </div>
     </div>
-    {% endfor %}
+    {% if controls|length < 1 %}
+      <div id="tab-content" class="row row-control" style="">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <p>No controls are currently selected for this system.</p>
+          <p>FEATURE NOTE: We are automating the assigning of control baselines by system categorization.
+          Prior to feature completion, we humbly ask you manually select the desired control baseline...</p>
+          <ul>
+            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev4/low/_assign">Assign 800-53 rev4 Low Impact Baseline</a></li>
+            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign">Assign 800-53 rev4 Moderate Impact Baseline</a></li>
+            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev4/high/_assign">Assign 800-53 rev4 High Impact Baseline</a></li>
+            <!--
+            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev5/low/_assign">Assign 800-53 rev5 Low Impact Baseline</a></li>
+            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev5/moderate/_assign">Assign 800-53 rev5 Moderate Impact Baseline</a></li>
+            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-53_rev5/high/_assign">Assign 800-53 rev5 High Impact Baseline</a></li>
+            -->
+            <li><a href="/systems/{{ system.id }}/controls/baseline/NIST_SP-800-171_rev1/cui/_assign">Assign 800-171 rev1 Baseline</a></li>
+          </ul>
+        </div>
+      </div>
+    {% else %}
+      {% for control in controls %}
+        <div id="tab-content" class="row row-control" style="">
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                <a href="/systems/{{ system.id }}/controls/catalogs/{{ control.oscal_catalog_key }}/control/{{ control.oscal_ctl_id }}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
+            </div>
+            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+                {{ control.get_flattened_oscal_control_as_dict.title }}
+            </div>
+        </div>
+      {% endfor %}
+    {% endif %}
 
   </div>
 </div>
@@ -70,5 +95,19 @@
     var url = "/controls/"+"800-53"+"/"+control_id+"/";
     window.location.href = url;
   }
+
+  // The download button shows a modal to ask what file format to download in.
+  function download_document(document_id) {
+    var dom = $("<div><p>Select download format:</p>"
+      + "<select class=form-control>"
+      + "<option value='xacta'>Xacta Import Spreadsheet</option>"
+      + "</select>"
+      + "</div>");
+    show_modal_confirm("Download Document", dom, "Download", function() {
+      var format = dom.find("select").val();
+      window.location = "selected/export/" + format + "/xlsx";
+    });
+  }
 </script>
+
 {% endblock %}

@@ -1,11 +1,22 @@
+from django.contrib import messages
 from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from siteapp.models import Project, User, Organization
 from .oscal import Catalog, Catalogs
 import json
 import re
 from .utilities import *
-from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl
+from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl, Baselines
 
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
 
 def test(request):
     # Simple test page of routing for controls
@@ -339,7 +350,6 @@ def controls_selected_export_xacta_xslx(request, system_id):
             c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
             # Private Implementation
-            print("DEBUG", control)
             smt_combined = ""
             if control.impl_smts:
                 for smt in control.impl_smts:
@@ -693,3 +703,21 @@ def delete_smt(request):
             statement_msg = "Statement delete failed. Error reported {}".format(e)
             
         return JsonResponse({ "status": "error", "message": statement_msg }) 
+
+# Baselines
+def assign_baseline(request, system_id, catalog_key, baseline_name):
+    """Assign a baseline to a system root element thereby showing selected controls for the system."""
+
+    system = System.objects.get(pk=system_id)
+    #system.root_element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'low')
+    system.root_element.assign_baseline_controls(request.user, catalog_key, baseline_name)
+    messages.add_message(request, messages.INFO, 'Baseline "{} {}" assigned.'.format(catalog_key.replace("_", " "), baseline_name.title()))
+    # Log start app / new project
+    logger.info(
+        event="assign_baseline",
+        object={"element": "system", "id": system.root_element.id, "title": system.root_element.name},
+        baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
+        user={"id": request.user.id, "username": request.user.username}
+    )
+    return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
+
