@@ -1196,6 +1196,35 @@ def authoring_create_q(request):
     return JsonResponse({ "status": "ok", "redirect": "/store" })
 
 @login_required
+def refresh_output_doc(request):
+    # Force refresh of the output documents associated with this Task.
+    # This will clear the cache of all the task.
+    # A primary reason for doing this is that we may have updated system information
+    # and the result of the system update has been cached somewhere in the stack of
+    # output documents that compose answers to a value in this document.
+    # We cannot always tell what update has caused a cache of an output document to be dirty.
+
+    # Check that the user is permitted to do so.
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    from .models import AppVersion
+    appver = get_object_or_404(AppVersion, id=request.POST["app"])
+
+    # Since ModuleQuestions may have changed...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
+
+    # Since impute conditions, output documents, and other generated
+    # data may have changed, clear all cached Task state.
+    Task.clear_state(Task.objects.filter(module__app=appver))
+
+    from django.contrib import messages
+    messages.add_message(request, messages.INFO, 'Document(s) refreshed.')
+
+    return JsonResponse({ "status": "ok" })
+
+@login_required
 @transaction.atomic
 def upgrade_app(request):
     # Upgrade an AppVersion in place by reloading all of its Modules from the

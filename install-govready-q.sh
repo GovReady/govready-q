@@ -85,6 +85,14 @@ echo $SPACER
 # retrieve static assets
 ./fetch-vendor-resources.sh
 
+# collect files into static directory
+if [ $NONINTERACTIVE ];
+then
+    python3 manage.py collectstatic --no-input
+else
+    python3 manage.py collectstatic
+fi
+
 # create the local/environment.json file, if it is missing (it generally will be)
 if [ ! -e local/environment.json ];
 then
@@ -123,6 +131,14 @@ fi
 
 echo $SPACER
 
+# Use jq and cut to extract hostname from govready-url param in local/environment.json
+# environment_json=$(<local/environment.json)
+govready_url=`cat local/environment.json | jq .\"govready-url\"`
+# echo "govready_url is $govready_url"
+govready_host_and_port=$(echo $govready_url | cut -f2 -d\" | cut -f3 -d/)
+echo "govready_host_and_port is $govready_host_and_port"
+
+
 if [ $NONINTERACTIVE ];
 then
 	echo ""
@@ -130,7 +146,7 @@ then
 	echo "* Starting GovReady-Q Server... *"
 	echo "*********************************"
 	echo ""
-	python3 manage.py runserver
+	python3 manage.py runserver "$govready_host_and_port"
 else
 	# prompt the user if they want to run the webserver now
 	# this currently runs synchronously, in the foreground, so it needs to be the last
@@ -139,7 +155,7 @@ else
 	do
 		read -p "Do you want to run the GovReady-Q now, in the foreground? [y/n] " answer
 		case $answer in
-			[Yy]* ) python3 manage.py runserver; break;;
+			[Yy]* ) python3 manage.py runserver "$govready_host_and_port"; break;;
 			[Nn]* ) break;;
 			* ) echo "Please answer 'yes' or 'no'";;
 		esac

@@ -99,3 +99,9 @@ docs/build
 .scannerwork/
 sonar-project.properties
 
+# vscode
+.vscode/
+
+# notes
+_notes/
+

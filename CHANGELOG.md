@@ -1,6 +1,182 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.6 (June 10, 2020)
+---------------------------
+
+**UI changes**
+
+* Temporary links on Selected Controls page to assign baselines controls to a system. Will replace in future with automatic assignment.
+
+**Developer changes**
+
+* Make sure Baseline model is fully incorporated with 0.9.1.22.
+* Add new route to assign baselines to system.root_element.
+* Because we are still working on better extraction of data from questionnaires, create links in the Selected Control page to assign a baseline when none exists.
+* Added new `assign_baseline` method to System object to assign
+controls that are part of baseline to the selected controls of
+a system root element.
+* Comment out polling on the task_finished page to lower noise in log.
+
+**Data changes**
+
+* Correct an control_id typo in NIST 800-53 rev moderate baseline
+
+v0.9.1.22.5 (June 09, 2020)
+---------------------------
+
+**Bug fix**
+
+* Fix bug causing the starting of apps as answers to modules to fail. Reset start app form to pass a GET instead of a post to correctly pass question parameter to store.
+
+
+v0.9.1.22.4 (June 09, 2020)
+---------------------------
+
+**UI changes**
+
+* Added refresh icon to output documents to let user force refresh of output document. Useful for refreshing SSPs after implementation statements have changed.
+
+v0.9.1.22.3 (June 07, 2020)
+---------------------------
+
+**Feature changes**
+
+This version integrates the new implementation statements
+stored in GovReady-Q's database into the Output Docs.
+
+The implementation statements are accessed via a new `{{ system }}`
+object. The `system` object provides access to the component-to-control
+implementation statements that we began storing as distinct database
+objects in version 0.9.1.5 of GovReady-Q.
+
+The `system` object is injected into the Output Document context as
+an item in guidedmodules.module_logic. NOTE: if the context from
+the view already has a `system` item, it will not be overwritten.
+
+Exactly one Information System associated with the project (if one exists).
+
+The key attribute of `system` object is `control_implementation_as_dict`
+containing a dictionary of all implementations statements and common controls
+for a system.
+
+    {
+      "au-2": {
+                "control_impl_smts": [smt_obj_1, smt_obj_2],
+                "common_controls": [common_control_obj_1, common_control_obj_2],
+                "combined_smt": "Very long text combining statements into a single string..."
+              },
+      "au-3": {
+                "control_impl_smts": [smt_obj_3, smt_obj_4, ...],
+                "common_controls": [],
+                "combined_smt": "Very long text combining statements into a single string..."
+              },
+      ...
+    }
+
+**Documentation changes**
+
+* Add initial documentation describing the `{{ system }}` object and the previously created `{{ control_catalog }}` object.
+
+v0.9.1.22.2 (June 07, 2020)
+---------------------------
+
+**Deployment changes**
+
+CRITICAL fix for deployment documentation and configuration files.
+
+* Remove all comments from `supervisor-govready-q.conf ` because trailing "# comments" cause line to be ignored. This caused a problem in Ubuntu deployment documentation leading to a situation where gunicorn was starting in wrong context and python packages not found.
+* Improved `settings.py` handling of deprecated `host` and `https` parameters for setting `SITE_ROOT_URL` value.
+
+
+v0.9.1.22 (June 05, 2020)
+------------------------
+
+**Feature changes**
+
+Improve application logging. Add `structlog` library. Log permission escalations.
+See documentation for a description of the event log formats.
+The following logged events have been added:
+
+"update_permissions portfolio assign_owner_permissions" - assign portfolio owner permissions
+"update_permissions portfolio remove_owner_permissions" - remove portfolio owner permissions
+"portfolio_list" - view list of portfolios
+"new_portfolio" - create new portfolio
+"new_portfolio assign_owner_permissions" - assign portfolio owner permissions of newly created portfolio to creator
+"send_invitation portfolio assign_edit_permissions" - assign portfolio edit permissions of newly created portfolio to creator
+"send_invitation project assign_edit_permissions" - assign edit permissions to a project and send invitation
+"cancel_invitation" - cancel invitation to a project
+"accept_invitation" - accept invitation to a project
+"sso_logout" - Single Sign On logout
+"project_list" - vew list of projects
+"start_app" - start a questionnaire/compliance app
+"new_project" - create a new project (e.g., questionnaire/compliance app that is a project)
+"new_element new_system" - create a new element (e.g., system component) that represents a new system
+
+**Deployment changes**
+
+* Update name of git 2 CentOS package to git222 in Dockerfile.
+
+**Documentation changes**
+
+* Added documentation section on logging.
+
+v0.9.1.20 (May 31, 2020)
+------------------------
+
+**Documentation changes**
+
+* Re-wrote Ubuntu from Source instructions to explain deployment in much greater detail.
+* Extend Ubuntu from Source instructions to include Gunicorn, Supervisor, and NGINX
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+
+**Deployment changes**
+
+* Introduce the ``govready_url`` environment parameter as a replacement for multiple params of ``host``, ``port``, and ``https``. During transition period ``govready-url`` parameter overrides any setting of ``host``, ``port``, and ``https`` parameters. Example below shows the ``local/environment.json`` file using the single ``govready-url`` parameter replacing legacy parameters:
+
+```
+    # Preferred local/environment.json file using govready-url parameter
+
+    {
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "govready-url": "http://localhost:8000",
+      "debug": false,
+      "secret-key": "long_random_string_here",
+      ...
+    }
+
+
+    # Legacy version local/environment.json file using deprecated host, https parameter
+
+    {
+       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+       "host": "localhost:8000",
+       "https": false,
+       "debug": false,
+       "secret-key": "long_random_string_here",
+       ...
+    }
+```
+
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+* The ``install-govready-q.sh`` script now reads the ``govready-url`` parameter from ``local/environment.json`` and uses the values to start GovReady-Q on the indicated host and port.
+
+v.0.9.1.19 (June 02, 2020)
+-------------------------
+
+**UI Changes**
+
+* Intially collapse component controls so it is easier see all components.
+* Add full text of implementation statement to accordian panel header to make it easier to read controls.
+* Create routes and templates for displaying components (e.g., elements) associated with a system.
+
+v0.9.1.18 (May 30, 2020)
+------------------------
+
+**Documentation changes:**
+
+* Ubuntu from source installation docs updated to include upgrading pip to solve problem of Ubuntu's defualt pip not installing Python packages under Linux user installs.
+
 v0.9.1.17 (May 29, 2020)
 ------------------------
 
@@ -41,7 +217,7 @@ v.0.9.1.14 (May 17, 2020)
 
 **Deployment changes**
 
-* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive`` flag.
+* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive` flag.
 * Create install-govready-q.sh script (based on quickstart.sh) to have an easy single script for installing GovReady-Q.
 * Update Dockerfile to copy over new install-govready-q.sh script and quickstart.sh script.
 * Use docker_container_run.sh script in instructions for installing in the cloud.
@@ -94,6 +270,11 @@ v0.9.1.8.2 (May 10, 2020)
 Update Documentation. Organization installation documentation inside of `Installation Guide` directory.
 Clean up singe pages for installation notes on each Operating System flavor.
 Rename 0.9.0 mentions to 0.9.x. Remove installation instructions from 0.9.x directory.
+
+v0.9.1.9 (May 08, 2020)
+-----------------------
+
+Add export to Xacta Control Implementation Excel file format.
 
 v0.9.1.8.1 (May 07, 2020)
 -------------------------
@@ -168,7 +349,7 @@ First effort to add control catalogs (e.g., control guidance)
 to the output templates using OSCAL and to create an editor
 for adding and editing control statements stored in the database.
 
-Initial use story is as a user/developer wanting to import
+Initial user story is as a user/developer wanting to import
 a spreadsheet of common controls to have a better interface for
 reading the common controls against the control statement and
 drafting the application layer controls for hybrid controls.

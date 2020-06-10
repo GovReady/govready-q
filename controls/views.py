@@ -1,11 +1,22 @@
+from django.contrib import messages
 from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from siteapp.models import Project, User, Organization
 from .oscal import Catalog, Catalogs
 import json
 import re
 from .utilities import *
-from .models import Statement, Element, System, CommonControl, CommonControlProvider
+from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl, Baselines
 
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
 
 def test(request):
     # Simple test page of routing for controls
@@ -110,7 +121,7 @@ def controls_selected(request, system_id):
         # Temporarily assume only one project and get first project
         project = system.projects.all()[0]
         controls = system.root_element.controls.all()
-        
+
         # Return the controls
         context = {
             "system": system,
@@ -122,9 +133,52 @@ def controls_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+def components_selected(request, system_id):
+    """Display System's selected components view"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Return the components
+        context = {
+            "system": system,
+            "project": project,
+        }
+        return render(request, "systems/components_selected.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+def system_element(request, system_id, element_id):
+    """Display System's selected element detail view"""
+    
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+        
+        # Return the system's element information
+        context = {
+            "system": system,
+            "project": project,
+            "element": element,
+        }
+        return render(request, "systems/element_detail.html", context)
+
 def controls_selected_export_xacta_xslx(request, system_id):
     """Export System's selected controls compatible with Xacta 360"""
-    
+
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
@@ -148,6 +202,8 @@ def controls_selected_export_xacta_xslx(request, system_id):
             if control.oscal_ctl_id in impl_smts_by_sid:
                 setattr(control, 'impl_smts', impl_smts_by_sid[control.oscal_ctl_id])
                 # print(control.oscal_ctl_id, control.impl_smts)
+            else:
+                setattr(control, 'impl_smts', None)
 
         from openpyxl import Workbook
         from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
@@ -295,8 +351,9 @@ def controls_selected_export_xacta_xslx(request, system_id):
 
             # Private Implementation
             smt_combined = ""
-            for smt in control.impl_smts:
-                smt_combined += smt.body
+            if control.impl_smts:
+                for smt in control.impl_smts:
+                    smt_combined += smt.body
             c = ws.cell(row=row, column=3, value=smt_combined)
             c.alignment = Alignment(vertical='top', wrapText=True)
             c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
@@ -357,6 +414,8 @@ def controls_selected_export_xacta_xslx(request, system_id):
             c = ws.cell(row=1, column=17, value="History")
             c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
+        wb.save('export.xlsx')
+
         with NamedTemporaryFile() as tmp:
             wb.save(tmp.name)
             tmp.seek(0)
@@ -395,6 +454,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # if len(projects) > 0:
         #     project = projects[0]
         # Retrieve any related CommonControls
+        # CRITICAL TODO: Filter by sid and by system.root_element
         common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
         ccp_name = None
         if common_controls:
@@ -402,8 +462,8 @@ def editor(request, system_id, catalog_key, cl_id):
             ccp_name = cc.common_control_provider.name
         # Get and return the control
 
-        # Retrieve any related Implementation Statements
-        impl_smts = Statement.objects.filter(sid=cl_id)
+        # Retrieve any related Implementation Statements filtering by control and system.root_element
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element)
         context = {
             "system": system,
             "project": project, 
@@ -643,3 +703,21 @@ def delete_smt(request):
             statement_msg = "Statement delete failed. Error reported {}".format(e)
             
         return JsonResponse({ "status": "error", "message": statement_msg }) 
+
+# Baselines
+def assign_baseline(request, system_id, catalog_key, baseline_name):
+    """Assign a baseline to a system root element thereby showing selected controls for the system."""
+
+    system = System.objects.get(pk=system_id)
+    #system.root_element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'low')
+    system.root_element.assign_baseline_controls(request.user, catalog_key, baseline_name)
+    messages.add_message(request, messages.INFO, 'Baseline "{} {}" assigned.'.format(catalog_key.replace("_", " "), baseline_name.title()))
+    # Log start app / new project
+    logger.info(
+        event="assign_baseline",
+        object={"element": "system", "id": system.root_element.id, "title": system.root_element.name},
+        baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
+        user={"id": request.user.id, "username": request.user.username}
+    )
+    return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
+
