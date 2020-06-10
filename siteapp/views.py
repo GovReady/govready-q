@@ -147,6 +147,40 @@ def project_list(request):
         "project_form": ProjectForm(request.user),
     })
 
+def project_list_lifecycle(request):
+    # Get all of the projects that the user can see *and* that are in a folder,
+    # which indicates it is top-level.
+    projects = Project.get_projects_with_read_priv(
+        request.user,
+        excludes={ "contained_in_folders": None })
+
+    # Sort the projects by their creation date. The projects
+    # won't always appear in that order, but it will determine
+    # the overall order of the page in a stable way.
+    projects = sorted(projects, key = lambda project : project.created)
+
+    # Load each project's lifecycle stage, which is computed by each project's
+    # root task's app's output document named govready_lifecycle_stage_code.
+    # That output document yields a string identifying a lifecycle stage.
+    assign_project_lifecycle_stage(projects)
+
+    # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
+    # types are arranged in the order they first appear across the projects.
+    lifecycles = []
+    for project in projects:
+        # On the first occurrence of this lifecycle type, add it to the output.
+        if project.lifecycle_stage[0] not in lifecycles:
+            lifecycles.append(project.lifecycle_stage[0])
+
+        # Put the project into the lifecycle's appropriate stage.
+        project.lifecycle_stage[1].setdefault("projects", []).append(project)
+
+    return render(request, "projects_lifecycle_original.html", {
+        "lifecycles": lifecycles,
+        "projects": projects,
+        "project_form": ProjectForm(request.user),
+    })
+
 def get_compliance_apps_catalog_for_user(user):
     # Each organization that the user is in sees a different set of compliance
     # apps. Since a user may be a member of multiple organizations, merge the
@@ -328,11 +362,11 @@ def apps_catalog(request):
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
     # Add the portfolio id the user is creating the project from to the args
-    if "portfolio" not in request.POST:
+    if "portfolio" not in request.GET:
         messages.add_message(request, messages.ERROR, "Please select 'Start a project' to continue.")
         return redirect('projects')
     else:
-        forward_qsargs["portfolio"] = request.POST["portfolio"]
+        forward_qsargs["portfolio"] = request.GET["portfolio"]
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.

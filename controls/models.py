@@ -1,8 +1,13 @@
+import os
+import json
 from django.db import models
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
+from .oscal import Catalogs, Catalog
 
+
+BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
 class Statement(models.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=False, null=False)
@@ -63,6 +68,26 @@ class Element(models.Model):
         # For debugging.
         return "'%s id=%d'" % (self.name, self.id)
 
+    def assign_baseline_controls(self, user, baselines_key, baseline_name):
+        """Assign set of controls from baseline to an element"""
+
+        # Usage
+            # s = System.objects.get(pk=20)
+            # s.root_element.assign_baseline_controls('NIST_SP-800-53_rev4', 'low')
+
+        can_assign_controls = user.has_perm('edit_system', self.system)
+        # Does user have edit permissions on system?
+        if  can_assign_controls:
+            from controls.models import Baselines
+            bs = Baselines()
+            controls = bs.get_baseline_controls(baselines_key, baseline_name)
+            for oscal_ctl_id in controls:
+                ec = ElementControl(element=self, oscal_ctl_id=oscal_ctl_id, oscal_catalog_key=baselines_key)
+                ec.save()
+        else:
+            print("User does not have permission to assign selected controls to element's system.")
+            return False
+
 class ElementControl(models.Model):
     element = models.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")
     oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)
@@ -114,7 +139,6 @@ class ElementControl(models.Model):
         return selected_controls
 
     def get_flattened_oscal_control_as_dict(self):
-        from .oscal import Catalogs, Catalog
         cg = Catalog.GetInstance(catalog_key=self.oscal_catalog_key)
         return cg.get_flattened_control_as_dict(cg.get_control_by_id(self.oscal_ctl_id))
 
@@ -224,10 +248,6 @@ class CommonControl(models.Model):
     def __str__(self):
         return self.name
 
-    @property
-    def body(self):
-        return self.legacy_imp_smt
-
 class ElementCommonControl(models.Model):
     element = models.ForeignKey(Element, related_name="common_controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which common controls are associated.")
     common_control = models.ForeignKey(CommonControl, related_name="element_common_control", on_delete=models.CASCADE, help_text="The Common Control for this association.")
@@ -245,3 +265,69 @@ class ElementCommonControl(models.Model):
     def __repr__(self):
         # For debugging.
         return "'%s %s %s id=%d'" % (self.element, self.common_control, self.oscal_ctl_id, self.id)
+
+class Baselines (object):
+    """Represent list of baselines"""
+    def __init__(self):
+        global BASELINE_PATH
+        self.file_path = BASELINE_PATH
+        self.baselines_keys = self._list_keys()
+        # self.index = self._build_index()
+
+        # Usage
+            # from controls.models import Baselines
+            # bs = Baselines()
+            # bs.baselines_keys
+            # bs53 = bs._load_json('NIST_SP-800-53_rev4')
+            # bs53['moderate']['controls']
+            # # Returns ['ac-1', 'ac-2', 'ac-2.1', 'ac-2.2', ...]
+            # bs.get_baseline_controls('NIST_SP-800-53_rev4', 'moderate')
+
+    def _list_files(self):
+        return [
+            'NIST_SP-800-53_rev4_baselines.json',
+            # 'NIST_SP-800-53_rev5_baselines.json',
+            'NIST_SP-800-171_rev1_baselines.json'
+        ]
+
+    def _list_keys(self):
+        return [
+            'NIST_SP-800-53_rev4',
+            # 'NIST_SP-800-53_rev5',
+            'NIST_SP-800-171_rev1'
+        ]
+
+    def _load_json(self, baselines_key):
+        """Read baseline file - JSON"""
+        # TODO Escape baselines_key
+        self.data_file = baselines_key + "_baselines.json"
+        data_file = os.path.join(self.file_path, self.data_file)
+        # Does file exist?
+        if not os.path.isfile(data_file):
+            print("ERROR: {} does not exist".format(data_file))
+            return False
+        # Load file as json
+        try:
+            with open(data_file, 'r') as json_file:
+                data = json.load(json_file)
+            return data
+        except:
+            print("ERROR: {} could not be read or could not be read as json".format(data_file))
+            return False
+
+    def get_baseline_controls(self, baselines_key, baseline_name):
+        """Return baseline's control OSCAL control ids given baselines key and baseline name"""
+        if baselines_key in self.baselines_keys:
+            data = self._load_json(baselines_key)
+        else:
+            print("Requested baselines_key not found in baselines_key data file")
+            return False
+        if baseline_name in data.keys():
+            return data[baseline_name]['controls']
+        else:
+            print("Requested baseline name not found in baselines_key data file")
+            return False
+
+    @property
+    def body(self):
+        return self.legacy_imp_smt
