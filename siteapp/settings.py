@@ -66,7 +66,6 @@ ADMINS = environment.get("admins") or []
 from urllib.parse import urlparse
 GOVREADY_URL = urlparse(environment.get("govready-url",""))
 
-
 # Set Django's ALLOWED_HOSTS parameter.
 # Use the deprecated 'host' environment parameter and preferred 'govready-url'.
 # The port is used in SITE_ROOT_URL must be removed from ALLOWED_HOSTS.
@@ -364,10 +363,6 @@ else:
 		'security.W012', # SESSION_COOKIE_SECURE not set
 		'security.W016', # CSRF_COOKIE_SECURE not set
 	]
-
-
-	SECURE_SSL_REDIRECT = False
-
 
 # Other security headers.
 SECURE_BROWSER_XSS_FILTER = True
