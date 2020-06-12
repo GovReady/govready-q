@@ -575,14 +575,16 @@ be replaced with your domain.
 Example - HTTPS on 443 and HTTP on 80 redirecting to HTTPS on 443
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The below example shows a basic version of ``/nginx/sites-available/nginx-govready-q.conf`` redirecting port 80 to 443.
+The below example shows a basic version of ``/nginx/sites-available/nginx-govready-q.conf`` redirecting port 80 to 443
+while passing the path to the requested files along with the redirect.
 
 .. code:: text
 
    server {
       listen 80;
       server_name example.com;
-      return 302 https://example.com;
+      return 302 https://$server_name:443$request_uri;
+
    }
 
    server {
@@ -605,6 +607,10 @@ The below example shows a basic version of ``/nginx/sites-available/nginx-govrea
    Be sure to remove NGINX's default configuration file listening on
    port 80 from ``/etc/nginx/sites-enabled/``. Failure to remove the default configuration
    file will create two conflicting NGINX servers listening on port 80.
+
+.. warning::
+   It is important to include the ``$request_uri`` in any redirect of the URL for the redirected
+   user to be routed to the request page.
 
 Example - Listening both HTTP on 80 and HTTPS on 443
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -647,7 +653,7 @@ on both ports because we want logins to GovReady-Q to be encrypted.
        # listen [::]:80;
        listen 80;
        server_name example.com;
-       return 301 https://example.com;
+       return 302 https://$server_name:443$request_uri;
      }
 
      server {
@@ -686,7 +692,6 @@ on both ports because we want logins to GovReady-Q to be encrypted.
            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
        }
      }
-
 
 .. note::
    Some code for creating and using a self-generated certificated

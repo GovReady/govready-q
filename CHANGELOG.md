@@ -1,6 +1,25 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.7 (June 12, 2020)
+---------------------------
+
+**Deployment fix**
+
+* Remove conflict leading to infinite redirects when terminating SSL at a reverse proxy caused by SECURE_SSL_REDIRECT being set to `True` in `settings.py` telling Django to also redirect insecure `https` connections on the same server. Introduces optional new `secure_ssl_redirect`
+parameter setting for `local/enviornment.json` file for deployments where Django redirect should be used. See: https://github.com/GovReady/govready-q/issues/934.
+
+# Force Django to redirect non-secure SSL connections to secure ssl connections
+# NOTE: Setting to True while simultaneously using a http proxy like NGINX
+#       that is also redirecting can lead to infinite redirects.
+#       See: https://docs.djangoproject.com/en/3.0/ref/settings/#secure-ssl-redirect
+#       SECURE_SSL_REDIRECT is False by default.
+
+**Documentation fix**
+
+* Update documentation on NGINX deployments to include `$request_uri` when redirecting from port 80 to port 443.
+* Update documentation to explain new `secure_ssl_redirect` parameter.
+
 v0.9.1.22.6 (June 10, 2020)
 ---------------------------
 
