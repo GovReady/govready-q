@@ -301,7 +301,7 @@ Create the ``local/environment.json`` file with appropriate parameters. (Order o
 .. note::
    As of 0.9.1.20, the "govready-url" environment parameter is preferred way to set Django internal security, url,
    ALLOWED_HOST, and other settings instead of deprecated environment parameters "host" and "https".
-   The "host" and "https" deprecated parameters will continue to be support for reasonable period for legacy installs.
+   The "host" and "https" deprecated parameters will continue to be supported for a reasonable period for legacy installs.
 
    Deprecated (but supported for a reasonable period):
 

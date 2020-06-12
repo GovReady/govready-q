@@ -301,7 +301,7 @@ Create the ``local/environment.json`` file with appropriate parameters. (Order o
 .. note::
    As of 0.9.1.20, the "govready-url" environment parameter is preferred way to set Django internal security, url,
    ALLOWED_HOST, and other settings instead of deprecated environment parameters "host" and "https".
-   The "host" and "https" deprecated parameters will continue to be support for reasonable period for legacy installs.
+   The "host" and "https" deprecated parameters will continue to be supported for a reasonable period for legacy installs.
 
    Deprecated (but supported for a reasonable period):
 
@@ -466,4 +466,4 @@ be found in the source code directory ``deployment/ubuntu``.
 Notes
 ~~~~~
 
-Instructions applicable for RHEL 8 and CentOS 8 and tested on a `CentOS 8.TKTK Docker image <https://hub.docker.com/_/centos>`__.
+Instructions applicable for RHEL 8 and CentOS 8 and tested on a `CentOS 8.1.1911 Docker image <https://hub.docker.com/_/centos>`__.
