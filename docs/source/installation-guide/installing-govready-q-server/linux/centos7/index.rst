@@ -83,7 +83,7 @@ Linux user. Installing as root is convenient for initial testing and some circum
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
-   These steps assume your are installing into the ``/opt/`` directory as root.
+   These steps assume you are installing into the ``/opt/`` directory as root.
 
 Clone the GovReady-Q repository from GitHub into the desired directory on your Ubuntu server.
 
@@ -125,7 +125,7 @@ created user's home directory and switch users to ``govready-q``. Clone the GovR
    git clone https://github.com/govready/govready-q
    cd govready-q
 
-   # GovReady-Q files are now installed in /home/govready-q/govready-q and owned govready-q
+   # GovReady-Q files are now installed in /home/govready-q/govready-q and owned by govready-q
 
 3. Installing desired database
 ------------------------------

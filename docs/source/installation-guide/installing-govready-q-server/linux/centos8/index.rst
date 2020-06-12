@@ -23,22 +23,26 @@ This guide will take you through the following steps:
 ----------------------------------
 
 GovReady-Q requires Python 3.6 or higher and several Linux packages to
-provide full functionality. Execute the following commands:
+provide full functionality. Execute the following commands as root:
 
 .. code:: bash
 
-   # Enable IUS repository
-   sudo yum install https://centos7.iuscommunity.org/ius-release.rpm
-   sudo yum update
+   # Update package list
+   dnf update
 
    # Install dependencies
-   sudo yum install \
-   python36u python36u-pip \
-   unzip git2u jq \
-   graphviz pandoc
+   dnf install \
+   python3 python3-devel gcc-c++.x86_64 \
+   unzip git jq \
+   graphviz
+
+   # for pandoc, enable PowerTools repository (equivalent of CodeReady Linux Builder repo in RHEL 8)
+   dnf install dnf-plugins-core
+   dnf config-manager --set-enabled PowerTools
+   dnf install pandoc
 
    # Upgrade pip to version 20.1+
-   python3 -m pip install --upgrade pip
+   pip3 install --upgrade pip
 
    # Optionally install supervisord for monitoring and restarting GovReady-q; and NGINX as a reverse proxy
    DEBIAN_FRONTEND=noninteractive \
@@ -47,31 +51,7 @@ provide full functionality. Execute the following commands:
    # To generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
    # search the web for "wkhtmltopdf Server-Side Request Forgery"
-   read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then sudo yum install xorg-x11-server-Xvfb wkhtmltopdf ; fi
-
-GovReady-Q calls out to ``git`` to fetch apps from git repositories, but
-that requires git version 2 or later because of the use of the
-GIT_SSH_COMMAND environment variable. The stock git on RHEL is version 1.
-Switch it to version 2+ by using the IUS package:
-
-.. code:: bash
-
-   # If necessary, remove any git currently installed
-   sudo yum remove git
-
-   # Install git2u
-   sudo yum install git2u
-
-
-Upgrading pip on RHEL 7
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Upgrade ``pip`` because the RHEL package version is out of date (we need
->=9.1 to properly process hashes in ``requirements.txt``)
-
-.. code:: bash
-
-   pip3 install --upgrade pip
+   read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then dnf install xorg-x11-server-Xvfb https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox-0.12.6-1.centos8.x86_64.rpm ; fi
 
 2. Cloning the GovReady-Q repository
 ------------------------------------
@@ -92,7 +72,7 @@ Clone the GovReady-Q repository from GitHub into the desired directory on your U
    cd /opt
 
    # Clone GovReady-Q
-   git clone https://github.com/govready/govready-q /path/to/govready-q
+   git clone https://github.com/govready/govready-q
    cd govready-q
 
    # GovReady-Q files are now installed in /opt/govready-q and owned by root
@@ -101,7 +81,7 @@ Clone the GovReady-Q repository from GitHub into the desired directory on your U
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
-   These steps assume your are installing into the ``/home/govready-q`` directory as user ``govready-q``.
+   These steps assume you are installing into the ``/home/govready-q`` directory as user ``govready-q``.
 
 While you are still root, create a dedicated Linux user ``govready-q`` and home directory. Change directory into the
 created user's home directory and switch users to ``govready-q``. Clone the GovReady-Q repository from GitHub.
@@ -110,9 +90,6 @@ created user's home directory and switch users to ``govready-q``. Clone the GovR
 
    # Create user
    useradd govready-q -m -c "govready-q"
-   chsh -s /bin/bash govready-q
-   cp /etc/skel/.bashrc /home/govready-q/.
-   chown govready-q:govready-q /home/govready-q/.bashrc
 
    # Change permissions so that the webserver can read static files
    chmod a+rx /home/govready-q
@@ -125,7 +102,7 @@ created user's home directory and switch users to ``govready-q``. Clone the GovR
    git clone https://github.com/govready/govready-q
    cd govready-q
 
-   # GovReady-Q files are now installed in /home/govready-q/govready-q and owned govready-q
+   # GovReady-Q files are now installed in /home/govready-q/govready-q and owned by govready-q
 
 3. Installing desired database
 ------------------------------
