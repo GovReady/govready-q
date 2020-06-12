@@ -1,11 +1,11 @@
 .. Copyright (C) 2020 GovReady PBC
 
-.. _govready-q_server_sources_centos_rhel_7:
+.. _govready-q_server_sources_centos_rhel_8:
 
-CentOS / RHEL 7 from sources
+CentOS / RHEL 8 from sources
 ============================
 
-This guide describes how to install the GovReady-Q server for CentOS 7 or greater from source code.
+This guide describes how to install the GovReady-Q server for CentOS 8 from source code.
 This guide will take you through the following steps:
 
 1. Installing required OS packages
@@ -466,4 +466,4 @@ be found in the source code directory ``deployment/ubuntu``.
 Notes
 ~~~~~
 
-Instructions applicable for RHEL 7 and CentOS 7 tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__.
+Instructions applicable for RHEL 8 and CentOS 8 and tested on a `CentOS 8.TKTK Docker image <https://hub.docker.com/_/centos>`__.

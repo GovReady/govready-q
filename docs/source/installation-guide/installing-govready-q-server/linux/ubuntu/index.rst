@@ -778,6 +778,6 @@ Sample ``nginx.conf``, ``supervisor.conf``, and ``update.sh`` files can
 be found in the source code directory ``deployment/ubuntu``.
 
 Notes
-=====
+~~~~~
 
 Instructions tested in May 2020 on Ubuntu 20.04 on a Digital Ocean droplet and on LTS (Focal Fossa) `Ubuntu focal-20200423 Docker image <https://hub.docker.com/_/ubuntu>`__.
