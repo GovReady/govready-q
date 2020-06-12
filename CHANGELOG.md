@@ -1,6 +1,27 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.6 (June 10, 2020)
+---------------------------
+
+**UI changes**
+
+* Temporary links on Selected Controls page to assign baselines controls to a system. Will replace in future with automatic assignment.
+
+**Developer changes**
+
+* Make sure Baseline model is fully incorporated with 0.9.1.22.
+* Add new route to assign baselines to system.root_element.
+* Because we are still working on better extraction of data from questionnaires, create links in the Selected Control page to assign a baseline when none exists.
+* Added new `assign_baseline` method to System object to assign
+controls that are part of baseline to the selected controls of
+a system root element.
+* Comment out polling on the task_finished page to lower noise in log.
+
+**Data changes**
+
+* Correct an control_id typo in NIST 800-53 rev moderate baseline
+
 v0.9.1.22.5 (June 09, 2020)
 ---------------------------
 
@@ -229,6 +250,20 @@ v.0.9.1.11 (May 11, 2020)
 
 Add docker compose file for deploying GovReady and Wazuh together.
 
+v0.9.1.10 (May 10, 2020)
+------------------------
+
+**Feature changes**
+
+Add in baselines listings for 800-53 Rev 4 (low, moderate, high) and 800-171 Rev 1.
+
+Assigning baselines only available from Django commandline shell at momement (no UI).
+
+**Documentation changes**
+
+v0.9.1.9 (May 08, 2020)
+-----------------------
+
 v0.9.1.8.2 (May 10, 2020)
 -------------------------
 
@@ -244,6 +279,7 @@ Add export to Xacta Control Implementation Excel file format.
 v0.9.1.8.1 (May 07, 2020)
 -------------------------
 
+Add export to Xacta Control Implementation Excel file format.
 Add full draft of 800-171_rev1_catalog.json in OSCAL.
 
 v0.9.1.8 (May 06, 2020)
