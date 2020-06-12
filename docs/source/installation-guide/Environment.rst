@@ -46,14 +46,18 @@ launching a container with GovReady-Q.
 -  ``secret-key`` - used to make instance more secure by contributing a
    salt value to generating various random strings and hashes. Do not
    share.
--  ``gr-pdf-generator`` - specifies the library/process used to generate PDFs,
+-  ``gr-pdf-generator``: specifies the library/process used to generate PDFs,
    options are `off` and `wkhtmltopdf` and default is `None`.
--  ``gr-img-generator`` - specifies the library/process used to generate images and thumbnails,
+-  ``gr-img-generator``: specifies the library/process used to generate images and thumbnails,
    options are `off` and `wkhtmltopdf` and default is `None`.
 -  ``single-organization``: used to enforce single organization mode
    with “main” as subdomain of default organization instead of
    multi-tenant with different subdomains for different organizations.
--  ``static``: used to prepend a root path to the default ``/static/``
+- ``secure_ssl_redirect``: tells Django to redirect any non-secure connections to secure
+  HTTPS (SSL) connections when terminating SSL at Django and connection scheme is ``https``;
+  setting ``secure_ssl_redirect`` to ``true`` behind a reverse proxy that is also managing
+  redirects can cause infinite redirects.
+-  ``static``  used to prepend a root path to the default ``/static/``
    URL path for accessing static assets.
 -  ``syslog``: used to set the host and port of a syslog-compatible log
    message sink. (Default: None.)

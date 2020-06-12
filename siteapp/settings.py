@@ -66,6 +66,7 @@ ADMINS = environment.get("admins") or []
 from urllib.parse import urlparse
 GOVREADY_URL = urlparse(environment.get("govready-url",""))
 
+
 # Set Django's ALLOWED_HOSTS parameter.
 # Use the deprecated 'host' environment parameter and preferred 'govready-url'.
 # The port is used in SITE_ROOT_URL must be removed from ALLOWED_HOSTS.
@@ -344,9 +345,16 @@ if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in
 	SESSION_COOKIE_SECURE = True
 	CSRF_COOKIE_HTTPONLY = True
 	CSRF_COOKIE_SECURE = True
-	SECURE_SSL_REDIRECT = True
 	SECURE_HSTS_SECONDS = 31536000
 	SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+	if environment.get("secure_ssl_redirect", False):
+		# Force Django to redirect non-secure SSL connections to secure SSL connections
+		# NOTE: Setting to True while simultaneously using a http proxy like NGINX
+		#       that is also redirecting can lead to infinite redirects.
+		#       See: https://docs.djangoproject.com/en/3.0/ref/settings/#secure-ssl-redirect
+		#       SECURE_SSL_REDIRECT is False by default.
+		SECURE_SSL_REDIRECT = True
+		print("INFO: SECURE_SSL_REDIRECT is set to 'True'. May cause infinite redirects behind reverse proxies.")
 else:
 	print("INFO: Connection scheme is 'http'.")
 	# Silence some checks about HTTPS.
@@ -356,6 +364,10 @@ else:
 		'security.W012', # SESSION_COOKIE_SECURE not set
 		'security.W016', # CSRF_COOKIE_SECURE not set
 	]
+
+
+	SECURE_SSL_REDIRECT = False
+
 
 # Other security headers.
 SECURE_BROWSER_XSS_FILTER = True
