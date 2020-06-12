@@ -35,7 +35,8 @@ Consult the table below and choose how to proceed:
     .. toctree::
         :maxdepth: 1
 
-        linux/centos/index
+        linux/centos7/index
+        linux/centos8/index
         linux/ubuntu/index
         unix/macos/index
         containers/docker/index
