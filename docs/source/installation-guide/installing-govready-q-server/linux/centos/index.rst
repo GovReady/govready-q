@@ -34,7 +34,7 @@ provide full functionality. Execute the following commands:
    # Install dependencies
    sudo yum install \
    python36u python36u-pip \
-   unzip git2u jq \
+   unzip jq \
    graphviz pandoc
 
    # Upgrade pip to version 20.1+
@@ -57,10 +57,10 @@ Switch it to version 2+ by using the IUS package:
 .. code:: bash
 
    # If necessary, remove any git currently installed
-   sudo yum remove git
+   yum remove git
 
-   # Install git2u
-   sudo yum install git2u
+   # Install git222
+   yum install git222
 
 
 Upgrading pip on RHEL 7
@@ -155,7 +155,7 @@ On the database server, install MySQL OS packages:
 
 .. code:: bash
 
-   # Install of MySQL OS packages
+   # Install MySQL OS packages
     sudo yum install -y mysql-devel
 
 Make a note of the MySQL's host, port, database name, user and password to add to GovReady-Q's configuration file at ``local/environment.json``.
