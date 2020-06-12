@@ -42,11 +42,11 @@ provide full functionality. Execute the following commands as root:
    dnf install pandoc
 
    # Upgrade pip to version 20.1+
-   pip3 install --upgrade pip
+   pip install --upgrade pip
 
    # Optionally install supervisord for monitoring and restarting GovReady-q; and NGINX as a reverse proxy
-   DEBIAN_FRONTEND=noninteractive \
-   apt-get install -y supervisor nginx
+   pip install supervisor
+   dnf install nginx
 
    # To generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
@@ -63,7 +63,7 @@ Linux user. Installing as root is convenient for initial testing and some circum
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
-   These steps assume your are installing into the ``/opt/`` directory as root.
+   These steps assume you are installing into the ``/opt/`` directory as root.
 
 Clone the GovReady-Q repository from GitHub into the desired directory on your Ubuntu server.
 
