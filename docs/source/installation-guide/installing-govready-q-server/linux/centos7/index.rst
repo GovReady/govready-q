@@ -23,31 +23,32 @@ This guide will take you through the following steps:
 ----------------------------------
 
 GovReady-Q requires Python 3.6 or higher and several Linux packages to
-provide full functionality. Execute the following commands:
+provide full functionality. Execute the following commands as root:
 
 .. code:: bash
 
    # Enable IUS repository
-   sudo yum install https://centos7.iuscommunity.org/ius-release.rpm
-   sudo yum update
+   yum install \
+   https://repo.ius.io/ius-release-el7.rpm \
+   https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+   yum update
 
    # Install dependencies
-   sudo yum install \
+   yum install \
    python36u python36u-pip \
    unzip git2u jq \
    graphviz pandoc
 
    # Upgrade pip to version 20.1+
-   python3 -m pip install --upgrade pip
+   pip3 install --upgrade pip
 
    # Optionally install supervisord for monitoring and restarting GovReady-q; and NGINX as a reverse proxy
-   DEBIAN_FRONTEND=noninteractive \
-   apt-get install -y supervisor nginx
+   yum install supervisor nginx
 
    # To generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
    # search the web for "wkhtmltopdf Server-Side Request Forgery"
-   read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then sudo yum install xorg-x11-server-Xvfb wkhtmltopdf ; fi
+   read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then yum install xorg-x11-server-Xvfb wkhtmltopdf ; fi
 
 GovReady-Q calls out to ``git`` to fetch apps from git repositories, but
 that requires git version 2 or later because of the use of the
@@ -61,17 +62,6 @@ Switch it to version 2+ by using the IUS package:
 
    # Install git2u
    sudo yum install git2u
-
-
-Upgrading pip on RHEL 7
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Upgrade ``pip`` because the RHEL package version is out of date (we need
->=9.1 to properly process hashes in ``requirements.txt``)
-
-.. code:: bash
-
-   pip3 install --upgrade pip
 
 2. Cloning the GovReady-Q repository
 ------------------------------------
