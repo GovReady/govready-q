@@ -56,7 +56,7 @@ The instance can be set to debug mode at runtime.
 
     The command ``docker container exec -it govready-q first_run --non-interactive`` creates the Superuser automatically for installs where you do
     not have access to interactive access to the command line. The auto-generated username and password will be generated once to
-    to the standout log. When running the Docker containter in the detached (``-d``) mode, you can access the standout log with the command ``docker container logs govready-q``.
+    to the stdout log. When running the Docker container in the detached (``-d``) mode, you can access the stdout log with the command ``docker container logs govready-q``.
 
 .. warning::
     The GovReady-Q default SQLite database created within a Docker container
