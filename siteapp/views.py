@@ -418,6 +418,12 @@ def apps_catalog_item(request, source_slug, app_name):
     else:
         raise Http404()
 
+    # Get portfolio project should be included in.
+    if request.GET.get("portfolio"):
+      portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+    else:
+      portfolio = None
+
     error = None
 
     if request.method == "POST":
@@ -488,6 +494,8 @@ def apps_catalog_item(request, source_slug, app_name):
         "app": app_catalog_info,
         "error": error,
         "project_form": ProjectForm(request.user),
+        "source_slug": source_slug,
+        "portfolio": portfolio
     })
 
 def start_app(appver, organization, user, folder, task, q, portfolio):

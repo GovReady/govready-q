@@ -1,6 +1,6 @@
 .. Copyright (C) 2020 GovReady PBC
 
-.. _govready-q_server_sources_centos_rhel:
+.. _govready-q_server_sources_centos_rhel_7:
 
 CentOS / RHEL 7 from sources
 ============================
@@ -23,31 +23,32 @@ This guide will take you through the following steps:
 ----------------------------------
 
 GovReady-Q requires Python 3.6 or higher and several Linux packages to
-provide full functionality. Execute the following commands:
+provide full functionality. Execute the following commands as root:
 
 .. code:: bash
 
    # Enable IUS repository
-   sudo yum install https://centos7.iuscommunity.org/ius-release.rpm
-   sudo yum update
+   yum install \
+   https://repo.ius.io/ius-release-el7.rpm \
+   https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+   yum update
 
    # Install dependencies
-   sudo yum install \
+   yum install \
    python36u python36u-pip \
    unzip jq \
    graphviz pandoc
 
    # Upgrade pip to version 20.1+
-   python3 -m pip install --upgrade pip
+   pip3 install --upgrade pip
 
    # Optionally install supervisord for monitoring and restarting GovReady-q; and NGINX as a reverse proxy
-   DEBIAN_FRONTEND=noninteractive \
-   apt-get install -y supervisor nginx
+   yum install supervisor nginx
 
    # To generate thumbnails and PDFs for export, you must install wkhtmltopdf
    # WARNING: wkhtmltopdf can expose you to security risks. For more information,
    # search the web for "wkhtmltopdf Server-Side Request Forgery"
-   read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then sudo yum install xorg-x11-server-Xvfb wkhtmltopdf ; fi
+   read -p "Are you sure (yes/no)? " ; if [ "$REPLY" = "yes" ]; then yum install xorg-x11-server-Xvfb wkhtmltopdf ; fi
 
 GovReady-Q calls out to ``git`` to fetch apps from git repositories, but
 that requires git version 2 or later because of the use of the
@@ -62,17 +63,6 @@ Switch it to version 2+ by using the IUS package:
    # Install git222
    yum install git222
 
-
-Upgrading pip on RHEL 7
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Upgrade ``pip`` because the RHEL package version is out of date (we need
->=9.1 to properly process hashes in ``requirements.txt``)
-
-.. code:: bash
-
-   pip3 install --upgrade pip
-
 2. Cloning the GovReady-Q repository
 ------------------------------------
 
@@ -83,7 +73,7 @@ Linux user. Installing as root is convenient for initial testing and some circum
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
-   These steps assume your are installing into the ``/opt/`` directory as root.
+   These steps assume you are installing into the ``/opt/`` directory as root.
 
 Clone the GovReady-Q repository from GitHub into the desired directory on your Ubuntu server.
 
@@ -125,7 +115,7 @@ created user's home directory and switch users to ``govready-q``. Clone the GovR
    git clone https://github.com/govready/govready-q
    cd govready-q
 
-   # GovReady-Q files are now installed in /home/govready-q/govready-q and owned govready-q
+   # GovReady-Q files are now installed in /home/govready-q/govready-q and owned by govready-q
 
 3. Installing desired database
 ------------------------------
@@ -301,7 +291,7 @@ Create the ``local/environment.json`` file with appropriate parameters. (Order o
 .. note::
    As of 0.9.1.20, the "govready-url" environment parameter is preferred way to set Django internal security, url,
    ALLOWED_HOST, and other settings instead of deprecated environment parameters "host" and "https".
-   The "host" and "https" deprecated parameters will continue to be support for reasonable period for legacy installs.
+   The "host" and "https" deprecated parameters will continue to be supported for a reasonable period for legacy installs.
 
    Deprecated (but supported for a reasonable period):
 
@@ -464,6 +454,6 @@ Sample ``nginx.conf``, ``supervisor.conf``, and ``update.sh`` files can
 be found in the source code directory ``deployment/ubuntu``.
 
 Notes
-=====
+~~~~~
 
-Instructions applicable for RHEL 7 and CentOS 7 and tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__.
+Instructions applicable for RHEL 7 and CentOS 7 tested on a `CentOS 7.8.2003 Docker image <https://hub.docker.com/_/centos>`__.

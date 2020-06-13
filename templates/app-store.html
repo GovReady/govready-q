@@ -7,25 +7,32 @@ Compliance Apps
 
 {% block head %}
 <style>
-body {
-  padding-left: 20px;
-  padding-right: 20px;
-  background-color: rgb(247,247,247);
-}
+  body {
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: rgb(247,247,247);
+  }
 
-h1 {
-  margin-bottom: 30px;
-}
+  h1 {
+    margin-bottom: 30px;
+  }
 
-h2 {
-  margin: 1em 0 .5em 0;
-  font-variant: small-caps;
-  font-size: 25px;
-}
+  h2 {
+    width: 40%;
+    margin: 2.5em auto 24px auto;
+    padding: 8px;
+    border-bottom: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 10px;
+    font-size: 24px;
+    color: #666;
+    text-align: center;
+  }
 
-.app-category-nav {
-  font-size: 85%;
-}
+  .app-category-nav {
+    font-size: 85%;
+  }
+
   .app-category-nav > *[data-category] {
     margin-left: 3px;
     color: #66C;
@@ -35,66 +42,77 @@ h2 {
   .app-category-nav *[data-category] {
     margin-left: 20px;
   }
-    .app-category-nav *[data-category].first {
-      margin-left: 0;
-    }
 
-.app {
-  border-radius: 10px;
-  border-bottom: 1px solid rgb(204, 204, 204);
-  padding: 12px;
-  background-color: white;
-  margin-bottom: 24px;
-  cursor: default;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .app-category-nav *[data-category].first {
+    margin-left: 0;
+  }
+
+  .app {
+    border-radius: 10px;
+    border-bottom: 1px solid rgb(204, 204, 204);
+    padding: 12px;
+    background-color: white;
+    margin-bottom: 24px;
+    cursor: default;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .app h3 {
     margin: 0;
     font-size: 21px;
     font-weight: bold;
     margin-bottom: 5px;
   }
-    @media screen and (max-width: 1200px) {
-      .app h3 {
-        font-size: 17px;
-      }
+
+  @media screen and (max-width: 1200px) {
+    .app h3 {
+      font-size: 17px;
     }
+  }
+
   .app .app-icon {
     width: 20%;
     max-width: 128px;
   }
-    @media screen and (max-width: 768px) {
-      .app .app-icon {
-        width: 20%;
-      }
+
+  @media screen and (max-width: 768px) {
+    .app .app-icon {
+      width: 20%;
     }
+  }
+
   .app .body {
   }
-  	.app .body p {
-  	}
-    .app .body p:last-child {
-      margin: 0;
-    }
 
-.app-metadata {
-  font-size: 0.7em;
-  text-align: left;
-  color: #666;
-}
-.body {
-  font-size: 0.8em;
-}
+  .app .body p {
+  }
 
-.if-has-more-apps {
-	display: none;
-	text-align: right;
-	font-size: 95%;
-}
-	.if-has-more-apps .show-less { display: none; }
-	.has-more-apps .if-has-more-apps { display: block; }
-	.show-more-apps .if-has-more-apps .show-more { display: none; }
-	.show-more-apps .if-has-more-apps .show-less { display: inline; }
+  .app .body p:last-child {
+    margin: 0;
+  }
+
+  .app-metadata {
+    font-size: 0.7em;
+    text-align: left;
+    color: #666;
+  }
+
+  .body {
+    font-size: 0.8em;
+  }
+
+  .if-has-more-apps {
+    display: none;
+    text-align: right;
+    font-size: 95%;
+  }
+
+  .if-has-more-apps .show-less { display: none; }
+  .has-more-apps .if-has-more-apps { display: block; }
+  .show-more-apps .if-has-more-apps .show-more { display: none; }
+  .show-more-apps .if-has-more-apps .show-less { display: inline; }
+
 </style>
 {% endblock %}
 
@@ -148,7 +166,7 @@ h2 {
 {% for app_category in apps %}
 <div class="app-category" data-category="{{app_category.title}}">
 {% if apps|length > 1 %} {# only display category titles if there is more than one category available #}
-<h2>{{app_category.title}}</h2>
+<h2>{{app_category.title}} Apps</h2>
 {% endif %}
 
 <div class="row">
@@ -158,56 +176,43 @@ h2 {
         data-app="{{app.key}}"
         data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}"
         >
-
         <table>
         <tr valign="top">
-
         <td>
           <h3>{{app.title}}</h3>
-
           <div class="body">
           {{app.description.short|safe|truncatewords_html:18}}
           </div>
-
           {% if app.authz != "none" %}
           <div class="app-metadata">
             Admin approval required</div>
           </div>
           {% endif %}
-
           <div style="margin-top: .5em">
-          <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-info btn-sm view-app">
-              <span class="glyphicon glyphicon-info-sign"> </span>
-              Info
-          </a>
-
-          {# If the user can only start the app in a single organization context, we can offer a quick start button. #}
-          {% if app.organizations|length == 1 %}
-          <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
-            {% csrf_token %}
-            {% with app.organizations|first as first_org %}
-              <input type="hidden" name="organization" value="{{first_org.slug}}">
-            {% endwith %}
-            <button type="submit" class="btn btn-success btn-sm start-app">
-              Add ►
-            </button>
-          </form>
-          {% endif %}
-
+            {# If the user can only start the app in a single organization context, we can offer a quick start button. #}
+            {% if app.organizations|length == 1 %}
+            <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
+              {% csrf_token %}
+              {% with app.organizations|first as first_org %}
+                <input type="hidden" name="organization" value="{{first_org.slug}}">
+              {% endwith %}
+              <button type="submit" class="btn btn-success btn-sm start-app">
+                Add ►
+              </button>&nbsp;
+            </form>
+            {% endif %}
+            <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-default btn-sm view-app">Info</a>
           </div>
         </td>
-
         {% if app.icon %}
         <td class="app-icon" style="padding-top: 1px; padding-right: 12px;">
-          <img src="{{app.icon}}" class="img-responsive" alt= "App Icon">
+          <img src="{{app.icon}}" class="img-responsive" alt="App Icon">
         </td>
         {% endif %}
-
         </tr>
         </table>
       </div>
     </div>
-
     {% if forloop.counter|divisibleby:3 %} {# breaks dont play well with client-side search --- they are re-generated when search results are displayed #}
       <div class="visible-sm clearfix rowbrk"> </div>
       <div class="visible-md clearfix rowbrk"> </div>
