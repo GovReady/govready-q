@@ -1,6 +1,22 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.9 (June 13, 2020)
+---------------------------
+
+**UI changes**
+
+Improve the UI of the app-store-item info page.
+
+* Improve visual continuity by making App info a larger version of the app info box in the store.
+* Remove legacy catalog data that is not well maintained.
+* Rearrange logo and add button.
+* Make sure portfolio information is being maintained.
+* Add a back to apps link under start button.
+
+Also clean up presentation of footer in all pages.
+
+
 v0.9.1.22.8 (June 12, 2020)
 ---------------------------
 
