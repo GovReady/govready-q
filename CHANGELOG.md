@@ -1,6 +1,19 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.11 (June 14, 2020)
+---------------------------
+
+**UI changes**
+
+* Display component statement counts on a system's selected controls page via a custom tag to provide access to a dictionary key of
+impl_smts_counts created in the view for the page
+* Add datetime to filename of a project's export JSON file
+
+**Django Admin changes**
+
+* In ProjectAdmin screen, change the organization field to a select field
+
 v0.9.1.22.10 (June 14, 2020)
 ---------------------------
 
