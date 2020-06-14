@@ -4,7 +4,7 @@ type: project
 version: 0.1.0
 icon: app.png
 catalog:
-  category: Draft
+  category: Preview
   vendor: GovReady
   vendor_url: ~
   status: stub
