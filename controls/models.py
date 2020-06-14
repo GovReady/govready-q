@@ -88,6 +88,13 @@ class Element(models.Model):
             print("User does not have permission to assign selected controls to element's system.")
             return False
 
+    @property
+    def selected_controls_oscal_ctl_ids(self):
+        """Return array of selectecd controls oscal ids"""
+        # oscal_ids = self.controls.all()
+        oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
+        return oscal_ctl_ids
+
 class ElementControl(models.Model):
     element = models.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")
     oscal_ctl_id = models.CharField(max_length=20, help_text="OSCAL formatted Control ID (e.g., au-2.3)", blank=True, null=True)

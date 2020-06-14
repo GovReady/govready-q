@@ -1,6 +1,24 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.10 (June 14, 2020)
+---------------------------
+
+**Model changes**
+
+* Add controls.Element.select_controls_oscal_ctl_ids property to generate list of selected controls oscal_ctl_ids. Enable list of selected controls in SSP.
+
+**UI changes**
+
+* Simplify references to compliance app version; display compliance app version number from 'version' key
+* Simplify display of title of project in UI
+* Display additional information about the compliance app in the project settings modal
+* Stop showing project page's grid of options once number of projects exceeds 4
+
+**Compliance app changes**
+
+* Improve data extraction in project page and store so only use the 'version' key to get version information.
+
 v0.9.1.22.9 (June 13, 2020)
 ---------------------------
 
