@@ -169,7 +169,7 @@ Your Compliance Projects
 
 {% endfor %}
 
-
+{% if projects|length < 4 %}
 <!-- Display grid of options -->
   <div class="row">
 
@@ -225,6 +225,7 @@ Your Compliance Projects
       </div>
     </div>
 </div>
+{% endif %}
 
 {% include "portfolios/select-portfolio-modal.html" %}
 
