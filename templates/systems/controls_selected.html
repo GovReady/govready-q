@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% load guardian_tags %}
+{% load system_tags %}
 {% load static %}
 {% load q %}
 
@@ -75,8 +76,17 @@
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                 <a href="/systems/{{ system.id }}/controls/catalogs/{{ control.oscal_catalog_key }}/control/{{ control.oscal_ctl_id }}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
             </div>
-            <div id="" class="col-xs-5 col-sm-5 col-md-5 col-lg-5 col-xl-5">
+            <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
                 {{ control.get_flattened_oscal_control_as_dict.title }}
+            </div>
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+              {% if impl_smts_count|get_item:control.oscal_ctl_id > 0%}
+                {{ impl_smts_count|get_item:control.oscal_ctl_id }} component statement{{ impl_smts_count|get_item:control.oscal_ctl_id|pluralize }}
+              {% else %}
+                <div style="text-align: center;">
+                  &mdash;
+                </div>
+              {% endif %}
             </div>
         </div>
       {% endfor %}

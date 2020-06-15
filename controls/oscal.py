@@ -300,7 +300,7 @@ class Catalog (object):
     def get_flattended_controls_all_as_dict(self):
         """Return all controls as a simplified flattened Python dictionary indexed by control ids"""
         # Create an empty dictionary
-        cl_all_dict = {'ac-1': {}}
+        cl_all_dict = {}
         # Get all the controls
         for cl in self.get_controls_all():
             # Get flattened control and add to dictionary of controls
