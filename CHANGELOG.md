@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.12 (June 14, 2020)
+---------------------------
+
+**Bug fix**
+
+* Dynamically determine control_catalog for SSP based on controls selected.
+
 v0.9.1.22.11 (June 14, 2020)
 ---------------------------
 

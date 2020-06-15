@@ -1210,11 +1210,19 @@ class TemplateContext(Mapping):
                 return RenderedOrganization(self.module_answers.task, parent_context=self)
             if item == "control_catalog":
                 # Retrieve control catalog(s) for project
-                # Temporarily assume controls are 800-53 for the moment
+                # Temporarily retrieve a single catalog
+                # TODO: Retrieve multiple catalogs because we could have catalogs plus overlays
+                #       Will need a better way to determine the catalogs on a system so we can retrieve at once
+                #       Maybe get the catalogs as a property of the system
                 # Retrieve a Django dictionary of dictionaries object of full control catalog
                 from controls.oscal import Catalog
-                sca = Catalog.GetInstance()
-                control_catalog = sca.flattended_controls_all_as_dict
+                # Detect single control catalog from first control
+                try:
+                    catalog_key = self.module_answers.task.project.system.root_element.controls.first().oscal_catalog_key
+                    sca = Catalog.GetInstance(catalog_key=catalog_key)
+                    control_catalog = sca.flattended_controls_all_as_dict
+                except:
+                    control_catalog = None
                 return control_catalog
             if item == "system":
                 # Retrieve the system object associated with this project
