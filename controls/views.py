@@ -121,12 +121,20 @@ def controls_selected(request, system_id):
         # Temporarily assume only one project and get first project
         project = system.projects.all()[0]
         controls = system.root_element.controls.all()
+        impl_smts = system.root_element.statements_consumed.all()
+
+        impl_smts_count = {}
+        for c in controls:
+            impl_smts_count[c.oscal_ctl_id] = 0
+            if c.oscal_ctl_id in system.control_implementation_as_dict.keys():
+                impl_smts_count[c.oscal_ctl_id] = len(system.control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
 
         # Return the controls
         context = {
             "system": system,
             "project": project,
             "controls": controls,
+            "impl_smts_count": impl_smts_count
         }
         return render(request, "systems/controls_selected.html", context)
     else:

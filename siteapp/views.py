@@ -1,5 +1,6 @@
 import random
 
+from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -1119,7 +1120,8 @@ def export_project(request, project):
     from urllib.parse import quote
     data = project.export_json(include_metadata=True, include_file_content=True)
     resp = JsonResponse(data, json_dumps_params={"indent": 2})
-    resp["content-disposition"] = "attachment; filename=%s.json" % quote(project.title)
+    filename = project.title.replace(" ","_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
+    resp["content-disposition"] = "attachment; filename=%s.json" % quote(filename)
     return resp
 
 @project_admin_login_post_required
