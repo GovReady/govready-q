@@ -7,6 +7,9 @@ import json
 import re
 from .utilities import *
 from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl, Baselines
+from guardian.shortcuts import (assign_perm, get_objects_for_user,
+                                get_perms_for_model, get_user_perms,
+                                get_users_with_perms, remove_perm)
 
 import logging
 logging.basicConfig()
@@ -606,11 +609,6 @@ def save_smt(request):
             # Does the name match and existing element? (Element names are unique.)
             # TODO: Sanitize data entered in form?
             producer_element, created = Element.objects.get_or_create(name=form_values['producer_element_name'])
-            # producer_element = Element(  name=form_values['producer_element_name'], )
-            # ONLY save produce_element when creating a new producer element
-            print("get_or_create result ", producer_element, created)
-            # if (created == True):
-            #     producer_element.save()
             producer_element_status = "ok"
             producer_element_msg = "Producer Element saved."
         except Exception as e:
@@ -632,7 +630,7 @@ def save_smt(request):
 
         # Associate Statement and System's root_element
         # TODO Only associate if we have created new statement object.
-        print("** System.objects.get(pk=form_values['system_id']).root_element", System.objects.get(pk=form_values['system_id']).root_element)
+        # print("** System.objects.get(pk=form_values['system_id']).root_element", System.objects.get(pk=form_values['system_id']).root_element)
         try:
             statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
             statement.save()
@@ -709,8 +707,9 @@ def delete_smt(request):
         except Exception as e:
             statement_status = "error"
             statement_msg = "Statement delete failed. Error reported {}".format(e)
-            
-        return JsonResponse({ "status": "error", "message": statement_msg }) 
+            return JsonResponse({ "status": "error", "message": statement_msg })
+
+        return JsonResponse({ "status": "success", "message": statement_msg })
 
 # Baselines
 def assign_baseline(request, system_id, catalog_key, baseline_name):
@@ -718,14 +717,18 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
 
     system = System.objects.get(pk=system_id)
     #system.root_element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'low')
-    system.root_element.assign_baseline_controls(request.user, catalog_key, baseline_name)
-    messages.add_message(request, messages.INFO, 'Baseline "{} {}" assigned.'.format(catalog_key.replace("_", " "), baseline_name.title()))
-    # Log start app / new project
-    logger.info(
-        event="assign_baseline",
-        object={"element": "system", "id": system.root_element.id, "title": system.root_element.name},
-        baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
-        user={"id": request.user.id, "username": request.user.username}
-    )
+    assign_results = system.root_element.assign_baseline_controls(request.user, catalog_key, baseline_name)
+    if assign_results:
+        messages.add_message(request, messages.INFO, 'Baseline "{} {}" assigned.'.format(catalog_key.replace("_", " "), baseline_name.title()))
+        # Log start app / new project
+        logger.info(
+            event="assign_baseline",
+            object={"object": "system", "id": system.root_element.id, "title": system.root_element.name},
+            baseline={"catalog_key": catalog_key, "baseline_name": baseline_name},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+    else:
+        messages.add_message(request, messages.ERROR, 'Baseline "{} {}" assignment failed.'.format(catalog_key.replace("_", " "), baseline_name.title()))
+
     return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
 

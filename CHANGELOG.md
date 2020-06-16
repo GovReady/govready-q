@@ -1,8 +1,21 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.22.12 (June 14, 2020)
+v0.9.1.22.13 (June 16, 2020)
 ---------------------------
+
+**Bug fix**
+
+* Correctly assign owner permissions to new system, new system root element when starting a new project and creating new system. Addresses #951.
+* Correctly assign edit permissions to a new system and root element when non-admin user invites non-admin user. Addresses #953.
+* Fix mislabeled JSON response preventing full remove deleted statement from editor.
+
+**Doc updates**
+
+* Adds log entries to log documentation for assigning of ower permissions and edit permissions to new system and its root element when users are added to a project.
+
+v0.9.1.22.12 (June 14, 2020)
+----------------------------
 
 **Bug fix**
 

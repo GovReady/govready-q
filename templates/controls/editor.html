@@ -442,7 +442,7 @@ Remove contextbar from top of page
           if (result) {
               // Delete statement object in database if it exists
               if ($( '#'+smt_panel_num+' input[name=producer_element_id]' ).val().length > 0) {
-                console.log("deleting db object")
+                // console.log("deleting db object")
                 // serialize data from the identified statement form
                 var data = $( '#'+smt_panel_num ).serialize()
                 // send data via ajax to delete object

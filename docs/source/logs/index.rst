@@ -74,8 +74,23 @@ Assign portfolio edit permissions to a user.
 
 **"send_invitation project assign_edit_permissions"**
 
-Assign edit permissions to a project and send invitation.
+Assign edit permissions to a project when inviting a user to a project.
 
+.. code:: text
+
+    (pending example)
+
+**"send_invitation system assign_edit_permissions"**
+
+Assign edit permissions to a project's associated system when inviting a user to a project.
+
+.. code:: text
+
+    (pending example)
+
+**"send_invitation element assign_edit_permissions"**
+
+Assign edit permissions to a project's associated system's root_element when inviting a user to a project.
 .. code:: text
 
     (pending example)
@@ -104,7 +119,6 @@ Single Sign On logout.
 .. code:: text
 
     (pending example)
-
 
 **"project_list"**
 
@@ -140,4 +154,27 @@ Create a new element (e.g., system component) that represents a new system.
 
     2020-06-03 23:54:07,816 siteapp.views level INFO {"object": {"object": "invitation", "id": 3, "to_email": "user2@example.com"}, "user": {"id": 29, "username": "me2"}, "event": "accept_invitation"}
 
+**"new_element new_system assign_owner_permissions"**
+
+Assign owernship permission to a newly created element for a project's newly created associated system.
+
+.. code:: text
+
+    (pending example)
+
+**"new_system assign_owner_permissions"**
+
+Assign owernship permission to a project's newly created associated system.
+
+.. code:: text
+
+    (pending example)
+
+**"assign_baseline"**
+
+Assign a baseline set of controls to a project system (technically, assign the baseline set of controls to a system.root_element).
+
+.. code:: text
+
+    2020-06-03 23:53:49,721 controls.views level INFO {"object": {"object": "system", "id": 16, "title": "My Project Name"}, baseline={"catalog_key": "NIST_SP-800-53_rev4", "baseline_name": "low"}, "user": {"id": 28, "username": "me"}, "event": "assign_baseline"}
 

@@ -297,6 +297,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Assumes _new_project() just finished.
 
         # Start the task.
+        var_sleep(0.4)
         self.click_element('#question-simple_module')
 
         # Return the Task instance that we just created or are now visiting.
