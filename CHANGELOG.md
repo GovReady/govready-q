@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.13 (June 16, 2020)
+---------------------------
+
+**UI changes**
+
+* Display component implementation statements on the System's component detail page making it easy to see to which controls a system element participates
+
 v0.9.1.22.12 (June 14, 2020)
 ---------------------------
 
