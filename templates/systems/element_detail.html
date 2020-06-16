@@ -49,7 +49,15 @@
       </div>
       <div>
         <h3>Use in {{ system.root_element.name }}</h3>
-        <p>This component produces XX statements related to {{ system.root_element.name }}.</p>
+        <p>This component produces {{ impl_smts|length }} statement{{ impl_smts|length|pluralize }}.</p>
+
+        {% for smt in impl_smts %}
+          <div class="row">
+            <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">{{ smt.sid }}</div>
+            <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10">{{ smt.body }}</div>
+          </div>
+          <div>&nbsp;</div>
+        {% endfor %}
       </div>
     </div>
 
