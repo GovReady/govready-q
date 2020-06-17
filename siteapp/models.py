@@ -10,7 +10,7 @@ from django.utils import crypto, timezone
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
-from controls.models import System
+from controls.models import System, Element
 from jsonfield import JSONField
 
 

@@ -68,6 +68,24 @@ class Element(models.Model):
         # For debugging.
         return "'%s id=%d'" % (self.name, self.id)
 
+    def assign_owner_permissions(self, user):
+        try:
+            permissions = get_perms_for_model(Element)
+            for perm in permissions:
+                assign_perm(perm.codename, user, self)
+            return True
+        except:
+            return False
+
+    def assign_edit_permissions(self, user):
+        try:
+            permissions = ['view_element', 'change_element', 'add_element']
+            for perm in permissions:
+                assign_perm(perm, user, self)
+            return True
+        except:
+            return False
+
     def assign_baseline_controls(self, user, baselines_key, baseline_name):
         """Assign set of controls from baseline to an element"""
 
@@ -75,7 +93,7 @@ class Element(models.Model):
             # s = System.objects.get(pk=20)
             # s.root_element.assign_baseline_controls('NIST_SP-800-53_rev4', 'low')
 
-        can_assign_controls = user.has_perm('edit_system', self.system)
+        can_assign_controls = user.has_perm('change_element', self)
         # Does user have edit permissions on system?
         if  can_assign_controls:
             from controls.models import Baselines
@@ -84,8 +102,9 @@ class Element(models.Model):
             for oscal_ctl_id in controls:
                 ec = ElementControl(element=self, oscal_ctl_id=oscal_ctl_id, oscal_catalog_key=baselines_key)
                 ec.save()
+            return True
         else:
-            print("User does not have permission to assign selected controls to element's system.")
+            # print("User does not have permission to assign selected controls to element's system.")
             return False
 
     @property
@@ -182,6 +201,24 @@ class System(models.Model):
     # def statements_consumed(self):
     #     smts = self.root_element.statements_consumed.all()
     #     return smts
+
+    def assign_owner_permissions(self, user):
+        try:
+            permissions = get_perms_for_model(System)
+            for perm in permissions:
+                assign_perm(perm.codename, user, self)
+            return True
+        except:
+            return False
+
+    def assign_edit_permissions(self, user):
+        try:
+            permissions = ['view_system', 'change_system', 'add_system']
+            for perm in permissions:
+                assign_perm(perm, user, self)
+            return True
+        except:
+            return False
 
     @property
     def smts_common_controls_as_dict(self):

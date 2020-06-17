@@ -558,6 +558,21 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             project=project,
             user=user,
             is_admin=True)
+        # Grant owner permissions on root_element to user
+        element.assign_owner_permissions(user)
+        # Log ownership assignment
+        logger.info(
+                event="new_element new_system assign_owner_permissions",
+                object={"object": "element", "id": element.id, "name":element.name},
+                user={"id": user.id, "username": user.username}
+            )
+        system.assign_owner_permissions(user)
+        # Log ownership assignment
+        logger.info(
+                event="new_system assign_owner_permissions",
+                object={"object": "system", "id": system.root_element.id, "name":system.root_element.name},
+                user={"id": user.id, "username": user.username}
+            )
 
         if task and q:
             # It will also answer a task's question.
@@ -1376,7 +1391,22 @@ def send_invitation(request):
             logger.info(
                 event="send_invitation project assign_edit_permissions",
                 object={"object": "project", "id": from_project.id, "title":from_project.title},
-                receiving_user={"id": to_user.user.id, "username": to_user.user.username},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            # Assign permissions to view system, root_element
+            from_project.system.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation system assign_edit_permissions",
+                object={"object": "system", "id": from_project.system.root_element.id, "name":from_project.root_element.name},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            from_project.system.root_element.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation element assign_edit_permissions",
+                object={"object": "element", "id": from_project.system.root_element.id, "name":from_project.root_element.name},
+                receiving_user={"id": to_user.id, "username": to_user.username},
                 user={"id": request.user.id, "username": request.user.username}
             )
 
