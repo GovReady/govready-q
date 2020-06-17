@@ -6,8 +6,25 @@ v0.9.1.22.14 (June 17, 2020)
 
 * Correctly create a default portfolio for a user accepting an invitation.
 
-v0.9.1.22.13 (June 16, 2020)
----------------------------
+v0.9.1.22.13 (June 17, 2020)
+----------------------------
+
+**UI changes**
+
+* Display component implementation statements on the System's component detail page making it easy to see to which controls a system element participates.
+
+**Bug fixes**
+
+* Correctly assign owner permissions to new system, new system root element when starting a new project and creating new system. Addresses #951.
+* Correctly assign edit permissions to a new system and root element when non-admin user invites non-admin user. Addresses #953.
+* Fix mislabeled JSON response preventing full remove deleted statement from editor.
+
+**Doc updates**
+
+* Adds log entries to log documentation for assigning of ower permissions and edit permissions to new system and its root element when users are added to a project.
+
+v0.9.1.22.12 (June 14, 2020)
+----------------------------
 
 **Bug fix**
 
@@ -31,8 +48,7 @@ v0.9.1.22.11 (June 14, 2020)
 
 **UI changes**
 
-* Display component statement counts on a system's selected controls page via a custom tag to provide access to a dictionary key of
-impl_smts_counts created in the view for the page
+* Display component statement counts on a system's selected controls page via a custom tag to provide access to a dictionary key of impl_smts_counts created in the view for the page
 * Add datetime to filename of a project's export JSON file
 
 **Django Admin changes**
