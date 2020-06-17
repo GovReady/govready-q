@@ -13,7 +13,8 @@ class ProjectForm(ModelForm):
 
     def __init__(self, user, *args, **kwargs):
         super(ProjectForm, self).__init__(*args, **kwargs)
-        self.fields['portfolio'].choices = [(x.pk, x.title) for x in Portfolio.get_all_readable_by(user).order_by('title')]
+        # self.fields['portfolio'].choices = [(x.pk, x.title) for x in Portfolio.get_all_readable_by(user).order_by('title')]
+        self.fields['portfolio'].choices = [(x.pk, x.title) for x in user.portfolio_list().order_by('title')]
 
 class PortfolioForm(ModelForm):
 

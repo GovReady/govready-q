@@ -1,6 +1,11 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.14 (June 17, 2020)
+---------------------------
+
+* Correctly create a default portfolio for a user accepting an invitation.
+
 v0.9.1.22.13 (June 16, 2020)
 ---------------------------
 
