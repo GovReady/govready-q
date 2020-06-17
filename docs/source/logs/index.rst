@@ -156,7 +156,7 @@ Create a new element (e.g., system component) that represents a new system.
 
 **"new_element new_system assign_owner_permissions"**
 
-Assign owernship permission to a newly created element for a project's newly created associated system.
+Assign ownership permission to a newly created element for a project's newly created associated system.
 
 .. code:: text
 
@@ -164,7 +164,7 @@ Assign owernship permission to a newly created element for a project's newly cre
 
 **"new_system assign_owner_permissions"**
 
-Assign owernship permission to a project's newly created associated system.
+Assign ownership permission to a project's newly created associated system.
 
 .. code:: text
 
