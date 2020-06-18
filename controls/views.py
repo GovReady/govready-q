@@ -430,8 +430,6 @@ def controls_selected_export_xacta_xslx(request, system_id):
             c = ws.cell(row=1, column=17, value="History")
             c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
-        wb.save('export.xlsx')
-
         with NamedTemporaryFile() as tmp:
             wb.save(tmp.name)
             tmp.seek(0)
