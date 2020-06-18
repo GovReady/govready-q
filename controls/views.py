@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from siteapp.models import Project, User, Organization
+from datetime import datetime
 from .oscal import Catalog, Catalogs
 import json
 import re
@@ -437,7 +438,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
             blob = stream
 
         mime_type = "application/octet-stream"
-        filename = "{}_control_implementations.xlsx".format(system.root_element.name.replace(" ","_"))
+        filename = "{}_control_implementations-{}.xlsx".format(system.root_element.name.replace(" ","_"),datetime.now().strftime("%Y-%m-%d-%H-%M"))
         
         resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
