@@ -21,6 +21,16 @@ from .forms import PortfolioSignupForm
 from .models import Organization, Portfolio, User
 from .notifications_helpers import notification_reply_email_hook
 
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
+
 
 def homepage(request):
     # Main landing page.
@@ -60,7 +70,17 @@ def homepage(request):
                 if portfolio_form.is_valid():
                     portfolio = portfolio_form.save()
                     portfolio.assign_owner_permissions(request.user)
-
+                    logger.info(
+                        event="new_portfolio",
+                        object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+                        user={"id": request.user.id, "username": request.user.username}
+                    )
+                    logger.info(
+                        event="new_portfolio assign_owner_permissions",
+                        object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+                        receiving_user={"id": request.user.id, "username": request.user.username},
+                        user={"id": request.user.id, "username": request.user.username}
+                    )
                 # Send a message to site administrators.
                 from django.core.mail import mail_admins
                 def subvars(s):

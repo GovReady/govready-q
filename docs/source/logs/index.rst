@@ -74,8 +74,23 @@ Assign portfolio edit permissions to a user.
 
 **"send_invitation project assign_edit_permissions"**
 
-Assign edit permissions to a project and send invitation.
+Assign edit permissions to a project when inviting a user to a project.
 
+.. code:: text
+
+    (pending example)
+
+**"send_invitation system assign_edit_permissions"**
+
+Assign edit permissions to a project's associated system when inviting a user to a project.
+
+.. code:: text
+
+    (pending example)
+
+**"send_invitation element assign_edit_permissions"**
+
+Assign edit permissions to a project's associated system's root_element when inviting a user to a project.
 .. code:: text
 
     (pending example)
@@ -95,7 +110,25 @@ Accept invitation to a project.
 
 .. code:: text
 
-    (pending example)
+    2020-06-17 23:20:29,782 siteapp.views level INFO {"object": {"object": "invitation", "id": 13, "to_email": "user2@gmail.com"}, "user": {"id": 15, "username": "User2"}, "event": "accept_invitation"}
+
+**"accept_invitation project assign_edit_permissions"**
+
+.. code:: text
+
+    2020-06-17 23:20:29,752 siteapp.views level INFO {"object": {"object": "project", "id": 85, "title": "Awesome System"}, "sending_user": {"id": 14, "username": "User1"}, "user": {"id": 15, "username": "User2"}, "event": "accept_invitation project assign_edit_permissions"}
+
+**"accept_invitation system assign_edit_permissions"**
+
+.. code:: text
+
+    2020-06-17 23:20:29,763 siteapp.views level INFO {"object": {"object": "system", "id": 183, "name": "Awesome System"}, "sending_user": {"id": 14, "username": "User1"}, "user": {"id": 15, "username": "User2"}, "event": "accept_invitation system assign_edit_permissions"}
+
+**"accept_invitation element assign_edit_permissions"**
+
+.. code:: text
+
+    2020-06-17 23:20:29,772 siteapp.views level INFO {"object": {"object": "element", "id": 183, "name": "Awesome System"}, "sending_user": {"id": 14, "username": "User1"}, "user": {"id": 15, "username": "User2"}, "event": "accept_invitation element assign_edit_permissions"}
 
 **"sso_logout"**
 
@@ -104,7 +137,6 @@ Single Sign On logout.
 .. code:: text
 
     (pending example)
-
 
 **"project_list"**
 
@@ -140,4 +172,27 @@ Create a new element (e.g., system component) that represents a new system.
 
     2020-06-03 23:54:07,816 siteapp.views level INFO {"object": {"object": "invitation", "id": 3, "to_email": "user2@example.com"}, "user": {"id": 29, "username": "me2"}, "event": "accept_invitation"}
 
+**"new_element new_system assign_owner_permissions"**
+
+Assign ownership permission to a newly created element for a project's newly created associated system.
+
+.. code:: text
+
+    (pending example)
+
+**"new_system assign_owner_permissions"**
+
+Assign owernship permission to a project's newly created associated system.
+
+.. code:: text
+
+    (pending example)
+
+**"assign_baseline"**
+
+Assign a baseline set of controls to a project system (technically, assign the baseline set of controls to a system.root_element).
+
+.. code:: text
+
+    2020-06-03 23:53:49,721 controls.views level INFO {"object": {"object": "system", "id": 16, "title": "My Project Name"}, baseline={"catalog_key": "NIST_SP-800-53_rev4", "baseline_name": "low"}, "user": {"id": 28, "username": "me"}, "event": "assign_baseline"}
 

@@ -10,8 +10,18 @@ from django.utils import crypto, timezone
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
-from controls.models import System
+from controls.models import System, Element
 from jsonfield import JSONField
+
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
 
 
 class User(AbstractUser):
@@ -209,7 +219,6 @@ class User(AbstractUser):
 
         return profile
 
-
     random_colors = ('#5cb85c', '#337ab7', '#AFB', '#ABF', '#FAB', '#FBA', '#BAF', '#BFA')
     def get_avatar_fallback_css(self):
         # Compute a non-cryptographic hash over the user ID and username to generate
@@ -253,6 +262,36 @@ class User(AbstractUser):
         portfolio_permissions = Portfolio.get_all_readable_by(self)
         project_permissions = self.get_portfolios_from_projects()
         return portfolio_permissions | project_permissions
+
+    @transaction.atomic
+    def create_default_portfolio_if_missing(self):
+        """Create a default portfolio if none exists"""
+
+        # Try to create a default portfolio with username
+        if not Portfolio.objects.filter(title=self.username).exists():
+            title = self.username
+        else:
+            # Loop through suffix to find a valid portfolio title
+            suffix = 2
+            title = self.username + "-" + str(suffix)
+            while Portfolio.objects.filter(title=title).exists():
+                suffix += 1
+                title = self.username + "-" + str(suffix)
+        portfolio = Portfolio.objects.create(title=title)
+        portfolio.save()
+        portfolio.assign_owner_permissions(self)
+        logger.info(
+            event="new_portfolio",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            user={"id": self.id, "username": self.username}
+        )
+        portfolio.assign_owner_permissions(self)
+        logger.info(
+            event="new_portfolio assign_owner_permissions",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            user={"id": self.id, "username": self.username}
+        )
+        return portfolio
 
     def get_portfolios_from_projects(self):
         projects = get_objects_for_user(self, 'siteapp.view_project')
