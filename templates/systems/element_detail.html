@@ -39,21 +39,20 @@
     <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">information</div>
+        <div id=""><span style="font-size: 14pt; font-weight: bold;">{{ element.name }}</span></div>
     </div>
     <div id="tab-content" class="row row-control" style="">
-      <h2>{{ element.name }}</h2>
       <div>
         <h3>Description</h3>
         {{ element.description }}
       </div>
       <div>
-        <h3>Use in {{ system.root_element.name }}</h3>
-        <p>This component produces {{ impl_smts|length }} statement{{ impl_smts|length|pluralize }}.</p>
-
+        <h3>{{ impl_smts|length }} Implementation Statement{{ impl_smts|length|pluralize }} associated with "{{ system.root_element.name }}"</h3>
         {% for smt in impl_smts %}
           <div class="row">
-            <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">{{ smt.sid }}</div>
+            <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+              <a href="/systems/{{ system.id }}/controls/catalogs/{{ smt.sid_class }}/control/{{ smt.sid }}">{{ smt.sid|upper }}</a>
+            </div>
             <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 col-xl-10">{{ smt.body }}</div>
           </div>
           <div>&nbsp;</div>
