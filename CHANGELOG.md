@@ -1,8 +1,10 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.22.15 (June 18, 2020)
+v0.9.1.22.16 (June 18, 2020)
 ---------------------------
+
+(Version 0.9.1.22.15 subsumed into 0.9.1.22.16)
 
 Miscellaneous fixes and corrections
 
