@@ -16,7 +16,7 @@
 3.1.16	Authorize wireless access prior to allowing such connections.
 3.1.17	Protect wireless access using authentication and encryption.
 3.1.18	Control connection of mobile devices.
-3.1.19	Encrypt CUI on mobile devices and mobile computing platforms.21
+3.1.19	Encrypt CUI on mobile devices and mobile computing platforms.
 3.1.20	Verify and control/limit connections to and use of external systems.
 3.1.21	Limit use of portable storage devices on external systems.
 3.1.22	Control CUI posted or processed on publicly accessible systems.
@@ -43,7 +43,7 @@
 3.4.9	Control and monitor user-installed software.
 3.5.1	Identify system users, processes acting on behalf of users, and devices.
 3.5.2	Authenticate (or verify) the identities of users, processes, or devices, as a prerequisite to allowing access to organizational systems.
-3.5.3	Use multifactor authentication22 for local and network access23 to privileged accounts and for network access to non-privileged accounts.
+3.5.3	Use multifactor authentication22 for local and network access to privileged accounts and for network access to non-privileged accounts.
 3.5.4	Employ replay-resistant authentication mechanisms for network access to privileged and non- privileged accounts.
 3.5.5	Prevent reuse of identifiers for a defined period.
 3.5.6	Disable identifiers after a defined period of inactivity.
@@ -96,7 +96,7 @@
 3.13.9	Terminate network connections associated with communications sessions at the end of the sessions or after a defined period of inactivity.
 3.13.10	Establish and manage cryptographic keys for cryptography employed in organizational systems.
 3.13.11	Employ FIPS-validated cryptography when used to protect the confidentiality of CUI.
-3.13.12	Prohibit remote activation 27 of collaborative computing devices and provide indication of devices in use to users present at the device.
+3.13.12	Prohibit remote activation of collaborative computing devices and provide indication of devices in use to users present at the device.
 3.13.13	Control and monitor the use of mobile code.
 3.13.14	Control and monitor the use of Voice over Internet Protocol (VoIP) technologies.
 3.13.15	Protect the authenticity of communications sessions.

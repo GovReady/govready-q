@@ -709,7 +709,7 @@
             {
                 "id": "3.1.19",
                 "class": "SP800-171",
-                "title": "Encrypt CUI on mobile devices and mobile computing platforms.21",
+                "title": "Encrypt CUI on mobile devices and mobile computing platforms.",
                 "parameters": [],
                 "properties": [
                     {
@@ -726,7 +726,7 @@
                     {
                         "id": "3.1.19_smt",
                         "name": "statement",
-                        "prose": "Encrypt CUI on mobile devices and mobile computing platforms.21",
+                        "prose": "Encrypt CUI on mobile devices and mobile computing platforms.",
                         "parts": []
                     },
                     {

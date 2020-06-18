@@ -1,6 +1,37 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.22.15 (June 18, 2020)
+---------------------------
+
+Miscellaneous fixes and corrections
+
+**Documentation changes**
+
+* Start 'howtos' page in docs for misc
+
+**UI changes**
+
+* Fixes to the control implementation statement editor:
+  * Proper dynamic assignment of the control catalog key
+  * Hyperlinking the component name to the component detail page for that system
+  * Removing non-functioning "edit" button to change name of the component
+  * Show correct catalog name in subtitle editor page
+* Add datetime to implimentation statement spreadsheet export
+
+**Developer changes**
+
+* Remove commented out javascript function in control implementation statement editor
+* Remove server file save of control export
+
+**Data changes**
+
+* Fix typos in NIST_SP-800-171_rev1
+
+**Model changes**
+
+* Sort statements by producer_element__name
+
 v0.9.1.22.14 (June 17, 2020)
 ---------------------------
 
