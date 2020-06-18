@@ -25,6 +25,7 @@ The code is open source, and `available on GitHub
    Authoring
    Automation
    DataDesign
+   howto
    logs/index
    testing/index.rst
    version.0.9.x
