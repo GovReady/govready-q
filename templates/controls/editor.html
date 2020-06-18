@@ -38,6 +38,7 @@
     font-family: trebuchet ms, sans-serif;
     text-align: justify;
     /*text-justify: inter-word;*/
+    line-height: 24px;
   }
 
   #control-lookup input {
@@ -120,7 +121,7 @@ Remove contextbar from top of page
 
          {% if control.title is not None %}
           <h2 class="control-heading" style="">
-             <small style="color: #888;">NIST SP 800-53 Rev 4 </small>
+             <small style="color: #888;">{{ catalog.catalog_key_display }}</small>
           </h2>
           {% else %}
           <h2 class="control-heading" style="">
@@ -237,7 +238,7 @@ Remove contextbar from top of page
 
                   <div class="form-group">
                     <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                    <label for="compoment">{{ smt.producer_element.name }}</label> <button class="btn btn-default btn-small" onclick="return rename_project();">Edit</button>
+                    <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" style="color: black;">{{ smt.producer_element.name }}</a></label>
                   </div>
 
                   <div class="form-group">
@@ -253,7 +254,7 @@ Remove contextbar from top of page
                   <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                   <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
                   <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
-                  <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
+                  <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
                   <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
 
                 <div class="modal-footer">
@@ -293,19 +294,8 @@ Remove contextbar from top of page
       </script>
 
       <script>
-        function show_module_smt_editor() {
-          // Initialize form state for the compliance app catalog information
-          // field and the module specification field.
-          // $('#authoring_tool_catalog_metadata').parents('.form-group').toggle(typeof window.q_authoring_tool_state.catalog_yaml != "undefined");
-          // $('#authoring_tool_catalog_metadata').val(window.q_authoring_tool_state.catalog_yaml);
-          // $('#authoring_tool_mspec').val(window.q_authoring_tool_state.module_yaml);
-
-          // Show modal.
-          $('#module_smt_editor').modal();
-        }
-
         // View combined implementation statement
-        
+
         function update_combined_smt() {
           // Read through existing statements and combine into single statement
           combined_smt = $( ".smt_form textarea[name=body]" ).map(function(){return this.value}).get().join("\n\n");
@@ -349,7 +339,7 @@ Remove contextbar from top of page
                 <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                 <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
                 <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
-                <input type="hidden" id="sid_class" name="sid_class" value="800-53rev4">
+                <input type="hidden" id="sid_class" name="sid_class" value="{{ catalog.catalog_key }}">
                 <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
 
               <div class="modal-footer">
@@ -365,25 +355,6 @@ Remove contextbar from top of page
             </div>
           </div>`.replace(/panel_num/g, panel_num);
           $( "#smt-list" ).append(smt_form);
-        }
-
-        function rename_project() {
-          // Allow setting the title to the empty string, which clears the override if set.
-          // If the user is renaming it to what we already have, or cancelled the dialog,
-          // then ignore the change.
-          var new_title = prompt("Rename this project?", "{{project.title|escapejs}}");
-          if (new_title === null || new_title == "{{project.title|escapejs}}") return;
-          ajax_with_indicator({
-           url: '{% url "rename_project" project.id %}',
-           method: "POST",
-           data: {
-            title: new_title
-           },
-           keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the reload
-           success: function() {
-             window.location.reload();
-           }
-          });
         }
 
         function save_smt(smt_panel_num) {

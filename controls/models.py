@@ -28,6 +28,7 @@ class Statement(models.Model):
         permissions = [
             ('can_grant_smt_owner_permission', 'Grant a user statement owner permission'),
         ]
+        ordering = ['producer_element__name', 'sid']
 
     def __str__(self):
         return "'%s %s %s id=%d'" % (self.statement_type, self.sid, self.sid_class, self.id)
