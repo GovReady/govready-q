@@ -110,7 +110,25 @@ Accept invitation to a project.
 
 .. code:: text
 
-    (pending example)
+    2020-06-17 23:20:29,782 siteapp.views level INFO {"object": {"object": "invitation", "id": 13, "to_email": "user2@gmail.com"}, "user": {"id": 15, "username": "User2"}, "event": "accept_invitation"}
+
+**"accept_invitation project assign_edit_permissions"**
+
+.. code:: text
+
+    2020-06-17 23:20:29,752 siteapp.views level INFO {"object": {"object": "project", "id": 85, "title": "Awesome System"}, "sending_user": {"id": 14, "username": "User1"}, "user": {"id": 15, "username": "User2"}, "event": "accept_invitation project assign_edit_permissions"}
+
+**"accept_invitation system assign_edit_permissions"**
+
+.. code:: text
+
+    2020-06-17 23:20:29,763 siteapp.views level INFO {"object": {"object": "system", "id": 183, "name": "Awesome System"}, "sending_user": {"id": 14, "username": "User1"}, "user": {"id": 15, "username": "User2"}, "event": "accept_invitation system assign_edit_permissions"}
+
+**"accept_invitation element assign_edit_permissions"**
+
+.. code:: text
+
+    2020-06-17 23:20:29,772 siteapp.views level INFO {"object": {"object": "element", "id": 183, "name": "Awesome System"}, "sending_user": {"id": 14, "username": "User1"}, "user": {"id": 15, "username": "User2"}, "event": "accept_invitation element assign_edit_permissions"}
 
 **"sso_logout"**
 
@@ -164,7 +182,7 @@ Assign ownership permission to a newly created element for a project's newly cre
 
 **"new_system assign_owner_permissions"**
 
-Assign ownership permission to a project's newly created associated system.
+Assign owernship permission to a project's newly created associated system.
 
 .. code:: text
 

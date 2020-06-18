@@ -1514,6 +1514,10 @@ def accept_invitation(request, code=None):
         user={"id": request.user.id, "username": request.user.username}
     )
 
+    # Make sure user has a default portfolio
+    if len(request.user.portfolio_list()) == 0:
+        portfolio = request.user.create_default_portfolio_if_missing()
+
     # Some invitations create an interstitial before redirecting.
     inv.from_user.preload_profile()
     try:
@@ -1619,6 +1623,30 @@ def accept_invitation_do_accept(request, inv):
                 user=request.user,
                 )
             add_message('You have joined the team %s.' % inv.from_project.title)
+            # Add user to system and root element
+            # Grant user permissions to system and root element
+            inv.from_project.assign_edit_permissions(request.user)
+            logger.info(
+                event="accept_invitation project assign_edit_permissions",
+                object={"object": "project", "id": inv.from_project.id, "title":inv.from_project.title},
+                sending_user={"id": inv.from_user.id, "username": inv.from_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            # Assign permissions to view system, root_element
+            inv.from_project.system.assign_edit_permissions(request.user)
+            logger.info(
+                event="accept_invitation system assign_edit_permissions",
+                object={"object": "system", "id": inv.from_project.system.root_element.id, "name":inv.from_project.system.root_element.name},
+                sending_user={"id": inv.from_user.id, "username": inv.from_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            inv.from_project.system.root_element.assign_edit_permissions(request.user)
+            logger.info(
+                event="accept_invitation element assign_edit_permissions",
+                object={"object": "element", "id": inv.from_project.system.root_element.id, "name":inv.from_project.system.root_element.name},
+                sending_user={"id": inv.from_user.id, "username": inv.from_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
 
         # Run the target's invitation accept function.
         inv.target.accept_invitation(inv, add_message)
@@ -1786,7 +1814,8 @@ def shared_static_pages(request, page):
         "base_template": "base.html",
         "SITE_ROOT_URL": request.build_absolute_uri("/"),
         "password_hash_method": password_hash_method,
-        "project_form": ProjectForm(request.user),
+        # "project_form": ProjectForm(request.user),
+        "project_form": None,
     })
 
 # SINGLE SIGN ON
