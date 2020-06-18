@@ -271,13 +271,12 @@ class User(AbstractUser):
         if not Portfolio.objects.filter(title=self.username).exists():
             title = self.username
         else:
-            # Append a random string to the username
-            # TODO: make this a counter and make sure there are portfolio title collissions
-            import random
-            import string
-            letters = string.ascii_lowercase
-            title = self.username + '-' + ''.join(random.choice(letters) for i in range(3))
-        # Create the default portfolio, assign ownership, and log events
+            # Loop through suffix to find a valid portfolio title
+            suffix = 2
+            title = self.username + "-" + str(suffix)
+            while Portfolio.objects.filter(title=title).exists():
+                suffix += 1
+                title = self.username + "-" + str(suffix)
         portfolio = Portfolio.objects.create(title=title)
         portfolio.save()
         portfolio.assign_owner_permissions(self)
