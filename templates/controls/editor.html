@@ -38,6 +38,7 @@
     font-family: trebuchet ms, sans-serif;
     text-align: justify;
     /*text-justify: inter-word;*/
+    line-height: 24px;
   }
 
   #control-lookup input {
@@ -120,7 +121,7 @@ Remove contextbar from top of page
 
          {% if control.title is not None %}
           <h2 class="control-heading" style="">
-             <small style="color: #888;">NIST SP 800-53 Rev 4 </small>
+             <small style="color: #888;">{{ catalog.catalog_key_display }}</small>
           </h2>
           {% else %}
           <h2 class="control-heading" style="">
