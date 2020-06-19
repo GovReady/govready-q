@@ -272,6 +272,8 @@ class System(models.Model):
         for smt in smts:
             if smt.producer_element:
                 components.add(smt.producer_element)
+        components = list(components)
+        components.sort(key = lambda component:component.name)
         return components
 
     producer_elements = property(get_producer_elements)

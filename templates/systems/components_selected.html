@@ -39,11 +39,11 @@
     <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">information</div>
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Selected Components</div>
     </div>
    {% for component in system.producer_elements %}
     <div id="tab-content" class="row row-control" style="">
-        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
             <a href="/systems/{{ system.id }}/component/{{ component.id }}">{{ component.name }}</a>
         </div>
         <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
