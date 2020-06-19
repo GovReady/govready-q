@@ -48,7 +48,7 @@
           <!--a href="selected/export/xacta/xlsx">export</a-->
           <span class="glyphicon glyphicon-download-alt pull-right"
                 style="cursor: pointer;"
-                onclick="download_document('{{document.id|escapejs}}')"></span>
+                onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
         </div>
     </div>
     {% if controls|length < 1 %}
@@ -107,15 +107,23 @@
   }
 
   // The download button shows a modal to ask what file format to download in.
-  function download_document(document_id) {
+  function download_document(document_id, system_id) {
     var dom = $("<div><p>Select download format:</p>"
       + "<select class=form-control>"
+      + "<option value='opencontrol'>OpenControl Repository</option>"
       + "<option value='xacta'>Xacta Import Spreadsheet</option>"
       + "</select>"
       + "</div>");
     show_modal_confirm("Download Document", dom, "Download", function() {
       var format = dom.find("select").val();
-      window.location = "selected/export/" + format + "/xlsx";
+      switch(format) {
+        case "opencontrol":
+          window.location = "/systems/" + system_id + "/components/selected/export/opencontrol";
+          break;
+        case "xacta":
+          window.location = "selected/export/" + format + "/xlsx";
+          break;
+      }
     });
   }
 </script>

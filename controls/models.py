@@ -25,9 +25,8 @@ class Statement(models.Model):
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
 
     class Meta:
-        permissions = [
-            ('can_grant_smt_owner_permission', 'Grant a user statement owner permission'),
-        ]
+        indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'),]
+        permissions = [('can_grant_smt_owner_permission', 'Grant a user statement owner permission'),]
         ordering = ['producer_element__name', 'sid']
 
     def __str__(self):
@@ -36,6 +35,23 @@ class Statement(models.Model):
     def __repr__(self):
         # For debugging.
         return "'%s %s %s id=%d'" % (self.statement_type, self.sid, self.sid_class, self.id)
+
+    @property
+    def catalog_control(self):
+        """Return the control content from the catalog"""
+        # Get instance of the control catalog
+        catalog = Catalog.GetInstance(catalog_key=self.sid_class)
+        # Look up control by ID
+        return catalog.get_control_by_id(self.sid)
+
+    @property
+    def catalog_control_as_dict(self):
+        """Return the control content from the catalog"""
+        # Get instance of the control catalog
+        catalog = Catalog.GetInstance(catalog_key=self.sid_class)
+        catalog_control_dict = catalog.get_flattended_controls_all_as_dict()
+        # Look up control by ID
+        return catalog_control_dict[self.sid]
 
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
@@ -60,7 +76,6 @@ class Element(models.Model):
     #
     # Retrieve statements that are control implementations
     #    e.statements_consumed.filter(statement_type="control_implementation")
-
 
     def __str__(self):
         return "'%s id=%d'" % (self.name, self.id)
