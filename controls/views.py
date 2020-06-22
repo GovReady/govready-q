@@ -128,10 +128,11 @@ def controls_selected(request, system_id):
         impl_smts = system.root_element.statements_consumed.all()
 
         impl_smts_count = {}
+        ikeys = system.smts_control_implementation_as_dict.keys()
         for c in controls:
             impl_smts_count[c.oscal_ctl_id] = 0
-            if c.oscal_ctl_id in system.control_implementation_as_dict.keys():
-                impl_smts_count[c.oscal_ctl_id] = len(system.control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+            if c.oscal_ctl_id in ikeys:
+                impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
 
         # Return the controls
         context = {
