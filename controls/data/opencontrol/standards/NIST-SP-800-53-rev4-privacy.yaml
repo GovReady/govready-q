@@ -1,0 +1,946 @@
+name: NIST SP 800-53 Revision 4 Privacy
+source: https://github.com/opencontrol/standards/blob/master/nist-800-53-rev4-privacy.yaml
+license: ~
+AR-1:
+  name: GOVERNANCE AND PRIVACY PROGRAM
+  description: |-
+    "The organization:
+       a.   Appoints a Senior Agency Official for Privacy (SAOP)/Chief Privacy Officer
+            (CPO) accountable for developing, implementing, and maintaining an organization-wide
+            governance and privacy program to ensure compliance with all applicable
+    laws and
+            regulations regarding the collection, use, maintenance, sharing, and disposal
+            of personally identifiable information (PII) by programs and information
+    systems;
+       b.   Monitors federal privacy laws and policy for changes that affect the privacy
+            program;
+       c.   Allocates [Assignment: organization-defined allocation of budget and staffing]
+            sufficient resources to implement and operate the organization-wide privacy
+    program;
+       d.   Develops a strategic organizational privacy plan for implementing applicable
+            privacy controls, policies, and procedures;
+       e.   Develops, disseminates, and implements operational privacy policies and
+            procedures that govern the appropriate privacy and security controls for
+    programs,
+            information systems, or technologies involving PII; and
+       f.   Updates privacy plan, policies, and procedures [Assignment: organization-defined
+            frequency, at least biennially]."
+  supplemental guidance: 'The development and implementation of a comprehensive governance
+    and privacy program demonstrates organizational accountability for and commitment
+    to the protection of individual privacy. Accountability begins with the appointment
+    of an SAOP/CPO with the authority, mission, resources, and responsibility to develop
+    and implement a multifaceted privacy program. The SAOP/CPO, in consultation with
+    legal counsel, information security officials, and others as appropriate: (i)
+    ensures the development, implementation, and enforcement of privacy policies and
+    procedures; (ii) defines roles and responsibilities for protecting PII; (iii)
+    determines the level of information sensitivity with regard to PII holdings; (iv)
+    identifies the laws, regulations, and internal policies that apply to the PII;
+    (v) monitors privacy best practices; and (vi) monitors/audits compliance with
+    identified privacy controls. To further accountability, the SAOP/CPO develops
+    privacy plans to document the privacy requirements of organizations and the privacy
+    and security controls in place or planned for meeting those requirements. The
+    plan serves as evidence of organizational privacy operations and supports resource
+    requests by the SAOP/CPO. A single plan or multiple plans may be necessary depending
+    upon the organizational structures, requirements, and resources, and the plan(s)
+    may vary in comprehensiveness. For example, a one-page privacy plan may cover
+    privacy policies, documentation, and controls already in place, such as Privacy
+    Impact Assessments (PIA) and System of Records Notices (SORN). A comprehensive
+    plan may include a baseline of privacy controls selected from this appendix and
+    include: (i) processes for conducting privacy risk assessments; (ii) templates
+    and guidance for completing PIAs and SORNs; (iii) privacy training and awareness
+    requirements; (iv) requirements for contractors processing PII; (v) plans for
+    eliminating unnecessary PII holdings; and (vi) a framework for measuring annual
+    performance goals and objectives for implementing identified privacy controls.'
+  referenees: The Privacy Act of 1974, 5 U.S.C. § 552a; E-Government Act of 2002 (P.L.
+    107- 347); Federal Information Security Management Act (FISMA) of 2002, 44 U.S.C.
+    § 3541; OMB Memoranda 03-22, 05-08, 07-16; OMB Circular A-130; Federal Enterprise
+    Architecture Security and Privacy Profile.
+AR-2:
+  name: PRIVACY IMPACT AND RISK ASSESSMENT
+  description: |-
+    "The organization:
+         a.   Documents and implements a privacy risk management process that assesses
+    privacy risk to
+              individuals resulting from the collection, sharing, storing, transmitting,
+    use, and disposal of
+              personally identifiable information (PII); and
+         b.   Conducts Privacy Impact Assessments (PIAs) for information systems,
+    programs, or other
+              activities that pose a privacy risk in accordance with applicable law,
+    OMB policy, or any
+              existing organizational policies and procedures."
+  supplemental guidance: |-
+    Organizational privacy risk management processes operate across the life
+         cycles of all mission/business processes that collect, use, maintain, share,
+    or dispose of PII. The
+         tools and processes for managing risk are specific to organizational missions
+    and resources. They
+         include, but are not limited to, the conduct of PIAs. The PIA is both a process
+    and the document
+         that is the outcome of that process. OMB Memorandum 03-22 provides guidance
+    to organizations
+         for implementing the privacy provisions of the E-Government Act of 2002,
+    including guidance on
+         when PIAs are required for information systems. Some organizations may be
+    required by law or
+         policy to extend the PIA requirement to other activities involving PII or
+    otherwise impacting
+         privacy (e.g., programs, projects, or regulations). PIAs are conducted to
+    identify privacy risks and
+         identify methods to mitigate those risks. PIAs are also conducted to ensure
+    that programs or
+         information systems comply with legal, regulatory, and policy requirements.
+    PIAs also serve as
+         notice to the public of privacy practices. PIAs are performed before developing
+    or procuring
+         information systems, or initiating programs or projects, that collect, use,
+    maintain, or share PII and
+         are updated when changes create new privacy risks."
+  references: >-
+    Section 208, E-Government Act of 2002 (P.L. 107-347); Federal Information Security
+
+    Management Act (FISMA) of 2002, 44 U.S.C. § 3541; OMB Memoranda 03-22, 05-08,
+    10-23.
+AR-3:
+  name: PRIVACY REQUIREMENTS FOR CONTRACTORS AND SERVICE PROVIDERS
+  description: |-
+    "The organization:
+         a.   Establishes privacy roles, responsibilities, and access requirements for contractors and service
+              providers; and
+         b.   Includes privacy requirements in contracts and other acquisition-related documents."
+  supplemental guidance: |-
+    Contractors and service providers include, but are not limited to,
+        information providers, information processors, and other organizations providing
+    information
+        system development, information technology services, and other outsourced
+        applications. Organizations consult with legal counsel, the Senior Agency
+    Official for Privacy
+        (SAOP)/Chief Privacy Officer (CPO), and contracting officers about applicable
+    laws, directives,
+        policies, or regulations that may impact implementation of this control."
+        Related control: AR-1, AR-5, SA-4.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. § 552a(m); Federal Acquisition Regulation, 48
+    C.F.R. Part 24; OMB Circular A-130.
+AR-4:
+  name: PRIVACY MONITORING AND AUDITING
+  description: >-
+    "The organization monitors and audits privacy controls and internal privacy policy
+      [Assignment: organization-defined frequency] to ensure effective implementation."
+  supplemental guidance: |-
+    "To promote accountability, organizations identify and address gaps in
+         privacy compliance, management, operational, and technical controls by conducting
+    regular
+         assessments (e.g., internal risk assessments). These assessments can be self-assessments
+    or third-
+         party audits that result in reports on compliance gaps identified in programs,
+    projects, and
+         information systems. In addition to auditing for effective implementation
+    of all privacy controls
+         identified in this appendix, organizations assess whether they: (i) implement
+    a process to embed
+         privacy considerations into the life cycle of personally identifiable information
+    (PII), programs,
+         information systems, mission/business processes, and technology; (ii) monitor
+    for changes to
+         applicable privacy laws, regulations, and policies; (iii) track programs,
+    information systems, and
+         applications that collect and maintain PII to ensure compliance; (iv) ensure
+    that access to PII is
+         only on a need-to-know basis; and (v) ensure that PII is being maintained
+    and used only for the
+         legally authorized purposes identified in the public notice(s).
+         Organizations also: (i) implement technology to audit for the security, appropriate
+    use, and loss of
+         PII; (ii) perform reviews to ensure physical security of documents containing
+    PII; (iii) assess
+         contractor compliance with privacy requirements; and (iv) ensure that corrective
+    actions identified
+         as part of the assessment process are tracked and monitored until audit findings
+    are corrected. The
+         organization Senior Agency Official for Privacy (SAOP)/Chief Privacy Officer
+    (CPO) coordinates
+         monitoring and auditing efforts with information security officials and ensures
+    that the results are
+         provided to senior managers and oversight officials."
+  related controls: AR-6, AR-7, AU-1, AU-2, AU-3, AU-6, AU-12, CA-7, TR-1, UL-2.
+  references: >-
+    The Privacy Act of 1974, 5 U.S.C. § 552a; Federal Information Security Management
+
+    Act (FISMA) of 2002, 44 U.S.C. § 3541; Section 208, E-Government Act of 2002 (P.L.
+    107-347);
+
+    OMB Memoranda 03-22, 05-08, 06-16, 07-16; OMB Circular A-130.
+AR-5:
+  name: PRIVACY AWARENESS AND TRAINING
+  description: |-
+    "The organization:
+         a.   Develops, implements, and updates a comprehensive training and awareness
+    strategy aimed at
+              ensuring that personnel understand privacy responsibilities and procedures;
+         b.   Administers basic privacy training [Assignment: organization-defined
+    frequency, at least
+              annually] and targeted, role-based privacy training for personnel having
+    responsibility for
+              personally identifiable information (PII) or for activities that involve
+    PII [Assignment:
+              organization-defined frequency, at least annually]; and
+         c.   Ensures that personnel certify (manually or electronically) acceptance
+    of responsibilities for
+              privacy requirements [Assignment: organization-defined frequency, at
+    least annually]."
+  supplemental guidance: |-
+    Through implementation of a privacy training and awareness strategy, the
+         organization promotes a culture of privacy. Privacy training and awareness
+    programs typically
+         focus on broad topics, such as responsibilities under the Privacy Act of
+    1974 and E-Government
+         Act of 2002 and the consequences of failing to carry out those responsibilities,
+    how to identify
+         new privacy risks, how to mitigate privacy risks, and how and when to report
+    privacy incidents.
+         Privacy training may also target data collection and use requirements identified
+    in public notices,
+         such as Privacy Impact Assessments (PIAs) or System of Records Notices (SORNs)
+    for a program
+         or information system. Specific training methods may include: (i) mandatory
+    annual privacy
+         awareness training; (ii) targeted, role-based training; (iii) internal privacy
+    program websites; (iv)
+         manuals, guides, and handbooks; (v) slide presentations; (vi) events (e.g.,
+    privacy awareness week,
+         privacy clean-up day); (vii) posters and brochures; and (viii) email messages
+    to all employees and
+         contractors. Organizations update training based on changing statutory, regulatory,
+    mission,
+         program, business process, and information system requirements, or on the
+    results of compliance
+         monitoring and auditing. Where appropriate, organizations may provide privacy
+    training as part of
+         existing information security training."
+  related controls: AR-3, AT-2, AT-3, TR-1.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. § 552a(e); Section 208, E-Government Act of 2002
+    (P.L. 107-347); OMB Memoranda 03-22, 07-16.
+AR-6:
+  name: PRIVACY REPORTING
+  description: |-
+    The organization develops, disseminates, and updates reports to the Office of
+         Management and Budget (OMB), Congress, and other oversight bodies, as appropriate,
+    to
+         demonstrate accountability with specific statutory and regulatory privacy
+    program mandates, and
+         to senior management and other personnel with responsibility for monitoring
+    privacy program
+         progress and compliance."
+  supplemental guidance: |-
+    Through internal and external privacy reporting, organizations promote
+         accountability and transparency in organizational privacy operations. Reporting
+    also helps
+         organizations to determine progress in meeting privacy compliance requirements
+    and privacy
+         controls, compare performance across the federal government, identify vulnerabilities
+    and gaps in
+         policy and implementation, and identify success models. Types of privacy
+    reports include: (i)
+         annual Senior Agency Official for Privacy (SAOP) reports to OMB; (ii) reports
+    to Congress
+         required by the Implementing Regulations of the 9/11 Commission Act; and
+    (iii) other public
+         reports required by specific statutory mandates or internal policies of organizations.
+    The
+         organization Senior Agency Official for Privacy (SAOP)/Chief Privacy Officer
+    (CPO) consults
+         with legal counsel, where appropriate, to ensure that organizations meet
+    all applicable privacy
+         reporting requirements.
+  references: >-
+    The Privacy Act of 1974, 5 U.S.C. § 552a; Section 208, E-Government Act of 2002
+
+    (P.L. 107-347); Federal Information Security Management Act (FISMA) of 2002, 44
+    U.S.C. §
+
+    3541; Section 803, 9/11 Commission Act, 42 U.S.C. § 2000ee-1; Section 804, 9/11
+    Commission
+
+    Act, 42 U.S.C. § 2000ee-3; Section 522, Consolidated Appropriations Act of 2005
+    (P.L. 108-447);
+
+    OMB Memoranda 03-22; OMB Circular A-130.
+AR-7:
+  name: PRIVACY-ENHANCED SYSTEM DESIGN AND DEVELOPMENT
+  description: Control:The organization designs information systems to support privacy
+    by automating privacy controls.
+  supplemental guidance: "To the extent feasible, when designing organizational information\
+    \ systems,\n    organizations employ technologies and system capabilities that\
+    \ automate privacy controls on the\n    collection, use, retention, and disclosure\
+    \ of personally identifiable information (PII). By building\n    privacy controls\
+    \ into system design and development, organizations mitigate privacy risks to\
+    \ PII,\n    thereby reducing the likelihood of information system breaches and\
+    \ other privacy-related\n    incidents. Organizations also conduct periodic reviews\
+    \ of systems to determine the need for\n    updates to maintain compliance with\
+    \ the Privacy Act and the organization’s privacy policy.\n    Regardless of whether\
+    \ automated privacy controls are employed, organizations regularly monitor\n \
+    \   information system use and sharing of PII to ensure that the use/sharing is\
+    \ consistent with the\n    authorized purposes identified in the Privacy Act and/or\
+    \ in the public notice of organizations, or in\n    a manner compatible with those\
+    \ purposes.\" "
+  related controls: AC-6, AR-4, AR-5, DM-2, TR-1.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. § 552a(e)(10); Sections 208(b) and(c), E-
+         Government Act of 2002 (P.L. 107-347); OMB Memorandum 03-22.
+AR-8:
+  name: ACCOUNTING OF DISCLOSURES
+  description: |-
+    "The organization:
+         a.   Keeps an accurate accounting of disclosures of information held in each
+    system of records
+              under its control, including:
+              (1) Date, nature, and purpose of each disclosure of a record; and
+              (2) Name and address of the person or agency to which the disclosure
+    was made;
+         b.   Retains the accounting of disclosures for the life of the record or
+    five years after the
+              disclosure is made, whichever is longer; and
+         c.   Makes the accounting of disclosures available to the person named in
+    the record upon request."
+  supplemental guidance: |-
+    The Senior Agency Official for Privacy (SAOP)/Chief Privacy Officer
+         (CPO) periodically consults with managers of organization systems of record
+    to ensure that the
+         required accountings of disclosures of records are being properly maintained
+    and provided to
+         persons named in those records consistent with the dictates of the Privacy
+    Act. Organizations are
+         not required to keep an accounting of disclosures when the disclosures are
+    made to individuals
+         with a need to know, are made pursuant to the Freedom of Information Act,
+    or are made to a law
+         enforcement agency pursuant to 5 U.S.C. § 552a(c)(3). Heads of agencies can
+    promulgate rules to
+         exempt certain systems of records from the requirement to provide the accounting
+    of disclosures to
+         individuals. Related control: IP-2.
+  references: The Privacy Act of 1974, 5 U.S.C. § 552a (c)(1), (c)(3), (j), (k).
+DI-1:
+  name: DATA QUALITY
+  description: |-
+    "The organization:
+         a.    Confirms to the greatest extent practicable upon collection or creation
+    of personally
+               identifiable information (PII), the accuracy, relevance, timeliness,
+    and completeness of that
+               information;
+         b.    Collects PII directly from the individual to the greatest extent practicable;
+         c.    Checks for, and corrects as necessary, any inaccurate or outdated PII
+    used by its programs or
+               systems [Assignment: organization-defined frequency]; and
+         d.    Issues guidelines ensuring and maximizing the quality, utility, objectivity,
+    and integrity of
+               disseminated information."
+  supplemental guidance: "Organizations take reasonable steps to confirm the accuracy\
+    \ and relevance\n    of PII. Such steps may include, for example, editing and\
+    \ validating addresses as they are collected\n    or entered into information\
+    \ systems using automated address verification look-up application\n    programming\
+    \ interfaces (API). The types of measures taken to protect data quality are based\
+    \ on\n    the nature and context of the PII, how it is to be used, and how it\
+    \ was obtained. Measures taken to\n    validate the accuracy of PII that is used\
+    \ to make determinations about the rights, benefits, or\n    privileges of individuals\
+    \ under federal programs may be more comprehensive than those used to\n    validate\
+    \ less sensitive PII. Additional steps may be necessary to validate PII that is\
+    \ obtained from\n    sources other than individuals or the authorized representatives\
+    \ of individuals.\n    When PII is of a sufficiently sensitive nature (e.g., when\
+    \ it is used for annual reconfirmation of a\n    taxpayer’s income for a recurring\
+    \ benefit), organizations incorporate mechanisms into information\n    systems\
+    \ and develop corresponding procedures for how frequently, and by what method,\
+    \ the\n    information is to be updated. "
+  related controls: AP-2, DI-2, DM-1, IP-3, SI-10.
+  references: >-
+    The Privacy Act of 1974, 5 U.S.C. § 552a (c) and (e); Treasury and General
+
+    Government Appropriations Act for Fiscal Year 2001 (P.L. 106-554), app C § 515,
+    114 Stat.
+
+    2763A-153-4; Paperwork Reduction Act, 44 U.S.C. § 3501; OMB Guidelines for Ensuring
+    and
+
+    Maximizing the Quality, Objectivity, Utility, and Integrity of Information Disseminated
+    by
+
+    Federal Agencies (October 2001); OMB Memorandum 07-16.
+DI-1 (1):
+  name: DATA QUALITY | VALIDATE PII
+  description: |-
+    The organization requests that the individual or individual’s authorized representative validate PII
+     during the collection process.
+DI-1 (2):
+  name: DATA QUALITY | RE-VALIDATE PII
+  description: >-
+    The organization requests that the individual or individual’s authorized representative
+    revalidate
+
+    that PII collected is still accurate [Assignment: organization-defined frequency].
+DI-2:
+  name: DATA INTEGRITY AND DATA INTEGRITY BOARD
+  description: |-
+    "The organization:
+         a.    Documents processes to ensure the integrity of personally identifiable information (PII)
+               through existing security controls; and
+
+
+         b.    Establishes a Data Integrity Board when appropriate to oversee organizational Computer
+               Matching Agreements 123 and to ensure that those agreements comply with the computer
+               matching provisions of the Privacy Act."
+  supplemental guidance: "Organizations conducting or participating in Computer Matching\n\
+    \    Agreements with other organizations regarding applicants for and recipients\
+    \ of financial assistance\n    or payments under federal benefit programs or regarding\
+    \ certain computerized comparisons\n    involving federal personnel or payroll\
+    \ records establish a Data Integrity Board to oversee and\n    coordinate their\
+    \ implementation of such matching agreements. In many organizations, the Data\n\
+    \    Integrity Board is led by the Senior Agency Official for Privacy (SAOP)/Chief\
+    \ Privacy Officer\n    (CPO). The Data Integrity Board ensures that controls are\
+    \ in place to maintain both the quality and\n    the integrity of data shared\
+    \ under Computer Matching Agreements. "
+  related controls: AC-1, AC-3, AC-4, AC-6, AC-17, AC-22, AU-2, AU-3, AU-6, AU-10,
+    AU-11, DI-1, SC-8, SC-28, UL-2.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. §§ 552a (a)(8)(A), (o), (p), (u); OMB Circular A-
+    130, Appendix I.
+DI-2 (1):
+  name: DATA INTEGRITY AND DATA INTEGRITY BOARD | PUBLISH AGREEMENTS ON WEBSITE
+  description: The organization publishes Computer Matching Agreements on its public
+    website.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. §§ 552a (a)(8)(A), (o), (p), (u); OMB Circular A-
+    130, Appendix I.
+DM-1:
+  name: MINIMIZATION OF PERSONALLY IDENTIFIABLE INFORMATION
+  description: |-
+    "The organization:
+         a.    Identifies the minimum personally identifiable information (PII) elements
+    that are relevant
+               and necessary to accomplish the legally authorized purpose of collection;
+         b.    Limits the collection and retention of PII to the minimum elements
+    identified for the purposes
+               described in the notice and for which the individual has provided consent;
+    and
+         c.    Conducts an initial evaluation of PII holdings and establishes and
+    follows a schedule for
+               regularly reviewing those holdings [Assignment: organization-defined
+    frequency, at least
+               annually] to ensure that only PII identified in the notice is collected
+    and retained, and that the
+               PII continues to be necessary to accomplish the legally authorized
+    purpose."
+  supplemental guidance: "Organizations take appropriate steps to ensure that the\
+    \ collection of PII is\n     consistent with a purpose authorized by law or regulation.\
+    \ The minimum set of PII elements\n     required to support a specific organization\
+    \ business process may be a subset of the PII the\n     organization is authorized\
+    \ to collect. Program officials consult with the Senior Agency Official for\n\
+    \     Privacy (SAOP)/Chief Privacy Officer (CPO) and legal counsel to identify\
+    \ the minimum PII\n     elements required by the information system or activity\
+    \ to accomplish the legally authorized\n     purpose.\n     Organizations can\
+    \ further reduce their privacy and security risks by also reducing their inventory\n\
+    \     of PII, where appropriate. OMB Memorandum 07-16 requires organizations to\
+    \ conduct both an\n     initial review and subsequent reviews of their holdings\
+    \ of all PII and ensure, to the maximum\n     extent practicable, that such holdings\
+    \ are accurate, relevant, timely, and complete. Organizations\n     are also directed\
+    \ by OMB to reduce their holdings to the minimum necessary for the proper\n  \
+    \   performance of a documented organizational business purpose. OMB Memorandum\
+    \ 07-16\n     requires organizations to develop and publicize, either through\
+    \ a notice in the Federal Register or\n     on their websites, a schedule for\
+    \ periodic reviews of their holdings to supplement the initial\n     review. Organizations\
+    \ coordinate with their federal records officers to ensure that reductions in\n\
+    \     organizational holdings of PII are consistent with NARA retention schedules.\n\
+    \     By performing periodic evaluations, organizations reduce risk, ensure that\
+    \ they are collecting only\n     the data specified in the notice, and ensure\
+    \ that the data collected is still relevant and necessary for\n     the purpose(s)\
+    \ specified in the notice. "
+  related controls: AP-1, AP-2, AR-4, IP-1, SE-1, SI-12, TR-1.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. §552a (e); Section 208(b), E-Government Act of
+    2002 (P.L. 107-347); OMB Memoranda 03-22, 07-16.
+DM-1 (1):
+  name: MINIMIZATION OF PERSONALLY IDENTIFIABLE INFORMATION | LOCATE / REMOVE / REDACT
+    / ANONYMIZE PII
+  description: >-
+    The organization, where feasible and within the limits of technology, locates
+
+    and removes/redacts specified PII and/or uses anonymization and de-identification
+    techniques
+
+    to permit use of the retained information while reducing its sensitivity and reducing
+    the risk
+
+    resulting from disclosure.
+  supplemental guidance: NIST Special Publication 800-122 provides guidance on anonymization.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. §552a (e); Section 208(b), E-Government Act of
+    2002 (P.L. 107-347); OMB Memoranda 03-22, 07-16.
+DM-2:
+  name: DATA RETENTION AND DISPOSAL
+  description: "\"The organization:\n     a. Retains each collection of personally\
+    \ identifiable information (PII)\n        for [Assignment: organization-defined\
+    \ time period] to fulfill the purpose(s) identified in the notice or as\n    \
+    \    required by law;\n     b. Disposes of, destroys, erases, and/or anonymizes\
+    \ the PII, regardless\n        of the method of storage, in accordance with a\
+    \ NARA-approved record retention\n        schedule and in a manner that prevents\
+    \ loss, theft, misuse, or unauthorized access; and\n     c. Uses [Assignment:\
+    \ organization-defined techniques or methods] to ensure\n        secure deletion\
+    \ or destruction of PII (including originals, copies, and \n        archived records).\""
+  supplemental guidance: "NARA provides retention schedules that govern the disposition\
+    \ of federal\n     records. Program officials coordinate with records officers\
+    \ and with NARA to identify appropriate\n     retention periods and disposal methods.\
+    \ NARA may require organizations to retain PII longer than\n     is operationally\
+    \ needed. In those situations, organizations describe such requirements in the\
+    \ notice.\n     Methods of storage include, for example, electronic, optical media,\
+    \ or paper.\n     Examples of ways organizations may reduce holdings include reducing\
+    \ the types of PII held (e.g.,\n     delete Social Security numbers if their use\
+    \ is no longer needed) or shortening the retention period\n     for PII that is\
+    \ maintained if it is no longer necessary to keep PII for long periods of time\
+    \ (this\n     effort is undertaken in consultation with an organization’s records\
+    \ officer to receive NARA\n     approval). In both examples, organizations provide\
+    \ notice (e.g., an updated System of Records\n     Notice) to inform the public\
+    \ of any changes in holdings of PII.\n     Certain read-only archiving techniques,\
+    \ such as DVDs, CDs, microfilm, or microfiche, may not\n     permit the removal\
+    \ of individual records without the destruction of the entire database contained\n\
+    \     on such media. "
+  related controls: AR-4, AU-11, DM-1, MP-1, MP-2, MP-3, MP-4, MP-5, MP-6, MP-7, MP-8,
+    SI-12, TR-1.
+DM-2 (1):
+  name: DATA RETENTION AND DISPOSAL | SYSTEM CONFIGURATION
+  description: >-
+    The organization, where feasible, configures its information systems to
+
+    record the date PII is  collected, created, or updated and when PII is to be deleted
+    or archived
+
+    under an approved record retention schedule.
+  references: The Privacy Act of 1974, 5 U.S.C. § 552a (e)(1), (c)(2); Section 208
+    (e), E-Government Act of 2002 (P.L. 107-347); 44 U.S.C. Chapters 29, 31, 33; OMB
+    Memorandum 07-16; OMB Circular A-130; NIST Special Publication 800-88.
+DM-3:
+  name: MINIMIZATION OF PII USED IN TESTING, TRAINING, AND RESEARCH
+  description: |-
+    "The organization:
+         a.    Develops policies and procedures that minimize the use of personally identifiable information
+               (PII) for testing, training, and research; and
+         b.    Implements controls to protect PII used for testing, training, and research."
+  supplemental guidance: |-
+    Organizations often use PII for testing new applications or information
+         systems prior to deployment. Organizations also use PII for research purposes
+    and for training.
+         The use of PII in testing, research, and training increases risk of unauthorized
+    disclosure or misuse
+         of the information. If PII must be used, organizations take measures to minimize
+    any associated
+         risks and to authorize the use of and limit the amount of PII for these purposes.
+    Organizations
+         consult with the SAOP/CPO and legal counsel to ensure that the use of PII
+    in testing, training, and
+         research is compatible with the original purpose for which it was collected.
+DM-3 (1):
+  name: MINIMIZATION OF PII USED IN TESTING, TRAINING, AND RESEARCH | RISK MINIMIZATION
+    TECHNIQUES
+  description: The organization, where feasible, uses techniques to minimize the risk
+    to privacy of using PII for research, testing, or training.
+  supplemental guidance: Organizations can minimize risk to privacy of PII by using
+    techniques such as de-identification.
+  references: NIST Special Publication 800-122.
+IP-1:
+  name: CONSENT
+  description: |-
+    "The organization:
+         a.    Provides means, where feasible and appropriate, for individuals to
+    authorize the collection,
+               use, maintaining, and sharing of personally identifiable information
+    (PII) prior to its
+               collection;
+         b.    Provides appropriate means for individuals to understand the consequences
+    of decisions to
+               approve or decline the authorization of the collection, use, dissemination,
+    and retention of PII;
+         c.    Obtains consent, where feasible and appropriate, from individuals prior
+    to any new uses or
+               disclosure of previously collected PII; and
+         d.    Ensures that individuals are aware of and, where feasible, consent
+    to all uses of PII not
+               initially described in the public notice that was in effect at the
+    time the organization collected
+               the PII."
+  supplemental guidance: |-
+    Organizations can provide, for example, individuals’ itemized choices
+        as to whether they wish to be contacted for any of a variety of purposes.
+    In this situation,
+        organizations construct consent mechanisms to ensure that organizational operations
+    comply
+        with individual choices.
+  related controls: AC-2, AP-1, TR-1, TR-2.
+IP -1 (1):
+  name: CONSENT | MECHANISMS SUPPORTING ITEMIZED OR TIERED CONSENT
+  description: The organization implements mechanisms to support itemized or tiered
+    consent for specific uses of data.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. § 552a (b), (e)(3); Section 208(c), E-Government
+    Act of 2002 (P.L. 107-347); OMB Memoranda 03-22, 10-22.
+IP-2:
+  name: INDIVIDUAL ACCESS
+  description: |-
+    "The organization:
+         a.   Provides individuals the ability to have access to their personally identifiable information
+              (PII) maintained in its system(s) of records;
+         b.   Publishes rules and regulations governing how individuals may request access to records
+              maintained in a Privacy Act system of records;
+         c.   Publishes access procedures in System of Records Notices (SORNs); and
+         d.   Adheres to Privacy Act requirements and OMB policies and guidance for the proper
+              processing of Privacy Act requests."
+  supplemental guidance: |-
+    Access affords individuals the ability to review PII about them held within organizational systems of records. Access includes timely, simplified, and inexpensive access to data. Organizational processes for allowing access to records may differ based on resources, legal
+         requirements, or other factors. The organization Senior Agency Official for
+    Privacy (SAOP)/Chief
+         Privacy Officer (CPO) is responsible for the content of Privacy Act regulations
+    and record request
+         processing, in consultation with legal counsel. Access to certain types of
+    records may not be
+         appropriate, however, and heads of agencies may promulgate rules exempting
+    particular systems
+         from the access provision of the Privacy Act. In addition, individuals are
+    not entitled to access to
+         information compiled in reasonable anticipation of a civil action or proceeding.
+    Related controls:
+         AR-8, IP-3, TR-1, TR-2. References:The Privacy Act of 1974, 5 U.S.C. §§ 552a (c)(3),
+    (d)(5), (e) (4); (j), (k), (t); OMB Circular A-130.
+IP-3:
+  name: REDRESS
+  description: '"The organization: a.   Provides a process for individuals to have
+    inaccurate personally identifiable information (PII) maintained by the organization
+    corrected or amended, as appropriate; and b.   Establishes a process for disseminating
+    corrections or amendments of the PII to other authorized users of the PII, such
+    as external information-sharing partners and, where feasible and appropriate,
+    notifies affected individuals that their information has been corrected or amended."'
+  supplemental guidance: |-
+    Redress supports the ability of individuals to ensure the accuracy of PII
+         held by organizations. Effective redress processes demonstrate organizational
+    commitment to data
+         quality especially in those business functions where inaccurate data may
+    result in inappropriate
+         decisions or denial of benefits and services to individuals. Organizations
+    use discretion in
+         determining if records are to be corrected or amended, based on the scope
+    of redress requests, the
+         changes sought, and the impact of the changes. Individuals may appeal an
+    adverse decision and
+         have incorrect information amended, where appropriate.
+         To provide effective redress, organizations: (i) provide effective notice
+    of the existence of a PII
+         collection; (ii) provide plain language explanations of the processes and
+    mechanisms for
+         requesting access to records; (iii) establish criteria for submitting requests
+    for correction or
+         amendment; (iv) implement resources to analyze and adjudicate requests; (v)
+    implement means of
+         correcting or amending data collections; and (vi) review any decisions that
+    may have been the
+         result of inaccurate information.
+
+         Organizational redress processes provide responses to individuals of decisions
+    to deny requests for
+         correction or amendment, including the reasons for those decisions, a means
+    to record individual
+         objections to the organizational decisions, and a means of requesting organizational
+    reviews of the
+         initial determinations. Where PII is corrected or amended, organizations
+    take steps to ensure that
+         all authorized recipients of that PII are informed of the corrected or amended
+    information. In
+         instances where redress involves information obtained from other organizations,
+    redress processes
+         include coordination with organizations that originally collected the information.
+  related controls: IP-2, TR-1, TR-2, UL-2.
+  references: The Privacy Act of 1974, 5 U.S.C. § 552a (d), (c)(4); OMB Circular A-130.
+IP-4:
+  name: COMPLAINT MANAGEMENT
+  description: >-
+    "The organization implements a process for receiving and responding to complaints,
+      concerns, or questions from individuals about the organizational privacy practices."
+  supplemental guidance: "Complaints, concerns, and questions from individuals can\
+    \ serve as a\n     valuable source of external input that ultimately improves\
+    \ operational models, uses of technology,\n     data collection practices, and\
+    \ privacy and security safeguards. Organizations provide complaint\n     mechanisms\
+    \ that are readily accessible by the public, include all information necessary\
+    \ for\n     successfully filing complaints (including contact information for\
+    \ the Senior Agency Official for\n     Privacy (SAOP)/Chief Privacy Officer (CPO)\
+    \ or other official designated to receive complaints),\n     and are easy to use.\
+    \ Organizational complaint management processes include tracking mechanisms\n\
+    \     to ensure that all complaints received are reviewed and appropriately addressed\
+    \ in a timely\n     manner. "
+  related controls: AR-6, IP-3.
+IP-4 (1):
+  name: COMPLAINT MANAGEMENT | RESPONSE TIMES
+  description: |-
+    The organization responds to complaints, concerns, or questions from individuals within
+    [Assignment: organization-defined time period].
+  references: OMB Circular A-130; OMB Memoranda 07-16, 08-09.
+SE-1:
+  name: INVENTORY OF PERSONALLY IDENTIFIABLE INFORMATION
+  description: |-
+    "The organization:
+         a.   Establishes, maintains, and updates [Assignment: organization-defined
+    frequency] an
+              inventory that contains a listing of all programs and information systems
+    identified as
+              collecting, using, maintaining, or sharing personally identifiable information
+    (PII); and
+         b.   Provides each update of the PII inventory to the CIO or information
+    security official
+              [Assignment: organization-defined frequency] to support the establishment
+    of information
+              security requirements for all new or modified information systems containing
+    PII."
+  supplemental guidance: "The PII inventory enables organizations to implement effective\n\
+    \     administrative, technical, and physical security policies and procedures\
+    \ to protect PII consistent\n     with Appendix F, and to mitigate risks of PII\
+    \ exposure. As one method of gathering information\n     for their PII inventories,\
+    \ organizations may extract the following information elements from\n     Privacy\
+    \ Impact Assessments (PIA) for information systems containing PII: (i) the name\
+    \ and\n     acronym for each system identified; (ii) the types of PII contained\
+    \ in that system; (iii)\n     classification of level of sensitivity of all types\
+    \ of PII, as combined in that information system; and\n     (iv) classification\
+    \ of level of potential risk of substantial harm, embarrassment, inconvenience,\
+    \ or\n     unfairness to affected individuals, as well as the financial or reputational\
+    \ risks to organizations, if\n     PII is exposed. Organizations take due care\
+    \ in updating the inventories by identifying linkable data\n     that could create\
+    \ PII. "
+  related controls: AR-1, AR-4, AR-5, AT-1, DM-1, PM-5, UL-3.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. § 552a (e) (10); Section 208(b)(2), E-Government
+         Act of 2002 (P.L. 107-347); OMB Memorandum 03-22; OMB Circular A-130, Appendix
+    I; FIPS
+         Publication 199; NIST Special Publications 800-37, 800-122.
+SE-2:
+  name: PRIVACY INCIDENT RESPONSE
+  description: |-
+    "The organization:
+         a.   Develops and implements a Privacy Incident Response Plan; and
+         b.   Provides an organized and effective response to privacy incidents in accordance with the
+              organizational Privacy Incident Response Plan."
+  supplemental guidance: "In contrast to the Incident Response (IR) family in Appendix\
+    \ F, which\n     concerns a broader range of incidents affecting information security,\
+    \ this control uses the term\n     Privacy Incident to describe only those incidents\
+    \ that relate to personally identifiable information\n     (PII). The organization\
+    \ Privacy Incident Response Plan is developed under the leadership of the\n  \
+    \   SAOP/CPO. The plan includes: (i) the establishment of a cross-functional Privacy\
+    \ Incident\n     Response Team that reviews, approves, and participates in the\
+    \ execution of the Privacy Incident\n     Response Plan; (ii) a process to determine\
+    \ whether notice to oversight organizations or affected\n     individuals is appropriate\
+    \ and to provide that notice accordingly; (iii) a privacy risk assessment\n  \
+    \   process to determine the extent of harm, embarrassment, inconvenience, or\
+    \ unfairness to affected\n     individuals and, where appropriate, to take steps\
+    \ to mitigate any such risks; (iv) internal and Organizations\n     procedures\
+    \ to ensure prompt reporting by employees and contractors of any privacy incident\
+    \ to\n     information security officials and the Senior Agency Official for Privacy\
+    \ (SAOP)/Chief Privacy\n     Officer (CPO), consistent with organizational incident\
+    \ management structures; and (v) internal\n     procedures for reporting noncompliance\
+    \ with organizational privacy policy by employees or\n     contractors to appropriate\
+    \ management or oversight officials. Some organizations may be required\n    \
+    \ by law or policy to provide notice to oversight organizations in the event of\
+    \ a breach.\n     Organizations may also choose to integrate Privacy Incident\
+    \ Response Plans with Security\n     Incident Response Plans, or keep the plans\
+    \ separate. "
+  related controls: AR-1, AR-4, AR-5, AR-6, AU-1 through 14, IR-1 through IR-8, RA-1.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. § 552a (e), (i)(1), and (m); Federal Information
+         Security Management Act (FISMA) of 2002, 44 U.S.C. § 3541; OMB Memoranda 06-19, 07-16;
+         NIST Special Publication 800-37.
+TR-1:
+  name: PRIVACY NOTICE
+  description: |-
+    "The organization:
+         a.    Provides effective notice to the public and to individuals regarding:
+    (i) its activities that
+               impact privacy, including its collection, use, sharing, safeguarding,
+    maintenance, and disposal
+               of personally identifiable information (PII); (ii) authority for collecting
+    PII; (iii) the choices, if
+               any, individuals may have regarding how the organization uses PII and
+    the consequences of
+               exercising or not exercising those choices; and (iv) the ability to
+    access and have PII amended
+               or corrected if necessary;
+         b.    Describes: (i) the PII the organization collects and the purpose(s)
+    for which it collects that
+               information; (ii) how the organization uses PII internally; (iii) whether
+    the organization shares
+               PII with external entities, the categories of those entities, and the
+    purposes for such sharing;
+               (iv) whether individuals have the ability to consent to specific uses
+    or sharing of PII and how
+               to exercise any such consent; (v) how individuals may obtain access
+    to PII; and (vi) how the
+               PII will be protected; and
+         c.    Revises its public notices to reflect changes in practice or policy
+    that affect PII or changes in
+               its activities that impact privacy, before or as soon as practicable
+    after the change."
+  supplemental guidance: "Effective notice, by virtue of its clarity, readability,\
+    \ and comprehensiveness,\n     enables individuals to understand how an organization\
+    \ uses PII generally and, where appropriate,\n     to make an informed decision\
+    \ prior to providing PII to an organization. Effective notice also\n     demonstrates\
+    \ the privacy considerations that the organization has addressed in implementing\
+    \ its\n     information practices. The organization may provide general public\
+    \ notice through a variety of\n     means, as required by law or policy, including\
+    \ System of Records Notices (SORNs), Privacy\n     Impact Assessments (PIAs),\
+    \ or in a website privacy policy. As required by the Privacy Act, the\n     organization\
+    \ also provides direct notice to individuals via Privacy Act Statements on the\
+    \ paper and\n     electronic forms it uses to collect PII, or on separate forms\
+    \ that can be retained by the individuals.\n     The organization Senior Agency\
+    \ Official for Privacy (SAOP)/Chief Privacy Officer (CPO) is\n     responsible\
+    \ for the content of the organization’s public notices, in consultation with legal\
+    \ counsel\n     and relevant program managers. The public notice requirement in\
+    \ this control is satisfied by an\n     organization’s compliance with the public\
+    \ notice provisions of the Privacy Act, the E-Government\n     Act’s PIA requirement,\
+    \ with OMB guidance related to federal agency privacy notices, and, where\n  \
+    \   applicable, with policy pertaining to participation in the Information Sharing\
+    \ Environment\n     (ISE). 124 Changing PII practice or policy without prior notice\
+    \ is disfavored and should only be\n     undertaken in consultation with the SAOP/CPO\
+    \ and counsel. "
+  related controls: AP-1, AP-2, AR-1, AR-2, IP-1, IP-2, IP-3, UL-1, UL-2.
+TR-1 (1):
+  name: PRIVACY NOTICE | REAL-TIME OR LAYERED NOTICE
+  description: The organization provides real-time and/or layered notice when it collects
+    PII.
+  supplemental guidance: |-
+    Real-time notice is defined as notice at the point of collection. A
+    layered notice approach involves providing individuals with a summary of key points
+    in the organization’s privacy policy. A second notice provides more detailed/specific
+    information.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. § 552a (e)(3), (e)(4); Section 208(b), E-
+    Government Act of 2002 (P.L. 107-347); OMB Memoranda 03-22, 07-16, 10-22, 10-23; ISE
+    Privacy Guidelines.
+TR-2:
+  name: SYSTEM OF RECORDS NOTICES AND PRIVACY ACT STATEMENTS
+  description: |-
+    "The organization:
+         a.    Publishes System of Records Notices (SORNs) in the Federal Register,
+    subject to required
+               oversight processes, for systems containing personally identifiable
+    information (PII);
+         b.    Keeps SORNs current; and
+         c.    Includes Privacy Act Statements on its forms that collect PII, or on
+    separate forms that can be
+               retained by individuals, to provide additional formal notice to individuals
+    from whom the
+               information is being collected."
+  supplemental guidance: |-
+    Organizations issue SORNs to provide the public notice regarding PII
+        collected in a system of records, which the Privacy Act defines as “a group
+    of any records under
+        the control of any agency from which information is retrieved by the name
+    of an individual or by
+        some identifying number, symbol, or other identifier.” SORNs explain how the
+    information is
+        used, retained, and may be corrected, and whether certain portions of the
+    system are subject to
+        Privacy Act exemptions for law enforcement or national security reasons. Privacy
+    Act Statements
+        provide notice of: (i) the authority of organizations to collect PII; (ii)
+    whether providing PII is
+        mandatory or optional; (iii) the principal purpose(s) for which the PII is
+    to be used; (iv) the
+        intended disclosures (routine uses) of the information; and (v) the consequences
+    of not providing
+        all or some portion of the information requested. When information is collected
+    verbally,
+        organizations read a Privacy Act Statement prior to initiating the collection
+    of PII (for example,
+        when conducting telephone interviews or surveys). Related control: DI-2.
+TR-2 (1):
+  name: SYSTEM OF RECORDS NOTICES AND PRIVACY ACT STATEMENTS | PUBLIC WEBSITE PUBLICATION
+  description: The organization publishes SORNs on its public website.
+  references: The Privacy Act of 1974, 5 U.S.C. § 552a (e)(3); OMB Circular A-130.
+TR-3:
+  name: DISSEMINATION OF PRIVACY PROGRAM INFORMATION
+  description: |-
+    "The organization:
+         a.    Ensures that the public has access to information about its privacy activities and is able to
+               communicate with its Senior Agency Official for Privacy (SAOP)/Chief Privacy Officer
+               (CPO); and
+         b.    Ensures that its privacy practices are publicly available through organizational websites or
+               otherwise."
+  supplemental guidance: |-
+    Organizations employ different mechanisms for informing the public about
+         their privacy practices including, but not limited to, Privacy Impact Assessments
+    (PIAs), System
+         of Records Notices (SORNs), privacy reports, publicly available web pages,
+    email distributions,
+         blogs, and periodic publications (e.g., quarterly newsletters). Organizations
+    also employ publicly
+         facing email addresses and/or phone lines that enable the public to provide
+    feedback and/or direct
+         questions to privacy offices regarding privacy practices.
+  related control: AR-6.
+  references: |-
+    The Privacy Act of 1974, 5 U.S.C. § 552a; Section 208, E-Government Act of 2002
+    (P.L. 107-347); OMB Memoranda 03-22, 10-23.
+UL-1:
+  name: INTERNAL USE
+  description: >-
+    "The organization uses personally identifiable information (PII) internally only
+    for the
+          authorized purpose(s) identified in the Privacy Act and/or in public notices."
+  supplemental guidance: |-
+    Organizations take steps to ensure that they use PII only for legally
+         authorized purposes and in a manner compatible with uses identified in the
+    Privacy Act and/or in
+         public notices. These steps include monitoring and auditing organizational
+    use of PII and training
+         organizational personnel on the authorized uses of PII. With guidance from
+    the Senior Agency
+         Official for Privacy (SAOP)/Chief Privacy Officer (CPO) and where appropriate,
+    legal counsel,
+         organizations document processes and procedures for evaluating any proposed
+    new uses of PII to
+         assess whether they fall within the scope of the organizational authorities.
+    Where appropriate,
+         organizations obtain consent from individuals for the new use(s) of PII."
+  related controls: AP-2, AR-2, AR-3, AR-4, AR-5, IP-1, TR-1, TR-2.
+  references: The Privacy Act of 1974, 5 U.S.C. § 552a (b)(1).
+UL-2:
+  name: INFORMATION SHARING WITH THIRD PARTIES
+  description: |-
+    "The organization:
+         a.   Shares personally identifiable information (PII) externally, only for
+    the authorized purposes
+              identified in the Privacy Act and/or described in its notice(s) or for
+    a purpose that is
+              compatible with those purposes;
+         b.   Where appropriate, enters into Memoranda of Understanding, Memoranda
+    of Agreement,
+              Letters of Intent, Computer Matching Agreements, or similar agreements,
+    with third parties
+              that specifically describe the PII covered and specifically enumerate
+    the purposes for which
+              the PII may be used;
+         c.   Monitors, audits, and trains its staff on the authorized sharing of
+    PII with third parties and on
+              the consequences of unauthorized use or sharing of PII; and
+         d.   Evaluates any proposed new instances of sharing PII with third parties
+    to assess whether the
+              sharing is authorized and whether additional or new public notice is
+    required."
+  supplemental guidance: "The organization Senior Agency Official for Privacy (SAOP)/Chief\n\
+    \  Privacy Officer (CPO) and, where appropriate, legal counsel review and approve\
+    \ any proposed\n  external sharing of PII, including with other public, international,\
+    \ or private sector entities, for\n  consistency with uses described in the existing\
+    \ organizational public notice(s). When a proposed\n  new instance of external\
+    \ sharing of PII is not currently authorized by the Privacy Act and/or\n  specified\
+    \ in a notice, organizations evaluate whether the proposed external sharing is\
+    \ compatible\n  with the purpose(s) specified in the notice. If the proposed sharing\
+    \ is compatible, organizations\n  review, update, and republish their Privacy\
+    \ Impact Assessments (PIAs), System of Records\n  Notices (SORNs), website privacy\
+    \ policies, and other public notices, if any, to include specific\n  descriptions\
+    \ of the new uses(s) and obtain consent where appropriate and feasible. Information-\n\
+    \  sharing agreements also include security protections consistent with the sensitivity\
+    \ of the\n  information being shared. "
+  related controls: AR-3, AR-4, AR-5, AR-8, AP-2, DI-1, DI-2, IP-1, TR-1.

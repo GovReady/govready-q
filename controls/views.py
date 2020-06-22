@@ -4,9 +4,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from siteapp.models import Project, User, Organization
 from datetime import datetime
 from .oscal import Catalog, Catalogs
-import json, rtyaml
-import re
-import os
+import json, rtyaml, shutil, re, os
 from .utilities import *
 from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl, Baselines
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
@@ -129,10 +127,11 @@ def controls_selected(request, system_id):
         impl_smts = system.root_element.statements_consumed.all()
 
         impl_smts_count = {}
+        ikeys = system.smts_control_implementation_as_dict.keys()
         for c in controls:
             impl_smts_count[c.oscal_ctl_id] = 0
-            if c.oscal_ctl_id in system.control_implementation_as_dict.keys():
-                impl_smts_count[c.oscal_ctl_id] = len(system.control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+            if c.oscal_ctl_id in ikeys:
+                impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
 
         # Return the controls
         context = {
@@ -833,55 +832,100 @@ def export_system_opencontrol(request, system_id):
         # Create temporary directory structure
         import tempfile
         temp_dir = tempfile.TemporaryDirectory(dir=".")
-        oc_path = os.path.join(temp_dir.name, system.root_element.name.replace(" ", "_"))
+        repo_path = os.path.join(temp_dir.name, system.root_element.name.replace(" ", "_"))
         # print(temp_dir.name)
-        if not os.path.exists(oc_path):
-            os.makedirs(oc_path)
+        if not os.path.exists(repo_path):
+            os.makedirs(repo_path)
+
+        # Create various directories
+        os.makedirs(os.path.join(repo_path, "components"))
+        os.makedirs(os.path.join(repo_path, "standards"))
+        os.makedirs(os.path.join(repo_path, "certifications"))
+
+        # Create opencontrol.yaml config file
+        cfg_str = """schema_version: 1.0.0
+name: ~
+metadata:
+  authorization_id: ~
+  description: ~
+  organization:
+    name: ~
+    abbreviation: ~
+  repository: ~
+components: []
+standards:
+- ./standards/NIST-SP-800-53-rev4.yaml
+certifications:
+- ./certifications/fisma-low-impact.yaml
+"""
+
+        # read default opencontrol.yaml into object
+        cfg = rtyaml.load(cfg_str)
+        # customize values
+        cfg["name"] = system.root_element.name
+        # cfg["metadata"]["organization"]["name"] = organization_name
+        # cfg["metadata"]["description"] = description
+        # cfg["metadata"]["organization"]["abbreviation"] = None
+        # if organization_name:
+        #     cfg["metadata"]["organization"]["abbreviation"] = "".join([word[0].upper() for word in organization_name.split(" ")])
+
+        with open(os.path.join(repo_path, "opencontrol.yaml"), 'w') as outfile:
+            outfile.write(rtyaml.dump(cfg))
+
+        # Populate reference directories from reference
+        OPENCONTROL_PATH = os.path.join(os.path.dirname(__file__),'data','opencontrol')
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "NIST-SP-800-53-rev4.yaml"), os.path.join(repo_path, "standards", "NIST-SP-800-53-rev4.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "NIST-SP-800-171r1.yaml"), os.path.join(repo_path, "standards", "NIST-SP-800-53-rev4.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "opencontrol.yaml"), os.path.join(repo_path, "standards", "opencontrol.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "hipaa-draft.yaml"), os.path.join(repo_path, "standards", "hipaa-draft.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "certifications", "fisma-low-impact.yaml"), os.path.join(repo_path, "certifications", "fisma-low-impact.yaml"))
+
+        # # Make stub README.md file
+        # with open(os.path.join(repo_path, "README.md"), 'w') as outfile:
+        #     outfile.write("Machine readable representation of 800-53 control implementations for {}.\n\n# Notes\n\n".format(system_name))
+        #     print("wrote file: {}\n".format(os.path.join(repo_path, "README.md")))
 
         # Populate system information files
-        with open(os.path.join(oc_path, "opencontrol.yaml"), 'w') as fh:
-            fh.write("test content")
 
         # Populate component files
-        if not os.path.exists(os.path.join(oc_path, "components")):
-            os.makedirs(os.path.join(oc_path, "components"))
-            for element in system.producer_elements:
-                # Build OpenControl
-                ocf = {
-                        "name": element.name,
-                        "schema_version": "3.0.0",
-                        "documentation_complete": False,
-                        "satisfies": []
-                       }
-                satisfies_smts = ocf["satisfies"]
-                # Retrieve impl_smts produced by element and consumed by system
-                # Get the impl_smts contributed by this component to system
-                impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
-                for smt in impl_smts:
-                    my_dict = {
-                                "control_key": smt.sid.upper(),
-                                "control_name": smt.catalog_control_as_dict['title'],
-                                "standard_key": smt.sid_class,
-                                "covered_by": [],
-                                "security_control_type": "Hybrid | Inherited | ...",
-                                "narrative": [
-                                    {"text": smt.body}
-                                ],
-                                "remarks": [
-                                    {"text": smt.remarks}
-                                ]
-                             }
-                    satisfies_smts.append(my_dict)
-                opencontrol_string = rtyaml.dump(ocf)
-                # Write component file
-                with open(os.path.join(oc_path, "components", "{}.yaml".format(element.name.replace(" ", "_"))), 'w') as fh:
-                    fh.write(opencontrol_string)
+        if not os.path.exists(os.path.join(repo_path, "components")):
+            os.makedirs(os.path.join(repo_path, "components"))
+        for element in system.producer_elements:
+            # Build OpenControl
+            ocf = {
+                    "name": element.name,
+                    "schema_version": "3.0.0",
+                    "documentation_complete": False,
+                    "satisfies": []
+                   }
+            satisfies_smts = ocf["satisfies"]
+            # Retrieve impl_smts produced by element and consumed by system
+            # Get the impl_smts contributed by this component to system
+            impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+            for smt in impl_smts:
+                my_dict = {
+                            "control_key": smt.sid.upper(),
+                            "control_name": smt.catalog_control_as_dict['title'],
+                            "standard_key": smt.sid_class,
+                            "covered_by": [],
+                            "security_control_type": "Hybrid | Inherited | ...",
+                            "narrative": [
+                                {"text": smt.body}
+                            ],
+                            "remarks": [
+                                {"text": smt.remarks}
+                            ]
+                         }
+                satisfies_smts.append(my_dict)
+            opencontrol_string = rtyaml.dump(ocf)
+            # Write component file
+            with open(os.path.join(repo_path, "components", "{}.yaml".format(element.name.replace(" ", "_"))), 'w') as fh:
+                fh.write(opencontrol_string)
 
         # Build Zip archive
         # TODO Make Temporary File
         #      Current approach leads to race conditions!
-        import shutil
-        shutil.make_archive("/tmp/Zipped_file", 'zip', oc_path)
+        shutil.make_archive("/tmp/Zipped_file", 'zip', repo_path)
 
         # Download Zip archive of OpenControl files
         with open('/tmp/Zipped_file.zip', 'rb') as tmp:
@@ -895,7 +939,7 @@ def export_system_opencontrol(request, system_id):
         resp['Content-Disposition'] = 'inline; filename=' + filename
 
         # Clean up
-        shutil.rmtree(oc_path)
+        shutil.rmtree(repo_path)
         # os.remove("/tmp/Zipped_file") ????
         return resp
 

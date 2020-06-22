@@ -80,13 +80,15 @@
                 {{ control.get_flattened_oscal_control_as_dict.title }}
             </div>
             <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
-              {% if impl_smts_count|get_item:control.oscal_ctl_id > 0%}
-                {{ impl_smts_count|get_item:control.oscal_ctl_id }} component statement{{ impl_smts_count|get_item:control.oscal_ctl_id|pluralize }}
-              {% else %}
-                <div style="text-align: center;">
-                  &mdash;
-                </div>
-              {% endif %}
+              {% with total=impl_smts_count|get_item:control.oscal_ctl_id %}
+                {% if total > 0%}
+                  {{ total }} component statement{{ total|pluralize }}
+                {% else %}
+                  <div style="text-align: center;">
+                    &mdash;
+                  </div>
+                {% endif %}
+              {% endwith %}
             </div>
         </div>
       {% endfor %}
