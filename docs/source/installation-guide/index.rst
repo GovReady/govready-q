@@ -27,6 +27,7 @@ Setting up GovReady-Q involves installing the GovReady-Q server, a database, a W
         deploy_prod
         configure_db
         configure_webserver
+        system_settings
         Environment
         enterprise_sso
         CustomBranding
