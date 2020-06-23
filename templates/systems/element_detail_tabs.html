@@ -125,8 +125,12 @@
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="active"><a href="#component" aria-controls="component" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Component</a></li>
       <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
-      <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
-      <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
+      {% if enable_experimental_opencontrol %}
+        <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
+      {% endif %}
+      {% if enable_experimental_opencontrol %}
+        <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
+      {% endif %}
     </ul>
 
   <!-- Tab panels -->
@@ -217,16 +221,20 @@
       </div>
 
       <!-- Tab panel: combined -->
+      {% if enable_experimental_oscal %}
       <div role="tabpanel" class="tab-pane" id="oscal">
         <div id="combined_smt" class="control-text"><h3>OSCAL (under development)</h3></div>
         <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
       </div>
+      {% endif %}
 
       <!-- Tab panel: opencontrol -->
+      {% if enable_experimental_opencontrol %}
       <div role="tabpanel" class="tab-pane" id="opencontrol">
         <div id="combined_smt" class="control-text"><h3>OpenControl (under development)</h3></div>
         <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ opencontrol }}</div>
       </div>
+      {% endif %}
 
     </div>
   </div>

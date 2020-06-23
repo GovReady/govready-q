@@ -7,6 +7,7 @@ from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
 from .utilities import *
 from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl, Baselines
+from system_settings.models import SystemSettings
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
@@ -138,7 +139,10 @@ def controls_selected(request, system_id):
             "system": system,
             "project": project,
             "controls": controls,
-            "impl_smts_count": impl_smts_count
+            "impl_smts_count": impl_smts_count,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+
         }
         return render(request, "systems/controls_selected.html", context)
     else:
@@ -268,6 +272,8 @@ def system_element(request, system_id, element_id):
             "element": element,
             "impl_smts": impl_smts,
             "oscal": oscal_string,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "opencontrol": opencontrol_string
         }
         return render(request, "systems/element_detail_tabs.html", context)

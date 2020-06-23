@@ -112,7 +112,9 @@
   function download_document(document_id, system_id) {
     var dom = $("<div><p>Select download format:</p>"
       + "<select class=form-control>"
+      {% if enable_experimental_opencontrol %}
       + "<option value='opencontrol'>OpenControl Repository</option>"
+      {% endif %}
       + "<option value='xacta'>Xacta Import Spreadsheet</option>"
       + "</select>"
       + "</div>");
