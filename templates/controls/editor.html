@@ -286,6 +286,7 @@ Remove contextbar from top of page
 
             {% endfor %}
           </div><!--/smt-list-->
+          <!-- Add component button -->
           <div><h3><button type="submit" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
 
       </div>
@@ -293,10 +294,10 @@ Remove contextbar from top of page
     </div>
   </div>
 
-      {{ block.super }}
-      {% endblock %}
+  {{ block.super }}
+  {% endblock %}
 
-      {% block scripts %}
+  {% block scripts %}
       <script>
         // Submits control id for Control look up box
         function show_control_by_id() {
@@ -360,7 +361,6 @@ Remove contextbar from top of page
                   <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team"  rows="4" cols="50"></textarea>
                 </div>
 
-                <input type="hidden" id="control_id_panel_num" name="control_id" value="{{ control.id }}">
                 <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
                 <input type="hidden" id="sid_panel_num" name="sid" value="{{ control.id }}">
                 <input type="hidden" id="sid_class_panel_num" name="sid_class" value="{{ catalog.catalog_key }}">
@@ -415,7 +415,9 @@ Remove contextbar from top of page
                 $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
                 $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
                 // Update combined statement
-                update_combined_smt();
+                if (typeof update_combined_smt === "function") {
+                  update_combined_smt();
+                }
               } else {
                 $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
               }
@@ -475,4 +477,4 @@ Remove contextbar from top of page
 
       </script>
 
-      {% endblock %}
+  {% endblock %}
