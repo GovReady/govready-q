@@ -188,6 +188,12 @@ def system_element(request, system_id, element_id):
         # Get the impl_smts contributed by this component to system
         impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
 
+        # Retrieve used catalog_key
+        catalog_key = impl_smts[0].sid_class
+
+        # Retrieve control ids
+        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+
         # Build OSCAL
             # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
         of = {
@@ -271,6 +277,8 @@ def system_element(request, system_id, element_id):
             "project": project,
             "element": element,
             "impl_smts": impl_smts,
+            "catalog_controls": catalog_controls,
+            "catalog_key": catalog_key,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
@@ -678,13 +686,14 @@ def save_smt(request):
             statement.status = form_values['status']
         else:
             # Create new Statement object
-            statement = Statement(  sid=form_values['sid'], # need to make oscalized?
+            statement = Statement(
+                sid=oscalize_control_id(form_values['sid']),
                 sid_class=form_values['sid_class'],
                 body=form_values['body'],
                 statement_type=form_values['statement_type'],
                 status=form_values['status'],
                 remarks=form_values['remarks'],
-                )
+            )
         # Save Statement object
         try:
             statement.save()
