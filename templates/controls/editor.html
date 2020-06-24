@@ -164,7 +164,8 @@ Remove contextbar from top of page
       <div role="tabpanel" class="tab-pane" id="combined">
       
         <div id="combined_smt" class="control-text"><h3>Component Implementations Statement</h3>
-{% for smt in impl_smts %}{{ smt.body }}
+{% for smt in impl_smts %}{{ smt.producer_element.name}} (Status: {{smt.status}})
+{{ smt.body }}
 
 {% endfor %}</div>{% comment %}Leave left justified for proper formatting of text{% endcomment %}
 <div id="combined_smt" class="control-text">{% for control in common_controls %}{{control.legacy_imp_smt}}
@@ -216,6 +217,7 @@ Remove contextbar from top of page
       <div role="tabpanel" class="tab-pane" id="component_controls">
           <div id="control-description" class="control-text"><h3>Component Implementations Statements</h3></div>
           <div id="smt-list" class="" style="width: 90%">
+            <!-- Loop through existing component-control statements -->
             {% for smt in impl_smts %}
             <div id="panel-{{ forloop.counter }}" class="panel panel-default">
               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
@@ -245,6 +247,17 @@ Remove contextbar from top of page
                     <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
                     <label for="statement">Statement</label>
                     <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="status">Status</label>
+                    <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
+                    <option value='' {% if '' == smt.status %}selected="selected"{% endif %}></option>
+                    <option value='Not Implemented' {% if 'Not Implemented' == smt.status %}selected="selected"{% endif %}>Not Implemented</option>
+                    <option value='Planned' {% if 'Planned' == smt.status %}selected="selected"{% endif %}>Planned</option>
+                    <option value='Partially Implemented' {% if 'Partially Implemented' == smt.status %}selected="selected"{% endif %}>Partially Implemented</option>
+                    <option value='Implemented' {% if 'Implemented' == smt.status %}selected="selected"{% endif %}>Implemented</option>
+                    <option value='Unknown' {% if 'Unknown' == smt.status %}selected="selected"{% endif %}>Unknown</option>
+                    </select>
                   </div>
                   <div class="form-group">
                     <label for="remarks">Remarks</label>
@@ -329,18 +342,29 @@ Remove contextbar from top of page
                 <div class="form-group">
                   <input type="hidden" id="smt_id" name="smt_id" value="">
                   <label for="statement">Statement</label>
-                  <textarea class="form-control" id="body" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
+                  <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="status">Status</label>
+                    <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
+                      <option value=''></option>
+                      <option value='Not Implemented'>Not Implemented</option>
+                      <option value='Planned'>Planned</option>
+                      <option value='Partially Implemented'>Partially Implemented</option>
+                      <option value='Implemented'>Implemented</option>
+                      <option value='Unknown'>Unknown</option>
+                    </select>
                 </div>
                 <div class="form-group">
                   <label for="remarks">Remarks</label>
-                  <textarea class="form-control" id="remarks" name="remarks" placeholder="Add remarks for team"  rows="4" cols="50"></textarea>
+                  <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team"  rows="4" cols="50"></textarea>
                 </div>
 
-                <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
-                <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-                <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
-                <input type="hidden" id="sid_class" name="sid_class" value="{{ catalog.catalog_key }}">
-                <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
+                <input type="hidden" id="control_id_panel_num" name="control_id" value="{{ control.id }}">
+                <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
+                <input type="hidden" id="sid_panel_num" name="sid" value="{{ control.id }}">
+                <input type="hidden" id="sid_class_panel_num" name="sid_class" value="{{ catalog.catalog_key }}">
+                <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
 
               <div class="modal-footer">
                 <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
@@ -360,7 +384,7 @@ Remove contextbar from top of page
         function save_smt(smt_panel_num) {
           // Save a statement
           // serialize data from the identified statement form
-          var data = $( '#'+smt_panel_num ).serialize()
+          var data = $( '#'+smt_panel_num ).serialize();
 
           // send data via ajax to be saved
           ajax_with_indicator({

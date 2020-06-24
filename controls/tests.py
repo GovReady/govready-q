@@ -247,6 +247,32 @@ class ControlUITests(SeleniumTest):
 
 #####################################################################
 
+class StatementUnitTests(TestCase):
+    ## Simply dummy test ##
+    def test_tests(self):
+        self.assertEqual(1,1)
+
+    def test_smt_status(self):
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = "au.3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is a test statement.",
+            statement_type = "control",
+            status = "Implemented"
+        )
+        self.assertIsNotNone(smt.id)
+        self.assertEqual(smt.status, "Implemented")
+        self.assertEqual(smt.sid, "au.3")
+        self.assertEqual(smt.body, "This is a test statement.")
+        self.assertEqual(smt.sid_class, "NIST_SP-800-53_rev4")
+        # Test updating status and retrieving statement
+        smt.status = "Partially Implemented"
+        smt.save()
+        smt2 = Statement.objects.get(pk=smt.id)
+        self.assertEqual(smt.sid, "au.3")
+        self.assertEqual(smt.status, "Partially Implemented")
+
 class ElementUnitTests(TestCase):
     ## Simply dummy test ##
     def test_tests(self):

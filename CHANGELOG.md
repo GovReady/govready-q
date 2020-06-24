@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.24 (June 23, 2020)
+-------------------------
+
+**New features**
+
+* Track whether a component-control status is planned, partially-implemented, implemented, etc.
+
 v0.9.1.23 (June 23, 2020)
 -------------------------
 

@@ -11,10 +11,11 @@ BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
 class Statement(models.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=False, null=False)
-    sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as '800-53rev4' or other OSCAL catalog name Control ID ", unique=False, blank=False, null=False)
+    sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID ", unique=False, blank=False, null=False)
     body = models.TextField(help_text="The statement itself", unique=False, blank=True, null=True)
     statement_type = models.CharField(max_length=150, help_text="Statement type", unique=False, blank=True, null=True)
-    remarks = models.TextField(help_text="The statement itself", unique=False, blank=True, null=True)
+    remarks = models.TextField(help_text="Remarks about the statement", unique=False, blank=True, null=True)
+    status = models.CharField(max_length=100, help_text="The status of the statement", unique=False, blank=True, null=True)
     version = models.CharField(max_length=20, help_text="Optional version number", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -269,7 +270,7 @@ class System(models.Model):
             else:
                 smts_as_dict[smt.sid] = {"control_impl_smts": [smt], "common_controls": [], "combined_smt": ""}
             # Build combined statement
-            smts_as_dict[smt.sid]['combined_smt'] += "{}\n{}\n\n".format(smt.producer_element.name, smt.body)
+            smts_as_dict[smt.sid]['combined_smt'] += "{} (Status: {})\n{}\n\n".format(smt.producer_element.name, smt.status, smt.body)
 
         # Add in the common controls
         for cc in self.root_element.common_controls.all():

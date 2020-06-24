@@ -675,12 +675,14 @@ def save_smt(request):
             # Update existing Statement object with received info
             statement.body = form_values['body']
             statement.remarks = form_values['remarks']
+            statement.status = form_values['status']
         else:
             # Create new Statement object
             statement = Statement(  sid=form_values['sid'], # need to make oscalized?
                 sid_class=form_values['sid_class'],
                 body=form_values['body'],
                 statement_type=form_values['statement_type'],
+                status=form_values['status'],
                 remarks=form_values['remarks'],
                 )
         # Save Statement object
