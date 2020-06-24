@@ -4,10 +4,10 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from siteapp.models import Project, User, Organization
 from datetime import datetime
 from .oscal import Catalog, Catalogs
-import json
-import re
+import json, rtyaml, shutil, re, os
 from .utilities import *
 from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl, Baselines
+from system_settings.models import SystemSettings
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
@@ -139,7 +139,10 @@ def controls_selected(request, system_id):
             "system": system,
             "project": project,
             "controls": controls,
-            "impl_smts_count": impl_smts_count
+            "impl_smts_count": impl_smts_count,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+
         }
         return render(request, "systems/controls_selected.html", context)
     else:
@@ -169,7 +172,7 @@ def components_selected(request, system_id):
 
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
-    
+
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
@@ -185,14 +188,95 @@ def system_element(request, system_id, element_id):
         # Get the impl_smts contributed by this component to system
         impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
 
+        # Build OSCAL
+            # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
+        of = {
+                "metadata": {
+                    "title": "{} Component-to-Control Narratives".format(element.name),
+                    "published": datetime.now().replace(microsecond=0).isoformat(),
+                    "last-modified": element.updated.replace(microsecond=0).isoformat(),
+                    "version": "string",
+                    "oscal-version": "1.0.0-milestone2",
+                    },
+                "component": {
+                    "name": element.name,
+                    "component-type": element.element_type,
+                    "title": element.full_name,
+                    "description": element.description,
+                    "properties": [],
+                    "links": [],
+                    "control-implementation": {
+                        "description": "",
+                        "can-meet-requirement-sets": [
+                            {
+                                "source": "url-reference",
+                                "description": "text",
+                                "properties": [],
+                                "links": [],
+                                "implemented-requirement": {
+                                        "requirement-id": "",
+                                        "id": "",
+                                        "control-id": "",
+                                    },
+                                "remarks": ""
+                            }
+                            ]
+                        },
+                    "remarks": "text, parsed as Markdown (multiple lines) [0 or 1]"
+                    },
+                "back-matter": []
+        }
+        implemented_requirement = of["component"]["control-implementation"]["can-meet-requirement-sets"][0]["implemented-requirement"]
+        for smt in impl_smts:
+            my_dict = {
+                        smt.sid + "_smt": {
+                            "description": smt.body,
+                            "properties": [],
+                            "links": [],
+                            "remarks": smt.remarks
+                        },
+                     }
+            implemented_requirement.update(my_dict)
+        oscal_string = json.dumps(of, sort_keys=False, indent=2)
+
+        # Build OpenControl
+        ocf = {
+                "name": element.name,
+                "schema_version": "3.0.0",
+                "documentation_complete": False,
+                "satisfies": []
+               }
+
+        satisfies_smts = ocf["satisfies"]
+        for smt in impl_smts:
+            my_dict = {
+                        "control_key": smt.sid.upper(),
+                        "control_name": smt.catalog_control_as_dict['title'],
+                        "standard_key": smt.sid_class,
+                        "covered_by": [],
+                        "security_control_type": "Hybrid | Inherited | ...",
+                        "narrative": [
+                            {"text": smt.body}
+                        ],
+                        "remarks": [
+                            {"text": smt.remarks}
+                        ]
+                     }
+            satisfies_smts.append(my_dict)
+        opencontrol_string = rtyaml.dump(ocf)
+
         # Return the system's element information
         context = {
             "system": system,
             "project": project,
             "element": element,
             "impl_smts": impl_smts,
+            "oscal": oscal_string,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "opencontrol": opencontrol_string
         }
-        return render(request, "systems/element_detail.html", context)
+        return render(request, "systems/element_detail_tabs.html", context)
 
 def controls_selected_export_xacta_xslx(request, system_id):
     """Export System's selected controls compatible with Xacta 360"""
@@ -440,7 +524,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
 
         mime_type = "application/octet-stream"
         filename = "{}_control_implementations-{}.xlsx".format(system.root_element.name.replace(" ","_"),datetime.now().strftime("%Y-%m-%d-%H-%M"))
-        
+
         resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
         return resp
@@ -736,4 +820,136 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
         messages.add_message(request, messages.ERROR, 'Baseline "{} {}" assignment failed.'.format(catalog_key.replace("_", " "), baseline_name.title()))
 
     return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
+
+# Export OpenControl
+
+def export_system_opencontrol(request, system_id):
+    """Export entire system in OpenControl"""
+
+    # Does user have permission
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Create temporary directory structure
+        import tempfile
+        temp_dir = tempfile.TemporaryDirectory(dir=".")
+        repo_path = os.path.join(temp_dir.name, system.root_element.name.replace(" ", "_"))
+        # print(temp_dir.name)
+        if not os.path.exists(repo_path):
+            os.makedirs(repo_path)
+
+        # Create various directories
+        os.makedirs(os.path.join(repo_path, "components"))
+        os.makedirs(os.path.join(repo_path, "standards"))
+        os.makedirs(os.path.join(repo_path, "certifications"))
+
+        # Create opencontrol.yaml config file
+        cfg_str = """schema_version: 1.0.0
+name: ~
+metadata:
+  authorization_id: ~
+  description: ~
+  organization:
+    name: ~
+    abbreviation: ~
+  repository: ~
+components: []
+standards:
+- ./standards/NIST-SP-800-53-rev4.yaml
+certifications:
+- ./certifications/fisma-low-impact.yaml
+"""
+
+        # read default opencontrol.yaml into object
+        cfg = rtyaml.load(cfg_str)
+        # customize values
+        cfg["name"] = system.root_element.name
+        # cfg["metadata"]["organization"]["name"] = organization_name
+        # cfg["metadata"]["description"] = description
+        # cfg["metadata"]["organization"]["abbreviation"] = None
+        # if organization_name:
+        #     cfg["metadata"]["organization"]["abbreviation"] = "".join([word[0].upper() for word in organization_name.split(" ")])
+
+        with open(os.path.join(repo_path, "opencontrol.yaml"), 'w') as outfile:
+            outfile.write(rtyaml.dump(cfg))
+
+        # Populate reference directories from reference
+        OPENCONTROL_PATH = os.path.join(os.path.dirname(__file__),'data','opencontrol')
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "NIST-SP-800-53-rev4.yaml"), os.path.join(repo_path, "standards", "NIST-SP-800-53-rev4.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "NIST-SP-800-171r1.yaml"), os.path.join(repo_path, "standards", "NIST-SP-800-53-rev4.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "opencontrol.yaml"), os.path.join(repo_path, "standards", "opencontrol.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "hipaa-draft.yaml"), os.path.join(repo_path, "standards", "hipaa-draft.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "certifications", "fisma-low-impact.yaml"), os.path.join(repo_path, "certifications", "fisma-low-impact.yaml"))
+
+        # # Make stub README.md file
+        # with open(os.path.join(repo_path, "README.md"), 'w') as outfile:
+        #     outfile.write("Machine readable representation of 800-53 control implementations for {}.\n\n# Notes\n\n".format(system_name))
+        #     print("wrote file: {}\n".format(os.path.join(repo_path, "README.md")))
+
+        # Populate system information files
+
+        # Populate component files
+        if not os.path.exists(os.path.join(repo_path, "components")):
+            os.makedirs(os.path.join(repo_path, "components"))
+        for element in system.producer_elements:
+            # Build OpenControl
+            ocf = {
+                    "name": element.name,
+                    "schema_version": "3.0.0",
+                    "documentation_complete": False,
+                    "satisfies": []
+                   }
+            satisfies_smts = ocf["satisfies"]
+            # Retrieve impl_smts produced by element and consumed by system
+            # Get the impl_smts contributed by this component to system
+            impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+            for smt in impl_smts:
+                my_dict = {
+                            "control_key": smt.sid.upper(),
+                            "control_name": smt.catalog_control_as_dict['title'],
+                            "standard_key": smt.sid_class,
+                            "covered_by": [],
+                            "security_control_type": "Hybrid | Inherited | ...",
+                            "narrative": [
+                                {"text": smt.body}
+                            ],
+                            "remarks": [
+                                {"text": smt.remarks}
+                            ]
+                         }
+                satisfies_smts.append(my_dict)
+            opencontrol_string = rtyaml.dump(ocf)
+            # Write component file
+            with open(os.path.join(repo_path, "components", "{}.yaml".format(element.name.replace(" ", "_"))), 'w') as fh:
+                fh.write(opencontrol_string)
+
+        # Build Zip archive
+        # TODO Make Temporary File
+        #      Current approach leads to race conditions!
+        shutil.make_archive("/tmp/Zipped_file", 'zip', repo_path)
+
+        # Download Zip archive of OpenControl files
+        with open('/tmp/Zipped_file.zip', 'rb') as tmp:
+            tmp.seek(0)
+            stream = tmp.read()
+            blob = stream
+        mime_type = "application/octet-stream"
+        filename = "{}-opencontrol-{}.zip".format(system.root_element.name.replace(" ","_"),datetime.now().strftime("%Y-%m-%d-%H-%M"))
+
+        resp = HttpResponse(blob, mime_type)
+        resp['Content-Disposition'] = 'inline; filename=' + filename
+
+        # Clean up
+        shutil.rmtree(repo_path)
+        # os.remove("/tmp/Zipped_file") ????
+        return resp
+
+    else:
+        # User does not have permission to this system
+        raise Http404
 

@@ -1,6 +1,29 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.23 (June 23, 2020)
+-------------------------
+
+**Experimental features**
+
+The following experimental features around OSCAL and OpenControl can be enabled through system settings on the `/admin/` page for system settings.
+
+* Display component control information in OSCAL and OpenControl on component detail page.
+* The OSCAL exports a single component in a partial OSCAL format.
+* OpenControl export from a system's controls-selected page supports an export of an entire OpenControl repository for the system controls. This is still underdevelopment.
+
+**Performance changes**
+
+* Significantly improve speed of rendering of a system's controls-selected page by reducing time it takes to get component counts.
+
+**Configuration changes**
+
+* Add new system settings for enabling experimental OSCAL and OpenControl features.
+
+**Data changes**
+
+* Additional data added to controls/data to support 800-53 and 800-171 OpenControl export.
+
 v0.9.1.22.16 (June 18, 2020)
 ---------------------------
 
