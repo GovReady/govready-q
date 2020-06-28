@@ -4,7 +4,7 @@
 
 # Common Python Packages
 python-dateutil # Simplified BSD License
-Pillow # MIT-like License
+Pillow>=7.1.2 # MIT-like License
 Jinja2 # BSD License
 
 # Less Common Python Packages
@@ -33,7 +33,6 @@ whitenoise # MIT License
 django-guardian # MIT License
 
 # Python Packages Developed by GovReady and/or Josh
-mondrianish # CC0
 rtyaml # CC0
 email-validator # CC0
 exclusiveprocess # CC0
@@ -56,7 +55,6 @@ bandit # Apache License 2.0
 coverage # Apache License 2.0
 selenium # Apache License 2.0
 safety # MIT License
-fpdf2 # LGPLv3+	
 parsel # BSD License
 
 # Documentation only
