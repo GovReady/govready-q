@@ -297,6 +297,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Assumes _new_project() just finished.
 
         # Start the task.
+        var_sleep(0.4)
         self.click_element('#question-simple_module')
 
         # Return the Task instance that we just created or are now visiting.
@@ -369,7 +370,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # - The user is looking at the Introduction page.
         self.click_element("#save-button")
-        var_sleep(.5) # wait for page to load
+        var_sleep(1.0) # wait for page to load
 
         # - Now at the what is your name page?
         self.fill_field("#inputctrl", "John Doe")
@@ -406,7 +407,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(1)
         self.assertRegex(self.browser.title, "Next Question: Introduction")
         self.click_element("#save-button")
-        var_sleep(1)
+        var_sleep(1.75)
 
         # Text question.
         self.assertIn("| A Simple Module - GovReady-Q", self.browser.title)
@@ -507,6 +508,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
 
         # Test an invitation to take over editing a task but without joining the project.
         var_sleep(2)
+
         self.click_element("#save-button") # pass over the Introductory question because the Help link is suppressed on interstitials
         self.click_element('#transfer-editorship')
         # Toggle field to invite user by email
@@ -641,7 +643,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.select_option_by_visible_text('#invite-user-select', 'me2')
         var_sleep(0.75)
         self.click_element("#invitation_modal button.btn-submit")
-        var_sleep(0.75)
+        var_sleep(1)
         self.assertInNodeText("me2", "#portfolio-member-me2")
 
         # Grant another member ownership of portfolio
@@ -1069,7 +1071,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(3.0)
         import urllib.parse
         s = urllib.parse.urlsplit(self.browser.current_url)
-        m = re.match(r"/tasks/(\d+)/a-simple-module", s[2])
+        m = re.match(r"^/tasks/(\d+)/", s[2])
         task_id = int(m.group(1))
 
         def do_submodule(answer_text):

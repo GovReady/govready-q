@@ -1,6 +1,380 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.25 (June 24, 2020)
+-------------------------
+
+**Feature changes**
+
+* Include the ability to edit implementation statements and add new implementation statements for a system component on the system component view. This is nice because you manage the content associated with a component on the component page for a system.
+
+v0.9.1.24 (June 23, 2020)
+-------------------------
+
+**New features**
+
+* Track whether a component-control status is planned, partially-implemented, implemented, etc.
+
+v0.9.1.23 (June 23, 2020)
+-------------------------
+
+**Experimental features**
+
+The following experimental features around OSCAL and OpenControl can be enabled through system settings on the `/admin/` page for system settings.
+
+* Display component control information in OSCAL and OpenControl on component detail page.
+* The OSCAL exports a single component in a partial OSCAL format.
+* OpenControl export from a system's controls-selected page supports an export of an entire OpenControl repository for the system controls. This is still underdevelopment.
+
+**Performance changes**
+
+* Significantly improve speed of rendering of a system's controls-selected page by reducing time it takes to get component counts.
+
+**Configuration changes**
+
+* Add new system settings for enabling experimental OSCAL and OpenControl features.
+
+**Data changes**
+
+* Additional data added to controls/data to support 800-53 and 800-171 OpenControl export.
+
+v0.9.1.22.16 (June 18, 2020)
+---------------------------
+
+(Version 0.9.1.22.15 subsumed into 0.9.1.22.16)
+
+Miscellaneous fixes and corrections
+
+**Documentation changes**
+
+* Start 'howtos' page in docs for misc
+
+**UI changes**
+
+* Fixes to the control implementation statement editor:
+  * Proper dynamic assignment of the control catalog key
+  * Hyperlinking the component name to the component detail page for that system
+  * Removing non-functioning "edit" button to change name of the component
+  * Show correct catalog name in subtitle editor page
+* Add datetime to implimentation statement spreadsheet export
+
+**Developer changes**
+
+* Remove commented out javascript function in control implementation statement editor
+* Remove server file save of control export
+
+**Data changes**
+
+* Fix typos in NIST_SP-800-171_rev1
+
+**Model changes**
+
+* Sort statements by producer_element__name
+
+v0.9.1.22.14 (June 17, 2020)
+---------------------------
+
+* Correctly create a default portfolio for a user accepting an invitation.
+
+v0.9.1.22.13 (June 17, 2020)
+----------------------------
+
+**UI changes**
+
+* Display component implementation statements on the System's component detail page making it easy to see to which controls a system element participates.
+
+**Bug fixes**
+
+* Correctly assign owner permissions to new system, new system root element when starting a new project and creating new system. Addresses #951.
+* Correctly assign edit permissions to a new system and root element when non-admin user invites non-admin user. Addresses #953.
+* Fix mislabeled JSON response preventing full remove deleted statement from editor.
+
+**Doc updates**
+
+* Adds log entries to log documentation for assigning of ower permissions and edit permissions to new system and its root element when users are added to a project.
+
+v0.9.1.22.12 (June 14, 2020)
+----------------------------
+
+**Bug fix**
+
+* Correctly assign owner permissions to new system, new system root element when starting a new project and creating new system. Addresses #951.
+* Correctly assign edit permissions to a new system and root element when non-admin user invites non-admin user. Addresses #953.
+* Fix mislabeled JSON response preventing full remove deleted statement from editor.
+
+**Doc updates**
+
+* Adds log entries to log documentation for assigning of ower permissions and edit permissions to new system and its root element when users are added to a project.
+
+v0.9.1.22.12 (June 14, 2020)
+----------------------------
+
+**Bug fix**
+
+* Dynamically determine control_catalog for SSP based on controls selected.
+
+v0.9.1.22.11 (June 14, 2020)
+---------------------------
+
+**UI changes**
+
+* Display component statement counts on a system's selected controls page via a custom tag to provide access to a dictionary key of impl_smts_counts created in the view for the page
+* Add datetime to filename of a project's export JSON file
+
+**Django Admin changes**
+
+* In ProjectAdmin screen, change the organization field to a select field
+
+v0.9.1.22.10 (June 14, 2020)
+---------------------------
+
+**Model changes**
+
+* Add controls.Element.select_controls_oscal_ctl_ids property to generate list of selected controls oscal_ctl_ids. Enable list of selected controls in SSP.
+
+**UI changes**
+
+* Simplify references to compliance app version; display compliance app version number from 'version' key
+* Simplify display of title of project in UI
+* Display additional information about the compliance app in the project settings modal
+* Stop showing project page's grid of options once number of projects exceeds 4
+
+**Compliance app changes**
+
+* Improve data extraction in project page and store so only use the 'version' key to get version information.
+
+v0.9.1.22.9 (June 13, 2020)
+---------------------------
+
+**UI changes**
+
+Improve the UI of the app-store-item info page.
+
+* Improve visual continuity by making App info a larger version of the app info box in the store.
+* Remove legacy catalog data that is not well maintained.
+* Rearrange logo and add button.
+* Make sure portfolio information is being maintained.
+* Add a back to apps link under start button.
+
+Also clean up presentation of footer in all pages.
+
+
+v0.9.1.22.8 (June 12, 2020)
+---------------------------
+
+**Deployment fix**
+
+* Remove conflict leading to infinite redirects when terminating SSL at a reverse proxy caused by SECURE_SSL_REDIRECT being set to `True` in `settings.py` telling Django to also redirect insecure `https` connections on the same server. Introduces optional new `secure_ssl_redirect`
+parameter setting for `local/enviornment.json` file for deployments where Django redirect should be used. See: https://github.com/GovReady/govready-q/issues/934.
+
+# Force Django to redirect non-secure SSL connections to secure ssl connections
+# NOTE: Setting to True while simultaneously using a http proxy like NGINX
+#       that is also redirecting can lead to infinite redirects.
+#       See: https://docs.djangoproject.com/en/3.0/ref/settings/#secure-ssl-redirect
+#       SECURE_SSL_REDIRECT is False by default.
+
+**Documentation fix**
+
+* Update documentation on NGINX deployments to include `$request_uri` when redirecting from port 80 to port 443.
+* Update documentation to explain new `secure_ssl_redirect` parameter.
+
+v0.9.1.22.6 (June 10, 2020)
+---------------------------
+
+**UI changes**
+
+* Temporary links on Selected Controls page to assign baselines controls to a system. Will replace in future with automatic assignment.
+
+**Developer changes**
+
+* Make sure Baseline model is fully incorporated with 0.9.1.22.
+* Add new route to assign baselines to system.root_element.
+* Because we are still working on better extraction of data from questionnaires, create links in the Selected Control page to assign a baseline when none exists.
+* Added new `assign_baseline` method to System object to assign
+controls that are part of baseline to the selected controls of
+a system root element.
+* Comment out polling on the task_finished page to lower noise in log.
+
+**Data changes**
+
+* Correct an control_id typo in NIST 800-53 rev moderate baseline
+
+v0.9.1.22.5 (June 09, 2020)
+---------------------------
+
+**Bug fix**
+
+* Fix bug causing the starting of apps as answers to modules to fail. Reset start app form to pass a GET instead of a post to correctly pass question parameter to store.
+
+
+v0.9.1.22.4 (June 09, 2020)
+---------------------------
+
+**UI changes**
+
+* Added refresh icon to output documents to let user force refresh of output document. Useful for refreshing SSPs after implementation statements have changed.
+
+v0.9.1.22.3 (June 07, 2020)
+---------------------------
+
+**Feature changes**
+
+This version integrates the new implementation statements
+stored in GovReady-Q's database into the Output Docs.
+
+The implementation statements are accessed via a new `{{ system }}`
+object. The `system` object provides access to the component-to-control
+implementation statements that we began storing as distinct database
+objects in version 0.9.1.5 of GovReady-Q.
+
+The `system` object is injected into the Output Document context as
+an item in guidedmodules.module_logic. NOTE: if the context from
+the view already has a `system` item, it will not be overwritten.
+
+Exactly one Information System associated with the project (if one exists).
+
+The key attribute of `system` object is `control_implementation_as_dict`
+containing a dictionary of all implementations statements and common controls
+for a system.
+
+    {
+      "au-2": {
+                "control_impl_smts": [smt_obj_1, smt_obj_2],
+                "common_controls": [common_control_obj_1, common_control_obj_2],
+                "combined_smt": "Very long text combining statements into a single string..."
+              },
+      "au-3": {
+                "control_impl_smts": [smt_obj_3, smt_obj_4, ...],
+                "common_controls": [],
+                "combined_smt": "Very long text combining statements into a single string..."
+              },
+      ...
+    }
+
+**Documentation changes**
+
+* Add initial documentation describing the `{{ system }}` object and the previously created `{{ control_catalog }}` object.
+
+v0.9.1.22.2 (June 07, 2020)
+---------------------------
+
+**Deployment changes**
+
+CRITICAL fix for deployment documentation and configuration files.
+
+* Remove all comments from `supervisor-govready-q.conf ` because trailing "# comments" cause line to be ignored. This caused a problem in Ubuntu deployment documentation leading to a situation where gunicorn was starting in wrong context and python packages not found.
+* Improved `settings.py` handling of deprecated `host` and `https` parameters for setting `SITE_ROOT_URL` value.
+
+
+v0.9.1.22 (June 05, 2020)
+------------------------
+
+**Feature changes**
+
+Improve application logging. Add `structlog` library. Log permission escalations.
+See documentation for a description of the event log formats.
+The following logged events have been added:
+
+"update_permissions portfolio assign_owner_permissions" - assign portfolio owner permissions
+"update_permissions portfolio remove_owner_permissions" - remove portfolio owner permissions
+"portfolio_list" - view list of portfolios
+"new_portfolio" - create new portfolio
+"new_portfolio assign_owner_permissions" - assign portfolio owner permissions of newly created portfolio to creator
+"send_invitation portfolio assign_edit_permissions" - assign portfolio edit permissions of newly created portfolio to creator
+"send_invitation project assign_edit_permissions" - assign edit permissions to a project and send invitation
+"cancel_invitation" - cancel invitation to a project
+"accept_invitation" - accept invitation to a project
+"sso_logout" - Single Sign On logout
+"project_list" - vew list of projects
+"start_app" - start a questionnaire/compliance app
+"new_project" - create a new project (e.g., questionnaire/compliance app that is a project)
+"new_element new_system" - create a new element (e.g., system component) that represents a new system
+
+**Deployment changes**
+
+* Update name of git 2 CentOS package to git222 in Dockerfile.
+
+**Documentation changes**
+
+* Added documentation section on logging.
+
+v0.9.1.20 (May 31, 2020)
+------------------------
+
+**Documentation changes**
+
+* Re-wrote Ubuntu from Source instructions to explain deployment in much greater detail.
+* Extend Ubuntu from Source instructions to include Gunicorn, Supervisor, and NGINX
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+
+**Deployment changes**
+
+* Introduce the ``govready_url`` environment parameter as a replacement for multiple params of ``host``, ``port``, and ``https``. During transition period ``govready-url`` parameter overrides any setting of ``host``, ``port``, and ``https`` parameters. Example below shows the ``local/environment.json`` file using the single ``govready-url`` parameter replacing legacy parameters:
+
+```
+    # Preferred local/environment.json file using govready-url parameter
+
+    {
+      "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+      "govready-url": "http://localhost:8000",
+      "debug": false,
+      "secret-key": "long_random_string_here",
+      ...
+    }
+
+
+    # Legacy version local/environment.json file using deprecated host, https parameter
+
+    {
+       "db": "mysql://USER:PASSWORD@HOST:PORT/NAME",
+       "host": "localhost:8000",
+       "https": false,
+       "debug": false,
+       "secret-key": "long_random_string_here",
+       ...
+    }
+```
+
+* Created sets of exammple configuration files in ``local-examples`` to make deployment eaiser.
+* The ``install-govready-q.sh`` script now reads the ``govready-url`` parameter from ``local/environment.json`` and uses the values to start GovReady-Q on the indicated host and port.
+
+v.0.9.1.19 (June 02, 2020)
+-------------------------
+
+**UI Changes**
+
+* Intially collapse component controls so it is easier see all components.
+* Add full text of implementation statement to accordian panel header to make it easier to read controls.
+* Create routes and templates for displaying components (e.g., elements) associated with a system.
+
+v0.9.1.18 (May 30, 2020)
+------------------------
+
+**Documentation changes:**
+
+* Ubuntu from source installation docs updated to include upgrading pip to solve problem of Ubuntu's defualt pip not installing Python packages under Linux user installs.
+
+v0.9.1.17 (May 29, 2020)
+------------------------
+
+**UX changes:**
+
+Performance improvements to improve rendering questions faster.
+
+A major change in this commit is to create a cache for Jinja `expression_compile` routine.
+This new cache is `jinja2_expression_compile_cache` and seems to have a noticable improvement
+on maintaining a regular amount of time to render questions.
+
+Several page reloads were the result of page redirects being handled
+based on content of the next page inside the question save form. Calculating the next page
+to display while accounting for skipping computed pages is now handled server side as a function
+that can be called.
+
+Removed links to imputed pages from the module finished page. It does not make sense to
+link to imputed questions when users cannot visit imputed question pages.
+
+Improve caching of OSCAL control catalogs.
+
 v.0.9.1.16 (May 18, 2020)
 -------------------------
 
@@ -20,7 +394,7 @@ v.0.9.1.14 (May 17, 2020)
 
 **Deployment changes**
 
-* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive`` flag.
+* Update deployment/docker/first_run.sh script to accept and pass along `--non-interactive` flag.
 * Create install-govready-q.sh script (based on quickstart.sh) to have an easy single script for installing GovReady-Q.
 * Update Dockerfile to copy over new install-govready-q.sh script and quickstart.sh script.
 * Use docker_container_run.sh script in instructions for installing in the cloud.
@@ -53,6 +427,20 @@ v.0.9.1.11 (May 11, 2020)
 
 Add docker compose file for deploying GovReady and Wazuh together.
 
+v0.9.1.10 (May 10, 2020)
+------------------------
+
+**Feature changes**
+
+Add in baselines listings for 800-53 Rev 4 (low, moderate, high) and 800-171 Rev 1.
+
+Assigning baselines only available from Django commandline shell at momement (no UI).
+
+**Documentation changes**
+
+v0.9.1.9 (May 08, 2020)
+-----------------------
+
 v0.9.1.8.2 (May 10, 2020)
 -------------------------
 
@@ -60,9 +448,15 @@ Update Documentation. Organization installation documentation inside of `Install
 Clean up singe pages for installation notes on each Operating System flavor.
 Rename 0.9.0 mentions to 0.9.x. Remove installation instructions from 0.9.x directory.
 
+v0.9.1.9 (May 08, 2020)
+-----------------------
+
+Add export to Xacta Control Implementation Excel file format.
+
 v0.9.1.8.1 (May 07, 2020)
 -------------------------
 
+Add export to Xacta Control Implementation Excel file format.
 Add full draft of 800-171_rev1_catalog.json in OSCAL.
 
 v0.9.1.8 (May 06, 2020)
@@ -132,7 +526,7 @@ First effort to add control catalogs (e.g., control guidance)
 to the output templates using OSCAL and to create an editor
 for adding and editing control statements stored in the database.
 
-Initial use story is as a user/developer wanting to import
+Initial user story is as a user/developer wanting to import
 a spreadsheet of common controls to have a better interface for
 reading the common controls against the control statement and
 drafting the application layer controls for hybrid controls.
@@ -320,7 +714,7 @@ v0.9.0.3.3 (February 23, 2020)
 * Use Math.pow in main.js to fix IE11 failing to display invite modal
 
 
-v0.9.0.3.2 (February 21, 2019)
+v0.9.0.3.2 (February 21, 2020)
 -------------------------------
 
 **Deployment changes**
@@ -340,7 +734,7 @@ v0.9.0.3.2 (February 21, 2019)
 
 
 v0.9.0.3 (November 21, 2019)
--------------------------------
+----------------------------
 
 **UX changes**
 

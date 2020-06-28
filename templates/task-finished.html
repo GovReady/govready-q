@@ -109,8 +109,14 @@
               </a>
               {% if document.id %}
                 <div class="pull-right">
+                  <span class="glyphicon glyphicon-refresh"
+                    style="cursor: pointer"
+                    alt="Refresh document"
+                    onclick="refresh_output_doc({{project.root_task.module.app.id}});"> </span>
+                    &nbsp;&nbsp;
                   <span class="glyphicon glyphicon-download-alt"
                     style="cursor: pointer"
+                    alt="Download document"
                     onclick="download_document('{{document.id|escapejs}}')"> </span>
                 </div>
               {% endif %}
@@ -243,48 +249,70 @@
     });
   }
 
-  $(function() {
-    // Poll for changes to the answers in the project, which would mean
-    // this document may be out of date.
-    var initial_timestamp = {{task.project.root_task.updated.timestamp|json}};
-    var interval = setInterval(check_for_update, 2500);
-    var is_checking_for_update = false;
-    function check_for_update() {
-      if (is_checking_for_update) return;
-      is_checking_for_update = true;
-      $.ajax({
-        method: 'POST',
-        url: '/tasks/_get_task_timetamp',
-        data: {
-          id: {{task.project.root_task.id}},
-          get_changes_since: initial_timestamp
-        },
-        success: function(res) {
-          // Do nothing if the timestamp matches the timestamp
-          // when the page was generated.
-          if (res.timestamp == initial_timestamp)
-            return;
+  //$(function() {
+  //  // Poll for changes to the answers in the project, which would mean
+  //  // this document may be out of date.
+  //  var initial_timestamp = {{task.project.root_task.updated.timestamp|json}};
+  //  var interval = setInterval(check_for_update, 2500);
+  //  var is_checking_for_update = false;
+  //  function check_for_update() {
+  //    if (is_checking_for_update) return;
+  //    is_checking_for_update = true;
+  //    $.ajax({
+  //      method: 'POST',
+  //      url: '/tasks/_get_task_timetamp',
+  //      data: {
+  //        id: {{task.project.root_task.id}},
+  //        get_changes_since: initial_timestamp
+  //      },
+  //      success: function(res) {
+  //        // Do nothing if the timestamp matches the timestamp
+  //        // when the page was generated.
+  //        if (res.timestamp == initial_timestamp)
+  //          return;
 
-          // Don't poll for any further changes.
-          clearInterval(interval);
+  //        // Don't poll for any further changes.
+  //        clearInterval(interval);
 
-          // Show a desktop notification.
-          Push.create("Project Information Changed", {
-            body: res.changes,
-            timeout: 5000
-          });
+  //        // Show a desktop notification.
+  //        Push.create("Project Information Changed", {
+  //          body: res.changes,
+  //          timeout: 5000
+  //        });
 
-          // Dim the page and reload.
-          var modal = $('<div style="display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 100000; text-align: center; background-color: rgba(255,255,255,.75)"><div style="margin: 20% auto"><div><span class="fas fa-spinner fa-pulse"></span></div><div class="message">Loading...</div></div></div>');
-          $('body').append(modal);
-          modal.fadeIn();
-          window.location.reload();
-        },
-        complete: function() {
-          is_checking_for_update = false;
-        }
+  //        // Dim the page and reload.
+  //        var modal = $('<div style="display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 100000; text-align: center; background-color: rgba(255,255,255,.75)"><div style="margin: 20% auto"><div><span class="fas fa-spinner fa-pulse"></span></div><div class="message">Loading...</div></div></div>');
+  //        $('body').append(modal);
+  //        modal.fadeIn();
+  //        window.location.reload();
+  //      },
+  //      complete: function() {
+  //        is_checking_for_update = false;
+  //      }
+  //    })
+  //  }
+  //});
+
+  function refresh_output_doc(app_id) {
+      if (upgrade_app_option_confirm
+         {% if is_question_page %}
+         && !confirm("All instances of '{{task.project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
+         {% else %}
+         && !confirm("Force refresh of output document(s) in '{{project.root_task.title}}'?"))
+         {% endif %}
+        return;
+      ajax_with_indicator({
+          url: "/tasks/_refresh-output-doc",
+          method: "POST",
+          data: {
+            app: app_id,
+            force: upgrade_app_option_force ? "true" : "false"
+          },
+          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect or reload
+          success: function(res) {
+            location.reload();
+          }
       })
     }
-  });
   </script>
 {% endblock %}

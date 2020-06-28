@@ -109,8 +109,8 @@ class NotificationAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
 
 class ProjectAdmin(GuardedModelAdmin):
-    list_display = ('id', 'portfolio_name', 'title', 'root_task', 'created')
-    raw_id_fields = ('organization', 'root_task',)
+    list_display = ('id', 'portfolio_name', 'organization_name', 'title', 'root_task', 'created')
+    raw_id_fields = ('root_task',)
     readonly_fields = ('id', 'extra',)
 
     def portfolio_name(self, obj):
@@ -118,6 +118,12 @@ class ProjectAdmin(GuardedModelAdmin):
             return obj.portfolio.title
 
     portfolio_name.admin_order_field = 'portfolio'
+
+    def organization_name(self, obj):
+        if obj.organization:
+            return obj.organization.name
+
+    organization_name.admin_order_field = 'organization'
 
 class ProjectMembershipAdmin(admin.ModelAdmin):
     list_display = ('project', 'organization', 'user', 'is_admin', 'created')

@@ -21,6 +21,8 @@ from django.test import TestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from .oscal import Catalogs, Catalog
+from .models import *
+from siteapp.models import User
 
 # from controls.oscal import Catalogs, Catalog
 
@@ -242,4 +244,91 @@ class ControlUITests(SeleniumTest):
     #     self.browser.get(self.url("/controls/800-53/AC-2 (4)/"))
     #     self.assertInNodeText("AC-2 (4)", "#control-heading")
     #     self.assertInNodeText("Automated Audit Actions", "#control-heading")
+
+#####################################################################
+
+class StatementUnitTests(TestCase):
+    ## Simply dummy test ##
+    def test_tests(self):
+        self.assertEqual(1,1)
+
+    def test_smt_status(self):
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = "au.3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is a test statement.",
+            statement_type = "control",
+            status = "Implemented"
+        )
+        self.assertIsNotNone(smt.id)
+        self.assertEqual(smt.status, "Implemented")
+        self.assertEqual(smt.sid, "au.3")
+        self.assertEqual(smt.body, "This is a test statement.")
+        self.assertEqual(smt.sid_class, "NIST_SP-800-53_rev4")
+        # Test updating status and retrieving statement
+        smt.status = "Partially Implemented"
+        smt.save()
+        smt2 = Statement.objects.get(pk=smt.id)
+        self.assertEqual(smt.sid, "au.3")
+        self.assertEqual(smt.status, "Partially Implemented")
+
+class ElementUnitTests(TestCase):
+    ## Simply dummy test ##
+    def test_tests(self):
+        self.assertEqual(1,1)
+
+    def test_element_create(self):
+        e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "New Element")
+        self.assertTrue(e.full_name == "New Element Full Name")
+        self.assertTrue(e.element_type == "system")
+        e.delete()
+        self.assertTrue(e.id is None)
+
+    def test_element_assign_owner_permissions(self):
+        e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
+        e.save()
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "New Element")
+        # create a user
+        u = User.objects.create(username="Jane", email="jane@example.com")
+        # Test no permissions for user
+        perms = get_user_perms(u, e)
+        self.assertTrue(len(perms) == 0)
+
+        # Assign owner permissions
+        e.assign_owner_permissions(u)
+        perms = get_user_perms(u, e)
+        self.assertTrue(len(perms) == 4)
+        self.assertIn('add_element', perms)
+        self.assertIn('change_element', perms)
+        self.assertIn('delete_element', perms)
+        self.assertIn('view_element', perms)
+
+class SystemUnitTests(TestCase):
+    def test_system_create(self):
+        e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "New Element")
+        self.assertTrue(e.full_name == "New Element Full Name")
+        self.assertTrue(e.element_type == "system")
+        s = System(root_element=e)
+        s.save()
+        self.assertEqual(s.root_element.name,e.name)
+
+        u2 = User.objects.create(username="Jane2", email="jane@example.com")
+        # Test no permissions for user
+        perms = get_user_perms(u2, s)
+        self.assertTrue(len(perms) == 0)
+
+        # Assign owner permissions
+        s.assign_owner_permissions(u2)
+        perms = get_user_perms(u2, s)
+        self.assertTrue(len(perms) == 4)
+        self.assertIn('add_system', perms)
+        self.assertIn('change_system', perms)
+        self.assertIn('delete_system', perms)
+        self.assertIn('view_system', perms)
 

@@ -6,6 +6,10 @@ appdirs==1.4.4 \
     --hash=sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41 \
     --hash=sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128 \
     # via fs
+asgiref==3.2.10 \
+    --hash=sha256:7e51911ee147dd685c3c8b805c0ad0cb58d360987b56953878f8c06d2d1c6f1a \
+    --hash=sha256:9fc6fb5d39b8af147ba40765234fa822b39818b12cc80b35ad9b0cef3a476aed \
+    # via django
 babel==2.8.0 \
     --hash=sha256:1aac2ae2d0d8ea368fa90906567f5c08463d98ade155c0c4bfedd6a0f7160e38 \
     --hash=sha256:d670ea0b10f8b723672d3a6abeb87b565b244da220d76b4dba1b66269ec152d4 \
@@ -122,12 +126,13 @@ django-model-utils==4.0.0 \
     --hash=sha256:9cf882e5b604421b62dbe57ad2b18464dc9c8f963fc3f9831badccae66c1139c \
     --hash=sha256:adf09e5be15122a7f4e372cb5a6dd512bbf8d78a23a90770ad0983ee9d909061 \
     # via django-notifications-hq
-django-notifications-hq==1.4 \
-    --hash=sha256:bbf1fbc7c7accfe79c1cf2da5fde96cd3e27e22d27108e6f368a91b26ef75450 \
+django-notifications-hq==1.6 \
+    --hash=sha256:debeb71b7076b08487b40bf07664d1cc43b9977c4480bbc969b30236dda7a461 \
+    --hash=sha256:dfc6f8bd4034ceae91143bc3802ddfb6e276eaec90e63dd23e2584c052561576 \
     # via -r requirements.in
-django==2.2.12 \
-    --hash=sha256:69897097095f336d5aeef45b4103dceae51c00afa6d3ae198a2a18e519791b7a \
-    --hash=sha256:6ecd229e1815d4fc5240fc98f1cca78c41e7a8cd3e3f2eefadc4735031077916 \
+django==3.0.7 \
+    --hash=sha256:5052b34b34b3425233c682e0e11d658fd6efd587d11335a0203d827224ada8f2 \
+    --hash=sha256:e1630333248c9b3d4e38f02093a26f1e07b271ca896d73097457996e0fae12e8 \
     # via -r requirements.in, django-allauth, django-bootstrap3, django-debug-toolbar, django-guardian, django-model-utils, django-notifications-hq, jsonfield
 dnspython==1.16.0 \
     --hash=sha256:36c5e8e38d4369a08b6780b7f27d790a292b2b08eea01607865bf0936c558e01 \
@@ -145,6 +150,9 @@ email-validator==1.1.1 \
     --hash=sha256:5f246ae8d81ce3000eade06595b7bb55a4cf350d559e890182a1466a21f25067 \
     --hash=sha256:63094045c3e802c3d3d575b18b004a531c36243ca8d1cec785ff6bfcb04185bb \
     # via -r requirements.in
+et-xmlfile==1.0.1 \
+    --hash=sha256:614d9722d572f6246302c4491846d2c393c199cfa4edc9af593437691683335b \
+    # via openpyxl
 exclusiveprocess==0.9.4 \
     --hash=sha256:f09c3dda7706e2db9f65b46a3658f5d3a02dbca243e57993c3f9f727f48190a1 \
     # via -r requirements.in
@@ -234,14 +242,18 @@ imagesize==1.2.0 \
     --hash=sha256:6965f19a6a2039c7d48bca7dba2473069ff854c36ae6f19d2cde309d998228a1 \
     --hash=sha256:b1f6b5a4eab1f73479a50fb79fcf729514a900c341d8503d62a62dbc4127a2b1 \
     # via sphinx
-importlib-metadata==1.7.0 \
-    --hash=sha256:90bb658cdbbf6d1735b6341ce708fc7024a3e14e99ffdc5783edea9f9b077f83 \
-    --hash=sha256:dc15b2969b4ce36305c51eebe62d418ac7791e9a157911d58bfb1f9ccd8e2070 \
+importlib-metadata==1.6.1 \
+    --hash=sha256:0505dd08068cfec00f53a74a0ad927676d7757da81b7436a6eefe4c7cf75c545 \
+    --hash=sha256:15ec6c0fd909e893e3a08b3a7c76ecb149122fb14b7efe1199ddd4c7c57ea958 \
     # via -r requirements.in
 importlib-resources==1.5.0 \
     --hash=sha256:6f87df66833e1942667108628ec48900e02a4ab4ad850e25fbf07cb17cf734ca \
     --hash=sha256:85dc0b9b325ff78c8bef2e4ff42616094e16b98ebd5e3b50fe7e2f0bbcdcde49 \
     # via -r requirements.in
+jdcal==1.4.1 \
+    --hash=sha256:1abf1305fce18b4e8aa248cf8fe0c56ce2032392bc64bbd61b5dff2a19ec8bba \
+    --hash=sha256:472872e096eb8df219c23f2689fc336668bdb43d194094b5cc1707e1640acfc8 \
+    # via openpyxl
 jinja2==2.11.2 \
     --hash=sha256:89aab215427ef59c34ad58735269eb58b1a5808103067f7bb9d5836c651b3bb0 \
     --hash=sha256:f0a4641d3cf955324a89c04f3d94663aa4d638abe8f733ecd3582848e1c37035 \
@@ -356,6 +368,9 @@ oauthlib==3.1.0 \
     --hash=sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889 \
     --hash=sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea \
     # via requests-oauthlib
+openpyxl==3.0.3 \
+    --hash=sha256:547a9fc6aafcf44abe358b89ed4438d077e9d92e4f182c87e2dc294186dc4b64 \
+    # via -r requirements.in
 packaging==20.4 \
     --hash=sha256:4357f74f47b9c12db93624a82154e9b120fa8293699949152b22065d556079f8 \
     --hash=sha256:998416ba6962ae7fbd6596850b80e17859a5753ba17c32284f67bfff33784181 \
@@ -504,7 +519,7 @@ selenium==3.141.0 \
 six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced \
-    # via bandit, fpdf2, fs, html5lib, packaging, parsel, python-dateutil, w3lib
+    # via bandit, fpdf2, fs, html5lib, packaging, parsel, python-dateutil, structlog, w3lib
 smmap==3.0.4 \
     --hash=sha256:54c44c197c819d5ef1991799a7e30b662d1e520f2ac75c9efbeb54a742214cf4 \
     --hash=sha256:9c98bbd1f9786d22f14b3d4126894d56befb835ec90cef151af566c7e19b5d24 \
@@ -556,6 +571,14 @@ stevedore==2.0.1 \
     --hash=sha256:609912b87df5ad338ff8e44d13eaad4f4170a65b79ae9cb0aa5632598994a1b7 \
     --hash=sha256:c4724f8d7b8f6be42130663855d01a9c2414d6046055b5a65ab58a0e38637688 \
     # via bandit
+structlog==20.1.0 \
+    --hash=sha256:7a48375db6274ed1d0ae6123c486472aa1d0890b08d314d2b016f3aa7f35990b \
+    --hash=sha256:8a672be150547a93d90a7d74229a29e765be05bd156a35cdcc527ebf68e9af92 \
+    # via -r requirements.in
+swapper==1.1.2.post1 \
+    --hash=sha256:51651018fb027354dd27ff38d5eb47a225d3e642c99b04cff878ae65b1872f64 \
+    --hash=sha256:f3bc7b77b76daf46fcbd41fda9b2f599974ac8c564e129f2a9bae73871c4116e \
+    # via django-notifications-hq
 termcolor==1.1.0 \
     --hash=sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b \
     # via -r requirements.in

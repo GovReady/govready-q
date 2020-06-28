@@ -1,5 +1,6 @@
 import random
 
+from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -25,6 +26,16 @@ from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User, Organization
 from .notifications_helpers import *
+
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
 
 
 def homepage(request):
@@ -125,7 +136,47 @@ def project_list(request):
         # Put the project into the lifecycle's appropriate stage.
         project.lifecycle_stage[1].setdefault("projects", []).append(project)
 
+    # Log listing
+    logger.info(
+        event="project_list",
+        user={"id": request.user.id, "username": request.user.username}
+    )
+
     return render(request, "projects.html", {
+        "lifecycles": lifecycles,
+        "projects": projects,
+        "project_form": ProjectForm(request.user),
+    })
+
+def project_list_lifecycle(request):
+    # Get all of the projects that the user can see *and* that are in a folder,
+    # which indicates it is top-level.
+    projects = Project.get_projects_with_read_priv(
+        request.user,
+        excludes={ "contained_in_folders": None })
+
+    # Sort the projects by their creation date. The projects
+    # won't always appear in that order, but it will determine
+    # the overall order of the page in a stable way.
+    projects = sorted(projects, key = lambda project : project.created)
+
+    # Load each project's lifecycle stage, which is computed by each project's
+    # root task's app's output document named govready_lifecycle_stage_code.
+    # That output document yields a string identifying a lifecycle stage.
+    assign_project_lifecycle_stage(projects)
+
+    # Group projects into lifecyle types, and then lifecycle stages. The lifecycle
+    # types are arranged in the order they first appear across the projects.
+    lifecycles = []
+    for project in projects:
+        # On the first occurrence of this lifecycle type, add it to the output.
+        if project.lifecycle_stage[0] not in lifecycles:
+            lifecycles.append(project.lifecycle_stage[0])
+
+        # Put the project into the lifecycle's appropriate stage.
+        project.lifecycle_stage[1].setdefault("projects", []).append(project)
+
+    return render(request, "projects_lifecycle_original.html", {
         "lifecycles": lifecycles,
         "projects": projects,
         "project_form": ProjectForm(request.user),
@@ -312,11 +363,11 @@ def apps_catalog(request):
     if "q" in request.GET: forward_qsargs["q"] = request.GET["q"]
 
     # Add the portfolio id the user is creating the project from to the args
-    if "portfolio" not in request.POST:
+    if "portfolio" not in request.GET:
         messages.add_message(request, messages.ERROR, "Please select 'Start a project' to continue.")
         return redirect('projects')
     else:
-        forward_qsargs["portfolio"] = request.POST["portfolio"]
+        forward_qsargs["portfolio"] = request.GET["portfolio"]
 
     # Get the app catalog. If the user is answering a question, then filter to
     # just the apps that can answer that question.
@@ -367,6 +418,12 @@ def apps_catalog_item(request, source_slug, app_name):
             break
     else:
         raise Http404()
+
+    # Get portfolio project should be included in.
+    if request.GET.get("portfolio"):
+      portfolio = Portfolio.objects.get(id=request.GET.get("portfolio"))
+    else:
+      portfolio = None
 
     error = None
 
@@ -438,6 +495,8 @@ def apps_catalog_item(request, source_slug, app_name):
         "app": app_catalog_info,
         "error": error,
         "project_form": ProjectForm(request.user),
+        "source_slug": source_slug,
+        "portfolio": portfolio
     })
 
 def start_app(appver, organization, user, folder, task, q, portfolio):
@@ -459,6 +518,18 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
         if folder:
             folder.projects.add(project)
 
+        # Log start app / new project
+        logger.info(
+            event="start_app",
+            object={"task": "project", "id": project.root_task.id, "title": project.root_task.title_override},
+            user={"id": user.id, "username": user.username}
+        )
+        logger.info(
+            event="new_project",
+            object={"object": "project", "id": project.id, "title":project.title},
+            user={"id": user.id, "username": user.username}
+        )
+
         # Create a new System element and link to project?
         # Top level apps should be linked to a system
         # Repeat folder test so we can easily refactor this code later
@@ -475,12 +546,33 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
             # Link system to project
             project.system = system
             project.save()
+            # Log start app / new project
+            logger.info(
+                event="new_element new_system",
+                object={"object": "element", "id": element.id, "name":element.name},
+                user={"id": user.id, "username": user.username}
+            )
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
             project=project,
             user=user,
             is_admin=True)
+        # Grant owner permissions on root_element to user
+        element.assign_owner_permissions(user)
+        # Log ownership assignment
+        logger.info(
+                event="new_element new_system assign_owner_permissions",
+                object={"object": "element", "id": element.id, "name":element.name},
+                user={"id": user.id, "username": user.username}
+            )
+        system.assign_owner_permissions(user)
+        # Log ownership assignment
+        logger.info(
+                event="new_system assign_owner_permissions",
+                object={"object": "system", "id": system.root_element.id, "name":system.root_element.name},
+                user={"id": user.id, "username": user.username}
+            )
 
         if task and q:
             # It will also answer a task's question.
@@ -1043,7 +1135,8 @@ def export_project(request, project):
     from urllib.parse import quote
     data = project.export_json(include_metadata=True, include_file_content=True)
     resp = JsonResponse(data, json_dumps_params={"indent": 2})
-    resp["content-disposition"] = "attachment; filename=%s.json" % quote(project.title)
+    filename = project.title.replace(" ","_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
+    resp["content-disposition"] = "attachment; filename=%s.json" % quote(filename)
     return resp
 
 @project_admin_login_post_required
@@ -1155,14 +1248,34 @@ def update_permissions(request):
         portfolio.remove_permissions(user)
       elif permission == 'grant_owner_permission':
         portfolio.assign_owner_permissions(user)
+        # Log permission escalation
+        logger.info(
+            event="update_permissions portfolio assign_owner_permissions",
+            object={"id": portfolio.id, "title":portfolio.title},
+            receiving_user={"id": user.id, "username": user.username},
+            user={"id": request.user.id, "username": request.user.username}
+        )
       elif permission == 'remove_owner_permissions':
-          portfolio.remove_owner_permissions(user)
+        portfolio.remove_owner_permissions(user)
+        # Log permission removal
+        logger.info(
+            event="update_permissions portfolio remove_owner_permissions",
+            object={"id": portfolio.id, "title":portfolio.title},
+            receiving_user={"id": user.id, "username": user.username},
+            user={"id": request.user.id, "username": request.user.username}
+        )
     next = request.POST.get('next', '/')
     return HttpResponseRedirect(next)
 
 @login_required
 def portfolio_list(request):
     """List portfolios"""
+
+    logger.info(
+        event="portfolio_list",
+        user={"id": request.user.id, "username": request.user.username}
+    )
+
     return render(request, "portfolios/index.html", {
         "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
         "project_form": ProjectForm(request.user),
@@ -1176,7 +1289,18 @@ def new_portfolio(request):
       if form.is_valid():
         form.save()
         portfolio = form.instance
+        logger.info(
+            event="new_portfolio",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         portfolio.assign_owner_permissions(request.user)
+        logger.info(
+            event="new_portfolio assign_owner_permissions",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            receiving_user={"id": request.user.id, "username": request.user.username},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         return redirect('portfolio_projects', pk=portfolio.pk)
     else:
         form = PortfolioForm()
@@ -1251,6 +1375,12 @@ def send_invitation(request):
           from_portfolio = Portfolio.objects.filter(id=request.POST["portfolio"]).first()
           if len(request.POST.get("user_id")) > 0:
             from_portfolio.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation portfolio assign_edit_permissions",
+                object={"object": "portfolio", "id": from_portfolio.id, "title": from_portfolio.title},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
 
         # Validate that the user is a member of from_project. Is None
         # if user is not a project member.
@@ -1258,6 +1388,27 @@ def send_invitation(request):
           from_project = Project.objects.filter(id=request.POST["project"]).first()
           if len(request.POST.get("user_id")) > 0:
             from_project.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation project assign_edit_permissions",
+                object={"object": "project", "id": from_project.id, "title":from_project.title},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            # Assign permissions to view system, root_element
+            from_project.system.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation system assign_edit_permissions",
+                object={"object": "system", "id": from_project.system.root_element.id, "name":from_project.root_element.name},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            from_project.system.root_element.assign_edit_permissions(to_user)
+            logger.info(
+                event="send_invitation element assign_edit_permissions",
+                object={"object": "element", "id": from_project.system.root_element.id, "name":from_project.root_element.name},
+                receiving_user={"id": to_user.id, "username": to_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
 
         # Authorization for adding invitee to the project team.
         if not from_project:
@@ -1341,6 +1492,11 @@ def cancel_invitation(request):
     inv = get_object_or_404(Invitation, id=request.POST['id'], from_user=request.user)
     inv.revoked_at = timezone.now()
     inv.save(update_fields=['revoked_at'])
+    logger.info(
+        event="cancel_invitation",
+        object={"object": "invitation", "id": inv.id, "to_email": inv.to_email},
+        user={"id": request.user.id, "username": request.user.username}
+    )
     return JsonResponse({ "status": "ok" })
 
 def accept_invitation(request, code=None):
@@ -1352,6 +1508,15 @@ def accept_invitation(request, code=None):
         return response
 
     # The invitation has been accepted by a logged in user.
+    logger.info(
+        event="accept_invitation",
+        object={"object": "invitation", "id": inv.id, "to_email": inv.to_email},
+        user={"id": request.user.id, "username": request.user.username}
+    )
+
+    # Make sure user has a default portfolio
+    if len(request.user.portfolio_list()) == 0:
+        portfolio = request.user.create_default_portfolio_if_missing()
 
     # Some invitations create an interstitial before redirecting.
     inv.from_user.preload_profile()
@@ -1458,6 +1623,30 @@ def accept_invitation_do_accept(request, inv):
                 user=request.user,
                 )
             add_message('You have joined the team %s.' % inv.from_project.title)
+            # Add user to system and root element
+            # Grant user permissions to system and root element
+            inv.from_project.assign_edit_permissions(request.user)
+            logger.info(
+                event="accept_invitation project assign_edit_permissions",
+                object={"object": "project", "id": inv.from_project.id, "title":inv.from_project.title},
+                sending_user={"id": inv.from_user.id, "username": inv.from_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            # Assign permissions to view system, root_element
+            inv.from_project.system.assign_edit_permissions(request.user)
+            logger.info(
+                event="accept_invitation system assign_edit_permissions",
+                object={"object": "system", "id": inv.from_project.system.root_element.id, "name":inv.from_project.system.root_element.name},
+                sending_user={"id": inv.from_user.id, "username": inv.from_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            inv.from_project.system.root_element.assign_edit_permissions(request.user)
+            logger.info(
+                event="accept_invitation element assign_edit_permissions",
+                object={"object": "element", "id": inv.from_project.system.root_element.id, "name":inv.from_project.system.root_element.name},
+                sending_user={"id": inv.from_user.id, "username": inv.from_user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
 
         # Run the target's invitation accept function.
         inv.target.accept_invitation(inv, add_message)
@@ -1625,12 +1814,18 @@ def shared_static_pages(request, page):
         "base_template": "base.html",
         "SITE_ROOT_URL": request.build_absolute_uri("/"),
         "password_hash_method": password_hash_method,
-        "project_form": ProjectForm(request.user),
+        # "project_form": ProjectForm(request.user),
+        "project_form": None,
     })
 
 # SINGLE SIGN ON
 
 def sso_logout(request):
+    # Log sso_logout
+    logger.info(
+        event="sso_logout",
+        user={"id": request.user.id, "username": request.user.username}
+    )
     output = "You are logged out."
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)

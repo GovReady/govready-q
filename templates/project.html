@@ -150,6 +150,11 @@ h3.question-group-title {
         <em class="glyphicon glyphicon-book"></em> Controls</a>
       </button>
     {% endif %}
+    {% if project.system is not None %}
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
+        <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
+      </button>
+    {% endif %}
     {% if not project.is_account_project or project.is_deletable %}
       <button class="btn btn-sm btn-default" onclick="$('#project_settings').modal();">
         <em class="glyphicon glyphicon-cog"></em> Settings</a>
@@ -250,7 +255,7 @@ h3.question-group-title {
 
 {% block body_content %}
     <div class="row">
-      <div class="col-sm-12">
+      <div class="col-sm-12" style="margin-bottom:1em;">
         {% if project.root_task.module.spec.introduction %}
           <p style="margin: 1em 0;">
           {{project.root_task.render_introduction|safe}}
@@ -317,8 +322,8 @@ h3.question-group-title {
                       
                       {% else %}
                         {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
-                        <form method="get" action="/store"
-                          onclick="$(this).submit();" style="cursor: pointer">
+                        <form method="get" action="/store" onclick="$(this).submit();" style="cursor: pointer">
+                          <input type="hidden" name="portfolio" id="id_portfolio" value="{{ project.portfolio.id }}">
                           <input type="hidden" name="q" value="{{project.root_task.id}}/{{q.question.key}}">
                       {% endif %}
                     {% endif %}
@@ -489,11 +494,26 @@ h3.question-group-title {
           <div class="col-sm-2">
             <span style="font-weight: bold;">Project</span>
           </div>
-          <div class="col-sm-6" style="font-size: 1.1em;">
+          <div class="col-sm-8" style="font-size: 1.1em;">
             {{project.title}}
           </div>
           <div class="col-sm-1">
-            <button class="btn btn-default btn-small" onclick="return rename_project();">Edit</button>
+            <button class="btn btn-default btn-sm" onclick="return rename_project();">Edit</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="row">
+            <div class="col-sm-12">
+              <span style="font-weight: bold;">About</span>
+            </div>
+          </div>
+          <div class="row" style="margin: 8px 0 20px 0;">
+            <div class="col-sm-12" style="margin-bottom:8px;  "><small>{{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}</small></div>
+            <div class="col-sm-3"><small><span class="text-muted">App Source:</span><br>{{project.root_task.module.app.source.slug|safe}}</small></div>
+            <div class="col-sm-3"><small><span class="text-muted">Compliance App:</span><br>{{project.root_task.module.spec.title}}</small></div>
+            <div class="col-sm-3"><small><span class="text-muted">Project ID:</span><br>{{project.id}}</small></div>
+            <div class="col-sm-3"><small><span class="text-muted">Started:</span><br>{{project.created}}</small></div>
           </div>
         </div>
 
@@ -505,9 +525,8 @@ h3.question-group-title {
         </div>
         {% endif %}
 
-
       {% endif %}
-
+        <div class="row">&nbsp;</div>
         <div class="row" style="margin-top:12px;">
           <div class="col-sm-2">
             <span style="font-weight: bold;">Participants</span>
@@ -573,7 +592,7 @@ h3.question-group-title {
             </div>
           </div>
         </div>
-
+        <div class="row">&nbsp;</div>
         <div class="row" style="margin-top:12px;">
           <div class="col-sm-2">
             <span style="font-weight: bold;">Share Data</span>
@@ -598,6 +617,7 @@ h3.question-group-title {
               </form>
           </div>
         </div>
+        <div class="row">&nbsp;</div>
         <div>
           {% include "permissions.html" with users=users portfolios=portfolios project=project %}
         </div>

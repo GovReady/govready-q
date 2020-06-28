@@ -709,7 +709,7 @@
             {
                 "id": "3.1.19",
                 "class": "SP800-171",
-                "title": "Encrypt CUI on mobile devices and mobile computing platforms.21",
+                "title": "Encrypt CUI on mobile devices and mobile computing platforms.",
                 "parameters": [],
                 "properties": [
                     {
@@ -726,7 +726,7 @@
                     {
                         "id": "3.1.19_smt",
                         "name": "statement",
-                        "prose": "Encrypt CUI on mobile devices and mobile computing platforms.21",
+                        "prose": "Encrypt CUI on mobile devices and mobile computing platforms.",
                         "parts": []
                     },
                     {
@@ -3302,7 +3302,7 @@
             {
                 "id": "3.12.4",
                 "class": "SP800-171",
-                "title": "Develop, document, and periodically update system security plans that describe system boundaries, system environments of operation, how security requirements are implemented, and the relationships with or connections to other systems.26",
+                "title": "Develop, document, and periodically update system security plans that describe system boundaries, system environments of operation, how security requirements are implemented, and the relationships with or connections to other systems.",
                 "parameters": [],
                 "properties": [
                     {
@@ -3753,7 +3753,7 @@
             {
                 "id": "3.13.12",
                 "class": "SP800-171",
-                "title": "Prohibit remote activation 27 of collaborative computing devices and provide indication of devices in use to users present at the device.",
+                "title": "Prohibit remote activation of collaborative computing devices and provide indication of devices in use to users present at the device.",
                 "parameters": [],
                 "properties": [
                     {

@@ -82,6 +82,11 @@ class Catalog (object):
             self.catalog_id = None
             self.info = {}
             self.info['groups'] = None
+        # Precalculate the flattened versions of controls to improve performance
+        # WARNING TODO: This precalculation along with instance caching of controls
+        # may cause a problem in multi-tenant environment where different tenants have
+        # have different organizational defined parameters.
+        self.flattended_controls_all_as_dict = self.get_flattended_controls_all_as_dict()
 
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
@@ -295,7 +300,7 @@ class Catalog (object):
     def get_flattended_controls_all_as_dict(self):
         """Return all controls as a simplified flattened Python dictionary indexed by control ids"""
         # Create an empty dictionary
-        cl_all_dict = {'ac-1': {}}
+        cl_all_dict = {}
         # Get all the controls
         for cl in self.get_controls_all():
             # Get flattened control and add to dictionary of controls

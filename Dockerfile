@@ -31,14 +31,14 @@ ENV LC_ALL en_US.UTF-8
 ENV LANGUAGE en_US:en
 
 # Install required system packages.
-# git2u: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
+# git222: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
 # jq: we use it to assemble the local/environment.json file
 RUN \
-   yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
+   yum -y install https://repo.ius.io/ius-release-el7.rpm \
 && yum -y update \
 && yum -y install \
     python36u python36u-pip \
-    unzip git2u jq nmap-ncat \
+    unzip git222 jq nmap-ncat \
     graphviz pandoc \
     supervisor \
     && yum clean all && rm -rf /var/cache/yum
