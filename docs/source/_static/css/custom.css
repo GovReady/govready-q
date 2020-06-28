@@ -1,4 +1,0 @@
-/* thanks to http://knowyourtoolset.com/2018/02/controlling-the-width-of-a-table-with-read-the-docs/ */
-.tight-table td {
-    white-space: normal !important;
-}

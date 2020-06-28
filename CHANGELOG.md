@@ -16,6 +16,11 @@ v0.9.1.25 (June 24, 2020)
 
 * Include the ability to edit implementation statements and add new implementation statements for a system component on the system component view. This is nice because you manage the content associated with a component on the component page for a system.
 
+**Deployment changes**
+
+* Remove Python packages mondrianish, fpdf2 - no longer generating a mondrianish icon for new apps.
+* Update various Python packages.
+
 v0.9.1.24 (June 23, 2020)
 -------------------------
 
