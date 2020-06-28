@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.26 (June 29, 2020)
+-------------------------
+
+**Bug changes**
+
+* Fix error assigning edit perms to system.root_element from missing path reference to root_element.
+* Extend timeout on output template generation
+
 v0.9.1.25 (June 24, 2020)
 -------------------------
 

@@ -521,6 +521,26 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         var_sleep(1.5)
         self.assertRegex(self.browser.title, "Next Question: The Question") # user is on the task page
 
+        # Test assigning existing user to a project.
+        reset_login()
+        self._new_project()
+        project_page = self.browser.current_url
+
+        # And create a new task.
+        self._start_task()
+        task_page = self.browser.current_url
+
+        # But now go back to the project page.
+        self.browser.get(project_page)
+        var_sleep(1.25)
+        self.click_element("#show-project-invite")
+        var_sleep(0.75)
+        # Select username "me3"
+        self.select_option_by_visible_text('#invite-user-select', "me3")
+        self.click_element("#invite_submit_btn")
+        var_sleep(0.75)
+        self.assertTrue("× me3 granted edit permission to project." == self._getNodeText(".alert-info"))
+       
         # reset_login()
 
         # Invitations to join discussions are tested in test_discussion.
@@ -598,6 +618,19 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
+class PortfolioProjetTests(OrganizationSiteFunctionalTests):
+    
+    def _fill_in_signup_form(self, email, username=None):
+        if username:
+            self.fill_field("#id_username", username)
+        else:
+            self.fill_field("#id_username", "test+%s@q.govready.com" % get_random_string(8))
+        self.fill_field("#id_email", email)
+        new_test_user_password = get_random_string(16)
+        self.fill_field("#id_password1", new_test_user_password)
+        self.fill_field("#id_password2", new_test_user_password)
+
+ 
     def test_create_portfolios(self):
         # Create a new account
         self.browser.get(self.url("/"))
