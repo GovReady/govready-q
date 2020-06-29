@@ -1,12 +1,29 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.26 (June 29, 2020)
+-------------------------
+
+**Bug changes**
+
+* Fix error assigning edit perms to system.root_element from missing path reference to root_element.
+* Extend timeout on output template generation
+
+**Miscellanous changes**
+
+* Update README to correct aging links.
+
 v0.9.1.25 (June 24, 2020)
 -------------------------
 
 **Feature changes**
 
 * Include the ability to edit implementation statements and add new implementation statements for a system component on the system component view. This is nice because you manage the content associated with a component on the component page for a system.
+
+**Deployment changes**
+
+* Remove Python packages mondrianish, fpdf2 - no longer generating a mondrianish icon for new apps.
+* Update various Python packages.
 
 v0.9.1.24 (June 23, 2020)
 -------------------------

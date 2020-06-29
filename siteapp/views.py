@@ -1398,17 +1398,18 @@ def send_invitation(request):
             from_project.system.assign_edit_permissions(to_user)
             logger.info(
                 event="send_invitation system assign_edit_permissions",
-                object={"object": "system", "id": from_project.system.root_element.id, "name":from_project.root_element.name},
+                object={"object": "system", "id": from_project.system.root_element.id, "name": from_project.system.root_element.name},
                 receiving_user={"id": to_user.id, "username": to_user.username},
                 user={"id": request.user.id, "username": request.user.username}
             )
             from_project.system.root_element.assign_edit_permissions(to_user)
             logger.info(
                 event="send_invitation element assign_edit_permissions",
-                object={"object": "element", "id": from_project.system.root_element.id, "name":from_project.root_element.name},
+                object={"object": "element", "id": from_project.system.root_element.id, "name": from_project.system.root_element.name},
                 receiving_user={"id": to_user.id, "username": to_user.username},
                 user={"id": request.user.id, "username": request.user.username}
             )
+            messages.add_message(request, messages.INFO, "{} granted edit permission to project.".format(to_user.username))
 
         # Authorization for adding invitee to the project team.
         if not from_project:

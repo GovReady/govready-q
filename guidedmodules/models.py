@@ -1182,7 +1182,7 @@ class Task(models.Model):
                 with subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
                     stdout, stderr = proc.communicate(
                         html.encode("utf8"),
-                        timeout=10)
+                        timeout=30)
                     if proc.returncode != 0: raise subprocess.CalledProcessError(proc.returncode, ' '.join(cmd))
 
                 blob = stdout
@@ -1212,7 +1212,7 @@ class Task(models.Model):
                     ) as proc:
                     proc.communicate(
                         doc["html"].encode("utf8"),
-                        timeout=10)
+                        timeout=30)
                     if proc.returncode != 0: raise subprocess.CalledProcessError(0, '')
 
                 # return the content of the temporary file
