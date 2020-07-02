@@ -99,10 +99,9 @@ dj-database-url==0.5.0 \
 django-allauth==0.42.0 \
     --hash=sha256:f17209410b7f87da0a84639fd79d3771b596a6d3fc1a8e48ce50dabc7f441d30 \
     # via -r requirements.in
-django-bootstrap3==14.0.0 \
-    --hash=sha256:504dddb563c18f1fbb423a07001948f08d509eac6dbc7a0c08959c05b6026d1f \
-    --hash=sha256:60ad56186a48ebb7a70f87e1d9e8120b017977be30289444bf3eda304bdaa875 \
-    # via -r requirements.in
+django-bootstrap3==14.1.0 \
+    --hash=sha256:0590fc82302d160fe7095c037235005de9769461edfdef75951c28f7faaa0fd2 \
+    --hash=sha256:b4518a69ebb33211f5dc5eb3e6be844cd228825cf22fdb2d0d971ce2f714449a    # via -r requirements.in
 django-database-storage-backend==0.0.5 \
     --hash=sha256:130449ddb0604546769c818aab88b70dfaa207f75300bf7e370040447fae3278 \
     # via -r requirements.in
