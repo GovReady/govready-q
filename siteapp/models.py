@@ -823,8 +823,9 @@ class Project(models.Model):
 
     def is_invitation_valid(self, invitation):
         # Invitations to create a new Task remain valid so long as the
-        # inviting user is a member of the project.
-        return ProjectMembership.objects.filter(project=self, user=invitation.from_user).exists()
+        # inviting user is a member of the project or has view or edit permissions.
+        if invitation.from_user.has_perm('view_project', self) or invitation.from_user.has_perm('edit_project', self) or ProjectMembership.objects.filter(project=self, user=invitation.from_user).exists():
+            return True
 
     def accept_invitation(self, invitation, add_message):
         # Create a new Task for the user to begin a module.

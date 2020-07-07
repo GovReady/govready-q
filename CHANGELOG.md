@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.27 (July 06, 2020)
+-------------------------
+
+**Bug changes**
+
+* Fix invite showing as invalid on project in some cases because not checking guardian permissions.
+
 v0.9.1.26 (June 29, 2020)
 -------------------------
 
