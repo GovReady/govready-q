@@ -49,7 +49,6 @@ from siteapp.models import User
 # from guidedmodules.app_loading import load_app_into_database
 
 
-
 def var_sleep(duration):
     '''
     Tweak sleep globally by multple, a fraction, or depend on env
