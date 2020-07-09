@@ -6,7 +6,7 @@
 {% load q %}
 
 {% block title %}
-{{ portfolio.title }} Controls Selected
+{{ portfolio.title }} Controls Updated
 {% endblock %}
 
 {% block head %}
@@ -25,7 +25,7 @@
       <!-- Page Title-->
       <div style="float: left;">
           <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> > Selected Controls
+            <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> > Updated Controls
           </h2>
       </div>
       <!-- Control Lookup-->
@@ -42,7 +42,7 @@
     <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">Selected controls</div>
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">Updated controls</div>
         <div id="" class="col-xs-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">&nbsp;</div>
         <div id="" class="col-xs-1 col-sm-1 col-md-1 col-lg-1 col-xl-1">
           <!--a href="selected/export/xacta/xlsx">export</a-->
@@ -76,26 +76,19 @@
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                 <a href="/systems/{{ system.id }}/controls/catalogs/{{ control.oscal_catalog_key }}/control/{{ control.oscal_ctl_id }}">{{ control.get_flattened_oscal_control_as_dict.id_display|upper }}</a>
             </div>
-            <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+            <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
                 {{ control.get_flattened_oscal_control_as_dict.title }}
             </div>
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+            <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
               {% with total=impl_smts_count|get_item:control.oscal_ctl_id %}
                 {% if total > 0%}
-                  {{ total }} component{{ total|pluralize }}
+                  {{ total }} component statement{{ total|pluralize }}
                 {% else %}
                   <div style="text-align: center;">
                     &mdash;
                   </div>
                 {% endif %}
               {% endwith %}
-            </div>
-            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-              {% if control.smts_updated %}
-                {{ control.smts_updated|timesince}} ago
-              {% else %}
-                {{ control.created|timesince}} ago
-              {% endif %}
             </div>
         </div>
       {% endfor %}

@@ -18,9 +18,9 @@ class Statement(models.Model):
     status = models.CharField(max_length=100, help_text="The status of the statement", unique=False, blank=True, null=True)
     version = models.CharField(max_length=20, help_text="Optional version number", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
 
-    parent = models.ForeignKey('self', help_text="Optional version number", on_delete=models.SET_NULL, blank=True, null=True)
+    parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
     producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement. ")
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about. ")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
@@ -63,7 +63,7 @@ class Element(models.Model):
     description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=False, null=False)
     element_type = models.CharField(max_length=150, help_text="Statement type", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)
@@ -137,6 +137,7 @@ class ElementControl(models.Model):
     oscal_catalog_key = models.CharField(max_length=100, help_text="Catalog key from which catalog file can be derived (e.g., 'NIST_SP-800-53_rev4')", blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
+    smts_updated = models.DateTimeField(auto_now=False, db_index=True, help_text="Store date of most recent statement update", blank=True, null=True)
 
     # Notes
     # from controls.oscal import *;from controls.models import *;

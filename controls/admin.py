@@ -24,8 +24,9 @@ class ExportCsvMixin:
     export_as_csv.short_description = "Export Selected as CSV"
 
 class StatementAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('id', 'sid', 'sid_class', 'parent')
+    list_display = ('id', 'sid', 'sid_class', 'producer_element')
     actions = ["export_as_csv"]
+    readonly_fields = ('created', 'updated')
 
 class ElementAdmin(GuardedModelAdmin, ExportCsvMixin):
     list_display = ('name', 'full_name', 'id')
@@ -34,6 +35,7 @@ class ElementAdmin(GuardedModelAdmin, ExportCsvMixin):
 class ElementControlAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('id', 'element', 'oscal_ctl_id', 'oscal_catalog_key')
     actions = ["export_as_csv"]
+    readonly_fields = ('created', 'updated', 'smts_updated')
 
 class SystemAdmin(GuardedModelAdmin, ExportCsvMixin):
     list_display = ('id', 'root_element')

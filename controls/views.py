@@ -6,7 +6,7 @@ from datetime import datetime
 from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
 from .utilities import *
-from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl, Baselines
+from .models import *
 from system_settings.models import SystemSettings
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -116,7 +116,46 @@ def control(request, catalog_key, cl_id):
 
 def controls_selected(request, system_id):
     """Display System's selected controls view"""
-    
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+        impl_smts = system.root_element.statements_consumed.all()
+
+        # sort controls
+        # components = list(components)
+        # components.sort(key = lambda component:component.name)
+        # controls.sort(key = lambda control:control.)
+
+        impl_smts_count = {}
+        ikeys = system.smts_control_implementation_as_dict.keys()
+        for c in controls:
+            impl_smts_count[c.oscal_ctl_id] = 0
+            if c.oscal_ctl_id in ikeys:
+                impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "controls": controls,
+            "impl_smts_count": impl_smts_count,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+        }
+        return render(request, "systems/controls_selected.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+def controls_updated(request, system_id):
+    """Display System's statements by updated date in reverse chronological order"""
+
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
@@ -142,9 +181,8 @@ def controls_selected(request, system_id):
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-
         }
-        return render(request, "systems/controls_selected.html", context)
+        return render(request, "systems/controls_updated.html", context)
     else:
         # User does not have permission to this system
         raise Http404
@@ -741,6 +779,17 @@ def save_smt(request):
             statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_consumer_msg })
 
+        # Update ElementControl smts_updated to know when control element on system was recently updated
+        try:
+            print("Updating ElementControl smts_updated")
+            ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid, oscal_catalog_key=statement.sid_class)
+            ec.smts_updated = statement.updated
+            ec.save()
+        except Exception as e:
+            statement_element_status = "error"
+            statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
+
     # Serialize saved data object(s) to send back to update web page
     # The submitted form needs to be updated with the object primary keys (ids)
     # in order that future saves will be treated as updates.
@@ -808,6 +857,20 @@ def delete_smt(request):
             statement_status = "error"
             statement_msg = "Statement delete failed. Error reported {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg })
+
+        # TODO Record fact statement deleted
+        # Below will not work because statement is deleted
+        # and need to show in racird that a statement was recently deleted
+        # Update ElementControl smts_updated to know when control element on system was recently updated
+        # try:
+        #     print("Updating ElementControl smts_updated")
+        #     ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid, oscal_catalog_key=statement.sid_class)
+        #     ec.smts_updated = statement.updated
+        #     ec.save()
+        # except Exception as e:
+        #     statement_element_status = "error"
+        #     statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
+        #     return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
 
         return JsonResponse({ "status": "success", "message": statement_msg })
 
