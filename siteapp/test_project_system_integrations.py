@@ -22,7 +22,7 @@ from controls.models import *
 from .tests import var_sleep, SeleniumTest
 
 
-class ProjectSystemPermissionsUnitTests(TestCase):
+class ProjectSystemPermissionsUnitTests(SeleniumTest):
 
     def _login(self, username=None, password=None):
         # Fill in the login form and submit. Use self.user's credentials
