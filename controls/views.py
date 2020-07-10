@@ -128,9 +128,9 @@ def controls_selected(request, system_id):
         impl_smts = system.root_element.statements_consumed.all()
 
         # sort controls
-        # components = list(components)
-        # components.sort(key = lambda component:component.name)
-        # controls.sort(key = lambda control:control.)
+        controls = list(controls)
+        controls.sort(key = lambda control:control.get_flattened_oscal_control_as_dict()['sort_id'])
+        # controls.sort(key = lambda control:list(reversed(control.get_flattened_oscal_control_as_dict()['sort_id'])))
 
         impl_smts_count = {}
         ikeys = system.smts_control_implementation_as_dict.keys()
