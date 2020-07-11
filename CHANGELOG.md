@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.29 (July 10, 2020)
+-------------------------
+
+**UI changes**
+
+* Added OSCAL to control editor.
+
 v0.9.1.27 (July 09, 2020)
 -------------------------
 
