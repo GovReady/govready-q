@@ -142,6 +142,9 @@ Remove contextbar from top of page
       <li role="presentation"><a href="#combined" aria-controls="combined" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Combined Statement </a></li>
       <li role="presentation"><a href="#common_controls" aria-controls="common_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-ok-circle"></span> Common Controls &nbsp;<div id="common-tab-count">{{ common_controls|length }}</div></a></li>
       <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+      {% if enable_experimental_opencontrol %}
+        <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+      {% endif %}
     </ul>
 
   <!-- Tab panes -->
@@ -290,6 +293,16 @@ Remove contextbar from top of page
           <div><h3><button type="submit" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
 
       </div>
+
+      <!-- Tab panel: combined -->
+      {% if enable_experimental_oscal %}
+      <div role="tabpanel" class="tab-pane" id="oscal">
+        <div id="combined_smt" class="control-text"><h3>OSCAL (under development)</h3></div>
+        <div>See reference <a href="https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json">https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json</a></div>
+        <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
+      </div>
+      {% endif %}
+
 
     </div>
   </div>

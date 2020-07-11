@@ -610,6 +610,64 @@ def editor(request, system_id, catalog_key, cl_id):
 
         # Retrieve any related Implementation Statements filtering by control and system.root_element
         impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element)
+
+        # Build OSCAL
+        # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
+        of = {
+                "system-security-plan": {
+                    "id": "example-ssp",
+                    "metadata": {
+                        "title": "{} System Security Plan Excerpt".format(system.root_element.name),
+                        "published": datetime.now().replace(microsecond=0).isoformat(),
+                        "last-modified": "element.updated.replace(microsecond=0).isoformat()",
+                        "version": "1.0",
+                        "oscal-version": "1.0.0-milestone3",
+                        "roles": [],
+                        "parties": [],
+                        },
+                    "import-profile": {},
+                    "system-characteristics": {},
+                    "system-implementations": {},
+                    "control-implementation": {
+                        "description": "",
+                        "implemented-requirements": {
+                            "control-id": "{}".format(cl_id),
+                            "description": "",
+                            "statements": {
+                                "{}_smt".format(cl_id): {
+                                    "description": "N/A",
+                                    "by-components": {
+                                        "component-logging-policy": {
+                                            "description": "The legal department develops, documents, and disseminates this policy to all staff and contractors within the organization.",
+                                            "role-ids": "legal-officer",
+                                            "set-params": {
+                                                "{}_prm_1".format(cl_id): {
+                                                    "value": ""
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } #statements
+                        }, # implemented-requirements
+                    },
+                    "back-matter": []
+                }
+            }
+        by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"]["{}_smt".format(cl_id)]["by-components"]
+        for smt in impl_smts:
+            print(smt.id, smt.body)
+            my_dict = {
+                        smt.sid + "{}".format(smt.producer_element.name.replace(" ","-")): {
+                            "description": smt.body,
+                            "role-ids": "",
+                            "set-params": {},
+                            "remarks": smt.remarks
+                        },
+                     }
+            by_components.update(my_dict)
+        oscal_string = json.dumps(of, sort_keys=False, indent=2)
+
         context = {
             "system": system,
             "project": project, 
@@ -617,7 +675,11 @@ def editor(request, system_id, catalog_key, cl_id):
             "control": cg_flat[cl_id.lower()],
             "common_controls": common_controls,
             "ccp_name": ccp_name,
-            "impl_smts": impl_smts
+            "impl_smts": impl_smts,
+            "oscal": oscal_string,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "opencontrol": "opencontrol_string"
         }
         return render(request, "controls/editor.html", context)
     else:
