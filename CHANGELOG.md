@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.31 (July 16, 2020)
+-------------------------
+
+**Bug fix**
+
+* Fixed no route error received when Admin following a link to imputed page from task finished page (link path was not correct).
+
 v0.9.1.30 (July 16, 2020)
 -------------------------
 
