@@ -1,5 +1,7 @@
 from django import forms
 from django.forms import ModelForm
+from django.core.exceptions import ValidationError
+from django.db.models import Exists
 
 from .models import Portfolio, Project
 
@@ -22,6 +24,13 @@ class PortfolioForm(ModelForm):
         model = Portfolio
         fields = ['title', 'description']
 
+    def clean(self):
+        """Extend clean to validate portfolio name is not reused."""
+        cd = self.cleaned_data
+        # Validate portfolio name does not exist case insensitive
+        if Portfolio.objects.filter(title__iexact=cd['title']).exists():
+            raise ValidationError("Portfolio name {} not available.".format(cd['title']))
+        return cd
 
 class PortfolioSignupForm(ModelForm):
 
