@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.30 (July 16, 2020)
+-------------------------
+
+**Bug fix**
+
+* Case insensitive prevention of duplicate portfolio names.
+
 v0.9.1.29 (July 10, 2020)
 -------------------------
 

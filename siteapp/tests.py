@@ -619,7 +619,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
 class PortfolioProjetTests(OrganizationSiteFunctionalTests):
-    
+
     def _fill_in_signup_form(self, email, username=None):
         if username:
             self.fill_field("#id_username", username)
@@ -644,6 +644,52 @@ class PortfolioProjetTests(OrganizationSiteFunctionalTests):
         # Navigate to portfolio created on signup
         self.click_element_with_link_text("portfolio-user")
         var_sleep(0.5)
+
+        # Test creating a portfolio using the form
+        # Navigate to the portfolio form
+        self.click_element_with_link_text("Portfolios")
+        # Click Create Portfolio button
+        self.click_element("#new-portfolio")
+        var_sleep(0.25)
+        # Fill in form
+        self.fill_field("#id_title", "Test 1")
+        self.fill_field("#id_description", "Test 1 portfolio")
+        # Submit form
+        self.click_element("#create-portfolio-button")
+        # Test we are on portfolio page we just created
+        var_sleep(0.35)
+        self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q")
+
+        # Test we cannot create a portfolio with the same name
+        # Navigate to the portfolio form
+        self.click_element_with_link_text("Portfolios")
+        # Click Create Portfolio button
+        self.click_element("#new-portfolio")
+        var_sleep(0.25)
+        # Fill in form
+        self.fill_field("#id_title", "Test 1")
+        self.fill_field("#id_description", "Test 1 portfolio")
+        # Submit form
+        self.click_element("#create-portfolio-button")
+        # We should get an error
+        var_sleep(0.25)
+        # test error
+        self.assertIn("Portfolio name Test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link"))
+        # Test uniqueness with case insentivity
+        # Navigate to the portfolio form
+        self.click_element_with_link_text("Portfolios")
+        # Click Create Portfolio button
+        self.click_element("#new-portfolio")
+        var_sleep(0.25)
+        # Fill in form
+        self.fill_field("#id_title", "test 1")
+        # Submit form
+        var_sleep(0.5)
+        self.click_element("#create-portfolio-button")
+        # We should get an error
+        var_sleep(0.25)
+        # test error
+        self.assertIn("Portfolio name test 1 not available.", self._getNodeText("div.alert.alert-danger.alert-dismissable.alert-link"))
 
     def test_create_portfolio_project(self):
         # Create new project within portfolio
