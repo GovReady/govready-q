@@ -1,6 +1,35 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.30 (July 16, 2020)
+-------------------------
+
+**Bug fix**
+
+* Case insensitive prevention of duplicate portfolio names.
+
+v0.9.1.29 (July 10, 2020)
+-------------------------
+
+**UI changes**
+
+* Added OSCAL to control editor.
+
+v0.9.1.27 (July 09, 2020)
+-------------------------
+
+**UI changes**
+
+* Added last updated information to display of selected controls.
+* Admin interface replaced `parent` field on Statement model admin page with `producing_element`
+* Admin interface added read-only view of dates to Statement and ElementControl model admin pages.
+
+**Data changes**
+
+* Added `smts_updated` field to ElementControl.
+* Fixed `updated` field to automatically add update of record date to Statement, Element.
+* Updated help_text on Statement `parent` field. Note that `parent` field is not being used at this time.
+
 v0.9.1.27 (July 06, 2020)
 -------------------------
 

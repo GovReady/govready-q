@@ -6,7 +6,7 @@ from datetime import datetime
 from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
 from .utilities import *
-from .models import Statement, Element, System, CommonControl, CommonControlProvider, ElementCommonControl, Baselines
+from .models import *
 from system_settings.models import SystemSettings
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -116,7 +116,46 @@ def control(request, catalog_key, cl_id):
 
 def controls_selected(request, system_id):
     """Display System's selected controls view"""
-    
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+        impl_smts = system.root_element.statements_consumed.all()
+
+        # sort controls
+        controls = list(controls)
+        controls.sort(key = lambda control:control.get_flattened_oscal_control_as_dict()['sort_id'])
+        # controls.sort(key = lambda control:list(reversed(control.get_flattened_oscal_control_as_dict()['sort_id'])))
+
+        impl_smts_count = {}
+        ikeys = system.smts_control_implementation_as_dict.keys()
+        for c in controls:
+            impl_smts_count[c.oscal_ctl_id] = 0
+            if c.oscal_ctl_id in ikeys:
+                impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "controls": controls,
+            "impl_smts_count": impl_smts_count,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+        }
+        return render(request, "systems/controls_selected.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+def controls_updated(request, system_id):
+    """Display System's statements by updated date in reverse chronological order"""
+
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
@@ -142,9 +181,8 @@ def controls_selected(request, system_id):
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-
         }
-        return render(request, "systems/controls_selected.html", context)
+        return render(request, "systems/controls_updated.html", context)
     else:
         # User does not have permission to this system
         raise Http404
@@ -572,6 +610,64 @@ def editor(request, system_id, catalog_key, cl_id):
 
         # Retrieve any related Implementation Statements filtering by control and system.root_element
         impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element)
+
+        # Build OSCAL
+        # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
+        of = {
+                "system-security-plan": {
+                    "id": "example-ssp",
+                    "metadata": {
+                        "title": "{} System Security Plan Excerpt".format(system.root_element.name),
+                        "published": datetime.now().replace(microsecond=0).isoformat(),
+                        "last-modified": "element.updated.replace(microsecond=0).isoformat()",
+                        "version": "1.0",
+                        "oscal-version": "1.0.0-milestone3",
+                        "roles": [],
+                        "parties": [],
+                        },
+                    "import-profile": {},
+                    "system-characteristics": {},
+                    "system-implementations": {},
+                    "control-implementation": {
+                        "description": "",
+                        "implemented-requirements": {
+                            "control-id": "{}".format(cl_id),
+                            "description": "",
+                            "statements": {
+                                "{}_smt".format(cl_id): {
+                                    "description": "N/A",
+                                    "by-components": {
+                                        "component-logging-policy": {
+                                            "description": "The legal department develops, documents, and disseminates this policy to all staff and contractors within the organization.",
+                                            "role-ids": "legal-officer",
+                                            "set-params": {
+                                                "{}_prm_1".format(cl_id): {
+                                                    "value": ""
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } #statements
+                        }, # implemented-requirements
+                    },
+                    "back-matter": []
+                }
+            }
+        by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"]["{}_smt".format(cl_id)]["by-components"]
+        for smt in impl_smts:
+            print(smt.id, smt.body)
+            my_dict = {
+                        smt.sid + "{}".format(smt.producer_element.name.replace(" ","-")): {
+                            "description": smt.body,
+                            "role-ids": "",
+                            "set-params": {},
+                            "remarks": smt.remarks
+                        },
+                     }
+            by_components.update(my_dict)
+        oscal_string = json.dumps(of, sort_keys=False, indent=2)
+
         context = {
             "system": system,
             "project": project, 
@@ -579,7 +675,11 @@ def editor(request, system_id, catalog_key, cl_id):
             "control": cg_flat[cl_id.lower()],
             "common_controls": common_controls,
             "ccp_name": ccp_name,
-            "impl_smts": impl_smts
+            "impl_smts": impl_smts,
+            "oscal": oscal_string,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "opencontrol": "opencontrol_string"
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -741,6 +841,17 @@ def save_smt(request):
             statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_consumer_msg })
 
+        # Update ElementControl smts_updated to know when control element on system was recently updated
+        try:
+            print("Updating ElementControl smts_updated")
+            ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid, oscal_catalog_key=statement.sid_class)
+            ec.smts_updated = statement.updated
+            ec.save()
+        except Exception as e:
+            statement_element_status = "error"
+            statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
+
     # Serialize saved data object(s) to send back to update web page
     # The submitted form needs to be updated with the object primary keys (ids)
     # in order that future saves will be treated as updates.
@@ -808,6 +919,20 @@ def delete_smt(request):
             statement_status = "error"
             statement_msg = "Statement delete failed. Error reported {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg })
+
+        # TODO Record fact statement deleted
+        # Below will not work because statement is deleted
+        # and need to show in racird that a statement was recently deleted
+        # Update ElementControl smts_updated to know when control element on system was recently updated
+        # try:
+        #     print("Updating ElementControl smts_updated")
+        #     ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid, oscal_catalog_key=statement.sid_class)
+        #     ec.smts_updated = statement.updated
+        #     ec.save()
+        # except Exception as e:
+        #     statement_element_status = "error"
+        #     statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
+        #     return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
 
         return JsonResponse({ "status": "success", "message": statement_msg })
 
