@@ -12,6 +12,7 @@ BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 class Statement(models.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=False, null=False)
     sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID ", unique=False, blank=False, null=False)
+    pid = models.CharField(max_length=20, help_text="Statement part identifier such as 'h' or 'h.1' or other part key", unique=False, blank=True, null=True)
     body = models.TextField(help_text="The statement itself", unique=False, blank=True, null=True)
     statement_type = models.CharField(max_length=150, help_text="Statement type", unique=False, blank=True, null=True)
     remarks = models.TextField(help_text="Remarks about the statement", unique=False, blank=True, null=True)
@@ -31,11 +32,11 @@ class Statement(models.Model):
         ordering = ['producer_element__name', 'sid']
 
     def __str__(self):
-        return "'%s %s %s id=%d'" % (self.statement_type, self.sid, self.sid_class, self.id)
+        return "'%s %s %s %s id=%d'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "'%s %s %s id=%d'" % (self.statement_type, self.sid, self.sid_class, self.id)
+        return "'%s %s %s %s id=%d'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
 
     @property
     def catalog_control(self):
@@ -251,7 +252,7 @@ class System(models.Model):
 
     @property
     def smts_control_implementation_as_dict(self):
-        smts = self.root_element.statements_consumed.filter(statement_type="control_implementation")
+        smts = self.root_element.statements_consumed.filter(statement_type="control_implementation").order_by('pid')
         smts_as_dict = {}
         for smt in smts:
             if smt.sid in smts_as_dict:
@@ -263,7 +264,7 @@ class System(models.Model):
     @property
     def control_implementation_as_dict(self):
         # Get the smts_control_implementations
-        smts = self.root_element.statements_consumed.filter(statement_type="control_implementation")
+        smts = self.root_element.statements_consumed.filter(statement_type="control_implementation").order_by('pid')
         smts_as_dict = {}
         for smt in smts:
             if smt.sid in smts_as_dict:
