@@ -1,6 +1,17 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.33 (July 26, 2020)
+-------------------------
+
+**Data changes**
+
+* Add "part" attribute to Statement model to support tracking control implementation statements by control parts.
+
+**UI changes**
+
+* Add "Part" field into control implementation statement editor.
+
 v0.9.1.31 (July 16, 2020)
 -------------------------
 

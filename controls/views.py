@@ -609,7 +609,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # Get and return the control
 
         # Retrieve any related Implementation Statements filtering by control and system.root_element
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element)
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element).order_by('pid')
 
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
@@ -656,7 +656,7 @@ def editor(request, system_id, catalog_key, cl_id):
             }
         by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"]["{}_smt".format(cl_id)]["by-components"]
         for smt in impl_smts:
-            print(smt.id, smt.body)
+            # print(smt.id, smt.body)
             my_dict = {
                         smt.sid + "{}".format(smt.producer_element.name.replace(" ","-")): {
                             "description": smt.body,
@@ -769,7 +769,6 @@ def save_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-
         # Updating or saving a new statement?
         if len(form_values['smt_id']) > 0:
             # Look up existing Statement object
@@ -781,6 +780,7 @@ def save_smt(request):
                 statement_msg = "The id for this statement is no longer valid in the database."
                 return JsonResponse({ "status": "error", "message": statement_msg })
             # Update existing Statement object with received info
+            statement.pid = form_values['pid']
             statement.body = form_values['body']
             statement.remarks = form_values['remarks']
             statement.status = form_values['status']
@@ -790,6 +790,7 @@ def save_smt(request):
                 sid=oscalize_control_id(form_values['sid']),
                 sid_class=form_values['sid_class'],
                 body=form_values['body'],
+                pid=form_values['pid'],
                 statement_type=form_values['statement_type'],
                 status=form_values['status'],
                 remarks=form_values['remarks'],
