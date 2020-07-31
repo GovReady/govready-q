@@ -39,14 +39,12 @@ def replace_colons(text, project):
 
 def oscalize_control_id(cl_id):
     """ output an oscal standard control id from various common formats for control ids """
-
     # Handle improperly formatted control id
     # Recognize only properly formmated control id:
     #   at-1, at-01, ac-2.3, ac-02.3, ac-2 (3), ac-02 (3), ac-2(3), ac-02 (3)
     pattern = re.compile("^[A-Za-z][A-Za-z]-[0-9() .]*$")
     if not pattern.match(cl_id):
         return render(request, "controls/detail.html", { "control": {} })
-
     # Handle properly formatted existing id
     # Transform various patterns of control ids into OSCAL format
     # Fix leading zero in at-01, ac-02.3, ac-02 (3)
@@ -57,7 +55,6 @@ def oscalize_control_id(cl_id):
     cl_id = cl_id.strip(" ")
     # makes ure lowercase
     cl_id = cl_id.lower()
-
     return cl_id
 
 
@@ -269,4 +266,46 @@ class StatementParser_TaggedTextWithElementsInBrackets(object):
                 sd['elements'].append(t)
                 sd['element_counts'][t] = len(t_found)
         return sd
+
+class ControlsJsonParser(object):
+    """Parse Json object of controls"""
+
+    """
+    from controls.parsers_i import ControlsJsonParser, oscalize_control_id
+    fp = "/path/to/ssp.json"
+    d = ControlsJsonParser(fp)
+
+    d.parse_print()
+    d.parse_print("ac")
+    """
+
+    import json
+
+    def __init__(self, file_path):
+        self.file_path = file_path
+        # self.catalog = None
+        with open(self.file_path) as json_file:
+            self.data = json.load(json_file)
+
+    def controls_list(self):
+        return self.data.keys()
+
+    def get_ctl_by_id(self, id):
+        return self.data[id]
+
+    def parse_print(self,group=None):
+        """Print out the controls by part for controls with optionally defined family group"""
+        for cid in self.controls_list():
+            # Skip items that are not in defined group
+            ctl = self.get_ctl_by_id(cid)
+            print(ctl['control'].split("_")[0])
+            # if group is not None and ctl['control'].split("_")[0] != "group":
+            #     continue
+            print(ctl['control'])
+            print(ctl['imp_status'])
+            print(ctl['implementation'].keys())
+            print()
+            # for key in ctl['implementation'].keys():
+            #     print('----------\n#', key.split(' ')[1], '\n', ctl['implementation'][key])
+
 
