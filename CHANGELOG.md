@@ -1,7 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.33 (July 26, 2020)
+v0.9.1.33 (August 01, 2020)
+---------------------------
+Fix #986 crash on loading set-type module
+
+**Bug Fix**
+
+* Remove an unneeded check for folder existance that was failing causing project system root_element to not be created.
+
+v0.9.1.32 (July 26, 2020)
 -------------------------
 
 **Data changes**
