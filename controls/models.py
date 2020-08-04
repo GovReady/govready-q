@@ -5,26 +5,28 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
 from .oscal import Catalogs, Catalog
+import uuid
 
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
 class Statement(models.Model):
-    sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=False, null=False)
-    sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID ", unique=False, blank=False, null=False)
+    sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=True, null=True)
+    sid_class = models.CharField(max_length=200, help_text="Statement identifier 'class' such as 'NIST_SP-800-53_rev4' or other OSCAL catalog name Control ID.", unique=False, blank=True, null=True)
     pid = models.CharField(max_length=20, help_text="Statement part identifier such as 'h' or 'h.1' or other part key", unique=False, blank=True, null=True)
     body = models.TextField(help_text="The statement itself", unique=False, blank=True, null=True)
-    statement_type = models.CharField(max_length=150, help_text="Statement type", unique=False, blank=True, null=True)
-    remarks = models.TextField(help_text="Remarks about the statement", unique=False, blank=True, null=True)
-    status = models.CharField(max_length=100, help_text="The status of the statement", unique=False, blank=True, null=True)
-    version = models.CharField(max_length=20, help_text="Optional version number", unique=False, blank=True, null=True)
+    statement_type = models.CharField(max_length=150, help_text="Statement type.", unique=False, blank=True, null=True)
+    remarks = models.TextField(help_text="Remarks about the statement.", unique=False, blank=True, null=True)
+    status = models.CharField(max_length=100, help_text="The status of the statement.", unique=False, blank=True, null=True)
+    version = models.CharField(max_length=20, help_text="Optional version number.", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
     parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
-    producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement. ")
-    consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about. ")
+    producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement.")
+    consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
 
     class Meta:
         indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'),]
@@ -55,7 +57,7 @@ class Statement(models.Model):
         # Look up control by ID
         return catalog_control_dict[self.sid]
 
-    # TODO:
+    # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
 class Element(models.Model):
@@ -65,6 +67,7 @@ class Element(models.Model):
     element_type = models.CharField(max_length=150, help_text="Statement type", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)
@@ -396,3 +399,38 @@ class Baselines (object):
     @property
     def body(self):
         return self.legacy_imp_smt
+
+class Poam(models.Model):
+    statement = models.OneToOneField(Statement, related_name="poam", unique=False, blank=True, null=True, on_delete=models.CASCADE, help_text="The Poam details for this statement. Statement must be type Poam.")
+    poam_id = models.IntegerField(unique=False, blank=True, null=True, help_text="The sequential ID for the information system.")
+    controls = models.CharField(max_length=254, unique=False, blank=True, null=True, help_text="Comma delimited list of security controls affected by the weakness identified.")
+    weakness_name = models.CharField(max_length=254, unique=False, blank=True, null=True, help_text="Name for the identified weakness that provides a general idea of the weakness.")
+    # weakness_description is found in the Statement.body
+    weakness_detection_source = models.CharField(max_length=180, unique=False, blank=True, null=True, help_text=" Name of organization, vulnerability scanner, or other entity that first identified the weakness.")
+    weakness_source_identifier = models.CharField(max_length=180, unique=False, blank=True, null=True, help_text="ID or reference provided by the detection source identifying the weakness.")
+    # asset_identifier is the Statement.producer_element
+    remediation_plan = models.TextField(unique=False, blank=True, null=True, help_text="A high-level summary of the actions required to remediate the plan.")
+    scheduled_completion_date = models.DateTimeField(db_index=True, unique=False, blank=True, null=True, help_text="Planned completion date of all milestones.")
+    milestones = models.TextField(unique=False, blank=True, null=True, help_text="One or more milestones that identify specific actions to correct the weakness with an associated completion date.")
+    milestone_changes = models.TextField(unique=False, blank=True, null=True, help_text="List of changes to milestones.")
+    # vendor_dependency = models.CharField(max_length=254, unique=False, blank=True, null=True, help_text="Comma.")
+    risk_rating_original = models.CharField(max_length=50, unique=False, blank=True, null=True, help_text="The initial risk rating of the weakness.")
+    risk_rating_adjusted = models.CharField(max_length=50, unique=False, blank=True, null=True, help_text="The current or modified risk rating of the weakness.")
+    # spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
+    # Spec will hold additional values, such as: POC, resources_required, vendor_dependency
+
+    def __str__(self):
+        return "<Poam %s id=%d>" % (self.statement, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "<Poam %s id=%d>" % (self.statement, self.id)
+
+    def get_next_poam_id(self, system):
+        """Count total number of POAMS and return next linear id"""
+        return len(Statement.objects.filter(statement_type="POAM", consumer_element=system.root_element))
+
+    # TODO:
+    #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
+
+

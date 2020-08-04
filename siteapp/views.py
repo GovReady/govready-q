@@ -532,26 +532,24 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
 
         # Create a new System element and link to project?
         # Top level apps should be linked to a system
-        # Repeat folder test so we can easily refactor this code later
-        if folder:
-            # Create element to serve as system's root_element
-            # Element names must be unique. Use unique project title set above.
-            element = Element()
-            element.name = project.title
-            element.element_type = "system"
-            element.save()
-            # Create system
-            system = System(root_element=element)
-            system.save()
-            # Link system to project
-            project.system = system
-            project.save()
-            # Log start app / new project
-            logger.info(
-                event="new_element new_system",
-                object={"object": "element", "id": element.id, "name":element.name},
-                user={"id": user.id, "username": user.username}
-            )
+        # Create element to serve as system's root_element
+        # Element names must be unique. Use unique project title set above.
+        element = Element()
+        element.name = project.title
+        element.element_type = "system"
+        element.save()
+        # Create system
+        system = System(root_element=element)
+        system.save()
+        # Link system to project
+        project.system = system
+        project.save()
+        # Log start app / new project
+        logger.info(
+            event="new_element new_system",
+            object={"object": "element", "id": element.id, "name":element.name},
+            user={"id": user.id, "username": user.username}
+        )
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
