@@ -363,7 +363,6 @@ class PoamUnitTests(TestCase):
         smt.save()
         import uuid
         poam = Poam.objects.create(statement = smt)
-        self.assertTrue(poam.uuid is not None)
         # self.assertTrue(poam.name == "New Element")
         # self.assertTrue(poam.full_name == "New Element Full Name")
         # self.assertTrue(poam.element_type == "system")
