@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+% load static %
+
+{% block title %}
+Support
+{% endblock %}
+
+{% block head %}
+<style>
+	.body-text {
+		max-width: 70em;
+	}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="body-text">
+
+<div class="container-fluid">
+	<div class="row" style="width: 768px; margin: auto; padding-top: 24px; margin: auto;">
+		<h2>Support</h2>
+	</div>
+	<div class="row" style="width: 768px; margin: auto; padding-top: 24px; margin: auto;">
+		{% if support.text %}<p>{{ support.text }}</p>{% endif %}
+		{% if support.email %}<p><a href="mailto:{{ support.email }}">{{ support.email }}</a></p>{% endif %}
+		{% if support.url %}<p><a href="{{ support.url }}">{{ support.url }}</a></p>{% endif %}
+		{% if support.phone %}<p>{{ support.phone }}</p>{% endif %}
+	</div>
+</div>
+
+{% endblock %}
+

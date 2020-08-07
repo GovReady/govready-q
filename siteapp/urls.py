@@ -74,6 +74,9 @@ urlpatterns = [
     url(r'^invitation/_cancel$', views.cancel_invitation, name="cancel_invitation"),
     url(r'^invitation/accept/(?P<code>.+)$', views.accept_invitation, name="accept_invitation"),
 
+    # support
+    url(r'^support$', views.support, name="support"),
+
     # administration
     url(r'^settings$', views.organization_settings),
     url(r'^settings/_save$', views.organization_settings_save),

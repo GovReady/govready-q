@@ -24,7 +24,7 @@ from controls.models import Element, System
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User, Organization
+from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
 from .notifications_helpers import *
 
 import logging
@@ -1816,6 +1816,25 @@ def shared_static_pages(request, page):
         # "project_form": ProjectForm(request.user),
         "project_form": None,
     })
+
+# SUPPORT
+
+def support(request):
+    """Render a supoort page with custom content"""
+
+    support_results = Support.objects.all()
+    if len(support_results) > 0:
+        support = support_results[0]
+    else:
+        support = {
+            "text": "This page has not be set up. Please have admin set up page.",
+            "email": None,
+            "phone": None,
+            "url": None
+        }
+    return render(request, "support.html", {
+        "support": support,
+        })
 
 # SINGLE SIGN ON
 
