@@ -5,7 +5,7 @@ version: 2
 jobs:
   build:
     docker:
-    - image: circleci/python:3.8-stretch-browsers # when upgrading, check that it works with selenium
+    - image: circleci/python:3.8.1 # when upgrading, check that it works with selenium
 
     steps:
     # Add .local/bin to PATH for utilities install by `pip install --user`.
