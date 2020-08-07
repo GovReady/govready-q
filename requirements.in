@@ -22,7 +22,7 @@ importlib-resources<2,>=1.0 # Apache License
 
 # Common Django Packages
 # Django==2.2.12 # BSD License
-Django==3.0.7 # BSD License
+Django==3.1 # BSD License
 django-debug-toolbar # BSD License
 django-allauth # MIT License
 django-bootstrap3 # Apache License 2.0
