@@ -51,7 +51,8 @@ jobs:
     # Install packages necesary for requirements_txt_checker.sh,
     # and then run it and store output as an artifact.
     - run: pip3 install --user -U pip-tools
-    - run: ./requirements_txt_checker.sh > requirements.txt.status.txt
+    # Temporarily comment out below line - 08/06/2020
+    # - run: ./requirements_txt_checker.sh > requirements.txt.status.txt
     - store_artifacts:
         path: requirements.txt.status.txt
 
