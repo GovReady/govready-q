@@ -82,6 +82,7 @@ class DiscussionTests(SeleniumTest):
         self.click_element("#start-project")
         var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
+        var_sleep(1.5)
 
     def _start_task(self):
         # Assumes _new_project() just finished.
