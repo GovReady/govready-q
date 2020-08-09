@@ -669,6 +669,15 @@ def editor(request, system_id, catalog_key, cl_id):
             by_components.update(my_dict)
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
 
+        # Build combined statement if it exists
+        if cl_id in system.control_implementation_as_dict:
+            combined_smt = system.control_implementation_as_dict[cl_id]['combined_smt']
+        else:
+            combined_smt = ""
+
+        # Define status options
+        impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
+
         context = {
             "system": system,
             "project": project, 
@@ -677,6 +686,8 @@ def editor(request, system_id, catalog_key, cl_id):
             "common_controls": common_controls,
             "ccp_name": ccp_name,
             "impl_smts": impl_smts,
+            "impl_statuses": impl_statuses,
+            "combined_smt": combined_smt,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,

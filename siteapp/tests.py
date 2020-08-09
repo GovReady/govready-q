@@ -137,6 +137,7 @@ class SeleniumTest(StaticLiveServerTestCase):
 
     def assertInNodeText(self, search_text, css_selector):
         self.assertIn(search_text, self._getNodeText(css_selector))
+
     def assertNotInNodeText(self, search_text, css_selector):
         self.assertNotIn(search_text, self._getNodeText(css_selector))
 
@@ -158,6 +159,30 @@ class SeleniumTest(StaticLiveServerTestCase):
         return len(outbox) > 0
 
 #####################################################################
+
+class SupportPageTests(SeleniumTest):
+    def test_supportpage(self):
+        self.browser.get(self.url("/support"))
+        self.assertRegex(self.browser.title, "Support")
+
+    def test_supportpage_customize(self):
+        self.browser.get(self.url("/support"))
+        self.assertRegex(self.browser.title, "Support")
+        self.assertInNodeText("This page has not be set up.", "#support_content")
+
+        # Update content
+        from siteapp.models import Support
+        support = Support()
+        support.text = "Updated support text."
+        support.email = "support@govready.com"
+        support.url = "https://govready.com/support"
+        support.phone = "212-555-5555"
+        support.save()
+        self.browser.get(self.url("/support"))
+        self.assertInNodeText("Updated support text.", "#support_content")
+        self.assertInNodeText("support@govready.com", "#support_content")
+
+
 
 class LandingSiteFunctionalTests(SeleniumTest):
     def test_homepage(self):

@@ -1,6 +1,22 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.35 (August 08, 2020)
+---------------------------
+
+**UI changes**
+
+* Add customizable support page with content defined in the database via Django Admin.
+* Improve rendering of controls implementation statements to show control parts.
+* Improve rendering of control implemenentation status for better readability. Display as list of options.
+
+**Data changes**
+* Add Support model to store customizable support page content.
+
+**Test changes**
+
+* Add tests for support page.
+
 v0.9.1.34 (August 02, 2020)
 ---------------------------
 

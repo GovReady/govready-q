@@ -266,7 +266,8 @@ class System(models.Model):
 
     @property
     def control_implementation_as_dict(self):
-        # Get the smts_control_implementations
+        pid_current = None
+        # Get the smts_control_implementations ordered by part, e.g. pid
         smts = self.root_element.statements_consumed.filter(statement_type="control_implementation").order_by('pid')
         smts_as_dict = {}
         for smt in smts:
@@ -275,7 +276,20 @@ class System(models.Model):
             else:
                 smts_as_dict[smt.sid] = {"control_impl_smts": [smt], "common_controls": [], "combined_smt": ""}
             # Build combined statement
-            smts_as_dict[smt.sid]['combined_smt'] += "{} (Status: {})\n{}\n\n".format(smt.producer_element.name, smt.status, smt.body)
+
+            # Define status options
+            impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
+            status_str = ""
+            for status in impl_statuses:
+                if smt.status.lower() == status.lower():
+                    status_str += '[x] {} &nbsp;'.format(status)
+                else:
+                    status_str += '<span style="color: #888;">[ ] {}</span> &nbsp;'.format(status)
+            # Conditionally add statement part in the beginning of a block of statements related to a part
+            if smt.pid is not None and smt.pid != pid_current:
+                smts_as_dict[smt.sid]['combined_smt'] += "{}.\n".format(smt.pid)
+                pid_current = smt.pid
+            smts_as_dict[smt.sid]['combined_smt'] += "<i>{}</i>\n{}\n\n{}\n\n".format(smt.producer_element.name, status_str, smt.body)
 
         # Add in the common controls
         for cc in self.root_element.common_controls.all():

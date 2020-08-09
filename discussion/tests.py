@@ -13,6 +13,11 @@ class DiscussionTests(SeleniumTest):
     def setUp(self):
         super().setUp()
 
+        # Set screen resolution
+        capabilities = {
+         "resolution": "1920x1080"
+        }
+
         # Load modules from the fixtures directory so that we have the required
         # modules as well as a test project.
         from guidedmodules.models import AppSource
@@ -76,12 +81,13 @@ class DiscussionTests(SeleniumTest):
         # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
         self.click_element("#select_portfolio_submit")
-        var_sleep(2)
+        var_sleep(1)
 
         self.click_element(".app[data-app='project/simple_project'] .view-app")
         self.click_element("#start-project")
         var_sleep(1)
         self.assertRegex(self.browser.title, "I want to answer some questions on Q.")
+        var_sleep(2.0)
 
     def _start_task(self):
         # Assumes _new_project() just finished.
