@@ -165,12 +165,17 @@ Remove contextbar from top of page
       </div>
 
       <div role="tabpanel" class="tab-pane" id="combined">
-      
-        <div id="combined_smt" class="control-text"><h3>Component Implementations Statement</h3>
-{% for smt in impl_smts %}{% if smt.pid %}{{ smt.pid}}.<br/>{% endif %}{{ smt.producer_element.name}} (Status: {{smt.status}})
+        <div id="combined_smt" class="control-text" style="white-space: pre-line; word-break: keep-all;"><h3>Component Implementations Statement</h3>
+          {{ combined_smt|safe }}
+        </div>
+<!-- OLD computing of controls in the template
+{% for smt in impl_smts %}{% if smt.pid %}{{ smt.pid}}.<br/>{% endif %}<b>{{ smt.producer_element.name}}</b>
+{% for status in impl_statuses %}{% if smt.status|lower == status|lower %}[x] {{ status }} {% else %}<span style="color: #888;">[ ] {{ status }}</span> {% endif %}&nbsp;{% endfor %}
+
 {{ smt.body }}
 
-{% endfor %}</div>{% comment %}Leave left justified for proper formatting of text{% endcomment %}
+{% endfor %}</div>
+-->
 <div id="combined_smt" class="control-text">{% for control in common_controls %}{{control.legacy_imp_smt}}
 {% endfor %}
 </div>

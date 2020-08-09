@@ -1827,7 +1827,7 @@ def support(request):
         support = support_results[0]
     else:
         support = {
-            "text": "This page has not be set up. Please have admin set up page.",
+            "text": "This page has not be set up. Please have admin set up page in Djano admin.",
             "email": None,
             "phone": None,
             "url": None
