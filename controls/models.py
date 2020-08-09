@@ -281,7 +281,7 @@ class System(models.Model):
             impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
             status_str = ""
             for status in impl_statuses:
-                if smt.status.lower() == status.lower():
+                if (smt.status is not None) and (smt.status.lower() == status.lower()):
                     status_str += '[x] {} &nbsp;'.format(status)
                 else:
                     status_str += '<span style="color: #888;">[ ] {}</span> &nbsp;'.format(status)
