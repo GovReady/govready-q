@@ -24,7 +24,7 @@ from controls.models import Element, System
 from .forms import PortfolioForm, ProjectForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
-from .models import Folder, Invitation, Portfolio, Project, User, Organization
+from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
 from .notifications_helpers import *
 
 import logging
@@ -532,26 +532,24 @@ def start_app(appver, organization, user, folder, task, q, portfolio):
 
         # Create a new System element and link to project?
         # Top level apps should be linked to a system
-        # Repeat folder test so we can easily refactor this code later
-        if folder:
-            # Create element to serve as system's root_element
-            # Element names must be unique. Use unique project title set above.
-            element = Element()
-            element.name = project.title
-            element.element_type = "system"
-            element.save()
-            # Create system
-            system = System(root_element=element)
-            system.save()
-            # Link system to project
-            project.system = system
-            project.save()
-            # Log start app / new project
-            logger.info(
-                event="new_element new_system",
-                object={"object": "element", "id": element.id, "name":element.name},
-                user={"id": user.id, "username": user.username}
-            )
+        # Create element to serve as system's root_element
+        # Element names must be unique. Use unique project title set above.
+        element = Element()
+        element.name = project.title
+        element.element_type = "system"
+        element.save()
+        # Create system
+        system = System(root_element=element)
+        system.save()
+        # Link system to project
+        project.system = system
+        project.save()
+        # Log start app / new project
+        logger.info(
+            event="new_element new_system",
+            object={"object": "element", "id": element.id, "name":element.name},
+            user={"id": user.id, "username": user.username}
+        )
 
         # Add user as the first admin.
         ProjectMembership.objects.create(
@@ -1818,6 +1816,25 @@ def shared_static_pages(request, page):
         # "project_form": ProjectForm(request.user),
         "project_form": None,
     })
+
+# SUPPORT
+
+def support(request):
+    """Render a supoort page with custom content"""
+
+    support_results = Support.objects.all()
+    if len(support_results) > 0:
+        support = support_results[0]
+    else:
+        support = {
+            "text": "This page has not be set up. Please have admin set up page in Djano admin.",
+            "email": None,
+            "phone": None,
+            "url": None
+        }
+    return render(request, "support.html", {
+        "support": support,
+        })
 
 # SINGLE SIGN ON
 

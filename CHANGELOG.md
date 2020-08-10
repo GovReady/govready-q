@@ -1,6 +1,63 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.35 (August 08, 2020)
+---------------------------
+
+**UI changes**
+
+* Add customizable support page with content defined in the database via Django Admin.
+* Improve rendering of controls implementation statements to show control parts.
+* Improve rendering of control implemenentation status for better readability. Display as list of options.
+
+**Data changes**
+* Add Support model to store customizable support page content.
+
+**Test changes**
+
+* Add tests for support page.
+
+v0.9.1.34 (August 02, 2020)
+---------------------------
+
+Create POA&M management as a "PAOM" Statement type inside the database instead as existing as questionnaires.
+
+**UI changes**
+
+* Add pages for listing, creating and editing POA&Ms.
+* Add "POA&Ms" action button to project page.
+
+**Data changes**
+
+* Add "Poam" model in 1 to 1 relationship with "Statement" model to create POA&M object type.
+* Add "uuid" field to "Statement" model to make POA&M id management easier.
+* Add "uuid" to "Element" model.
+* Adjust migration scripts to back-fill Element records during migration.
+
+**Test changes**
+
+* Add tests for Poam object.
+
+v0.9.1.33 (August 01, 2020)
+---------------------------
+
+Fix #986 crash on loading set-type module
+
+**Bug Fix**
+
+* Remove an unneeded check for folder existance that was failing causing project system root_element to not be created.
+
+v0.9.1.32 (July 26, 2020)
+-------------------------
+
+**Data changes**
+
+* Add "part" attribute to Statement model to support tracking control implementation statements by control parts.
+
+**UI changes**
+
+* Add "Part" field into control implementation statement editor.
+
 v0.9.1.31 (July 16, 2020)
 -------------------------
 

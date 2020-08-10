@@ -1,6 +1,8 @@
 from django.db import models
 
 class SystemSettings(models.Model):
+  """Model for various system settings for install of GovReady"""
+
   setting = models.CharField(max_length=200, unique=True)
   active = models.BooleanField(default=False)
 
@@ -18,4 +20,3 @@ class SystemSettings(models.Model):
   @classmethod
   def enable_experimental_oscal(cls):
     return cls.objects.get(setting="enable_experimental_opencontrol").active
-

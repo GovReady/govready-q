@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from django.forms import ModelForm
 from siteapp.models import Project, User, Organization
 from datetime import datetime
 from .oscal import Catalog, Catalogs
@@ -609,7 +610,7 @@ def editor(request, system_id, catalog_key, cl_id):
         # Get and return the control
 
         # Retrieve any related Implementation Statements filtering by control and system.root_element
-        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element)
+        impl_smts = Statement.objects.filter(sid=cl_id, consumer_element=system.root_element).order_by('pid')
 
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
@@ -656,7 +657,7 @@ def editor(request, system_id, catalog_key, cl_id):
             }
         by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"]["{}_smt".format(cl_id)]["by-components"]
         for smt in impl_smts:
-            print(smt.id, smt.body)
+            # print(smt.id, smt.body)
             my_dict = {
                         smt.sid + "{}".format(smt.producer_element.name.replace(" ","-")): {
                             "description": smt.body,
@@ -668,6 +669,15 @@ def editor(request, system_id, catalog_key, cl_id):
             by_components.update(my_dict)
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
 
+        # Build combined statement if it exists
+        if cl_id in system.control_implementation_as_dict:
+            combined_smt = system.control_implementation_as_dict[cl_id]['combined_smt']
+        else:
+            combined_smt = ""
+
+        # Define status options
+        impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
+
         context = {
             "system": system,
             "project": project, 
@@ -676,6 +686,8 @@ def editor(request, system_id, catalog_key, cl_id):
             "common_controls": common_controls,
             "ccp_name": ccp_name,
             "impl_smts": impl_smts,
+            "impl_statuses": impl_statuses,
+            "combined_smt": combined_smt,
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
@@ -769,7 +781,6 @@ def save_smt(request):
         form_values = {}
         for key in form_dict.keys():
             form_values[key] = form_dict[key][0]
-
         # Updating or saving a new statement?
         if len(form_values['smt_id']) > 0:
             # Look up existing Statement object
@@ -781,6 +792,7 @@ def save_smt(request):
                 statement_msg = "The id for this statement is no longer valid in the database."
                 return JsonResponse({ "status": "error", "message": statement_msg })
             # Update existing Statement object with received info
+            statement.pid = form_values['pid']
             statement.body = form_values['body']
             statement.remarks = form_values['remarks']
             statement.status = form_values['status']
@@ -790,6 +802,7 @@ def save_smt(request):
                 sid=oscalize_control_id(form_values['sid']),
                 sid_class=form_values['sid_class'],
                 body=form_values['body'],
+                pid=form_values['pid'],
                 statement_type=form_values['statement_type'],
                 status=form_values['status'],
                 remarks=form_values['remarks'],
@@ -1088,4 +1101,142 @@ certifications:
     else:
         # User does not have permission to this system
         raise Http404
+
+# PoamS
+def poams_list(request, system_id):
+    """List PoamS for a system"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+
+        # impl_smts_count = {}
+        # ikeys = system.smts_control_implementation_as_dict.keys()
+        # for c in controls:
+        #     impl_smts_count[c.oscal_ctl_id] = 0
+        #     if c.oscal_ctl_id in ikeys:
+        #         impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+
+        # Return the controls
+        context = {
+            "system": system,
+            "project": project,
+            "controls": controls,
+            "poam_smts": poam_smts,
+            "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+            "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+        }
+        return render(request, "systems/poams_list.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+def new_poam(request, system_id):
+    """Form to create new POAM"""
+    from .forms import StatementPoamForm, PoamForm
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+
+        if request.method == 'POST':
+            statement_form = StatementPoamForm(request.POST)
+            # if statement_form.is_valid() and poam_form.is_valid():
+            if statement_form.is_valid():
+                statement = statement_form.save()
+                poam_form = PoamForm(request.POST)
+                if poam_form.is_valid():
+                    poam = poam_form.save()
+                    print('POAM ID',poam.get_next_poam_id(system))
+                    poam.poam_id = poam.get_next_poam_id(system)
+                    poam.statement = statement
+                    poam.save()
+                return HttpResponseRedirect('/systems/{}/poams'.format(system_id),{})
+                #url(r'^(?P<system_id>.*)/poams$', views.poams_list, name="poams_list"),
+            else:
+                pass
+        else:
+            statement_form = StatementPoamForm(status="Open", statement_type="POAM", consumer_element=system.root_element)
+            poam = Poam()
+            poam_id = poam.get_next_poam_id(system)
+            poam_form = PoamForm()
+            return render(request, 'systems/poam_form.html', {
+                'statement_form': statement_form,
+                'poam_form': poam_form,
+                'system': system,
+                'project': project,
+                'controls': controls,
+            })
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+def edit_poam(request, system_id, poam_id):
+    """Form to create new POAM"""
+    from .forms import StatementPoamForm, PoamForm
+    from django.shortcuts import get_object_or_404
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+        controls = system.root_element.controls.all()
+        # Retrieve POAM Statement
+        poam_smt = get_object_or_404(Statement, id=poam_id)
+
+        if request.method == 'POST':
+            statement_form = StatementPoamForm(request.POST, instance=poam_smt)
+            poam_form = PoamForm(request.POST, instance=poam_smt.poam)
+            if statement_form.is_valid() and poam_form.is_valid():
+                # Save statement after updating values
+                statement_form.save()
+                poam_form.save()
+                return HttpResponseRedirect('/systems/{}/poams'.format(system_id),{})
+            else:
+                pass
+                #TODO: What if form invalid?
+        else:
+            statement_form = StatementPoamForm(initial={
+                    'statement_type': poam_smt.statement_type,
+                    'status': poam_smt.status,
+                    'consumer_element': system.root_element,
+                    'body': poam_smt.body,
+                    'remarks': poam_smt.remarks,
+                })
+            poam_form = PoamForm(initial={
+                    'weakness_name': poam_smt.poam.weakness_name,
+                    'controls': poam_smt.poam.controls,
+                    'risk_rating_original': poam_smt.poam.risk_rating_original,
+                    'risk_rating_adjusted': poam_smt.poam.risk_rating_adjusted,
+                    'weakness_detection_source': poam_smt.poam.weakness_detection_source,
+                    'remediation_plan': poam_smt.poam.remediation_plan,
+                    'milestones': poam_smt.poam.milestones,
+                    'scheduled_completion_date': poam_smt.poam.scheduled_completion_date,
+                })
+            return render(request, 'systems/poam_edit_form.html', {
+                'statement_form': statement_form,
+                'poam_form': poam_form,
+                'system': system,
+                'project': project,
+                'controls': controls,
+                'poam_smt': poam_smt,
+            })
+    else:
+        # User does not have permission to this system
+        raise Http404
+
+
 

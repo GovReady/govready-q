@@ -92,7 +92,7 @@ DEBUG_TOOLBAR_CONFIG = {
 
 LOGIN_REDIRECT_URL = "/projects"
 
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
     EMAIL_DOMAIN = environment.get("email", {}).get("domain", GOVREADY_URL.hostname)
 elif "host" in environment:
     EMAIL_DOMAIN = environment.get("email", {}).get("domain", environment["host"].split(":")[0])

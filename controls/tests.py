@@ -331,3 +331,44 @@ class SystemUnitTests(TestCase):
         self.assertIn('delete_system', perms)
         self.assertIn('view_system', perms)
 
+class PoamUnitTests(TestCase):
+    """Class for Poam Unit Tests"""
+
+    ## Simply dummy test ##
+    def test_tests(self):
+        self.assertEqual(1,1)
+
+    def test_element_create(self):
+        # Create a root_element and system
+        e = Element.objects.create(name="New Element 2", full_name="New Element 2 Full Name", element_type="system")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "New Element 2")
+        self.assertTrue(e.full_name == "New Element 2 Full Name")
+        self.assertTrue(e.element_type == "system")
+        e.save()
+        s = System(root_element=e)
+        s.save()
+        self.assertEqual(s.root_element.name,e.name)
+
+        # Create a Poam for the system
+        smt = Statement.objects.create(
+            sid = None,
+            sid_class = None,
+            pid = None,
+            body = "This is a test Poam statement.",
+            statement_type = "Poam",
+            status = "New",
+            consumer_element = e
+        )
+        smt.save()
+        import uuid
+        poam = Poam.objects.create(statement = smt)
+        # self.assertTrue(poam.name == "New Element")
+        # self.assertTrue(poam.full_name == "New Element Full Name")
+        # self.assertTrue(poam.element_type == "system")
+        poam.save()
+        # poam.delete()
+        # self.assertTrue(poam.uuid is None)
+
+
+

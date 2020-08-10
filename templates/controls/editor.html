@@ -142,6 +142,9 @@ Remove contextbar from top of page
       <li role="presentation"><a href="#combined" aria-controls="combined" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Combined Statement </a></li>
       <li role="presentation"><a href="#common_controls" aria-controls="common_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-ok-circle"></span> Common Controls &nbsp;<div id="common-tab-count">{{ common_controls|length }}</div></a></li>
       <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+      {% if enable_experimental_opencontrol %}
+        <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+      {% endif %}
     </ul>
 
   <!-- Tab panes -->
@@ -162,12 +165,17 @@ Remove contextbar from top of page
       </div>
 
       <div role="tabpanel" class="tab-pane" id="combined">
-      
-        <div id="combined_smt" class="control-text"><h3>Component Implementations Statement</h3>
-{% for smt in impl_smts %}{{ smt.producer_element.name}} (Status: {{smt.status}})
+        <div id="combined_smt" class="control-text" style="white-space: pre-line; word-break: keep-all;"><h3>Component Implementations Statement</h3>
+          {{ combined_smt|safe }}
+        </div>
+<!-- OLD computing of controls in the template
+{% for smt in impl_smts %}{% if smt.pid %}{{ smt.pid}}.<br/>{% endif %}<b>{{ smt.producer_element.name}}</b>
+{% for status in impl_statuses %}{% if smt.status|lower == status|lower %}[x] {{ status }} {% else %}<span style="color: #888;">[ ] {{ status }}</span> {% endif %}&nbsp;{% endfor %}
+
 {{ smt.body }}
 
-{% endfor %}</div>{% comment %}Leave left justified for proper formatting of text{% endcomment %}
+{% endfor %}</div>
+-->
 <div id="combined_smt" class="control-text">{% for control in common_controls %}{{control.legacy_imp_smt}}
 {% endfor %}
 </div>
@@ -199,6 +207,10 @@ Remove contextbar from top of page
                           <div class="form-group">
                             <label for="statement">Statement</label>
                             <textarea class="form-control" id="statement" placeholder="Place control text here" rows="8" cols="50">{{control.legacy_imp_smt}}</textarea>
+                          </div>
+                          <div class="form-group">
+                            <label for="statement">Part</label>
+                            <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{smt.pid}}" style="width:180px;">
                           </div>
                           <div class="form-group">
                             <label for="remarks">Remarks</label>
@@ -249,6 +261,10 @@ Remove contextbar from top of page
                     <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
                   </div>
                   <div class="form-group">
+                    <label for="statement">Part</label>
+                    <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{smt.pid}}" style="width:180px;">
+                  </div>
+                  <div class="form-group">
                     <label for="status">Status</label>
                     <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
                     <option value='' {% if '' == smt.status %}selected="selected"{% endif %}></option>
@@ -291,6 +307,16 @@ Remove contextbar from top of page
 
       </div>
 
+      <!-- Tab panel: combined -->
+      {% if enable_experimental_oscal %}
+      <div role="tabpanel" class="tab-pane" id="oscal">
+        <div id="combined_smt" class="control-text"><h3>OSCAL (under development)</h3></div>
+        <div>See reference <a href="https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json">https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json</a></div>
+        <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
+      </div>
+      {% endif %}
+
+
     </div>
   </div>
 
@@ -312,7 +338,15 @@ Remove contextbar from top of page
 
         function update_combined_smt() {
           // Read through existing statements and combine into single statement
-          combined_smt = $( ".smt_form textarea[name=body]" ).map(function(){return this.value}).get().join("\n\n");
+          combined_smt = $( ".smt_form" ).map(function(){
+            pid = $(this).find('input[name=pid]')[0].value;
+            body = $(this).find('textarea[name=body]')[0].value;
+            if (pid != null) {
+              c_smt = pid + "\n" + body;
+            } else {
+              c_smt = body;
+            }
+            return c_smt}).get().join("\n\n");
           // Add combined statement to #combined_smt
           $( "#combined_smt" ).html("<h3>Component Implementations Statement</h3><textarea style=\"border: none; min-height:300px;overflow-y: scroll;\" class=\"form-control\" cols=\"50\" onkeypress=\"$(this).keypress(function(e) {return false});\">"+combined_smt+"</textarea>");
         }
@@ -344,6 +378,10 @@ Remove contextbar from top of page
                   <input type="hidden" id="smt_id" name="smt_id" value="">
                   <label for="statement">Statement</label>
                   <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="statement">Part</label>
+                  <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="" style="width:180px;">
                 </div>
                 <div class="form-group">
                   <label for="status">Status</label>
