@@ -793,7 +793,7 @@ def save_smt(request):
                 # Log permission to save answer denied
                 logger.info(
                     event="save_smt permission_denied",
-                    object={"object": "statement", "id": statment.id},
+                    object={"object": "statement", "id": statement.id},
                     user={"id": request.user.id, "username": request.user.username}
                 )
                 return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
@@ -938,7 +938,7 @@ def delete_smt(request):
             # Log permission to save answer denied
             logger.info(
                 event="delete_smt permission_denied",
-                object={"object": "statement", "id": statment.id},
+                object={"object": "statement", "id": statement.id},
                 user={"id": request.user.id, "username": request.user.username}
             )
             return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
