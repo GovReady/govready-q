@@ -595,6 +595,11 @@ class Project(models.Model):
         for perm in permissions:
             assign_perm(perm, user, self)
 
+    def assign_view_permissions(self, user):
+        permissions = ['view_project']
+        for perm in permissions:
+            assign_perm(perm, user, self)
+
     def get_owner_domains(self):
         # Utility function for the admin/debugging to quickly see the domain
         # names in the email addresses of the admins of this project.

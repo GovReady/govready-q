@@ -785,6 +785,19 @@ def save_smt(request):
         if len(form_values['smt_id']) > 0:
             # Look up existing Statement object
             statement = Statement.objects.get(pk=form_values['smt_id'])
+
+            # Check user permissions
+            system = statement.consumer_element
+            if not request.user.has_perm('change_system', system):
+                # User does not have write permissions
+                # Log permission to save answer denied
+                logger.info(
+                    event="save_smt permission_denied",
+                    object={"object": "statement", "id": statment.id},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
             if statement is None:
                 # Statement from received has an id no longer in the database.
                 # Report error. Alternatively, in future save as new Statement object
@@ -917,6 +930,19 @@ def delete_smt(request):
 
         # Delete statement?
         statement = Statement.objects.get(pk=form_values['smt_id'])
+
+        # Check user permissions
+        system = statement.consumer_element
+        if not request.user.has_perm('change_system', system):
+            # User does not have write permissions
+            # Log permission to save answer denied
+            logger.info(
+                event="delete_smt permission_denied",
+                object={"object": "statement", "id": statment.id},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
         if statement is None:
             # Statement from received has an id no longer in the database.
             # Report error. Alternatively, in future save as new Statement object

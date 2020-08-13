@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+
+v0.9.1.36 (August 13, 2020)
+---------------------------
+
+**Feature changes**
+
+* Create view only access for projects, system to support Auditor/Assessor role
+
 v0.9.1.35 (August 08, 2020)
 ---------------------------
 
