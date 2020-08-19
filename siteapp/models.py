@@ -1163,7 +1163,7 @@ class Support(models.Model):
 
   email = models.EmailField(max_length=254, unique=False, blank=True, null=True, help_text="Support email address")
   phone = models.CharField(max_length=24, unique=False, blank=True, null=True, help_text="Support phone number")
-  text = models.TextField(unique=False, blank=True, null=True, help_text="Support desription at top of page")
+  text = models.TextField(unique=False, blank=True, null=True, help_text="Text or HTML content to appear at top of support page")
   url = models.URLField(max_length=200, unique=False, blank=True, null=True, help_text="Support url")
 
   def __str__(self):

@@ -1,6 +1,12 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.36.1 (August 19, 2020)
+---------------------------
+
+**UI changes**
+
+* Allow customizable support page to render HTML tags.
 
 v0.9.1.36 (August 13, 2020)
 ---------------------------
