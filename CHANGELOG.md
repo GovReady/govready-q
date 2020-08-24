@@ -1,8 +1,29 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.36.1 (August 19, 2020)
+v0.9.1.37 (August 23, 2020)
 ---------------------------
+
+**UI changes**
+
+Fixed multiple accessibility issues:
+
+- Improve contrast in `/projects`, `/portfolios`, and various control pages (replaced `#888` with `#666`)
+- Fix redundant links in `/projects`.
+- Add label to `select-portfolio-modal` portfolio form element (and remove extra inclusion of modal from `projects.html` template).
+- Add value to hidden `h4` global_modal_title to help with accessibility.
+- Properly generate "Start project" content to `/controls`, `catalog`, and other control pages.
+- Added accessible `title` parameter to `control-lookup` search box on control pages.
+- Properly hide notifications when user is anonymous.
+- Do not display start dropdown in navbar when user is anonymous.
+
+**Bug fixes**
+
+- Fix missing form labels in start project portfolio selection modal effecting accessibility.
+- Do notget portfolio object in ProjectForm for AnonymousUser.
+
+v0.9.1.36.1 (August 19, 2020)
+-----------------------------
 
 **UI changes**
 
