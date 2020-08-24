@@ -5,11 +5,11 @@
 {% if portfolios %}
 <div class="container">
 <div class="row">
-  <div class="col-xs-10 col-md-5">Portfolio</div>
-  <div class="col-xs-6 col-sm-1">ID</div>
-  <div class="col-xs-6 col-sm-2">Role</div>
+  <div class="col-xs-10 col-md-5"><strong>Portfolio</strong></div>
+  <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
+  <div class="col-xs-6 col-sm-2"><strong>Role</strong></div>
   <div class="col-md-2">&nbsp;</div>
-  <div class="col-xs-12 col-md-2">Created</div>
+  <div class="col-xs-12 col-md-2"><strong>Created</strong></div>
 </div>
 {% endif %}
 
@@ -23,20 +23,20 @@
       </div>
     </div>
 
-    <div class="col-md-1"><small style="color: #888;">{{portfolio.id}}</small></div>
+    <div class="col-md-1">{{portfolio.id}}</div>
 
     {% get_obj_perms request.user for portfolio as "perms" %}
     {% if "can_grant_portfolio_owner_permission" in perms %}
-    <div class="col-md-2"><small style="color: #888;">Owner</small></div>
+    <div class="col-md-2">Owner</div>
     {% elif "change_portfolio" in perms%}
-    <div class="col-md-2"><small style="color: #888;">Portfolio Member</small></div>
+    <div class="col-md-2">Portfolio Member</div>
     {% else %}
-    <div class="col-md-2"><small style="color: #888;">Project Member</small></div>
+    <div class="col-md-2">Project Member</div>
     {% endif %}
     <div class="col-md-2">&nbsp;</div>
 
-    <div class="col-xs-12 col-md-2" style="text-align: left;"><small style="color: #888;">
-        {{portfolio.created|naturaltime}}</small></div>
+    <div class="col-xs-12 col-md-2" style="text-align: left;">
+        {{portfolio.created|naturaltime}}</div>
   </div>
   {% endfor %}
 
