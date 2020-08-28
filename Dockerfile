@@ -7,7 +7,7 @@
 #   docker run -it -d -p 8000:8000 --name govready-q-0.9.0 --rm govready/govready-q-0.9.0
 
 # Build on Docker's official CentOS 7 image.
-FROM centos:7
+FROM centos:centos7.8.2003
 
 # Default to gunicorn instead of uwsgi
 ARG SUPERVISORD_INI=deployment/docker/supervisord_gunicorn.ini
