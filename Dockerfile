@@ -56,7 +56,7 @@ RUN pip3.6 install --no-cache-dir -r requirements.txt
 # Install database drivers which aren't in our requirements.
 RUN \
    yum -y install \
-   python36u-devel.x86_64 gcc-c++.x86_64 \
+   python36u-devel gcc-c++.x86_64 \
    mysql-devel \
    && yum clean all && rm -rf /var/cache/yum
 COPY requirements_mysql.txt ./
