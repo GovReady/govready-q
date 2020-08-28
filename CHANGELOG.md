@@ -1,6 +1,17 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.38 (August 28, 2020)
+---------------------------
+
+**Bug fix**
+
+* Updated a library filename to match upstream change, fixed failing Docker build.
+
+**Miscellaneous change**
+
+* Use a specific known good version of CentOS 7 (7.8.2003) rather than just generic 7.
+
 v0.9.1.37 (August 23, 2020)
 ---------------------------
 
