@@ -7,7 +7,7 @@
 #   docker run -it -d -p 8000:8000 --name govready-q-0.9.0 --rm govready/govready-q-0.9.0
 
 # Build on Docker's official CentOS 7 image.
-FROM centos:7
+FROM centos:centos7.8.2003
 
 # Default to gunicorn instead of uwsgi
 ARG SUPERVISORD_INI=deployment/docker/supervisord_gunicorn.ini
@@ -56,7 +56,7 @@ RUN pip3.6 install --no-cache-dir -r requirements.txt
 # Install database drivers which aren't in our requirements.
 RUN \
    yum -y install \
-   python36u-devel.x86_64 gcc-c++.x86_64 \
+   python36u-devel gcc-c++.x86_64 \
    mysql-devel \
    && yum clean all && rm -rf /var/cache/yum
 COPY requirements_mysql.txt ./
