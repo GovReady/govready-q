@@ -5,11 +5,12 @@
 {% load q %}
 
 {% block title %}
-{{ portfolio.title }} Controls Selected
+{{ portfolio.title }} Components Selected
 {% endblock %}
 
 {% block head %}
 {% include "controls/_style-controls.html" %}
+
 {% endblock %}
 
 {% block contextbar %}{% endblock %}
@@ -53,6 +54,24 @@
     </div>
     {% endfor %}
 
+    <div id="tab-content" class="row row-control" style="">
+      <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">
+        {% csrf_token %}
+        <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+        <div class="form-group">
+            <label for="compoment">Add component</label>&nbsp;&nbsp;
+              <select class="producer_element_id" id="producer_element_id" name="producer_element_id" style="width:340px;">
+                {% for component in elements %}
+                <option value="{{ component.id }}">{{ component.name }}</option>
+                {% endfor %}
+              </select>
+        </div>
+          &nbsp;&nbsp;<button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
+      </div>
+    </div>
+      </form>
+  </div>
+
   </div>
 </div>
 
@@ -60,11 +79,19 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script src="{% static "js/select2.min.js" %}"></script>
+<link href="{% static "css/select2.min.css" %}" rel="stylesheet" />
+
+<script type="text/javascript">
   function show_control_by_id() {
     var control_id = $('#control_lookup').find('input[name="id"]').val();
     var url = "/controls/"+"800-53"+"/"+control_id+"/";
     window.location.href = url;
   }
+
+  $(document).ready(function() {
+    $('.producer_element_id').select2();
+  });
 </script>
+
 {% endblock %}

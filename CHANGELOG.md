@@ -1,6 +1,17 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.XX (September 04, 2020)
+------------------------------
+
+**Feature changes**
+
+- Support Compliance As Code reuse of statements by adding a "control_implementation_prototype" statement type that seeds all instances of a component's control implementation statements.
+
+**UI changes**
+
+- Add components (system elements) to a system on system's selected components page.
+
 v0.9.1.38 (August 28, 2020)
 ---------------------------
 

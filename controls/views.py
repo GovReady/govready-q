@@ -210,6 +210,7 @@ def components_selected(request, system_id):
         context = {
             "system": system,
             "project": project,
+            "elements": Element.objects.all().exclude(element_type='system'),
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/components_selected.html", context)
@@ -233,7 +234,7 @@ def system_element(request, system_id, element_id):
 
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+        impl_smts = element.statements_produced.filter(consumer_element=system.root_element, statement_type="control_implementation")
 
         # Retrieve used catalog_key
         catalog_key = impl_smts[0].sid_class
@@ -647,15 +648,6 @@ def editor(request, system_id, catalog_key, cl_id):
                                 "{}_smt".format(cl_id): {
                                     "description": "N/A",
                                     "by-components": {
-                                        "component-logging-policy": {
-                                            "description": "The legal department develops, documents, and disseminates this policy to all staff and contractors within the organization.",
-                                            "role-ids": "legal-officer",
-                                            "set-params": {
-                                                "{}_prm_1".format(cl_id): {
-                                                    "value": ""
-                                                }
-                                            }
-                                        }
                                     }
                                 }
                             } #statements
@@ -787,6 +779,8 @@ def save_smt(request):
         # #     skipped_reason = request.POST.get("skipped_reason") or None
         #     unsure = bool(request.POST.get("unsure"))
 
+        # Track if we are creating a new statement
+        new_statement = False
         #print(dict(request.POST))
         form_dict = dict(request.POST)
         form_values = {}
@@ -831,6 +825,7 @@ def save_smt(request):
                 status=form_values['status'],
                 remarks=form_values['remarks'],
             )
+            new_statement = True
         # Save Statement object
         try:
             statement.save()
@@ -846,6 +841,9 @@ def save_smt(request):
             # Does the name match and existing element? (Element names are unique.)
             # TODO: Sanitize data entered in form?
             producer_element, created = Element.objects.get_or_create(name=form_values['producer_element_name'])
+            if created:
+                producer_element.element_type = "system_element"
+                producer_element.save()
             producer_element_status = "ok"
             producer_element_msg = "Producer Element saved."
         except Exception as e:
@@ -864,6 +862,15 @@ def save_smt(request):
             statement_element_status = "error"
             statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
+
+        # Create new Prototype Statement object on new statement creation (not statement edit)
+        if new_statement:
+            try:
+                statement_prototype = statement.create_prototype()
+            except Exception as e:
+                statement_status = "error"
+                statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
+                return JsonResponse({ "status": "error", "message": statement_msg })
 
         # Associate Statement and System's root_element
         # TODO Only associate if we have created new statement object.
@@ -985,6 +992,56 @@ def delete_smt(request):
         #     return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
 
         return JsonResponse({ "status": "success", "message": statement_msg })
+
+# Components
+
+def add_system_component(request, system_id):
+    """Add an existing element and its statements to a system"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    print(dict(request.POST))
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    # Does user have permission to add element?
+    # Check user permissions
+    # system = system.objects.get(pk=form_values['system_id'])
+    system = System.objects.get(pk=system_id)
+    if not request.user.has_perm('change_system', system):
+        # User does not have write permissions
+        # Log permission to save answer denied
+        logger.info(
+            event="change_system permission_denied",
+            object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
+    selected_controls = system.root_element.controls.all()
+    selected_controls_ids = set()
+    for sc in selected_controls:
+        selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
+
+    # Add element
+    # Look up the element
+    producer_element = Element.objects.get(pk=form_values['producer_element_id'])
+    # TODO: Handle case of element already associated with system
+
+    # Loop through element's prototype statements and add to control implementation statements
+    print("Adding {} to system_id {}".format(producer_element.name, system_id))
+    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+        # Only add statements for controls selected for system
+        if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
+            print("smt", smt)
+            smt.create_instance_from_prototype(system.root_element.id)
+        else:
+            print("not adding smt not selected controls for system", smt)
+
+    # Redirect to selected element page
+    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
 # Baselines
 def assign_baseline(request, system_id, catalog_key, baseline_name):
