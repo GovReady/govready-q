@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='poam',
-            name='group',
-            field=models.CharField(blank=True, help_text='The name of the group, if any, this control belongs to.', max_length=50, null=True),
+            name='poam_group',
+            field=models.CharField(blank=True, help_text='The name of the POA&M group, if any, this control belongs to.', max_length=50, null=True),
         ),
     ]
