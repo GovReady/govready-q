@@ -43,5 +43,6 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/poams$', views.poams_list, name="poams_list"),
     url(r'^(?P<system_id>.*)/poams/new$', views.new_poam, name="new_poam"),
     url(r'^(?P<system_id>.*)/poams/(?P<poam_id>.*)/edit$', views.edit_poam, name="edit_poam"),
+    url(r'^(?P<system_id>.*)/poams/export/xlsx$', views.poam_export_xslx, name="poam_export_xslx"),
 
 ]
