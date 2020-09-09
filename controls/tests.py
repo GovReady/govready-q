@@ -345,6 +345,7 @@ class PoamUnitTests(TestCase):
         self.assertTrue(e.name == "New Element 2")
         self.assertTrue(e.full_name == "New Element 2 Full Name")
         self.assertTrue(e.element_type == "system")
+
         e.save()
         s = System(root_element=e)
         s.save()
@@ -362,7 +363,8 @@ class PoamUnitTests(TestCase):
         )
         smt.save()
         import uuid
-        poam = Poam.objects.create(statement = smt)
+        poam = Poam.objects.create(statement = smt, poam_group = "New POA&M Group")
+        self.assertTrue(poam.poam_group == "New POA&M Group")
         # self.assertTrue(poam.name == "New Element")
         # self.assertTrue(poam.full_name == "New Element Full Name")
         # self.assertTrue(poam.element_type == "system")
