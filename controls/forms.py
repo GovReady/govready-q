@@ -40,7 +40,7 @@ class PoamForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['weakness_name'].widget.attrs['placeholder'] = ""
         self.fields['controls'].widget.attrs['placeholder'] = "e.g., CM-3, CM-6"
-        self.fields['poam_group'].widget.attrs['placeholder'] = "e.g., POA&M Group Name"
+        self.fields['poam_group'].widget.attrs['placeholder'] = "e.g., Epic 23, Log Fixes"
         self.fields['risk_rating_original'].widget.attrs['placeholder'] = "e.g., Low, Moderate, or High"
         self.fields['risk_rating_adjusted'].widget.attrs['placeholder'] = "e.g., Low, Moderate, or High"
         self.fields['weakness_detection_source'].widget.attrs['placeholder'] = ""
@@ -54,6 +54,9 @@ class PoamForm(ModelForm):
         # scheduled_completion_date = forms.DateField(widget=forms.DateField)
         widgets = {
             # "scheduled_completion_date": forms.DateField(),
+        }
+        labels = {
+            "poam_group": "Group"
         }
 
 
