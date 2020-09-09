@@ -20,6 +20,14 @@
     font-size: 22px;
     font-weight: bold;
   }
+
+  thead tr {
+    border:1px solid black;
+    background-color: rgb(80, 170, 67);
+    color: #fff;
+    font-weight: bold;
+  }
+
 </style>
 {% endblock %}
 
@@ -45,6 +53,49 @@
 
     <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
       {# output documents #}
+
+      {% if outputs|length > 0 %}
+        <div class="panel panel-default">
+          <div class="panel-heading" rol="tab" id="your-answers-title-2">
+            <h4 class="panel-title">
+              <a role="button" data-toggle="collapse" data-parent="#accordion" href="#your-answers-body-2" aria-expanded="true" aria-controls="your-answers-body-2">
+                Available documents
+              </a>
+            </h4>
+          </div>
+          <div id="your-answers-body-2" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="your-answers-title-2">
+            <div class="panel-body output-document">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <td width="40%">Document</td>
+                    <td>Downloads</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for document in outputs %}
+                    <tr>
+                        <td>{{document.title}}</td>
+                        <td>
+                          {% if document.format == "oscal_xml" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/oscal_xml">OSCAL (xml)</a>&nbsp;&nbsp;
+                          {% else %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a>&nbsp;&nbsp;
+                            {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html">HTML</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/markdown">Markdown</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">Plain Text</a>&nbsp;&nbsp;
+                          {% endif %}
+                        </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      {% endif %}
 
       {% if had_any_questions %}
         <div class="panel panel-default">
@@ -101,6 +152,7 @@
       {% endif %}
 
       {% for document in outputs %}
+        {% if document.format != "oscal_xml" %}
         <div class="panel panel-default">
           <div class="panel-heading" role="tabx" id="document-{{forloop.counter}}-title">
             <h4 class="panel-title">
@@ -128,6 +180,7 @@
             </div>
           </div>
         </div>
+        {% endif %}
       {% endfor %}
     </div> <!-- /accordion -->
     <div id="continue-nav "style="margin: 2em 0">
