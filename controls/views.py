@@ -1422,23 +1422,24 @@ def poam_export_xlsx(request, system_id):
         for poam_smt in poam_smts:
             row += 1
 
-            # Controls
-            c = ws.cell(row=row, column=1, value=poam_smt.poam.controls)
-            c.fill = PatternFill("solid", fgColor="FFFF99")
-            c.alignment = Alignment(vertical='top', wrapText=True)
-            c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            fields = [
+                'weakness_name',
+                'controls',
+                'risk_rating_original',
+                'risk_rating_adjusted',
+                'weakness_detection_source',
+                'remediation_plan',
+                'milestones',
+                'scheduled_completion_date'
+            ]
 
-            # WeaknessName
-            c = ws.cell(row=row, column=2, value=poam_smt.poam.weakness_name)
-            c.fill = PatternFill("solid", fgColor="FFFF99")
-            c.alignment = Alignment(vertical='top', wrapText=True)
-            c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-            # WeaknessDetectionSource
-            c = ws.cell(row=row, column=3, value=poam_smt.poam.weakness_detection_source)
-            c.fill = PatternFill("solid", fgColor="FFFF99")
-            c.alignment = Alignment(vertical='top', wrapText=True)
-            c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            column = 0
+            for field in fields:
+                column += 1
+                c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, field))
+                c.fill = PatternFill("solid", fgColor="FFFF99")
+                c.alignment = Alignment(vertical='top', wrapText=True)
+                c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
         with NamedTemporaryFile() as tmp:
             wb.save(tmp.name)
