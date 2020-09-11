@@ -1302,8 +1302,10 @@ def poam_export_xlsx(request, system_id):
             'risk_rating_original': 'Risk Rating Original',
             'risk_rating_adjusted': 'Risk Rating Adjusted',
             'weakness_detection_source': 'Weakness Detection Source',
+            'weakness_source_identifier': 'Weakness Source Identifier',
             'remediation_plan': 'Remediation Plan',
             'milestones': 'Milestones',
+            'milestone_changes': 'Milestone Changes',
             'scheduled_completion_date': 'Scheduled Completion Date'
         }
 
