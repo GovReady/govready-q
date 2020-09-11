@@ -1456,6 +1456,3 @@ def poam_export_xlsx(request, system_id):
     else:
         # User does not have permission to this system
         raise Http404
-
-
-
