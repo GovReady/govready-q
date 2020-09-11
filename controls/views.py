@@ -1296,6 +1296,11 @@ def poam_export_xlsx(request, system_id):
         wrap_alignment = Alignment(wrap_text=True)
         ws.title = "POA&Ms"
 
+        statement_fields = {
+            'body': 'Description',
+            'status': 'Status'
+        }
+
         poam_fields = {
             'weakness_name': 'Weakness Name',
             'controls': 'Controls',
@@ -1311,18 +1316,15 @@ def poam_export_xlsx(request, system_id):
 
         # create header row
         # Description and Status are in statement
-        c = ws.cell(row=1, column=1, value="Description")
-        c.fill = PatternFill("solid", fgColor="5599FE")
-        c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-        c = ws.cell(row=1, column=2, value="Status")
-        c.fill = PatternFill("solid", fgColor="5599FE")
-        c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        column = 0
+        for field_name in statement_fields:
+            column += 1
+            c = ws.cell(row=1, column=column, value=statement_fields[field_name])
+            c.fill = PatternFill("solid", fgColor="5599FE")
+            c.font = Font(color="FFFFFF", bold=True)
+            c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
         # other fields are in statement.poam
-        column = 2
         for field_name in poam_fields:
             column += 1
             c = ws.cell(row=1, column=column, value=poam_fields[field_name])
@@ -1342,7 +1344,7 @@ def poam_export_xlsx(request, system_id):
 
             # fields in statement
             column = 0
-            for field_name in ['body', 'status']:
+            for field_name in statement_fields:
                 column += 1
                 c = ws.cell(row=row, column=column, value=getattr(poam_smt, field_name))
                 c.fill = PatternFill("solid", fgColor="FFFF99")
