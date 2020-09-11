@@ -1296,7 +1296,7 @@ def poam_export_xlsx(request, system_id):
         wrap_alignment = Alignment(wrap_text=True)
         ws.title = "POA&Ms"
 
-        fields = {
+        poam_fields = {
             'weakness_name': 'Weakness Name',
             'controls': 'Controls',
             'risk_rating_original': 'Risk Rating Original',
@@ -1310,10 +1310,22 @@ def poam_export_xlsx(request, system_id):
         }
 
         # create header row
-        column = 0
-        for field_name in fields:
+        # Description and Status are in statement
+        c = ws.cell(row=1, column=1, value="Description")
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        c = ws.cell(row=1, column=2, value="Status")
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # other fields are in statement.poam
+        column = 2
+        for field_name in poam_fields:
             column += 1
-            c = ws.cell(row=1, column=column, value=fields[field_name])
+            c = ws.cell(row=1, column=column, value=poam_fields[field_name])
             c.fill = PatternFill("solid", fgColor="5599FE")
             c.font = Font(color="FFFFFF", bold=True)
             c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
@@ -1328,8 +1340,17 @@ def poam_export_xlsx(request, system_id):
         for poam_smt in poam_smts:
             row += 1
 
+            # fields in statement
             column = 0
-            for field_name in fields:
+            for field_name in ['body', 'status']:
+                column += 1
+                c = ws.cell(row=row, column=column, value=getattr(poam_smt, field_name))
+                c.fill = PatternFill("solid", fgColor="FFFF99")
+                c.alignment = Alignment(vertical='top', wrapText=True)
+                c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+            # fields in poam object
+            for field_name in poam_fields:
                 column += 1
                 c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, field_name))
                 c.fill = PatternFill("solid", fgColor="FFFF99")
