@@ -1279,22 +1279,33 @@ def edit_poam(request, system_id, poam_id):
         raise Http404
 
 def poam_export_xlsx(request, system_id):
-    """Export POA&M to xlsx"""
+    return poam_export(request, system_id, 'xlsx')
+
+def poam_export_csv(request, system_id):
+    return poam_export(request, system_id, 'csv')
+
+def poam_export(request, system_id, format='xlsx'):
+    """Export POA&M in either xlsx or csv"""
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected POA&Ms if user has permission on system
     if request.user.has_perm('view_system', system):
 
-        from openpyxl import Workbook
-        from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
-        from tempfile import NamedTemporaryFile
+        if format == 'xlsx':
+            from openpyxl import Workbook
+            from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+            from tempfile import NamedTemporaryFile
 
-        wb = Workbook()
-        ws = wb.active
-        # create alignment style
-        wrap_alignment = Alignment(wrap_text=True)
-        ws.title = "POA&Ms"
+            wb = Workbook()
+            ws = wb.active
+            # create alignment style
+            wrap_alignment = Alignment(wrap_text=True)
+            ws.title = "POA&Ms"
+        else:
+            import csv, io
+            csv_buffer = io.StringIO(newline='\n')
+            csv_writer = csv.writer(csv_buffer)
 
         statement_fields = {
             'body': 'Description',
@@ -1317,56 +1328,79 @@ def poam_export_xlsx(request, system_id):
         # create header row
         # Description and Status are in statement
         column = 0
+        csv_row = []
         for field_name in statement_fields:
             column += 1
-            c = ws.cell(row=1, column=column, value=statement_fields[field_name])
-            c.fill = PatternFill("solid", fgColor="5599FE")
-            c.font = Font(color="FFFFFF", bold=True)
-            c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            if format == 'xlsx':
+                c = ws.cell(row=1, column=column, value=statement_fields[field_name])
+                c.fill = PatternFill("solid", fgColor="5599FE")
+                c.font = Font(color="FFFFFF", bold=True)
+                c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            else:
+                csv_row.append(statement_fields[field_name])
 
         # other fields are in statement.poam
         for field_name in poam_fields:
             column += 1
-            c = ws.cell(row=1, column=column, value=poam_fields[field_name])
-            c.fill = PatternFill("solid", fgColor="5599FE")
-            c.font = Font(color="FFFFFF", bold=True)
-            c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            if format == 'xlsx':
+                c = ws.cell(row=1, column=column, value=poam_fields[field_name])
+                c.fill = PatternFill("solid", fgColor="5599FE")
+                c.font = Font(color="FFFFFF", bold=True)
+                c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            else:
+                csv_row.append(poam_fields[field_name])
 
         # TODO: set column widths
         # ws.column_dimensions['A'].width = 30
+
+        if format != 'xlsx':
+            csv_writer.writerow(csv_row)
 
         # Retrieve POA&Ms and create POA&M rows
         poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
         poam_smts_by_sid = {}
         row = 1
         for poam_smt in poam_smts:
+            csv_row = []
             row += 1
 
             # fields in statement
             column = 0
             for field_name in statement_fields:
                 column += 1
-                c = ws.cell(row=row, column=column, value=getattr(poam_smt, field_name))
-                c.fill = PatternFill("solid", fgColor="FFFF99")
-                c.alignment = Alignment(vertical='top', wrapText=True)
-                c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
+                if format == 'xlsx':
+                    c = ws.cell(row=row, column=column, value=getattr(poam_smt, field_name))
+                    c.fill = PatternFill("solid", fgColor="FFFF99")
+                    c.alignment = Alignment(vertical='top', wrapText=True)
+                    c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                else:
+                    csv_row.append(getattr(poam_smt, field_name))
             # fields in poam object
             for field_name in poam_fields:
                 column += 1
-                c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, field_name))
-                c.fill = PatternFill("solid", fgColor="FFFF99")
-                c.alignment = Alignment(vertical='top', wrapText=True)
-                c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                if format == 'xlsx':
+                    c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, field_name))
+                    c.fill = PatternFill("solid", fgColor="FFFF99")
+                    c.alignment = Alignment(vertical='top', wrapText=True)
+                    c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                else:
+                    csv_row.append(getattr(poam_smt.poam, field_name))
 
-        with NamedTemporaryFile() as tmp:
-            wb.save(tmp.name)
-            tmp.seek(0)
-            stream = tmp.read()
-            blob = stream
+            if format != 'xlsx':
+                csv_writer.writerow(csv_row)
+
+        if format == 'xlsx':
+            with NamedTemporaryFile() as tmp:
+                wb.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+                blob = stream
+        else:
+            blob = csv_buffer.getvalue()
+            csv_buffer.close()
 
         mime_type = "application/octet-stream"
-        filename = "{}_poam_export-{}.xlsx".format(system_id,datetime.now().strftime("%Y-%m-%d-%H-%M"))
+        filename = "{}_poam_export-{}.{}".format(system_id,datetime.now().strftime("%Y-%m-%d-%H-%M"),format)
 
         resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
