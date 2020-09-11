@@ -1283,38 +1283,8 @@ def poam_export_xlsx(request, system_id):
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
+    # Retrieve related selected POA&Ms if user has permission on system
     if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
-        # FIXME: replace controls with Poam objects
-        controls = system.root_element.controls.all()
-
-        # Retrieve POA&Ms
-        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
-        poam_smts_by_sid = {}
-        for smt in poam_smts:
-
-            ## debug>>
-            print("poam_smt>>")
-            from pprint import pprint
-            pprint(vars(smt))
-            print("<<poam_smt")
-            ## <<debug
-
-            if smt.sid in poam_smts_by_sid:
-                poam_smts_by_sid[smt.sid].append(smt)
-            else:
-                poam_smts_by_sid[smt.sid] = [smt]
-
-        for control in controls:
-            # print(control)
-            if control.oscal_ctl_id in poam_smts_by_sid:
-                setattr(control, 'poam_smts', poam_smts_by_sid[control.oscal_ctl_id])
-                # print(control.oscal_ctl_id, control.poam_smts)
-            else:
-                setattr(control, 'poam_smts', None)
 
         from openpyxl import Workbook
         from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
@@ -1445,36 +1415,27 @@ def poam_export_xlsx(request, system_id):
         c.font = Font(color="FFFFFF", bold=True)
         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
+        # Retrieve POA&Ms
+        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+        poam_smts_by_sid = {}
+        row = 1
+        for poam_smt in poam_smts:
+            row += 1
 
-        ## debug>>
-        print("len(controls)>>")
-        print(len(controls))
-        print("<<len(controls)")
-        ## <<debug
-
-        for row in range(2,len(controls)+1):
-            control = controls[row - 2]
-
-            # PoamId
-            c = ws.cell(row=row, column=1, value=control.get_flattened_oscal_control_as_dict()['poam_id'])
-            c.fill = PatternFill("solid", fgColor="FFFF99")
-            c.alignment = Alignment(vertical='top', wrapText=True)
-            c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-            
             # Controls
-            c = ws.cell(row=row, column=2, value=control.get_flattened_oscal_control_as_dict()['controls'])
+            c = ws.cell(row=row, column=1, value=poam_smt.poam.controls)
             c.fill = PatternFill("solid", fgColor="FFFF99")
             c.alignment = Alignment(vertical='top', wrapText=True)
             c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
             # WeaknessName
-            c = ws.cell(row=row, column=3, value=control.get_flattened_oscal_control_as_dict()['weakness_name'])
+            c = ws.cell(row=row, column=2, value=poam_smt.poam.weakness_name)
             c.fill = PatternFill("solid", fgColor="FFFF99")
             c.alignment = Alignment(vertical='top', wrapText=True)
             c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
             # WeaknessDetectionSource
-            c = ws.cell(row=row, column=4, value=control.get_flattened_oscal_control_as_dict()['weakness_detection_source'])
+            c = ws.cell(row=row, column=3, value=poam_smt.poam.weakness_detection_source)
             c.fill = PatternFill("solid", fgColor="FFFF99")
             c.alignment = Alignment(vertical='top', wrapText=True)
             c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
@@ -1488,7 +1449,7 @@ def poam_export_xlsx(request, system_id):
         mime_type = "application/octet-stream"
         filename = "{}_poam_export-{}.xlsx".format(system_id,datetime.now().strftime("%Y-%m-%d-%H-%M"))
 
-        resp = HttpResponse('', mime_type)
+        resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
         return resp
     else:
