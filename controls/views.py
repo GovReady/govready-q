@@ -1278,160 +1278,212 @@ def edit_poam(request, system_id, poam_id):
         # User does not have permission to this system
         raise Http404
 
-def poam_export_xslx(request, system_id):
-    """Export POA&M to xslx"""
+def poam_export_xlsx(request, system_id):
+    """Export POA&M to xlsx"""
 
-    # Retrieve POA&M
-        # Retrieve identified System
+    # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
         # Temporarily assume only one project and get first project
         project = system.projects.all()[0]
-        # poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
-        poam_smts = Statement.objects.filter(statement_type="POAM",consumer_element=system.root_element).order_by('-updated')
-        from pprint import pprint
-        pprint(vars(poam_smts.model))
-        exit(1)
+        # FIXME: replace controls with Poam objects
+        controls = system.root_element.controls.all()
 
-   
+        # Retrieve POA&Ms
+        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+        poam_smts_by_sid = {}
+        for smt in poam_smts:
 
-    # Retrieve related selected controls if user has permission on system
-    if True: # request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-    #     project = system.projects.all()[0]
-    #     controls = system.root_element.controls.all()
+            ## debug>>
+            print("poam_smt>>")
+            from pprint import pprint
+            pprint(vars(smt))
+            print("<<poam_smt")
+            ## <<debug
 
-    #     # Retrieve any related Implementation Statements
-    #     impl_smts = system.root_element.statements_consumed.all()
-    #     impl_smts_by_sid = {}
-    #     for smt in impl_smts:
-    #         if smt.sid in impl_smts_by_sid:
-    #             impl_smts_by_sid[smt.sid].append(smt)
-    #         else:
-    #             impl_smts_by_sid[smt.sid] = [smt]
-    
+            if smt.sid in poam_smts_by_sid:
+                poam_smts_by_sid[smt.sid].append(smt)
+            else:
+                poam_smts_by_sid[smt.sid] = [smt]
+
+        for control in controls:
+            # print(control)
+            if control.oscal_ctl_id in poam_smts_by_sid:
+                setattr(control, 'poam_smts', poam_smts_by_sid[control.oscal_ctl_id])
+                # print(control.oscal_ctl_id, control.poam_smts)
+            else:
+                setattr(control, 'poam_smts', None)
+
+        from openpyxl import Workbook
+        from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+        from tempfile import NamedTemporaryFile
+
+        wb = Workbook()
+        ws = wb.active
+        # create alignment style
+        wrap_alignment = Alignment(wrap_text=True)
+        ws.title = "POA&Ms"
+
+        # Add in field name row
+        # Paragraph/ReqID
+        c = ws.cell(row=1, column=1, value="Paragraph/ReqID")
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Stated Requirement (Control statement/Requirement)
+        c = ws.cell(row=1, column=2, value="Title")
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        ws.column_dimensions['B'].width = 30
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Private Implementation
+        c = ws.cell(row=1, column=3, value="Private Implementation")
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        ws.column_dimensions['C'].width = 80
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Public Implementation
+        c = ws.cell(row=1, column=4, value="Public Implementation")
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        ws.column_dimensions['D'].width = 80
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Notes
+        c = ws.cell(row=1, column=5, value="Notes")
+        ws.column_dimensions['E'].width = 60
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Status ["Implemented", "Planned"]
+        c = ws.cell(row=1, column=6, value="Status")
+        ws.column_dimensions['F'].width = 15
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Expected Completion (expected implementation)
+        c = ws.cell(row=1, column=7, value="Expected Completion")
+        ws.column_dimensions['G'].width = 20
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Class ["Management", "Operational", "Technical",
+        c = ws.cell(row=1, column=8, value="Class")
+        ws.column_dimensions['H'].width = 15
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Priority ["p0", "P1", "P2", "P3"]
+        c = ws.cell(row=1, column=9, value="Priority")
+        ws.column_dimensions['I'].width = 15
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Responsible Entities
+        c = ws.cell(row=1, column=10, value="Responsible Entities")
+        ws.column_dimensions['J'].width = 20
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Control Owner(s)
+        c = ws.cell(row=1, column=11, value="Control Owner(s)")
+        ws.column_dimensions['K'].width = 15
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Type ["System-Specific", "Hybrid", "Inherited", "Common", "blank"]
+        c = ws.cell(row=1, column=12, value="Type")
+        ws.column_dimensions['L'].width = 15
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Inherited From
+        c = ws.cell(row=1, column=13, value="Inherited From")
+        ws.column_dimensions['M'].width = 20
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Provide As ["Do Not Share", "blank"]
+        c = ws.cell(row=1, column=14, value="Provide As")
+        ws.column_dimensions['N'].width = 15
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Evaluation Status ["Evaluated", "Expired", "Not Evaluated", "Unknown", "blank"]
+        c = ws.cell(row=1, column=15, value="Evaluation Status")
+        ws.column_dimensions['O'].width = 15
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # Control Origination
+        c = ws.cell(row=1, column=16, value="Control Origination")
+        ws.column_dimensions['P'].width = 15
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+
+        # History
+        c = ws.cell(row=1, column=17, value="History")
+        ws.column_dimensions['Q'].width = 15
+        c.fill = PatternFill("solid", fgColor="5599FE")
+        c.font = Font(color="FFFFFF", bold=True)
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
 
-    # [statement, poam_id, controls, weakness_name, weakness_detection_source, weakness_source_identifier, remediation_plan
-    # scheduled_completion_date
-    # milestones
-    # milestone_changes
-    # risk_rating_original
-    # risk_rating_adjusted
+        ## debug>>
+        print("len(controls)>>")
+        print(len(controls))
+        print("<<len(controls)")
+        ## <<debug
 
-    #     for control in controls:
-    #         # print(control)
-    #         if control.oscal_ctl_id in impl_smts_by_sid:
-    #             setattr(control, 'impl_smts', impl_smts_by_sid[control.oscal_ctl_id])
-    #             # print(control.oscal_ctl_id, control.impl_smts)
-    #         else:
-    #             setattr(control, 'impl_smts', None)
+        for row in range(2,len(controls)+1):
+            control = controls[row - 2]
 
-    #     from openpyxl import Workbook
-    #     from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
-    #     from tempfile import NamedTemporaryFile
-
-    #     wb = Workbook()
-    #     ws = wb.active
-    #     # create alignment style
-    #     wrap_alignment = Alignment(wrap_text=True)
-    #     ws.title = "Controls_Implementation"
-
-    #     # Add in field name row
-    #     # Paragraph/ReqID
-    #     c = ws.cell(row=1, column=1, value="Paragraph/ReqID")
-    #     c.fill = PatternFill("solid", fgColor="5599FE")
-    #     c.font = Font(color="FFFFFF", bold=True)
-    #     c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #     for row in range(2,len(controls)+1):
-    #         control = controls[row - 2]
-
-    #         # Paragraph/ReqID
-    #         c = ws.cell(row=row, column=1, value=control.get_flattened_oscal_control_as_dict()['id_display'].upper())
-    #         c.fill = PatternFill("solid", fgColor="FFFF99")
-    #         c.alignment = Alignment(vertical='top', wrapText=True)
-    #         c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            # PoamId
+            c = ws.cell(row=row, column=1, value=control.get_flattened_oscal_control_as_dict()['poam_id'])
+            c.fill = PatternFill("solid", fgColor="FFFF99")
+            c.alignment = Alignment(vertical='top', wrapText=True)
+            c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
             
-    #         # Title
-    #         c = ws.cell(row=row, column=2, value=control.get_flattened_oscal_control_as_dict()['title'])
-    #         c.fill = PatternFill("solid", fgColor="FFFF99")
-    #         c.alignment = Alignment(vertical='top', wrapText=True)
-    #         c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            # Controls
+            c = ws.cell(row=row, column=2, value=control.get_flattened_oscal_control_as_dict()['controls'])
+            c.fill = PatternFill("solid", fgColor="FFFF99")
+            c.alignment = Alignment(vertical='top', wrapText=True)
+            c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
-    #         # Private Implementation
-    #         smt_combined = ""
-    #         if control.impl_smts:
-    #             for smt in control.impl_smts:
-    #                 smt_combined += smt.body
-    #         c = ws.cell(row=row, column=3, value=smt_combined)
-    #         c.alignment = Alignment(vertical='top', wrapText=True)
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            # WeaknessName
+            c = ws.cell(row=row, column=3, value=control.get_flattened_oscal_control_as_dict()['weakness_name'])
+            c.fill = PatternFill("solid", fgColor="FFFF99")
+            c.alignment = Alignment(vertical='top', wrapText=True)
+            c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
-    #         # Public Implementation
-    #         c.alignment = Alignment(vertical='top', wrapText=True)
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            # WeaknessDetectionSource
+            c = ws.cell(row=row, column=4, value=control.get_flattened_oscal_control_as_dict()['weakness_detection_source'])
+            c.fill = PatternFill("solid", fgColor="FFFF99")
+            c.alignment = Alignment(vertical='top', wrapText=True)
+            c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
 
-    #         # Notes
-    #         c = ws.cell(row=1, column=5, value="Notes")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Status ["Implemented", "Planned"]
-    #         c = ws.cell(row=1, column=6, value="Status")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Expected Completion (expected implementation)
-    #         c = ws.cell(row=1, column=7, value="Expected Completion")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Class ["Management", "Operational", "Technical",
-    #         c = ws.cell(row=1, column=8, value="Class")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Priority ["p0", "P1", "P2", "P3"]
-    #         c = ws.cell(row=1, column=9, value="Priority")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Responsible Entities
-    #         c = ws.cell(row=1, column=10, value="Responsible Entities")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Control Owner(s)
-    #         c = ws.cell(row=1, column=11, value="Control Owner(s)")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Type ["System-Specific", "Hybrid", "Inherited", "Common", "blank"]
-    #         c = ws.cell(row=1, column=12, value="Type")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Inherited From
-    #         c = ws.cell(row=1, column=13, value="Inherited From")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Provide As ["Do Not Share", "blank"]
-    #         c = ws.cell(row=1, column=14, value="Provide As")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Evaluation Status ["Evaluated", "Expired", "Not Evaluated", "Unknown", "blank"]
-    #         c = ws.cell(row=1, column=15, value="Evaluation Status")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # Control Origination
-    #         c = ws.cell(row=1, column=16, value="Control Origination")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-    #         # History
-    #         c = ws.cell(row=1, column=17, value="History")
-    #         c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-
-        # with NamedTemporaryFile() as tmp:
-        #     wb.save(tmp.name)
-        #     tmp.seek(0)
-        #     stream = tmp.read()
-        #     blob = stream
+        with NamedTemporaryFile() as tmp:
+            wb.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()
+            blob = stream
 
         mime_type = "application/octet-stream"
         filename = "{}_poam_export-{}.xlsx".format(system_id,datetime.now().strftime("%Y-%m-%d-%H-%M"))
