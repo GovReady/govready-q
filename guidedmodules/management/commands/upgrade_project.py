@@ -143,7 +143,8 @@ class Command(BaseCommand):
                 .filter(task__project=project,
                         question=old_module_questions[key])\
                 .update(question=new_module_questions[key])
-
+            print("Updating {}".format(new_module_questions[key]))
+        print("Update complete.")
 
     def is_safe_upgrade(self, project, new_app):
         # A Project can be upgraded to a new app if every Module that has been started

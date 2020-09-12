@@ -284,7 +284,6 @@ def update_question(m, definition_order, spec, log_status):
 
     return q
 
-
 def is_module_changed(m, source, spec):
     # Returns whether a module specification has changed since
     # it was loaded into a Module object (and its questions).
@@ -303,11 +302,6 @@ def is_module_changed(m, source, spec):
 
     # Now we're just checking if the change is compatible or not with
     # the existing database record.
-
-    if m.spec.get("version") != spec.get("version"):
-        # The module writer can force a bump by changing the version
-        # field.
-        return "The module version number changed, forcing a reload."
 
     # If there are no Tasks started for this Module, then the change is
     # compatible because there is no data consistency to worry about.
@@ -348,6 +342,11 @@ def is_module_changed(m, source, spec):
 
         # The removal of this question is an incompatible change.
         return "Question %s was removed." % mq.key
+
+    if m.spec.get("version") != spec.get("version"):
+        # The module writer can force a bump by changing the version
+        # field.
+        return "The module version number changed, forcing a reload."
 
     # The changes will not create any data inconsistency.
     return False
