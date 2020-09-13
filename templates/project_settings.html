@@ -157,7 +157,7 @@ h3.question-group-title {
       </button>
     {% endif %}
     {% if not project.is_account_project or project.is_deletable %}
-      <button class="btn btn-sm btn-default" onclick="$('#project_settings').modal();">
+      <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
         <em class="glyphicon glyphicon-cog"></em> Settings</a>
       </button>
     {% endif %}
@@ -382,25 +382,24 @@ h3.question-group-title {
                 </tr>
               </thead>
               <tbody>
-            % for av in project.available_root_task_versions_for_upgrade %
             {% for av in available_versions %}
                 <tr>
                   <td>{{ av.appname }}</td>
                   <td>{{ av.version_number }}</td>
                   <td>{% if av.version_number == project.root_task.module.app.version_number %}current version{% else %}{{av.is_safe_upgrade}}{% endif %}</td>
-                  <td><a href="" onclick="alert('coming soon');return false;">upgrade</a></td>
+                  <td>
+                    <button class="btn btn-default" onclick="return upgrade_project('{{ av.version_number }}');">Upgrade</button>
+                  </td>
                 </tr>
             {% endfor %}
             </tbody>
             </table>
             </div>
-
-        </div>
-        {% endif %}
+          </div>
+          {% endif %}
 
         <div class="row" style="margin-top:12px;">
           <div class="col-sm-12">
-            <!-- <div style="font-weight: bold;border-bottom:1px solid #999;margin-bottom: 12px;">Share Data</div> -->
             <h2 style="border-bottom:1px solid #ccc;">Share Data</h2>
           </div>
           <div class="col-sm-12">
@@ -427,7 +426,6 @@ h3.question-group-title {
       {% if project.is_deletable and is_admin %}
         <div class="row" style="margin-top: 12px;">
           <div class="col-sm-12">
-            <!-- <span style="font-weight: bold;">DANGER</span> -->
             <h2 style="border-bottom:1px solid #ccc;">DANGER</h2>
           </div>
           <div class="col-sm-12">
@@ -435,7 +433,6 @@ h3.question-group-title {
           </div>
         </div>
       {% endif %}
-
 
     </div> <!-- /row for columns -->
   </div>
@@ -542,6 +539,27 @@ function rename_project() {
      window.location.reload();
    }
   });
+}
+
+function upgrade_project(version_number) {
+  show_modal_confirm(
+    "Upgrade Project",
+    "Are you sure you want to upgrade this project to version version_number?".replace("version_number", version_number),
+    "Upgrade",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "upgrade_project" project.id %}',
+       method: "POST",
+       data: {
+        version_number: version_number
+       },
+       success: function(res) {
+         // redirect to main project page after successful upgrade
+         window.location = res.redirect;
+       }
+      });
+    }
+  )
 }
 
 function delete_project() {

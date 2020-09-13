@@ -1161,10 +1161,55 @@ def rename_project(request, project):
     return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required
+def upgrade_project(request, project):
+    """Upgrade root task of project to newer version"""
+
+    available_versions = project.available_root_task_versions_for_upgrade
+    current_app = project.root_task.module.app
+
+    # Determine new version of app to upgrade from version_number
+    version_number = request.POST.get("version_number", "").strip() or None
+    new_app = None
+    for av in available_versions:
+        if av.version_number == version_number:
+            new_app = av
+
+    # Attempt upgrade
+    result = project.upgrade_root_task_app(new_app)
+    # Was upgrade successful?
+    if result == True:
+        # Upgrade successful
+        # Log successful project root task upgrade
+        logger.info(
+            event="upgrade_project root_task successful",
+            object={"id": project.id, "title":project.title},
+            from_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": version_number},
+            to_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": new_app.version_number},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        message = "Project {} upgraded successfully to {}".format(project, new_app.version_number)
+        messages.add_message(request, messages.INFO, message)
+        redirect = project.get_absolute_url()
+        return JsonResponse({ "status": "ok", "redirect": redirect })
+    else:
+        # Upgrade failure
+        # Log failed project root task upgrade
+        logger.info(
+            event="upgrade_project root_task failure",
+            object={"id": project.id, "title":project.title},
+            from_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": version_number},
+            to_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": new_app.version_number},
+            detail={"reason": result},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        message = "Project {} failed to upgrade to {}. {}".format(project, new_app.version_number, result)
+        return JsonResponse({ "status": "error", "message": message })
+
+@project_admin_login_post_required
 def delete_project(request, project):
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
-    
+
     # Get the project's parents for redirect.
     parents = project.get_parent_projects()
     project.delete()

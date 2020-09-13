@@ -1108,7 +1108,7 @@ class Project(models.Model):
         if changed is not True:
             print("The compliance app has incompatible changes with the current app.")
             print(changed)
-            return False
+            return changed
 
         # Do the upgrade.
 

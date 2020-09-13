@@ -40,7 +40,7 @@ class Command(BaseCommand):
             source=app_source,
             appname=app_name)\
             .exclude(version_number=None)
-        
+
         # Sort available versions.
         from packaging import version
         app_versions = sorted(app_versions, key = lambda av : version.parse(av.version_number))
