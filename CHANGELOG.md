@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.38 (September 13, 2020)
+v0.9.1.39 (September 13, 2020)
 ------------------------------
 
 Enable upgrade of project root_task to more recent version.
@@ -28,6 +28,52 @@ Enable upgrade of project root_task to more recent version.
 **Documentation changes**
 
 * Document new logger entries for successful and failed attempts to upgrade project's root_task app.
+
+v0.9.1.38 (August 28, 2020)
+---------------------------
+
+**Bug fix**
+
+* Updated a library filename to match upstream change, fixed failing Docker build.
+
+**Miscellaneous change**
+
+* Use a specific known good version of CentOS 7 (7.8.2003) rather than just generic 7.
+
+v0.9.1.37 (August 23, 2020)
+---------------------------
+
+**UI changes**
+
+Fixed multiple accessibility issues:
+
+- Improve contrast in `/projects`, `/portfolios`, and various control pages (replaced `#888` with `#666`)
+- Fix redundant links in `/projects`.
+- Add label to `select-portfolio-modal` portfolio form element (and remove extra inclusion of modal from `projects.html` template).
+- Add value to hidden `h4` global_modal_title to help with accessibility.
+- Properly generate "Start project" content to `/controls`, `catalog`, and other control pages.
+- Added accessible `title` parameter to `control-lookup` search box on control pages.
+- Properly hide notifications when user is anonymous.
+- Do not display start dropdown in navbar when user is anonymous.
+
+**Bug fixes**
+
+- Fix missing form labels in start project portfolio selection modal effecting accessibility.
+- Do notget portfolio object in ProjectForm for AnonymousUser.
+
+v0.9.1.36.1 (August 19, 2020)
+-----------------------------
+
+**UI changes**
+
+* Allow customizable support page to render HTML tags.
+
+v0.9.1.36 (August 13, 2020)
+---------------------------
+
+**Feature changes**
+
+* Create view only access for projects, system to support Auditor/Assessor role
 
 v0.9.1.35 (August 08, 2020)
 ---------------------------

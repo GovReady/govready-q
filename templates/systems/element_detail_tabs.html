@@ -167,6 +167,8 @@
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
                     <span id="producer_element-panel_num-control">{{ smt.sid|upper }}</span>&nbsp;
                     <!--<span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;-->
+                    <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
+                    {% if smt.pid is not None %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
                     <div class="panel-heading-smt">{{ smt.body }}</div>
                   </a>
                 </h4>

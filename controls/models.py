@@ -286,7 +286,7 @@ class System(models.Model):
                 else:
                     status_str += '<span style="color: #888;">[ ] {}</span> &nbsp;'.format(status)
             # Conditionally add statement part in the beginning of a block of statements related to a part
-            if smt.pid is not None and smt.pid != pid_current:
+            if smt.pid != "" and smt.pid != pid_current:
                 smts_as_dict[smt.sid]['combined_smt'] += "{}.\n".format(smt.pid)
                 pid_current = smt.pid
             smts_as_dict[smt.sid]['combined_smt'] += "<i>{}</i>\n{}\n\n{}\n\n".format(smt.producer_element.name, status_str, smt.body)
