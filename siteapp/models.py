@@ -1012,6 +1012,7 @@ class Project(models.Model):
         return urllib.parse.urljoin(settings.SITE_ROOT_URL,
             "/api/v1//projects/{id}/answers".format(id=self.id))
 
+    @property
     def available_root_task_versions_for_upgrade(self):
         """Show available versions to which the root task module can be upgraded"""
 
