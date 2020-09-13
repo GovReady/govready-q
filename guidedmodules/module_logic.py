@@ -774,7 +774,23 @@ class HtmlAnswerRenderer:
 
         # Wrap the output in a tag that holds metadata.
 
-        # If the question is unanswered or imputed...
+        # If the question is imputed...
+        if has_answer and not answerobj:
+            return """<{tag} class='question-answer'
+              data-module='{module}'
+              data-question='{question}'
+              data-answer-type='{answer_type}'
+              {edit_link}
+              >{value}</{tag}>""".format(
+                tag=wrappertag,
+                module=html.escape(question.module.spec['title']),
+                question=html.escape(question.spec["title"]),
+                answer_type="skipped" if not has_answer else "imputed",
+                edit_link="",
+                value=value,
+            )
+
+        # If the question is unanswered...
         if not answerobj:
             return """<{tag} class='question-answer'
               data-module='{module}'

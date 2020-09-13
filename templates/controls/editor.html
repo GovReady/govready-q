@@ -104,7 +104,7 @@ Remove contextbar from top of page
       <!-- Control Lookup-->
       <div style="float: right;">
           <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-            <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
+            <input type="text" name="id" placeholder="Enter control id" title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
                 <button type="submit" class="btn btn-success">Look up</button>
                 <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <a href="/">families</a> -->
@@ -236,6 +236,8 @@ Remove contextbar from top of page
                 <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
                     <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;
+                    <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
+                    {% if smt.pid is not None %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
                     <div class="panel-heading-smt">{{ smt.body }}</div>
                   </a>
                 </h4>

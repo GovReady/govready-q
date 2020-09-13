@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from django.forms import ModelForm
 from siteapp.models import Project, User, Organization
+from siteapp.forms import PortfolioForm, ProjectForm
 from datetime import datetime
 from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
@@ -49,6 +50,7 @@ def catalogs(request):
 
     context = {
         "catalogs": Catalogs(),
+        "project_form": ProjectForm(request.user),
     }
     return render(request, "controls/index-catalogs.html", context)
 
@@ -69,7 +71,8 @@ def catalog(request, catalog_key, system_id=None):
         "control": None,
         "common_controls": None,
         "system": system,
-        "control_groups": control_groups
+        "control_groups": control_groups,
+        "project_form": ProjectForm(request.user),
     }
     return render(request, "controls/index.html", context)
 
@@ -92,7 +95,8 @@ def group(request, catalog_key, g_id):
         "control": None,
         "common_controls": None,
         "control_groups": control_groups,
-        "group": group
+        "group": group,
+        "project_form": ProjectForm(request.user),
     }
     return render(request, "controls/index-group.html", context)
 
@@ -111,7 +115,8 @@ def control(request, catalog_key, cl_id):
     # Get and return the control
     context = {
         "catalog": catalog,
-        "control": cg_flat[cl_id.lower()]
+        "control": cg_flat[cl_id.lower()],
+        "project_form": ProjectForm(request.user),
     }
     return render(request, "controls/detail.html", context)
 
@@ -148,6 +153,7 @@ def controls_selected(request, system_id):
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/controls_selected.html", context)
     else:
@@ -182,6 +188,7 @@ def controls_updated(request, system_id):
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/controls_updated.html", context)
     else:
@@ -203,6 +210,7 @@ def components_selected(request, system_id):
         context = {
             "system": system,
             "project": project,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/components_selected.html", context)
     else:
@@ -321,7 +329,8 @@ def system_element(request, system_id, element_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-            "opencontrol": opencontrol_string
+            "opencontrol": opencontrol_string,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
@@ -691,7 +700,8 @@ def editor(request, system_id, catalog_key, cl_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-            "opencontrol": "opencontrol_string"
+            "opencontrol": "opencontrol_string",
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -734,7 +744,8 @@ def editor_compare(request, system_id, catalog_key, cl_id):
             "control": cg_flat[cl_id.lower()],
             "common_controls": common_controls,
             "ccp_name": ccp_name,
-            "impl_smts": impl_smts
+            "impl_smts": impl_smts,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "controls/compare.html", context)
     else:
@@ -785,6 +796,19 @@ def save_smt(request):
         if len(form_values['smt_id']) > 0:
             # Look up existing Statement object
             statement = Statement.objects.get(pk=form_values['smt_id'])
+
+            # Check user permissions
+            system = statement.consumer_element
+            if not request.user.has_perm('change_system', system):
+                # User does not have write permissions
+                # Log permission to save answer denied
+                logger.info(
+                    event="save_smt permission_denied",
+                    object={"object": "statement", "id": statement.id},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
             if statement is None:
                 # Statement from received has an id no longer in the database.
                 # Report error. Alternatively, in future save as new Statement object
@@ -917,6 +941,19 @@ def delete_smt(request):
 
         # Delete statement?
         statement = Statement.objects.get(pk=form_values['smt_id'])
+
+        # Check user permissions
+        system = statement.consumer_element
+        if not request.user.has_perm('change_system', system):
+            # User does not have write permissions
+            # Log permission to save answer denied
+            logger.info(
+                event="delete_smt permission_denied",
+                object={"object": "statement", "id": statement.id},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
         if statement is None:
             # Statement from received has an id no longer in the database.
             # Report error. Alternatively, in future save as new Statement object
@@ -1131,6 +1168,7 @@ def poams_list(request, system_id):
             "poam_smts": poam_smts,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/poams_list.html", context)
     else:
@@ -1176,6 +1214,7 @@ def new_poam(request, system_id):
                 'system': system,
                 'project': project,
                 'controls': controls,
+                "project_form": ProjectForm(request.user),
             })
     else:
         # User does not have permission to this system
@@ -1233,6 +1272,7 @@ def edit_poam(request, system_id, poam_id):
                 'project': project,
                 'controls': controls,
                 'poam_smt': poam_smt,
+                "project_form": ProjectForm(request.user),
             })
     else:
         # User does not have permission to this system

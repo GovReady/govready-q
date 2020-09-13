@@ -10,13 +10,16 @@ class ProjectForm(ModelForm):
         model = Project
         fields = ['portfolio']
         portfolio = forms.ChoiceField(choices = [])
-
         user1 = forms.ChoiceField(choices = [])
 
     def __init__(self, user, *args, **kwargs):
         super(ProjectForm, self).__init__(*args, **kwargs)
-        # self.fields['portfolio'].choices = [(x.pk, x.title) for x in Portfolio.get_all_readable_by(user).order_by('title')]
-        self.fields['portfolio'].choices = [(x.pk, x.title) for x in user.portfolio_list().order_by('title')]
+        if not user.is_anonymous:
+            # self.fields['portfolio'].choices = [(x.pk, x.title) for x in Portfolio.get_all_readable_by(user).order_by('title')]
+            self.fields['portfolio'].choices = [(x.pk, x.title) for x in user.portfolio_list().order_by('title')]
+            self.fields['portfolio'].label = "Add project to portfolio"
+            self.fields['portfolio'].label_suffix = "    "
+            self.fields['portfolio'].help_text = ""
 
 class PortfolioForm(ModelForm):
 

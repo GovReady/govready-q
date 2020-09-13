@@ -948,6 +948,13 @@ class Task(models.Model):
         return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in ("READ", "WRITE") or self.project.has_read_priv(user)
 
     def has_write_priv(self, user, allow_access_to_deleted=False):
+        """Return True if user has write privilege on task"""
+
+        # Deny write privilege to users with ONLY view_project permission
+        project_user_permissions = get_user_perms(user, self.project)
+        if len(project_user_permissions) == 1 and user.has_perm('view_project', self.project):
+            # User only has view_project permission
+            return False
         return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE" or self.project.has_write_priv(user)
 
     def has_review_priv(self, user):
