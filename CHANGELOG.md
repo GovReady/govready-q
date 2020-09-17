@@ -1,6 +1,26 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.40 (September 17, 2020)
+------------------------------
+
+**UI changes**
+
+* Add group field to POA&M page to collect related POA&Ms together. (#1010)
+* Improve the UI on the task-finish page to display option to download OSCAL versions of SSP (JSON, XML). (#1018, #1026)
+
+**Data changes**
+
+* Add `poam_group` field to POA&M model and form.
+
+**Developer changes**
+
+* Support for generating OSCAL versions of SSPs as templates.
+
+**Bug fixes**
+
+* Do not show link to question on imputed answers. Separate test for unanswered question and imputed question in rendering HTML navigation for question. (#1015)
+
 v0.9.1.38 (August 28, 2020)
 ---------------------------
 
