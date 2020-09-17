@@ -301,6 +301,7 @@ class System(models.Model):
             smts_as_dict[cc.common_control.oscal_ctl_id]['combined_smt'] += "{}\n{}\n\n".format(cc.common_control.name, cc.common_control.body)
         return smts_as_dict
 
+    @property
     def get_producer_elements(self):
         smts = self.root_element.statements_consumed.all()
         components = set()

@@ -1126,6 +1126,8 @@ class Task(models.Model):
             # the rest use pandoc
             "plain": ("plain", "txt", "text/plain"),
             "markdown": ("markdown_github", "md", "text/plain"),
+            "oscal_json": ("markdown_github", "md", "text/plain"),
+            "oscal_yaml": ("markdown_github", "md", "text/plain"),
             "oscal_xml": ("markdown_github", "md", "text/plain"),
             "docx": ("docx", "docx", "application/octet-stream"),
             "odt": ("odt", "odt", "application/octet-stream"),
@@ -1164,6 +1166,16 @@ class Task(models.Model):
         filename = document_id + "." + file_extension
 
         if download_format == "markdown" and doc["format"] == "markdown":
+            # When Markdown output is requested for a template that is
+            # authored in markdown, we can render directly to markdown.
+            blob = doc["markdown"].encode("utf8")
+
+        elif download_format == "oscal_json" and doc["format"] == "oscal_json":
+            # When Markdown output is requested for a template that is
+            # authored in markdown, we can render directly to markdown.
+            blob = doc["markdown"].encode("utf8")
+
+        elif download_format == "oscal_yaml" and doc["format"] == "oscal_yaml":
             # When Markdown output is requested for a template that is
             # authored in markdown, we can render directly to markdown.
             blob = doc["markdown"].encode("utf8")
