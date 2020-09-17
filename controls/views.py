@@ -1258,6 +1258,7 @@ def edit_poam(request, system_id, poam_id):
             poam_form = PoamForm(initial={
                     'weakness_name': poam_smt.poam.weakness_name,
                     'controls': poam_smt.poam.controls,
+                    'poam_group': poam_smt.poam.poam_group,
                     'risk_rating_original': poam_smt.poam.risk_rating_original,
                     'risk_rating_adjusted': poam_smt.poam.risk_rating_adjusted,
                     'weakness_detection_source': poam_smt.poam.weakness_detection_source,
