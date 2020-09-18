@@ -449,4 +449,12 @@ class Poam(models.Model):
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
+class IssueTracker(models.Model):
+    def __init__(self):
+        import gitlab
+        self._gl = gitlab.Gitlab('https://gitlab.com', private_token='YOUR_PERSONAL_ACCESS_TOKEN')
+        self._gl.auth()
 
+    def projects(self):
+        projects = self._gl.projects.list(owned=True)
+        return {str(project.id): project.name_with_namespace for project in projects}

@@ -1279,5 +1279,29 @@ def edit_poam(request, system_id, poam_id):
         # User does not have permission to this system
         raise Http404
 
+# Issue Tracker
+def issue_tracker(request, system_id):
+    """Display issue tracker for a system"""
 
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve issue tracker if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
 
+        # Retrieve Issue Tracker
+        it = IssueTracker()
+        it_projects = it.projects()
+
+        # Return the projects
+        context = {
+            "system": system,
+            "project": project,
+            "it_projects": it_projects,
+        }
+        return render(request, "systems/issue_tracker.html", context)
+    else:
+        # User does not have permission to this system
+        raise Http404
