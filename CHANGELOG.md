@@ -12,6 +12,8 @@ v0.9.1.40 (September 17, 2020)
 **Data changes**
 
 * Add `poam_group` field to POA&M model and form.
+* Have `System.control_implementation_as_dict` populate information for all assigned (e.g. selected) controls even if no statement exists for assigned control.
+* Have `System.control_implementation_as_dict` generate a random uuid for combined statement. NOTE: This statement is random on each generation.
 
 **Developer changes**
 

@@ -142,6 +142,7 @@ class ElementControl(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     smts_updated = models.DateTimeField(auto_now=False, db_index=True, help_text="Store date of most recent statement update", blank=True, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this ElementControl.")
 
     # Notes
     # from controls.oscal import *;from controls.models import *;
@@ -183,7 +184,10 @@ class ElementControl(models.Model):
         query_set = self.objects.filter(element=element)
         selected_controls = {}
         for cl in query_set:
-            selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'], 'oscal_catalog_key': cl['oscal_catalog_key']}
+            selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'],
+                                                     'oscal_catalog_key': cl['oscal_catalog_key'],
+                                                     'uuid': cl['uuid']
+                                                     }
         return selected_controls
 
     def get_flattened_oscal_control_as_dict(self):
@@ -274,7 +278,14 @@ class System(models.Model):
             if smt.sid in smts_as_dict:
                 smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
             else:
-                smts_as_dict[smt.sid] = {"control_impl_smts": [smt], "common_controls": [], "combined_smt": ""}
+                # Get ElementControl
+                elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid, oscal_catalog_key=smt.sid_class)
+                smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
+                                         "common_controls": [],
+                                         "combined_smt": "",
+                                         "elementcontrol_uuid": elementcontrol.uuid,
+                                         "combined_smt_uuid": uuid.uuid4()
+                                         }
             # Build combined statement
 
             # Define status options
@@ -299,6 +310,19 @@ class System(models.Model):
                 smts_as_dict[cc.common_control.oscal_ctl_id] = {"control_impl_smts": [], "common_controls": [cc], "combined_smt": ""}
             # Build combined statement
             smts_as_dict[cc.common_control.oscal_ctl_id]['combined_smt'] += "{}\n{}\n\n".format(cc.common_control.name, cc.common_control.body)
+
+        # Populate any controls from assigned baseline that do not have statements
+        for ec in self.root_element.controls.all():
+            if ec.oscal_ctl_id not in smts_as_dict:
+                # Get ElementControl
+                smts_as_dict[ec.oscal_ctl_id] = {"control_impl_smts": [],
+                                         "common_controls": [],
+                                         "combined_smt": "",
+                                         "elementcontrol_uuid": ec.uuid,
+                                         "combined_smt_uuid": uuid.uuid4()
+                                         }
+
+        # Return the dictionary
         return smts_as_dict
 
     @property
