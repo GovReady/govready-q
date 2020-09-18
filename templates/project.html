@@ -155,6 +155,9 @@ h3.question-group-title {
       <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
         <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
       </button>
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/issue-tracker';">
+        <em class="glyphicon glyphicon-inbox"></em>&nbsp; Issue Tracker</a>
+      </button>
     {% endif %}
     {% if not project.is_account_project or project.is_deletable %}
       <button class="btn btn-sm btn-default" onclick="$('#project_settings').modal();">
