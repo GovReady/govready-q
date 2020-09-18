@@ -1293,13 +1293,13 @@ def issue_tracker(request, system_id):
 
         # Retrieve Issue Tracker
         it = IssueTracker()
-        it_projects = it.projects()
+        it_issues = it.issues()
 
         # Return the projects
         context = {
             "system": system,
             "project": project,
-            "it_projects": it_projects,
+            "it_issues": it_issues,
         }
         return render(request, "systems/issue_tracker.html", context)
     else:

@@ -458,3 +458,9 @@ class IssueTracker(models.Model):
     def projects(self):
         projects = self._gl.projects.list(owned=True)
         return {str(project.id): project.name_with_namespace for project in projects}
+
+    def issues(self):
+        project_id = '15604542'
+        project = self._gl.projects.get(project_id)
+        issues = project.issues.list()
+        return {str(issue.id): issue.title for issue in issues}

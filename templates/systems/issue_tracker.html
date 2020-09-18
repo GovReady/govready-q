@@ -25,18 +25,18 @@
       <!-- Page Title-->
       <div style="float: left;">
           <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> > Issue Tracker Projects
+            <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> > Issues in Issue Tracker
           </h2>
       </div>
     </div>
   </div><!--/row-->
     <p>&nbsp;</p>
 
-    {% for id, name in it_projects.items %}
+    {% for id, title in it_issues.items %}
       <div id="tab-content" class="row row-control" style="">
           <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
               {{ id }}:
-              {{ name }}
+              {{ title }}
           </div>
       </div>
     {% endfor %}
