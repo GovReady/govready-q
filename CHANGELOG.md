@@ -23,6 +23,13 @@ v0.9.1.40 (September 17, 2020)
 
 * Do not show link to question on imputed answers. Separate test for unanswered question and imputed question in rendering HTML navigation for question. (#1015)
 
+v0.9.1.38 (September 20, 2020)
+------------------------------
+
+**Developer changes**
+
+* Remove no longer maintained code for deploying to Pivotal Web Services.
+
 v0.9.1.38 (August 28, 2020)
 ---------------------------
 
