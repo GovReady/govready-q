@@ -33,15 +33,13 @@
     <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">POA&Ms</div>
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2" style="margin-top: 4px;">POA&Ms</div>
         <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">&nbsp;</div>
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-          <a href="/systems/{{ system.id }}/poams/new" class="small btn btn-xs btn-success" style="color: white;">New POA&M</a>
-          <a>
-	    <span class="glyphicon glyphicon-download-alt pull-right"
-		  style="cursor: pointer;"
-		  onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
-	  </a>
+          <a href="/systems/{{ system.id }}/poams/new" class="btn btn-sm btn-success" style="color: white;">New POA&M</a>
+          <span class="glyphicon glyphicon-download-alt pull-right"
+                style="cursor: pointer; margin-top: 6px;"
+                onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
         </div>
     </div>
     {% if poam_smts|length < 1 %}
