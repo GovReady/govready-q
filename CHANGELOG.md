@@ -29,6 +29,13 @@ Enable upgrade of project root_task to more recent version.
 
 * Document new logger entries for successful and failed attempts to upgrade project's root_task app.
 
+v0.9.1.38.2 (September 20, 2020)
+--------------------------------
+
+**Developer changes**
+
+* Remove no longer maintained code for deploying to Pivotal Web Services.
+
 v0.9.1.38 (August 28, 2020)
 ---------------------------
 
