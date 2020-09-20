@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.39 (September 13, 2020)
+v0.9.1.41 (September 20, 2020)
 ------------------------------
 
 Enable upgrade of project root_task to more recent version.
