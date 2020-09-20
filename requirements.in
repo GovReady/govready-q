@@ -13,6 +13,7 @@ commonmark # BSD License
 graphviz # MIT License
 fs # BSD License
 PyGithub # LGPL License
+python-gitlab # LGPL License
 GitPython # BSD License
 Pygments==2.2.0 # BSD License
 termcolor # MIT License

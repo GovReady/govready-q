@@ -416,6 +416,10 @@ pygithub==1.52 \
     --hash=sha256:371d17e855a2fd7a9ea1a9c71fd1d5d3e805369b60ce21121dd2931e5fbfc4e7 \
     --hash=sha256:fc11a182ca3d88dde6ab2fbbd07e3441685cc8b738f7813fcbfc18be28c1d8ed \
     # via -r requirements.in
+python-gitlab==2.5.0 \
+    --hash=sha256:61270e1f8ac24fe248f41834c840c6465d2e0b216493d3508d296a02960122c0 \
+    --hash=sha256:68b42aafd4b620ab2534ff78a52584c7f799e4e55d5ac297eab4263066e6f74b \
+    # via -r requirements.in
 pygments==2.2.0 \
     --hash=sha256:78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d \
     --hash=sha256:dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc \
