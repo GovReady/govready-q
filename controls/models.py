@@ -452,7 +452,7 @@ class Poam(models.Model):
 class IssueTracker(models.Model):
     def __init__(self):
         import gitlab
-        self._gl = gitlab.Gitlab('https://gitlab.com', private_token='q9Mdjx7sK1vugZC3DXz5')
+        self._gl = gitlab.Gitlab('https://gitlab.com', private_token='YOUR_PERSONAL_ACCESS_TOKEN')
         self._gl.auth()
 
     def projects(self):
