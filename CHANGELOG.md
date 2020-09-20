@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.38 (September 20, 2020)
+------------------------------
+
+**Developer changes**
+
+* Remove no longer maintained code for deploying to Pivotal Web Services.
+
 v0.9.1.38 (August 28, 2020)
 ---------------------------
 
