@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.XX (September 20, 2020)
+v0.9.1.42 (September 20, 2020)
 ------------------------------
 
 **Feature changes**
@@ -12,8 +12,8 @@ v0.9.1.XX (September 20, 2020)
 
 - Add components (system elements) to a system on system's selected components page.
 
-v0.9.1.38.1 (September 20, 2020)
-------------------------------
+v0.9.1.38.2 (September 20, 2020)
+--------------------------------
 
 **Developer changes**
 
