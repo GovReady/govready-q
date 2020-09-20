@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.XX (September 04, 2020)
+v0.9.1.XX (September 20, 2020)
 ------------------------------
 
 **Feature changes**
@@ -11,6 +11,14 @@ v0.9.1.XX (September 04, 2020)
 **UI changes**
 
 - Add components (system elements) to a system on system's selected components page.
+
+v0.9.1.38.1 (September 20, 2020)
+------------------------------
+
+**Developer changes**
+
+* Remove no longer maintained code for deploying to Pivotal Web Services.
+
 
 v0.9.1.38 (August 28, 2020)
 ---------------------------

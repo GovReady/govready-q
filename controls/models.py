@@ -466,8 +466,10 @@ class Poam(models.Model):
     # vendor_dependency = models.CharField(max_length=254, unique=False, blank=True, null=True, help_text="Comma.")
     risk_rating_original = models.CharField(max_length=50, unique=False, blank=True, null=True, help_text="The initial risk rating of the weakness.")
     risk_rating_adjusted = models.CharField(max_length=50, unique=False, blank=True, null=True, help_text="The current or modified risk rating of the weakness.")
+    poam_group = models.CharField(max_length=50, unique=False, blank=True, null=True, help_text="A name to collect related POA&Ms together.")
     # spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
     # Spec will hold additional values, such as: POC, resources_required, vendor_dependency
+
 
     def __str__(self):
         return "<Poam %s id=%d>" % (self.statement, self.id)
