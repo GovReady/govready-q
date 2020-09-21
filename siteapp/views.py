@@ -608,6 +608,7 @@ def project_read_required(f):
 
 @project_read_required
 def project(request, project):
+
     # Get this project's lifecycle stage, which is shown below the project title.
     assign_project_lifecycle_stage([project])
     if project.lifecycle_stage[0]["id"] == "none":
@@ -782,7 +783,7 @@ def project(request, project):
                     continue
 
         # If the invitation didn't get put elsewhere, display in the
-        # other list.                
+        # other list.
         other_open_invitations.append(inv)
 
     # Render.
@@ -809,6 +810,68 @@ def project(request, project):
         "users": User.objects.all(),
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
+        "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+    })
+
+@project_read_required
+def project_settings(request, project):
+    """Display settings for project"""
+
+    # Assign questions to the main area or to the "action buttons" panel on the side of the page.
+    main_area_questions = []
+    action_buttons = []
+
+    other_open_invitations = []
+    for inv in Invitation.objects.filter(from_user=request.user, from_project=project, accepted_at=None, revoked_at=None).order_by('-created'):
+        if inv.is_expired():
+            continue
+        if inv.target == project:
+            into_new_task_question_id = inv.target_info.get("into_new_task_question_id")
+            if into_new_task_question_id:
+                if into_new_task_question_id in questions: # should always be True
+                    questions[into_new_task_question_id]["invitations"].append(inv)
+                    continue
+
+        # If the invitation didn't get put elsewhere, display in the
+        # other list.                
+        other_open_invitations.append(inv)
+
+    # Gather version upgrade information
+    available_versions = []
+    avs = project.available_root_task_versions_for_upgrade
+    for av in avs:
+        av_info = {
+            "appname": av.appname,
+            "version_number": av.version_number
+        }
+        print("project.is_safe_upgrade(av)", project.is_safe_upgrade(av))
+        if project.is_safe_upgrade(av) == True:
+            av_info["is_safe_upgrade"] = True
+            av_info["reason"] = "Compatible"
+        else:
+            av_info["is_safe_upgrade"] = "Incompatible"
+            av_info["reason"] = project.is_safe_upgrade(av)
+        available_versions.append(av_info)
+
+    # Render.
+    return render(request, "project_settings.html", {
+        "is_project_page": True,
+        "project": project,
+
+        "is_admin": request.user in project.get_admins(),
+        "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
+        "available_versions": available_versions,
+
+        "title": project.title,
+        "open_invitations": other_open_invitations,
+        "send_invitation": Invitation.form_context_dict(request.user, project, [request.user]),
+
+        "action_buttons": action_buttons,
+
+        "projects": Project.objects.all(),
+        "portfolios": Portfolio.objects.all(),
+        "users": User.objects.all(),
+
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
     })
 
@@ -1098,10 +1161,55 @@ def rename_project(request, project):
     return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required
+def upgrade_project(request, project):
+    """Upgrade root task of project to newer version"""
+
+    available_versions = project.available_root_task_versions_for_upgrade
+    current_app = project.root_task.module.app
+
+    # Determine new version of app to upgrade from version_number
+    version_number = request.POST.get("version_number", "").strip() or None
+    new_app = None
+    for av in available_versions:
+        if av.version_number == version_number:
+            new_app = av
+
+    # Attempt upgrade
+    result = project.upgrade_root_task_app(new_app)
+    # Was upgrade successful?
+    if result == True:
+        # Upgrade successful
+        # Log successful project root task upgrade
+        logger.info(
+            event="upgrade_project root_task successful",
+            object={"id": project.id, "title":project.title},
+            from_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": version_number},
+            to_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": new_app.version_number},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        message = "Project {} upgraded successfully to {}".format(project, new_app.version_number)
+        messages.add_message(request, messages.INFO, message)
+        redirect = project.get_absolute_url()
+        return JsonResponse({ "status": "ok", "redirect": redirect })
+    else:
+        # Upgrade failure
+        # Log failed project root task upgrade
+        logger.info(
+            event="upgrade_project root_task failure",
+            object={"id": project.id, "title":project.title},
+            from_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": version_number},
+            to_app={"appsource_slug": project.root_task.module.source.slug, "id": new_app.id, "version_number": new_app.version_number},
+            detail={"reason": result},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        message = "Project {} failed to upgrade to {}. {}".format(project, new_app.version_number, result)
+        return JsonResponse({ "status": "error", "message": message })
+
+@project_admin_login_post_required
 def delete_project(request, project):
     if not project.is_deletable():
         return JsonResponse({ "status": "error", "message": "This project cannot be deleted." })
-    
+
     # Get the project's parents for redirect.
     parents = project.get_parent_projects()
     project.delete()
