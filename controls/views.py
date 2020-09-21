@@ -1308,51 +1308,51 @@ def poam_export(request, system_id, format='xlsx'):
             csv_buffer = io.StringIO(newline='\n')
             csv_writer = csv.writer(csv_buffer)
 
-        statement_fields = {
-            'body': 'Description',
-            'status': 'Status'
-        }
+        statement_fields = [
+            {'var_name':'body', 'name':'Description', 'width':30},
+            {'var_name':'status', 'name':'Status', 'width':8},
+        ]
 
-        poam_fields = {
-            'weakness_name': 'Weakness Name',
-            'controls': 'Controls',
-            'risk_rating_original': 'Risk Rating Original',
-            'risk_rating_adjusted': 'Risk Rating Adjusted',
-            'weakness_detection_source': 'Weakness Detection Source',
-            'weakness_source_identifier': 'Weakness Source Identifier',
-            'remediation_plan': 'Remediation Plan',
-            'milestones': 'Milestones',
-            'milestone_changes': 'Milestone Changes',
-            'scheduled_completion_date': 'Scheduled Completion Date'
-        }
+        poam_fields = [
+            {'var_name':'weakness_name', 'name':'Weakness Name', 'width':24},
+            {'var_name':'controls', 'name':'Controls', 'width':24},
+            {'var_name':'risk_rating_original', 'name':'Risk Rating Original', 'width':16},
+            {'var_name':'risk_rating_adjusted', 'name':'Risk Rating Adjusted', 'width':16},
+            {'var_name':'weakness_detection_source', 'name':'Weakness Detection Source', 'width':24},
+            {'var_name':'weakness_source_identifier', 'name':'Weakness Source Identifier', 'width':24},
+            {'var_name':'remediation_plan', 'name':'Remediation Plan', 'width':30},
+            {'var_name':'milestones', 'name':'Milestones', 'width':30},
+            {'var_name':'milestone_changes', 'name':'Milestone Changes', 'width':30},
+            {'var_name':'scheduled_completion_date', 'name':'Scheduled Completion Date', 'width':18},
+        ]
 
         # create header row
         # Description and Status are in statement
         column = 0
+        ord_zeroth_column = ord('A') - 1
         csv_row = []
-        for field_name in statement_fields:
+        for statement_field in statement_fields:
             column += 1
             if format == 'xlsx':
-                c = ws.cell(row=1, column=column, value=statement_fields[field_name])
+                c = ws.cell(row=1, column=column, value=statement_field['name'])
                 c.fill = PatternFill("solid", fgColor="5599FE")
                 c.font = Font(color="FFFFFF", bold=True)
                 c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                ws.column_dimensions[chr(ord_zeroth_column + column)].width = statement_field['width']
             else:
-                csv_row.append(statement_fields[field_name])
+                csv_row.append(statement_field['name'])
 
         # other fields are in statement.poam
-        for field_name in poam_fields:
+        for poam_field in poam_fields:
             column += 1
             if format == 'xlsx':
-                c = ws.cell(row=1, column=column, value=poam_fields[field_name])
+                c = ws.cell(row=1, column=column, value=poam_field['name'])
                 c.fill = PatternFill("solid", fgColor="5599FE")
                 c.font = Font(color="FFFFFF", bold=True)
                 c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                ws.column_dimensions[chr(ord_zeroth_column + column)].width = poam_field['width']
             else:
-                csv_row.append(poam_fields[field_name])
-
-        # TODO: set column widths
-        # ws.column_dimensions['A'].width = 30
+                csv_row.append(poam_field['name'])
 
         if format != 'xlsx':
             csv_writer.writerow(csv_row)
@@ -1367,25 +1367,25 @@ def poam_export(request, system_id, format='xlsx'):
 
             # fields in statement
             column = 0
-            for field_name in statement_fields:
+            for statement_field in statement_fields:
                 column += 1
                 if format == 'xlsx':
-                    c = ws.cell(row=row, column=column, value=getattr(poam_smt, field_name))
-                    c.fill = PatternFill("solid", fgColor="FFFF99")
-                    c.alignment = Alignment(vertical='top', wrapText=True)
+                    c = ws.cell(row=row, column=column, value=getattr(poam_smt, statement_field['var_name']))
+                    c.fill = PatternFill("solid", fgColor="FFFFFF")
+                    c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
                     c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
                 else:
-                    csv_row.append(getattr(poam_smt, field_name))
+                    csv_row.append(getattr(poam_smt, statement_field['var_name']))
             # fields in poam object
-            for field_name in poam_fields:
+            for poam_field in poam_fields:
                 column += 1
                 if format == 'xlsx':
-                    c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, field_name))
-                    c.fill = PatternFill("solid", fgColor="FFFF99")
-                    c.alignment = Alignment(vertical='top', wrapText=True)
+                    c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, poam_field['var_name']))
+                    c.fill = PatternFill("solid", fgColor="FFFFFF")
+                    c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
                     c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
                 else:
-                    csv_row.append(getattr(poam_smt.poam, field_name))
+                    csv_row.append(getattr(poam_smt.poam, poam_field['var_name']))
 
             if format != 'xlsx':
                 csv_writer.writerow(csv_row)
