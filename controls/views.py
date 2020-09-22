@@ -1308,41 +1308,28 @@ def poam_export(request, system_id, format='xlsx'):
             csv_buffer = io.StringIO(newline='\n')
             csv_writer = csv.writer(csv_buffer)
 
-        statement_fields = [
-            {'var_name':'body', 'name':'Description', 'width':30},
-            {'var_name':'status', 'name':'Status', 'width':8},
-        ]
-
         poam_fields = [
+            {'var_name':'poam_id', 'name':'POA&M ID', 'width':8},
+            {'var_name':'poam_group', 'name':'POA&M Group', 'width':16},
             {'var_name':'weakness_name', 'name':'Weakness Name', 'width':24},
-            {'var_name':'controls', 'name':'Controls', 'width':24},
+            {'var_name':'controls', 'name':'Controls', 'width':16},
+            {'var_name':'body', 'name':'Description', 'width':50},
+            {'var_name':'status', 'name':'Status', 'width':8},
             {'var_name':'risk_rating_original', 'name':'Risk Rating Original', 'width':16},
             {'var_name':'risk_rating_adjusted', 'name':'Risk Rating Adjusted', 'width':16},
             {'var_name':'weakness_detection_source', 'name':'Weakness Detection Source', 'width':24},
             {'var_name':'weakness_source_identifier', 'name':'Weakness Source Identifier', 'width':24},
-            {'var_name':'remediation_plan', 'name':'Remediation Plan', 'width':30},
-            {'var_name':'milestones', 'name':'Milestones', 'width':30},
+            {'var_name':'remediation_plan', 'name':'Remediation Plan', 'width':50},
+            {'var_name':'milestones', 'name':'Milestones', 'width':50},
             {'var_name':'milestone_changes', 'name':'Milestone Changes', 'width':30},
             {'var_name':'scheduled_completion_date', 'name':'Scheduled Completion Date', 'width':18},
         ]
 
         # create header row
-        # Description and Status are in statement
         column = 0
         ord_zeroth_column = ord('A') - 1
         csv_row = []
-        for statement_field in statement_fields:
-            column += 1
-            if format == 'xlsx':
-                c = ws.cell(row=1, column=column, value=statement_field['name'])
-                c.fill = PatternFill("solid", fgColor="5599FE")
-                c.font = Font(color="FFFFFF", bold=True)
-                c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-                ws.column_dimensions[chr(ord_zeroth_column + column)].width = statement_field['width']
-            else:
-                csv_row.append(statement_field['name'])
 
-        # other fields are in statement.poam
         for poam_field in poam_fields:
             column += 1
             if format == 'xlsx':
@@ -1358,34 +1345,36 @@ def poam_export(request, system_id, format='xlsx'):
             csv_writer.writerow(csv_row)
 
         # Retrieve POA&Ms and create POA&M rows
-        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('-updated')
+        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('id')
         poam_smts_by_sid = {}
         row = 1
         for poam_smt in poam_smts:
             csv_row = []
             row += 1
 
-            # fields in statement
+            # Loop through fields
             column = 0
-            for statement_field in statement_fields:
-                column += 1
-                if format == 'xlsx':
-                    c = ws.cell(row=row, column=column, value=getattr(poam_smt, statement_field['var_name']))
-                    c.fill = PatternFill("solid", fgColor="FFFFFF")
-                    c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
-                    c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-                else:
-                    csv_row.append(getattr(poam_smt, statement_field['var_name']))
-            # fields in poam object
             for poam_field in poam_fields:
                 column += 1
                 if format == 'xlsx':
-                    c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, poam_field['var_name']))
+                    if poam_field['var_name'] in ['body', 'status']:
+                        c = ws.cell(row=row, column=column, value=getattr(poam_smt, poam_field['var_name']))
+                    else:
+                        if poam_field['var_name'] == 'poam_id':
+                            c = ws.cell(row=row, column=column, value="V-{}".format(getattr(poam_smt.poam, poam_field['var_name'])))
+                        else:
+                            c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, poam_field['var_name']))
                     c.fill = PatternFill("solid", fgColor="FFFFFF")
                     c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
                     c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
                 else:
-                    csv_row.append(getattr(poam_smt.poam, poam_field['var_name']))
+                    if poam_field['var_name'] in ['body', 'status']:
+                        csv_row.append(getattr(poam_smt, poam_field['var_name']))
+                    else:
+                        if poam_field['var_name'] == 'poam_id':
+                            csv_row.append("V-{}".format(getattr(poam_smt.poam, poam_field['var_name'])))
+                        else:
+                            csv_row.append(getattr(poam_smt.poam, poam_field['var_name']))
 
             if format != 'xlsx':
                 csv_writer.writerow(csv_row)
@@ -1400,8 +1389,10 @@ def poam_export(request, system_id, format='xlsx'):
             blob = csv_buffer.getvalue()
             csv_buffer.close()
 
+        # Determine filename based on system name
+        system_name = system.root_element.name.replace(" ","_") + "_" + system_id
+        filename = "{}_poam_export-{}.{}".format(system_name,datetime.now().strftime("%Y-%m-%d-%H-%M"),format)
         mime_type = "application/octet-stream"
-        filename = "{}_poam_export-{}.{}".format(system_id,datetime.now().strftime("%Y-%m-%d-%H-%M"),format)
 
         resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
