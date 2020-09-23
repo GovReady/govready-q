@@ -11,6 +11,11 @@ v0.9.1.43 (September 23, 2020)
 * Gracefully handle missing ElementControl in `System.control_implementation_as_dict` method to avoid failure to render SSP output templates
 * Improve compliance app (questionnaire) upgrade to see upgrades as compatible even if compliance app version changed or the id of modules changes (which is expected to happen in an upgrade).
 
+**UI changes**
+
+* Changes to portfolio detail page to match style of similar pages.
+* Stop displaying content recommendations on project page and portfolio pages after a project is 1 or higher.
+
 v0.9.1.42 (September 22, 2020)
 ------------------------------
 
