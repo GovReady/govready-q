@@ -1061,6 +1061,15 @@ class Project(models.Model):
             for m in new_modules
         }
 
+        # Make a mapping of modules in the existing compliance app to their corresponding
+        # modules in the new compliance app (for modules that exist in both the old and new
+        # app with the same name) so that when checking module-type questions, we can know
+        # to expect certain ID changes.
+        module_id_map = {
+            old_modules[m].id: new_modules[m].id
+            for m in set(old_modules) & set(new_modules)
+        }
+
         # Check each module in use.
         for module_name, old_module in old_modules.items():
             if module_name not in new_modules:
@@ -1077,7 +1086,7 @@ class Project(models.Model):
                 # that is_module_changed expects to be there.
                 spec["questions"] = [q.spec for q in new_module.questions.all()]
 
-                changed = is_module_changed(old_module, new_app.source, spec)
+                changed = is_module_changed(old_module, new_app.source, spec, module_id_map=module_id_map)
                 if changed in (None, False):
                 # if changed in (None, False, 'The module version number changed, forcing a reload.'):
                     # 'None' signals no changes.

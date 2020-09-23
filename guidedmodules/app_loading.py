@@ -284,7 +284,7 @@ def update_question(m, definition_order, spec, log_status):
 
     return q
 
-def is_module_changed(m, source, spec):
+def is_module_changed(m, source, spec, module_id_map=None):
     # Returns whether a module specification has changed since
     # it was loaded into a Module object (and its questions).
     # Returns:
@@ -324,7 +324,7 @@ def is_module_changed(m, source, spec):
         # Is there an incompatible change in the question? (If there
         # is a change that is compatible, we will return that the
         # module is changed anyway at the end of this method.)
-        qchg = is_question_changed(mq, definition_order, q)
+        qchg = is_question_changed(mq, definition_order, q, module_id_map=module_id_map)
         if isinstance(qchg, str):
             return "In question %s: %s" % (q["id"], qchg)
 
@@ -351,7 +351,7 @@ def is_module_changed(m, source, spec):
     # The changes will not create any data inconsistency.
     return False
 
-def is_question_changed(mq, definition_order, spec):
+def is_question_changed(mq, definition_order, spec, module_id_map=None):
     # Returns whether a question specification has changed since
     # it was loaded into a ModuleQuestion object.
     # Returns:
@@ -421,9 +421,19 @@ def is_question_changed(mq, definition_order, spec):
     # rather than the string module ID in the YAML files.
     if mq.spec["type"] in ("module", "module-set"):
         if mq.spec.get("module-id") != spec.get("module-id"):
-            return "The answer type module changed from %s to %s." %(
-                repr(mq.spec.get("module-id")), repr(spec.get("module-id"))
-            )
+            # The ID of the module that is a valid answer for this question
+            # has changed. But when upgrade an app, we expect the IDs of
+            # modules defined within the app to change, so we check if
+            # the ID change is expected or not. module_map, if set, has
+            # a mapping of old Module instances to new Module instances
+            # that will be upgraded as a part of the upgrade.
+            if module_id_map is not None and module_id_map.get(mq.spec.get("module-id")) == spec.get("module-id"):
+                # The module change is expected.
+                pass
+            else:
+                return "The answer type module changed from %s to %s." %(
+                    repr(mq.spec.get("module-id")), repr(spec.get("module-id"))
+                )
         if set(mq.spec.get("protocol", [])) != set(spec.get("protocol", [])):
             return "The answer type protocol changed (%s to %s)." % (
                 set(mq.spec.get("protocol")),
