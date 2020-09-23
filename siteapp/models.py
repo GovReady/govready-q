@@ -1048,6 +1048,7 @@ class Project(models.Model):
         old_app = self.root_task.module.app
 
         # Get the Modules in use by this Project, and make a mapping from name to module,
+        # Only need to test upgrading upgrades for modules that are actually in use.
         old_modules = Module.objects.filter(task__project=self).distinct()
         old_modules = {
             m.module_name: m
@@ -1064,10 +1065,13 @@ class Project(models.Model):
         # Make a mapping of modules in the existing compliance app to their corresponding
         # modules in the new compliance app (for modules that exist in both the old and new
         # app with the same name) so that when checking module-type questions, we can know
-        # to expect certain ID changes.
+        # to expect certain ID changes. Here we need all of the modules in the app regardless
+        # of whether they are in use.
+        old_modules_all = { m.module_name: m for m in old_app.modules.all() }
+        new_modules_all = { m.module_name: m for m in new_app.modules.all() }
         module_id_map = {
-            old_modules[m].id: new_modules[m].id
-            for m in set(old_modules) & set(new_modules)
+            old_modules_all[m].id: new_modules_all[m].id
+            for m in set(old_modules_all) & set(new_modules_all)
         }
 
         # Check each module in use.
