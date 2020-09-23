@@ -1,12 +1,15 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.43 (September 22, 2020)
+v0.9.1.43 (September 23, 2020)
 ------------------------------
 
 **Bug fixes**
 
 * Enable all admins to upgrade apps versions.
+* Fix `System.producer_elements` property error by removing unneeded `@property` decorator added in Version 0.9.1.42 to `get_producer_elements`.
+* Gracefully handle missing ElementControl in `System.control_implementation_as_dict` method to avoid failure to render SSP output templates
+* Improve compliance app (questionnaire) upgrade to see upgrades as compatible even if compliance app version changed or the id of modules changes (which is expected to happen in an upgrade).
 
 v0.9.1.42 (September 22, 2020)
 ------------------------------
