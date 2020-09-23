@@ -1048,6 +1048,7 @@ class Project(models.Model):
         old_app = self.root_task.module.app
 
         # Get the Modules in use by this Project, and make a mapping from name to module,
+        # Only need to test upgrading upgrades for modules that are actually in use.
         old_modules = Module.objects.filter(task__project=self).distinct()
         old_modules = {
             m.module_name: m
@@ -1059,6 +1060,18 @@ class Project(models.Model):
         new_modules = {
             m.module_name: m
             for m in new_modules
+        }
+
+        # Make a mapping of modules in the existing compliance app to their corresponding
+        # modules in the new compliance app (for modules that exist in both the old and new
+        # app with the same name) so that when checking module-type questions, we can know
+        # to expect certain ID changes. Here we need all of the modules in the app regardless
+        # of whether they are in use.
+        old_modules_all = { m.module_name: m for m in old_app.modules.all() }
+        new_modules_all = { m.module_name: m for m in new_app.modules.all() }
+        module_id_map = {
+            old_modules_all[m].id: new_modules_all[m].id
+            for m in set(old_modules_all) & set(new_modules_all)
         }
 
         # Check each module in use.
@@ -1077,7 +1090,7 @@ class Project(models.Model):
                 # that is_module_changed expects to be there.
                 spec["questions"] = [q.spec for q in new_module.questions.all()]
 
-                changed = is_module_changed(old_module, new_app.source, spec)
+                changed = is_module_changed(old_module, new_app.source, spec, module_id_map=module_id_map)
                 if changed in (None, False):
                 # if changed in (None, False, 'The module version number changed, forcing a reload.'):
                     # 'None' signals no changes.
