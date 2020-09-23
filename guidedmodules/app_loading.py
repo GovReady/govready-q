@@ -343,10 +343,11 @@ def is_module_changed(m, source, spec, module_id_map=None):
         # The removal of this question is an incompatible change.
         return "Question %s was removed." % mq.key
 
-    if m.spec.get("version") != spec.get("version"):
-        # The module writer can force a bump by changing the version
-        # field.
-        return "The module version number changed, forcing a reload."
+    # Stop marking version changes as a blocker to upgrades
+    # if m.spec.get("version") != spec.get("version"):
+    #     # The module writer can force a bump by changing the version
+    #     # field.
+    #     return "The module version number changed, forcing a reload."
 
     # The changes will not create any data inconsistency.
     return False
