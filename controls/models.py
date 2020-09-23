@@ -278,14 +278,24 @@ class System(models.Model):
             if smt.sid in smts_as_dict:
                 smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
             else:
-                # Get ElementControl
-                elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid, oscal_catalog_key=smt.sid_class)
-                smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
+                # Get ElementControl if it exists
+                try:
+                    elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid, oscal_catalog_key=smt.sid_class)
+                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
                                          "common_controls": [],
                                          "combined_smt": "",
                                          "elementcontrol_uuid": elementcontrol.uuid,
                                          "combined_smt_uuid": uuid.uuid4()
                                          }
+                except ElementControl.DoesNotExist:
+                    # Handle case where Element control does not exist
+                    elementcontrol = None
+                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
+                                             "common_controls": [],
+                                             "combined_smt": "",
+                                             "elementcontrol_uuid": None,
+                                             "combined_smt_uuid": uuid.uuid4()
+                                             }
             # Build combined statement
 
             # Define status options
@@ -325,7 +335,7 @@ class System(models.Model):
         # Return the dictionary
         return smts_as_dict
 
-    @property
+    # @property (See below for creation of property from method)
     def get_producer_elements(self):
         smts = self.root_element.statements_consumed.all()
         components = set()

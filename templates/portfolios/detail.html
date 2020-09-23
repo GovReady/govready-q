@@ -73,10 +73,10 @@ Remove contextbar from top of page
           <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
         </div>
 
-        <div class="col-xs-6 col-sm-1"><small style="color: #888;">{{project.id}}</small></div>
-        <div class="col-xs-6 col-sm-2"><small style="color: #888;">{{project.portfolio.title}}</small></div>
+        <div class="col-xs-6 col-sm-1">{{project.id}}</div>
+        <div class="col-xs-6 col-sm-2">{{project.portfolio.title}}</div>
 
-        {% get_obj_perms request.user for project as "project_perms" %}
+<!--         {% get_obj_perms request.user for project as "project_perms" %}
         {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
         <div class="col-xs-6 col-sm-2">
           <small style="color: #888;">
@@ -87,12 +87,20 @@ Remove contextbar from top of page
                 Permissions through project portfolio
               {% endif %}
           </small>
-        </div>
+        </div> -->
+        {% get_obj_perms request.user for project as "perms" %}
+        {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
+        {% if "delete_project" in perms %}
+        <div class="col-xs-6 col-sm-2">Owner</div>
+        {% elif "change_project" in perms%}
+        <div class="col-xs-6 col-sm-2">Project Member</div>
+        {% elif "portfolio_perms"%}
+        <div class="col-xs-6 col-sm-2">Portfolio Member</div>
+        {% endif %}
+
 
         <div class="col-md-2">
-          <small style="color: #888;">
             {{project.root_task.updated|naturaltime}}
-          </small>
         </div>
 
       </div>

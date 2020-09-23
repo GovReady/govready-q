@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.43 (September 22, 2020)
+------------------------------
+
+**Bug fixes**
+
+* Enable all admins to upgrade apps versions.
+
 v0.9.1.42 (September 22, 2020)
 ------------------------------
 

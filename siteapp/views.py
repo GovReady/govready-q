@@ -844,7 +844,7 @@ def project_settings(request, project):
             "appname": av.appname,
             "version_number": av.version_number
         }
-        print("project.is_safe_upgrade(av)", project.is_safe_upgrade(av))
+        # print("project.is_safe_upgrade(av)", project.is_safe_upgrade(av))
         if project.is_safe_upgrade(av) == True:
             av_info["is_safe_upgrade"] = True
             av_info["reason"] = "Compatible"

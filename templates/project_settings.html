@@ -365,7 +365,7 @@ h3.question-group-title {
           </div>
         </div>
 
-        {% if is_admin and can_upgrade_app %}
+        {% if is_admin or can_upgrade_app %}
         <div class="row" style="margin-top:12px;">
           <div class="col-sm-12">
             <h2 style="border-bottom:1px solid #ccc;">Upgrade Project</h2>
