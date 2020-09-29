@@ -122,7 +122,16 @@ with open("VERSION") as f:
     APP_VERSION_COMMIT = f.readline().strip()
 if not APP_VERSION_COMMIT and os.path.exists(".git"):
     import subprocess # nosec
-    APP_VERSION_COMMIT = subprocess.check_output(["/usr/bin/git", "rev-parse", "HEAD"]).strip().decode("ascii")
-    if subprocess.run(["/usr/bin/git", "diff-index", "--quiet", "HEAD", "--"]):
+
+    try:
+        APP_VERSION_COMMIT = subprocess.check_output(["/usr/bin/git", "rev-parse", "HEAD"]).strip().decode("ascii")
+    except:
+        APP_VERSION_COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip().decode("ascii")
+    try:
+        DIFF_QUIET = subprocess.run(["/usr/bin/git", "diff-index", "--quiet", "HEAD", "--"])
+    except:
+        DIFF_QUIET = subprocess.run(["git", "diff-index", "--quiet", "HEAD", "--"])
+
+    if DIFF_QUIET:
         # see https://stackoverflow.com/questions/3878624/how-do-i-programmatically-determine-if-there-are-uncommitted-changes
         APP_VERSION_COMMIT += "-dirty"
