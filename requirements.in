@@ -7,7 +7,6 @@ python-dateutil # Simplified BSD License
 Pillow>=7.1.2 # MIT-like License
 Jinja2 # BSD License
 pip-tools # BSD License
-python-magic-bin # MIT License
 
 # Less Common Python Packages
 html5lib # MIT License
