@@ -126,11 +126,11 @@ if not APP_VERSION_COMMIT and os.path.exists(".git"):
     try:
         APP_VERSION_COMMIT = subprocess.check_output(["/usr/bin/git", "rev-parse", "HEAD"]).strip().decode("ascii")
     except:
-        APP_VERSION_COMMIT = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip().decode("ascii")
+        APP_VERSION_COMMIT = subprocess.check_output(["/git", "rev-parse", "HEAD"]).strip().decode("ascii")
     try:
         DIFF_QUIET = subprocess.run(["/usr/bin/git", "diff-index", "--quiet", "HEAD", "--"])
     except:
-        DIFF_QUIET = subprocess.run(["git", "diff-index", "--quiet", "HEAD", "--"])
+        DIFF_QUIET = subprocess.run(["/git", "diff-index", "--quiet", "HEAD", "--"])
 
     if DIFF_QUIET:
         # see https://stackoverflow.com/questions/3878624/how-do-i-programmatically-determine-if-there-are-uncommitted-changes
