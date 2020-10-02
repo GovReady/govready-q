@@ -1,8 +1,10 @@
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
 from django.forms import ModelForm
 from siteapp.models import Project, User, Organization
+from siteapp.forms import PortfolioForm, ProjectForm
 from datetime import datetime
 from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
@@ -49,6 +51,7 @@ def catalogs(request):
 
     context = {
         "catalogs": Catalogs(),
+        "project_form": ProjectForm(request.user),
     }
     return render(request, "controls/index-catalogs.html", context)
 
@@ -69,7 +72,8 @@ def catalog(request, catalog_key, system_id=None):
         "control": None,
         "common_controls": None,
         "system": system,
-        "control_groups": control_groups
+        "control_groups": control_groups,
+        "project_form": ProjectForm(request.user),
     }
     return render(request, "controls/index.html", context)
 
@@ -92,7 +96,8 @@ def group(request, catalog_key, g_id):
         "control": None,
         "common_controls": None,
         "control_groups": control_groups,
-        "group": group
+        "group": group,
+        "project_form": ProjectForm(request.user),
     }
     return render(request, "controls/index-group.html", context)
 
@@ -111,7 +116,8 @@ def control(request, catalog_key, cl_id):
     # Get and return the control
     context = {
         "catalog": catalog,
-        "control": cg_flat[cl_id.lower()]
+        "control": cg_flat[cl_id.lower()],
+        "project_form": ProjectForm(request.user),
     }
     return render(request, "controls/detail.html", context)
 
@@ -148,6 +154,7 @@ def controls_selected(request, system_id):
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/controls_selected.html", context)
     else:
@@ -182,6 +189,7 @@ def controls_updated(request, system_id):
             "impl_smts_count": impl_smts_count,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/controls_updated.html", context)
     else:
@@ -203,6 +211,7 @@ def components_selected(request, system_id):
         context = {
             "system": system,
             "project": project,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/components_selected.html", context)
     else:
@@ -321,7 +330,8 @@ def system_element(request, system_id, element_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-            "opencontrol": opencontrol_string
+            "opencontrol": opencontrol_string,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
@@ -691,7 +701,8 @@ def editor(request, system_id, catalog_key, cl_id):
             "oscal": oscal_string,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
-            "opencontrol": "opencontrol_string"
+            "opencontrol": "opencontrol_string",
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -734,7 +745,8 @@ def editor_compare(request, system_id, catalog_key, cl_id):
             "control": cg_flat[cl_id.lower()],
             "common_controls": common_controls,
             "ccp_name": ccp_name,
-            "impl_smts": impl_smts
+            "impl_smts": impl_smts,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "controls/compare.html", context)
     else:
@@ -785,6 +797,19 @@ def save_smt(request):
         if len(form_values['smt_id']) > 0:
             # Look up existing Statement object
             statement = Statement.objects.get(pk=form_values['smt_id'])
+
+            # Check user permissions
+            system = statement.consumer_element
+            if not request.user.has_perm('change_system', system):
+                # User does not have write permissions
+                # Log permission to save answer denied
+                logger.info(
+                    event="save_smt permission_denied",
+                    object={"object": "statement", "id": statement.id},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
             if statement is None:
                 # Statement from received has an id no longer in the database.
                 # Report error. Alternatively, in future save as new Statement object
@@ -917,6 +942,19 @@ def delete_smt(request):
 
         # Delete statement?
         statement = Statement.objects.get(pk=form_values['smt_id'])
+
+        # Check user permissions
+        system = statement.consumer_element
+        if not request.user.has_perm('change_system', system):
+            # User does not have write permissions
+            # Log permission to save answer denied
+            logger.info(
+                event="delete_smt permission_denied",
+                object={"object": "statement", "id": statement.id},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
         if statement is None:
             # Statement from received has an id no longer in the database.
             # Report error. Alternatively, in future save as new Statement object
@@ -1131,6 +1169,7 @@ def poams_list(request, system_id):
             "poam_smts": poam_smts,
             "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+            "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/poams_list.html", context)
     else:
@@ -1176,6 +1215,7 @@ def new_poam(request, system_id):
                 'system': system,
                 'project': project,
                 'controls': controls,
+                "project_form": ProjectForm(request.user),
             })
     else:
         # User does not have permission to this system
@@ -1219,6 +1259,7 @@ def edit_poam(request, system_id, poam_id):
             poam_form = PoamForm(initial={
                     'weakness_name': poam_smt.poam.weakness_name,
                     'controls': poam_smt.poam.controls,
+                    'poam_group': poam_smt.poam.poam_group,
                     'risk_rating_original': poam_smt.poam.risk_rating_original,
                     'risk_rating_adjusted': poam_smt.poam.risk_rating_adjusted,
                     'weakness_detection_source': poam_smt.poam.weakness_detection_source,
@@ -1233,10 +1274,149 @@ def edit_poam(request, system_id, poam_id):
                 'project': project,
                 'controls': controls,
                 'poam_smt': poam_smt,
+                "project_form": ProjectForm(request.user),
             })
     else:
         # User does not have permission to this system
         raise Http404
 
+def poam_export_xlsx(request, system_id):
+    return poam_export(request, system_id, 'xlsx')
 
+def poam_export_csv(request, system_id):
+    return poam_export(request, system_id, 'csv')
 
+def poam_export(request, system_id, format='xlsx'):
+    """Export POA&M in either xlsx or csv"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected POA&Ms if user has permission on system
+    if request.user.has_perm('view_system', system):
+
+        if format == 'xlsx':
+            from openpyxl import Workbook
+            from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+            from tempfile import NamedTemporaryFile
+
+            wb = Workbook()
+            ws = wb.active
+            # create alignment style
+            wrap_alignment = Alignment(wrap_text=True)
+            ws.title = "POA&Ms"
+        else:
+            import csv, io
+            csv_buffer = io.StringIO(newline='\n')
+            csv_writer = csv.writer(csv_buffer)
+
+        poam_fields = [
+            {'var_name':'poam_id', 'name':'POA&M ID', 'width':8},
+            {'var_name':'poam_group', 'name':'POA&M Group', 'width':16},
+            {'var_name':'weakness_name', 'name':'Weakness Name', 'width':24},
+            {'var_name':'controls', 'name':'Controls', 'width':16},
+            {'var_name':'body', 'name':'Description', 'width':60},
+            {'var_name':'status', 'name':'Status', 'width':8},
+            {'var_name':'risk_rating_original', 'name':'Risk Rating Original', 'width':16},
+            {'var_name':'risk_rating_adjusted', 'name':'Risk Rating Adjusted', 'width':16},
+            {'var_name':'weakness_detection_source', 'name':'Weakness Detection Source', 'width':24},
+            {'var_name':'weakness_source_identifier', 'name':'Weakness Source Identifier', 'width':24},
+            {'var_name':'remediation_plan', 'name':'Remediation Plan', 'width':60},
+            {'var_name':'milestones', 'name':'Milestones', 'width':60},
+            {'var_name':'milestone_changes', 'name':'Milestone Changes', 'width':30},
+            {'var_name':'scheduled_completion_date', 'name':'Scheduled Completion Date', 'width':18},
+        ]
+
+        # create header row
+        column = 0
+        ord_zeroth_column = ord('A') - 1
+        csv_row = []
+
+        for poam_field in poam_fields:
+            column += 1
+            if format == 'xlsx':
+                c = ws.cell(row=1, column=column, value=poam_field['name'])
+                c.fill = PatternFill("solid", fgColor="5599FE")
+                c.font = Font(color="FFFFFF", bold=True)
+                c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                ws.column_dimensions[chr(ord_zeroth_column + column)].width = poam_field['width']
+            else:
+                csv_row.append(poam_field['name'])
+        # Add column for URL
+        if format == 'xlsx':
+            c = ws.cell(row=1, column=column, value="URL")
+            c.fill = PatternFill("solid", fgColor="5599FE")
+            c.font = Font(color="FFFFFF", bold=True)
+            c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            ws.column_dimensions[chr(ord_zeroth_column + column)].width = 60
+        else:
+            csv_row.append('URL')
+
+        if format != 'xlsx':
+            csv_writer.writerow(csv_row)
+
+        # Retrieve POA&Ms and create POA&M rows
+        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('id')
+        poam_smts_by_sid = {}
+        row = 1
+        for poam_smt in poam_smts:
+            csv_row = []
+            row += 1
+
+            # Loop through fields
+            column = 0
+            for poam_field in poam_fields:
+                column += 1
+                if format == 'xlsx':
+                    if poam_field['var_name'] in ['body', 'status']:
+                        c = ws.cell(row=row, column=column, value=getattr(poam_smt, poam_field['var_name']))
+                    else:
+                        if poam_field['var_name'] == 'poam_id':
+                            c = ws.cell(row=row, column=column, value="V-{}".format(getattr(poam_smt.poam, poam_field['var_name'])))
+                        else:
+                            c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, poam_field['var_name']))
+                    c.fill = PatternFill("solid", fgColor="FFFFFF")
+                    c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
+                    c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                else:
+                    if poam_field['var_name'] in ['body', 'status']:
+                        csv_row.append(getattr(poam_smt, poam_field['var_name']))
+                    else:
+                        if poam_field['var_name'] == 'poam_id':
+                            csv_row.append("V-{}".format(getattr(poam_smt.poam, poam_field['var_name'])))
+                        else:
+                            csv_row.append(getattr(poam_smt.poam, poam_field['var_name']))
+
+            # Add URL column
+            poam_url = settings.SITE_ROOT_URL+"/systems/{}/poams/{}/edit".format(system_id,poam_smt.id)
+            if format == 'xlsx':
+                c = ws.cell(row=row, column=column, value=poam_url)
+                c.fill = PatternFill("solid", fgColor="FFFFFF")
+                c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
+                c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            else:
+                csv_row.append(poam_url)
+
+            if format != 'xlsx':
+                csv_writer.writerow(csv_row)
+
+        if format == 'xlsx':
+            with NamedTemporaryFile() as tmp:
+                wb.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+                blob = stream
+        else:
+            blob = csv_buffer.getvalue()
+            csv_buffer.close()
+
+        # Determine filename based on system name
+        system_name = system.root_element.name.replace(" ","_") + "_" + system_id
+        filename = "{}_poam_export-{}.{}".format(system_name,datetime.now().strftime("%Y-%m-%d-%H-%M"),format)
+        mime_type = "application/octet-stream"
+
+        resp = HttpResponse(blob, mime_type)
+        resp['Content-Disposition'] = 'inline; filename=' + filename
+        return resp
+    else:
+        # User does not have permission to this system
+        raise Http404

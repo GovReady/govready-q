@@ -948,6 +948,13 @@ class Task(models.Model):
         return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) in ("READ", "WRITE") or self.project.has_read_priv(user)
 
     def has_write_priv(self, user, allow_access_to_deleted=False):
+        """Return True if user has write privilege on task"""
+
+        # Deny write privilege to users with ONLY view_project permission
+        project_user_permissions = get_user_perms(user, self.project)
+        if len(project_user_permissions) == 1 and user.has_perm('view_project', self.project):
+            # User only has view_project permission
+            return False
         return self.get_access_level(user, allow_access_to_deleted=allow_access_to_deleted) == "WRITE" or self.project.has_write_priv(user)
 
     def has_review_priv(self, user):
@@ -1119,6 +1126,9 @@ class Task(models.Model):
             # the rest use pandoc
             "plain": ("plain", "txt", "text/plain"),
             "markdown": ("markdown_github", "md", "text/plain"),
+            "oscal_json": ("markdown_github", "md", "text/plain"),
+            "oscal_yaml": ("markdown_github", "md", "text/plain"),
+            "oscal_xml": ("markdown_github", "md", "text/plain"),
             "docx": ("docx", "docx", "application/octet-stream"),
             "odt": ("odt", "odt", "application/octet-stream"),
         }
@@ -1156,6 +1166,21 @@ class Task(models.Model):
         filename = document_id + "." + file_extension
 
         if download_format == "markdown" and doc["format"] == "markdown":
+            # When Markdown output is requested for a template that is
+            # authored in markdown, we can render directly to markdown.
+            blob = doc["markdown"].encode("utf8")
+
+        elif download_format == "oscal_json" and doc["format"] == "oscal_json":
+            # When Markdown output is requested for a template that is
+            # authored in markdown, we can render directly to markdown.
+            blob = doc["markdown"].encode("utf8")
+
+        elif download_format == "oscal_yaml" and doc["format"] == "oscal_yaml":
+            # When Markdown output is requested for a template that is
+            # authored in markdown, we can render directly to markdown.
+            blob = doc["markdown"].encode("utf8")
+
+        elif download_format == "oscal_xml" and doc["format"] == "oscal_xml":
             # When Markdown output is requested for a template that is
             # authored in markdown, we can render directly to markdown.
             blob = doc["markdown"].encode("utf8")

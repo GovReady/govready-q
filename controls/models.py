@@ -142,6 +142,7 @@ class ElementControl(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     smts_updated = models.DateTimeField(auto_now=False, db_index=True, help_text="Store date of most recent statement update", blank=True, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this ElementControl.")
 
     # Notes
     # from controls.oscal import *;from controls.models import *;
@@ -183,7 +184,10 @@ class ElementControl(models.Model):
         query_set = self.objects.filter(element=element)
         selected_controls = {}
         for cl in query_set:
-            selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'], 'oscal_catalog_key': cl['oscal_catalog_key']}
+            selected_controls[cl['oscal_ctl_id']] = {'oscal_ctl_id': cl['oscal_ctl_id'],
+                                                     'oscal_catalog_key': cl['oscal_catalog_key'],
+                                                     'uuid': cl['uuid']
+                                                     }
         return selected_controls
 
     def get_flattened_oscal_control_as_dict(self):
@@ -274,7 +278,24 @@ class System(models.Model):
             if smt.sid in smts_as_dict:
                 smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
             else:
-                smts_as_dict[smt.sid] = {"control_impl_smts": [smt], "common_controls": [], "combined_smt": ""}
+                # Get ElementControl if it exists
+                try:
+                    elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid, oscal_catalog_key=smt.sid_class)
+                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
+                                         "common_controls": [],
+                                         "combined_smt": "",
+                                         "elementcontrol_uuid": elementcontrol.uuid,
+                                         "combined_smt_uuid": uuid.uuid4()
+                                         }
+                except ElementControl.DoesNotExist:
+                    # Handle case where Element control does not exist
+                    elementcontrol = None
+                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
+                                             "common_controls": [],
+                                             "combined_smt": "",
+                                             "elementcontrol_uuid": None,
+                                             "combined_smt_uuid": uuid.uuid4()
+                                             }
             # Build combined statement
 
             # Define status options
@@ -299,8 +320,22 @@ class System(models.Model):
                 smts_as_dict[cc.common_control.oscal_ctl_id] = {"control_impl_smts": [], "common_controls": [cc], "combined_smt": ""}
             # Build combined statement
             smts_as_dict[cc.common_control.oscal_ctl_id]['combined_smt'] += "{}\n{}\n\n".format(cc.common_control.name, cc.common_control.body)
+
+        # Populate any controls from assigned baseline that do not have statements
+        for ec in self.root_element.controls.all():
+            if ec.oscal_ctl_id not in smts_as_dict:
+                # Get ElementControl
+                smts_as_dict[ec.oscal_ctl_id] = {"control_impl_smts": [],
+                                         "common_controls": [],
+                                         "combined_smt": "",
+                                         "elementcontrol_uuid": ec.uuid,
+                                         "combined_smt_uuid": uuid.uuid4()
+                                         }
+
+        # Return the dictionary
         return smts_as_dict
 
+    # @property (See below for creation of property from method)
     def get_producer_elements(self):
         smts = self.root_element.statements_consumed.all()
         components = set()
@@ -430,8 +465,10 @@ class Poam(models.Model):
     # vendor_dependency = models.CharField(max_length=254, unique=False, blank=True, null=True, help_text="Comma.")
     risk_rating_original = models.CharField(max_length=50, unique=False, blank=True, null=True, help_text="The initial risk rating of the weakness.")
     risk_rating_adjusted = models.CharField(max_length=50, unique=False, blank=True, null=True, help_text="The current or modified risk rating of the weakness.")
+    poam_group = models.CharField(max_length=50, unique=False, blank=True, null=True, help_text="A name to collect related POA&Ms together.")
     # spec = JSONField(help_text="A load_modules ModuleRepository spec.", load_kwargs={'object_pairs_hook': OrderedDict})
     # Spec will hold additional values, such as: POC, resources_required, vendor_dependency
+
 
     def __str__(self):
         return "<Poam %s id=%d>" % (self.statement, self.id)
@@ -446,5 +483,4 @@ class Poam(models.Model):
 
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
-
 

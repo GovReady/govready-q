@@ -7,6 +7,7 @@
       </div>
       <form action="{% url 'store' %}" role="form" method="get">
         <div class="modal-body">
+          <label for="id_portfolio">{{ project_form.portfolio.label }}</label>:&nbsp;
           {{ project_form.portfolio }}
          </div>
          <div class="modal-footer">

@@ -17,6 +17,16 @@ from siteapp.forms import ProjectForm
 
 import fs, fs.errors
 
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
+
 @login_required
 def new_task(request):
     # Create a new task by answering a module question of a project rook task.
@@ -218,7 +228,14 @@ def save_answer(request, task, answered, context, __):
 
     # does user have write privs?
     if not task.has_write_priv(request.user):
-        return HttpResponseForbidden()
+        # User does not have write permissions
+        # Log permission to save answer denied
+        logger.info(
+            event="save_answer permission_denied",
+            object={"object": "task", "id": task.id, "title":task.get_slug()},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        return HttpResponseForbidden("Permission denied. {} does not have write privileges to task answer.".format(request.user.username))
 
     # validate question
     q = task.module.questions.get(id=request.POST.get("question"))
