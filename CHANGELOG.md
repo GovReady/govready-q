@@ -1,8 +1,73 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.38 (September 20, 2020)
+v0.9.1.43 (September 23, 2020)
 ------------------------------
+
+**Bug fixes**
+
+* Enable all admins to upgrade apps versions.
+* Fix `System.producer_elements` property error by removing unneeded `@property` decorator added in Version 0.9.1.42 to `get_producer_elements`.
+* Gracefully handle missing ElementControl in `System.control_implementation_as_dict` method to avoid failure to render SSP output templates
+* Improve compliance app (questionnaire) upgrade to see upgrades as compatible even if compliance app version changed or the id of modules changes (which is expected to happen in an upgrade).
+
+**UI changes**
+
+* Changes to portfolio detail page to match style of similar pages.
+* Stop displaying content recommendations on project page and portfolio pages after a project is 1 or higher.
+
+v0.9.1.42 (September 22, 2020)
+------------------------------
+
+**UI changes**
+
+* Add group field to POA&M page to collect related POA&Ms together. (#1010)
+* Improve the UI on the task-finish page to display option to download OSCAL versions of SSP (JSON, XML). (#1018, #1026)
+
+**Data changes**
+
+* Add `poam_group` field to POA&M model and form.
+* Have `System.control_implementation_as_dict` populate information for all assigned (e.g. selected) controls even if no statement exists for assigned control.
+* Have `System.control_implementation_as_dict` generate a random uuid for combined statement. NOTE: This statement is random on each generation.
+
+**Developer changes**
+
+* Support for generating OSCAL versions of SSPs as templates.
+
+**Bug fixes**
+
+* Do not show link to question on imputed answers. Separate test for unanswered question and imputed question in rendering HTML navigation for question. (#1015)
+
+v0.9.1.41 (September 20, 2020)
+------------------------------
+
+Enable upgrade of project root_task to more recent version.
+
+**UI changes**
+
+* Convert project settings modal to a separate route, view, and page template.
+* Add section on project settings page to upgrade project root_task to more recent version.
+* Improve ordering of settings option on new project settings page.
+
+**Data changes**
+
+* Add new methods to Project model to support managing and upgrading project's root_task app after the app has been loaded into the database.
+
+**Developer changes**
+
+* Add management command `upgrade_project` to upgrade a project to a newer version of an app, after the app has been loaded into the database from the admin.
+* Add logger entries for successful and failed attempts to upgrade project's root_task app.
+
+**Test changes**
+
+* Add tests for upgrading project root_task to more recent version.
+
+**Documentation changes**
+
+* Document new logger entries for successful and failed attempts to upgrade project's root_task app.
+
+v0.9.1.38.2 (September 20, 2020)
+--------------------------------
 
 **Developer changes**
 
@@ -64,6 +129,7 @@ v0.9.1.35 (August 08, 2020)
 * Improve rendering of control implemenentation status for better readability. Display as list of options.
 
 **Data changes**
+
 * Add Support model to store customizable support page content.
 
 **Test changes**

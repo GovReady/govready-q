@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
@@ -1302,6 +1303,145 @@ def issue_tracker(request, system_id):
             "it_issues": it_issues,
         }
         return render(request, "systems/issue_tracker.html", context)
+
+# POA&M Export
+def poam_export_xlsx(request, system_id):
+    return poam_export(request, system_id, 'xlsx')
+
+def poam_export_csv(request, system_id):
+    return poam_export(request, system_id, 'csv')
+
+def poam_export(request, system_id, format='xlsx'):
+    """Export POA&M in either xlsx or csv"""
+
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected POA&Ms if user has permission on system
+    if request.user.has_perm('view_system', system):
+
+        if format == 'xlsx':
+            from openpyxl import Workbook
+            from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+            from tempfile import NamedTemporaryFile
+
+            wb = Workbook()
+            ws = wb.active
+            # create alignment style
+            wrap_alignment = Alignment(wrap_text=True)
+            ws.title = "POA&Ms"
+        else:
+            import csv, io
+            csv_buffer = io.StringIO(newline='\n')
+            csv_writer = csv.writer(csv_buffer)
+
+        poam_fields = [
+            {'var_name':'poam_id', 'name':'POA&M ID', 'width':8},
+            {'var_name':'poam_group', 'name':'POA&M Group', 'width':16},
+            {'var_name':'weakness_name', 'name':'Weakness Name', 'width':24},
+            {'var_name':'controls', 'name':'Controls', 'width':16},
+            {'var_name':'body', 'name':'Description', 'width':60},
+            {'var_name':'status', 'name':'Status', 'width':8},
+            {'var_name':'risk_rating_original', 'name':'Risk Rating Original', 'width':16},
+            {'var_name':'risk_rating_adjusted', 'name':'Risk Rating Adjusted', 'width':16},
+            {'var_name':'weakness_detection_source', 'name':'Weakness Detection Source', 'width':24},
+            {'var_name':'weakness_source_identifier', 'name':'Weakness Source Identifier', 'width':24},
+            {'var_name':'remediation_plan', 'name':'Remediation Plan', 'width':60},
+            {'var_name':'milestones', 'name':'Milestones', 'width':60},
+            {'var_name':'milestone_changes', 'name':'Milestone Changes', 'width':30},
+            {'var_name':'scheduled_completion_date', 'name':'Scheduled Completion Date', 'width':18},
+        ]
+
+        # create header row
+        column = 0
+        ord_zeroth_column = ord('A') - 1
+        csv_row = []
+
+        for poam_field in poam_fields:
+            column += 1
+            if format == 'xlsx':
+                c = ws.cell(row=1, column=column, value=poam_field['name'])
+                c.fill = PatternFill("solid", fgColor="5599FE")
+                c.font = Font(color="FFFFFF", bold=True)
+                c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                ws.column_dimensions[chr(ord_zeroth_column + column)].width = poam_field['width']
+            else:
+                csv_row.append(poam_field['name'])
+        # Add column for URL
+        if format == 'xlsx':
+            c = ws.cell(row=1, column=column, value="URL")
+            c.fill = PatternFill("solid", fgColor="5599FE")
+            c.font = Font(color="FFFFFF", bold=True)
+            c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            ws.column_dimensions[chr(ord_zeroth_column + column)].width = 60
+        else:
+            csv_row.append('URL')
+
+        if format != 'xlsx':
+            csv_writer.writerow(csv_row)
+
+        # Retrieve POA&Ms and create POA&M rows
+        poam_smts = system.root_element.statements_consumed.filter(statement_type="POAM").order_by('id')
+        poam_smts_by_sid = {}
+        row = 1
+        for poam_smt in poam_smts:
+            csv_row = []
+            row += 1
+
+            # Loop through fields
+            column = 0
+            for poam_field in poam_fields:
+                column += 1
+                if format == 'xlsx':
+                    if poam_field['var_name'] in ['body', 'status']:
+                        c = ws.cell(row=row, column=column, value=getattr(poam_smt, poam_field['var_name']))
+                    else:
+                        if poam_field['var_name'] == 'poam_id':
+                            c = ws.cell(row=row, column=column, value="V-{}".format(getattr(poam_smt.poam, poam_field['var_name'])))
+                        else:
+                            c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, poam_field['var_name']))
+                    c.fill = PatternFill("solid", fgColor="FFFFFF")
+                    c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
+                    c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                else:
+                    if poam_field['var_name'] in ['body', 'status']:
+                        csv_row.append(getattr(poam_smt, poam_field['var_name']))
+                    else:
+                        if poam_field['var_name'] == 'poam_id':
+                            csv_row.append("V-{}".format(getattr(poam_smt.poam, poam_field['var_name'])))
+                        else:
+                            csv_row.append(getattr(poam_smt.poam, poam_field['var_name']))
+
+            # Add URL column
+            poam_url = settings.SITE_ROOT_URL+"/systems/{}/poams/{}/edit".format(system_id,poam_smt.id)
+            if format == 'xlsx':
+                c = ws.cell(row=row, column=column, value=poam_url)
+                c.fill = PatternFill("solid", fgColor="FFFFFF")
+                c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
+                c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            else:
+                csv_row.append(poam_url)
+
+            if format != 'xlsx':
+                csv_writer.writerow(csv_row)
+
+        if format == 'xlsx':
+            with NamedTemporaryFile() as tmp:
+                wb.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+                blob = stream
+        else:
+            blob = csv_buffer.getvalue()
+            csv_buffer.close()
+
+        # Determine filename based on system name
+        system_name = system.root_element.name.replace(" ","_") + "_" + system_id
+        filename = "{}_poam_export-{}.{}".format(system_name,datetime.now().strftime("%Y-%m-%d-%H-%M"),format)
+        mime_type = "application/octet-stream"
+
+        resp = HttpResponse(blob, mime_type)
+        resp['Content-Disposition'] = 'inline; filename=' + filename
+        return resp
     else:
         # User does not have permission to this system
         raise Http404
