@@ -1977,13 +1977,14 @@ def new_remote_service(request):
     if request.method == 'POST':
         form = RemoteServiceForm(request.POST)
         if form.is_valid():
-            rsa = form.save(commit=False)
-            rsa.user = request.user
+            # add current user to form
+            rs = form.save(commit=False)
+            rs.user = request.user
+            # save form
             form.save()
-            rsa = form.instance
             logger.info(
                 event="new_remote_service",
-                object={"object": "remote_service", "id": rsa.id, "name":rsa.name},
+                object={"object": "remote_service", "id": rs.id, "name":rs.name},
                 user={"id": request.user.id, "username": request.user.username}
             )
 #### obsoleted - TODO: remove
