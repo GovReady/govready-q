@@ -6,7 +6,7 @@
 <div class="container">
 <div class="row">
   <div class="col-xs-10 col-md-5"><strong>Remote Service</strong></div>
-  <div class="col-xs-6 col-sm-2"><strong>Access Key</strong></div>
+  <div class="col-xs-10 col-md-5"><strong>Access Key</strong></div>
 </div>
 {% endif %}
 
@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <div class="col-md-2">{{remote_service.access_token}}</div>
+    <div class="col-md-5">{{remote_service.access_token_or_identifier}}</div>
   </div>
   {% endfor %}
 

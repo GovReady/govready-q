@@ -56,12 +56,14 @@ class RemoteServiceForm(ModelForm):
 
     class Meta:
         model = RemoteService
-        fields = ['name','url','connection_url','access_token','access_token_secret','service_type']
+        fields = ['name','connection_url','access_token_or_identifier','access_token_secret','service_type']
 
     def clean(self):
         """Extend clean to validate access token is not reused."""
         cd = self.cleaned_data
-        # Validate access token does not exist
-        if RemoteService.objects.filter(access_token=cd['access_token']).exists():
-            raise ValidationError("Remote service access token {} is already used.".format(cd['access_token']))
+        # Validate access token identifier and access token secret does not already exist
+        if RemoteService.objects.filter(access_token_or_identifier=cd['access_token_or_identifier']).exists():
+            raise ValidationError("Remote service access token or identifier {} is already used.".format(cd['access_token_or_identifier']))
+        if RemoteService.objects.filter(access_token_secret=cd['access_token_secret']).exists():
+            raise ValidationError("Remote service access token secret {} is already used.".format(cd['access_token_secret']))
         return cd

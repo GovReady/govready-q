@@ -1360,11 +1360,10 @@ class RemoteService(models.Model):
 
     user = models.ForeignKey(User, related_name="remote_service", on_delete=models.CASCADE, help_text="The User who owns this remote service account.")
     name = models.CharField(max_length=255, unique=False, help_text="The name of the remote service")
-    url = models.URLField(max_length=200, unique=False, help_text="Web address of home page")
     connection_url = models.URLField(max_length=200, unique=False, help_text="Web address of service connection")
-    access_token = models.CharField(max_length=255, help_text="Access token or username for authentication")
-    access_token_secret = models.CharField(max_length=255, unique=False, blank=True, null=True, help_text="Access token secret or password for authentication (optional)")
-    service_type = models.IntegerField(default=0, choices=[(1, "GitLab"), (2, "GitHub"), (0, "Other")], help_text="Type of remote service")
+    access_token_or_identifier = models.CharField(max_length=255, help_text="Access token, identifier, or username for authentication")
+    access_token_secret = models.CharField(max_length=255, blank=True, null=True, help_text="Access token secret or password for authentication (optional)")
+    service_type = models.IntegerField(default=1, choices=[(1, "GitLab"), (2, "GitHub"), (0, "Other")], help_text="Type of remote service")
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.access_token)
+        return "{} ({})".format(self.name, self.access_token_or_identifier)
