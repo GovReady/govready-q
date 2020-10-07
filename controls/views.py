@@ -1293,7 +1293,7 @@ def issue_tracker(request, system_id):
         project = system.projects.all()[0]
 
         # Retrieve Issue Tracker
-        it = IssueTracker()
+        it = IssueTracker(request.user.id)
         it_issues = it.issues()
 
         # Return the projects

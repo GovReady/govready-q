@@ -1,6 +1,7 @@
 import os
 import json
 from django.db import models
+from django.apps import apps
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
@@ -485,9 +486,14 @@ class Poam(models.Model):
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
 class IssueTracker(models.Model):
-    def __init__(self):
+    def __init__(self, user_id):
+        # avoid circular model dependency with apps.get_model()
+        # TODO: filter for/choose the "active" connection, not just the first one
+        rs = apps.get_model('siteapp.RemoteService').objects.filter(user=user_id, service_type=1)
+
+        # TODO: check if we've already initialized gitlab
         import gitlab
-        self._gl = gitlab.Gitlab('https://gitlab.com', private_token='YOUR_PERSONAL_ACCESS_TOKEN')
+        self._gl = gitlab.Gitlab(rs[0].connection_url, private_token=rs[0].access_token_secret)
         self._gl.auth()
 
     def projects(self):
