@@ -59,7 +59,7 @@ class RemoteServiceForm(ModelForm):
         fields = ['name','connection_url','access_token_or_identifier','access_token_secret','service_type']
 
     def clean(self):
-        """Extend clean to validate access token is not reused."""
+        """Extend clean to validate access token identifier and access token is not reused."""
         cd = self.cleaned_data
         # Validate access token identifier and access token secret does not already exist
         if RemoteService.objects.filter(access_token_or_identifier=cd['access_token_or_identifier']).exists():

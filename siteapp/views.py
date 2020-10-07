@@ -1956,7 +1956,7 @@ def sso_logout(request):
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
 
-# REMOTE SERVICE ACCOUNT
+# REMOTE SERVICE
 
 @login_required
 def remote_service_list(request):
