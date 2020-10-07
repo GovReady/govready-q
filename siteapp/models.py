@@ -306,6 +306,10 @@ class User(AbstractUser):
         portfolios = Portfolio.objects.filter(id__in=portfolio_list)
         return portfolios
 
+    def remote_service_list(self, user_id):
+        remote_services = RemoteService.objects.filter(user=user_id)
+        return remote_services
+
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):
     # Register in settings.py!
@@ -1351,10 +1355,10 @@ class Support(models.Model):
   def __str__(self):
     return "Support information"
 
-class RemoteServiceAccount(models.Model):
-    """A RemoteServiceAccount stores information needed to connect to a remote service."""
+class RemoteService(models.Model):
+    """A RemoteService stores information needed to connect to a remote service."""
 
-    user = models.ForeignKey(User, related_name="remote_service_accounts", on_delete=models.CASCADE, help_text="The User who owns this remote service account.")
+    user = models.ForeignKey(User, related_name="remote_service", on_delete=models.CASCADE, help_text="The User who owns this remote service account.")
     name = models.CharField(max_length=255, unique=False, help_text="The name of the remote service")
     url = models.URLField(max_length=200, unique=False, help_text="Web address of home page")
     connection_url = models.URLField(max_length=200, unique=False, help_text="Web address of service connection")

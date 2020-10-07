@@ -21,7 +21,7 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
 from controls.models import Element, System
 
-from .forms import PortfolioForm, ProjectForm, RemoteServiceAccountForm
+from .forms import PortfolioForm, ProjectForm, RemoteServiceForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
@@ -1959,25 +1959,40 @@ def sso_logout(request):
 # REMOTE SERVICE ACCOUNT
 
 @login_required
-def new_remote_service_account(request):
+def remote_service_list(request):
+    """List remote services"""
+
+    logger.info(
+        event="remote_service_list",
+        user={"id": request.user.id, "username": request.user.username}
+    )
+
+    return render(request, "remote-services/index.html", {
+        "remote_services": request.user.remote_service_list(request.user.id) if request.user.is_authenticated else None
+    })
+
+@login_required
+def new_remote_service(request):
     """Form to create new remote service accounts"""
     if request.method == 'POST':
-        form = RemoteServiceAccountForm(request.POST)
+        form = RemoteServiceForm(request.POST)
         if form.is_valid():
             rsa = form.save(commit=False)
             rsa.user = request.user
             form.save()
             rsa = form.instance
             logger.info(
-                event="new_remote_service_account",
-                object={"object": "remote_service_account", "id": rsa.id, "name":rsa.name},
+                event="new_remote_service",
+                object={"object": "remote_service", "id": rsa.id, "name":rsa.name},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            # return to user's Account Settings page
-            return redirect(User.objects.get(id=request.user.id).get_settings_task().get_absolute_url())
+#### obsoleted - TODO: remove
+####          # return to user's Account Settings page
+####            return redirect(User.objects.get(id=request.user.id).get_settings_task().get_absolute_url())
+            return redirect('/remote-services')
     else:
-        form = RemoteServiceAccountForm()
+        form = RemoteServiceForm()
 
-    return render(request, 'remote_service_accounts/form.html', {
+    return render(request, 'remote-services/form.html', {
         'form': form,
     })

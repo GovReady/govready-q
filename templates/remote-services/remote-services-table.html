@@ -1,0 +1,28 @@
+<!-- List of remote_serviceos -->
+{% load humanize %}
+{% load guardian_tags %}
+
+{% if remote_services %}
+<div class="container">
+<div class="row">
+  <div class="col-xs-10 col-md-5"><strong>Remote Service</strong></div>
+  <div class="col-xs-6 col-sm-2"><strong>Access Key</strong></div>
+</div>
+{% endif %}
+
+  {% for remote_service in remote_services %}
+  <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+
+    <div class="col-xs-10 col-md-5">
+      <div>
+        <span class="glyphicon glyphicon-flash"></span>&nbsp;&nbsp;&nbsp;
+        <a href="/remote_services/{{remote_service.id}}" id="remote_service_{{remote_service.name}}" style="color: black;">{{remote_service.name}}</a>
+      </div>
+    </div>
+
+    <div class="col-md-1">{{remote_service.name}}</div>
+    <div class="col-md-2">{{remote_service.access_key}}</div>
+  </div>
+  {% endfor %}
+
+</div>
