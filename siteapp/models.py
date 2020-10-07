@@ -55,9 +55,13 @@ class User(AbstractUser):
             else:
                 return name
         elif self.email:
+
             return self.email
         else:
             return "Anonymous User Without Email Address"
+
+    def user_setting_task(self):
+        return self._get_setting("user_setting_task")
 
     @staticmethod
     def preload_profiles(users, sort=False):
@@ -118,6 +122,9 @@ class User(AbstractUser):
 
         # Otherwise, create it.
         return self.get_settings_task()
+
+    def user_setting_task(self):
+        return self._get_setting("user_setting_task")
 
     def _get_setting(self, key):
         if not hasattr(self, 'user_settings_task'):
@@ -1343,3 +1350,17 @@ class Support(models.Model):
 
   def __str__(self):
     return "Support information"
+
+class RemoteServiceAccount(models.Model):
+    """A RemoteServiceAccount stores information needed to connect to a remote service."""
+
+    user = models.ForeignKey(User, related_name="remote_service_accounts", on_delete=models.CASCADE, help_text="The User who owns this remote service account.")
+    name = models.CharField(max_length=255, unique=False, help_text="The name of the remote service")
+    url = models.URLField(max_length=200, unique=False, help_text="Web address of home page")
+    connection_url = models.URLField(max_length=200, unique=False, help_text="Web address of service connection")
+    access_token = models.CharField(max_length=255, help_text="Access token or username for authentication")
+    access_token_secret = models.CharField(max_length=255, unique=False, blank=True, null=True, help_text="Access token secret or password for authentication (optional)")
+    service_type = models.IntegerField(default=0, choices=[(1, "GitLab"), (2, "GitHub"), (0, "Other")], help_text="Type of remote service")
+
+    def __str__(self):
+        return "{} ({})".format(self.name, self.access_token)

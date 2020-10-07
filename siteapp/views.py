@@ -21,7 +21,7 @@ from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
 from controls.models import Element, System
 
-from .forms import PortfolioForm, ProjectForm
+from .forms import PortfolioForm, ProjectForm, RemoteServiceAccountForm
 from .good_settings_helpers import \
     AllauthAccountAdapter  # ensure monkey-patch is loaded
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
@@ -1955,3 +1955,29 @@ def sso_logout(request):
     output = "You are logged out."
     html = "<html><body><pre>{}</pre></body></html>".format(output)
     return HttpResponse(html)
+
+# REMOTE SERVICE ACCOUNT
+
+@login_required
+def new_remote_service_account(request):
+    """Form to create new remote service accounts"""
+    if request.method == 'POST':
+        form = RemoteServiceAccountForm(request.POST)
+        if form.is_valid():
+            rsa = form.save(commit=False)
+            rsa.user = request.user
+            form.save()
+            rsa = form.instance
+            logger.info(
+                event="new_remote_service_account",
+                object={"object": "remote_service_account", "id": rsa.id, "name":rsa.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            # return to user's Account Settings page
+            return redirect(User.objects.get(id=request.user.id).get_settings_task().get_absolute_url())
+    else:
+        form = RemoteServiceAccountForm()
+
+    return render(request, 'remote_service_accounts/form.html', {
+        'form': form,
+    })

@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django.db.models import Exists
 
-from .models import Portfolio, Project
+from .models import Portfolio, Project, RemoteServiceAccount
 
 class ProjectForm(ModelForm):
     class Meta:
@@ -51,3 +51,17 @@ class PortfolioSignupForm(ModelForm):
             "description": forms.HiddenInput(),
             "title": forms.TextInput(attrs={"placeholder": "username"})
         }
+
+class RemoteServiceAccountForm(ModelForm):
+
+    class Meta:
+        model = RemoteServiceAccount
+        fields = ['name','url','connection_url','access_token','access_token_secret','service_type']
+
+    def clean(self):
+        """Extend clean to validate access token is not reused."""
+        cd = self.cleaned_data
+        # Validate access token does not exist
+        if RemoteServiceAccount.objects.filter(access_token=cd['access_token']).exists():
+            raise ValidationError("Remote service access token {} is already used.".format(cd['access_token']))
+        return cd

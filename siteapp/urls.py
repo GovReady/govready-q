@@ -92,6 +92,9 @@ urlpatterns = [
     url(r'^health/request-headers$', views_health.request_headers),
     url(r'^health/request$', views_health.request),
     url(r'^health/debug$', views.debug, name="debug"),
+
+    # remote service accounts
+    url(r'^remote_service_account/new$', views.new_remote_service_account),
 ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
