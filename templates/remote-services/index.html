@@ -22,9 +22,9 @@ Your Remote Services
 
     <h2 class="">Remote Services</h2>
     {% if remote_services|length > 0 %}
-    <p>You have access to {{ remote_services|length }} remote service{{ remote_services|pluralize }}</p>
+    <p>You have {{ remote_services|length }} remote service{{ remote_services|pluralize }} connected.</p>
     {% else %}
-    <p>You do not have access to any remote servicess.</p>
+    <p>You do not have any remote services connected.</p>
     {% endif %}
 
     {% include "remote-services/remote-services-table.html" with remote_services=remote_services %}
