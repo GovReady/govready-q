@@ -275,8 +275,8 @@ class Catalog (object):
         for parameter in control['parameters']:
             if parameter["id"] not in parameter_values:
                 parameter_values[parameter["id"]] = "[" + parameter.get("label", parameter["id"]) + "]"
-        for parameter_key, parameter_value in parameter_values.items():
-            text = re.sub(r"{{ " + re.escape(parameter_key) + " }}", parameter_value, text)
+            text = text.replace(r"{{ " + re.escape(parameter["id"]) + " }}", parameter["label"])
+
         return text
 
     def get_flattened_control_as_dict(self, control):
