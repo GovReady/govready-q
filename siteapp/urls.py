@@ -96,6 +96,8 @@ urlpatterns = [
     # remote services
     url(r'^remote-services$', views.remote_service_list),
     url(r'^remote-services/new$', views.new_remote_service),
+    url(r'^remote-services/project/(\d+)/_add$', views.add_remote_service, name="add_remote_service"),
+    url(r'^remote-services/project/(\d+)/_remove$', views.remove_remote_service, name="remove_remote_service"),
 ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:

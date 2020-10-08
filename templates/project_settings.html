@@ -424,6 +424,39 @@ h3.question-group-title {
           </div>
 
       {% if project.is_deletable and is_admin %}
+        <div class="row" style="margin-top:12px;">
+          <div class="col-sm-12">
+            <h2 style="border-bottom:1px solid #ccc;">Remote Services</h2>
+          </div>
+          <div class="col-sm-12">Enables services</div>
+            <div class="col-sm-12">
+              <table class="table" style="width: auto;">
+              <thead>
+                <tr>
+                  <th style="width:200px;">Name</th>
+                  <th style="width:200px;">Service Type</th>
+                  <th style="width:200px;">access_token_or_identifier</th>
+                  <th style="width:200px;">TBD</th>
+                </tr>
+              </thead>
+              <tbody>
+            {% for rs in remote_services %}
+                <tr>
+                  <td>{{ rs.name }} ({{ rs.id }})</td>
+                  <td>{{ rs.service_type }}</td>
+                  <td>{{ rs.access_token_or_identifier }}</td>
+                  <td>
+                    <button class="btn btn-default" onclick="return add_remote_services('{{ rs.id }}');">Add</button>
+                  </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+            </div>
+          </div>
+      {% endif %}
+
+      {% if project.is_deletable and is_admin %}
         <div class="row" style="margin-top: 12px;">
           <div class="col-sm-12">
             <h2 style="border-bottom:1px solid #ccc;">DANGER</h2>
@@ -561,6 +594,29 @@ function upgrade_project(version_number) {
     }
   )
 }
+
+function add_remote_services(remote_service_id) {
+  show_modal_confirm(
+    "Add Remote Service",
+    "Are you sure you want to associate the remote service this project?",
+    "Confirm",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "add_remote_service" project.id %}',
+       method: "POST",
+       data: {
+        remote_service_id: remote_service_id,
+        project_id: {{ project.id }}
+       },
+       success: function(res) {
+         // redirect to main project page after successful upgrade
+         window.location = res.redirect;
+       }
+      });
+    }
+  )
+}
+
 
 function delete_project() {
   show_modal_confirm(

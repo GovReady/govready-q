@@ -853,6 +853,9 @@ def project_settings(request, project):
             av_info["reason"] = project.is_safe_upgrade(av)
         available_versions.append(av_info)
 
+    # remote_services = project.available_root_task_versions_for_upgrade
+    remote_services = request.user.remote_service_list(request.user.id)
+
     # Render.
     return render(request, "project_settings.html", {
         "is_project_page": True,
@@ -861,6 +864,7 @@ def project_settings(request, project):
         "is_admin": request.user in project.get_admins(),
         "can_upgrade_app": project.root_task.module.app.has_upgrade_priv(request.user),
         "available_versions": available_versions,
+        "remote_services": remote_services,
 
         "title": project.title,
         "open_invitations": other_open_invitations,
@@ -1997,3 +2001,32 @@ def new_remote_service(request):
     return render(request, 'remote-services/form.html', {
         'form': form,
     })
+
+@project_admin_login_post_required
+def add_remote_service(request, project):
+    """Associate a remote service with a project"""
+
+    result = True
+
+    if result == True:
+        # message = "Remote service {} upgraded successfully to {}".format(project, new_app.version_number)
+        message = "Remote service added."
+        messages.add_message(request, messages.INFO, message)
+        redirect = project.get_absolute_url()
+        return JsonResponse({ "status": "ok", "redirect": redirect })
+    else:
+        # message = "Project {} upgraded successfully to {}".format(project, new_app.version_number)
+        message = "There was a problem adding the remote service."
+        messages.add_message(request, messages.INFO, message)
+        redirect = project.get_absolute_url()
+        return JsonResponse({ "status": "ok", "redirect": redirect })
+
+
+    return false
+
+@project_admin_login_post_required
+def remove_remote_service(request, project):
+    """Disassociate a remote service with a project"""
+
+    return false
+

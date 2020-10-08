@@ -536,6 +536,8 @@ class Project(models.Model):
         # other instance is created
     root_task = models.ForeignKey('guidedmodules.Task', blank=True, null=True, related_name="root_of", on_delete=models.CASCADE, help_text="All Projects have a 'root Task' (e.g., 'guidedmodules.task'). The root Task defines important information about Project.")
 
+    remote_services = models.ManyToManyField('RemoteService', related_name='projects', blank=True, help_text="Associated remote services.")
+
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     extra = JSONField(blank=True, help_text="Additional information stored with this object.")

@@ -3,7 +3,7 @@ from guardian.admin import GuardedModelAdmin
 
 import django.contrib.auth.admin as contribauthadmin
 
-from .models import User, Organization, Folder, Project, ProjectMembership, Portfolio, Support
+from .models import User, Organization, Folder, Project, ProjectMembership, Portfolio, Support, RemoteService
 from notifications.models import Notification
 
 def all_user_fields_still_exist(fieldlist):
@@ -139,6 +139,12 @@ class SupportAdmin(admin.ModelAdmin):
   list_display = ('id', 'email',)
   fields = ('text', 'email', 'phone', 'url')
 
+class RemoteServiceAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'user', 'connection_url', 'access_token_or_identifier')
+    fields = ('name', 'user', 'connection_url', 'access_token_or_identifier')
+    # raw_id_fields = ('organization','admin_users')
+    readonly_fields = ('id', )
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Folder, FolderAdmin)
@@ -150,4 +156,6 @@ admin.site.register(Portfolio, PortfolioAdmin)
 admin.site.unregister(Notification)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Support, SupportAdmin)
+
+admin.site.register(RemoteService, RemoteServiceAdmin)
 
