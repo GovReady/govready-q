@@ -272,10 +272,12 @@ class Catalog (object):
         parameter_values = dict(parameter_values) # clone so that we don't modify the caller's dict
         if "parameters" not in control:
             return text
+        # TODO: will include implementing org values where parameter label could be used
         for parameter in control['parameters']:
             if parameter["id"] not in parameter_values:
                 parameter_values[parameter["id"]] = "[" + parameter.get("label", parameter["id"]) + "]"
-            text = text.replace(r"{{ " + re.escape(parameter["id"]) + " }}", parameter["label"])
+        for parameter_key, parameter_value in parameter_values.items():
+            text = text.replace(r"{{ " + re.escape(parameter_key) + " }}", parameter_value)
 
         return text
 
