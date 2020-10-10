@@ -31,6 +31,10 @@ jsonfield # MIT License
 dj_database_url # BSD License
 whitenoise # MIT License
 django-guardian # MIT License
+django-utils-six # BSD License
+
+# Less common Django Packages
+django-dbtemplates # BSD License
 
 # Python Packages Developed by GovReady and/or Josh
 rtyaml # CC0

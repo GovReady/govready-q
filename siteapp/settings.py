@@ -95,6 +95,7 @@ INSTALLED_APPS = [
 	'allauth',
 	'allauth.account',
 	'allauth.socialaccount',
+	'dbtemplates'
 	# add any allauth social providers as you like
 ]
 
@@ -136,6 +137,7 @@ TEMPLATES = [
 				'django.template.context_processors.request', # allauth
 			],
 			'loaders': [
+					'dbtemplates.loader.Loader',
 					'django.template.loaders.filesystem.Loader',
 					'django.template.loaders.app_directories.Loader',
 				],
@@ -236,12 +238,14 @@ else:
 	DATABASES['default']['CONN_MAX_AGE'] = 60
 	DATABASES['default'].update(environment['db'])
 
+DBTEMPLATES_CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
+
 # Setup the cache. The default is a LocMemCache.
 CACHES = {
 	'default': {
 		'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
 		'LOCATION': '127.0.0.1:11211',
-	}
+	},
 }
 if environment.get('memcached'):
 	# But if the 'memcached' environment setting is true,

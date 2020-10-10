@@ -2348,3 +2348,32 @@ def image_to_dataurl(f, size):
     buf = BytesIO()
     im.save(buf, "png")
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+
+class DjangoSite(models.Model):
+    name = models.CharField(max_length=50)
+    domain = models.CharField(unique=True, max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'django_site'
+
+
+class DjangoTemplate(models.Model):
+    name = models.CharField(max_length=100)
+    content = models.TextField()
+    creation_date = models.DateTimeField()
+    last_changed = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'django_template'
+
+
+class DjangoTemplateSites(models.Model):
+    template = models.ForeignKey(DjangoTemplate, models.DO_NOTHING)
+    site = models.ForeignKey(DjangoSite, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'django_template_sites'
+        unique_together = (('template', 'site'),)
