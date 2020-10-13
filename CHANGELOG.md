@@ -1,6 +1,21 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.43.X (October 12, 2020)
+------------------------------
+
+**UI changes**
+
+* Remove display of output documents on task finished page due to performance; only display link to the document
+
+**Bug fixes**
+
+* Significantly improve performance of generating System Security Plans.
+
+**Developer changes**
+
+* Remove inclusion of deprecated CommonControls section in controls.models.System
+
 v0.9.1.43 (September 23, 2020)
 ------------------------------
 

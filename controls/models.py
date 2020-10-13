@@ -1,6 +1,7 @@
 import os
 import json
 from django.db import models
+from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
@@ -39,6 +40,10 @@ class Statement(models.Model):
     def __repr__(self):
         # For debugging.
         return "'%s %s %s %s id=%d'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
+
+    @cached_property
+    def producer_element_name(self):
+        return self.producer_element.name
 
     @property
     def catalog_control(self):
@@ -271,9 +276,16 @@ class System(models.Model):
     @property
     def control_implementation_as_dict(self):
         pid_current = None
+
+        # Fetch all selected controls
+        elm = self.root_element
+        selected_controls = elm.controls.all().values("oscal_ctl_id", "uuid")
         # Get the smts_control_implementations ordered by part, e.g. pid
         smts = self.root_element.statements_consumed.filter(statement_type="control_implementation").order_by('pid')
+
         smts_as_dict = {}
+
+        # Retrieve all of the existing statements
         for smt in smts:
             if smt.sid in smts_as_dict:
                 smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
@@ -303,32 +315,41 @@ class System(models.Model):
             status_str = ""
             for status in impl_statuses:
                 if (smt.status is not None) and (smt.status.lower() == status.lower()):
-                    status_str += '[x] {} &nbsp;'.format(status)
+                    status_str += '[x] {} '.format(status)
                 else:
-                    status_str += '<span style="color: #888;">[ ] {}</span> &nbsp;'.format(status)
+                    status_str += '<span style="color: #888;">[ ] {}</span> '.format(status)
             # Conditionally add statement part in the beginning of a block of statements related to a part
             if smt.pid != "" and smt.pid != pid_current:
                 smts_as_dict[smt.sid]['combined_smt'] += "{}.\n".format(smt.pid)
                 pid_current = smt.pid
+            # DEBUG
+            # TODO
+            # Poor performance, at least in some instances, appears to being caused by `smt.prouder_element.name`
+            # parameter in the below statement.
             smts_as_dict[smt.sid]['combined_smt'] += "<i>{}</i>\n{}\n\n{}\n\n".format(smt.producer_element.name, status_str, smt.body)
+            # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
+            # for testing purposes, the loop runs 3x faster
+            # The reference `smt.prouder_element.name` appears to be calling the database and creating poor performance
+            # even where there are no statements.
 
-        # Add in the common controls
-        for cc in self.root_element.common_controls.all():
-            if cc.common_control.oscal_ctl_id in smts_as_dict:
-                smts_as_dict[smt.sid]['common_controls'].append(cc)
-            else:
-                smts_as_dict[cc.common_control.oscal_ctl_id] = {"control_impl_smts": [], "common_controls": [cc], "combined_smt": ""}
-            # Build combined statement
-            smts_as_dict[cc.common_control.oscal_ctl_id]['combined_smt'] += "{}\n{}\n\n".format(cc.common_control.name, cc.common_control.body)
+        # Deprecated implementation of inherited/common controls
+        # Leave commented out until we can fully delete...Greg - 2020-10-12
+        # # Add in the common controls
+        # for cc in self.root_element.common_controls.all():
+        #     if cc.common_control.oscal_ctl_id in smts_as_dict:
+        #         smts_as_dict[smt.sid]['common_controls'].append(cc)
+        #     else:
+        #         smts_as_dict[cc.common_control.oscal_ctl_id] = {"control_impl_smts": [], "common_controls": [cc], "combined_smt": ""}
+        #     # Build combined statement
+        #     smts_as_dict[cc.common_control.oscal_ctl_id]['combined_smt'] += "{}\n{}\n\n".format(cc.common_control.name, cc.common_control.body)
 
         # Populate any controls from assigned baseline that do not have statements
-        for ec in self.root_element.controls.all():
-            if ec.oscal_ctl_id not in smts_as_dict:
-                # Get ElementControl
-                smts_as_dict[ec.oscal_ctl_id] = {"control_impl_smts": [],
+        for ec in selected_controls:
+            if ec.get('oscal_ctl_id') not in smts_as_dict:
+                smts_as_dict[ec.get('oscal_ctl_id')] = {"control_impl_smts": [],
                                          "common_controls": [],
                                          "combined_smt": "",
-                                         "elementcontrol_uuid": ec.uuid,
+                                         "elementcontrol_uuid": ec.get('ec.uuid'),
                                          "combined_smt_uuid": uuid.uuid4()
                                          }
 
