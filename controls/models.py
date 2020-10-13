@@ -290,24 +290,20 @@ class System(models.Model):
             if smt.sid in smts_as_dict:
                 smts_as_dict[smt.sid]['control_impl_smts'].append(smt)
             else:
-                # Get ElementControl if it exists
+
                 try:
+                    # Get ElementControl if it exists
                     elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid, oscal_catalog_key=smt.sid_class)
-                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
-                                         "common_controls": [],
-                                         "combined_smt": "",
-                                         "elementcontrol_uuid": elementcontrol.uuid,
-                                         "combined_smt_uuid": uuid.uuid4()
-                                         }
-                except ElementControl.DoesNotExist:
-                    # Handle case where Element control does not exist
-                    elementcontrol = None
                     smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
                                              "common_controls": [],
                                              "combined_smt": "",
-                                             "elementcontrol_uuid": None,
+                                             "elementcontrol_uuid": elementcontrol.uuid if elementcontrol.uuid else None,
+                                             # Handle case where Element control does not exist
                                              "combined_smt_uuid": uuid.uuid4()
                                              }
+                except Exception as ex:
+                    print(ex)
+
             # Build combined statement
 
             # Define status options
@@ -315,18 +311,18 @@ class System(models.Model):
             status_str = ""
             for status in impl_statuses:
                 if (smt.status is not None) and (smt.status.lower() == status.lower()):
-                    status_str += '[x] {} '.format(status)
+                    status_str += f'[x] {status} '
                 else:
-                    status_str += '<span style="color: #888;">[ ] {}</span> '.format(status)
+                    status_str += f'<span style="color: #888;">[ ] {status}</span> '
             # Conditionally add statement part in the beginning of a block of statements related to a part
             if smt.pid != "" and smt.pid != pid_current:
-                smts_as_dict[smt.sid]['combined_smt'] += "{}.\n".format(smt.pid)
+                smts_as_dict[smt.sid]['combined_smt'] += f"{smt.pid}.\n"
                 pid_current = smt.pid
             # DEBUG
             # TODO
             # Poor performance, at least in some instances, appears to being caused by `smt.prouder_element.name`
             # parameter in the below statement.
-            smts_as_dict[smt.sid]['combined_smt'] += "<i>{}</i>\n{}\n\n{}\n\n".format(smt.producer_element.name, status_str, smt.body)
+            smts_as_dict[smt.sid]['combined_smt'] += f"<i>{smt.producer_element.name}</i>\n{status_str}\n\n{smt.body}\n\n"
             # When "smt.producer_element.name" the provided as a fixed string (e.g, "smt.producer_element.name")
             # for testing purposes, the loop runs 3x faster
             # The reference `smt.prouder_element.name` appears to be calling the database and creating poor performance
@@ -398,11 +394,11 @@ class ElementCommonControl(models.Model):
         unique_together = [('element', 'common_control', 'oscal_ctl_id', 'oscal_catalog_key')]
 
     def __str__(self):
-        return "'%s %s %s id=%d'" % (self.element, self.common_control, self.oscal_ctl_id, self.id)
+        return f"'{self.element} {self.common_control} {self.oscal_ctl_id} id={self.id}'"
 
     def __repr__(self):
         # For debugging.
-        return "'%s %s %s id=%d'" % (self.element, self.common_control, self.oscal_ctl_id, self.id)
+        return f"'{self.element} {self.common_control} {self.oscal_ctl_id} id={self.id}'"
 
 class Baselines (object):
     """Represent list of baselines"""
@@ -504,4 +500,3 @@ class Poam(models.Model):
 
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
-
