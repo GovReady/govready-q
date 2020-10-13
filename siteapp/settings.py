@@ -106,6 +106,10 @@ try:
 except ImportError:
 	pass
 
+# profile every request and save the HTML output to the folder profiles
+if DEBUG:
+	PYINSTRUMENT_PROFILE_DIR = 'profiles'
+
 # Add standard middleware.
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
@@ -116,6 +120,7 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'pyinstrument.middleware.ProfilerMiddleware',
 ]
 if environment["debug"] and os.path.exists(os.path.join(os.path.dirname(__file__), 'helper_middleware.py')):
 	MIDDLEWARE_CLASSES.append(primary_app+'.helper_middleware.DumpErrorsToConsole')
