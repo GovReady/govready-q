@@ -273,7 +273,7 @@ class System(models.Model):
                 smts_as_dict[smt.sid] = {"control_impl_smts": [smt], "common_controls": [], "combined_smt": ""}
         return smts_as_dict
 
-    @property
+    @cached_property
     def control_implementation_as_dict(self):
         pid_current = None
 
@@ -281,7 +281,7 @@ class System(models.Model):
         elm = self.root_element
         selected_controls = elm.controls.all().values("oscal_ctl_id", "uuid")
         # Get the smts_control_implementations ordered by part, e.g. pid
-        smts = self.root_element.statements_consumed.filter(statement_type="control_implementation").order_by('pid')
+        smts = elm.statements_consumed.filter(statement_type="control_implementation").order_by('pid')
 
         smts_as_dict = {}
 
@@ -293,7 +293,7 @@ class System(models.Model):
 
                 try:
                     # Get ElementControl if it exists
-                    elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid, oscal_catalog_key=smt.sid_class)
+                    elementcontrol = elm.controls.get(oscal_ctl_id=smt.sid, oscal_catalog_key=smt.sid_class)
                     smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
                                              "common_controls": [],
                                              "combined_smt": "",
@@ -496,7 +496,7 @@ class Poam(models.Model):
 
     def get_next_poam_id(self, system):
         """Count total number of POAMS and return next linear id"""
-        return len(Statement.objects.filter(statement_type="POAM", consumer_element=system.root_element))
+        return Statement.objects.filter(statement_type="POAM", consumer_element=system.root_element).count()
 
     # TODO:
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
