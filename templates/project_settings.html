@@ -436,14 +436,14 @@ h3.question-group-title {
                   <th style="width:200px;">Name</th>
                   <th style="width:200px;">Service Type</th>
                   <th style="width:200px;">Access Token or Identifier</th>
-                  <th style="width:200px;">Add or Remove</th>
+                  <th style="width:200px;">Add/Remove</th>
                 </tr>
               </thead>
               <tbody>
             {% for rs in remote_services %}
                 <tr>
-                  <td>{{ rs.name }} ({{ rs.id }})</td>
-                  <td>{{ rs.service_type }}</td>
+                  <td>{{ rs.name }} (id {{ rs.id }})</td>
+                  <td>{{ rs.get_service_type_display }}</td>
                   <td>{{ rs.access_token_or_identifier }}</td>
                   <td>
                     <button class="btn btn-default" onclick="return add_remote_services('{{ rs.id }}');">Add</button>
