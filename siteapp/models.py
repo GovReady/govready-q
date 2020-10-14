@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models, transaction
 from django.utils import crypto, timezone
+from django.utils.translation import gettext_lazy as _
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
@@ -1360,12 +1361,17 @@ class Support(models.Model):
 class RemoteService(models.Model):
     """A RemoteService stores information needed to connect to a remote service."""
 
+    class ServiceType(models.IntegerChoices):
+        OTHER = 0, _('Other')
+        GITLAB = 1, _('GitLab')
+        GITHUB = 2, _('GitHub')
+
     user = models.ForeignKey(User, related_name="remote_service", on_delete=models.CASCADE, help_text="The User who owns this remote service account.")
     name = models.CharField(max_length=255, unique=False, help_text="The name of the remote service")
     connection_url = models.URLField(max_length=200, unique=False, help_text="Web address of service connection")
     access_token_or_identifier = models.CharField(max_length=255, help_text="Access token, identifier, or username for authentication")
     access_token_secret = models.CharField(max_length=255, help_text="Access token secret or password for authentication")
-    service_type = models.IntegerField(default=1, choices=[(1, "GitLab"), (2, "GitHub"), (0, "Other")], help_text="Type of remote service")
+    service_type = models.IntegerField(default=1, choices=ServiceType.choices, help_text="Type of remote service")
 
     def __str__(self):
         return "{} ({})".format(self.name, self.access_token_or_identifier)
