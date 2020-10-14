@@ -428,15 +428,15 @@ h3.question-group-title {
           <div class="col-sm-12">
             <h2 style="border-bottom:1px solid #ccc;">Remote Services</h2>
           </div>
-          <div class="col-sm-12">Enables services</div>
+          <div class="col-sm-12">Connect or disconnect services</div>
             <div class="col-sm-12">
               <table class="table" style="width: auto;">
               <thead>
                 <tr>
                   <th style="width:200px;">Name</th>
                   <th style="width:200px;">Service Type</th>
-                  <th style="width:200px;">access_token_or_identifier</th>
-                  <th style="width:200px;">TBD</th>
+                  <th style="width:200px;">Access Token or Identifier</th>
+                  <th style="width:200px;">Add or Remove</th>
                 </tr>
               </thead>
               <tbody>
@@ -598,7 +598,7 @@ function upgrade_project(version_number) {
 function add_remote_services(remote_service_id) {
   show_modal_confirm(
     "Add Remote Service",
-    "Are you sure you want to associate the remote service this project?",
+    "Are you sure you want to connect the remote service to this project?",
     "Confirm",
     function() {
       ajax_with_indicator({

@@ -2012,13 +2012,13 @@ def add_remote_service(request, project):
         # message = "Remote service {} upgraded successfully to {}".format(project, new_app.version_number)
         message = "Remote service added."
         messages.add_message(request, messages.INFO, message)
-        redirect = project.get_absolute_url()
+        redirect = project.get_absolute_url() + '/settings'
         return JsonResponse({ "status": "ok", "redirect": redirect })
     else:
         # message = "Project {} upgraded successfully to {}".format(project, new_app.version_number)
         message = "There was a problem adding the remote service."
         messages.add_message(request, messages.INFO, message)
-        redirect = project.get_absolute_url()
+        redirect = project.get_absolute_url() + '/settings'
         return JsonResponse({ "status": "ok", "redirect": redirect })
 
 
