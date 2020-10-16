@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.43.4 (October 16, 2020)
+v0.9.1.44 (October 16, 2020)
 ------------------------------
 
 This release significantly decreases the time taking to rendering System Security Plans including OSCAL versions.
