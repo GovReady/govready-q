@@ -170,9 +170,9 @@ done
 
 # quill rich text editor (BSD License)
 download \
-  https://github.com/quilljs/quill/releases/download/v1.3.6/quill.tar.gz \
+  https://github.com/quilljs/quill/releases/download/v1.3.7/quill.tar.gz \
   /tmp/quill.tar.gz \
-  'a7e8b79ace3f620725d4fb543795a4cf0349db1202624c4b16304954745c3890'
+  'ca784fe3b83f3b2b93b443a953e0b34a27a2178618501b0841eebcd62c9785c2'
 tar -zx -C $VENDOR -f /tmp/quill.tar.gz
 rm -f /tmp/quill.tar.gz
 
