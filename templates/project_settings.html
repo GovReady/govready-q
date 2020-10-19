@@ -430,6 +430,9 @@ h3.question-group-title {
           </div>
           <div class="col-sm-12">Connect or disconnect services</div>
             <div class="col-sm-12">
+	      {% if remote_services|length == 0 %}
+	      <div style="margin:1em 1em 0 1em;"><em>No remote services defined.</em></div>
+	      {% else %}
               <table class="table" style="width: auto;">
               <thead>
                 <tr>
@@ -440,18 +443,23 @@ h3.question-group-title {
                 </tr>
               </thead>
               <tbody>
-            {% for rs in remote_services %}
+		{% for rs in remote_services %}
                 <tr>
                   <td>{{ rs.name }} (id {{ rs.id }})</td>
                   <td>{{ rs.get_service_type_display }}</td>
                   <td>{{ rs.access_token_or_identifier }}</td>
                   <td>
-                    <button class="btn btn-default" onclick="return add_remote_services('{{ rs.id }}');">Add</button>
+		    {% if rs in project.remote_services.all %}
+                    <button class="btn btn-default" onclick="return remove_remote_service('{{ rs.id }}');">Remove</button>
+		    {% else %}
+                    <button class="btn btn-default" onclick="return add_remote_service('{{ rs.id }}');">Add</button>
+		    {% endif %}
                   </td>
                 </tr>
-            {% endfor %}
-            </tbody>
-            </table>
+		{% endfor %}
+              </tbody>
+              </table>
+	      {% endif %}
             </div>
           </div>
       {% endif %}
@@ -595,7 +603,7 @@ function upgrade_project(version_number) {
   )
 }
 
-function add_remote_services(remote_service_id) {
+function add_remote_service(remote_service_id) {
   show_modal_confirm(
     "Add Remote Service",
     "Are you sure you want to connect the remote service to this project?",
@@ -606,10 +614,31 @@ function add_remote_services(remote_service_id) {
        method: "POST",
        data: {
         remote_service_id: remote_service_id,
-        project_id: {{ project.id }}
        },
        success: function(res) {
-         // redirect to main project page after successful upgrade
+         // redirect to main project page after successful association
+         window.location = res.redirect;
+       }
+      });
+    }
+  )
+}
+
+
+function remove_remote_service(remote_service_id) {
+  show_modal_confirm(
+    "Remove Remote Service",
+    "Are you sure you want to disconnect the remote service from this project?",
+    "Confirm",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "remove_remote_service" project.id %}',
+       method: "POST",
+       data: {
+        remote_service_id: remote_service_id,
+       },
+       success: function(res) {
+         // redirect to main project page after successful disassociation
          window.location = res.redirect;
        }
       });

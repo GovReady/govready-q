@@ -2006,27 +2006,22 @@ def new_remote_service(request):
 def add_remote_service(request, project):
     """Associate a remote service with a project"""
 
-    result = True
+    rs_id = request.POST.get("remote_service_id")
+    project.remote_services.add(rs_id)
 
-    if result == True:
-        # message = "Remote service {} upgraded successfully to {}".format(project, new_app.version_number)
-        message = "Remote service added."
-        messages.add_message(request, messages.INFO, message)
-        redirect = project.get_absolute_url() + '/settings'
-        return JsonResponse({ "status": "ok", "redirect": redirect })
-    else:
-        # message = "Project {} upgraded successfully to {}".format(project, new_app.version_number)
-        message = "There was a problem adding the remote service."
-        messages.add_message(request, messages.INFO, message)
-        redirect = project.get_absolute_url() + '/settings'
-        return JsonResponse({ "status": "ok", "redirect": redirect })
-
-
-    return false
+    message = "Remote service {} added".format(rs_id)
+    messages.add_message(request, messages.INFO, message)
+    redirect = project.get_absolute_url() + '/settings'
+    return JsonResponse({ "status": "ok", "redirect": redirect })
 
 @project_admin_login_post_required
 def remove_remote_service(request, project):
     """Disassociate a remote service with a project"""
 
-    return false
+    rs_id = request.POST.get("remote_service_id")
+    project.remote_services.remove(rs_id)
 
+    message = "Remote service {} removed".format(rs_id)
+    messages.add_message(request, messages.INFO, message)
+    redirect = project.get_absolute_url() + '/settings'
+    return JsonResponse({ "status": "ok", "redirect": redirect })
