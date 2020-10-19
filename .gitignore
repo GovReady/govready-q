@@ -22,6 +22,9 @@ __pycache__/
 # C extensions
 *.so
 
+# py instrument instrument files
+profiles/
+
 # Distribution / packaging
 .Python
 env/

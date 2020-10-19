@@ -56,11 +56,14 @@
 
       {% if outputs|length > 0 %}
         <div class="panel panel-default">
-          <div class="panel-heading" rol="tab" id="your-answers-title-2">
+          <div class="panel-heading" rol="tab" id="your-answers-title-2" style="height: 50px;">
             <h4 class="panel-title">
               <a role="button" data-toggle="collapse" data-parent="#accordion" href="#your-answers-body-2" aria-expanded="true" aria-controls="your-answers-body-2">
                 Available documents
               </a>
+              <div class="pull-right">
+                <a id="force-refresh" class="btn btn-success btn-sm" onclick="refresh_output_doc({{project.root_task.module.app.id}});return false;"><span class="glyphicon glyphicon-refresh"></span> Force Refresh</a>
+              </div>
             </h4>
           </div>
           <div id="your-answers-body-2" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="your-answers-title-2">
@@ -153,37 +156,6 @@
         </div>
       {% endif %}
 
-      {% for document in outputs %}
-        {% if document.format != "oscal_xml" %}
-        <div class="panel panel-default">
-          <div class="panel-heading" role="tabx" id="document-{{forloop.counter}}-title">
-            <h4 class="panel-title">
-              <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{forloop.counter}}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{forloop.counter}}-body">
-                {{document.title}}
-              </a>
-              {% if document.id %}
-                <div class="pull-right">
-                  <span class="glyphicon glyphicon-refresh"
-                    style="cursor: pointer"
-                    alt="Refresh document"
-                    onclick="refresh_output_doc({{project.root_task.module.app.id}});"> </span>
-                    &nbsp;&nbsp;
-                  <span class="glyphicon glyphicon-download-alt"
-                    style="cursor: pointer"
-                    alt="Download document"
-                    onclick="download_document('{{document.id|escapejs}}')"> </span>
-                </div>
-              {% endif %}
-            </h4>
-          </div>
-          <div id="document-{{forloop.counter}}-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-{{forloop.counter}}-title">
-            <div class="panel-body output-document">
-              {{document.html|safe}}
-            </div>
-          </div>
-        </div>
-        {% endif %}
-      {% endfor %}
     </div> <!-- /accordion -->
     <div id="continue-nav "style="margin: 2em 0">
       {% with answers_question=task.is_answer_to_unique %}

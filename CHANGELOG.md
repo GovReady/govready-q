@@ -1,6 +1,26 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.44 (October 16, 2020)
+------------------------------
+
+This release significantly decreases the time taking to rendering System Security Plans including OSCAL versions.
+Rendering time has been reduced by 97%.
+
+**UI changes**
+
+* Remove display of output documents on task finished page due to performance; only display link to the document
+
+**Bug fixes**
+
+* Significantly improve performance of generating System Security Plans
+
+**Developer changes**
+
+* Remove inclusion of deprecated CommonControls section in controls.models.System
+* Adjust siteapp.tests to not look for generated output document
+* Add `@cached_property` to `controls.models.System.control_implementation_as_dict` and `controls.models.Statement.producer_element_name` to significantly improve SSP rendering performance
+
 v0.9.1.43 (September 23, 2020)
 ------------------------------
 
