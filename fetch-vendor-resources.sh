@@ -72,11 +72,11 @@ download \
 
 # Bootstrap (MIT License)
 download \
-  https://github.com/twbs/bootstrap/releases/download/v3.3.7/bootstrap-3.3.7-dist.zip \
+  https://github.com/twbs/bootstrap/releases/download/v3.4.1/bootstrap-3.4.1-dist.zip \
   /tmp/bootstrap.zip \
-  'f498a8ff2dd007e29c2074f5e4b01a9a01775c3ff3aeaf6906ea503bc5791b7b'
+  'd49793cf773cbd393ac2cf340c3b4ddab5365fa7c292098ac07e12eab3efd92e'
 unzip -d /tmp /tmp/bootstrap.zip
-mv /tmp/bootstrap-3.3.7-dist $VENDOR/bootstrap
+mv /tmp/bootstrap-3.4.1-dist $VENDOR/bootstrap
 rm -f /tmp/bootstrap.zip
 
 # jsGrid (MIT License)
