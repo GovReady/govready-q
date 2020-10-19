@@ -66,9 +66,9 @@ fi
 
 # jQuery (MIT License)
 download \
-  https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
+  https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js \
   $VENDOR/jquery.js \
-  '0925e8ad7bd971391a8b1e98be8e87a6971919eb5b60c196485941c3c1df089a'
+  'f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d'
 
 # Bootstrap (MIT License)
 download \
