@@ -93,7 +93,7 @@ class Catalog (object):
         catalog_file = os.path.join(self.catalog_path, self.catalog_file)
         # Does file exist?
         if not os.path.isfile(catalog_file):
-            print("ERROR: {} does not exist".format(catalog_file))
+            print(f"ERROR: {catalog_file} does not exist")
             return False
         # Load file as json
         with open(catalog_file, 'r') as json_file:
@@ -167,7 +167,7 @@ class Catalog (object):
         return result_dict
 
     def get_control_property_by_name(self, control, property_name):
-        """Return value of a propery of a control by name of property"""
+        """Return value of a property of a control by name of property"""
         prop = self.find_dict_by_value(control['properties'], "name", property_name)
         if prop is None:
             return None
@@ -272,9 +272,10 @@ class Catalog (object):
         parameter_values = dict(parameter_values) # clone so that we don't modify the caller's dict
         if "parameters" not in control:
             return text
+
         for parameter in control['parameters']:
             if parameter["id"] not in parameter_values:
-                parameter_values[parameter["id"]] = "[" + parameter.get("label", parameter["id"]) + "]"
+                parameter_values[parameter["id"]] = f"[{parameter.get('label', parameter['id'])}]"
         for parameter_key, parameter_value in parameter_values.items():
             text = re.sub(r"{{ " + re.escape(parameter_key) + " }}", parameter_value, text)
         return text
