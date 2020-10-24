@@ -48,7 +48,7 @@ jobs:
 
     # Run tests.
 
-    # Install packages necesary for requirements_txt_checker.sh,
+    # Install packages necessary for requirements_txt_checker.sh,
     # and then run it and store output as an artifact.
     - run: pip3 install --user -U pip-tools
     # Temporarily comment out below line - 08/06/2020
@@ -56,7 +56,7 @@ jobs:
     - store_artifacts:
         path: requirements.txt.status.txt
 
-    # Install packages necesary for to check packages for known
+    # Install packages necessary to check packages for known
     # vulnerabilities using pyup.io, and run the check.
     - run: pip3 install --user -U safety
     - run: safety check --bare -r requirements.txt
@@ -78,7 +78,7 @@ jobs:
     # - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.GeneralTests
     #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.QuestionsTests
     - run: coverage combine
-    - run: coverage report # output to studout.
+    - run: coverage report # output to stdout.
     - run: coverage xml # generate report artifact coverage.xml.
     - run: coverage html # generate report artifact htmlcov/*.
     - store_artifacts:
