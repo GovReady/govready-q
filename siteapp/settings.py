@@ -1,7 +1,7 @@
 # from https://raw.githubusercontent.com/if-then-fund/django-good-settings/master/settings.py
 
 ################################################################
-# Good defaults for a setttings.py, plus logic for bringing    #
+# Good defaults for a settings.py, plus logic for bringing    #
 # in settings from various normal places you might store them. #
 ################################################################
 
@@ -72,7 +72,7 @@ GOVREADY_URL = urlparse(environment.get("govready-url",""))
 ALLOWED_HOSTS = []
 if "host" in environment:
 	ALLOWED_HOSTS = [environment["host"].split(':')[0]]
-	print("WARNING: Use of 'host' environment paramenter deprecated. Please use 'govready-url' environment parameter in future.")
+	print("WARNING: Use of 'host' environment parameter deprecated. Please use 'govready-url' environment parameter in future.")
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
 	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
 print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)

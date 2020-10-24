@@ -891,8 +891,9 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         # Finished.
         self.assertRegex(self.browser.title, "^Test The Text Input Question Types - ")
-        self.assertInNodeText("I am a kiwi.", "#document-1-body") # text default should appear
-        self.assertInNodeText("Peaches are sweet.", "#document-1-body") # text default should appear
+        # Need new tests for testing text appeared in linked output document instead of on the finished page as we use to test below
+        # self.assertInNodeText("I am a kiwi.", "#document-1-body") # text default should appear
+        # self.assertInNodeText("Peaches are sweet.", "#document-1-body") # text default should appear
 
     def test_questions_choice(self):
         # Log in and create a new project.
