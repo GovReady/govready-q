@@ -6,6 +6,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from .models import Discussion, Comment, Attachment
+from .validators import validate_file_extension
 
 @login_required
 @transaction.atomic
@@ -185,6 +186,10 @@ def create_attachments(request):
     # The user is uploading one or more files.
     ret = { }
     for fn in request.FILES:
+        # Validate before attachment object creation
+        uploaded_file = request.FILES[fn]
+        validate_file_extension(uploaded_file)
+
         attachment = Attachment.objects.create(
             comment=comment,
             user=request.user,
