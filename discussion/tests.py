@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.utils.crypto import get_random_string
 
+from discussion.validators import validate_file_extension
 from siteapp.models import User, ProjectMembership, Organization, Portfolio
 from siteapp.tests import SeleniumTest, var_sleep
 
@@ -163,6 +164,8 @@ class DiscussionTests(SeleniumTest):
 
         # Test that the image actually exists.
         imageFile = img.get_attribute('src')
+        imageFileValidation = validate_file_extension(imageFile)
+        self.assertIsNone(imageFileValidation)
 
         result = self.browser.execute_script("""var http = new XMLHttpRequest();
             http.open('HEAD', '{}', false);

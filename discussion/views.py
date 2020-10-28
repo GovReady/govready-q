@@ -188,7 +188,9 @@ def create_attachments(request):
     for fn in request.FILES:
         # Validate before attachment object creation
         uploaded_file = request.FILES[fn]
-        validate_file_extension(uploaded_file)
+        validation_result = validate_file_extension(uploaded_file)
+        if validation_result != None:
+            return validation_result
 
         attachment = Attachment.objects.create(
             comment=comment,

@@ -135,7 +135,7 @@
           </div>
           <div id="discussion-your-comment-tips">
 
-            <label for="discussion-attach-file"><span class="glyphicon glyphicon-paperclip" style="margin-right: 3px"></span>Attach a File</label>
+            <label for="discussion-attach-file"><span class="glyphicon glyphicon-paperclip" style="margin-right: 3px" data-toggle="tooltip" ></span> <span href="#" data-toggle="tooltip" title="Accepted file types are PDF(application/pdf), PNG(image/png), and JPG(image/jpg)">Attach a File</span></label>
             <div style="display: none"><input name="value" type="file" id="discussion-attach-file" multiple onchange="attach_files(this.files)" /></div>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <span>formatting:</span>
@@ -989,7 +989,7 @@ function attach_files(files) {
     data.append("draft", draft_state.id);
     for (var i = 0; i < files.length; i++)
       data.append("file" + i, files[i])
-    
+
     // Submit the ajax request.
     ajax_with_indicator({
       url: "{% url 'discussion-comment-create-attachments' %}",
@@ -1012,7 +1012,10 @@ function attach_files(files) {
       },
       complete: function() {
         disable_enable_submit_comment_controls(false);
-      }
+      },
+        error: function(res){
+            show_modal_error("Attachment Error", res);
+        }
     });
   }, function() {
     // update_draft error handler
