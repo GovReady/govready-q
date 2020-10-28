@@ -64,7 +64,7 @@ cffi==1.14.3 \
     --hash=sha256:f4eae045e6ab2bb54ca279733fe4eb85f1effda392666308250714e01907f394 \
     --hash=sha256:f92cdecb618e5fa4658aeb97d5eb3d2f47aa94ac6477c6daf0f306c5a3b9e6b1 \
     --hash=sha256:f92f789e4f9241cd262ad7a555ca2c648a98178a953af117ef7fad46aa1d5591 \
-    # via cryptography
+    # via cryptography, gevent
 chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
     --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691 \
@@ -73,6 +73,10 @@ click==7.1.2 \
     --hash=sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a \
     --hash=sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc \
     # via safety
+colorama==0.4.4 \
+    --hash=sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b \
+    --hash=sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2 \
+    # via bandit, sphinx
 commonmark==0.8.1 \
     --hash=sha256:9f6dda7876b2bb88dd784440166f4bc8e56cb2b2551264051123bacb0b6c1d8a \
     --hash=sha256:abcbc854e0eae5deaf52ae5e328501b78b4a0758bf98ac8bb792fce993006084 \
@@ -501,6 +505,40 @@ pygments==2.2.0 \
     --hash=sha256:78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d \
     --hash=sha256:dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc \
     # via -r requirements.in, sphinx
+pyinstrument-cext==0.2.2 \
+    --hash=sha256:02ad14a4949b16bc51e87a53799014f4d3b01e814d4cc0d29d66018fe76552f0 \
+    --hash=sha256:1fd53cc3213a2c89626c359e5788500217e91c75d01dd2e178a0e53aa905f1dd \
+    --hash=sha256:2346e5f2424d227be82ca5d5fb3c306cf44131b0fec0413bd182d4ef83553f2e \
+    --hash=sha256:25956082420f9a8c7ae2353921d59575f6acfd1d703d1188c117efd56d9baecf \
+    --hash=sha256:38ac36f73e8a767ed86ac8d66f834cf34f4bb2e0cc2ada9a51ae4852e5721cd4 \
+    --hash=sha256:3e2142eceb4e47274b7f1770fe85601094d24146813bbf00f0a37106b080d803 \
+    --hash=sha256:42f19056aed6c06aff5491f8de840ac89cd7dbcf1b46e820b00d1319e50ef5ea \
+    --hash=sha256:49d0b9f981ebf20abdcac73d23a3871dda445e7da15d318982d081aaed885788 \
+    --hash=sha256:4cd18fb31bba6ce6a04600ddccb487f26451bc6a4158f81479953be453c10ef8 \
+    --hash=sha256:5ff19426b066b64370bb4dfbe6b6eb558e792fd2893581905470d4e5be6459bc \
+    --hash=sha256:682683207d2100b54b3a649de4ab35264ab7a67607e1733732d8c6762bc79ee6 \
+    --hash=sha256:6b1efbd16e208cc603b9a4382de08890245ebb871f59bb359923ad3100759304 \
+    --hash=sha256:6e673c46f88c63c9588be74b12cf8a21071cedc80292610e160fe751c1a80199 \
+    --hash=sha256:731438b4a813992271f181510a293c950bb0d10eec70c787b80951e9b34a1f8f \
+    --hash=sha256:750e2ab431bbb4196ba9786a85497d95cb14d1927514ce72e12ff9c3699a9318 \
+    --hash=sha256:8559799767c297771e7602f4b59b47f62536f0431b799c3df34aea2ee56f9abb \
+    --hash=sha256:8f52067a9bf9e04227469a64cc2ed9209a814369f85c3b6b87b99d2bc51d2275 \
+    --hash=sha256:9c09af4b376d699337cdd8733d00b9720f4529ceea4a2e9b41aab65f56af9840 \
+    --hash=sha256:a1899c13683de603480595df06b6b0101bbce128aa294c68c2b4165f586f5016 \
+    --hash=sha256:aaacc34a0c2f05be503d12455eef7c1e43381db83552e47d07f8ba44ec29b17d \
+    --hash=sha256:aabb743d3718e01249ff64ebae126defb23476f5921d18dff99fd2b065110e55 \
+    --hash=sha256:b087e63b2419fa6e130781bcdf6a16aae8e9620cac3860f65cec71a2ccb057f8 \
+    --hash=sha256:b711fdad86e82f0ffee4347f6854524ff8df0f96f0ac73fcee38cfb4fe58826e \
+    --hash=sha256:e66e17856c4e916a2f503d39529947bce9c16cab983fed549225fe84202aa96a \
+    --hash=sha256:e9e0af9d122a43e4e9cf6cd44042aa434230f6ea6c5122ee0e812aa6d648b57c \
+    --hash=sha256:ef26fed4b80c409e26115e22382740917a2f3fc421f9eb9e23fa31b23ca57d2d \
+    --hash=sha256:f29e25f71d74c0415ca9310e5567fff0f5d29f4240a09a885abf8b0eed71cc5b \
+    --hash=sha256:faa497b3800736f398ae415f2c161c646fe8fbfbc922ce16bdd30d8727cdc19d \
+    # via pyinstrument
+pyinstrument==3.2.0 \
+    --hash=sha256:266a02d874799a8e06889ed9030dcef518b61c7a8e64a3a0ad0754645f901285 \
+    --hash=sha256:ce8fef6ea88349f0060b6d974483fd64d2c061346e6b78bca6357509a5121665 \
+    # via -r requirements.in
 pyjwt[crypto]==1.7.1 \
     --hash=sha256:5c6eca3c2940464d106b99ba83b00c6add741c9becaec087fb7ccdefea71350e \
     --hash=sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96 \
@@ -707,9 +745,9 @@ xxhash==2.0.0 \
     --hash=sha256:fc03a399205268815742125b17d967afa9f23b08cdafe185e41368cf7ba9b278 \
     --hash=sha256:fca7d0fb6fde33d1ac5f97298f44e711e5fe1b4587832864be8c6545cb072a54 \
     # via -r requirements.in
-zipp==3.3.2 \
-    --hash=sha256:50a4ef266c31c9409627b46012e206382eb8d23f46fbd358065a8335cfbf7d8f \
-    --hash=sha256:adf8f2ed8f614ced567d849cae9d183cef6cfd27c77a5cae7a28029be0c2b7a7 \
+zipp==3.4.0 \
+    --hash=sha256:102c24ef8f171fd729d46599845e95c7ab894a4cf45f5de11a44cc7444fb1108 \
+    --hash=sha256:ed5eee1974372595f9e416cc7bbeeb12335201d8081ca8a0743c954d4446e5cb \
     # via importlib-metadata
 
 # WARNING: The following packages were not pinned, but pip requires them to be
