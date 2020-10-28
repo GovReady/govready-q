@@ -1001,7 +1001,7 @@ function attach_files(files) {
           var attachment = res[key];
           var ins;
           if (attachment.is_image)
-            ins = "\n![Uploaded File](attachment:" + attachment.id + ")\n";
+            ins = "\n![Uploaded Image File](attachment:" + attachment.id + ")\n";
           else
             ins = " [" + attachment.original_fn.replace(/[\\[\]]/g, "") + "](attachment:" + attachment.id + ") ";
           $('#discussion-your-comment').insertAtCaret(ins);
