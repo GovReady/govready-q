@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
 import sys
+
+from siteapp.settings import DATA_UPLOAD_MAX_MEMORY_SIZE
 from .models import Discussion, Comment, Attachment
 from .validators import validate_file_extension
 
@@ -190,7 +192,7 @@ def create_attachments(request):
         uploaded_file = request.FILES[fn]
 
         # 2.5MB
-        if sys.getsizeof(uploaded_file) >= 2621440:
+        if sys.getsizeof(uploaded_file) >= DATA_UPLOAD_MAX_MEMORY_SIZE:
             huge_payload_error = HttpResponse("413 Payload Too Large")
             huge_payload_error.status_code = 413
             return huge_payload_error
