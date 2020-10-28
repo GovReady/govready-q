@@ -220,6 +220,10 @@ exclusiveprocess==0.9.4 \
 filemagic==1.6 \
     --hash=sha256:e684359ef40820fe406f0ebc5bf8a78f89717bdb7fed688af68082d991d6dbf3 \
     # via django-database-storage-backend
+filetype==1.0.7 \
+    --hash=sha256:353369948bb1c09b8b3ea3d78390b5586e9399bff9aab894a1dff954e31a66f6 \
+    --hash=sha256:da393ece8d98b47edf2dd5a85a2c8733e44b769e32c71af4cd96ed8d38d96aa7 \
+    # via -r requirements.in
 fs==2.4.11 \
     --hash=sha256:cc99d476b500f993df8ef697b96dc70928ca2946a455c396a566efe021126767 \
     --hash=sha256:cd6b178f373a0370feac8612fd3c142aa6a5cadd3d471b525b08db4d3b511c9c \

@@ -19,6 +19,7 @@ termcolor # MIT License
 xxhash # BSD License
 importlib-metadata>=1.7.0,>=0.12 # Apache License
 importlib-resources<2,>=1.0 # Apache License
+filetype # MIT License
 
 # Common Django Packages
 # Django==2.2.12 # BSD License
