@@ -1,16 +1,12 @@
-from django.core.validators import FileExtensionValidator
-from django.db import models, transaction
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.utils import timezone
+from django.db import models
 from django.urls import reverse
-from django.conf import settings
-from .validators import validate_file_extension
-import re
-
+from django.utils import timezone
 from jsonfield import JSONField
-
 from siteapp.models import User
+from .validators import validate_file_extension
+
 
 class Discussion(models.Model):
     organization = models.ForeignKey('siteapp.Organization', related_name="discussions", on_delete=models.CASCADE, help_text="The Organization that this Discussion belongs to.")
