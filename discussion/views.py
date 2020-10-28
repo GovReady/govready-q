@@ -4,7 +4,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
-
+import sys
 from .models import Discussion, Comment, Attachment
 from .validators import validate_file_extension
 
@@ -188,6 +188,13 @@ def create_attachments(request):
     for fn in request.FILES:
         # Validate before attachment object creation
         uploaded_file = request.FILES[fn]
+
+        # 2.5MB
+        if sys.getsizeof(uploaded_file) >= 2621440:
+            huge_payload_error = HttpResponse("413 Payload Too Large")
+            huge_payload_error.status_code = 413
+            return huge_payload_error
+
         validation_result = validate_file_extension(uploaded_file)
         if validation_result != None:
             return validation_result
