@@ -193,9 +193,7 @@ def create_attachments(request):
 
         # 2.5MB
         if sys.getsizeof(uploaded_file) >= DATA_UPLOAD_MAX_MEMORY_SIZE:
-            huge_payload_error = HttpResponse("413 Payload Too Large")
-            huge_payload_error.status_code = 413
-            return huge_payload_error
+            return JsonResponse(status=413, data={'status':'error','message': "413 Payload Too Large"})
 
         validation_result = validate_file_extension(uploaded_file)
         if validation_result != None:

@@ -1014,7 +1014,8 @@ function attach_files(files) {
         disable_enable_submit_comment_controls(false);
       },
         error: function(res){
-            show_modal_error("Attachment Error", res);
+          var errorjson = $.parseJSON(res);
+            show_modal_error("Attachment Error", errorjson["message"]);
         }
     });
   }, function() {
