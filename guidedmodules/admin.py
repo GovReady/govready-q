@@ -164,7 +164,8 @@ class AppSourceSpecWidget(forms.Widget):
 class AppSourceAdminForm(forms.ModelForm):
 	class Meta:
 		labels = {
-			"available_to_all": "Apps from this source are available to all organizations"
+			"available_to_all": "Apps from this source are available to all organizations",
+			"available_to_all_individuals": "Apps from this source are available to all individual users"
 		}
 
 	def __init__(self, *args, **kwargs):
@@ -191,8 +192,8 @@ class AppSourceAdminForm(forms.ModelForm):
 class AppSourceAdmin(admin.ModelAdmin):
 	form = AppSourceAdminForm # customize spec widget
 	list_display = ('id', 'slug', 'source', 'flags')
-	filter_horizontal = ('available_to_orgs',)
-	readonly_fields = ('is_system_source',)
+	filter_horizontal = ('available_to_orgs', "available_to_individual")
+	readonly_fields = ('is_system_source', "available_to_role",)
 	ordering = ('id',)
 	def source(self, obj):
 		return obj.get_description()
