@@ -49,7 +49,7 @@
         {% endif %}
         {# if user.can_see_any_org_settings or user.is_staff #}
         {% if user.is_staff %}
-        <li><a href="/settings" id="menu-settings" aria-label="Settings" tooltip="Settings><span class="glyphicon glyphicon-cog" aria-label="Settings" tooltip="Settings"></span></a></li>
+        <li><a href="/settings" id="menu-settings" aria-label="Settings" tooltip="Settings"><span class="glyphicon glyphicon-cog" aria-label="Settings" tooltip="Settings"></span></a></li>
         {% endif %}
 
         {% if not user.is_anonymous %}{% include "navbar-notifications.html" %}{% endif %}

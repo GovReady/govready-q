@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.42 (September 20, 2020)
-------------------------------
+v0.9.1.XX (November 1, 2020)
+----------------------------
 
 **Feature changes**
 
@@ -12,7 +12,53 @@ v0.9.1.42 (September 20, 2020)
 
 - Add components (system elements) to a system on system's selected components page.
 
-v0.9.1.40 (September 17, 2020)
+v0.9.1.45 (October 24, 2020)
+----------------------------
+
+**Bug fixes**
+
+* Fix bug in v0.9.1.44 that failed to handle case of non-existent ElementControl
+
+**Developer changes**
+
+* Update various Python libraries
+
+v0.9.1.44 (October 16, 2020)
+----------------------------
+
+This release significantly decreases the time taking to rendering System Security Plans including OSCAL versions.
+Rendering time has been reduced by 97%.
+
+**UI changes**
+
+* Remove display of output documents on task finished page due to performance; only display link to the document
+
+**Bug fixes**
+
+* Significantly improve performance of generating System Security Plans
+
+**Developer changes**
+
+* Remove inclusion of deprecated CommonControls section in controls.models.System
+* Adjust siteapp.tests to not look for generated output document
+* Add `@cached_property` to `controls.models.System.control_implementation_as_dict` and `controls.models.Statement.producer_element_name` to significantly improve SSP rendering performance
+
+v0.9.1.43 (September 23, 2020)
+------------------------------
+
+**Bug fixes**
+
+* Enable all admins to upgrade apps versions.
+* Fix `System.producer_elements` property error by removing unneeded `@property` decorator added in Version 0.9.1.42 to `get_producer_elements`.
+* Gracefully handle missing ElementControl in `System.control_implementation_as_dict` method to avoid failure to render SSP output templates
+* Improve compliance app (questionnaire) upgrade to see upgrades as compatible even if compliance app version changed or the id of modules changes (which is expected to happen in an upgrade).
+
+**UI changes**
+
+* Changes to portfolio detail page to match style of similar pages.
+* Stop displaying content recommendations on project page and portfolio pages after a project is 1 or higher.
+
+v0.9.1.42 (September 22, 2020)
 ------------------------------
 
 **UI changes**
@@ -33,6 +79,35 @@ v0.9.1.40 (September 17, 2020)
 **Bug fixes**
 
 * Do not show link to question on imputed answers. Separate test for unanswered question and imputed question in rendering HTML navigation for question. (#1015)
+
+v0.9.1.41 (September 20, 2020)
+------------------------------
+
+Enable upgrade of project root_task to more recent version.
+
+**UI changes**
+
+* Convert project settings modal to a separate route, view, and page template.
+* Add section on project settings page to upgrade project root_task to more recent version.
+* Improve ordering of settings option on new project settings page.
+
+**Data changes**
+
+* Add new methods to Project model to support managing and upgrading project's root_task app after the app has been loaded into the database.
+
+**Developer changes**
+
+* Add management command `upgrade_project` to upgrade a project to a newer version of an app, after the app has been loaded into the database from the admin.
+* Add logger entries for successful and failed attempts to upgrade project's root_task app.
+
+**Test changes**
+
+* Add tests for upgrading project root_task to more recent version.
+
+**Documentation changes**
+
+* Document new logger entries for successful and failed attempts to upgrade project's root_task app.
+>>>>>>> master
 
 v0.9.1.38.2 (September 20, 2020)
 --------------------------------
@@ -98,6 +173,7 @@ v0.9.1.35 (August 08, 2020)
 * Improve rendering of control implemenentation status for better readability. Display as list of options.
 
 **Data changes**
+
 * Add Support model to store customizable support page content.
 
 **Test changes**
