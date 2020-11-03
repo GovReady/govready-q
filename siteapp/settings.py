@@ -73,7 +73,7 @@ ALLOWED_HOSTS = []
 if "host" in environment:
 	ALLOWED_HOSTS = [environment["host"].split(':')[0]]
 	print("WARNING: Use of 'host' environment parameter deprecated. Please use 'govready-url' environment parameter in future.")
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
 	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
 print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 
@@ -328,7 +328,7 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 # always turned on.
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
 	EMAIL_SUBJECT_PREFIX = '[' + GOVREADY_URL.hostname + '] '
 elif "host" in environment:
 	EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
@@ -394,7 +394,7 @@ if environment.get("static"):
 # Construct value from preferred "govready-url" environment parameter and temporarily
 # support the deprecated "https" and "host" environment settings.
 SITE_ROOT_URL = None
-if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname != ""):
 	SITE_ROOT_URL = "{}://{}".format(GOVREADY_URL.scheme, GOVREADY_URL.netloc)
 	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
 elif "host" in environment and "https" in environment:
