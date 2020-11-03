@@ -60,8 +60,6 @@ jobs:
     # vulnerabilities using pyup.io, and run the check.
     - run: pip3 install --user -U safety
     - run: safety check --bare -r requirements.txt
-    - run: python3 manage.py makemigrations
-    - run: python3 manage.py migrate
 
     # Run static code analysis using 'bandit'.
     # Disable warning-like tests:
