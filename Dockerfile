@@ -163,12 +163,18 @@ RUN chown -R application:application local
 # working environment.json file for the remainder of this Dockerfile, downstream
 # packagers using 'FROM govready/govready-q' might want to run additional
 # management commands, so we'll keep it working.
+
 RUN cp local/environment.json /tmp
 RUN chown -R application:application /tmp/environment.json
-RUN ln -sf /tmp/environment.json local/environment.json
 
 # Run the container's process zero as this user.
 USER application
+
+# Change file permissions to secure file
+RUN chmod 0600 /tmp/environment.json
+
+# Create symbolic link
+RUN ln -sf /tmp/environment.json local/environment.json
 
 # Test.
 RUN python3.6 manage.py check
