@@ -410,7 +410,7 @@ class Comment(models.Model):
 class Attachment(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user uploading this attachment.")
     comment = models.ForeignKey(Comment, blank=True, null=True, related_name="attachments", on_delete=models.CASCADE, help_text="The Comment that this Attachment is attached to. Null when the file has been uploaded before the Comment has been saved.")
-    file = models.FileField(upload_to='discussion/attachments', validators=[validate_file_extension],help_text="The attached file.")
+    file = models.FileField(upload_to='discussion/attachments', validators=[validate_file_extension], help_text="The attached file.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)

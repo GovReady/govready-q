@@ -17,9 +17,5 @@ def validate_file_extension(file):
         filechunk_extension = filechunk.extension if filechunk is not None else None
         # If it is not a valid mime or extension that return http response with error message.
         if filechunk is None or filechunk_content_type not in valid_content_types or filechunk_extension not in valid_extensions:
-            return JsonResponse(status=400, data={'status':'error','message': f"The file {file.name} does not have a supported file type"})
-
-
-
-
-
+            return JsonResponse(status=400, data={'status': 'error',
+                                                  'message': f"The file {file.name} does not have a supported file type"})

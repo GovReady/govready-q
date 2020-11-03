@@ -7,6 +7,7 @@ from django.db import transaction
 
 import re
 
+from discussion.validators import validate_file_extension
 from .models import Module, ModuleQuestion, Task, TaskAnswer, TaskAnswerHistory, InstrumentationEvent
 
 import guidedmodules.module_logic as module_logic
@@ -280,6 +281,11 @@ def save_answer(request, task, answered, context, __):
             # just return immediately.
             if value is None:
                 return JsonResponse({ "status": "ok", "redirect": redirect_to() })
+
+            uploaded_file = value
+            validation_result = validate_file_extension(uploaded_file)
+            if validation_result != None:
+                return validation_result
 
         else:
             # All other values come in as string fields. Because
