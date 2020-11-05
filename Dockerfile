@@ -110,8 +110,7 @@ COPY quickstart.sh .
 # to work. It matches what's set in dockerfile_exec.sh.
 RUN mkdir -p local && echo '{ "static": "static_root", "debug": false, "host": "_", "https": false }' > local/environment.json
 RUN python3.6 manage.py collectstatic --noinput
-RUN python3.6 manage.py makemigrations
-RUN python3.6 manage.py migrate
+
 
 # Configure supervisord.
 # a) Wipe out /var/{run,log} because when these directories are mounted with
