@@ -66,17 +66,17 @@ fi
 
 # jQuery (MIT License)
 download \
-  https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js \
+  https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js \
   $VENDOR/jquery.js \
-  '0925e8ad7bd971391a8b1e98be8e87a6971919eb5b60c196485941c3c1df089a'
+  'f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d'
 
 # Bootstrap (MIT License)
 download \
-  https://github.com/twbs/bootstrap/releases/download/v3.3.7/bootstrap-3.3.7-dist.zip \
+  https://github.com/twbs/bootstrap/releases/download/v3.4.1/bootstrap-3.4.1-dist.zip \
   /tmp/bootstrap.zip \
-  'f498a8ff2dd007e29c2074f5e4b01a9a01775c3ff3aeaf6906ea503bc5791b7b'
+  'd49793cf773cbd393ac2cf340c3b4ddab5365fa7c292098ac07e12eab3efd92e'
 unzip -d /tmp /tmp/bootstrap.zip
-mv /tmp/bootstrap-3.3.7-dist $VENDOR/bootstrap
+mv /tmp/bootstrap-3.4.1-dist $VENDOR/bootstrap
 rm -f /tmp/bootstrap.zip
 
 # jsGrid (MIT License)
@@ -170,9 +170,9 @@ done
 
 # quill rich text editor (BSD License)
 download \
-  https://github.com/quilljs/quill/releases/download/v1.3.6/quill.tar.gz \
+  https://github.com/quilljs/quill/releases/download/v1.3.7/quill.tar.gz \
   /tmp/quill.tar.gz \
-  'a7e8b79ace3f620725d4fb543795a4cf0349db1202624c4b16304954745c3890'
+  'ca784fe3b83f3b2b93b443a953e0b34a27a2178618501b0841eebcd62c9785c2'
 tar -zx -C $VENDOR -f /tmp/quill.tar.gz
 rm -f /tmp/quill.tar.gz
 
