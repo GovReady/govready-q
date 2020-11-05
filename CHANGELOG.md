@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.45.1 (November 5, 2020)
+------------------------------
+
+**Developer changes**
+
+* Update various Python libraries (#1052)
+* Update jquery to 3.5.1, quill to 1.3.7, bootstrap to 3.4.1 (#1052)
+
 v0.9.1.45 (October 24, 2020)
 ----------------------------
 
