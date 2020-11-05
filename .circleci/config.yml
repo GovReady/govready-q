@@ -1,6 +1,8 @@
 # A CircleCI configuration file because we do continuous integration testing!
 
-version: 2
+version: 2.1
+orbs:
+  twistcli: twistlock/twistcli-scan@1.0.5
 
 jobs:
   build:
@@ -33,6 +35,7 @@ jobs:
             pip install --user -r requirements_mysql.txt
             # pip install --user -r requirements_util.txt
             ./fetch-vendor-resources.sh
+
 
     # This is adapted from https://github.com/circleci/circleci-images/blob/master/shared/images/Dockerfile-browsers.template
     # but it still says chromium crashes when launched from selenium tests. Maybe because chromium
@@ -85,3 +88,30 @@ jobs:
         path: coverage.xml
     - store_artifacts:
         path: htmlcov
+
+  govready_docker_build:
+      executor: twistcli/default
+      steps:
+        - checkout
+        - run: mkdir workspace
+        - run: 'docker build -t govready-q/${CIRCLE_BRANCH}_image:test .'
+        - run: 'docker save govready-q/${CIRCLE_BRANCH}_image:test -o workspace/image.tar'
+        - persist_to_workspace:
+            root: ./workspace
+            paths:
+              - image.tar
+
+
+workflows:
+  scan-image:
+    jobs:
+      - govready_docker_build
+      - twistcli/scan-image:
+          requires:
+            - govready_docker_build
+          context: tl_scan_context
+          image: 'govready-q/${CIRCLE_BRANCH}_image:test'
+          image-tar: 'image.tar'
+          vuln-thresh: critical
+          comp-thresh: ''
+          only-fixed: true
