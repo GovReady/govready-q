@@ -1,10 +1,10 @@
+from django.contrib.auth.models import Permission
+from django.db.models import Q
 from django.test import TestCase
-from django.conf import settings
-
 from siteapp.models import Organization, Project, User
-from .models import Module, Task, TaskAnswer
-from .module_logic import *
 from .app_loading import load_app_into_database
+from .models import Module, Task, AppVersion
+from .module_logic import *
 
 
 class TestCaseWithFixtureData(TestCase):
@@ -18,7 +18,6 @@ class TestCaseWithFixtureData(TestCase):
 
         # Load modules from the fixtures directory.
         from .models import AppSource, AppVersion
-        from .management.commands.load_modules import Command as load_modules
         from .app_source_connections import MultiplexedAppSourceConnection
         src = AppSource.objects.create(
             slug="fixture",
@@ -29,11 +28,14 @@ class TestCaseWithFixtureData(TestCase):
         )
         with MultiplexedAppSourceConnection(ms for ms in AppSource.objects.all()) as store:
             for app in store.list_apps():
-                load_app_into_database(app)
+                appver = load_app_into_database(app)
+                appver.show_in_catalog = True
+                appver.save()
         self.fixture_app = AppVersion.objects.get(source=src, appname="simple_project")
 
         # Create a dummy organization, project, and user.
-        self.user = User.objects.create(username="unit.test")
+        self.user = User.objects.create(username="unit.test", email='regular@example.org')
+        self.superuser = User.objects.create_superuser(username="superunit.test", email='super@example.org')
         self.organization = Organization.objects.create(name="My Supreme Organization")
         self.project = Project.objects.create(organization=self.organization)
         self.project.root_task = Task.objects.create(module=Module.objects.get(app=self.fixture_app, module_name="app"), project=self.project, editor=self.user)
@@ -481,8 +483,6 @@ class RenderTests(TestCaseWithFixtureData):
         def test(*args, **kwargs):
             self._test_render_single_question_md("question_types_choice", *args, **kwargs)
 
-        from html import escape
-
         # TODO: Update tests for datagrid question
         # test("q_datagrid", [], "", []) # renders empty, but impute value is the list
         # test("q_datagrid.text", [], escape("<nothing chosen>"))
@@ -760,3 +760,80 @@ class ImportExportTests(TestCaseWithFixtureData):
                     # Check other value types for equality.
                     self.assertEqual(b.get(k), v, "->".join(path+[k]))
         check_dict(task_dict, export, [module_name, question_name])
+
+class ComplianceAppTests(TestCaseWithFixtureData):
+    ## COMPLIANCE APP VISIBILITY DATA TESTS ##
+
+    def add_perm_fetch(self):
+        """
+        Adds the view appsource permission to the given user and fetches the updated user
+        """
+
+        # add the view_appsource permission and test again
+        self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+        self.user = User.objects.get(pk=self.user.pk)
+
+
+    def app_filter(self, role_bool):
+
+        app_filter = AppVersion.objects \
+            .filter(show_in_catalog=True) \
+            .filter(source__is_system_source=self.fixture_app.source.is_system_source) \
+            .filter(Q(source__available_to_role=role_bool)) \
+            .filter(Q(source__available_to_all_individuals=self.fixture_app.source.available_to_all_individuals) | Q(source__available_to_individual=self.user)) \
+            .filter(Q(source__available_to_all=self.fixture_app.source.available_to_all) | Q(source__available_to_orgs=self.organization))
+        return app_filter
+
+    def role_bool(self):
+        """
+        Returns a boolean if the given
+        """
+        role_bool = self.user.has_perm("guidedmodules.view_appsource")
+        return role_bool
+
+    def test_available_to_individuals(self):
+        """
+        Testing the limitation of compliance app view by individual
+        """
+
+        # Regular user does not have permission
+        self.assertIsNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
+
+        # Compliance app view only available to certain individuals
+        self.fixture_app.source.available_to_individual.add()
+
+        # Given permission to this individual user
+        self.add_perm_fetch()
+        # Should return
+        self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
+
+    def test_available_to_roles(self):
+        """
+        Users without viewing permission should not be able to request compliance apps
+        """
+
+        # In this scenario a regular user will not have permission to view compliance apps
+        self.user.user_permissions.remove(Permission.objects.get(codename='view_appsource'))
+
+        # User won't have viewing permission
+        self.assertFalse(self.user.has_perm("guidedmodules.view_appsource"))
+
+        self.add_perm_fetch()
+
+        self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
+        
+    def test_available_to_organizations(self):
+        """
+        Testing the limitation of compliance app view by organization
+        """
+
+        # Regular user does not have permission
+        self.assertIsNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
+
+        # Compliance app view only available to a certain organizations
+        self.fixture_app.source.available_to_orgs.add(self.organization)
+
+        # Given permission to this individual user
+        self.add_perm_fetch()
+        # Should return
+        self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
