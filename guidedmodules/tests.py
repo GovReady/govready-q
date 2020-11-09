@@ -34,8 +34,8 @@ class TestCaseWithFixtureData(TestCase):
         self.fixture_app = AppVersion.objects.get(source=src, appname="simple_project")
 
         # Create a dummy organization, project, and user.
-        self.user = User.objects.create(username="unit.test", email='regular@email.org')
-        self.superuser = User.objects.create_superuser(username="superunit.test", email='super@email.org')
+        self.user = User.objects.create(username="unit.test", email='regular@example.org')
+        self.superuser = User.objects.create_superuser(username="superunit.test", email='super@example.org')
         self.organization = Organization.objects.create(name="My Supreme Organization")
         self.project = Project.objects.create(organization=self.organization)
         self.project.root_task = Task.objects.create(module=Module.objects.get(app=self.fixture_app, module_name="app"), project=self.project, editor=self.user)
