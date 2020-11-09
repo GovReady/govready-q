@@ -797,7 +797,7 @@ class ComplianceAppTests(TestCaseWithFixtureData):
         """
 
         # Regular user does not have permission
-        self.assertIsNone(ComplianceAppTests.app_filter(self, self.role_bool()))
+        self.assertIsNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
 
         # Compliance app view only available to certain individuals
         self.fixture_app.source.available_to_individual.add()
@@ -805,7 +805,7 @@ class ComplianceAppTests(TestCaseWithFixtureData):
         # Given permission to this individual user
         self.add_perm_fetch()
         # Should return
-        self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()))
+        self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
 
     def test_available_to_roles(self):
         """
@@ -820,7 +820,7 @@ class ComplianceAppTests(TestCaseWithFixtureData):
 
         self.add_perm_fetch()
 
-        self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()))
+        self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
         
     def test_available_to_organizations(self):
         """
@@ -828,7 +828,7 @@ class ComplianceAppTests(TestCaseWithFixtureData):
         """
 
         # Regular user does not have permission
-        self.assertIsNone(ComplianceAppTests.app_filter(self, self.role_bool()))
+        self.assertIsNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
 
         # Compliance app view only available to a certain organizations
         self.fixture_app.source.available_to_orgs.add(self.organization)
@@ -836,4 +836,4 @@ class ComplianceAppTests(TestCaseWithFixtureData):
         # Given permission to this individual user
         self.add_perm_fetch()
         # Should return
-        self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()))
+        self.assertIsNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
