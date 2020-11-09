@@ -836,4 +836,4 @@ class ComplianceAppTests(TestCaseWithFixtureData):
         # Given permission to this individual user
         self.add_perm_fetch()
         # Should return
-        self.assertIsNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
+        self.assertIsNotNone(ComplianceAppTests.app_filter(self, self.role_bool()).first())
