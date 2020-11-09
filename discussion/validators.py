@@ -7,8 +7,15 @@ def validate_file_extension(file):
     Validates the file extension and type
     """
 
-    valid_extensions = ['.zip', '.pdf', '.png', '.jpg', ".doc", ".docx", ".vsd", ".xls", ".xlsx", ".csv", ".ppt", ".pptx"]
-    valid_content_types = ['application/zip', 'application/pdf', 'image/png', 'image/jpeg', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.visio', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv', 'application/csv', 'application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation']
+    valid_extensions = [".zip", ".pdf", ".png", ".jpg", ".doc", ".docx", ".vsd", ".xls", ".xlsx", ".csv", ".ppt", ".pptx", ".txt", ".md", ".yaml", ".yml"]
+    valid_content_types = ['application/zip', 'application/pdf', 'image/png', 'image/jpeg', 'application/msword',
+                           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                           'application/vnd.visio', 'application/vnd.ms-excel',
+                           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv',
+                           'application/csv', 'application/vnd.ms-powerpoint',
+                           'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'text/plain',
+                           'text/markdown']
+
     for chunk in file.chunks():
         # Archive and image filetypes will display chunks since it only looks at the first 261 bytes
         filechunk = filetype.guess(chunk)
