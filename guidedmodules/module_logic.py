@@ -1087,7 +1087,7 @@ class ModuleAnswers(object):
 
             yield (q, a, value_display)
 
-    def render_output(self, use_data_urls=False, settings=dict()):
+    def render_output(self, use_data_urls=False):
         # Now that all questions have been answered, generate this
         # module's output. The output is a set of documents. The
         # documents are lazy-rendered because not all of them may
