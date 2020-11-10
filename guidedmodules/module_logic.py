@@ -1,10 +1,6 @@
 from django.conf import settings
 from jinja2.sandbox import SandboxedEnvironment
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 def get_jinja2_template_vars(template):
     from jinja2 import meta, TemplateSyntaxError
     env = SandboxedEnvironment()
@@ -1264,7 +1260,6 @@ class TemplateContext(Mapping):
                     sca = Catalog.GetInstance(catalog_key=catalog_key)
                     control_catalog = sca.get_flattened_controls_all_as_dict(parameter_values)
                 except:
-                    logger.exception("getitem[control_catalog]")
                     control_catalog = None
                 return control_catalog
             if item == "system":
