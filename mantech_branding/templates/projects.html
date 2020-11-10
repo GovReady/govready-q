@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% load guardian_tags %}
+{% load q %}
+{% load humanize %}
+
+{% block title %}
+Your Compliance Projects
+{% endblock %}
+
+{% block head %}
+<style>
+  .btn .glyphicon { margin-right: 6px; }
+  .btn.btn-success .glyphicon { color: #FFF; }
+
+  .lifecycle {
+    margin-bottom: 30px;
+  }
+
+  .lifecycle h2 {
+    margin: 0 0 1em 0;
+  }
+
+  .lifecycle .stage {
+    margin: 0 -10px;
+    padding: 10px;
+    background-color: #D0D1D2;
+    border-radius: 5px;
+    max-width: 530px; /* so individual cards don't stretch across whole page */
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
+  }
+
+  .lifecycle .stage h3 {
+    color: black;
+    margin: 5px 0 0 0;
+    text-align: center;
+  }
+
+  .lifecycle .stage .stage-subhead {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .project {
+    background-color: white;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 3px;
+    border-bottom: 1px solid rgb(204, 204, 204);
+  }
+
+  .project-image {
+    width: 20px;
+    float: left;
+    margin: 4px 0 5px 8px;
+  }
+
+  .project-text {
+  }
+
+  .project-text h4 {
+    margin: 0;
+    font-weight: bold;
+    font-size: inherit;
+  }
+
+  .project-text > * {
+    margin: .5em 0 0 0;
+    font-size: 13px;
+  }
+
+  h1.mini {
+    font-size: 16px;
+    font-family: Hind, sands-serif;
+    line-height: 22px;
+    color: rgba(51, 51, 51);
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+  }
+
+  .luna-box {
+    border: 1px solid rgb(210, 210, 210);
+    min-height: 160px;
+    margin-top: 30px;
+    font-size: .8em;
+    border-radius: 4px;
+    padding: 20px 20px 0px 0px;
+  }
+
+  .luna-box div.glyphicon {
+    font-size:3em;
+    color: rgb(160, 210, 160);
+    margin:30px 0px 0px 40px;
+  }
+
+</style>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div style="margin-top: 30px">
+
+<div class="container">
+
+<div style="float: right; margin: 0 0.5em 0em 5em;">
+  <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#"" class=" btn btn-success">Start a project</a>
+</div>
+
+{% if projects|length > 0 %}
+<h2 class="">Projects</h2>
+{% else %}
+<h2>Welcome to GovReady-Q</h2>
+
+<p>Assess, test, and authorize together</p>
+{% endif %}
+
+{% if projects|length > 0 %}
+<p>You have access to {{ projects|length }} project{{ projects|pluralize }}</p>
+
+<div class="container">
+<div class="row">
+  <div class="col-xs-10 col-md-5"><strong>Project</strong></div>
+  <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
+  <div class="col-xs-6 col-sm-2"><strong>Portfolio</strong></div>
+  <div class="col-xs-6 col-sm-2"><strong>Role</strong></div>
+  <div class="col-xs-12 col-md-2"><strong>Updated</strong></div>
+</div>
+{% endif %}
+
+{% for project in projects %}
+<div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+  <div class="col-xs-10 col-md-5">
+    {% if project.root_task.get_app_icon_url %}
+      <span class="project-image">
+        <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive" alt="App Icon">
+      </span>
+      &nbsp;&nbsp;&nbsp;
+    {% else %}
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% endif %}
+    <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
+  </div>
+
+  <div class="col-xs-6 col-sm-1">{{project.id}}</div>
+  <div class="col-xs-6 col-sm-2">{{project.portfolio.title}}</div>
+
+  {% get_obj_perms request.user for project as "perms" %}
+  {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
+  {% if "delete_project" in perms %}
+  <div class="col-xs-6 col-sm-2">Owner</div>
+  {% elif "change_project" in perms%}
+  <div class="col-xs-6 col-sm-2">Project Member</div>
+  {% elif "portfolio_perms"%}
+  <div class="col-xs-6 col-sm-2">Portfolio Member</div>
+  {% endif %}
+
+  <div class="col-xs-12 col-md-2" style="text-align: left;">
+      <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
+      {{project.root_task.updated|naturaltime}}
+      <!-- Started: {{project.created|naturaltime}} -->
+  </div>
+</div>
+
+{% endfor %}
+
+{% if projects|length < 1 %}
+<!-- Display grid of options -->
+  <div class="row">
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon glyphicon-list-alt"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#"">Start a project</a></h3>
+          <p>Projects are your organization's questionnaires, assessments and guides needed for authorizations.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon glyphicon-folder-open"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="/portfolios/new">Create a Portfolio</a></h3>
+          <p>Portfolios are a way to organize and manage related projects.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-heart-empty"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="love-assessments">Fall in love with assessments</a></h3>
+          <p>Assessing, learning, and improving is one of the most powerful things about being  human.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="luna-box">
+        <div class="col-md-3">
+          <div class="glyphicon glyphicon-duplicate"></div>
+        </div>
+        <div class="col-md-9">
+          <h3><a href="https://govready-q.readthedocs.org">Learn more about GovReady-Q</a></h3>
+          <p>Checkout our documentation to learn how to take full advantage of GovReady-Q.
+          </p>
+        </div>
+      </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

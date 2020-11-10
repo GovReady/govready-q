@@ -1,0 +1,210 @@
+body {
+    padding-top: 50px !important; /* the !important is to fix a bug with the dashboard integration, remove it eventually */
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+    overflow-y: scroll;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    font-family: 'Hind', sans-serif;
+    color: #000000 !important;
+background-color: #D0D1D2;
+}
+
+body, blockquote {
+    font-size: 16px;
+}
+
+.navbar .notification.unread a span {
+    font-weight: bold;
+}
+
+#context-bar {
+    padding: 14px 0 8px 0;
+    margin-bottom: 8px;
+}
+
+#context-bar .breadcrumb {
+    margin: 0;
+    background-color: #D0D1D2;
+    padding: 8px;
+    cursor: default;
+}
+
+#context-bar .breadcrumb a {
+    color: #000000;
+}
+
+.glyphicon-globe {
+    color: #D0D1D2;
+}
+
+h1, h2 {
+    font-family: 'Lato', sans-serif;
+    font-weight: bold;
+}
+
+h1 {
+    font-size: 44px;
+}
+
+h2 {
+    font-size: 20px;
+}
+
+h3 {
+    font-size: 18px;
+}
+
+.btn {
+    white-space: normal;
+    font-size: inherit;
+}
+
+.btn.btn-sm {
+    font-size: 12px;
+}
+
+footer {
+    margin-top: 60px;
+    font-size: .75em;
+}
+
+footer .container-fluid {
+    padding: 8px;
+}
+
+.ql-editor {
+    min-height: 6em;
+}
+
+.question-answer[data-answer-type="skipped"] {
+    background-color: #F49522;
+    padding: 1px 1px;
+}
+
+span.question-answer[data-reviewed] {
+    background-repeat: repeat-x;
+    background-origin: content-box;
+    background-clip: content-box;
+    background-position-y: 1.15em;
+    background-size: .5em .35em;
+}
+
+div.question-answer[data-reviewed] {
+    margin-bottom: 1em;
+    padding-right: .66em;
+    background-repeat: repeat-y;
+    background-position-x: 100%;
+    background-size: .5em .4em;
+}
+
+div.question-answer[data-reviewed] p {
+    margin: 0;
+}
+
+div.question-answer[data-reviewed] a {
+    text-decoration: underline;
+}
+
+.question-answer[data-reviewed="0"] {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAA4UlEQVQY063PywqCQBTG8WMNXegyI+0CG9z0ALUpjKBlj9d7tPAhFNskbSI3EipMEEKadiWjxYh0cdny/Djw8ReezwQAACC5n/br+dm3CB23ulMu/ka1tZnAnx7XIHC0mJn1do/QEaqQVHarqigj/hE6+tFbNKWBKE+KpdqXoOR+Chzt6C2wNMRUKZZqv4L26/ktcJrSAFMlW4nYMhMAQGffwh0ldyUV10CEjnFnmLvCJXT1j7qILRvt/kcdM8uE/rHO36iXw/arLmbme13B1mZVURblCb9D1whdvUxoJgDwAuRFz6Fquj96AAAAAElFTkSuQmCC);
+}
+
+.question-answer[data-reviewed="1"] {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAA30lEQVQY02P89fMPAwMDAwPDj++/92y4cf/WG2MbOStnZYjIgW23Vi7czQhR9PnTj4snnly/8ELTQELfQoaXjwMicuPSCxlFQRa4ikunn+qZSpvYynNwsqKJMP34/hvO17eQ4eBkxRRh2bPhxvPHHyF8uC1Xzz+HizAwMLDcv/XG0FIWqy0Qkcunn7IY28jpmkpjtQUicv74YxTfXT3/XNtQEtne6xdeSMryU9F3B7bdenL/PZrvrl94gew7ZqYvKlYO2lYuytw87AwMDGePPDx37LGskpCNuwpEhIGBAQDIZc55AMSNhQAAAABJRU5ErkJggg==);
+}
+
+.label[data-reviewed="0"] {
+    background-color: #F49522;
+}
+
+.label[data-reviewed="1"] {
+    background-color: #54667F;
+}
+
+.label[data-reviewed="2"] {
+    background-color: #000000;
+}
+
+.textcomplete-item {
+    cursor: pointer;
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-container{
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+
+}
+
+/*glyph overrides*/
+
+    /*  color: rgba(244, 149, 34, 1)*/
+
+.glyphicon{
+    color: rgba(29, 46, 93, 1)
+}
+.glyphicon-plus, .glyphicon-cog, .glyphicon-dashboard{
+    color: rgba(244, 149, 34, 1)
+}
+/*Bootstrap overrides*/
+a{
+  color: #1D2E5D !important;
+}
+
+kbd, .btn-default .badge {
+  background-color: #000000 !important;
+}
+
+pre, legend, .btn.focus, .btn-default, .btn-default:focus, .btn-default.focus, .btn-default:hover, .open > .dropdown-toggle.btn-default, .open > .dropdown-toggle.btn-default.focus, .dropdown-menu > li > a   {
+ color: #000000 !important;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: #000000 !important;
+}
+
+.navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+.navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+      color: #000000 !important;
+  }
+
+.navbar-default .navbar-link:hover {
+  color: #000000 !important;
+}
+
+button.list-group-item .list-group-item-heading {
+border-color: #000000 !important;
+}
+
+.btn-success {
+    color: #ffffff !important;
+    background: #54667F !important;
+    border-color: #000000 !important;
+}
+.btn-danger{
+
+    background: #df2327 !important;
+    border-color: #000000 !important;
+}
+.btn-success:hover {
+    background: #000000 !important;
+}
+
+.navbar-inverse .navbar-brand, .navbar-inverse .navbar-text, .navbar-inverse .navbar-nav > li > a  {
+  color: #ffffff !important;
+}
+.container{
+background-color: #D0D1D2;
+}
+.badge {
+background-color: #D0D1D2;
+}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+Your Compliance Portfolios
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">Your Compliance Portfolios</li>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+    <div style="float: right; margin: 1em 0.5em 0em 5em;">
+      <a id="new-portfolio" href="/portfolios/new" class="btn btn-success">Create a portfolio</a>
+    </div>
+
+    <h2 class="">Portfolios</h2>
+    {% if portfolios|length > 0 %}
+    <p>You have access to {{ portfolios|length }} portfolio{{ portfolios|pluralize }}</p>
+    {% else %}
+    <p>You do not have access to any portfolios.</p>
+    {% endif %}
+
+    {% include "portfolios/portfolios_table.html" with portfolios=portfolios %}
+ </div>
+    {% endblock %}

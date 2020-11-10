@@ -1,0 +1,41 @@
+<!-- List of portfolios -->
+{% load humanize %}
+{% load guardian_tags %}
+
+{% if portfolios %}
+<div class="table-container">
+<div class="row"  style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+  <div class="col-xs-10 col-md-5"><strong>Portfolio</strong></div>
+  <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
+  <div class="col-xs-6 col-sm-2"><strong>Role</strong></div>
+  <div class="col-xs-12 col-md-2"><strong>Created</strong></div>
+
+{% endif %}
+
+  {% for portfolio in portfolios %}
+  <div class="row">
+
+    <div class="col-xs-10 col-md-5">
+      <div>
+        <span class="glyphicon glyphicon-folder-close"></span>&nbsp;&nbsp;&nbsp;
+        <a href="/portfolios/{{portfolio.id}}/projects" id="portfolio_{{portfolio.title}}" style="color: black;">{{portfolio.title}}</a>
+      </div>
+    </div>
+
+    <div class="col-md-1">{{portfolio.id}}</div>
+
+    {% get_obj_perms request.user for portfolio as "perms" %}
+    {% if "can_grant_portfolio_owner_permission" in perms %}
+    <div class="col-md-2">Owner</div>
+    {% elif "change_portfolio" in perms%}
+    <div class="col-md-2">Portfolio Member</div>
+    {% else %}
+    <div class="col-md-2">Project Member</div>
+    {% endif %}
+
+    <div class="col-xs-12 col-md-2" style="text-align: left;">
+        {{portfolio.created|naturaltime}}</div>
+  </div>
+  {% endfor %}
+
+</div>

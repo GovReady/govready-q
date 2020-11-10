@@ -722,7 +722,7 @@ class HtmlAnswerRenderer:
                 value = """
                 <p>
                   <a href="%s" class="user-media">
-                    <img src="%s" class="img-responsive" style=" border: 1px solid #333; margin-bottom: .25em;">
+                    <img src="%s" class="img-responsive" style=" border: 1px solid #000000; margin-bottom: .25em;">
                     <div style='font-size: 90%%;'>%s</a></div>
                   </a>
                 </p>""" % (

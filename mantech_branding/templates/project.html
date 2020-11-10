@@ -1,0 +1,667 @@
+{% extends "project-base.html" %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{title}}
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<style>
+.question-column {
+  margin: 0 -10px;
+  padding: 10px;
+  background-color: #D0D1D2;
+  border-radius: 5px;
+  max-width:66vw;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 2px 3px rgba(0, 0, 0, .2);
+}
+{% if layout_mode == "rows" %}
+  .question-column {
+    padding: 0px 30px 0px 30px;
+}
+{% endif %}
+{% if layout_mode == "columns" %}
+  .question-column h2 {
+    color: black;
+    margin: 5px 0 10px 0;
+    text-align: center;
+  }
+
+.question-group {
+
+}
+  .question-group h3 {
+    font-size: inherit;
+    font-weight: bold;    
+  }
+  .question-group > .row {
+    margin: 5px 0;
+  }
+
+.question {
+  background-color: white;
+  padding-top: 10px; /* can't mess with side padding because it is a bootstrap column */
+  padding-bottom: 10px; /* can't mess with side padding because it is a bootstrap column */
+  margin-bottom: 15px;
+  border-radius: 3px;
+  border-bottom: 1px solid rgb(204, 204, 204);
+  /*border: 1px solid #D0D0D0;*/
+}
+
+.question-icon {
+  width: 30px;
+  float: right;
+  margin: 4px 0 5px 8px;
+}
+
+{% else %}
+.question-group {
+  margin: 10px 0 20px 0;
+  padding-top: 16px;
+}
+
+h2.question-column-title {
+}
+
+h3.question-group-title {
+  color: black;
+  font-weight: bold;
+  padding: 0 18px 14px 0;
+  margin: 0;
+}
+
+.question {
+  background-color: white;
+  border-bottom: 1px solid rgb(204, 204, 204);
+  margin-bottom: 15px;
+  padding-top: .75em;
+  padding-bottom: .75em;
+  {% if layout_mode == "grid" %}
+    text-align: center;
+    margin-top: 10px;
+  {% endif %}
+  border-radius: 15px; /* good for highlighting */
+
+}
+  .question:hover {
+    background-color: rgb(246,250,249);
+  }
+  .question .question-icon {
+    margin: 0 auto;
+    width: 96px;
+    height: 96px;
+    border: 1px solid #DDD;
+    padding:12px;
+    border-radius: 10px;
+    background-color: #DDD;
+  }
+  .question .question-title {
+    margin-top: .5em;
+    color: #222;
+  }
+
+  .question-title > .btn {
+    margin: 8px 0 0 0;
+  }
+  .question .invitation {
+    font-size: 14px;
+    line-height: 128%;
+  }
+{% endif %}
+
+.question .question-title {
+  line-height: 124%;
+}
+
+#project-members {
+	margin-top: 1em;
+}
+#project-members .role {
+  font-style: italic;
+  /*font-size: 85%;*/
+}
+#project-members .action {
+  font-size: 85%;
+}
+
+.authoring-tool-hidden {
+  display: none; /* hidden by default */
+}
+.authoring-tool-edit-question {
+  position: absolute;
+  right: 0;
+  color: #31708f;
+}
+#action-buttons button {
+  width: 140px;
+}
+#action-buttons a {
+  margin: .25em 0;
+}
+</style>
+{% endblock %}
+
+{% block action_buttons %}
+  <div class="btn-group" role="group" aria-label="action buttons group">
+    {% if project.system is not None %}
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/controls/selected';">
+        <em class="glyphicon glyphicon-book"></em> Controls</a>
+      </button>
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/components/selected';">
+        <em class="glyphicon glyphicon-tags"></em>&nbsp; Components</a>
+      </button>
+      <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
+        <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
+      </button>
+    {% endif %}
+    {% if not project.is_account_project or project.is_deletable %}
+      <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/settings';">
+        <em class="glyphicon glyphicon-cog"></em> Settings</a>
+      </button>
+    {% endif %}
+    {% if send_invitation.can_add_invitee_to_team %}
+      <button id="show-project-invite" class="btn btn-sm  btn-default" onclick="invite_user_into_project()">
+        <em class="glyphicon glyphicon-user"></em><em class="glyphicon glyphicon-plus"></em>
+        Invite
+      </button>
+    {% endif %}
+
+    <button id="review-answers" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/list';">
+      <em class="glyphicon glyphicon-list"></em>
+      Review
+    </button>
+
+    {% if has_outputs %}
+      <button id="related-controls" class="btn btn-sm  btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/outputs';">
+        <em class="glyphicon glyphicon-th"></em>
+        Documents
+      </button>
+    {% endif %}
+
+    <button class="btn btn-sm btn-default" onclick="window.location = '{{project.get_absolute_url|escapejs}}/api';">
+      <em class="glyphicon glyphicon-sort"></em>
+      API Docs
+    </button>
+
+    {% if can_upgrade_app %}
+      <button class="btn btn-sm btn-default" onclick="upgrade_app({{project.root_task.module.app.id}});">
+        <em class="glyphicon glyphicon-upload"></em>
+        Upgrade Project
+      </button>
+    {% endif %}
+
+    {% if authoring_tool_enabled %}
+      <button id="open-authoring-tools" class="btn btn-sm btn-default" onclick="$('.authoring-tool-hidden').toggle();">
+        <em class="glyphicon glyphicon-pencil"></em>
+        Authoring Tool
+      </button>
+    {% endif %}
+  </div>
+
+    {# action buttons #}
+    {% if action_buttons %}
+      {% for q in action_buttons %}
+        <div style="margin-top: 1em">
+          {% if can_start_task and q.can_start_new_task %}
+            <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="project" value="{{project.id}}"/>
+              <input type="hidden" name="question" value="{{q.question.key}}"/>
+              <input type="hidden" name="previous" value="project"/>
+              <a class="btn btn-default" style="background: white"
+                href="#" onclick="$(this).parent('form').submit(); return false;">
+                {{q.question.spec.title}} &raquo;
+              </a>
+            </form>
+          {% else %}
+          <a id="question-{{q.question.key}}"
+            class="btn btn-default" style="background: white"
+            href="{{q.task.get_absolute_url}}?previous=project">
+            {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
+          </a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% endif %}
+{% endblock %}
+
+{% block above_title %}
+    {% if authoring_tool_enabled %}
+      <center style="font-size: 90%;" class="authoring-tool-hidden"><p class="text-info">
+        You are in author mode. Authoring tools have been enabled for this module.
+      </p></center>
+
+      <center style="font-size: 90%;" class="authoring-tool-hidden">
+      <p>
+      <a href="#" onclick="show_authoring_tool_module_editor(); return false;" style="margin: 0 1em;">
+        <span class="glyphicon glyphicon-pencil"></span>
+        Edit App
+      </a>
+
+      <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
+      <span class="glyphicon glyphicon-plus"></span>
+      Add Question
+      </a>
+
+      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
+      <span class="glyphicon glyphicon-download"></span>
+      Download Source
+      </a>
+      </p>
+    </center>
+    {% endif %}
+{% endblock %}
+
+{% block body_content %}
+    <div class="row">
+      <div class="col-sm-12" style="margin-bottom:1em;">
+        {% if project.root_task.module.spec.introduction %}
+          <p style="margin: 1em 0;">
+          {{project.root_task.render_introduction|safe}}
+          </p>
+        {% endif %}
+
+        {% if project.root_task.module.spec.is_app_stub %}
+          {# This project is tied to an app that has not yet been imported. #}
+          <h2>Activate App</h2>
+          <p>This app must be activated by an administrator of your organization. Send them <a href="javascript:invite_user_into_project()">an invitation</a> to join this project. When they get here, they&rsquo;ll be able to activate the app.</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="row">
+    {% with ncolumns=columns|length %}
+    {% for column in columns %}
+      <div class="col-md-{{12|div:ncolumns|floatformat:0}}">
+        <div class="question-column">
+            {% if column.title %}
+              <h2 class="question-column-title">{{column.title}}</h2>
+            {% endif %}
+
+            {% for group in column.groups %}
+            {% if group.title %}<div><a id="{{group.title}}"></a>&nbsp;</div>{% endif %}
+            <div class="question-group">
+
+              {% if group.title %}
+              <h3 class="question-group-title">{{group.title}}</h3>
+              {% endif %}
+
+              <div class="row">
+
+              {% for q in group.questions %}
+                <div id="question-{{q.question.key}}"
+                  {% if q.task  %}data-task-id="{{q.task.id}}"{% endif %}
+                  class="
+                    {# The layout of the project page is either a grid of components or a vertical list of components. #}
+                    {% if layout_mode == "grid" %}col-sm-3 col-lg-2{% else %}col-xs-12{% endif %}
+                    question
+                    "
+                    >
+
+                    {# The user may not have permission to actually start a Task, however. If not, show the same UI but without the form element that actually makes the request to start the Task. #}
+
+                    {% if can_start_task %}
+
+                      {# We need one of three forms here. If this is a module-type question and it's been answered already (it has a Task answer), then we simply link to that Task. Otherwise if it's not answered or if it's a module-set type quesion that can be answered multiple times, we show a form. If the question is answered by a particular module, clicking the icon submits a form that creates a new Task and redirects to it. If this question instead has a "protocol" field, then the user is simply redirected to the Apps Catalog and is presented with apps that satisfy the protocol. #}
+
+                      {% if not q.can_start_new_task %}
+                        {# This is a module-type question that has been started. Clicking the question doesn't start a new task --- instead, it's just a link to the started Task. #}
+
+                        {# Link to the Task. #}
+                        {# This is a module-type question that has been answered already (e.g., it has a Task answer). We are making the display of the information about the module one big link. Here we open the link tag and put everything that follows, including the progress bar and the buttons will clickable. #}
+                        <a href="{{q.task.get_absolute_url}}" style="display: block;">
+
+                      {% elif not q.question.spec.protocol %}
+                        {# Start a task directly using the module type in the specification. #}
+                        <form class="start-task" method="post" action="/tasks/start"
+                          onclick="$(this).submit();" style="cursor: pointer">
+                          {% csrf_token %}
+                          <input type="hidden" name="project" value="{{project.id}}"/>
+                          <input type="hidden" name="question" value="{{q.question.key}}"/>
+                          <input type="hidden" name="previous" value="project"/>
+                      
+                      {% else %}
+                        {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
+                        <form method="get" action="/store" onclick="$(this).submit();" style="cursor: pointer">
+                          <input type="hidden" name="portfolio" id="id_portfolio" value="{{ project.portfolio.id }}">
+                          <input type="hidden" name="q" value="{{project.root_task.id}}/{{q.question.key}}">
+                      {% endif %}
+                    {% endif %}
+
+                    {# Once again, different HTML depending on the layout mode being used. For rows, start a new Bootstrap row and put the icon in the first column div. #}
+                    {% if layout_mode == "rows" %}
+                      <div class="row">
+                      <div class="col-sm-3">
+                    {% endif %}
+
+                    {% if authoring_tool_enabled %}
+                      {# Pencil icon to edit this question. #}
+                      <div class="authoring-tool-edit-question authoring-tool-hidden" data-key="{{q.question.key}}">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                      </div>
+                    {% endif %}
+
+                    {% if not q.hide_icon %}
+                    <div class="question-icon" style="position: relative;">
+                        {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
+                        <div style="position: absolute; left: -1px; top: -1px;">
+                          {% if not q.can_start_new_task and q.task.is_finished %}
+                            <span class="glyphicon glyphicon-ok" style="color: #96B"></span>
+                          {% endif %}
+                        </div>
+
+                        {# Select and show an icon. #}
+                        <img
+                          {# If the question has been answered, can only be answered once (i.e. is a module-type question), its Task comes with its own icon, and the question specification allows the use of that icon ('app_overrides_name_and_icon' is not set), then use it. #}
+                          {% if not q.can_start_new_task and q.task.get_app_icon_url and q.question.spec.app_overrides_name_and_icon is None %}
+                          src="{{q.task.get_app_icon_url}}"
+
+                          {# If the view computed an icon to show, show it. It's probably the icon from the question's specification. #}
+                          {% elif q.icon %}
+                          src="{{q.icon}}"
+
+                          {# Fall back to a shopping cart (if this question redirects/redirected to the Apps Catalog) or a default icon if this is just a Module. #}
+                          {% elif not q.question.spec.protocol %}
+                          src="{% static "img/default_app_icon.png" %}"
+                          {% else %}
+                          src="{% static "img/default_cart_icon_sm.png" %}"
+                          {% endif %}
+
+                          title="{{q.question.spec.title}}"
+                          class="img-responsive"
+                          alt="App Icon">
+                    </div>
+                    {% endif %}
+
+                    {# Once again, different HTML depending on the layout mode being used. For row mode, move to the second column for the question's title. #}
+                    {% if layout_mode == "rows" %}
+                      </div> <!-- /col -->
+                      <div class="col-sm-9">
+                    {% endif %}
+
+                    {# The label for the icon is the title of the question in the question's specification. #}
+                    <div class="question-title">
+                        {# If the question has been answered, can only be answered once (i.e. is a module-type question), and the question specification allows the use of Task's title as the label ('app_overrides_name_and_icon' is not set), then use it. #}
+                        {% if not q.can_start_new_task and q.question.spec.app_overrides_name_and_icon is None %}
+                          {{q.task.title}}
+
+                        {# Otherwise use the question's title as the label. #}
+                        {% else %}
+                          {% if q.can_start_new_task and q.question.spec.type == "module-set" %}
+                            <span class="glyphicon glyphicon-plus pull-right"></span>
+                          {% endif %}
+                          {{q.question.spec.title}}
+                        {% endif %}
+
+                        {# In the rows layout mode, indicate the question's progress and show a button to start or continue the task #}
+                        {% if layout_mode != "grid" %}
+                          {% with task=q.task %}
+                            <div class="progress" style="width:80%; height: 5px;margin: 8px 0 0 0;">
+                              <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{task.get_progress_percent}}%" aria-valuenow="{{task.get_progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            {% if layout_mode == "rows" %}
+                            {% if task.is_finished %}
+                            <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37);">Finished</div>
+                            {% elif task.is_started %}
+                            <div class="btn btn-sm btn-default">In progress</div>
+                            {% else %}
+                            <div class="btn btn-sm btn-default">Start section</div>
+                            {% endif %}
+                            {% endif %}
+                          {% endwith %}
+                        {% endif %}
+                      </div>
+
+                    {# Once again, different HTML depending on the layout mode being used. For row mode, end the column and the row. #}
+                    {% if layout_mode == "rows" %}
+                      </div> <!-- /col -->
+                      </div> <!-- /row -->
+                    {% endif %}
+
+                    {# If the user had permission to start a task and we started an 'a' or 'form' element, end it. #}
+                    {% if can_start_task %}
+                      {% if not q.can_start_new_task %}
+                        </a>
+                      {% else %}
+                        </form>
+                      {% endif %}
+                    {% endif %}
+                    
+                  {# Show invitations and discussions for this question below the icon and label. #}
+
+                  <div class="question-body">
+                    {# Show open invitations related to this question. #}
+                    {% for inv in q.invitations %}
+                      <p class="invitation" data-invitation-id="{{inv.id}}">
+                        You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
+                        (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
+                      </p>
+                    {% endfor %}
+
+                      {# If the user is a guest participant in a discussion inside this question, link to this discussion. They can't view the task directly. (?) #}
+                      {% if q.discussions %}
+                      <div>
+                        <div><strong>Discussions:</strong></div>
+                        {% for d in q.discussions %}
+                          <div><a href="{{d.get_absolute_url}}">{{d.attached_to.question.spec.title}}</a></div>
+                        {% endfor %}
+                      </div>
+                      {% endif %}
+                  </div> <!-- /.question-body -->
+                </div> <!-- /#question-__.question -->
+              {% endfor %} {# question #}
+              </div> <!-- /row -->
+              </div> <!-- /question-group -->
+            {% endfor %} {# group #}
+
+            {% comment %}
+            {% if columns|length > 0 and column.groups|length == 0 %}
+              <p style="line-height: 122%; font-size: italic; font-size: 95%;">
+                {% if column.has_tasks_on_left %}
+                  There are no tasks in this column yet.
+                {% else %}
+                  There are no more tasks in this column. Congrats!
+                {% endif %}
+              </p>
+            {% endif %}
+            {% endcomment %}
+
+        </div> <!-- /question-column -->
+      </div> <!-- /col -->
+    {% endfor %} {# column #}
+    {% endwith %}
+
+
+    </div> <!-- /row for columns -->
+  </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+
+{% if authoring_tool_enabled %}
+{# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
+{% include "authoring-tool-modal.html" %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+var project_invitation_info = {{send_invitation|json}};
+
+$(function() {
+  set_state_from_url_fragment();
+  $(window).on('hashchange', set_state_from_url_fragment);
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    var tabid = e.target.getAttribute('href').substring(1); // old IE might return absolute URL here?
+    window.location.hash = "#tab=" + encodeURIComponent(tabid);
+  })
+
+  {% if layout_mode == "grid" %}
+  // Resize questions so they all have the same height, to the max height of any.
+  var max_height = 0;
+  $('.question').each(function() {
+    var h = $(this).outerHeight();
+    if (h > max_height) max_height = h;
+  });
+  $('.question').css({ height: max_height });
+  {% endif %}
+})
+
+function invite_user_into_project() {
+  var info = project_invitation_info;
+  show_invite_modal(
+    'Invite To Project Team (' + info.model_title + ')',
+    'Invite a colleague to join this project team.',
+    info,
+    'Please join the project team for ' + info.model_title + '.',
+    {
+      project: info.model_id,
+      add_to_team: "1"
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function invite_user_to_start_module(module_title, question_id) {
+  var info = project_invitation_info;
+  show_invite_modal(
+    'Start a Module (' + info.model_title + ')',
+    'Invite a colleague to answer the module ' + module_title + '.',
+    info,
+    'Can you give me a hand completing the module ' + module_title + ' for ' + info.model_title + '?',
+    {
+      project: info.model_id,
+      into_new_task_question_id: question_id
+    },
+    function() { window.location.reload() }
+  );
+
+  return false;
+}
+
+function set_state_from_url_fragment() {
+  var fragment = window.location.hash.substring(1); // chop off the "#"
+
+  // The GovReady Dashboard React app appends a random code like `?_k=h9zm95` to the
+  // fragment, so we need to strip that out.
+  fragment = fragment.split('?').shift();
+
+  var fragment = parse_qs(fragment);
+
+  // Highlight the question.
+  if (fragment.q && fragment.t) {
+    $('.question').each(function() {
+      if (this.id == "question-" + fragment.q && this.getAttribute("data-task-id") == fragment.t) {
+        var elem = $(this);
+        elem.css({ backgroundColor: "#FFA" });
+        smooth_scroll_to(elem);
+        setTimeout(function() { elem.css({ backgroundColor: "#FFF" }); }, 2000);
+      }
+    });
+  }
+}
+
+function rename_project() {
+  // Allow setting the title to the empty string, which clears the override if set.
+  // If the user is renaming it to what we already have, or cancelled the dialog,
+  // then ignore the change.
+  var new_title = prompt("Rename this project?", "{{project.title|escapejs}}");
+  if (new_title === null || new_title == "{{project.title|escapejs}}") return;
+  ajax_with_indicator({
+   url: '{% url "rename_project" project.id %}',
+   method: "POST",
+   data: {
+    title: new_title
+   },
+   keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the reload
+   success: function() {
+     window.location.reload();
+   }
+  });
+}
+
+function delete_project() {
+  show_modal_confirm(
+    "Delete Project",
+    "Are you sure you want to delete this project? All information will be permanently deleted.",
+    "Delete",
+    function() {
+      ajax_with_indicator({
+       url: '{% url "delete_project" project.id %}',
+       method: "POST",
+       success: function(res) {
+         // redirect to home to see other projects
+         window.location = res.redirect;
+       }
+      });
+    }
+  )
+}
+
+function make_admin(is_admin, user_id, user_name) {
+  show_modal_confirm(
+    (is_admin ? "Make Project Administrator" : "Revoke Administrator Privilege"),
+    "Do you want to "
+		+ (is_admin ? "make" : "revoke the administrator privilege from")
+		+ " "
+		+ user_name
+		+ (is_admin ? " an administrator" : "")
+		+ " for this project?",
+    (is_admin ? "Make Admin" : "Revoke Privilege"),
+    function() {
+      ajax_with_indicator({
+       url: '{% url "make_revoke_project_admin" project.id %}',
+       method: "POST",
+       data: {
+       	 user: user_id,
+       	 is_admin: is_admin ? "true" : false
+       },
+       success: function(res) {
+         // reload page to show changes in UI
+         window.location.reload();
+       }
+      });
+    }
+  )
+  return false;
+}
+</script>
+
+{% if authoring_tool_enabled %}
+<script src="{% static "vendor/js-yaml.min.js" %}"></script>
+<script src="{% static "js/authoring_tool.js" %}"></script>
+<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+<script>
+$(function() {
+  $('.authoring-tool-edit-question').click(function(e) {
+    e.stopPropagation();
+    show_question_authoring_tool($(this).data('key'));
+  })
+  init_authoring_tool({
+    task: {{project.root_task.id}},
+    module: {{project.root_task.module.spec|json}},
+    module_yaml: "{{project.root_task.module.spec_yaml|escapejs}}",
+    catalog_yaml: "{{project.root_task.module.app.catalog_metadata_yaml|escapejs}}",
+    questions: {
+      {% for q in project.root_task.module.questions.all %}
+      {{q.key}}: {
+        spec: {{q.spec|json}},
+        choices: "{{q.choices_as_csv|escapejs}}",
+        answer_type_module_id: {% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    },
+    answer_type_modules: [{% for m in project.root_task.module.get_referenceable_modules %}
+      { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+      {% endfor %}],
+    autocomplete_questions: { }
+  });
+});
+</script>
+{% endif %}
+{% endblock %}

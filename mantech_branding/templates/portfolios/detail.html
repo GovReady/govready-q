@@ -1,0 +1,195 @@
+{% extends "project-base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Portfolio
+{% endblock %}
+
+{% block head %}
+<style>
+  .project-image {
+    width: 20px;
+    float: left;
+    margin: 4px 0 5px 8px;
+  }
+
+  .inline {
+    display: inline;
+  }
+</style>
+{% endblock %}
+
+Remove contextbar from top of page
+{% block contextbar %}{% endblock %}
+
+% block body-wide %
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="table-container">
+    <div style="float: right; margin: 0 0.5em 0em 5em;">
+      <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#"" class=" btn
+        btn-success">Start a project</a>
+      {% if can_invite_to_portfolio %}
+      <a href="#" onclick="invite_user_into_portfolio(); return false;" id="grant-portfolio-access"
+        class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> Grant access to member</a>
+      {% endif %}
+    </div>
+
+    <h2 class="">{{ portfolio.title }}</h2>
+    <small style="color: #888;">Portfolio ID: {{ portfolio.id }}</small>
+
+    {% if projects|length > 0 %}
+    <p>This portfolio has {{ projects|length }} project{{ projects|pluralize }}</p>
+
+    <div class="table-container">
+      <div class="row">
+        <div class="col-sm-1">&nbsp;</div>
+        <div class="col-xs-10 col-md-4">Project</div>
+        <div class="col-xs-6 col-sm-1">ID</div>
+        <div class="col-xs-6 col-sm-2">Portfolio</div>
+        <div class="col-xs-6 col-sm-2">Role</div>
+        <div class="col-xs-12 col-md-2">Updated</div>
+      </div>
+    {% endif %}
+
+      {% for project in projects %}
+      <div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+
+        <div class="col-sm-1">
+          {% if project.root_task.get_app_icon_url %}
+            <a href="{{project.get_absolute_url}}" class="project-image">
+              <img src="{{project.root_task.get_app_icon_url}}" class="img-responsive" alt="App Icon">
+            </a>
+          {% else %}
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          {% endif %}
+        </div>
+
+        <div class="col-xs-10 col-md-4">
+          <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
+        </div>
+
+        <div class="col-xs-6 col-sm-1">{{project.id}}</div>
+        <div class="col-xs-6 col-sm-2">{{project.portfolio.title}}</div>
+
+<!--         {% get_obj_perms request.user for project as "project_perms" %}
+        {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
+        <div class="col-xs-6 col-sm-2">
+          <small style="color: #888;">
+              {{ project_perms|join:", " }}
+          </small>
+          <small style="color: #888;">
+              {% if portfolio_perms and not project_perms %}
+                Permissions through project portfolio
+              {% endif %}
+          </small>
+        </div> -->
+        {% get_obj_perms request.user for project as "perms" %}
+        {% get_obj_perms request.user for project.portfolio as "portfolio_perms" %}
+        {% if "delete_project" in perms %}
+        <div class="col-xs-6 col-sm-2">Owner</div>
+        {% elif "change_project" in perms%}
+        <div class="col-xs-6 col-sm-2">Project Member</div>
+        {% elif "portfolio_perms"%}
+        <div class="col-xs-6 col-sm-2">Portfolio Member</div>
+        {% endif %}
+
+
+        <div class="col-md-2">
+            {{project.root_task.updated|naturaltime}}
+        </div>
+
+      </div>
+
+      {% endfor %}
+
+      {% if projects|length < 2 %}
+      <div class="table-container">
+        <div class="row" style="margin-top: 60px;">
+          <div class="col-md-2"></div>
+          <div class="col-md-5">
+            <h2>A portfolio is a collection of projects.</h2>
+
+            <p>Think of a portfolio like a folder for your projects.</p>
+
+            <p>The owners of the portfolio can manage portfolio members.</p>
+          </div>
+          <div class="col-md-3">
+            <div class="glyphicon glyphicon-folder-open" style="font-size: 8em; color: rgb(160, 210, 160);"></div>
+          </div>
+          <div class="col-md-2"></div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if display_users_with_perms %}
+      <div id="portfolio-members" class="table-container">
+        <div class="row" style="margin-top: 60px;">
+          <p id="portfolio-members"></p>
+          <p> <b>Users With Access:</b></p>
+          {% for user in users_with_perms %}
+          <div id="portfolio-member-{{user.name}}">
+          <p class="inline"> {{user.name}}
+            {% if user.owner %}
+            (Owner)
+            {% if can_invite_to_portfolio and request.user.id != user.id %}
+            <form id="{{user.name}}_remove_permissions" name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">
+                {% csrf_token %}
+                <input type="hidden" id="portfolio_id" name="portfolio_id" value={{portfolio.id}}>
+                <input type="hidden" id="user_id" name="user_id" value={{user.id}}>
+                <input type="hidden" id="permission" name="permission" value="remove_owner_permissions">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <input type="submit" value="Remove Ownership" class="btn btn-sm btn-danger" />
+            </form>
+            {%endif%}
+          </p>
+          {% elif can_invite_to_portfolio %}
+          <form id="{{user.name}}_remove_permissions" name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">
+            {% csrf_token %}
+            <input type="hidden" id="portfolio_id" name="portfolio_id" value={{portfolio.id}}>
+            <input type="hidden" id="user_id" name="user_id" value={{user.id}}>
+            <input type="hidden" id="permission" name="permission" value="remove_permissions">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <input type="submit" value="Remove" class="btn btn-sm btn-danger" />
+          </form>
+          <form id="{{user.name}}_grant_owner_permission" name="assign_owner_permissions" method="post" action="{% url 'update_permissions' %}" class="inline">
+            {% csrf_token %}
+            <input type="hidden" id="portfolio_id" name="portfolio_id" value={{portfolio.id}}>
+            <input type="hidden" id="user_id" name="user_id" value={{user.id}}>
+            <input type="hidden" id="permission" name="permission" value="grant_owner_permission">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <input type="submit" value="Make Owner" class="btn btn-sm btn-success" />
+          </form>
+          {%endif%}
+          </p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {{ block.super }}
+      {% endblock %}
+
+      {% block scripts %}
+      <script>
+        var project_invitation_info = {{ send_invitation| json}};
+        function invite_user_into_portfolio() {
+          var info = project_invitation_info;
+          show_invite_modal(
+            'Invite To A Portfolio (' + info.model_title + ')',
+            'Give a colleague access to this portfolio.',
+            info,
+            'You have been granted access to the portfolio ' + info.model_title + '.',
+            {
+              portfolio: info.model_id,
+            },
+            function () { window.location.reload() }
+          );
+          return false;
+        }
+      </script>
+      {% endblock %}

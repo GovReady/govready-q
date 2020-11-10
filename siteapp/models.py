@@ -219,7 +219,7 @@ class User(AbstractUser):
 
         return profile
 
-    random_colors = ('#5cb85c', '#337ab7', '#AFB', '#ABF', '#FAB', '#FBA', '#BAF', '#BFA')
+    random_colors = ('#5cb85c', '#1D2E5D', '#AFB', '#ABF', '#FAB', '#FBA', '#BAF', '#BFA')
     def get_avatar_fallback_css(self):
         # Compute a non-cryptographic hash over the user ID and username to generate
         # a stable set of random bytes to use to select CSS styles.

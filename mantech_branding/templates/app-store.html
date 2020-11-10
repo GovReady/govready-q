@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Compliance Apps
+{% endblock %}
+
+{% block head %}
+<style>
+  body {
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #D0D1D2;
+  }
+
+  h1 {
+    margin-bottom: 30px;
+  }
+
+  h2 {
+    width: 40%;
+    margin: 2.5em auto 24px auto;
+    padding: 8px;
+    border-bottom: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 10px;
+    font-size: 24px;
+    color: #666;
+    text-align: center;
+  }
+
+  .app-category-nav {
+    font-size: 85%;
+  }
+
+  .app-category-nav > *[data-category] {
+    margin-left: 3px;
+    color: #66C;
+    white-space: nowrap;
+  }
+
+  .app-category-nav *[data-category] {
+    margin-left: 20px;
+  }
+
+  .app-category-nav *[data-category].first {
+    margin-left: 0;
+  }
+
+  .app {
+    border-radius: 10px;
+    border-bottom: 1px solid rgb(204, 204, 204);
+    padding: 12px;
+    background-color: white;
+    margin-bottom: 24px;
+    cursor: default;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .app h3 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  @media screen and (max-width: 1200px) {
+    .app h3 {
+      font-size: 17px;
+    }
+  }
+
+  .app .app-icon {
+    width: 20%;
+    max-width: 128px;
+  }
+
+  @media screen and (max-width: 768px) {
+    .app .app-icon {
+      width: 20%;
+    }
+  }
+
+  .app .body {
+  }
+
+  .app .body p {
+  }
+
+  .app .body p:last-child {
+    margin: 0;
+  }
+
+  .app-metadata {
+    font-size: 0.7em;
+    text-align: left;
+    color: #666;
+  }
+
+  .body {
+    font-size: 0.8em;
+  }
+
+  .if-has-more-apps {
+    display: none;
+    text-align: right;
+    font-size: 95%;
+  }
+
+  .if-has-more-apps .show-less { display: none; }
+  .has-more-apps .if-has-more-apps { display: block; }
+  .show-more-apps .if-has-more-apps .show-more { display: none; }
+  .show-more-apps .if-has-more-apps .show-less { display: inline; }
+
+</style>
+{% endblock %}
+
+{% block contextbar %} 
+  {# kill breadcrumbs but add some space below site header #}
+  <div id="contextbar">
+    &nbsp;
+  </div>
+{% endblock %}
+
+{% block body %}
+      <div>
+        <a href="/" style="color: black;">
+          <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
+        </a>
+        / Compliance Apps
+
+      <div class="pull-right" style="margin-bottom: 1em">
+        <form class="form-inline" onsubmit="return false;">
+          <div class="form-group">
+            {% if authoring_tool_enabled %}
+            <span style="margin: 0 0.5em 0em 0;">
+              <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create New Project</a>
+            </span>
+            {% endif %}
+            <label class="sr-only" for="app-search">search apps for</label>
+            <div class="input-group">
+              <div class="input-group-addon">search</div>
+              <input type="text" class="form-control" id="app-search" placeholder="search projects">
+            </div>
+          </div>
+        </form>
+      </div>
+
+
+{% if filter_description %}
+<p style="margin-bottom: 30px">These apps can help you with <em>{{filter_description}}</em>.</p>
+{% endif %}
+
+{# since the category links disappear in response to search queries, this should come after the search box so the search box's position doesn't jump around if this element changes size or disappears #}
+<div class="pull-left app-category-nav" style="margin-bottom: 1em; width:96%; margin:0 20px 0 20px;">
+  {% for app_category in apps %}
+    <span data-category="{{app_category.title}}" {% if forloop.first %}class="first"{% endif %}>
+      <a href="#" onclick="smooth_scroll_to($('.app-category').filter(function() { return this.getAttribute('data-category') == '{{app_category.title|escapejs}}' })); return false;">{{app_category.title}}</a>
+    </span>
+  {% endfor %}
+</div>
+
+<div class="clearfix"> </div>
+
+{% for app_category in apps %}
+<div class="app-category" data-category="{{app_category.title}}">
+{% if apps|length > 1 %} {# only display category titles if there is more than one category available #}
+<h2>{{app_category.title}} Apps</h2>
+{% endif %}
+
+<div class="row">
+  {% for app in app_category.apps %}
+    <div class="col-sm-4">
+      <div class="app"
+        data-app="{{app.key}}"
+        data-search-haystack="{{app.search_haystak}} {% if app_category.title %}{{app_category.title}}{% endif %}"
+        >
+        <table>
+        <tr valign="top">
+        <td>
+          <h3>{{app.title}}</h3>
+          <div class="body">
+          {{app.description.short|safe|truncatewords_html:18}}
+          </div>
+          {% if app.authz != "none" %}
+          <div class="app-metadata">
+            Admin approval required</div>
+          </div>
+          {% endif %}
+          <div style="margin-top: .5em">
+            {# If the user can only start the app in a single organization context, we can offer a quick start button. #}
+            {% if app.organizations|length == 1 %}
+            <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
+              {% csrf_token %}
+              {% with app.organizations|first as first_org %}
+                <input type="hidden" name="organization" value="{{first_org.slug}}">
+              {% endwith %}
+              <button type="submit" class="btn btn-success btn-sm start-app">
+                Add ►
+              </button>&nbsp;
+            </form>
+            {% endif %}
+            <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-default btn-sm view-app">Info</a>
+          </div>
+        </td>
+        {% if app.icon %}
+        <td class="app-icon" style="padding-top: 1px; padding-right: 12px;">
+          <img src="{{app.icon}}" class="img-responsive" alt="App Icon">
+          <div style="text-align: center;"><small>{{ app.version }}</small></div>
+        </td>
+        {% endif %}
+        </tr>
+        </table>
+      </div>
+    </div>
+    {% if forloop.counter|divisibleby:3 %} {# breaks dont play well with client-side search --- they are re-generated when search results are displayed #}
+      <div class="visible-sm clearfix rowbrk"> </div>
+      <div class="visible-md clearfix rowbrk"> </div>
+      <div class="visible-lg clearfix rowbrk"> </div>
+    {% endif %}
+{% endfor %}
+</div> <!--/row-->
+
+<a class="if-has-more-apps" href="#" onclick="$(this).parent().toggleClass('show-more-apps'); do_app_search(last_app_search); return false;">
+  <span class="show-more">Show More &raquo;</span>
+  <span class="show-less">&laquo; Show Fewer</span>
+</a>
+
+</div> <!--/.app-category-->
+
+{% empty %}
+  {% if request.GET.q %}
+    <p>There are currently no apps available that can be used to complete that question, sorry!</p>
+  {% else %}
+    <p>There are no AppSources configured by this site&rsquo;s administrator that provide any apps, sorry!</p>
+  {% endif %}
+{% endfor %}
+
+{% if authoring_tool_enabled %}
+{# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
+{% include "authoring-tool-modal.html" %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+RegExp.escape = function(s) {
+  // http://stackoverflow.com/a/18151038
+  return String(s).replace(/([-()\[\]{}+?*.$\^|,:#<!\\])/g, '\\$1').
+  replace(/\x08/g, '\\x08');
+};
+
+// Periodically check if the search box has changed and if so run
+// client-side search filtering. Pause until there are no recent
+// keypresses so the UI isn't updated while the user is typing.
+var app_search_last_keypress_time = Date.now();
+var last_app_search = null;
+$('#app-search').on('keydown', function() { app_search_last_keypress_time = Date.now(); });
+setInterval(function() {
+  if ((Date.now() - app_search_last_keypress_time) < 500) return;
+  var query = $('#app-search').val();
+  if (query == last_app_search) return;
+  last_app_search = query;
+  do_app_search(query);
+}, 250);
+function do_app_search(query) {
+  var pattern = new RegExp(".*" + RegExp.escape(query.toLowerCase()));
+
+  $('.app-category').each(function() {
+    var app_category = $(this);
+
+    // reset state for whether the show more/fewer link should be shown
+    app_category.removeClass("has-more-apps");
+
+    // reset row breaks
+    $(this).find(".rowbrk").remove();
+
+    // update visibility of apps within the category
+    var shown_counter = 0;
+    app_category.find('.app').each(function() {
+    	// Does the app match the search query?
+      var visible = pattern.test($(this).attr('data-search-haystack').toLowerCase());
+
+      // Hide apps after the first row if they aren't toggled on. Since we'll toggle
+      // the show more/show less buttons, they'll be toggled if there is more or
+      // less to show, which will be applied *after* the client-side search filters
+      // are applied, hence we wrap this in if (visible).
+      if (visible) {
+        if (shown_counter >= 9) {
+        	// This is an app in the second or later row.
+          // If the "show more" link isn't active, hide.
+        	if (!app_category.is('.show-more-apps'))
+            visible = false;
+
+          // Indicate this category has more apps that could be displayed
+          // by adding a class, which makes "show more/fewer" show up.
+          app_category.addClass("has-more-apps");
+        }
+
+        // Increment counter of number of how many apps are visible in this category so far.
+        shown_counter += 1;
+
+        // Re-add row breaks.
+        if ((shown_counter % 3) == 0) {
+          $('<div class="visible-sm clearfix rowbrk"> </div>').insertAfter($(this).parent());
+          $('<div class="visible-md clearfix rowbrk"> </div>').insertAfter($(this).parent());
+          $('<div class="visible-lg clearfix rowbrk"> </div>').insertAfter($(this).parent());
+        }
+
+      }
+
+      // Show/hide the .col around the .app.
+      $(this).parent()[visible ? "fadeIn" : "hide"](); // go from .app to the .col
+    })
+
+    // Hide category titles and jump-to link if there are no apps visible in it.
+    var visible = app_category.find(".app:visible").length > 0;
+    $(this).find('h2')[visible ? "fadeIn" : "hide"]();
+    $('.app-category-nav *').filter(function() { return this.getAttribute('data-category') == app_category[0].getAttribute('data-category') })[visible ? "fadeIn" : "hide"]();
+  });
+
+  // Reset which jump-to link is first, which hides the separator bullet before it.
+  // Hide the whole jump to list if there aren't any categories, or there's only
+  // one category (in which case we don't show category headings).
+  $('.app-category-nav *[data-category]').removeClass('first');
+  $('.app-category-nav').show(); // must be visible before :visible is checked
+  var jump_to_first = $('.app-category-nav *[data-category]:visible');
+  if (jump_to_first.length > 1 {% if apps|length == 1 %}&& 0{% endif %}) {
+    $(jump_to_first[0]).addClass('first');
+  } else {
+    $('.app-category-nav').hide();
+  }
+}
+do_app_search(""); // kick it off
+</script>
+
+{% if authoring_tool_enabled %}
+<script src="{% static 'vendor/js-yaml.min.js' %}"></script>
+<script src="{% static 'js/authoring_tool.js' %}"></script>
+<style>.dropdown-menu.textcomplete-dropdown { z-index: 99999 !important; }</style> {# show over modal #}
+<script>
+  $(function() {
+    init_authoring_tool({
+      task: "{{task.id}}",
+      module: "{{task.module.spec}}",
+      questions: {
+        q_key: {
+          spec: "{{q.spec}}",
+          choices: "{{q.choices_as_csv|escapejs}}",
+          answer_type_module_id: "{% if q.answer_type_module %}{{q.answer_type_module.id}}{% else %}null{% endif %}"
+        }
+      },
+      answer_type_modules: [{% for m in q.module.get_referenceable_modules %}
+        { id: "{{m.id}}", title: "{{m.title|escapejs}} ({{m.module_name}})" }{% if not forloop.last %},{% endif %}
+        {% endfor %}],
+      autocomplete_questions: { {% for q in q.module.get_questions %}
+        "{{q.key|escapejs}}": "{{q.value_explanation|truncatechars:50|escapejs}}"{% if not forloop.last %}, {% endif %}{% endfor %}
+      }
+    });
+  });
+
+  // Auto update "slug" name based on title in Create a Q modal
+  $('#authoring_tool_q_2_title').on('keyup', function() {
+      var slug = $(this).val();
+      slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "_");
+      $('#authoring_tool_q_name').val(slug);
+  });
+</script>
+{% endif %}
+
+{% endblock %}

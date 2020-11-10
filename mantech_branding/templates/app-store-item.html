@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{app.title}} - Compliance Apps
+{% endblock %}
+
+{% block head %}
+<style>
+
+  body {
+/*    padding-left: 20px;
+    padding-right: 20px;*/
+    background-color: #D0D1D2;
+  }
+
+  #app-metadata {
+    padding: 1em;
+    border: 0px solid #999;
+    background-color: #FAFAFA;
+    border-radius: 15px;
+    font-size: 0.9em;
+    text-align: left;
+  }
+
+  #app-metadata a {
+    color: black;
+    text-decoration: underline;
+  }
+
+  .meta-key {
+    color: #888;
+  }
+
+  .meta-heading {
+    margin-top: 20px;
+    /*color: #888;*/
+    /*border-bottom: 0.5px solid #888;*/
+    margin-bottom: 6px;
+  }
+
+  .app-icon {
+    width: 80%;
+    max-width: 128px;
+  }
+
+  @media screen and (max-width: 768px) {
+    .app .app-icon {
+      width: 80%;
+    }
+  }
+
+ .app {
+    width: 968px;
+    margin: auto;
+    margin-top: 40px;
+    border-radius: 10px;
+    /*border: 1px solid rgb(204, 204, 204);*/
+    border-bottom: 1px solid rgb(204, 204, 204);
+    padding: 12px;
+    background-color: white;
+    margin-bottom: 24px;
+    cursor: default;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .app h3 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  @media screen and (max-width: 1200px) {
+    .app h3 {
+      font-size: 17px;
+    }
+  }
+
+
+  .app .body {
+  }
+
+  .app .body p {
+  }
+
+  .app .body p:last-child {
+    margin: 0;
+  }
+
+</style>
+{% endblock %}
+
+{% block contextbar %}
+  {# kill breadcrumbs but add some space below site header #}
+  <div id="contextbar">
+    &nbsp;
+  </div>
+{% endblock %}
+
+{% block body %}
+
+      <div>
+        <a href="/" style="color: black;">
+          <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
+        </a>
+        /
+        <!-- fix this to display if I am in another app or store -->
+        {% if portfolio %}
+          <a href="/store?portfolio={{ portfolio.id }}" class="" style="color: black;">Compliance Apps</a>
+        {% else %}
+          <a href="/store">Compliance Apps</a>
+        {% endif %}
+        / {{app.title|truncatewords:6}}
+      </div>
+
+<div class="app">
+  <!-- App Header -->
+  <div class="row" style="max-width:968px; margin: auto; padding-top: 30px;">
+    <div class="col-sm-2">
+      {% if app.icon %}<img src="{{app.icon}}" class="app-icon" style="" alt= "App Icon">{% endif %}
+    </div>
+    <div class="col-sm-8">
+      <h1>{{app.title}}</h1>
+      <!-- <p>Maintainer: {{app.vendor}}</p> -->
+      {% if error %}
+        <p class="text-danger">{{error}}</p>
+      {% endif %}
+    </div>
+    <div class="col-sm-2">
+      <form method="post" style="margin: 1em; text-align: center;">
+        {% csrf_token %}
+        {# If the user is a member of more than one organization that can start this app, the user much choose which organization context to start this app in. #}
+        {% if app.organizations|length == 1 %}
+          {% with app.organizations|first as first_org %}
+            <input type="hidden" name="organization" value="{{first_org.slug}}">
+          {% endwith %}
+        {% else %}
+          <div style="margin-bottom: 1em">
+            <label for="add-to-org" style="font-weight: normal; margin: 0; font-size: 90%;">Add to:</label>
+            <select id="add-to-org" name="organization" class="form-control">
+              {% for org in app.organizations %}
+                <option value="{{org.slug}}">{{org.name}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+        <button id="start-project" type="submit" class="btn btn-success" style="width: 100%;">
+          {% if not request.GET.q %}
+          Add
+          {% else %}
+          Add
+          {% endif %}
+          ►
+        </button>
+      </form>
+      <button id="start-project" type="submit" class="btn btn-link" style="width: 100%;">
+          {% if portfolio %}
+            <a href="/store?portfolio={{ portfolio.id }}" style="color: #888;">Back to Apps</a>
+          {% else %}
+            <a href="/store" style="color: #888;">Back to Apps</a>
+          {% endif %}
+      </button>
+    </div>
+  </div>
+  <!-- Divider -->
+  <div class="row" style="max-width:968px; margin: auto;"><hr></div>
+  <!-- App Description -->
+  <div class="row" style="max-width:968px; margin: auto;">
+    <div class="col-sm-12">
+      <div class="body" style="margin-top:20px;">
+        {{app.description.long|safe}}
+      </div>
+    </div>
+  </div>
+  <!-- App Information -->
+  <div class="row" style="max-width:968px; margin: auto; height: 24px;">
+    &nbsp;
+  </div>
+  <div class="row" style="max-width:968px; margin: auto; border-top: 1px solid #eee; padding-top: 0px;">
+    <div class="col-lg-12 col-sm-12">
+      <div class="meta-heading"><strong>Information</strong></div>
+    </div>
+  </div>
+  <div class="row" style="max-width:968px; margin: auto;">
+    <div class="col-lg-4 col-sm-4">
+      <div><span class="meta-key">Provider</span><br>
+        {% if app.vendor_url is not None %}
+          <a href="{{app.vendor_url}}">{{app.vendor}}</a>
+        {% else %}
+          &mdash;
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg4 col-sm-4">
+      <!-- <div><span class="meta-key">Status</span><br>{{app.status}}</div> -->
+      <div><span class="meta-key">Version</span><br>{{app.version}}</div>
+    </div>
+    <div class="col-lg4 col-sm-4">
+      <!-- <div><span class="meta-key">Source</span><br><a href="{{app.source_url}}">{{app.source_url}}</a></div> -->
+      <div><span class="meta-key">AppSource</span><br>{{source_slug}}</span>
+    </div>
+  </div>
+  <div class="row" style="max-width:968px; margin: auto;"><p>&nbsp;</p></div>
+  <div class="row" style="max-width:968px; margin: auto;">
+    <div class="col-lg4 col-sm-4">
+        <div><span class="meta-key">Startable</span><br>
+      {% if app.authz == "none" %}
+        Yes
+      {% else %}
+        Requires Admin
+      {% endif %}
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- Spacer bottom of page -->
+<div style="height:40px;">&nbsp;</div>
+{% endblock %}
