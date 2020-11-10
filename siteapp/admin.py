@@ -3,7 +3,7 @@ from guardian.admin import GuardedModelAdmin
 
 import django.contrib.auth.admin as contribauthadmin
 
-from .models import User, Organization, Folder, Project, ProjectMembership, Portfolio
+from .models import User, Organization, Folder, Project, ProjectMembership, Portfolio, Support
 from notifications.models import Notification
 
 def all_user_fields_still_exist(fieldlist):
@@ -109,8 +109,8 @@ class NotificationAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
 
 class ProjectAdmin(GuardedModelAdmin):
-    list_display = ('id', 'portfolio_name', 'title', 'root_task', 'created')
-    raw_id_fields = ('organization', 'root_task',)
+    list_display = ('id', 'portfolio_name', 'organization_name', 'title', 'root_task', 'created')
+    raw_id_fields = ('root_task',)
     readonly_fields = ('id', 'extra',)
 
     def portfolio_name(self, obj):
@@ -118,6 +118,12 @@ class ProjectAdmin(GuardedModelAdmin):
             return obj.portfolio.title
 
     portfolio_name.admin_order_field = 'portfolio'
+
+    def organization_name(self, obj):
+        if obj.organization:
+            return obj.organization.name
+
+    organization_name.admin_order_field = 'organization'
 
 class ProjectMembershipAdmin(admin.ModelAdmin):
     list_display = ('project', 'organization', 'user', 'is_admin', 'created')
@@ -129,12 +135,19 @@ class PortfolioAdmin(GuardedModelAdmin):
     list_display = ('title', 'description')
     fields = ('title', 'description')
 
+class SupportAdmin(admin.ModelAdmin):
+  list_display = ('id', 'email',)
+  fields = ('text', 'email', 'phone', 'url')
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Folder, FolderAdmin)
+
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectMembership, ProjectMembershipAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)
 # Notification is an external library and registers itself. So we need to unregister and re-register it.
 admin.site.unregister(Notification)
 admin.site.register(Notification, NotificationAdmin)
+admin.site.register(Support, SupportAdmin)
+

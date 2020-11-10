@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load q %}
+
+{% block title %}
+404
+{% endblock %}
+
+{% block breadcrumbs %}
+<li class="active">Page Not Found (404)</li>
+{% endblock %}
+
+<!-- Remove contextbar from top of page -->
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+    <p>Your requested page was not found.</p>
+  </div>
+</div>
+    
+{% endblock %}

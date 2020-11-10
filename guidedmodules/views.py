@@ -17,6 +17,16 @@ from siteapp.forms import ProjectForm
 
 import fs, fs.errors
 
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
+
 @login_required
 def new_task(request):
     # Create a new task by answering a module question of a project rook task.
@@ -184,6 +194,33 @@ def next_question(request, task, answered, *unused_args):
         q = answered.can_answer[0]
         return HttpResponseRedirect(task.get_absolute_url_to_question(q) + previous)
 
+def get_next_question(current_question, task):
+    # get context of questions in module
+    answers = task.get_answers().with_extended_info()
+
+    # if there are no more questions to answer, return None
+    if len(answers.can_answer) == 0:
+        return None
+
+    # Find the 'best' next question among the answerable questions.
+    # If the next question is answerable, go there. But if that question is not answerable,
+    # go to the next one that is. If there are no subsequent questions to answer, go to the
+    # first one that is answerable.
+    answerable = list(answers.answerable)
+    # Avoid going to the current question as the computed available next question to answer
+    if current_question in answerable:
+        answerable.remove(current_question)
+    answerable.sort(key = lambda q : (
+        # Prefer questions that are after this question.
+        q.definition_order < current_question.definition_order,
+
+        # Prefer questions that are earlier.
+        q.definition_order
+    ))
+
+    # Return the first question after sorting, which is the preferable one to answer next.
+    return answerable[0]
+
 @task_view
 def save_answer(request, task, answered, context, __):
     if request.method != "POST":
@@ -191,16 +228,26 @@ def save_answer(request, task, answered, context, __):
 
     # does user have write privs?
     if not task.has_write_priv(request.user):
-        return HttpResponseForbidden()
-
-    # normal redirect - load next linear question if possible
-    if request.POST.get("next_linear_question"):
-        redirect_to = request.POST["next_linear_question"] + "?previous=nquestion"
-    else:
-        redirect_to = task.get_absolute_url() + "?previous=nquestion"
+        # User does not have write permissions
+        # Log permission to save answer denied
+        logger.info(
+            event="save_answer permission_denied",
+            object={"object": "task", "id": task.id, "title":task.get_slug()},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        return HttpResponseForbidden("Permission denied. {} does not have write privileges to task answer.".format(request.user.username))
 
     # validate question
     q = task.module.questions.get(id=request.POST.get("question"))
+
+    # make a function that gets the URL to the next page
+    def redirect_to():
+        next_q = get_next_question(q, task)
+        if next_q:
+            # Redirect to the next question.
+            return task.get_absolute_url_to_question(next_q) + "?previous=nquestion"
+        # Redirect to the module finished page because there are no more questions to answer.
+        return task.get_absolute_url() + "/finished?previous=nquestion"
 
     # validate and parse value
     if request.POST.get("method") == "clear":
@@ -232,7 +279,7 @@ def save_answer(request, task, answered, context, __):
             # clear it is to use Skip.) If the user submits nothing,
             # just return immediately.
             if value is None:
-                return JsonResponse({ "status": "ok", "redirect": redirect_to })
+                return JsonResponse({ "status": "ok", "redirect": redirect_to() })
 
         else:
             # All other values come in as string fields. Because
@@ -287,7 +334,12 @@ def save_answer(request, task, answered, context, __):
                 module=q.answer_type_module)
 
             answered_by_tasks = [t]
-            redirect_to = t.get_absolute_url() + "?previous=parent"
+
+            # Don't redirect to the next question. Redirect to the new Task.
+            # Replace the redirect_to() function with a new function that
+            # returns the URL to the new Task.
+            def redirect_to():
+                return t.get_absolute_url() + "?previous=parent"
 
         elif value == None:
             # User is skipping this question.
@@ -370,7 +422,7 @@ def save_answer(request, task, answered, context, __):
 
     # Form a JSON response to the AJAX request and indicate the
     # URL to redirect to, to load the next question.
-    response = JsonResponse({ "status": "ok", "redirect": redirect_to })
+    response = JsonResponse({ "status": "ok", "redirect": redirect_to() })
 
     # Return the response.
     return response
@@ -412,7 +464,12 @@ def show_question(request, task, answered, context, q):
     can_upgrade_app = task.module.app.has_upgrade_priv(request.user)
 
     is_answerable = (((q not in answered.unanswered) or (q in answered.can_answer)) and (q.key not in answered.was_imputed))
-    if not is_answerable and not authoring_tool_enabled:
+    # TODO Create Guidedmodules settings model set in database whether to display_non_answerable
+    # to allow allow access to imputed questions/
+    # Only show imputed questions if user is administrator and (new) setting says to display imputed
+    # Old test of `if not is_answerable and not authoring_tool_enabled:` was not smart enough.
+    display_not_answerable = False
+    if not is_answerable and not display_not_answerable:
         return HttpResponseRedirect(task.get_absolute_url())
 
     # Is there a TaskAnswer for this yet?
@@ -564,7 +621,6 @@ def show_question(request, task, answered, context, q):
     # Better to refactor context into its own view
     # instead of recreating from inside this question
     ###############################################################################
-
     # Pre-load the answers to project root task questions and impute answers so
     # that we know which questions are suppressed by imputed values.
     root_task_answers = task.project.root_task.get_answers().with_extended_info()
@@ -582,9 +638,11 @@ def show_question(request, task, answered, context, q):
     from collections import OrderedDict
     questions = OrderedDict()
     can_start_any_apps = False
-
     # for item in root_task_answers.answertuples.items():
     for (mq, is_answered, answer_obj, answer_value) in root_task_answers.answertuples.values():
+
+
+        # print("******  mq.id: {} |||  mq.answer_type_module.module_name  {}    || dir(mq): {}".format( mq.id, mq.answer_type_module.module_name, dir(mq) ))
 
         # Display module/module-set questions only. Other question types in a project
         # module are not valid.
@@ -644,12 +702,18 @@ def show_question(request, task, answered, context, q):
             if mq.spec.get("protocol"):
                 can_start_any_apps = True
 
+        # if questions.get(mq.id) and 'task' in questions[mq.id]:
+        # print("** questions.get(mq.id)", questions.get(mq.id)) # Debug
         if questions.get(mq.id) and 'task' in questions[mq.id]:
-            # print("\nquestions[mq.id]['task'].id", dir(questions[mq.id]['task']))
+            # print("\nquestions[mq.id]['task'].id", questions[mq.id]['task'].id, questions[mq.id]['task']) # Debug
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
             task_started = questions[mq.id]['task'].is_started()
-            task_answered = questions[mq.id]['task'].is_finished()
+            # TODO: Create a better, cached test for is_finished
+            # `is_finished` should return a value very quickly.
+            # Until a faster `is_finished` function, assume response is false.
+            # task_answered = questions[mq.id]['task'].is_finished()
+            task_answered = False
         else:
             # Question not started
             # TODO: Need better match than "/TODO"
@@ -670,7 +734,22 @@ def show_question(request, task, answered, context, q):
             "task_answered": task_answered,
             }
         task_progress_project_list.append(tasks_in_group)
-        if mq.spec.get('id') == task.module.spec.get('id'):
+
+        # Notes on what comes next, how we identify the current_group we are in based on the question.
+        # We need to make sure we are comparing module-id rather than id b/c the question.module-id
+        # does not have to be the same as the question.module.id.
+        # The original comparison (below) works only when the app.yaml question `id` and `module-id` are identical:
+        #
+        #       if mq.spec.get('id') == task.module.spec.get('id'): #orig
+        #
+        # But the above fails when the`module-id` differs from the `id` which is permitted.
+        #
+        # To address the shortcoming of the above original test, we remember that the id of the module
+        # does not need to be the same as the "module-id". We need to do some walking in the relationship to compare
+        # apples to apple. For the `mq` (module question), we need to go to `answer_type_module` and get the `module_name`.
+        #
+        # For the `Task`, we need to go to the `module` and the `spec` to get the `id`).
+        if mq.answer_type_module.module_name == task.module.spec.get('id'):
             current_group = mq.spec.get('group')
     ###############################################################################
     # END BLOCK task_progress_project_list
@@ -678,45 +757,51 @@ def show_question(request, task, answered, context, q):
 
     # get context of questions in module
     context_sorted = module_logic.get_question_context(answered, q)
-    # determine next linear question
-    current_q_index = next((index for (index, d) in enumerate(context_sorted) if d["is_this_question"] == True), None)
-    if current_q_index < len(context_sorted) - 1:
-        next_linear_question = context_sorted[current_q_index + 1]
-    else:
-        next_linear_question = None
 
-
+    # Split the `context.update` into smaller parts so it is possible to add in timing code
+    # to examine performance of certain embedded calls.
     context.update({
         "header_col_active": "start" if (len(answered.as_dict()) == 0 and q.spec["type"] == "interstitial") else "questions",
         "q": q,
         "title": title,
         "prompt": prompt,
+    })
+    context.update({
         "placeholder_answer": render_markdown_field("placeholder", "text") or "", # Render Jinja2 template but don't turn Markdown into HTML.
         "example_answers": [render_markdown_value(ex.get("example", ""), "html", "example {}".format(i+1)) for i, ex in enumerate(q.spec.get("examples", []))],
         "reference_text": render_markdown_field("reference_text", "html"),
+    })
+    context.update({
         "history": taskq.get_history() if taskq else None,
+    })
+    context.update({
         "answer_obj": answer,
         "answer": existing_answer,
         "answer_rendered": answer_rendered,
         "default_answer": default_answer,
         "hidden_button_ids": q.module.app.modules.get(module_name="app").spec.get("hidden-buttons", []),
+    })
+    context.update({
         "can_review": task.has_review_priv(request.user),
         "review_choices": TaskAnswerHistory.REVIEW_CHOICES,
+    })
+    context.update({
         "discussion": Discussion.get_for(taskq.task.project.organization, taskq) if taskq else None,
         "show_discussion_members_count": True,
 
         "answer_module": answer_module,
         "answer_tasks": answer_tasks,
+    })
+    context.update({
         "answer_tasks_show_user": len([ t for t in answer_tasks if t.editor != request.user ]) > 0,
-
+    })
+    context.update({
         "context": context_sorted,
-        "next_linear_question": next_linear_question,
 
         # task_progress_project_list parameters
         "root_task_answers": root_task_answers,
         "task_progress_project_list": task_progress_project_list,
         "current_group": current_group,
-
         # Helpers for showing date month, day, year dropdowns, with
         # localized strings and integer values. Default selections
         # are done in the template & client-side so that we can use
@@ -737,6 +822,8 @@ def show_question(request, task, answered, context, q):
         "can_upgrade_app": can_upgrade_app,
         "authoring_tool_enabled": authoring_tool_enabled,
         "is_question_page": True,
+    })
+    context.update({
         "project_form": ProjectForm(request.user),
     })
     return render(request, "question.html", context)
@@ -867,7 +954,11 @@ def task_finished(request, task, answered, context, *unused_args):
             task_link = "/tasks/{}/{}".format(questions[mq.id]['task'].id, "start")
             task_id = questions[mq.id]['task'].id
             task_started = questions[mq.id]['task'].is_started()
-            task_answered = questions[mq.id]['task'].is_finished()
+            # TODO: Create a better, cached test for is_finished
+            # `is_finished` should return a value very quickly.
+            # Until a faster `is_finished` function, assume response is false.
+            # task_answered = questions[mq.id]['task'].is_finished()
+            task_answered = False
         else:
             # Question not started
             # TODO: Need better match than "/TODO"
@@ -888,8 +979,24 @@ def task_finished(request, task, answered, context, *unused_args):
             "task_answered": task_answered,
             }
         task_progress_project_list.append(tasks_in_group)
-        if mq.spec.get('id') == task.module.spec.get('id'):
+
+        # Notes on what comes next, how we identify the current_group we are in based on the question.
+        # We need to make sure we are comparing module-id rather than id b/c the question.module-id
+        # does not have to be the same as the question.module.id.
+        # The original comparison (below) works only when the app.yaml question `id` and `module-id` are identical:
+        #
+        #       if mq.spec.get('id') == task.module.spec.get('id'): #orig
+        #
+        # But the above fails when the`module-id` differs from the `id` which is permitted.
+        #
+        # To address the shortcoming of the above original test, we remember that the id of the module
+        # does not need to be the same as the "module-id". We need to do some walking in the relationship to compare
+        # apples to apple. For the `mq` (module question), we need to go to `answer_type_module` and get the `module_name`.
+        #
+        # For the `Task`, we need to go to the `module` and the `spec` to get the `id`).
+        if mq.answer_type_module.module_name == task.module.spec.get('id'):
             current_group = mq.spec.get('group')
+
         elif current_group is not None and next_group is None:
             # Determine next group after current group
             next_group = mq.spec.get('group')
@@ -917,7 +1024,6 @@ def task_finished(request, task, answered, context, *unused_args):
         "project": task.project,
         "can_upgrade_app": task.project.root_task.module.app.has_upgrade_priv(request.user),
         "authoring_tool_enabled": task.project.root_task.module.is_authoring_tool_enabled(request.user),
-
         # task_progress_project_list parameters
         "root_task_answers": root_task_answers,
         "task_progress_project_list": task_progress_project_list,
@@ -926,9 +1032,8 @@ def task_finished(request, task, answered, context, *unused_args):
         "next_group": next_group,
         "next_module": next_module,
         "next_module_spec": next_module_spec,
-        # "context": context,
+        "gr_pdf_generator": settings.GR_PDF_GENERATOR,
         "project_form": ProjectForm(request.user, initial={'portfolio': task.project.portfolio.id}) if task.project.portfolio else ProjectForm(request.user)
-
     })
     return render(request, "task-finished.html", context)
 
@@ -1106,6 +1211,35 @@ def authoring_create_q(request):
     messages.add_message(request, messages.INFO, 'New Project "{}" added into the catalog.'.format(new_q["title"]))
 
     return JsonResponse({ "status": "ok", "redirect": "/store" })
+
+@login_required
+def refresh_output_doc(request):
+    # Force refresh of the output documents associated with this Task.
+    # This will clear the cache of all the task.
+    # A primary reason for doing this is that we may have updated system information
+    # and the result of the system update has been cached somewhere in the stack of
+    # output documents that compose answers to a value in this document.
+    # We cannot always tell what update has caused a cache of an output document to be dirty.
+
+    # Check that the user is permitted to do so.
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    from .models import AppVersion
+    appver = get_object_or_404(AppVersion, id=request.POST["app"])
+
+    # Since ModuleQuestions may have changed...
+    from .module_logic import clear_module_question_cache
+    clear_module_question_cache()
+
+    # Since impute conditions, output documents, and other generated
+    # data may have changed, clear all cached Task state.
+    Task.clear_state(Task.objects.filter(module__app=appver))
+
+    from django.contrib import messages
+    messages.add_message(request, messages.INFO, 'Document(s) refreshed.')
+
+    return JsonResponse({ "status": "ok" })
 
 @login_required
 @transaction.atomic

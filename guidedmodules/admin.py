@@ -65,7 +65,7 @@ class AppSourceSpecWidget(forms.Widget):
 
     	# The 'url' key is represented by two different widgets
     	# depending on if the URL is an HTTP or SSH URL.
-    	if value.get("type") == "git" and isinstance(value.get("url"), str):
+    	if value is not None and value.get("type") == "git" and isinstance(value.get("url"), str):
 	    	import re
 	    	if value["url"].startswith("https:") or value["url"].startswith("http:"):
 	    		value["type"] = "git-web"
@@ -85,16 +85,16 @@ class AppSourceSpecWidget(forms.Widget):
 
     	def make_widget(key, label, widget, help_text, show_for_types):
     	    if key != "_remaining_":
-    	    	if key in value:
+    	    	if value is not None and key in value:
     	    		val = value[key]
     	    		del value[key] # only the unrecognized keys are left at the end
     	    	else:
     	    		val = ""
-    	    elif len(value) == 0:
+    	    elif value is None:
     	    	# Nothing unrecognized.
     	    	val = ""
     	    else:
-    	    	# Serialize unrecognized keys in YAML.
+    	        # Serialize unrecognized keys in YAML.
     	        import rtyaml
     	        val = rtyaml.dump(value)
     	    return """
@@ -115,7 +115,7 @@ class AppSourceSpecWidget(forms.Widget):
 		            widget.render(name + "_" + key, val),
 		            escape_html(help_text or ""),
 		            )
-    	
+
     	# Widgets
     	ret = "\n\n".join(make_widget(*args) for args in self.fields)
 
@@ -134,8 +134,9 @@ class AppSourceSpecWidget(forms.Widget):
     	return ret
 
     def value_from_datadict(self, data, files, name):
+    	# Override Django Forms widget method `value_from_datadict`
     	# Start with the extra data.
-    	import rtyaml, collections
+    	import rtyaml, collections, json
     	value = rtyaml.load(data[name + "__remaining_"]) or collections.OrderedDict()
 
     	# Add other values.
@@ -146,7 +147,9 @@ class AppSourceSpecWidget(forms.Widget):
     			value[key] = val
 
     	# Map some data.
-    	if value.get("type") == "git-web":
+    	if value is None:
+    		value = ""
+    	elif value.get("type") == "git-web":
     		value["type"] = "git"
     		value["url"] = str(value.get("url-web"))
     		del value["url-web"]
@@ -155,7 +158,8 @@ class AppSourceSpecWidget(forms.Widget):
     		value["url"] = str(value.get("url-ssh"))
     		del value["url-ssh"]
 
-    	return value
+    	# Adjust for possible change in Django
+    	return json.dumps(value)
 
 class AppSourceAdminForm(forms.ModelForm):
 	class Meta:
@@ -217,7 +221,7 @@ class AppSourceAdmin(admin.ModelAdmin):
 
 		from django.contrib import messages
 		messages.add_message(request, messages.INFO, 'Compliance app added into the catalog.')
-		
+
 		return HttpResponseRedirect("/admin/guidedmodules/appsource/{}/change".format(appsourceid))
 
 class AppVersionAdmin(admin.ModelAdmin):

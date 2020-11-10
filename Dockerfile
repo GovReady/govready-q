@@ -7,7 +7,17 @@
 #   docker run -it -d -p 8000:8000 --name govready-q-0.9.0 --rm govready/govready-q-0.9.0
 
 # Build on Docker's official CentOS 7 image.
-FROM centos:7
+FROM centos:centos7.8.2003
+
+# Default to gunicorn instead of uwsgi
+ARG SUPERVISORD_INI=deployment/docker/supervisord_gunicorn.ini
+ARG DOCKERFILE_EXEC_SH=deployment/docker/dockerfile_exec_gunicorn.sh
+# ARG SUPERVISORD_INI=deployment/docker/supervisord_uwsgi.ini
+# ARG DOCKERFILE_EXEC_SH=deployment/docker/dockerfile_exec_uwsgi.sh
+
+# Default to "off"
+ARG GR_PDF_GENERATOR=off
+#ARG GR_PDF_GENERATOR=wkhtmltopdf
 
 # Expose the port that `manage.py runserver` uses by default.
 EXPOSE 8000
@@ -21,33 +31,57 @@ ENV LC_ALL en_US.UTF-8
 ENV LANGUAGE en_US:en
 
 # Install required system packages.
-# git2u: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
+# git222: git 2 or later is required for our use of GIT_SSH_COMMAND in AppSourceConnection
 # jq: we use it to assemble the local/environment.json file
 RUN \
-   yum -y install https://centos7.iuscommunity.org/ius-release.rpm \
+   yum -y install https://repo.ius.io/ius-release-el7.rpm \
 && yum -y update \
 && yum -y install \
-	python36u python36u-devel.x86_64 python36u-pip gcc-c++.x86_64 \
-	unzip git2u jq nmap-ncat \
-	graphviz pandoc xorg-x11-server-Xvfb wkhtmltopdf \
-	supervisor \
-	mysql-devel \
-	&& yum clean all && rm -rf /var/cache/yum
+    python36u python36u-pip \
+    unzip git222 jq nmap-ncat \
+    graphviz pandoc \
+    supervisor \
+    && yum clean all && rm -rf /var/cache/yum
+
+# install wkhtmltopdf for generating PDFs, thumbnails
+# TAKE CAUTION WITH wkhtmltopdf security issues where crafted content renders server-side information
+RUN if [ "$GR_PDF_GENERATOR" = "wkhtmltopdf" ] ; then (yum -y install xorg-x11-server-Xvfb wkhtmltopdf && yum clean all && rm -rf /var/cache/yum) ; fi
 
 # Copy in the Python module requirements and install them.
-# Manually install database drivers which aren't in our requirements
 # file because they're not commonly used in development.
 COPY requirements.txt ./
-COPY requirements_mysql.txt ./
 RUN pip3.6 install --no-cache-dir -r requirements.txt
+# RUN pip3.6 install --no-cache-dir --user -r requirements.txt
+
+# Install database drivers which aren't in our requirements.
+RUN \
+   yum -y install \
+   python36u-devel gcc-c++.x86_64 \
+   mysql-devel \
+   && yum clean all && rm -rf /var/cache/yum
+COPY requirements_mysql.txt ./
 RUN pip3.6 install --no-cache-dir -r requirements_mysql.txt
 
-# Run pyup.io's python package vulnerability check.
-RUN safety check
+# Remove build libraries needed only for installing packages
+RUN \
+   yum -y remove \
+   python36u-devel.x86_64 python3-devel.x86_64 gcc-c++.x86_64
+RUN yum clean all && rm -rf /var/cache/yum
+
+# Remove unneeded Python libraries
+# Remove `pipenv` and its extra copies of `requests` and `urllib3` that scanners see
+# Safety only needed for preparing requirements files, not operating GovReady
+# RUN pip3.6 uninstall -y pipenv safety || true
+
+# Safety only needed for preparing requirements files, not operating GovReady
+## Run pyup.io's python package vulnerability check.
+#RUN safety check
 
 # Copy in the vendor resources and fetch them.
 COPY fetch-vendor-resources.sh ./
 RUN ./fetch-vendor-resources.sh
+# Confirm that sqlite3 command runs, for users who use it.
+RUN sqlite3 --version
 
 # Copy in remaining source code. (We put this last because these
 # change most frequently, so there is less to rebuild if we put
@@ -57,6 +91,7 @@ RUN ./fetch-vendor-resources.sh
 # that often has local development files. But *do* include fixtures
 # so that tests can be run.
 COPY VERSION ./VERSION
+COPY controls ./controls
 COPY discussion ./discussion
 COPY guidedmodules ./guidedmodules
 COPY modules ./modules
@@ -67,6 +102,8 @@ COPY q-files ./q-files
 COPY testmocking ./testmocking
 COPY system_settings ./system_settings
 COPY manage.py .
+COPY install-govready-q.sh .
+COPY quickstart.sh .
 
 # Flatten static files. Create a local/environment.json file that
 # has the static directory set and only setting necessary for collectstatic
@@ -90,12 +127,13 @@ RUN chmod a+rwx /run /var/log
 RUN sed -i "s:/var/run/supervisor/:/var/run/:" /etc/supervisord.conf
 RUN sed -i "s:/var/log/supervisor/:/var/log/:" /etc/supervisord.conf
 RUN sed -i "s:^;childlogdir=/tmp:childlogdir=/var/log:" /etc/supervisord.conf
-COPY deployment/docker/supervisord.ini /etc/supervisord.d/application.ini
+COPY $SUPERVISORD_INI /etc/supervisord.d/application.ini
 
 # Add container startup and management scripts.
-COPY deployment/docker/dockerfile_exec.sh .
+COPY $DOCKERFILE_EXEC_SH dockerfile_exec.sh
 COPY deployment/docker/first_run.sh /usr/local/bin/first_run
-COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
+# COPY deployment/docker/uwsgi_stats.sh /usr/local/bin/uwsgi_stats
+# COPY deployment/docker/gunicorn_stats.sh /usr/local/bin/gunicorn_stats
 COPY deployment/docker/tail_logs.sh /usr/local/bin/tail_logs
 COPY deployment/docker/add_data.sh /usr/local/bin/add_data
 
@@ -123,12 +161,18 @@ RUN chown -R application:application local
 # working environment.json file for the remainder of this Dockerfile, downstream
 # packagers using 'FROM govready/govready-q' might want to run additional
 # management commands, so we'll keep it working.
+
 RUN cp local/environment.json /tmp
 RUN chown -R application:application /tmp/environment.json
-RUN ln -sf /tmp/environment.json local/environment.json
 
 # Run the container's process zero as this user.
 USER application
+
+# Change file permissions to secure file
+RUN chmod 0600 /tmp/environment.json
+
+# Create symbolic link
+RUN ln -sf /tmp/environment.json local/environment.json
 
 # Test.
 RUN python3.6 manage.py check

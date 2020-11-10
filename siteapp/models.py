@@ -10,9 +10,19 @@ from django.utils import crypto, timezone
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
+from controls.models import System, Element
 from jsonfield import JSONField
 
 from itsystems.models import SystemInstance
+import logging
+logging.basicConfig()
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
+structlog.configure(logger_factory=LoggerFactory())
+structlog.configure(processors=[structlog.processors.JSONRenderer()])
+logger = get_logger()
+# logger = logging.getLogger(__name__)
 
 
 class User(AbstractUser):
@@ -210,7 +220,6 @@ class User(AbstractUser):
 
         return profile
 
-
     random_colors = ('#5cb85c', '#337ab7', '#AFB', '#ABF', '#FAB', '#FBA', '#BAF', '#BFA')
     def get_avatar_fallback_css(self):
         # Compute a non-cryptographic hash over the user ID and username to generate
@@ -254,6 +263,36 @@ class User(AbstractUser):
         portfolio_permissions = Portfolio.get_all_readable_by(self)
         project_permissions = self.get_portfolios_from_projects()
         return portfolio_permissions | project_permissions
+
+    @transaction.atomic
+    def create_default_portfolio_if_missing(self):
+        """Create a default portfolio if none exists"""
+
+        # Try to create a default portfolio with username
+        if not Portfolio.objects.filter(title=self.username).exists():
+            title = self.username
+        else:
+            # Loop through suffix to find a valid portfolio title
+            suffix = 2
+            title = self.username + "-" + str(suffix)
+            while Portfolio.objects.filter(title=title).exists():
+                suffix += 1
+                title = self.username + "-" + str(suffix)
+        portfolio = Portfolio.objects.create(title=title)
+        portfolio.save()
+        portfolio.assign_owner_permissions(self)
+        logger.info(
+            event="new_portfolio",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            user={"id": self.id, "username": self.username}
+        )
+        portfolio.assign_owner_permissions(self)
+        logger.info(
+            event="new_portfolio assign_owner_permissions",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            user={"id": self.id, "username": self.username}
+        )
+        return portfolio
 
     def get_portfolios_from_projects(self):
         projects = get_objects_for_user(self, 'siteapp.view_project')
@@ -364,6 +403,13 @@ class Portfolio(models.Model):
             ('can_grant_portfolio_owner_permission', 'Grant a user portfolio owner permission'),
         ]
 
+    def __str__(self):
+        return "'Portfolio %s id=%d'" % (self.title, self.id)
+
+    def __repr__(self):
+        # For debugging.
+        return "'Portfolio %s id=%d'" % (self.title, self.id)
+
     def get_absolute_url(self):
         return "/portfolios/%s/projects" % (self.id)
 
@@ -470,6 +516,7 @@ class Project(models.Model):
     """"A Project is a set of Tasks rooted in a Task whose Module's type is "project". """
     organization = models.ForeignKey(Organization, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Organization that this Project belongs to. User profiles (is_account_project is True) are not a part of any Organization.")
     portfolio = models.ForeignKey(Portfolio, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The Portfolio that this Project belongs to.")
+    system = models.ForeignKey(System, blank=True, null=True, related_name="projects", on_delete=models.CASCADE, help_text="The System that this Project is about.")
     is_organization_project = models.NullBooleanField(default=None, help_text="Each Organization has one Project that holds Organization membership privileges and Organization settings (in its root Task). In order to have a unique_together constraint with Organization, only the values None (which need not be unique) and True (which must be unique to an Organization) are used.")
     SystemInstance = models.ForeignKey(SystemInstance, blank=True, null=True, related_name="projects", on_delete=models.SET_NULL, help_text="The IT System to which this Projectis associated.")
 
@@ -547,6 +594,11 @@ class Project(models.Model):
 
     def assign_edit_permissions(self, user):
         permissions = ['view_project', 'change_project', 'add_project']
+        for perm in permissions:
+            assign_perm(perm, user, self)
+
+    def assign_view_permissions(self, user):
+        permissions = ['view_project']
         for perm in permissions:
             assign_perm(perm, user, self)
 
@@ -740,7 +792,6 @@ class Project(models.Model):
         self.root_task = task
         self.save()
 
-
     def set_system_task(self, app, editor):
         from guidedmodules.models import Module
         module = Module.objects.get(
@@ -748,7 +799,6 @@ class Project(models.Model):
             app__system_app=True,
             module_name="app")
         self.set_root_task(module, editor, expected_module_type="system-project")
-
 
     def render_snippet(self):
         return self.root_task.render_snippet()
@@ -780,8 +830,9 @@ class Project(models.Model):
 
     def is_invitation_valid(self, invitation):
         # Invitations to create a new Task remain valid so long as the
-        # inviting user is a member of the project.
-        return ProjectMembership.objects.filter(project=self, user=invitation.from_user).exists()
+        # inviting user is a member of the project or has view or edit permissions.
+        if invitation.from_user.has_perm('view_project', self) or invitation.from_user.has_perm('edit_project', self) or ProjectMembership.objects.filter(project=self, user=invitation.from_user).exists():
+            return True
 
     def accept_invitation(self, invitation, add_message):
         # Create a new Task for the user to begin a module.
@@ -968,6 +1019,181 @@ class Project(models.Model):
         return urllib.parse.urljoin(settings.SITE_ROOT_URL,
             "/api/v1//projects/{id}/answers".format(id=self.id))
 
+    @property
+    def available_root_task_versions_for_upgrade(self):
+        """Show available versions to which the root task module can be upgraded"""
+
+        # Import needed guidedmodules objects
+        from guidedmodules.models import AppSource, AppVersion
+        from guidedmodules.app_loading import is_module_changed
+
+        # Get the AppVersion instances that match the filters.
+        app_versions = AppVersion.objects.filter(
+            source=self.root_task.module.source,
+            appname=self.root_task.module.app.appname)\
+            .exclude(version_number=None)
+
+        # Sort available versions.
+        from packaging import version
+        app_versions = sorted(app_versions, key = lambda av : version.parse(av.version_number))
+        return app_versions
+
+    def is_safe_upgrade(self, new_app):
+        # A Project can be upgraded to a new app if every Module that has been started
+        # in the Project corresponds to a Module in the new app *and* the new Module
+        # has not changed in an incompatible way.
+
+        # Import needed guidedmodules objects
+        from guidedmodules.models import AppSource, AppVersion, Module
+        from guidedmodules.app_loading import is_module_changed
+
+        old_app = self.root_task.module.app
+
+        # Get the Modules in use by this Project, and make a mapping from name to module,
+        # Only need to test upgrading upgrades for modules that are actually in use.
+        old_modules = Module.objects.filter(task__project=self).distinct()
+        old_modules = {
+            m.module_name: m
+            for m in old_modules
+        }
+
+        # Get the corresponding Modules in the new app, and make a mapping.
+        new_modules = new_app.modules.filter(module_name__in=old_modules.keys())
+        new_modules = {
+            m.module_name: m
+            for m in new_modules
+        }
+
+        # Make a mapping of modules in the existing compliance app to their corresponding
+        # modules in the new compliance app (for modules that exist in both the old and new
+        # app with the same name) so that when checking module-type questions, we can know
+        # to expect certain ID changes. Here we need all of the modules in the app regardless
+        # of whether they are in use.
+        old_modules_all = { m.module_name: m for m in old_app.modules.all() }
+        new_modules_all = { m.module_name: m for m in new_app.modules.all() }
+        module_id_map = {
+            old_modules_all[m].id: new_modules_all[m].id
+            for m in set(old_modules_all) & set(new_modules_all)
+        }
+
+        # Check each module in use.
+        for module_name, old_module in old_modules.items():
+            if module_name not in new_modules:
+                # Module must exist in the new app version to be compatible.
+                return "The module {} does not exist in the new app.".format(module_name)
+            else:
+                new_module = new_modules[module_name]
+
+                # Get the 'spec' which is the Python representation of the
+                # YAML module data. Clone it (dict(...)).
+                spec = dict(new_module.spec)
+
+                # Put back information that we move out when we load it into the database
+                # that is_module_changed expects to be there.
+                spec["questions"] = [q.spec for q in new_module.questions.all()]
+
+                changed = is_module_changed(old_module, new_app.source, spec, module_id_map=module_id_map)
+                if changed in (None, False):
+                # if changed in (None, False, 'The module version number changed, forcing a reload.'):
+                    # 'None' signals no changes.
+                    # 'False' means no incompatible changes.
+                    # 'The module version number changed, forcing a reload.' means only the version number has changed
+                    pass
+                else:
+                    # There is an incompatible change. 'changed' holds a string describing
+                    # the issue.
+                    return changed
+
+        # The upgrade is safe.
+        return True
+
+    @transaction.atomic
+    def upgrade_root_task_app(self, new_app):
+
+        # Import needed guidedmodules objects
+        from guidedmodules.models import AppSource, AppVersion, Module, ModuleQuestion, Task, TaskAnswer
+        from guidedmodules.app_loading import is_module_changed
+
+        # Get the current AppVersion.
+        old_app = self.root_task.module.app
+
+        # Get the target AppVersion.
+        # new_app = AppVersion.objects.get(
+        #     source__slug=options["app_source"],
+        #     appname=options["app_name"],
+        #     version_number=options["app_version"])
+
+        # Check that it is safe to upgrade to it.
+        changed = self.is_safe_upgrade(new_app)
+        if changed is not True:
+            print("The compliance app has incompatible changes with the current app.")
+            print(changed)
+            return changed
+
+        # Do the upgrade.
+
+        # Get the Modules in use by this Project, and make a mapping from name to module,
+        old_modules = Module.objects.filter(task__project=self).distinct()
+        old_modules = {
+            m.module_name: m
+            for m in old_modules
+        }
+
+        # Get the corresponding Modules in the new app, and make a mapping.
+        new_modules = new_app.modules.filter(module_name__in=old_modules.keys())
+        new_modules = {
+            m.module_name: m
+            for m in new_modules
+        }
+
+        # Every task in the Project is updated to point to the corresponding Module
+        # in the new app. This is optmized to do one database statement per Module
+        # in use by the Task, which is slightly better than doing one statement per
+        # Task, since multiple Tasks within the Project might use the same Module.
+        # It would be even faster to use bulk_update added in Django 2.2 (https://docs.djangoproject.com/en/3.1/ref/models/querysets/#bulk-update).
+        for m in old_modules.keys():
+            Task.objects\
+                .filter(project=self,
+                        module=old_modules[m])\
+                .update(module=new_modules[m])
+
+        # Additionally, each TaskAnswer is updated to point to the corresponding
+        # ModuleQuestion in the new app.
+
+        # Get the ModuleQuestions in use by this Project, and make a mapping from
+        # (module name, question key) to ModuleQuestion,
+        old_module_questions = ModuleQuestion.objects\
+            .select_related('module')\
+            .filter(taskanswer__task__project=self).distinct()
+        old_module_questions = {
+            (q.module.module_name, q.key): q
+            for q in old_module_questions
+        }
+
+        # Get the corresponding ModuleQuestionss in the new app, and make a similar mapping.
+        new_module_questions = ModuleQuestion.objects\
+            .select_related('module')\
+            .filter(module__app=new_app)
+        new_module_questions = {
+            (q.module.module_name, q.key): q
+            for q in new_module_questions
+        }
+
+        # Do the replacements. This is optmized to do one database statement per
+        # ModuleQuestion that has been answered in the Task, which is slightly
+        # better than doing one statement per TaskAnswer, since a ModuleQuestion
+        # might be answered multiple times within a Project if the Project contains
+        # multiple Tasks for the same Module. See the comment about using bulk_update
+        # above.
+        for key in old_module_questions.keys():
+            TaskAnswer.objects\
+                .filter(task__project=self,
+                        question=old_module_questions[key])\
+                .update(question=new_module_questions[key])
+            print("Updating {}".format(new_module_questions[key]))
+        print("Update complete.")
+        return True
+
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE, help_text="The Project this is defining membership for.")
     user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="The user that is a member of the Project.")
@@ -1108,3 +1334,14 @@ class Invitation(models.Model):
 
     def get_redirect_url(self):
         return self.target.get_invitation_redirect_url(self)
+
+class Support(models.Model):
+  """Model for support information for support page for install of GovReady"""
+
+  email = models.EmailField(max_length=254, unique=False, blank=True, null=True, help_text="Support email address")
+  phone = models.CharField(max_length=24, unique=False, blank=True, null=True, help_text="Support phone number")
+  text = models.TextField(unique=False, blank=True, null=True, help_text="Text or HTML content to appear at top of support page")
+  url = models.URLField(max_length=200, unique=False, blank=True, null=True, help_text="Support url")
+
+  def __str__(self):
+    return "Support information"

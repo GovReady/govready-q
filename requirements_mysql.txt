@@ -1,2 +1,6 @@
-mysqlclient==1.4.4 \
-    --hash=sha256:9c737cc55a5dc8dd3583a942d5a9b21be58d16f00f5fefca4e575e7d9682e98c
+mysqlclient==2.0.1 \
+    --hash=sha256:3f39855a4ad22805361e782cc4d1010ac74796225fa2d1c03cc16673ccdc983a \
+    --hash=sha256:a6b5648f648b16335e3b1aaec93dc3fcc81a9a661180e306936437cc522c810b \
+    --hash=sha256:edd42ccaa444b00702d5374b2f5f7585c9d0ce201917f15339f1c3cf91c1b1ed \
+    --hash=sha256:fb2f75aea14722390d2d8ddf384ad99da708c707a96656210a7be8af20a2c5e5 \
+    # via -r requirements_mysql.in

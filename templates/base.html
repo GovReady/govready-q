@@ -19,6 +19,8 @@
         <link rel="stylesheet" href="{% static "vendor/google-fonts.css" %}">
         <link rel="stylesheet" href="{% static "css/govready-q.css" %}">
         <link rel="stylesheet" href="{% static "vendor/bootstrap/css/bootstrap-theme.min.css" %}">
+        <link rel="stylesheet" href="{% static "vendor/jsgrid/jsgrid.min.css" %}">
+        <link rel="stylesheet" href="{% static "vendor/jsgrid/jsgrid-theme.min.css" %}">
         <script defer src="{% static "vendor/fontawesome.js" %}"></script>
         {% include "head.html" %}
 
@@ -75,15 +77,12 @@
         <div class="container-fluid">
           <div class="row">
             <div class="col-sm-12">
-              <div class="row">
-                <div class="col-xs-12">
-                    &copy; GovReady {% now "Y" %}.
-                    <a href="/privacy">Privacy Policy</a>.
-                    <a href="/terms-of-service">Terms of Service</a>. 
-                </div>
-                <div class="col-xs-12">
-                  ver {{APP_VERSION_STRING}}
-                </div>
+              <div class="row" style="width: 768px; margin: auto; border-top: 1px solid #eee; padding-top: 24px;">
+                <div class="col-xs-3">&copy; GovReady PBC {% now "Y" %}</div>
+                <div class="col-xs-2" style="text-align: center;"><a href="/privacy">Privacy Policy</a></div>
+                <div class="col-xs-2" style="text-align: center;""><a href="/terms-of-service">Terms of Service</a></div>
+                <div class="col-xs-2" style="text-align: center;""><a href="/support">Support</a></div>
+                <div class="col-xs-3" style="text-align: right;">{{APP_VERSION_STRING}}</div>
             </div>
           </div>
         </div>
@@ -134,7 +133,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-success btn-submit" onclick="$('#invitation_modal form').submit()">Invite</button>
+            <button id="invite_submit_btn" type="button" class="btn btn-success btn-submit" onclick="$('#invitation_modal form').submit()">Invite</button>
           </div>
         </div>
       </div>
@@ -149,6 +148,7 @@
     <script src="{% static "js/discussion.js" %}"></script>
     <script src="{% static "js/main.js" %}"></script>
     <script src="{% static "vendor/bootstrap-helpers.js" %}"></script>
+    <script src="{% static "vendor/jsgrid/jsgrid.min.js" %}"></script>
     <script>
     $(document).ajaxSend(function(event, xhr, settings) { if (!/^https?:.*/.test(settings.url)) xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); });
     </script>

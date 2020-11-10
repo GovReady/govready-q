@@ -6,7 +6,9 @@ admin.autodiscover()
 
 import siteapp.views as views
 import siteapp.views_landing as views_landing
+import siteapp.views_health as views_health
 from .good_settings_helpers import signup_wrapper
+from .settings import *
 
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
@@ -18,12 +20,19 @@ urlpatterns = [
     # incoming email hook for responses to notifications
     url(r'^notification_reply_email_hook$', views_landing.notification_reply_email_hook),
 
+    # Enterprise Single Sign On
+    url(r'^sso-logout$', views.sso_logout, name="sso-logout"),
+
     # Django admin site
     url(r'^admin/', admin.site.urls),
 
     # apps
     url(r"^tasks/", include("guidedmodules.urls")),
     url(r"^discussion/", include("discussion.urls")),
+
+    # Controls and Systems
+    url(r"^controls/", include("controls.urls")),
+    url(r"^systems/", include("controls.urls")),
 
     # app store
     url(r'^store$', views.apps_catalog, name="store"),
@@ -34,12 +43,15 @@ urlpatterns = [
 
     # projects
     url(r"^projects$", views.project_list, name="projects"),
+    url(r"^projects/lifecycle$", views.project_list_lifecycle, name="projects_lifecycle"),
     url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__admins$', views.make_revoke_project_admin, name="make_revoke_project_admin"),
     url(r'^projects/(\d+)/__export$', views.export_project, name="export_project"),
     url(r'^projects/(\d+)/__import$', views.import_project_data, name="import_project_data"),
+    url(r'^projects/(\d+)/__upgrade$', views.upgrade_project, name="upgrade_project"),
     url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project), # must be last because regex matches some previous URLs
+    url(r'^projects/(\d+)/(?:[\w\-]+)(/settings)$', views.project_settings, name="project_settings"),
     url(r'^projects/(\d+)/(?:[\w\-]+)(/startapps)$', views.project_start_apps), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/list)$', views.project_list_all_answers), # must be last because regex matches some previous URLs
     url(r'^projects/(\d+)/(?:[\w\-]+)(/outputs)$', views.project_outputs), # must be last because regex matches some previous URLs
@@ -67,9 +79,22 @@ urlpatterns = [
     url(r'^invitation/_cancel$', views.cancel_invitation, name="cancel_invitation"),
     url(r'^invitation/accept/(?P<code>.+)$', views.accept_invitation, name="accept_invitation"),
 
+    # support
+    url(r'^support$', views.support, name="support"),
+
     # administration
     url(r'^settings$', views.organization_settings),
     url(r'^settings/_save$', views.organization_settings_save),
+
+    # health
+    url(r'^health/$', views_health.index),
+    url(r'^health/check-system$', views_health.check_system),
+    url(r'^health/check-vendor-resources$', views_health.check_vendor_resources),
+    url(r'^health/list-vendor-resources$', views_health.list_vendor_resources),
+    url(r'^health/load-base/(?P<args>.*)$', views_health.load_base),
+    url(r'^health/request-headers$', views_health.request_headers),
+    url(r'^health/request$', views_health.request),
+    url(r'^health/debug$', views.debug, name="debug"),
 ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
@@ -91,4 +116,14 @@ if settings.DEBUG: # also in urls_landing
     import debug_toolbar
     urlpatterns += [
         url(r'^__debug_toolbar__/', include(debug_toolbar.urls)),
+    ]
+
+# Enterprise Single Sign On
+# if SSO Proxy enabled, add-in route to `/accounts/logout/` which comes from Django's account
+# module but is not present from Django when SSO Proxy enabled
+if environment.get("trust-user-authentication-headers"):
+    print("settings.PROXY_AUTHENTICATION_USER_HEADER enabled. Catching route accounts/logout/")
+    import debug_toolbar
+    urlpatterns += [
+        url(r'^accounts/logout/$', views.sso_logout, name="sso-logout")
     ]

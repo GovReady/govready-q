@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('version', models.CharField(blank=True, help_text='The current version number for this component.', max_length=50, null=True)),
                 ('created', models.DateTimeField(auto_now_add=True, db_index=True)),
                 ('updated', models.DateTimeField(auto_now=True, db_index=True)),
-                ('vendor', models.ForeignKey(help_text='The vendor who supports or sells this component.', on_delete='CASCADE', related_name='components', to='itsystems.Vendor')),
+                ('vendor', models.ForeignKey(help_text='The vendor who supports or sells this component.', on_delete=models.CASCADE, related_name='components', to='itsystems.Vendor')),
             ],
         ),
     ]

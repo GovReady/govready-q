@@ -3,6 +3,7 @@ __pycache__/
 /local
 /modules/local
 siteapp/static/vendor
+siteapp/static
 apps/
 
 # generated files
@@ -20,6 +21,9 @@ __pycache__/
 
 # C extensions
 *.so
+
+# py instrument instrument files
+profiles/
 
 # Distribution / packaging
 .Python
@@ -97,4 +101,10 @@ docs/build
 # scanners
 .scannerwork/
 sonar-project.properties
+
+# vscode
+.vscode/
+
+# notes
+_notes/
 

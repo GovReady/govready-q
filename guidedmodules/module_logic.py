@@ -101,7 +101,13 @@ def evaluate_module_state(current_answers, parent_context=None):
     # until we arrive at questions that have no unanswered dependencies.
     # Such questions can be put forth to the user.
 
-    # Build a list of ModuleQuestions that the user may answer now.
+    # Build a list of ModuleQuestion that the are not unanswerable
+    # because they are imputed or unavailable to the user. These
+    # questions may have no answer or can be updatd with a new answer.
+    answerable = set()
+
+    # Build a list of ModuleQuestions that the user may answer now
+    # excluding questions that the have already been answered.
     can_answer = set()
 
     # Build a list of ModuleQuestions that still need an answer,
@@ -140,12 +146,18 @@ def evaluate_module_state(current_answers, parent_context=None):
         # a state in which it wasn't imputed, but now it is), the
         # user's answer is overridden with the imputed value for
         # consistency with the Module's logic.
-        
-        # Create an evaluation context for evaluating impute conditions
-        # that only sees the answers of this question's dependencies,
-        # which are in state because we return the answers from this
-        # method and they are collected as the walk continues up the
-        # dependency tree. 
+
+        # Before running impute conditions below, we need a TemplateContext
+        # which provides the functionality of resolving variables mentioned
+        # in the impute condition. The TemplateContext that we use here is 
+        # different from the one we normally use to render output documents
+        # because an impute condition in a question should not be able to see
+        # the answers to questions that come later in the module. The purpose
+        # of evaluate_module_state is, in part, to get the answers to questions,
+        # included imputed answers, and so the answers to later questions are not
+        # yet know. Therefore, we construct a TemplateContext that only includes
+        # the answers to questions that we've computed so far.
+
         impute_context = TemplateContext(
             ModuleAnswers(current_answers.module, current_answers.task, state),
             impute_context_parent.escapefunc, parent_context=impute_context_parent, root=True)
@@ -158,9 +170,10 @@ def evaluate_module_state(current_answers, parent_context=None):
             was_imputed.add(q.key)
 
         elif q.key in current_answers.as_dict():
-            # The user has provided an answer to this question.
+            # The user has provided an answer to this question. Question can be updated.
             answerobj = current_answers.get(q.key)
             v = current_answers.as_dict()[q.key]
+            answerable.add(q)
 
         elif current_answers.module.spec.get("type") == "project" and q.key == "_introduction":
             # Projects have an introduction but it isn't displayed as a question.
@@ -177,6 +190,7 @@ def evaluate_module_state(current_answers, parent_context=None):
             #
             # But we can remember that this question *can* be answered
             # by the user, and that it's not answered yet.
+            answerable.add(q)
             can_answer.add(q)
             unanswered.add(q)
             answertuples[q.key] = (q, False, None, None)
@@ -210,6 +224,7 @@ def evaluate_module_state(current_answers, parent_context=None):
     ret.was_imputed = was_imputed
     ret.unanswered = unanswered
     ret.can_answer = can_answer
+    ret.answerable = answerable
     return ret
 
 
@@ -386,7 +401,6 @@ def render_content(content, answers, output_format, source, additional_context={
 
             template_format = "html"
             template_body = q_renderer().render(CommonMarkParser().parse(template_body))
-
             # Put the Jinja2 template tags back that we removed prior to running
             # the CommonMark renderer.
             def replace(m):
@@ -465,8 +479,7 @@ def render_content(content, answers, output_format, source, additional_context={
         else:
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
-
-    elif template_format in ("text", "markdown", "html"):
+    elif template_format in ("text", "markdown", "html", "oscal_json", "oscal_xml"):
         # The plain-text and HTML template types are rendered using Jinja2.
         #
         # The only difference is in how escaping of substituted variables works.
@@ -474,10 +487,9 @@ def render_content(content, answers, output_format, source, additional_context={
         # anwers as if the user was typing Markdown. That makes sure that
         # paragraphs aren't collapsed in HTML, and gives us other benefits.
         # For other values we perform standard HTML escaping.
-
         import jinja2
 
-        if template_format in ("text", "markdown"):
+        if template_format in ("text", "markdown", "oscal_json", "oscal_xml"):
             def escapefunc(question, task, has_answer, answerobj, value):
                 # Don't perform any escaping. The caller will wrap the
                 # result in jinja2.Markup().
@@ -485,7 +497,7 @@ def render_content(content, answers, output_format, source, additional_context={
             def errorfunc(message, short_message, long_message, **format_vars):
                 # Wrap in jinja2.Markup to prevent auto-escaping.
                 return jinja2.Markup("<" + message.format(**format_vars) + ">")
-    
+
         elif template_format == "html":
             escapefunc = HtmlAnswerRenderer(show_metadata=show_answer_metadata, use_data_urls=use_data_urls)
             def errorfunc(message, short_message, long_message, **format_vars):
@@ -554,14 +566,12 @@ def render_content(content, answers, output_format, source, additional_context={
             # a big error message for the output as a whole or silently ignoring it.
             for varname in get_jinja2_template_vars(template_body):
                 context.setdefault(varname, UndefinedReference(varname, errorfunc, [source]))
-
             # Now really render.
             output = template.render(context)
         except Exception as e:
             raise ValueError("There was an error executing the template %s: %s" % (source, str(e)))
 
         # Convert the output to the desired output format.
-
         if template_format == "text":
             if output_format == "text":
                 # text => text (nothing to do)
@@ -572,6 +582,22 @@ def render_content(content, answers, output_format, source, additional_context={
                 import html
                 return "<pre>" + html.escape(output) + "</pre>"
         elif template_format == "markdown":
+            if output_format == "text":
+                # TODO: markdown => text, for now just return the Markdown markup
+                return output
+            elif output_format == "markdown":
+                # markdown => markdown -- nothing to do
+                return output
+        elif template_format == "oscal_json":
+            if output_format == "text":
+                # TODO: markdown => text, for now just return the Markdown markup
+                return output
+            elif output_format == "markdown":
+                # markdown => markdown -- nothing to do
+                return output
+            # markdown => html never occurs because we convert the Markdown to
+            # HTML earlier and then we see it as html => html.
+        elif template_format == "oscal_xml":
             if output_format == "text":
                 # TODO: markdown => text, for now just return the Markdown markup
                 return output
@@ -631,7 +657,7 @@ def render_content(content, answers, output_format, source, additional_context={
                 return output
 
         raise ValueError("Cannot render %s to %s." % (template_format, output_format))
-         
+
     else:
         raise ValueError("Invalid template format encountered: %s." % template_format)
 
@@ -707,6 +733,51 @@ class HtmlAnswerRenderer:
 
             wrappertag = "div"
 
+        elif question is not None and question.spec["type"] == "datagrid":
+            # Assuming that RenderedAnswer gives us string version of the stored datagrid object
+            # that is an Array of Dictionaries
+            import ast
+            try:
+                # Get datagrid data if datagrid question has been answered with information
+                datagrid_rows = ast.literal_eval(value)
+            except:
+                if value == "<nothing chosen>":
+                    # Datagrid question has been visited and instantiated but no answer given
+                    # No data was entered into data grid
+                    datagrid_rows = []
+                else:
+                    # Datagrid question has not been visited and not yet instantiated
+                    # `value` is set to "<Software Inventory (datagrid)>"
+                    datagrid_rows = []
+
+            if "render" in question.spec and question.spec["render"] == "vertical":
+                # Build a vertical table to display datagrid information
+                value = ""
+                for item in datagrid_rows:
+                    # Start a new table
+                    value += "<table class=\"table\">\n"
+                    # Create a row for each field
+                    for field in question.spec["fields"]:
+                        value += "<tr><td class=\"td_datagrid_vertical\">{}</td><td>{}</td></tr>".format(html.escape(str(field["text"])), html.escape(str(item[field["key"]])))
+                    value += "\n</table>"
+            else:
+                # Build a standard table to display datagrid information
+                value = "<table class=\"table\">\n"
+                value += "<thead>\n<tr>"
+                # To get the correct order, get keys from question specification fields
+                for field in question.spec["fields"]:
+                    value += "<th>{}</th>".format(html.escape(str(field["text"])))
+                value += "</tr>\n"
+                for item in datagrid_rows:
+                    value += "<tr>"
+                    # To get the correct order, get keys from question specification fields
+                    for field in question.spec["fields"]:
+                        value += "<td>{}</td>".format(html.escape(str(item[field["key"]])))
+                    value += "</tr>\n</thead>"
+                # value = html.escape(str(datagrid_rows))
+                value += "\n</table>"
+            wrappertag = "div"
+
         else:
             # Regular text fields just get escaped.
             value = html.escape(str(value))
@@ -717,7 +788,23 @@ class HtmlAnswerRenderer:
 
         # Wrap the output in a tag that holds metadata.
 
-        # If the question is unanswered or imputed...
+        # If the question is imputed...
+        if has_answer and not answerobj:
+            return """<{tag} class='question-answer'
+              data-module='{module}'
+              data-question='{question}'
+              data-answer-type='{answer_type}'
+              {edit_link}
+              >{value}</{tag}>""".format(
+                tag=wrappertag,
+                module=html.escape(question.module.spec['title']),
+                question=html.escape(question.spec["title"]),
+                answer_type="skipped" if not has_answer else "imputed",
+                edit_link="",
+                value=value,
+            )
+
+        # If the question is unanswered...
         if not answerobj:
             return """<{tag} class='question-answer'
               data-module='{module}'
@@ -842,6 +929,24 @@ def get_question_dependencies_with_type(question, get_from_question_id=None):
          if qid in get_from_question_id
        ]
 
+jinja2_expression_compile_cache = { }
+
+def compile_jinja2_expression(expr):
+    # If the expression has already been compiled and is in the cache,
+    # return the compiled expression.
+    if expr in jinja2_expression_compile_cache:
+        return jinja2_expression_compile_cache[expr]
+
+    # The expression is not in the cache. Compile it.
+    env = Jinja2Environment()
+    compiled = env.compile_expression(expr)
+
+    # Save it to the cache.
+    jinja2_expression_compile_cache[expr] = compiled
+
+    # Return it.
+    return compiled
+
 def run_impute_conditions(conditions, context):
     # Check if any of the impute conditions are met based on
     # the questions that have been answered so far and return
@@ -851,7 +956,7 @@ def run_impute_conditions(conditions, context):
     env = Jinja2Environment()
     for rule in conditions:
         if "condition" in rule:
-            condition_func = env.compile_expression(rule["condition"])
+            condition_func = compile_jinja2_expression(rule["condition"])
             try:
                 value = condition_func(context)
             except:
@@ -865,7 +970,7 @@ def run_impute_conditions(conditions, context):
                 # Imputed value is the raw YAML value.
                 value = rule["value"]
             elif rule.get("value-mode", "raw") == "expression":
-                value = env.compile_expression(rule["value"])(context)
+                value = compile_jinja2_expression(rule["value"])(context)
                 if isinstance(value, RenderedAnswer):
                     # Unwrap.
                     value =  value.answer
@@ -981,6 +1086,7 @@ class ModuleAnswers(object):
         # documents are lazy-rendered because not all of them may
         # be used by the caller.
         output_formats = ("html", "text", "markdown")
+
         class LazyRenderedDocument:
             def __init__(self, module_answers, document, index, use_data_urls):
                 self.module_answers = module_answers
@@ -988,6 +1094,7 @@ class ModuleAnswers(object):
                 self.index = index
                 self.rendered_content = { }
                 self.use_data_urls = use_data_urls
+
             def __iter__(self):
                 # Yield all of the keys that are in the output document
                 # specification, plus all of the output formats which are
@@ -1044,6 +1151,7 @@ class ModuleAnswers(object):
             def get(self, key, default=None):
                 if key in output_formats or key in self.document:
                     return self[key]
+
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
 
@@ -1130,6 +1238,26 @@ class TemplateContext(Mapping):
                 if self.parent_context is not None: # use parent's cache
                     return self.parent_context[item]
                 return RenderedOrganization(self.module_answers.task, parent_context=self)
+            if item == "control_catalog":
+                # Retrieve control catalog(s) for project
+                # Temporarily retrieve a single catalog
+                # TODO: Retrieve multiple catalogs because we could have catalogs plus overlays
+                #       Will need a better way to determine the catalogs on a system so we can retrieve at once
+                #       Maybe get the catalogs as a property of the system
+                # Retrieve a Django dictionary of dictionaries object of full control catalog
+                from controls.oscal import Catalog
+                # Detect single control catalog from first control
+                try:
+                    catalog_key = self.module_answers.task.project.system.root_element.controls.first().oscal_catalog_key
+                    sca = Catalog.GetInstance(catalog_key=catalog_key)
+                    control_catalog = sca.flattended_controls_all_as_dict
+                except:
+                    control_catalog = None
+                return control_catalog
+            if item == "system":
+                # Retrieve the system object associated with this project
+                # Returned value must be a python dictionary
+                return self.module_answers.task.project.system
             if item in ("is_started", "is_finished"):
                 # These are methods on the Task instance. Don't
                 # call the method here because that leads to infinite
@@ -1179,13 +1307,14 @@ class TemplateContext(Mapping):
             yield q.key
 
         # special values
+        # List the name of variables that are available in the templatecontext `getitem`
         if self.module_answers and self.module_answers.task:
             # Attributes that are only available if there is a task.
             if not self.is_computing_title or not self.root:
                 # 'title' isn't available if we're in the process of
                 # computing it
                 yield "title"
-            for attribute in ("task_link", "project", "organization"):
+            for attribute in ("task_link", "project", "organization", "control_catalog", "system"):
                 if attribute not in seen_keys:
                     yield attribute
 
@@ -1301,12 +1430,15 @@ class RenderedAnswer:
                 # an unanswered question is rendered.
                 raise ValueError("Attempt to render unanswered question {}.".format(self.question.key))
             value = "<%s>" % self.question.spec['title']
-        
+
         elif self.question_type == "multiple-choice":
-            # Render multiple-choice as a comma+space-separated list
-            # of the choice keys.
+            # Render multiple-choice as a comma+space-separated list of the choice keys.
             value = ", ".join(self.answer)
-        
+
+        elif self.question_type == "datagrid":
+            # Render datagrid as an array of dictionaries
+            value = str(self.answer)
+
         elif self.question_type == "file":
             # Pass something to the escapefunc that HTML rendering can
             # recognize as a file but non-HTML rendering sees as a string.
@@ -1316,7 +1448,7 @@ class RenderedAnswer:
                 def __str__(self):
                     return "<uploaded file: " + self.file_data['url'] + ">"
             value = FileValueWrapper(self.answer)
-        
+
         elif self.question_type in ("module", "module-set"):
             ans = self.answer # ModuleAnswers or list of ModuleAnswers
             if self.question_type == "module": ans = [ans] # make it a lsit
@@ -1369,6 +1501,12 @@ class RenderedAnswer:
                 choices = [get_question_choice(self.question, c)["text"] for c in self.answer] # get choice text
                 delim = "," if ("," not in "".join(choices)) else ";" # separate choices by commas unless there are commas in the choices, then use semicolons
                 value = (delim+" ").join(choices)
+        elif self.question_type == "datagrid":
+            if len(self.answer) == 0:
+                value = "<nothing chosen>"
+            else:
+                value = str(self.answer)
+
         elif self.question_type in ("integer", "real"):
             # Use a locale to generate nice human-readable numbers.
             # The locale is set on app startup using locale.setlocale in settings.py.
@@ -1522,7 +1660,30 @@ class RenderedAnswer:
                     self.answerobj,
                     ans, self.parent_context)
                 for ans in self.answer)
-        
+
+        elif self.question_type == "datagrid":
+            # Iterate by creating a RenderedAnswer for each selected field,
+            # with a made-up temporary Question instance that has the same
+            # properties as the actual datagrid field but whose
+            # type is a single "datagrid".
+            from .models import ModuleQuestion
+            return (
+                RenderedAnswer(
+                    self.task,
+                    ModuleQuestion(
+                        module=self.question.module,
+                        key=self.question.key,
+                        spec={
+                            "type": "datagrid",
+                            "title": self.question.spec['title'],
+                            "prompt": self.question.spec['prompt'],
+                            "fields": self.question.spec["fields"],
+                        }),
+                    self.is_answered,
+                    self.answerobj,
+                    ans, self.parent_context)
+                for ans in self.answer)
+
         elif self.question_type == "module-set":
             # Iterate over the sub-tasks' answers. Load each's answers + imputed answers.
             return (TemplateContext(
@@ -1534,6 +1695,10 @@ class RenderedAnswer:
 
     def __len__(self):
         if self.question_type in ("multiple-choice", "module-set"):
+            if self.answer is None: return 0
+            return len(self.answer)
+
+        if self.question_type in ("datagrid"):
             if self.answer is None: return 0
             return len(self.answer)
 

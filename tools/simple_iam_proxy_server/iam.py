@@ -1,4 +1,5 @@
 import os
+import re
 import http.server
 import socketserver
 import http.cookies
@@ -94,6 +95,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
       "X-Forwarded-For": ((headers["X-Forwarded-For"] + ", ") if "X-Forwarded-For" in headers else "")
          + self.client_address[0]
     })
+
+    # Set Host (see https://tools.ietf.org/html/rfc7230#section-5.4) for Django to read
+    headers["Host"] = re.sub('^https?://', '', BACKEND_URL, flags=re.IGNORECASE)
+
+    # Build request
     req = urllib.request.Request(
             BACKEND_URL + self.path,
             data=body,
@@ -127,5 +133,6 @@ socketserver.TCPServer.allow_reuse_address = True
 httpd = socketserver.TCPServer((BIND_HOST, BIND_PORT), Handler)
 
 # Begin listening for connections.
+print("Authentication headers: " + IAM_USERNAME_HEADER + ", " + IAM_EMAIL_HEADER + ".")
 print("Forwarding http://" + BIND_HOST + ":" + str(BIND_PORT) + " to " + BACKEND_URL + ".")
 httpd.serve_forever()

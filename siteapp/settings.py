@@ -1,7 +1,7 @@
 # from https://raw.githubusercontent.com/if-then-fund/django-good-settings/master/settings.py
 
 ################################################################
-# Good defaults for a setttings.py, plus logic for bringing    #
+# Good defaults for a settings.py, plus logic for bringing    #
 # in settings from various normal places you might store them. #
 ################################################################
 
@@ -24,11 +24,14 @@ def make_secret_key():
 	from django.utils.crypto import get_random_string
 	return get_random_string(50, 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)')
 
+# Gather parameter settings from 'local/environment.json' file
+# NOTE: `environment` here refers to locally created environment data object and not OS level environment variables
 if os.path.exists(local("environment.json")):
         try:
                 environment = json.load(open(local("environment.json")))
         except json.decoder.JSONDecodeError as e:
                 print("%s is not in JSON format" % local("environment.json"))
+                print(open(local("environment.json")).read())
                 exit(1)
 else:
 	# Make some defaults and show the user.
@@ -45,6 +48,10 @@ else:
 	print(json.dumps(environment, sort_keys=True, indent=2))
 	print()
 
+# Load pre-specified admin users
+# Example: "govready_admins":[{"username": "username", "email":"first.last@example.com", "password": "REPLACEME"}]
+GOVREADY_ADMINS = environment.get("govready_admins") or []
+
 # DJANGO SETTINGS #
 ###################
 
@@ -55,9 +62,20 @@ SECRET_KEY = environment.get("secret-key") or make_secret_key()
 DEBUG = bool(environment.get("debug"))
 ADMINS = environment.get("admins") or []
 
-# Set Django's ALLOWED_HOSTS parameter from the host environment. If it has a port, strip it.
-# The port is used in SITE_ROOT_URL must must be removed from ALLOWED_HOSTS.
-ALLOWED_HOSTS = [environment["host"].split(':')[0]]
+# Set GOVREADY_URL if 'govready-url' set in environment.json.
+from urllib.parse import urlparse
+GOVREADY_URL = urlparse(environment.get("govready-url",""))
+
+# Set Django's ALLOWED_HOSTS parameter.
+# Use the deprecated 'host' environment parameter and preferred 'govready-url'.
+# The port is used in SITE_ROOT_URL must be removed from ALLOWED_HOSTS.
+ALLOWED_HOSTS = []
+if "host" in environment:
+	ALLOWED_HOSTS = [environment["host"].split(':')[0]]
+	print("WARNING: Use of 'host' environment parameter deprecated. Please use 'govready-url' environment parameter in future.")
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
+	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
+print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
 
 # allauth requires the use of the sites framework.
 SITE_ID = 1
@@ -140,17 +158,23 @@ if not DEBUG:
 # email address before confirming ownership.
 AUTH_USER_MODEL = primary_app + '.User'
 LOGIN_REDIRECT_URL = "/"
-AUTHENTICATION_BACKENDS = [
+AUTHENTICATION_BACKENDS = [ # see settings_application.py for how this is possible changed later
 	'django.contrib.auth.backends.ModelBackend',
 	'allauth.account.auth_backends.AuthenticationBackend', # allauth
 	'guardian.backends.ObjectPermissionBackend',
 	]
+
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
+if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in environment and environment["https"]):
+	ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+if "https" in environment:
+	print("WARNING: Use of 'https' environment paramenter deprecated. Please use 'govready-url' environment parameter in future.")
+
 ACCOUNT_ADAPTER = primary_app + '.good_settings_helpers.AllauthAccountAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_UNIQUE_EMAIL = False # otherwise unconfirmed addresses may block real users
 ACCOUNT_EMAIL_REQUIRED = True # otherwise password resets are not possible
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = ("http" if not environment["https"] else "https")
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 15 # default of 5 is too low!
 ACCOUNT_LOGOUT_ON_GET = True # allow simplified logout link
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
@@ -291,8 +315,16 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 # If the "email" environment setting is present, it is a dictionary
 # providing an SMTP server to send outbound emails to. TLS is
 # always turned on.
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+	EMAIL_SUBJECT_PREFIX = '[' + GOVREADY_URL.hostname + '] '
+elif "host" in environment:
+	EMAIL_SUBJECT_PREFIX = '[' + environment['host'] + '] '
+else:
+	EMAIL_SUBJECT_PREFIX = '[' + 'localhost' + '] '
+	print("WARNING: host not properly defined to set EMAIL_SUBJECT_PREFIX")
+
 if environment.get("email", {}).get("host"):
 	EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 	EMAIL_HOST = environment["email"]["host"]
@@ -301,18 +333,29 @@ if environment.get("email", {}).get("host"):
 	EMAIL_HOST_PASSWORD = environment["email"]["pw"]
 	EMAIL_USE_TLS = True
 
-# If the "https" environment setting is true, set the settings
-# that keep sessions and cookies secure and redirect any non-HTTPS
+# If the deprecated "https" environment setting is true or preferred 'govready-url' includes "https",
+# set the settings that keep sessions and cookies secure and redirect any non-HTTPS
 # requests to HTTPS.
-if environment["https"]:
+# Give GOVREADY_URL.scheme from 'govready-url' precedence.
+
+if (GOVREADY_URL.scheme == "https") or (GOVREADY_URL.scheme == "" and "https" in environment and environment["https"]):
+	print("INFO: Connection scheme is 'https'.")
 	SESSION_COOKIE_HTTPONLY = True
 	SESSION_COOKIE_SECURE = True
 	CSRF_COOKIE_HTTPONLY = True
 	CSRF_COOKIE_SECURE = True
-	SECURE_SSL_REDIRECT = True
 	SECURE_HSTS_SECONDS = 31536000
 	SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+	if environment.get("secure_ssl_redirect", False):
+		# Force Django to redirect non-secure SSL connections to secure SSL connections
+		# NOTE: Setting to True while simultaneously using a http proxy like NGINX
+		#       that is also redirecting can lead to infinite redirects.
+		#       See: https://docs.djangoproject.com/en/3.0/ref/settings/#secure-ssl-redirect
+		#       SECURE_SSL_REDIRECT is False by default.
+		SECURE_SSL_REDIRECT = True
+		print("INFO: SECURE_SSL_REDIRECT is set to 'True'. May cause infinite redirects behind reverse proxies.")
 else:
+	print("INFO: Connection scheme is 'http'.")
 	# Silence some checks about HTTPS.
 	SILENCED_SYSTEM_CHECKS += [
 		'security.W004', # SECURE_HSTS_SECONDS not set
@@ -331,14 +374,23 @@ X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
 # where "collectstatic" will put static files. The ManifestStaticFilesStorage
 # is activated.
 STATIC_URL = '/static/'
+STATIC_ROOT = 'siteapp/static/'
 if environment.get("static"):
 	STATIC_ROOT = environment["static"]
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
-# Add a convenience setting "SITE_ROOT_URL" that stores the root URL
-# of the website, constructed from the "https" and "host" environment
-# settings
-SITE_ROOT_URL = "%s://%s" % (("http" if not environment["https"] else "https"), environment["host"])
+# Add a convenience setting "SITE_ROOT_URL" that stores the root URL of the website.
+# Construct value from preferred "govready-url" environment parameter and temporarily
+# support the deprecated "https" and "host" environment settings.
+SITE_ROOT_URL = None
+if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not ""):
+	SITE_ROOT_URL = "{}://{}".format(GOVREADY_URL.scheme, GOVREADY_URL.netloc)
+	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
+elif "host" in environment and "https" in environment:
+	SITE_ROOT_URL = "%s://%s" % (("http" if not environment["https"] else "https"), environment["host"])
+	print("INFO: 'SITE_ROOT_URL' set to {} ".format(SITE_ROOT_URL))
+else:
+	print("CRITICAL: No parameters set to determine SITE_ROOT_URL.")
 
 # Enable custom branding. If "branding" is set, it's the name of an
 # app to add and whose templates supersede the built-in templates.
@@ -349,3 +401,6 @@ if environment.get("branding"):
 
 # Load all additional settings from settings_application.py.
 from .settings_application import *
+
+# Load logging configuration from settings_logging.py.
+from .settings_logging import *

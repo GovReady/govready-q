@@ -49,36 +49,44 @@ mkdir -p $VENDOR
 
 # Fetch resources.
 
-# sqlite3 3.8.5 (Public Domain)
+# sqlite3 3.8.3 (Public Domain)
 # Django 2.2 requires SQLite 3.8.3 or later; on CentOS 7 an upgrade is needed
+# We borrow the package from Fedora Project, https://koji.fedoraproject.org/koji/packageinfo?packageID=485
 if command -v rpm > /dev/null 2>&1 ; then
   if test $(rpm --eval %{centos_ver}) = 7; then
-    echo "Upgrading SQLite library to 3.8.5"
+    echo "Upgrading SQLite to 3.8.3"
     download \
-      http://www6.atomicorp.com/channels/atomic/centos/7/x86_64/RPMS/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm \
-      /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm \
-      '72ec76327ce9816b258d5cbeffc2930d93edd0bf50ff567c30fa775583eabf85'
-    yum -y localinstall /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm
-    mv /lib64/libsqlite3.so.0.8.6{,-3.17}
-    cp /opt/atomic/atomic-sqlite/root/usr/lib64/libsqlite3.so.0.8.6 /lib64
-    rm -f /tmp/atomic-sqlite-sqlite-3.8.5-3.el7.art.x86_64.rpm
+      https://kojipkgs.fedoraproject.org/packages/sqlite/3.8.3/1.fc20/x86_64/sqlite-3.8.3-1.fc20.x86_64.rpm \
+      /tmp/sqlite-3.8.3-1.fc20.x86_64.rpm \
+      '4c976fc17e3676ce76aa71ce604be6d16cef36c73515e9bf1ebcdbdc6cc6e7d4'
+    yum -y install /tmp/sqlite-3.8.3-1.fc20.x86_64.rpm
+    rm -f /tmp/sqlite-3.8.3-1.fc20.x86_64.rpm
   fi
 fi
 
 # jQuery (MIT License)
 download \
-  https://code.jquery.com/jquery-3.3.1.min.js \
+  https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js \
   $VENDOR/jquery.js \
-  '160a426ff2894252cd7cebbdd6d6b7da8fcd319c65b70468f10b6690c45d02ef'
+  'f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d'
 
 # Bootstrap (MIT License)
 download \
-  https://github.com/twbs/bootstrap/releases/download/v3.3.7/bootstrap-3.3.7-dist.zip \
+  https://github.com/twbs/bootstrap/releases/download/v3.4.1/bootstrap-3.4.1-dist.zip \
   /tmp/bootstrap.zip \
-  'f498a8ff2dd007e29c2074f5e4b01a9a01775c3ff3aeaf6906ea503bc5791b7b'
+  'd49793cf773cbd393ac2cf340c3b4ddab5365fa7c292098ac07e12eab3efd92e'
 unzip -d /tmp /tmp/bootstrap.zip
-mv /tmp/bootstrap-3.3.7-dist $VENDOR/bootstrap
+mv /tmp/bootstrap-3.4.1-dist $VENDOR/bootstrap
 rm -f /tmp/bootstrap.zip
+
+# jsGrid (MIT License)
+download \
+  https://github.com/tabalinas/jsgrid/releases/download/v1.5.3/jsgrid-1.5.3.zip \
+  /tmp/jsgrid-1.5.3.zip \
+  '96ffe3ca777f6eec504af3bbc0d30951f8ebfdba8fac7cd52b42b3dbd5d54eef'
+unzip -d /tmp/jsgrid /tmp/jsgrid-1.5.3.zip
+mv /tmp/jsgrid $VENDOR/jsgrid
+rm -f /tmp/jsgrid-1.5.3.zip
 
 # Font Awesome (for the spinner on ajax calls, various icons; MIT License)
 download \
@@ -162,9 +170,9 @@ done
 
 # quill rich text editor (BSD License)
 download \
-  https://github.com/quilljs/quill/releases/download/v1.3.6/quill.tar.gz \
+  https://github.com/quilljs/quill/releases/download/v1.3.7/quill.tar.gz \
   /tmp/quill.tar.gz \
-  'a7e8b79ace3f620725d4fb543795a4cf0349db1202624c4b16304954745c3890'
+  'ca784fe3b83f3b2b93b443a953e0b34a27a2178618501b0841eebcd62c9785c2'
 tar -zx -C $VENDOR -f /tmp/quill.tar.gz
 rm -f /tmp/quill.tar.gz
 
@@ -186,7 +194,7 @@ download \
 rm -f /tmp/google-font-download
 # generated with: $SHACMD $VENDOR/{google-fonts.css,Hind*,Lato*}
 $SHACMD_CHECK << EOF
-990e7373d100faee6fa7d92c1277695520e3c502f726bb28ce03d2b6d2cd3e6c  siteapp/static/vendor/google-fonts.css
+bcbe21760af24bef9ccca1ac3c8f2c1ed2bcd1e5094462da2f6efd48b443c709  siteapp/static/vendor/google-fonts.css
 6375a7ecbb77ba42e2de22c99aab9fea1fea125d6d857512360a3a555ff74161  siteapp/static/vendor/Hind_400.woff
 d7a3280717b1f82f46bee459863720a03de43b16dc8097ba1b133440e5fe0edc  siteapp/static/vendor/Hind_400.woff2
 a3ef4f13a191d01ecca06b8b997a666b28d4c614d6de256753fa9f4fbe15b726  siteapp/static/vendor/Hind_700.woff

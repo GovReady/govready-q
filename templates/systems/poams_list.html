@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load system_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} POA&Ms
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+<div style="margin-top: 30px">
+  <div class="container">
+
+  <div class="row" style="">
+    <div id="above-tab-content" class="row">
+      <!-- Page Title-->
+      <div style="float: left;">
+          <h2 class="control-heading" style="">
+            <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> > POA&Ms
+          </h2>
+      </div>
+    </div>
+  </div><!--/row-->
+    <p>&nbsp;</p>
+
+    <div id="tab-content" class="row rows-header" style="">
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2" style="margin-top: 4px;">POA&Ms</div>
+        <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">&nbsp;</div>
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+          <a href="/systems/{{ system.id }}/poams/new" class="btn btn-sm btn-success" style="color: white;">New POA&M</a>
+          <span class="glyphicon glyphicon-download-alt pull-right"
+                style="cursor: pointer; margin-top: 6px;"
+                onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
+        </div>
+    </div>
+    {% if poam_smts|length < 1 %}
+      <div id="tab-content" class="row row-control" style="">
+        <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <p>No POA&Ms are currently identified for this system.</p>
+        </div>
+      </div>
+    {% else %}
+      {% for poam_smt in poam_smts %}
+        <div id="tab-content" class="row row-control" style="">
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                <a href="/systems/{{ system.id }}/poams/{{ poam_smt.id }}/edit">V-{{ poam_smt.poam.poam_id }}</a>
+            </div>
+            <div id="" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                {{ poam_smt.poam.weakness_name }}
+            </div>
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+              {{ poam_smt.status }}
+            </div>
+            <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+                {{ poam_smt.updated|timesince}} ago
+            </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+  </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // The download button shows a modal to ask what file format to download in.
+  function download_document(document_id, system_id) {
+    var dom = $("<div><p>Select download format:</p>"
+      + "<select class=form-control>"
+      + "<option value='xlsx'>Microsoft Excel Spreadsheet</option>"
+      + "<option value='csv'>CSV Text File</option>"
+      + "</select>"
+      + "</div>");
+    show_modal_confirm("Download Document", dom, "Download", function() {
+      var format = dom.find("select").val();
+      switch(format) {
+        case "xlsx":
+          window.location = "/systems/" + system_id + "/poams/export/xlsx";
+          break;
+        case "csv":
+          window.location = "/systems/" + system_id + "/poams/export/csv";
+          break;
+      }
+    });
+  }
+</script>
+
+{% endblock %}

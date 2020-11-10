@@ -1,4 +1,0 @@
-gunicorn
-whitenoise==1.0.6
-newrelic
-dj_database_url

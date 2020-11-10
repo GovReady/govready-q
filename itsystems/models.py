@@ -52,8 +52,8 @@ class AgentService(models.Model):
 
 class Agent(models.Model):
     agent_id = models.CharField(max_length=24, help_text="The unique identifier of an installed Agent on a Host Instance.")
-    agent_service = models.ForeignKey(AgentService, null=False, blank=False, related_name="agents", on_delete="CASCADE", help_text="The AgentService to which this Agent belonts.")
-    host_instance = models.ForeignKey(HostInstance, null=True, blank=True, related_name="agents", on_delete="models.SET_NULL", help_text="The HostInstance on which the Agent is installed and monitoring.")
+    agent_service = models.ForeignKey(AgentService, null=False, blank=False, related_name="agents", on_delete=models.CASCADE, help_text="The AgentService to which this Agent belonts.")
+    host_instance = models.ForeignKey(HostInstance, null=True, blank=True, related_name="agents", on_delete=models.SET_NULL, help_text="The HostInstance on which the Agent is installed and monitoring.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
@@ -73,7 +73,7 @@ class Vendor(models.Model):
 class Component(models.Model):
     name = models.CharField(max_length=200, null=False, blank=False, help_text="The unique name of a usable component.")
     vendor = models.ForeignKey(Vendor, null=False, blank=False, related_name="components", 
-        on_delete="CASCADE", help_text="The vendor who supports or sells this component.")
+        on_delete=models.CASCADE, help_text="The vendor who supports or sells this component.")
     version = models.CharField(max_length=50, null=True, blank=True, help_text="The current version number for this component.")
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)

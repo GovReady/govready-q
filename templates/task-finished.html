@@ -20,6 +20,14 @@
     font-size: 22px;
     font-weight: bold;
   }
+
+  thead tr {
+    border:1px solid black;
+    background-color: rgb(80, 170, 67);
+    color: #fff;
+    font-weight: bold;
+  }
+
 </style>
 {% endblock %}
 
@@ -45,6 +53,54 @@
 
     <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
       {# output documents #}
+
+      {% if outputs|length > 0 %}
+        <div class="panel panel-default">
+          <div class="panel-heading" rol="tab" id="your-answers-title-2" style="height: 50px;">
+            <h4 class="panel-title">
+              <a role="button" data-toggle="collapse" data-parent="#accordion" href="#your-answers-body-2" aria-expanded="true" aria-controls="your-answers-body-2">
+                Available documents
+              </a>
+              <div class="pull-right">
+                <a id="force-refresh" class="btn btn-success btn-sm" onclick="refresh_output_doc({{project.root_task.module.app.id}});return false;"><span class="glyphicon glyphicon-refresh"></span> Force Refresh</a>
+              </div>
+            </h4>
+          </div>
+          <div id="your-answers-body-2" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="your-answers-title-2">
+            <div class="panel-body output-document">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <td width="40%">Document</td>
+                    <td>Downloads</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for document in outputs %}
+                    <tr>
+                        <td>{{document.title}}</td>
+                        <td>
+                          {% if document.format == "oscal_json" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/oscal_json">OSCAL (json)</a>&nbsp;&nbsp;
+                          {% elif document.format == "oscal_xml" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/oscal_xml">OSCAL (xml)</a>&nbsp;&nbsp;
+                          {% else %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a>&nbsp;&nbsp;
+                            {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/html">HTML</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/markdown">Markdown</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">Plain Text</a>&nbsp;&nbsp;
+                          {% endif %}
+                        </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      {% endif %}
 
       {% if had_any_questions %}
         <div class="panel panel-default">
@@ -73,7 +129,7 @@
                           {{q.spec.title}}
                         </a>
                       {% elif authoring_tool_enabled %}
-                        <a href="{{task.get_absolute_url}}/questions/{{q.key}}">
+                        <a href="{{task.get_absolute_url}}/question/{{q.key}}">
                           {{q.spec.title}}
                         </a>
                       {% else %}
@@ -100,29 +156,6 @@
         </div>
       {% endif %}
 
-      {% for document in outputs %}
-        <div class="panel panel-default">
-          <div class="panel-heading" role="tabx" id="document-{{forloop.counter}}-title">
-            <h4 class="panel-title">
-              <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{forloop.counter}}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{forloop.counter}}-body">
-                {{document.title}}
-              </a>
-              {% if document.id %}
-                <div class="pull-right">
-                  <span class="glyphicon glyphicon-download-alt"
-                    style="cursor: pointer"
-                    onclick="download_document('{{document.id|escapejs}}')"> </span>
-                </div>
-              {% endif %}
-            </h4>
-          </div>
-          <div id="document-{{forloop.counter}}-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-{{forloop.counter}}-title">
-            <div class="panel-body output-document">
-              {{document.html|safe}}
-            </div>
-          </div>
-        </div>
-      {% endfor %}
     </div> <!-- /accordion -->
     <div id="continue-nav "style="margin: 2em 0">
       {% with answers_question=task.is_answer_to_unique %}
@@ -190,7 +223,7 @@
       {% endwith %}
 
       {% if can_review %}
-        <p><a href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
+        <p><a id="review-answers" href="{{task.project.get_absolute_url}}/list#task-{{task.id}}" class="btn btn-default">
           <em class="glyphicon glyphicon-list"></em>
           Review &raquo;
         </a></p>
@@ -229,7 +262,7 @@
   function download_document(document_id) {
     var dom = $("<div><p>Select download format:</p>"
       + "<select class=form-control>"
-      + "<option value=pdf>PDF</option>"
+      {% if gr_pdf_generator == 'wkhtmltopdf' %}+ "<option value=pdf>PDF</option>"{% endif %}
       + "<option value=docx>Word Document</option>"
       + "<option value=odt>OpenOffice Document</option>"
       + "<option value=html>HTML Page</option>"
@@ -243,48 +276,70 @@
     });
   }
 
-  $(function() {
-    // Poll for changes to the answers in the project, which would mean
-    // this document may be out of date.
-    var initial_timestamp = {{task.project.root_task.updated.timestamp|json}};
-    var interval = setInterval(check_for_update, 2500);
-    var is_checking_for_update = false;
-    function check_for_update() {
-      if (is_checking_for_update) return;
-      is_checking_for_update = true;
-      $.ajax({
-        method: 'POST',
-        url: '/tasks/_get_task_timetamp',
-        data: {
-          id: {{task.project.root_task.id}},
-          get_changes_since: initial_timestamp
-        },
-        success: function(res) {
-          // Do nothing if the timestamp matches the timestamp
-          // when the page was generated.
-          if (res.timestamp == initial_timestamp)
-            return;
+  //$(function() {
+  //  // Poll for changes to the answers in the project, which would mean
+  //  // this document may be out of date.
+  //  var initial_timestamp = {{task.project.root_task.updated.timestamp|json}};
+  //  var interval = setInterval(check_for_update, 2500);
+  //  var is_checking_for_update = false;
+  //  function check_for_update() {
+  //    if (is_checking_for_update) return;
+  //    is_checking_for_update = true;
+  //    $.ajax({
+  //      method: 'POST',
+  //      url: '/tasks/_get_task_timetamp',
+  //      data: {
+  //        id: {{task.project.root_task.id}},
+  //        get_changes_since: initial_timestamp
+  //      },
+  //      success: function(res) {
+  //        // Do nothing if the timestamp matches the timestamp
+  //        // when the page was generated.
+  //        if (res.timestamp == initial_timestamp)
+  //          return;
 
-          // Don't poll for any further changes.
-          clearInterval(interval);
+  //        // Don't poll for any further changes.
+  //        clearInterval(interval);
 
-          // Show a desktop notification.
-          Push.create("Project Information Changed", {
-            body: res.changes,
-            timeout: 5000
-          });
+  //        // Show a desktop notification.
+  //        Push.create("Project Information Changed", {
+  //          body: res.changes,
+  //          timeout: 5000
+  //        });
 
-          // Dim the page and reload.
-          var modal = $('<div style="display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 100000; text-align: center; background-color: rgba(255,255,255,.75)"><div style="margin: 20% auto"><div><span class="fas fa-spinner fa-pulse"></span></div><div class="message">Loading...</div></div></div>');
-          $('body').append(modal);
-          modal.fadeIn();
-          window.location.reload();
-        },
-        complete: function() {
-          is_checking_for_update = false;
-        }
+  //        // Dim the page and reload.
+  //        var modal = $('<div style="display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 100000; text-align: center; background-color: rgba(255,255,255,.75)"><div style="margin: 20% auto"><div><span class="fas fa-spinner fa-pulse"></span></div><div class="message">Loading...</div></div></div>');
+  //        $('body').append(modal);
+  //        modal.fadeIn();
+  //        window.location.reload();
+  //      },
+  //      complete: function() {
+  //        is_checking_for_update = false;
+  //      }
+  //    })
+  //  }
+  //});
+
+  function refresh_output_doc(app_id) {
+      if (upgrade_app_option_confirm
+         {% if is_question_page %}
+         && !confirm("All instances of '{{task.project.root_task.title}}' will be updated.\n\nAre you sure you want to upgrade?"))
+         {% else %}
+         && !confirm("Force refresh of output document(s) in '{{project.root_task.title}}'?"))
+         {% endif %}
+        return;
+      ajax_with_indicator({
+          url: "/tasks/_refresh-output-doc",
+          method: "POST",
+          data: {
+            app: app_id,
+            force: upgrade_app_option_force ? "true" : "false"
+          },
+          keep_indicator_forever: true, // keep the ajax indicator up forever --- it'll go away when we issue the redirect or reload
+          success: function(res) {
+            location.reload();
+          }
       })
     }
-  });
   </script>
 {% endblock %}

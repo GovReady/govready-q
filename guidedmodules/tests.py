@@ -126,6 +126,11 @@ class ImputeConditionTests(TestCaseWithFixtureData):
         test("q_multiple_choice", ["choice1", "choice3"], "'choice2' in q_multiple_choice", False)
         test("q_multiple_choice", None, "q_multiple_choice", False) # skipped is falsey
 
+        # test("q_datagrid", [], "q_datagrid", True) # answered is truthy even if answered with nothing chosen
+        # test("q_datagrid", ["field1", "field3"], "'field1' in q_datagrid", True)
+        # test("q_datagrid", ["field1", "field3"], "'field2' in q_datagrid", False)
+        # test("q_datagrid", None, "q_datagrid", False) # skipped is falsey
+
     def test_impute_using_numeric_questions(self):
         test = lambda *args : self._test_condition_helper("question_types_numeric", *args)
 
@@ -471,6 +476,24 @@ class RenderTests(TestCaseWithFixtureData):
             template="{% for choice in q_multiple_choice %}[{{choice}}]{% endfor %}")
         test("q_multiple_choice", None, "", # not answered appears as nothing selected
             template="{% for choice in q_multiple_choice %}[{{choice}}]{% endfor %}")
+
+    def test_render_datagrid_questions(self):
+        def test(*args, **kwargs):
+            self._test_render_single_question_md("question_types_choice", *args, **kwargs)
+
+        from html import escape
+
+        # TODO: Update tests for datagrid question
+        # test("q_datagrid", [], "", []) # renders empty, but impute value is the list
+        # test("q_datagrid.text", [], escape("<nothing chosen>"))
+        # test("q_datagrid", ["field1", "field3"], "field1, field3", ["field1", "field3"]) # renders as a string, but imputes as a list
+        # test("q_datagrid.text", ["field1", "field3"], "Field 1, Field 3")
+        # test("q_datagrid", None, escape("<multiple-choice>"), None) # is actually the question's title, not its type, and {{...}} differently than in an impute condition
+        # test("q_datagrid.text", None, escape("<not answered>"))
+        # test("q_datagrid", ["field1", "field3"], "[field1][field3]",
+        #     template="{% for field in q_datagrid %}[{{field}}]{% endfor %}")
+        # test("q_datagrid", None, "", # not answered appears as nothing selected
+        #     template="{% for field in q_datagrid %}[{{field}}]{% endfor %}")
 
     def test_render_numeric_questions(self):
         def test(*args):

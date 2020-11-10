@@ -89,12 +89,14 @@ div.subtitle {
           {{project.title}}
           {% block title_suffix_text %}
           {% endblock %}
-          <br><small>Project ID: {{project.id}} &nbsp;|&nbsp; Portfolio: <a href="{{project.portfolio.get_absolute_url}}" style="color: inherit;">{{project.portfolio.title}}</a></small>
         </h1>
 
         {% if title != project.root_task.module.spec.title %}
-        <div class="subtitle">
-          {{project.root_task.module.spec.title}}
+        <div class="">
+        <br>
+          {{project.root_task.module.spec.title}} (ver {{project.root_task.module.spec.version}}) -
+          {{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}
+
         </div>
         {% endif %}
         {% endif %}
