@@ -1,4 +1,6 @@
 from itertools import chain
+from typing import Dict
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
@@ -390,6 +392,23 @@ class Organization(models.Model):
         pm.save()
 
         return org
+
+    def get_parameter_values(self, catalog_key) -> Dict[str, str]:
+        """
+        Return a dictionary of organizational settings for a given catalog key
+        Keys are OSCAL style parameter identifiers, e.g. 'ac-1_prm_1' would be the
+        first parameter for ac-1.
+        """
+
+        # REMIND: for now, we are ignoring `catalog_key` and returning
+        # a hardwired dict(); in the future, this needs to persist!
+
+        return {
+            'ac-1_prm_1': 'the GovReady-Q team',
+            'ac-1_prm_2': 'every 30 days',
+            'ac-1_prm_3': 'every 6 months'
+        }
+    
 
 class Portfolio(models.Model):
     title = models.CharField(max_length=255, help_text="The title of this Portfolio.", unique=True)
@@ -1191,6 +1210,15 @@ class Project(models.Model):
             print("Updating {}".format(new_module_questions[key]))
         print("Update complete.")
         return True
+
+
+    def get_parameter_values(self, catalog_id) -> Dict[str, str]:
+        """
+        Return a dictionary of organizational settings for a given catalog identifier.
+        Delegates to the project's organization.
+        """
+
+        return self.organization.get_parameter_values(catalog_id)
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE, help_text="The Project this is defining membership for.")

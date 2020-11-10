@@ -8,7 +8,6 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
 from .oscal import Catalogs, Catalog
 import uuid
 
-
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
 class Statement(models.Model):
@@ -58,7 +57,7 @@ class Statement(models.Model):
         """Return the control content from the catalog"""
         # Get instance of the control catalog
         catalog = Catalog.GetInstance(catalog_key=self.sid_class)
-        catalog_control_dict = catalog.get_flattended_controls_all_as_dict()
+        catalog_control_dict = catalog.get_flattened_controls_all_as_dict()
         # Look up control by ID
         return catalog_control_dict[self.sid]
 

@@ -23,7 +23,6 @@ from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-# logger = logging.getLogger(__name__)
 
 def test(request):
     # Simple test page of routing for controls
@@ -36,7 +35,7 @@ def index(request):
 
     # Get catalog
     catalog = Catalog()
-    cg_flat = catalog.get_flattended_controls_all_as_dict()
+    cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
     context = {
         "catalog": catalog,
@@ -65,7 +64,7 @@ def catalog(request, catalog_key, system_id=None):
 
     # Get catalog
     catalog = Catalog(catalog_key)
-    cg_flat = catalog.get_flattended_controls_all_as_dict()
+    cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
     context = {
         "catalog": catalog,
@@ -82,7 +81,7 @@ def group(request, catalog_key, g_id):
 
      # Get catalog
     catalog = Catalog(catalog_key)
-    cg_flat = catalog.get_flattended_controls_all_as_dict()
+    cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
     group =  None
     # Get group/family of controls
@@ -107,7 +106,7 @@ def control(request, catalog_key, cl_id):
 
     # Get catalog
     catalog = Catalog(catalog_key)
-    cg_flat = catalog.get_flattended_controls_all_as_dict()
+    cg_flat = catalog.get_flattened_controls_all_as_dict()
 
     # Handle properly formatted control id that does not exist
     if cl_id.lower() not in cg_flat:
@@ -596,13 +595,15 @@ def editor(request, system_id, catalog_key, cl_id):
 
     # Get control catalog
     catalog = Catalog(catalog_key)
-    cg_flat = catalog.get_flattended_controls_all_as_dict()
+    cg_flat = catalog.get_flattened_controls_all_as_dict()
+
     # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
         return render(request, "controls/detail.html", { "control": {} })
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
+
     # Retrieve related statements if user has permission on system
     if request.user.has_perm('view_system', system):
         # Retrieve primary system Project
@@ -612,6 +613,13 @@ def editor(request, system_id, catalog_key, cl_id):
         #     project = projects[0]
         # Retrieve any related CommonControls
         # CRITICAL TODO: Filter by sid and by system.root_element
+
+        # Retrieve organizational parameter settings for this catalog
+        # We need to regen the flattened controls using these params
+
+        parameter_values = project.get_parameter_values(catalog_key)
+        cg_flat = catalog.get_flattened_controls_all_as_dict(parameter_values=parameter_values)
+
         common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
         ccp_name = None
         if common_controls:
@@ -716,7 +724,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
 
     # Get control catalog
     catalog = Catalog(catalog_key)
-    cg_flat = catalog.get_flattended_controls_all_as_dict()
+    cg_flat = catalog.get_flattened_controls_all_as_dict()
     # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
         return render(request, "controls/detail.html", { "control": {} })

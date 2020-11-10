@@ -200,13 +200,22 @@ class Oscal80053Tests(TestCase):
     # Test 
     def test_catalog_load_control(self):
         cg = Catalog.GetInstance('NIST_SP-800-53_rev4')
-        cg_flat = cg.get_flattended_controls_all_as_dict()
+        cg_flat = cg.get_flattened_controls_all_as_dict()
         control = cg_flat['au-2']
         self.assertEqual(control['id'].upper(), "AU-2")
         # self.assertEqual(control.class, "NIST.800.53")
         # TODO: ADD Class into object
         self.assertEqual(control['title'].upper(), "AUDIT EVENTS")
 
+    def test_catalog_controls_with_organizational_parameters(self):
+        parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
+        cg = Catalog.GetInstance('NIST_SP-800-53_rev4')
+        cg_flat = cg.get_flattened_controls_all_as_dict(parameter_values=parameter_values)
+        control = cg_flat['ac-1']
+        description = control['description']
+        self.assertTrue('every 12 parsecs' in description, description)
+
+        
 #####################################################################
 
 class ControlUITests(SeleniumTest):
