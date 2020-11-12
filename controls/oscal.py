@@ -65,7 +65,10 @@ class Catalog (object):
         # instance.  This will certainly need to be fixed.
 
         catalog_instance_key = '_cached_instance_' + catalog_key
-
+        if parameter_values:
+            parameter_values_hash = hash(frozenset(parameter_values.items()))
+            catalog_instance_key += '_' + str(parameter_values_hash)
+            
         if not hasattr(Catalog, catalog_instance_key):
             new_catalog = Catalog(catalog_key=catalog_key, parameter_values=parameter_values)
             setattr(Catalog, catalog_instance_key, new_catalog)
@@ -95,7 +98,8 @@ class Catalog (object):
         # WARNING TODO: This precalculation along with instance caching of controls
         # may cause a problem in multi-tenant environment where different tenants have
         # have different organizational defined parameters.
-        self.flattened_controls_all_as_dict = self.get_flattened_controls_all_as_dict(parameter_values)
+        self.parameter_values = parameter_values
+        self.flattened_controls_all_as_dict = self.get_flattened_controls_all_as_dict()
 
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
@@ -292,8 +296,12 @@ class Catalog (object):
 
         return text
 
-    def get_flattened_control_as_dict(self, control, parameter_values=dict()):
-        """Return a control as a simplified, flattened Python dictionary"""
+    def get_flattened_control_as_dict(self, control):
+        """
+        Return a control as a simplified, flattened Python dictionary.
+        If parameter_values is supplied, it will override any paramters set
+        in the catalog.
+        """
         family_id = self.get_group_id_by_control_id(control['id'])
         cl_dict = {
             "id": control['id'],
@@ -303,7 +311,7 @@ class Catalog (object):
             "family_title": self.get_group_title_by_id(family_id),
             "class": control['class'],
             "description": self.get_control_prose_as_markdown(control, part_types={ "statement" },
-                                                              parameter_values=parameter_values),
+                                                              parameter_values=self.parameter_values),
             "guidance": self.get_control_prose_as_markdown(control, part_types={ "guidance" }),
             "catalog_file": self.catalog_file,
             "catalog_id": self.catalog_id,
@@ -312,13 +320,13 @@ class Catalog (object):
         # cl_dict = {"id": "te-1", "title": "Test Control"}
         return cl_dict
 
-    def get_flattened_controls_all_as_dict(self, parameter_values=dict()):
+    def get_flattened_controls_all_as_dict(self):
         """Return all controls as a simplified flattened Python dictionary indexed by control ids"""
         # Create an empty dictionary
         cl_all_dict = {}
         # Get all the controls
         for cl in self.get_controls_all():
             # Get flattened control and add to dictionary of controls
-            cl_dict = self.get_flattened_control_as_dict(cl, parameter_values)
+            cl_dict = self.get_flattened_control_as_dict(cl)
             cl_all_dict[cl_dict['id']] = cl_dict
         return cl_all_dict

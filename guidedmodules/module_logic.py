@@ -1257,8 +1257,9 @@ class TemplateContext(Mapping):
                 try:
                     catalog_key = self.module_answers.task.project.system.root_element.controls.first().oscal_catalog_key
                     parameter_values = self.module_answers.task.project.get_parameter_values(catalog_key)
-                    sca = Catalog.GetInstance(catalog_key=catalog_key)
-                    control_catalog = sca.get_flattened_controls_all_as_dict(parameter_values)
+                    sca = Catalog.GetInstance(catalog_key=catalog_key, 
+                                              parameter_values=parameter_values)
+                    control_catalog = sca.flattened_controls_all_as_dict
                 except:
                     control_catalog = None
                 return control_catalog

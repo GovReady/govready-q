@@ -595,6 +595,10 @@ def editor(request, system_id, catalog_key, cl_id):
 
     # Get control catalog
     catalog = Catalog(catalog_key)
+
+    # TODO: maybe catalogs could provide an API that returns a set of 
+    # control ids instead?
+
     cg_flat = catalog.get_flattened_controls_all_as_dict()
 
     # If control id does not exist in catalog
@@ -615,10 +619,11 @@ def editor(request, system_id, catalog_key, cl_id):
         # CRITICAL TODO: Filter by sid and by system.root_element
 
         # Retrieve organizational parameter settings for this catalog
-        # We need to regen the flattened controls using these params
+        # We need to grab the catalog again.
 
         parameter_values = project.get_parameter_values(catalog_key)
-        cg_flat = catalog.get_flattened_controls_all_as_dict(parameter_values=parameter_values)
+        catalog = Catalog(catalog_key, parameter_values=parameter_values)
+        cg_flat = catalog.get_flattened_controls_all_as_dict()
 
         common_controls = CommonControl.objects.filter(oscal_ctl_id=cl_id)
         ccp_name = None
