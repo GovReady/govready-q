@@ -46,7 +46,7 @@ def homepage(request):
     signup_form.fields['username'].widget.attrs.pop("autofocus", None)
     login_form.fields['login'].widget.attrs.pop("autofocus", None)
 
-    if request.POST.get("action") == "signup":
+    if "signup" in request.path or request.POST.get("action") == "signup":
         signup_form = SignupForm(request.POST)
         portfolio_form = PortfolioSignupForm(request.POST)
         if (request.user.is_authenticated or signup_form.is_valid()) and portfolio_form.is_valid():
@@ -95,7 +95,7 @@ def homepage(request):
 
                 return HttpResponseRedirect("/projects")
 
-    elif request.POST.get("action") == "login":
+    elif "login" in request.path or request.POST.get("action") == "login":
         login_form = LoginForm(request.POST, request=request)
         if login_form.is_valid():
             login_form.login(request)
