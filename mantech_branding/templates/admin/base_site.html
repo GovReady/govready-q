@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><img alt="GovReady Q logo" src="{% static "img/brand/mantech-logo-red.png" %}"
+          width="110px;" style="margin: -2px 20px;"><a href="{% url 'admin:index' %}">{{ "Django Administration"|default:_('Django administration') }}</a></h1>
+{% endblock %}
+
+
+{% block extrastyle %}
+     <link rel="stylesheet" type="text/css" href="{% static "css/admin_color.css" %}"/>
+{% endblock %}
+
+
+{% block nav-global %}{% endblock %}
