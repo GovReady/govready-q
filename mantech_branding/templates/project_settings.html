@@ -265,7 +265,7 @@ h3.question-group-title {
         <div>
           <div class="row">
             <div class="col-sm-12">
-              <h2 style="border-bottom:1px solid #ccc;">About</h2>
+              <h2 style="border-bottom:1px solid #ffffff;">About</h2>
             </div>
           </div>
           <div class="row" style="margin: 8px 0 20px 0;">
@@ -292,7 +292,7 @@ h3.question-group-title {
 
         <div class="row" style="margin-top:12px;">
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">Participants</h2>
+            <h2 style="border-bottom:1px solid #ffffff;">Participants</h2>
           </div>
           <div class="col-sm-12">
               {% for user, authz in project.get_all_participants %}
@@ -358,7 +358,7 @@ h3.question-group-title {
 
         <div class="row" style="margin-top:12px;">
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">Permissions</h2>
+            <h2 style="border-bottom:1px solid #ffffff;">Permissions</h2>
           </div>
           <div class="col-sm-12">
             {% include "permissions.html" with users=users portfolios=portfolios project=project %}
@@ -368,7 +368,7 @@ h3.question-group-title {
         {% if is_admin or can_upgrade_app %}
         <div class="row" style="margin-top:12px;">
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">Upgrade Project</h2>
+            <h2 style="border-bottom:1px solid #ffffff;">Upgrade Project</h2>
           </div>
           <div class="col-sm-12">Available versions</div>
             <div class="col-sm-12">
@@ -400,7 +400,7 @@ h3.question-group-title {
 
         <div class="row" style="margin-top:12px;">
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">Share Data</h2>
+            <h2 style="border-bottom:1px solid #ffffff;">Share Data</h2>
           </div>
           <div class="col-sm-12">
             {# export #}
@@ -426,7 +426,7 @@ h3.question-group-title {
       {% if project.is_deletable and is_admin %}
         <div class="row" style="margin-top: 12px;">
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">DANGER</h2>
+            <h2 style="border-bottom:1px solid #ffffff;">DANGER</h2>
           </div>
           <div class="col-sm-12">
             <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button>

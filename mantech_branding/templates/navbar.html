@@ -9,7 +9,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/" style="color: #EEE; font-weight: bold;">
+      <a class="navbar-brand" href="/" style="color: #ffffff; font-weight: bold;">
           <img alt="GovReady Q logo" src="{% static "img/brand/mantech-logo-red.png" %}"
           width="110px;" style="margin: -2px 20px;">
       </a>
@@ -84,7 +84,7 @@
           </li>
 
         {% elif LOGIN_ENABLED %}
-          <li><a href="{% url "account_login" %}">Log In</a></li>
+          <li><a href="/accounts/login/">Log In</a></li>
         {% endif %}
       </ul>
     </div><!-- /.navbar-collapse -->

@@ -21,7 +21,7 @@ Compliance Apps
     width: 40%;
     margin: 2.5em auto 24px auto;
     padding: 8px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #ffffff;
     background-color: #fff;
     border-radius: 10px;
     font-size: 24px;
@@ -166,7 +166,7 @@ Compliance Apps
 {% for app_category in apps %}
 <div class="app-category" data-category="{{app_category.title}}">
 {% if apps|length > 1 %} {# only display category titles if there is more than one category available #}
-<h2>{{app_category.title}} Apps</h2>
+<h2 class="col-sm-4">{{app_category.title}} Apps</h2>
 {% endif %}
 
 <div class="row">

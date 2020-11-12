@@ -26,7 +26,7 @@ body, blockquote {
 
 #context-bar .breadcrumb {
     margin: 0;
-    background-color: #D0D1D2;
+    background-color: #ffffff;
     padding: 8px;
     cursor: default;
 }
@@ -144,7 +144,11 @@ div.question-answer[data-reviewed] a {
     margin-left: auto;
 
 }
+/*pagination overrides*/
 
+.breadcrumb>.active{
+    color:#D0D1D2;
+}
 /*glyph overrides*/
 
     /*  color: rgba(244, 149, 34, 1)*/
@@ -153,7 +157,8 @@ div.question-answer[data-reviewed] a {
     color: rgba(29, 46, 93, 1)
 }
 .glyphicon-plus, .glyphicon-cog, .glyphicon-dashboard{
-    color: rgba(244, 149, 34, 1)
+    /*color: rgba(244, 149, 34, 1)*/
+    color: #D0D1D2
 }
 /*Bootstrap overrides*/
 a{
@@ -206,5 +211,166 @@ border-color: #000000 !important;
 background-color: #D0D1D2;
 }
 .badge {
-background-color: #D0D1D2;
+background-color: #DF2327;
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited {
+    color: #fff;
+}
+
+#header {
+    background: #d00a0a;
+    color: #fff;
+}
+#header a:link, #header a:visited {
+    color: #fff;
+}
+
+#header a:hover {
+    color: #fff;
+}
+
+div.breadcrumbs {
+    background: #54667f;
+    color: #c4dce8;
+}
+div.breadcrumbs a.active {
+    color: #c4dce8;
+!important;
+    font-weight: 300;
+}
+
+div.breadcrumbs a:focus, div.breadcrumbs a:hover {
+    color: #c4dce8;
+!important;
+    font-weight: 300;
+}
+
+.select2-container--admin-autocomplete .select2-results__option--highlighted[aria-selected] {
+    background-color: #292D32;
+}
+
+.paginator a:link, .paginator a:visited {
+    background: #292D32;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: #54667f;
+}
+.button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: #878787;
+}
+
+.module h2, .module caption, .inline-group h2 {
+    background: #54667f;
+}
+#user-tools a:focus, #user-tools a:hover {
+    border: 0;
+    color: #ddd;
+}
+
+.selector-chosen h2 {
+    background: #54667f !important;
+}
+
+.calendar td.selected a {
+    background: #54667f !important;
+}
+
+.calendar td a:focus, .timelist a:focus,
+.calendar td a:hover, .timelist a:hover {
+    background: #54667f !important;
+}
+
+#changelist-filter li.selected a {
+    color: #444;
+}
+
+fieldset.collapsed .collapse-toggle {
+    color: #444;
+}
+
+a:link, a:visited {
+    color: #777;
+}
+
+a:focus, a:hover {
+    color: #999;
+}
+
+table thead th.sorted .sortoptions a.sortremove:focus:after,
+table thead th.sorted .sortoptions a.sortremove:hover:after {
+    color: #444;
+}
+
+a.active.selector-chooseall:focus, a.active.selector-clearall:focus,
+a.active.selector-chooseall:hover, a.active.selector-clearall:hover {
+    color: #999;
+}
+
+.calendar td a:active, .timelist a:active {
+    background: #444;
+}
+
+.change-list ul.toplinks .date-back a:focus,
+.change-list ul.toplinks .date-back a:hover {
+    color: #222;
+}
+
+.paginator a.showall:focus, .paginator a.showall:hover {
+    color: #222;
+}
+
+.paginator a:focus, .paginator a:hover {
+    background: #222;
+}
+
+#changelist-filter a:focus, #changelist-filter a:hover,
+#changelist-filter li.selected a:focus,
+#changelist-filter li.selected a:hover {
+    color: #222;
+}
+
+.calendar td a:active, .timelist a:active {
+    background: #292D32;
+    color: white;
+}
+
+.calendar caption, .calendarbox h2 {
+    background: #999;
+}
+
+.button.default, input[type=submit].default, .submit-row input.default {
+    background: #000000;
+}
+
+.button.default:hover, input[type=submit].default:hover {
+    background: #191D22;
+}
+
+.select2-container--admin-autocomplete .select2-results__option--highlighted[aria-selected] {
+    background-color: #292D32;
+}
+
+.button.default, input[type=submit].default, .submit-row input.default {
+    background: #000000;
+}
+
+.object-tools a:focus, .object-tools a:hover {
+    background-color: #292D32;
+}
+
+input[type=file]::-webkit-file-upload-button:hover {
+    border: 0;
+    background: #292D32;
+}
+
+#changelist-filter {
+    top: -250px;
+    right: 15px;
+}
+
+#changelist-filter h2 {
+    padding-top: 0px;
+    padding-bottom: 0px
 }
