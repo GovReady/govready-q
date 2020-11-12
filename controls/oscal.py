@@ -6,8 +6,16 @@ from pathlib import Path
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__),'data','catalogs')
 
+
 class Catalogs (object):
     """Represent list of catalogs"""
+
+    # well known catalog identifiers
+
+    NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
+    NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
+    NIST_SP_800_181_rev1 = 'NIST_SP-800-171_rev1'
+
     def __init__(self):
         global CATALOG_PATH
         self.catalog_path = CATALOG_PATH
@@ -24,9 +32,9 @@ class Catalogs (object):
 
     def _list_catalog_keys(self):
         return [
-            'NIST_SP-800-53_rev4',
-            'NIST_SP-800-53_rev5',
-            'NIST_SP-800-171_rev1'
+            Catalogs.NIST_SP_800_53_rev4,
+            Catalogs.NIST_SP_800_53_rev5,
+            Catalogs.NIST_SP_800_171_rev1
         ]
 
     def _load_catalog_json(self, catalog_key):
@@ -50,19 +58,15 @@ class Catalog (object):
     """Represent a catalog"""
 
     # Create a singleton instance of this class per catalog. GetInstance returns
-    # that singleton instance. Instead of doing `cg = Catalog(catalog_key='NIST_SP-800-53_rev4')`,
-    # do `cg = Catalog.GetInstance(catalog_key='NIST_SP-800-53_rev4')`.
+    # that singleton instance. Instead of doing 
+    # `cg = Catalog(catalog_key=Catalogs.NIST_SP_800_53_rev4)`,
+    # do `cg = Catalog.GetInstance(catalog_key=Catalogs.NIST_SP_800_53_rev4')`.
     @staticmethod
-    def GetInstance(catalog_key='NIST_SP-800-53_rev4', parameter_values=dict()):
-        # Create a new instance of Catalog() the first time for each catalog key
+    def GetInstance(catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
+        # Create a new instance of Catalog() the first time for each 
+        # catalog key / parameter combo
         # this method is called. Keep it in memory indefinitely.
         # Clear cache only if a catalog itself changes
-        # REMIND: we're passing in organization parameters because we need them
-        # to render control descriptions.  GovReady-Q:
-        # (1) (mostly) treats Catalogs as singletons and (2) caches rendered control
-        # guidance.
-        # So we effectively can only have one set of parameters per GovReady
-        # instance.  This will certainly need to be fixed.
 
         catalog_instance_key = '_cached_instance_' + catalog_key
         if parameter_values:
@@ -74,7 +78,7 @@ class Catalog (object):
             setattr(Catalog, catalog_instance_key, new_catalog)
         return getattr(Catalog, catalog_instance_key)
 
-    def __init__(self, catalog_key='NIST_SP-800-53_rev4', parameter_values=dict()):
+    def __init__(self, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
         global CATALOG_PATH
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")

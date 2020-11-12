@@ -412,12 +412,16 @@ class OrganizationalSetting(models.Model):
     """
     
     class Meta:
-        db_table = "organizational_setting"
-        
+        unique_together = ('organization', 'catalog_key', 'parameter_key',)
+
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    catalog_key = models.CharField(max_length=255, unique=True)
-    parameter_key = models.CharField(max_length=255, unique=True)
+    catalog_key = models.CharField(max_length=255)
+    parameter_key = models.CharField(max_length=255)
     value = models.CharField(max_length=1024)
+
+    def __str__(self):
+        org_name = (self.organization and self.organization.name) or 'none'
+        return f"OrganizationalSetting({org_name}, {self.catalog_key}, {self.parameter_key})"
 
 class Portfolio(models.Model):
     title = models.CharField(max_length=255, help_text="The title of this Portfolio.", unique=True)
