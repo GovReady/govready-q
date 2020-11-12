@@ -311,6 +311,8 @@ class DirectLoginBackend(ModelBackend):
     def authenticate(self, user_object=None):
         return user_object
 
+
+
 subdomain_regex = r"^([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])$"
 
 class Organization(models.Model):
@@ -400,15 +402,22 @@ class Organization(models.Model):
         first parameter for ac-1.
         """
 
-        # REMIND: for now, we are ignoring `catalog_key` and returning
-        # a hardwired dict(); in the future, this needs to persist!
-
-        return {
-            'ac-1_prm_1': 'the GovReady-Q team',
-            'ac-1_prm_2': 'every 30 days',
-            'ac-1_prm_3': 'every 6 months'
-        }
+        settings = self.organizationalsetting_set.filter(catalog_key=catalog_key)
+        return dict((setting.parameter_key, setting.value) for setting in settings)
     
+class OrganizationalSetting(models.Model):
+    """
+    Captures an organizationally-defined setting for a parameterized control
+    in a catalog.
+    """
+    
+    class Meta:
+        db_table = "organizational_setting"
+        
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    catalog_key = models.CharField(max_length=255, unique=True)
+    parameter_key = models.CharField(max_length=255, unique=True)
+    value = models.CharField(max_length=1024)
 
 class Portfolio(models.Model):
     title = models.CharField(max_length=255, help_text="The title of this Portfolio.", unique=True)

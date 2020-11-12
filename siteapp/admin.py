@@ -3,7 +3,7 @@ from guardian.admin import GuardedModelAdmin
 
 import django.contrib.auth.admin as contribauthadmin
 
-from .models import User, Organization, Folder, Project, ProjectMembership, Portfolio, Support
+from .models import User, Organization, OrganizationalSetting, Folder, Project, ProjectMembership, Portfolio, Support
 from notifications.models import Notification
 
 def all_user_fields_still_exist(fieldlist):
@@ -141,6 +141,8 @@ class SupportAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
+admin.site.register(OrganizationalSetting)
+
 admin.site.register(Folder, FolderAdmin)
 
 admin.site.register(Project, ProjectAdmin)
