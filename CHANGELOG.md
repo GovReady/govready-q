@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.XX (November 1, 2020)
-----------------------------
+v0.9.1.45.2 (November 13, 2020)
+-------------------------------
 
 **Feature changes**
 
@@ -10,7 +10,12 @@ v0.9.1.XX (November 1, 2020)
 
 **UI changes**
 
-- Add components (system elements) to a system on system's selected components page.
+- Add components (system elements) via an autocomplete to a system on system's selected components page.
+
+**Developer changes**
+
+- Modified controls.Statement model to link `control_implementation` statements to
+  `control_implementation_prototype` statements. See commit 5083af.
 
 v0.9.1.45 (October 24, 2020)
 ----------------------------
