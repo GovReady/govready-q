@@ -14,7 +14,7 @@ class Catalogs (object):
 
     NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
     NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
-    NIST_SP_800_181_rev1 = 'NIST_SP-800-171_rev1'
+    NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
 
     def __init__(self):
         global CATALOG_PATH
