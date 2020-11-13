@@ -16,6 +16,7 @@ v0.9.1.45.2 (November 13, 2020)
 
 - Modified controls.Statement model to link `control_implementation` statements to
   `control_implementation_prototype` statements. See commit 5083af.
+- Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
 
 v0.9.1.45 (October 24, 2020)
 ----------------------------
