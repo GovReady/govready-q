@@ -11,6 +11,8 @@ v0.9.1.45.2 (November 13, 2020)
 **UI changes**
 
 - Add components (system elements) via an autocomplete to a system on system's selected components page.
+- Add alert link above implementation statement edit box when control implementation differs from certified control implementation statement. Clicking link displays visual diff of prototype statement and existing statement.
+- Add link to update implementation statement with latest certified control implementation statement.
 
 **Developer changes**
 

@@ -99,10 +99,20 @@ class Statement(models.Model):
         instance.save()
         return instance
 
+    @property
+    def prototype_synched(self):
+        """Return True if statement of type `control_implementation` and its prototype"""
+
+        if self.body == self.prototype.body:
+            return True
+        else:
+            return False
+
+    @property
     def diff_prototype_main(self):
         """Generate a diff of statement of type `control_implementation` and its prototype"""
 
-        if self.statement_type is not 'control_implementation':
+        if self.statement_type != 'control_implementation':
             # TODO: Should we reurn None or raise error because statement is not of type control_implementation?
             return None
         if self.prototype is None:
@@ -112,10 +122,11 @@ class Statement(models.Model):
         diff = dmp.diff_main(self.prototype.body, self.body)
         return diff
 
+    @property
     def diff_prototype_prettyHtml(self):
         """Generate a diff of statement of type `control_implementation` and its prototype"""
 
-        if self.statement_type is not 'control_implementation':
+        if self.statement_type != 'control_implementation':
             # TODO: Should we reurn None or raise error because statement is not of type control_implementation?
             return None
         if self.prototype is None:
