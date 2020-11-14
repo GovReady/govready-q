@@ -1018,9 +1018,9 @@ def project_api(request, project):
                 # This looks like a file field.
                 flatten_json(path, "<binary file content>", output)
             else:
-                for key, value in node.items():
-                    if "." in key: continue # a read-only field
-                    flatten_json(path+[key], value, output)
+                for entry, value in node.items():
+                    if "." in entry: continue # a read-only field
+                    flatten_json(path+[entry], value, output)
         elif isinstance(node, list):
             for item in node:
                 flatten_json(path, item, output)
