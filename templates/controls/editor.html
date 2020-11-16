@@ -306,21 +306,29 @@ Remove contextbar from top of page
           </div><!--/smt-list-->
               <!-- Add existing component -->
           <div id="tab-content" class="row row-control" style="">
-              <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">
+              <form class="form-inline" id="add_existing_component" method="post" action="/systems/{{ system.id }}/components/add_system_component">
                   {% csrf_token %}
                   <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-                      <div class="form-group">
+                      <div class="form-group" >
                           <label for="component">Add existing component</label>&nbsp;&nbsp;
   <input type="text" class="form-control" id="producer_element_search" name="producer_element_name" placeholder="Name of component"
-                    onchange="producer_autocomplete($(this).val(), {{ system.id }}, $('#producer_element_id :selected').text())">
-                          <select name="producer_element_id" id="producer_element_id" style="width:340px;">
+                    onchange="producer_autocomplete($(this).val(), {{ system.id }})">
+                      </div>
+                       <div class="form-group">
+                          <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
                               {% for component in elements %}
+
                                   <option value="{{ component.id }}">{{ component.name }}</option>
                               {% endfor %}
                           </select>
-                <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-{#                <input type="hidden" id="elements" name="elements" value="{{ elements }}">#}
-{#                <input type="hidden" id="hidden_elements" name="hidden_elements" value="{{ elements }}">#}
+
+{#                          {% if elements %}#}
+{#                              <input type="hidden" id="selected_producer_element_form_id" name="selected_producer_element_form_id" value="{{ elements.first.id }}">#}
+{#                          {% endif %}#}
+
+
+                          <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                          <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
 
                       </div>
                       &nbsp;&nbsp;<button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
@@ -579,46 +587,41 @@ Remove contextbar from top of page
            var helpers = {
 
                buildDropdown: function (result, dropdown, emptyMessage) {
+                   console.log("dropdowndropdown")
+                   console.log(dropdown)
+                                      console.log(dropdown.html())
 
                    //Remove current options
                    dropdown.html('');
 
                    // Add the empty option with the empty message
-                   dropdown.append("<option value='empty'>"+ emptyMessage + "</option>" );
+                   dropdown.append("<option disabled>"+ emptyMessage + "</option>" );
                    console.log("result");
                    console.log(result);
-                   console.log(result[0]['producer_element_name_value']);
+                   console.log(result['producer_element_name_value']);
                    //Check result isn't empty
                    if (result != '') {
                        // loop
-                       $.each(result, function (k, v) {
+                       $.each(result['producer_element_name_value'], function (k, v) {
                                               console.log("k, v");
                                               console.log(k, v);
 
-                           dropdown.append("<option value='" + v['producer_element_name_value'] + "'>" + v['producer_element_name_value'] + "</option>" );
+                           dropdown.append("<option value='" + v["id"] + "'>" + v["name"] + "</option>" );
                        });
                    }
                }
            }
 {#['fields']['sid'] ['model']#}
-           function fix_elements(elements){
-                          var elements_list = ((elements).replace(/&(l|g|quo)t;/g, function(a,b){
-                return {
-                    l   : '<',
-                    g   : '>',
-                    quo : '"'
-                }[b];
-            }));
 
- var final_elements = JSON.parse( elements_list );
- return final_elements
-           }
-      function producer_autocomplete(text, system_id, elements) {
+      function producer_autocomplete(text, system_id) {
   // Update the producer component autocomplete
     // Create an AJAX request to upload all of the files at once.
+          var producer_element_form_id = $('#selected_producer_element_form_id :selected').val();
+          var control_id = $('#control_id').val();
           console.log("text", text)
           console.log("system_id", system_id)
-          console.log("elements", elements)
+          console.log("producer_element_form_id", producer_element_form_id)
+
 
        var location_input=$('input[id="location_input"]');
           console.log(location_input)
@@ -630,18 +633,20 @@ Remove contextbar from top of page
         data: {
             "text": text,
             "system_id": system_id,
-            "elements": elements
+            "producer_element_form_id": producer_element_form_id,
+            "control_id": control_id
         },
         dataType: "json",
        method: "POST",
       success: function(res) {
         // We get back a mapping indicating what was uploaded.
+        console.log("result here in ajax search");
         console.log(res);
-        console.log(res[0]['value']);
+        console.log(res['producer_element_name_value']);
           console.log("SUCCESSS");
               //   keeps same width as box
 
-          helpers.buildDropdown(res , $('#autocomplete_statements_id'), "select a prototype statement");
+          helpers.buildDropdown(res , $('#selected_producer_element_form_id'), "select a prototype statement");
 
 
 
