@@ -1,6 +1,8 @@
 import os
 import json
+from django.core import serializers
 from django.db import models
+from django.http import HttpResponse
 from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
@@ -24,6 +26,7 @@ class Statement(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
     parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
+    prototype = models.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
     producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement.")
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
@@ -61,6 +64,41 @@ class Statement(models.Model):
         catalog_control_dict = catalog.get_flattended_controls_all_as_dict()
         # Look up control by ID
         return catalog_control_dict[self.sid]
+
+    def create_prototype(self):
+        """Creates a prototype statement from an existing statement and prototype object"""
+
+        if self.prototype is not None:
+            # Prototype already exists for statement
+            return self.prototype
+            # check if prototype content is the same, report error if not, or overwrite if permission approved
+        from copy import deepcopy
+        prototype = deepcopy(self)
+        prototype.statement_type="control_implementation_prototype"
+        prototype.consumer_element_id = None
+        prototype.id = None
+        prototype.save()
+        # Set prototype attribute on the instances to newly created prototype
+        self.prototype = prototype
+        self.save()
+        return self.prototype
+
+    def create_instance_from_prototype(self, consumer_element_id):
+        """Creates a control_implementation statement instance for root_element of a system from an existing control implementation prototype statement"""
+
+        # if self.prototype is not None:
+        #     # Prototype already exists for statement
+        #     return self.prototype
+        #     # check if prototype content is the same, report error if not, or overwrite if permission approved
+        from copy import deepcopy
+        instance = deepcopy(self)
+        instance.statement_type="control_implementation"
+        instance.consumer_element_id = consumer_element_id
+        instance.id = None
+        # Set prototype attribute to newly created instance
+        instance.prototype = self
+        instance.save()
+        return instance
 
     # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
@@ -139,6 +177,69 @@ class Element(models.Model):
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
         return oscal_ctl_ids
+
+from dal import autocomplete
+
+from django import forms
+
+def autocompleteModel(request):
+    print("request")
+    print(request)
+    print(request.method)
+    print(dict(request.POST))
+    form_dict = dict(request.POST)
+    print(form_dict)
+
+       # q = request.GET.get('term', '').capitalize()
+      #  search_qs = Element.objects.filter(name__startswith=q)
+    if request.method == 'POST':
+        q = request.POST.get('autocomplete_name', '')
+
+        cl_id = "ac-2"  #oscalize_control_id(cl_id)
+        # only prototype implementation statements for the given control
+        proto_impl_smts = Statement.objects.filter(statement_type="control_implementation_prototype").filter(sid=cl_id)
+        print("proto_impl_smts")
+        print(proto_impl_smts)
+        proto_data = serializers.serialize('json', proto_impl_smts)
+        proto_data = json.loads(proto_data)
+        print("proto_data")
+        print(proto_data)
+        for p_data in proto_data:
+            print(p_data.get('fields').get('sid'))
+        # STEP 1
+        # Getting elements that contain the name provided in the text search
+        search_qs = Element.objects.filter(name__contains=q)
+        print("search_qs")
+        print(search_qs)
+        #Element.objects.all().exclude(element_type='system')
+        data = serializers.serialize('json', search_qs)
+        data = json.loads(data)
+        # city_names = [c['good_name'] for c in all_city_names if q in c["input_name"].lower()]
+        # city_names = set(city_names) #removing duplicates
+        # print("city_names")
+        # print(city_names)
+        results = []
+        for control_element in data:
+            ce_json = {'value': control_element}
+            results.append(ce_json)
+        print(results)
+        data = json.dumps(results)
+
+    else:
+        data = 'fail'
+    mimetype = 'application/json'
+    return HttpResponse(data, mimetype)
+
+
+class ElementForm(forms.ModelForm):
+    uuid = forms.ModelChoiceField(
+        queryset=Element.objects.all(),
+        widget=autocomplete.ModelSelect2(url='editor_autocomplete')
+    )
+
+    class Meta:
+        model = Element
+        fields = ('__all__')
 
 class ElementControl(models.Model):
     element = models.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")
