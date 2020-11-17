@@ -14,7 +14,7 @@ import re
 
 # When adding users, we expect they'll be created for test purposes. Therefore, a
 # static easy-to-remember password is useful.
-DEFAULT_USER_PASSWORD="GovReadyTest2019"
+DEFAULT_USER_PWD="GovReadyTest2019"
 
 class Command(BaseCommand):
     client = None
@@ -62,6 +62,6 @@ class Command(BaseCommand):
             delay = self.prompt_for_time("It's possible to insert a delay between each action, while generating data. Enter the desired number of seconds to wait, or 0 for no delay.")
             
         if int(user_count) > 0:
-            call_command("populate", "--user-count", user_count, "--password", DEFAULT_USER_PASSWORD)
+            call_command("populate", "--user-count", user_count, "--password", DEFAULT_USER_PWD)
 
         call_command('create_and_fill_assessment', '--action-delay', delay, '--count', count)
