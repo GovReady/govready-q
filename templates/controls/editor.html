@@ -306,27 +306,23 @@ Remove contextbar from top of page
           </div><!--/smt-list-->
               <!-- Add existing component -->
           <div id="tab-content" class="row row-control" style="">
-              <form class="form-inline" id="add_existing_component" method="post" action="/systems/{{ system.id }}/components/add_system_component">
+              <form class="form-inline" id="add_existing_component" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
                   {% csrf_token %}
                   <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
                       <div class="form-group" >
                           <label for="component">Add existing component</label>&nbsp;&nbsp;
-  <input type="text" class="form-control" id="producer_element_search" name="producer_element_name" placeholder="Name of component"
+  <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
                     onchange="producer_autocomplete($(this).val(), {{ system.id }})">
                       </div>
                        <div class="form-group">
                           <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
+                    <option disabled value="select a prototype statement">select a prototype statement</option>
                               {% for component in elements %}
-
                                   <option value="{{ component.id }}">{{ component.name }}</option>
                               {% endfor %}
                           </select>
 
-{#                          {% if elements %}#}
-{#                              <input type="hidden" id="selected_producer_element_form_id" name="selected_producer_element_form_id" value="{{ elements.first.id }}">#}
-{#                          {% endif %}#}
-
-
+                          <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
                           <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                           <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
 
@@ -336,30 +332,11 @@ Remove contextbar from top of page
 
               </form>
           </div>
-      
-      
 
-      <!---last ajax try-->
-{#      <form id="search" method="POST" action="{% url 'editor_autocomplete' %}">#}
-{# {% csrf_token %}#}
-{# <input type="text" class="form-control" id="txtSearch" name="txtSearch">#}
-{# <button type="submit" class="btn btn-default btn-submit">Submit</button>#}
-{# </form>#}
-      <!--endtry-->
-              <!---stackk--->
-{#      <div class="ui-widget">#}
-{#  <label for="cities">City: </label>#}
-{#  <input type="text" class="form-control" id="autocomplete_statements" name="autocomplete_name" placeholder="Name of component"#}
-{#                    onchange="producer_autocomplete($(this).val())">#}
-{#          <select name="autocomplete_statements_id" id="autocomplete_statements_dropdown" style="width:340px;">#}
-{##}
-{#</select>#}
-{#</div>#}
-      <!---endstackk-->
-
-  </div>
-          <!-- Add component button -->
+ <!-- Add component button -->
           <div><h3><button type="submit" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+  </div>
+
 
       </div>
 
@@ -380,18 +357,7 @@ Remove contextbar from top of page
   {% endblock %}
 
   {% block scripts %}
-{#    <script src="{% static "js/select2.min.js" %}"></script>#}
-{#    <link href="{% static "css/select2.min.css" %}" rel="stylesheet" />#}
-
-      <script>function get_cur_selected(objDropDown) {
-          console.log("hello", $("#producer_element_id"))
-          console.log(objDropDown.value)
-
-   document.getElementById("hidden_elements").value = objDropDown.value;
-
-          {#return $("#producer_element_id").val();#}
-      }
-
+      <script>
       // Submits control id for Control look up box
         function show_control_by_id() {
           var control_id = $('#control-lookup').find('input[name="id"]').val();
@@ -491,6 +457,13 @@ Remove contextbar from top of page
           // Save a statement
           // serialize data from the identified statement form
           var data = $( '#'+smt_panel_num ).serialize();
+          var dataarray = $( '#'+smt_panel_num ).serializeArray();
+              dataObj = {};
+
+          $(dataarray).each(function(i, field){
+  dataObj[field.name] = field.value;
+});
+            console.log("datadata", dataObj['producer_element_name'])
 
           // send data via ajax to be saved
           ajax_with_indicator({
@@ -530,6 +503,7 @@ Remove contextbar from top of page
               setTimeout(function() {
                 $('#success-msg-'+smt_panel_num).fadeOut("fast");
               }, 1000 );
+                 $('#selected_producer_element_form_id').append("<option value='" + smt_saved[0]['fields']['producer_element'] + "'>" + dataObj['producer_element_name'] + "</option>" );
             }
           });
 
@@ -598,7 +572,6 @@ Remove contextbar from top of page
                    dropdown.append("<option disabled>"+ emptyMessage + "</option>" );
                    console.log("result");
                    console.log(result);
-                   console.log(result['producer_element_name_value']);
                    //Check result isn't empty
                    if (result != '') {
                        // loop
@@ -611,7 +584,6 @@ Remove contextbar from top of page
                    }
                }
            }
-{#['fields']['sid'] ['model']#}
 
       function producer_autocomplete(text, system_id) {
   // Update the producer component autocomplete
@@ -637,7 +609,7 @@ Remove contextbar from top of page
             "control_id": control_id
         },
         dataType: "json",
-       method: "POST",
+       method: "GET",
       success: function(res) {
         // We get back a mapping indicating what was uploaded.
         console.log("result here in ajax search");
@@ -654,14 +626,6 @@ Remove contextbar from top of page
     });
 
 }
-
-function update_producer_element_sent(){
-               console.log("11223")
-}
       </script>
-{#<script>#}
-{#$(document).on('change', '#producer_element_id', function(e) {#}
-{#    console.log(this.options[e.target.selectedIndex].text);#}
-{#});#}
-{#</script>#}
+
   {% endblock %}

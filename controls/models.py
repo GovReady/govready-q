@@ -231,15 +231,15 @@ def autocompleteModel(request):
     return HttpResponse(data, mimetype)
 
 
-class ElementForm(forms.ModelForm):
-    uuid = forms.ModelChoiceField(
-        queryset=Element.objects.all(),
-        widget=autocomplete.ModelSelect2(url='editor_autocomplete')
-    )
-
-    class Meta:
-        model = Element
-        fields = ('__all__')
+# class ElementForm(forms.ModelForm):
+#     uuid = forms.ModelChoiceField(
+#         queryset=Element.objects.all(),
+#         widget=autocomplete.ModelSelect2(url='editor_autocomplete')
+#     )
+#
+#     class Meta:
+#         model = Element
+#         fields = ('__all__')
 
 class ElementControl(models.Model):
     element = models.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")

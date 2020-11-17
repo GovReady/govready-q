@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
 from django.forms import ModelForm
+from django.views import View
 from siteapp.models import Project, User, Organization
 from siteapp.forms import PortfolioForm, ProjectForm
 from datetime import datetime
@@ -340,7 +341,6 @@ def system_element(request, system_id, element_id):
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
-
 
 def controls_selected_export_xacta_xslx(request, system_id):
     """Export System's selected controls compatible with Xacta 360"""
@@ -751,6 +751,24 @@ def editor(request, system_id, catalog_key, cl_id):
         # Define status options
         impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
 
+      #   # Only elements for the given control id
+      #  # all_elements= Element.objects.exclude(element_type='system').filter(id=Statement.objects.producer_element_id)
+      #   statesate= Statement.objects.filter(sid=cl_id)
+      #   related_states = Statement.objects.select_related('producer_element')
+      #   # UserAccount.objects.filter(bank__bank_type='international')
+      #   related_states222 = Element.objects.exclude(element_type='system').filter(statements_produced_producer_element_id=2)
+      # #  statementfilter =  Statement.objects.filter(statement_type="control_implementation_prototype").filter(sid=cl_id)
+      #  # blah = Element.objects.exclude(element_type='system').select_related("id")
+      #   print("statesate")
+      #   print(statesate)
+      #   print("related_states")
+      #   print(related_states)
+      #   print(str(related_states.query))
+      #   print("related_states222")
+      #   print(related_states222.name)
+
+        elements =  Element.objects.all().exclude(element_type='system')
+
         context = {
             "system": system,
             "project": project,
@@ -766,7 +784,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "opencontrol": "opencontrol_string",
             "project_form": ProjectForm(request.user),
-            "elements": Element.objects.all().exclude(element_type='system'),
+            "elements": elements,
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -774,70 +792,176 @@ def editor(request, system_id, catalog_key, cl_id):
         raise Http404
 
 
-class EditorAutocomplete(autocomplete.Select2QuerySetView):
-    form_class = ElementForm
+class EditorAutocomplete(View):
     template_name = 'controls/editor.html'
 
-    def post(self, request):
-        print("POSTTT")
-        cl_id = self.q  #oscalize_control_id(self.q)
-        # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated:
-            return Element.objects.none()
-        # data = serializers.serialize('json', search_qs)
-        # print("data")
-        # print(data)
-        # # else:
-        # #     data = 'fail'
-        # mimetype = 'application/json'
-        # return HttpResponse(data, mimetype)
-        print(request)
-        print(self.request.POST)
-        big_qs = Element.objects.filter(id=self.request.POST.get('txtSearch', 'Default'))
-
-        qs = big_qs.filter(name__istartswith="IT")
-        print("qs")
-        print(qs)
-        data = serializers.serialize('json', qs)  #self.get_queryset()
-
-        print("data")
-        print(data)
-
-        return JsonResponse({"status": "error", "message": data})
-
     def get(self, request):
+        """Add an existing element and its statements to a system"""
+        print("searchhhh_system_component request")
+        print(request)
+        print(request.method)
+        print("system_id")
+      #  if request.method != "GET":
+      #      return HttpResponseNotAllowed(["GET"])
 
-        cl_id = self.q  #oscalize_control_id(self.q)
-        # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated:
-            return Element.objects.none()
+        print(dict(request.GET))
+        form_dict = dict(request.GET)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+        # Form values from ajax data
 
-        qs = Element.objects.all()
+        if "system_id" in form_values.keys():
+            system_id = form_values['system_id']
+            # TODO: get producer element id from system id and/or statement
 
-        if cl_id:
-            qs = qs.filter(id__istartswith=cl_id)  #.values().first()
-        print("qs")
-        print(qs)
-        elelist_dict = {'elelist': {'title': 'Control Element list'}, 'qs': qs}
-        return render(request, 'controls/editor.html', context=elelist_dict)
+            producer_element_id = form_values['producer_element_form_id'][0]  #form_values['producer_element_id']
+            # Does user have permission to add element?
+            # Check user permissions
+            system = System.objects.get(pk=system_id)
+            print("system")
+            print(system)
+            #system = System.objects.get(pk=system_id)
+            if not request.user.has_perm('change_system', system):
+                # User does not have write permissions
+                # Log permission to save answer denied
+                logger.info(
+                    event="change_system permission_denied",
+                    object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return HttpResponseForbidden(
+                    "Permission denied. {} does not have change privileges to system and/or project.".format(
+                        request.user.username))
 
-    def get_queryset(self):
-        cl_id = self.q  #oscalize_control_id(self.q)
-        # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated:
-            return Element.objects.none()
-        print("self.request")
-        print(self.request.POST)
-        data = self.request.POST.get('txtSearch', 'Default')
-        print("data")
-        print(data)
+            selected_controls = system.root_element.controls.all()
+            selected_controls_ids = set()
+            for sc in selected_controls:
+                selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
+            print("selected_controls_ids")
+            print(selected_controls_ids)
+            print("selected_controls")
+            print(selected_controls)
+            # Add element
+            # Look up the element
+            producer_element = Element.objects.get(pk=producer_element_id)
+            print("producer_element")
+            print(producer_element)
+            # TODO: Handle case of element already associated with system
 
-        qs = Element.objects.filter(id=data)
+            cl_id = form_values['control_id']  #"ac-2"#oscalize_control_id(cl_id)
+            text = form_values['text']
+            print("cl_id")
+            print(cl_id)
+            print("text")
+            print(text)
+            # The final elements that are returned to the new dropdown created...
+            producer_system_elements = Element.objects.filter(element_type="system_element").filter(name__contains=text)
+            print("producer_system_elements")
+            print(producer_system_elements)
 
-        if data:
-            qs = qs.filter(name__istartswith="IT")
+            # only prototype implementation statements for the given control
+            #control_ids = Statement.objects.filter(statement_type="control_implementation_prototype").filter(sid=cl_id)
+            # print("control_ids")
+            # print(control_ids)
+            #  for contorl_id in control_ids:
+            #      filtered_by_element_name = Element.objects.filter(id=contorl_id.producer_element_id)
+            #      # Element.objects.get(pk=producer_element_id)
+            #      # filtered_by_element_name = Element.filter(name__contains= text)
+            #      print("filtered_by_element_name")
+            #      print(filtered_by_element_name)
+            # Loop through element's prototype statements and add to control implementation statements
+            #print("Adding {} to system_id {}".format(producer_element.name, system_id))
+            # for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+            #     # Only add statements for controls selected for system
+            #     if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
+            #         print("smt", smt)
+            #         smt.create_instance_from_prototype(system.root_element.id)
+            #     else:
+            #         print("not adding smt not selected controls for system", smt)
 
-        return qs
+            producer_elements = [{"id": str(ele.id), "name": ele.name} for ele in producer_system_elements]
+            print("producer_elements")
+            print(producer_elements)
+            results = {'producer_element_name_value': producer_elements}
+            data = json.dumps(results)
+            mimetype = 'application/json'
+            return HttpResponse(data, mimetype)
+
+    def post(self, request, system_id):
+        """Add an existing element and its statements to a system"""
+        print("addinggggg_system_component request")
+        print(request)
+        print(request.method)
+        print("system_id")
+        if request.method != "POST":
+            return HttpResponseNotAllowed(["POST"])
+
+        print(dict(request.POST))
+        form_dict = dict(request.POST)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+        # Form values from ajax data
+
+        if "system_id" in form_values.keys():
+            # This returns all the elements by system element and control id
+            # for system_ele in producer_system_elements:
+            #     filtered_by_element_name2 = Statement.objects.filter(sid=cl_id).filter(producer_element_id=system_ele)
+            #     # Element.objects.get(pk=producer_element_id)
+            #     # filtered_by_element_name = Element.filter(name__contains= text)
+            #     print("filtered_by_element_name2")
+            #     print(filtered_by_element_name2)
+
+            system_id = form_values['system_id']
+            producer_element_id = form_values['selected_producer_element_form_id']
+            # Does user have permission to add element?
+            # Check user permissions
+            system = System.objects.get(pk=system_id)
+            print("system")
+            print(system)
+            #system = System.objects.get(pk=system_id)
+            if not request.user.has_perm('change_system', system):
+                # User does not have write permissions
+                # Log permission to save answer denied
+                logger.info(
+                    event="change_system permission_denied",
+                    object={"object": "element", "entered_producer_element_name": form_values['text']},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return HttpResponseForbidden(
+                    "Permission denied. {} does not have change privileges to system and/or project.".format(
+                        request.user.username))
+
+            selected_controls = system.root_element.controls.all()
+            selected_controls_ids = set()
+            for sc in selected_controls:
+                selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
+
+            # Add element
+            # Look up the element
+            producer_element = Element.objects.get(pk=producer_element_id)
+            # TODO: Handle case of element already associated with system
+
+            # Loop through element's prototype statements and add to control implementation statements
+            print("Adding {} to system_id {}".format(producer_element.name, system_id))
+            for smt in Statement.objects.filter(producer_element_id=producer_element.id,
+                                                statement_type="control_implementation_prototype"):
+                # Only add statements for controls selected for system
+                if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
+                    print("smt", smt)
+                    smt.create_instance_from_prototype(system.root_element.id)
+                else:
+                    print("not adding smt not selected controls for system", smt)
+
+            results = [{'producer_element_name_value': producer_element.name}]
+            data = json.dumps(results)
+            mimetype = 'application/json'
+            #return HttpResponse(data, mimetype)
+        # Redirect to selected element page
+        # return HttpResponse('systems/{}/controls/catalogs/{}/control/{}'.format(system_id, form_values['catalog_key'], form_values['control_id']))
+        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
 
 
 def editor_compare(request, system_id, catalog_key, cl_id):
@@ -1203,11 +1327,11 @@ def search_system_component(request):
     print(request)
     print(request.method)
     print("system_id")
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
+    if request.method != "GET":
+        return HttpResponseNotAllowed(["GET"])
 
-    print(dict(request.POST))
-    form_dict = dict(request.POST)
+    print(dict(request.GET))
+    form_dict = dict(request.GET)
     form_values = {}
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
@@ -1317,7 +1441,6 @@ def add_system_component(request, system_id):
 
 
         system_id = form_values['system_id']
-        # TODO: get producer element id from system id and/or statement
         producer_element_id = form_values['selected_producer_element_form_id']
         # Does user have permission to add element?
         # Check user permissions
@@ -1330,7 +1453,7 @@ def add_system_component(request, system_id):
             # Log permission to save answer denied
             logger.info(
                 event="change_system permission_denied",
-                object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+                object={"object": "element", "entered_producer_element_name": form_values['text']},
                 user={"id": request.user.id, "username": request.user.username}
             )
             return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
@@ -1354,14 +1477,13 @@ def add_system_component(request, system_id):
                 smt.create_instance_from_prototype(system.root_element.id)
             else:
                 print("not adding smt not selected controls for system", smt)
-        print("producer_element")
-        print(producer_element)
-        print("HUHHH??")
+
         results = [{'producer_element_name_value': producer_element.name}]
         data = json.dumps(results)
         mimetype = 'application/json'
-        return HttpResponse(data, mimetype)
+        #return HttpResponse(data, mimetype)
     # Redirect to selected element page
+   # return HttpResponse('systems/{}/controls/catalogs/{}/control/{}'.format(system_id, form_values['catalog_key'], form_values['control_id']))
     return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 # Baselines
 def assign_baseline(request, system_id, catalog_key, baseline_name):

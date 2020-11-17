@@ -2,6 +2,8 @@ from django.conf.urls import include, url
 
 from django.contrib import admin
 from django.conf import settings
+from django.views.generic import TemplateView
+
 admin.autodiscover()
 
 import controls.views
@@ -22,12 +24,12 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/selected$', views.controls_selected, name="controls_selected"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
-    url(r'^editor_autocomplete/$', views.EditorAutocomplete.as_view(), name="editor_autocomp22lete"),
-url(r'^ajax_calls/search/', views.autocompleteModel, name="editor_autocomplete"),
-    url(r'^api/get_control_elements/', views.get_control_elements, name="get_control_elements"),
-
-    url(r'^search_system_component', views.search_system_component, name="search_system_component"),
-    url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
+    # url(r'^editor_autocomplete/$', views.EditorAutocomplete.as_view(), name="editor_autocomp22lete"),
+    url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
+url(r'^ajax_calls/search/', views.autocompleteModel, name="editor_autocompl33ete"),
+    # url(r'^api/get_control_elements/', views.get_control_elements, name="get_control_elements"),
+    #url(r'^search_system_component', views.search_system_component, name="search_system_component"),
+    url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="add_system_component"),
 
     url(r'^smt/_save/$', views.save_smt),
     url(r'^smt/_delete/$', views.delete_smt),
