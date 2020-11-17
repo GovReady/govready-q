@@ -74,9 +74,9 @@ jobs:
     - run: coverage run --source='.' --branch -p manage.py test guidedmodules
     # - run: coverage run --source='.' --branch -p manage.py test discussion
     # Commenting out tests until better solution for testing after page loaded
-    #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
-    # - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.GeneralTests
-    #- run: coverage run --source='.' --branch -p manage.py test siteapp.tests.QuestionsTests
+    - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.LandingSiteFunctionalTests
+    - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.GeneralTests
+    - run: coverage run --source='.' --branch -p manage.py test siteapp.tests.QuestionsTests
     - run: coverage combine
     - run: coverage report # output to stdout.
     - run: coverage xml # generate report artifact coverage.xml.
