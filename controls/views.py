@@ -958,9 +958,8 @@ class EditorAutocomplete(View):
             data = json.dumps(results)
             mimetype = 'application/json'
             #return HttpResponse(data, mimetype)
-        # Redirect to selected element page
-        # return HttpResponse('systems/{}/controls/catalogs/{}/control/{}'.format(system_id, form_values['catalog_key'], form_values['control_id']))
-        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+        # Redirect to the page where the component was added from
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 
