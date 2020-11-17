@@ -38,13 +38,13 @@ jobs:
     # but it still says chromium crashes when launched from selenium tests. Maybe because chromium
     # doesn't like to run as root --- need to try running it as non-root.
     ## Install selenium dependencies --- not needed if using circleci/python:3.5-jessie-browsers image.
-    #- run: apt install chromedriver
-    #- run: export DISPLAY=:99
-    #- run: export CHROMIUM_FLAGS="--disable-setuid-sandbox --no-sandbox"
-    #- run:
-    #    name: Running X virtual framebuffer
-    #    command: Xvfb :99 -screen 0 1280x1024x24
-    #    background: true
+    - run: apt install chromedriver
+    - run: export DISPLAY=:99
+    - run: export CHROMIUM_FLAGS="--disable-setuid-sandbox --no-sandbox"
+    - run:
+        name: Running X virtual framebuffer
+        command: Xvfb :99 -screen 0 1280x1024x24
+        background: true
 
     # Run tests.
 

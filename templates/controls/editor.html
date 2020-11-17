@@ -611,13 +611,6 @@ Remove contextbar from top of page
         dataType: "json",
        method: "GET",
       success: function(res) {
-        // We get back a mapping indicating what was uploaded.
-        console.log("result here in ajax search");
-        console.log(res);
-        console.log(res['producer_element_name_value']);
-          console.log("SUCCESSS");
-              //   keeps same width as box
-
           helpers.buildDropdown(res , $('#selected_producer_element_form_id'), "select a prototype statement");
 
 

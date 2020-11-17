@@ -801,8 +801,8 @@ class EditorAutocomplete(View):
         print(request)
         print(request.method)
         print("system_id")
-      #  if request.method != "GET":
-      #      return HttpResponseNotAllowed(["GET"])
+        if request.method != "GET":
+            return HttpResponseNotAllowed(["GET"])
 
         print(dict(request.GET))
         form_dict = dict(request.GET)
@@ -815,7 +815,7 @@ class EditorAutocomplete(View):
             system_id = form_values['system_id']
             # TODO: get producer element id from system id and/or statement
 
-            producer_element_id = form_values['producer_element_form_id'][0]  #form_values['producer_element_id']
+            producer_element_id = form_values['producer_element_form_id']
             # Does user have permission to add element?
             # Check user permissions
             system = System.objects.get(pk=system_id)
