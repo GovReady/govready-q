@@ -22,7 +22,10 @@ class AppSource(models.Model):
 
     trust_assets = models.BooleanField(default=False, help_text="Are assets trusted? Assets include Javascript that will be served on our domain, Python code included with Modules, and Jinja2 templates in Modules.")
     available_to_all = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular organizations.")
+    available_to_all_individuals = models.BooleanField(default=True, help_text="Turn off to restrict the Modules loaded from this source to particular individuals.")
     available_to_orgs = models.ManyToManyField(Organization, blank=True, help_text="If available_to_all is False, list the Organizations that can start projects defined by Modules provided by this AppSource.")
+    available_to_individual = models.ManyToManyField(User, blank=True, related_name="individual", help_text="If available_to_all_individuals is False, list the individuals who can start projects defined by Modules provided by this AppSource.")
+    available_to_role = models.BooleanField(default=True, help_text="Turn off to restrict the ability to start projects defined by Modules provided by this AppSource.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -173,15 +176,23 @@ class AppVersion(models.Model):
         return True
 
     @staticmethod
-    def get_startable_apps(organization):
+    def get_startable_apps(organization, userid):
         # Load all of the startable AppVersions. An AppVersion is startable
         # if its show_in_catalog field is True and its AppSource is available
         # to the organization the request is for, which is true if the AppSoure
         # is available to all organizations or the organization has been whitelisted.
         from django.db.models import Q
+        # Get user permissions and they have the right one then return boolean
+        #     ['guidedmodules.add_appsource', 'guidedmodules.delete_appsource', 'guidedmodules.change_appsource',
+        #      'guidedmodules.view_appsource']
+        user = User.objects.filter(id=userid).first()
+        role_bool = user.has_perm("guidedmodules.view_appsource")
+
         return AppVersion.objects\
             .filter(show_in_catalog=True)\
-            .filter(source__is_system_source=False)\
+            .filter(source__is_system_source=False) \
+            .filter(Q(source__available_to_role=role_bool))\
+            .filter(Q(source__available_to_all_individuals=True) | Q(source__available_to_individual=userid))\
             .filter(Q(source__available_to_all=True) | Q(source__available_to_orgs=organization))
 
 def extract_catalog_metadata(app_module, migration=None):

@@ -1,8 +1,27 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.44 (October 16, 2020)
+v0.9.1.45.1 (November 5, 2020)
 ------------------------------
+
+**Developer changes**
+
+* Update various Python libraries (#1052)
+* Update jquery to 3.5.1, quill to 1.3.7, bootstrap to 3.4.1 (#1052)
+
+v0.9.1.45 (October 24, 2020)
+----------------------------
+
+**Bug fixes**
+
+* Fix bug in v0.9.1.44 that failed to handle case of non-existent ElementControl
+
+**Developer changes**
+
+* Update various Python libraries
+
+v0.9.1.44 (October 16, 2020)
+----------------------------
 
 This release significantly decreases the time taking to rendering System Security Plans including OSCAL versions.
 Rendering time has been reduced by 97%.

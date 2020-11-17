@@ -293,17 +293,22 @@ class System(models.Model):
             else:
 
                 try:
-                    # Get ElementControl if it exists
-                    elementcontrol = elm.controls.get(oscal_ctl_id=smt.sid, oscal_catalog_key=smt.sid_class)
+                    elementcontrol = self.root_element.controls.get(oscal_ctl_id=smt.sid, oscal_catalog_key=smt.sid_class)
+                    smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
+                                         "common_controls": [],
+                                         "combined_smt": "",
+                                         "elementcontrol_uuid": elementcontrol.uuid,
+                                         "combined_smt_uuid": uuid.uuid4()
+                                         }
+                except ElementControl.DoesNotExist:
+                    # Handle case where Element control does not exist
+                    elementcontrol = None
                     smts_as_dict[smt.sid] = {"control_impl_smts": [smt],
                                              "common_controls": [],
                                              "combined_smt": "",
-                                             "elementcontrol_uuid": elementcontrol.uuid if elementcontrol.uuid else None,
-                                             # Handle case where Element control does not exist
+                                             "elementcontrol_uuid": None,
                                              "combined_smt_uuid": uuid.uuid4()
                                              }
-                except Exception as ex:
-                    print(ex)
 
             # Build combined statement
 
