@@ -29,9 +29,9 @@ jobs:
             fetch-vendor-resources.sh lists other external software packages needed by the program.
             In both cases, package versions are pinned using version numbers and package hashes.
         command: |
-            pip install --user -r requirements.txt
-            pip install --user -r requirements_mysql.txt
-            # pip install --user -r requirements_util.txt
+            pip3 install --user -r requirements.txt
+            pip3 install --user -r requirements_mysql.txt
+            # pip3 install --user -r requirements_util.txt
             ./fetch-vendor-resources.sh
 
     # This is adapted from https://github.com/circleci/circleci-images/blob/master/shared/images/Dockerfile-browsers.template
