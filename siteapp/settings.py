@@ -105,7 +105,7 @@ try:
 	import test_without_migrations
 	INSTALLED_APPS.append('test_without_migrations')
 except ImportError:
-	pass
+	print("WARNING: 'test_without_migrations' could not be imported")
 
 # Add standard middleware.
 MIDDLEWARE = [
