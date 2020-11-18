@@ -101,7 +101,6 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 class OrganizationalSettingAdmin(admin.ModelAdmin):
     list_display = ('id', 'organization', 'catalog_key', 'parameter_key', 'value')
-    #raw_id_fields = ('organization','admin_users')
     readonly_fields = ('id',)
 
 class FolderAdmin(admin.ModelAdmin):
