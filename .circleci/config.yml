@@ -29,7 +29,7 @@ jobs:
             fetch-vendor-resources.sh lists other external software packages needed by the program.
             In both cases, package versions are pinned using version numbers and package hashes.
         command: |
-            pip install --upgrade pip
+            pip install --user --upgrade pip
             pip install --user -r requirements.txt
             pip install --user -r requirements_mysql.txt
             # pip install --user -r requirements_util.txt
