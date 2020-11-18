@@ -99,6 +99,11 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     actions = [add_me_as_admin, populate_test_organization]
 
+class OrganizationalSettingAdmin(admin.ModelAdmin):
+    list_display = ('id', 'organization', 'catalog_key', 'parameter_key', 'value')
+    #raw_id_fields = ('organization','admin_users')
+    readonly_fields = ('id',)
+
 class FolderAdmin(admin.ModelAdmin):
     list_display = ('title', 'created')
     raw_id_fields = ('organization','admin_users')
@@ -141,7 +146,7 @@ class SupportAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
-admin.site.register(OrganizationalSetting)
+admin.site.register(OrganizationalSetting, OrganizationalSettingAdmin)
 
 admin.site.register(Folder, FolderAdmin)
 

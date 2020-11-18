@@ -1224,6 +1224,9 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
 
     def test_settings_page(self):
+        # Log in
+        var_sleep(.5)
+        self._login()
         # test navigating to settings page not logged in
         self.browser.get(self.url("/settings"))
         self.assertRegex(self.browser.title, "GovReady-Q")
@@ -1231,6 +1234,7 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
 
         # login as user without admin privileges and test settings page unreachable
+        self.browser.get(self.url("/accounts/logout/"))
         self._login(self.user2.username, self.user2.clear_password)
         self.browser.get(self.url("/projects"))
         var_sleep(1)

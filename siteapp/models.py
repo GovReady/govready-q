@@ -312,7 +312,6 @@ class DirectLoginBackend(ModelBackend):
         return user_object
 
 
-
 subdomain_regex = r"^([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])$"
 
 class Organization(models.Model):
