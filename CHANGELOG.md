@@ -20,6 +20,14 @@ v0.9.1.45.2 (November 13, 2020)
   `control_implementation_prototype` statements. See commit 5083af.
 - Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
 
+v0.9.1.45.1 (November 5, 2020)
+------------------------------
+
+**Developer changes**
+
+* Update various Python libraries (#1052)
+* Update jquery to 3.5.1, quill to 1.3.7, bootstrap to 3.4.1 (#1052)
+
 v0.9.1.45 (October 24, 2020)
 ----------------------------
 

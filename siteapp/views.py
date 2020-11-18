@@ -190,7 +190,7 @@ def get_compliance_apps_catalog_for_user(user):
     from siteapp.models import Organization
     catalog = { }
     for org in Organization.get_all_readable_by(user):
-        apps = get_compliance_apps_catalog(org)
+        apps = get_compliance_apps_catalog(org, user.id)
         for app in apps:
             # Add to merged catalog.
             catalog.setdefault(app['key'], app)
@@ -205,13 +205,13 @@ def get_compliance_apps_catalog_for_user(user):
 
     return catalog
 
-def get_compliance_apps_catalog(organization):
+def get_compliance_apps_catalog(organization, userid):
     # Load the compliance apps available to the given organization.
 
     from guidedmodules.models import AppVersion
     from collections import defaultdict
 
-    appvers = AppVersion.get_startable_apps(organization)
+    appvers = AppVersion.get_startable_apps(organization, userid)
 
     # Group the AppVersions into apps. An app is a unique source+appname pair.
     # For each app, one or more versions may be available.
