@@ -113,10 +113,10 @@ class Statement(models.Model):
         """Generate a diff of statement of type `control_implementation` and its prototype"""
 
         if self.statement_type != 'control_implementation':
-            # TODO: Should we reurn None or raise error because statement is not of type control_implementation?
+            # TODO: Should we return None or raise error because statement is not of type control_implementation?
             return None
         if self.prototype is None:
-            # TODO: Should we reurn None or raise error because statement does not have a prototype?
+            # TODO: Should we return None or raise error because statement does not have a prototype?
             return None
         dmp = dmp_module.diff_match_patch()
         diff = dmp.diff_main(self.prototype.body, self.body)
@@ -127,10 +127,10 @@ class Statement(models.Model):
         """Generate a diff of statement of type `control_implementation` and its prototype"""
 
         if self.statement_type != 'control_implementation':
-            # TODO: Should we reurn None or raise error because statement is not of type control_implementation?
+            # TODO: Should we return None or raise error because statement is not of type control_implementation?
             return None
         if self.prototype is None:
-            # TODO: Should we reurn None or raise error because statement does not have a prototype?
+            # TODO: Should we return None or raise error because statement does not have a prototype?
             return None
         dmp = dmp_module.diff_match_patch()
         diff = dmp.diff_main(self.prototype.body, self.body)
