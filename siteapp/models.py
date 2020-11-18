@@ -304,7 +304,7 @@ class User(AbstractUser):
 from django.contrib.auth.backends import ModelBackend
 class DirectLoginBackend(ModelBackend):
     # Register in settings.py!
-    # Django can't log a user in without their password. In views::accept_invitation
+    # Django can't log a user in without their pwd. In views::accept_invitation
     # we log a user in when they demonstrate ownership of an email address.
     supports_object_permissions = False
     supports_anonymous_user = False

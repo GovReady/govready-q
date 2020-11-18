@@ -17,10 +17,6 @@ def all_user_fields_still_exist(fieldlist):
 class UserAdmin(contribauthadmin.UserAdmin):
     ordering = ('username',)
     list_display = ('id', 'email', 'date_joined', 'notifemails_enabled', 'notifemails_last_notif_id') # base has first_name, etc. fields that we don't have on our model
-    # fieldsets = [
-    #     (None, {'fields': ('email', 'password')}),
-    # ] + [fs for fs in contribauthadmin.UserAdmin.fieldsets if all_user_fields_still_exist(fs[1]['fields'])] + [("Notifications", {'fields': ('notifemails_last_notif_id', 'notifemails_last_at')}),]
-
     pass
 
 class OrganizationAdmin(admin.ModelAdmin):
@@ -65,8 +61,8 @@ class OrganizationAdmin(admin.ModelAdmin):
         from django.contrib import messages
         from django.utils.crypto import get_random_string
 
-        # Create a random password for any new test accounts that are
-        # created. Use the same password for all.
+        # Create a random pwd for any new test accounts that are
+        # created. Use the same pwd for all.
         pw = get_random_string(12, 'abcdefghkmnpqrstuvwxyz23456789')
 
         for org in queryset:
