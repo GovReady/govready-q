@@ -33,7 +33,8 @@ jobs:
             pip install --user -r requirements.txt
             pip install --user -r requirements_mysql.txt
             # pip install --user -r requirements_util.txt
-            ./fetch-vendor-resources.sh
+            # fetchng vendor resources failing in CircleCI Nov 18 2020
+            # ./fetch-vendor-resources.sh
 
     # This is adapted from https://github.com/circleci/circleci-images/blob/master/shared/images/Dockerfile-browsers.template
     # but it still says chromium crashes when launched from selenium tests. Maybe because chromium
