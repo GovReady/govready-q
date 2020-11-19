@@ -1100,21 +1100,19 @@ class ModuleAnswers(object):
                 self.use_data_urls = use_data_urls
 
             def __iter__(self):
-                # Yield all of the keys that are in the output document
+                # Yield all of the keys (entry) that are in the output document
                 # specification, plus all of the output formats which are
-                # keys in our returned dict that lazily render the document.
-                for key, value in self.document.items():
-                    if key not in self.output_formats:
-                        yield key
-                for key in self.output_formats:
-                    yield key
+                # keys (entry) in our returned dict that lazily render the document.
+                for entry, value in self.document.items():
+                    if entry not in self.output_formats:
+                        yield entry
+                for entry in self.output_formats:
+                    yield entry
+            def __getitem__(self, entry):
+                if entry in self.output_formats:
+                    # entry is an output format -> lazy render.
 
-            def __getitem__(self, key):
-                if key in self.output_formats:
-
-                    # key is an output format -> lazy render.
-
-                    if key not in self.rendered_content:
+                    if entry not in self.rendered_content:
                         # Cache miss.
 
                         # For errors, what is the name of this document?
@@ -1127,35 +1125,36 @@ class ModuleAnswers(object):
                         doc_name = "'%s' output document '%s'" % (self.module_answers.module.module_name, doc_name)
 
                         # Try to render it.
-                        task_cache_key = "output_r1_{}_{}_{}".format(
+                        task_cache_entry = "output_r1_{}_{}_{}".format(
                             self.index,
-                            key,
+                            entry,
                             1 if self.use_data_urls else 0,
                         )
                         def do_render():
                             try:
-                                return render_content(self.document, self.module_answers, key, doc_name, show_answer_metadata=True, use_data_urls=self.use_data_urls)
+                                return render_content(self.document, self.module_answers, entry, doc_name, show_answer_metadata=True, use_data_urls=self.use_data_urls)
                             except Exception as e:
                                 # Put errors into the output. Errors should not occur if the
                                 # template is designed correctly.
                                 ret = str(e)
-                                if key == "html":
+                                if entry == "html":
                                     import html
                                     ret = "<p class=text-danger>" + html.escape(ret) + "</p>"
                                 return ret
-                        self.rendered_content[key] = self.module_answers.task._get_cached_state(task_cache_key, do_render)
-                    return self.rendered_content[key]
+                        self.rendered_content[entry] = self.module_answers.task._get_cached_state(task_cache_entry, do_render)
 
-                elif key in self.document:
-                    # key is a key in the specification for the document.
+                    return self.rendered_content[entry]
+
+                elif entry in self.document:
+                    # entry is a entry in the specification for the document.
                     # Return it unchanged.
-                    return self.document[key]
+                    return self.document[entry]
 
-                raise KeyError(key)
-
-            def get(self, key, default=None):
-                if key in self.output_formats or key in self.document:
-                    return self[key]
+                raise KeyError(entry)
+                
+            def get(self, entry, default=None):
+                if entry in self.output_formats or entry in self.document:
+                    return self[entry]
 
 
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
