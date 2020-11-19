@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.46.2 (November 19, 2020)
+------------------------------
+
+**UI changes**
+
+* Omitting the group breadcrumb if it is None for a given question
+
 v0.9.1.46.1 (November 19, 2020)
 -----------------------------
 
@@ -20,6 +27,7 @@ Add organizational parameter value substitution for Control guidance and OSCAL.
 **Test fixes**
 
 * Fix siteapp.test to make sure a proper login is performed before testing `/settings` page.
+
 
 v0.9.1.45.1 (November 5, 2020)
 ------------------------------
