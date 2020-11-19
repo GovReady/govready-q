@@ -755,6 +755,7 @@ class Task(models.Model):
 
         # Handle a cache miss --- call refresh_func() and
         # then save it to cached_state (and save to the db).
+
         if key not in self.cached_state:
             self.cached_state[key] = refresh_func()
             self.save(update_fields=["cached_state"])
@@ -1151,7 +1152,9 @@ class Task(models.Model):
 
         # Lazy-render the output documents. Use data: URLs so all
         # assets are embedded.
-        documents = self.render_output_documents(answers=answers, use_data_urls=True)
+
+        documents = self.render_output_documents(answers=answers,
+                                                 use_data_urls=True)
 
         # Find the document with the named id, if id is a string, or
         # by index if id is an integer.
@@ -1185,7 +1188,6 @@ class Task(models.Model):
             # When Markdown output is requested for a template that is
             # authored in markdown, we can render directly to markdown.
             blob = doc["markdown"].encode("utf8")
-
         elif download_format == "oscal_yaml" and doc["format"] == "oscal_yaml":
             # When Markdown output is requested for a template that is
             # authored in markdown, we can render directly to markdown.
@@ -1254,6 +1256,7 @@ class Task(models.Model):
                 # return the content of the temporary file
                 with open(outfn, "rb") as f:
                     blob = f.read()
+
         return blob, filename, mime_type
 
     def render_snippet(self):

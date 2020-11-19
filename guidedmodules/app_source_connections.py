@@ -405,7 +405,7 @@ class GithubApiFilesystem(SimplifiedReadonlyFilesystem):
 #	"type": "github",
 #   "repo": "organization/repository",
 #   "path": "apps", # optional
-#   "auth": { "user": "username", "pw": "password" } # optional
+#   "auth": { "user": "username", "pw": "pwd" } # optional
 # }
 class GithubApiAppSourceConnection(PyFsAppSourceConnection):
     def __init__(self, source, options):
