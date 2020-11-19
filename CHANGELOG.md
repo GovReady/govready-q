@@ -2,11 +2,12 @@ GovReady-Q Release Notes
 ========================
 
 v0.9.1.46.1 (November 19, 2020)
------------------------------
+-------------------------------
 
 **Developer changes**
 
 * Replace the word 'password' with 'pwd' in comments to reduce false positives in code scanners.
+* Replace the word 'key' with 'entry' where possible to reduce false positives in code scanners.
 
 v0.9.1.46 (November 17, 2020)
 -----------------------------
