@@ -128,6 +128,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         elem = self.browser.find_element_by_css_selector(css_selector)
         self.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
         elem.click()
+        
+    def find_selected_option(self, css_selector):
+        selected_option = self.browser.find_element_by_css_selector(f"{css_selector}")
+        return selected_option
 
     def select_option(self, css_selector, value):
         from selenium.webdriver.support.select import Select
@@ -234,7 +238,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
 
-        self.user = User.objects.create(
+        self.user = User.objects.create_superuser(
             username="me",
             email="test+user@q.govready.com",
             is_staff=True
@@ -1280,6 +1284,17 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
 class ControlComponentTests(OrganizationSiteFunctionalTests):
 
+    def click_components_tab(self):
+        self.browser.find_element_by_partial_link_text("Component Statements").click()
+
+    def dropdown_option(self, dropdownid):
+        """
+        Allows for viewing of attributes of a given dropdown/select
+        """
+
+        dropdown = Select(self.browser.find_element_by_id(dropdownid))
+        return dropdown
+
     def create_test_statement(self, sid, sid_class, body, statement_type, status):
         """
         Creates and saves a new statement
@@ -1294,13 +1309,13 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         )
         smt.save()
         return smt
+
     def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks):
         """
         In the component statements tab create and then fill a new component statement with the given information.
         """
 
-        # Click on Component Statements tab
-        self.browser.find_element_by_partial_link_text("Component Statements").click()
+        self.click_components_tab()
 
         # Click to add new component statement
         self.click_element("#new_component_statement")
@@ -1310,14 +1325,13 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         # Fill out form
         self.browser.find_element_by_id("producer_element_name").send_keys(name)
-        var_sleep(5)
-        self.browser.find_element_by_name("body").send_keys(statement)
-        self.browser.find_element_by_name("pid").send_keys(part)
-        select = Select(self.browser.find_element_by_id(status))
+       # self.browser.find_elements_by_name("body")[-1].send_keys(statement)
+        self.browser.find_elements_by_name("pid")[-1].send_keys(part)
+        select = self.dropdown_option(status)
         select.select_by_value(statusvalue)
-        self.browser.find_element_by_name("remarks").send_keys(remarks)
+        self.browser.find_elements_by_name("remarks")[-1].send_keys(remarks)
         # Save form
-        self.browser.find_element_by_name("save").click()
+        self.browser.find_elements_by_name("save")[-1].click()
         self.browser.refresh()
 
     def test_smt_autocomplete(self):
@@ -1325,7 +1339,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         Testing if the textbox can autocomplete and filter for existing components
         """
 
-        # Get login and create a new project
+        # login as the first user and create a new project
         self._login()
         self._new_project()
         var_sleep(0.5)
@@ -1340,16 +1354,59 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # Head to the control ac-3
         self.navigateToPage("/systems/1/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
 
+        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
+        assert len(statement_title_list) == 0
+
         # Creating a few components
-        self.create_fill_statement_form("New Producer component 1", "New Producer body", 'a', 'status_',"Planned", "New Producer remarks")
-        self.create_fill_statement_form("New Producer component 2", "New Producer body", 'b', 'status_',"Planned", "New Producer remarks")
-        self.create_fill_statement_form("New Producer component 3", "New Producer body", 'c', 'status_',"Planned", "New Producer remarks")
+        self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
 
-        self.browser.get(self.url("/systems/1/controls/selected"))
+        self.click_components_tab()
 
-        var_sleep(300)
-        #TODO:
-        # click on the component statements tab
-        # Search for all values in the dropdown
+        # Confirm the dropdown sees all components
+        comps_dropwon = self.dropdown_option("selected_producer_element_form_id")
+        assert len(comps_dropwon.options) == 6
+        # Click on search bar
+        search_comps_txtbar = self.browser.find_elements_by_id("producer_element_search")
 
-        print("DONE")
+        # Type a few text combinations and make sure filtering is working
+        # Need to click the new dropdown after sending keys
+
+        ## Search for Component
+        search_comps_txtbar[-1].click()
+        search_comps_txtbar[-1].clear()
+        search_comps_txtbar[-1].send_keys("Component")
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(3)
+        assert len(comps_dropwon.options) == 3
+
+
+        ## Search for 2
+        search_comps_txtbar[-1].click()
+        search_comps_txtbar[-1].clear()
+        search_comps_txtbar[-1].send_keys("2")
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(3)
+        assert len(comps_dropwon.options) == 2
+        
+        # Add a new component based on one of the options available in the filtered dropdown
+        
+        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        self.select_option("select#selected_producer_element_form_id", "6")
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
+
+        self.select_option("select#selected_producer_element_form_id", "3")
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+
+        # Adding an existing component
+        add_existing_component_btn = self.browser.find_elements_by_id("add_existing_component")
+        add_existing_component_btn[-1].click()
+        self.click_components_tab()
+
+        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
+        assert len(statement_title_list) == 7
+

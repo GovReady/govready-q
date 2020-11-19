@@ -306,7 +306,7 @@ Remove contextbar from top of page
           </div><!--/smt-list-->
               <!-- Add existing component -->
           <div id="tab-content" class="row row-control" style="">
-              <form class="form-inline" id="add_existing_component" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
+              <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
                   {% csrf_token %}
                   <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
                       <div class="form-group" >
@@ -329,7 +329,7 @@ Remove contextbar from top of page
                           <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
 
                       </div>
-                      &nbsp;&nbsp;<button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
+                      &nbsp;&nbsp;<button type="submit" id="add_existing_component" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
                   </div>
 
               </form>
