@@ -92,7 +92,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
         options.add_argument("--incognito")
-        cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+        cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
 
         # Clean up and quit tests if Q is in SSO mode
@@ -197,7 +197,7 @@ class SampleTest(TestCase):
         self.assertEqual(1,1)
 
 class Oscal80053Tests(TestCase):
-    # Test 
+    # Test
     def test_catalog_load_control(self):
         cg = Catalog.GetInstance('NIST_SP-800-53_rev4')
         cg_flat = cg.get_flattended_controls_all_as_dict()
@@ -254,7 +254,7 @@ class StatementUnitTests(TestCase):
     def test_smt_status(self):
         # Create a smt
         smt = Statement.objects.create(
-            sid = "au.3",
+            sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is a test statement.",
             statement_type = "control",
@@ -262,15 +262,15 @@ class StatementUnitTests(TestCase):
         )
         self.assertIsNotNone(smt.id)
         self.assertEqual(smt.status, "Implemented")
-        self.assertEqual(smt.sid, "au.3")
+        self.assertEqual(smt.sid, "au-3")
         self.assertEqual(smt.body, "This is a test statement.")
         self.assertEqual(smt.sid_class, "NIST_SP-800-53_rev4")
         # Test updating status and retrieving statement
         smt.status = "Partially Implemented"
         smt.save()
         smt2 = Statement.objects.get(pk=smt.id)
-        self.assertEqual(smt.sid, "au.3")
-        self.assertEqual(smt.status, "Partially Implemented")
+        self.assertEqual(smt2.sid, "au-3")
+        self.assertEqual(smt2.status, "Partially Implemented")
 
 class ElementUnitTests(TestCase):
     ## Simply dummy test ##

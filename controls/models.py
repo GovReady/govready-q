@@ -24,6 +24,7 @@ class Statement(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
     parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
+    prototype = models.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
     producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement.")
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
@@ -61,6 +62,41 @@ class Statement(models.Model):
         catalog_control_dict = catalog.get_flattended_controls_all_as_dict()
         # Look up control by ID
         return catalog_control_dict[self.sid]
+
+    def create_prototype(self):
+        """Creates a prototype statement from an existing statement and prototype object"""
+
+        if self.prototype is not None:
+            # Prototype already exists for statement
+            return self.prototype
+            # check if prototype content is the same, report error if not, or overwrite if permission approved
+        from copy import deepcopy
+        prototype = deepcopy(self)
+        prototype.statement_type="control_implementation_prototype"
+        prototype.consumer_element_id = None
+        prototype.id = None
+        prototype.save()
+        # Set prototype attribute on the instances to newly created prototype
+        self.prototype = prototype
+        self.save()
+        return self.prototype
+
+    def create_instance_from_prototype(self, consumer_element_id):
+        """Creates a control_implementation statement instance for root_element of a system from an existing control implementation prototype statement"""
+
+        # if self.prototype is not None:
+        #     # Prototype already exists for statement
+        #     return self.prototype
+        #     # check if prototype content is the same, report error if not, or overwrite if permission approved
+        from copy import deepcopy
+        instance = deepcopy(self)
+        instance.statement_type="control_implementation"
+        instance.consumer_element_id = consumer_element_id
+        instance.id = None
+        # Set prototype attribute to newly created instance
+        instance.prototype = self
+        instance.save()
+        return instance
 
     # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
@@ -139,6 +175,7 @@ class Element(models.Model):
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
         return oscal_ctl_ids
+
 
 class ElementControl(models.Model):
     element = models.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")
