@@ -16,6 +16,7 @@ import re
 from unittest import skip
 
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
 
@@ -238,6 +239,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user.set_password(self.user.clear_password)
         self.user.save()
         self.user.reset_api_keys()
+        self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user.username, password=self.user.clear_password)
 
         # Create a Portfolio and Grant Access
@@ -259,6 +261,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user2.set_password(self.user2.clear_password)
         self.user2.save()
         self.user2.reset_api_keys()
+        self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user2.username, password=self.user2.clear_password)
         portfolio = Portfolio.objects.create(title=self.user2.username)
         portfolio.assign_owner_permissions(self.user2)
@@ -271,6 +274,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user3.set_password(self.user3.clear_password)
         self.user3.save()
         self.user3.reset_api_keys()
+        self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user3.username, password=self.user3.clear_password)
         portfolio = Portfolio.objects.create(title=self.user3.username)
         portfolio.assign_owner_permissions(self.user3)
