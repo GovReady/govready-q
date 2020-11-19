@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.45.2 (November 19, 2020)
+------------------------------
+
+**UI changes**
+
+* Omitting the group breadcrumb if it is None for a given question
+
 v0.9.1.45.1 (November 5, 2020)
 ------------------------------
 
