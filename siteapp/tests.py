@@ -366,7 +366,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
 
     def test_login(self):
-        # Test that a wrong password doesn't log us in.
+        # Test that a wrong pwd doesn't log us in.
         self._login(password=get_random_string(4))
         self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
@@ -813,7 +813,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
         self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
 
-        # password-type question input (this is not a user password)
+        # password-type question input (this is not a user pwd)
         self.assertRegex(self.browser.title, "Next Question: password")
         self.fill_field("#inputctrl", "th1s1z@p@ssw0rd!")
         self.click_element("#save-button")
@@ -1224,6 +1224,9 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
 
     def test_settings_page(self):
+        # Log in
+        var_sleep(.5)
+        self._login()
         # test navigating to settings page not logged in
         self.browser.get(self.url("/settings"))
         self.assertRegex(self.browser.title, "GovReady-Q")
@@ -1231,6 +1234,7 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
 
         # login as user without admin privileges and test settings page unreachable
+        self.browser.get(self.url("/accounts/logout/"))
         self._login(self.user2.username, self.user2.clear_password)
         self.browser.get(self.url("/projects"))
         var_sleep(1)
@@ -1249,7 +1253,6 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
         print("self.user is '{}'".format(self.user))
         print("self.user.username is '{}'".format(self.user.username))
-        # print("self.user.clear_password is '{}'".format(self.user.clear_password))
         print("self.user2.username is '{}'".format(self.user2.username))
 
         # SAMPLE NAVIGATING AND TESTING

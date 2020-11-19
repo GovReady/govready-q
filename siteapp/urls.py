@@ -95,7 +95,7 @@ urlpatterns = [
 ]
 
 if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS:
-    # If username/password logins are enabled, add the login pages.
+    # If username/pwd logins are enabled, add the login pages.
     urlpatterns += [
         # auth
         # next line overrides signup with our own view so we can monitor signup attempts, can comment out to go back to allauth's functionality
