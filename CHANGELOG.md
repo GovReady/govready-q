@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.46.2 (November 19, 2020)
+-----------------------------
+
+**UI changes**
+
+* Adding a url pattern for accounts login to ensure proper styling. Also added conditionals the views landing that constructs the signup and login forms.
+
 v0.9.1.46.1 (November 19, 2020)
 -----------------------------
 
