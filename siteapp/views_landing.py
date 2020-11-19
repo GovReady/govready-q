@@ -31,6 +31,8 @@ structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
 # logger = logging.getLogger(__name__)
 
+LOGIN = "login"
+SIGNUP = "signup"
 
 def homepage(request):
     # Main landing page.
@@ -46,7 +48,7 @@ def homepage(request):
     signup_form.fields['username'].widget.attrs.pop("autofocus", None)
     login_form.fields['login'].widget.attrs.pop("autofocus", None)
 
-    if "signup" in request.path or request.POST.get("action") == "signup":
+    if SIGNUP in request.path or request.POST.get("action") == SIGNUP:
         signup_form = SignupForm(request.POST)
         portfolio_form = PortfolioSignupForm(request.POST)
         if (request.user.is_authenticated or signup_form.is_valid()) and portfolio_form.is_valid():
@@ -95,7 +97,7 @@ def homepage(request):
 
                 return HttpResponseRedirect("/projects")
 
-    elif "login" in request.path or request.POST.get("action") == "login":
+    elif LOGIN in request.path or request.POST.get("action") == LOGIN:
         login_form = LoginForm(request.POST, request=request)
         if login_form.is_valid():
             login_form.login(request)
