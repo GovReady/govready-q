@@ -174,12 +174,12 @@ ACCOUNT_ADAPTER = primary_app + '.good_settings_helpers.AllauthAccountAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_UNIQUE_EMAIL = False # otherwise unconfirmed addresses may block real users
-ACCOUNT_EMAIL_REQUIRED = True # otherwise password resets are not possible
+ACCOUNT_EMAIL_REQUIRED = True # otherwise pwd resets are not possible
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 15 # default of 5 is too low!
 ACCOUNT_LOGOUT_ON_GET = True # allow simplified logout link
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
-ACCOUNT_PASSWORD_MIN_LENGTH = (4 if DEBUG else 6) # in debugging, allow simple passwords
+ACCOUNT_PASSWORD_MIN_LENGTH = (4 if DEBUG else 6) # in debugging, allow simple pwds
 
 # improve how the allauth forms are rendered using django-bootstrap forms,
 # in combination with a monkeypatch run elsewhere
