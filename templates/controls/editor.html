@@ -549,7 +549,8 @@ Remove contextbar from top of page
               data: data,
               success: function(res) {
                 console.log(res);
-                window.location.reload()
+                $( '#diff_'+smt_panel_num.replace("smt_","") ).hide();
+                $( '#diff_alert_'+smt_panel_num.replace("smt_","") ).hide();
               }
             });
           }
