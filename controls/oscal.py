@@ -9,6 +9,13 @@ CATALOG_PATH = os.path.join(os.path.dirname(__file__),'data','catalogs')
 
 class Catalogs (object):
     """Represent list of catalogs"""
+
+    # well known catalog identifiers
+
+    NIST_SP_800_53_rev4 = 'NIST_SP-800-53_rev4'
+    NIST_SP_800_53_rev5 = 'NIST_SP-800-53_rev5'
+    NIST_SP_800_171_rev1 = 'NIST_SP-800-171_rev1'
+
     def __init__(self):
         global CATALOG_PATH
         self.catalog_path = CATALOG_PATH
@@ -25,9 +32,9 @@ class Catalogs (object):
 
     def _list_catalog_keys(self):
         return [
-            'NIST_SP-800-53_rev4',
-            'NIST_SP-800-53_rev5',
-            'NIST_SP-800-171_rev1'
+            Catalogs.NIST_SP_800_53_rev4,
+            Catalogs.NIST_SP_800_53_rev5,
+            Catalogs.NIST_SP_800_171_rev1
         ]
 
     def _load_catalog_json(self, catalog_key):
@@ -51,18 +58,27 @@ class Catalog (object):
     """Represent a catalog"""
 
     # Create a singleton instance of this class per catalog. GetInstance returns
-    # that singleton instance. Instead of doing `cg = Catalog(catalog_key='NIST_SP-800-53_rev4')`,
-    # do `cg = Catalog.GetInstance(catalog_key='NIST_SP-800-53_rev4')`.
+    # that singleton instance. Instead of doing 
+    # `cg = Catalog(catalog_key=Catalogs.NIST_SP_800_53_rev4)`,
+    # do `cg = Catalog.GetInstance(catalog_key=Catalogs.NIST_SP_800_53_rev4')`.
     @staticmethod
-    def GetInstance(catalog_key='NIST_SP-800-53_rev4'):
-        # Create a new instance of Catalog() the first time for each catalog key
+    def GetInstance(catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
+        # Create a new instance of Catalog() the first time for each 
+        # catalog key / parameter combo
         # this method is called. Keep it in memory indefinitely.
         # Clear cache only if a catalog itself changes
-        if not hasattr(Catalog, '_cached_instance_' + catalog_key):
-            setattr(Catalog, '_cached_instance_' + catalog_key, Catalog(catalog_key=catalog_key))
-        return getattr(Catalog, '_cached_instance_' + catalog_key)
 
-    def __init__(self, catalog_key='NIST_SP-800-53_rev4'):
+        catalog_instance_key = '_cached_instance_' + catalog_key
+        if parameter_values:
+            parameter_values_hash = hash(frozenset(parameter_values.items()))
+            catalog_instance_key += '_' + str(parameter_values_hash)
+            
+        if not hasattr(Catalog, catalog_instance_key):
+            new_catalog = Catalog(catalog_key=catalog_key, parameter_values=parameter_values)
+            setattr(Catalog, catalog_instance_key, new_catalog)
+        return getattr(Catalog, catalog_instance_key)
+
+    def __init__(self, catalog_key=Catalogs.NIST_SP_800_53_rev4, parameter_values=dict()):
         global CATALOG_PATH
         self.catalog_key = catalog_key
         self.catalog_key_display = catalog_key.replace("_", " ")
@@ -86,7 +102,8 @@ class Catalog (object):
         # WARNING TODO: This precalculation along with instance caching of controls
         # may cause a problem in multi-tenant environment where different tenants have
         # have different organizational defined parameters.
-        self.flattended_controls_all_as_dict = self.get_flattended_controls_all_as_dict()
+        self.parameter_values = parameter_values
+        self.flattened_controls_all_as_dict = self.get_flattened_controls_all_as_dict()
 
     def _load_catalog_json(self):
         """Read catalog file - JSON"""
@@ -178,7 +195,7 @@ class Catalog (object):
         param = self.find_dict_by_value(control['parameters'], "id", param_id)
         return param['label']
 
-    def get_control_prose_as_markdown(self, control_data, part_types={ "statement" }):
+    def get_control_prose_as_markdown(self, control_data, part_types={ "statement" }, parameter_values=dict()):
         # Concatenate the prose text of all of the 'parts' of this control
         # in Markdown. Filter out the parts that are not wanted.
         # Example 'statement'
@@ -192,7 +209,7 @@ class Catalog (object):
             return "Withdrawn"
 
         text = self.format_part_as_markdown(control_data, filter_name=part_types)
-        parameter_values = {} # Eventually replace with organizational defined parameters when we have them
+
         text_params_replaced = self.substitute_parameter_text(control_data, text, parameter_values)
 
         return text_params_replaced
@@ -270,18 +287,25 @@ class Catalog (object):
         # Fill in parameter_values with control parameter labels for any
         # parameters that are not specified.
         parameter_values = dict(parameter_values) # clone so that we don't modify the caller's dict
+
         if "parameters" not in control:
             return text
 
         for parameter in control['parameters']:
             if parameter["id"] not in parameter_values:
                 parameter_values[parameter["id"]] = f"[{parameter.get('label', parameter['id'])}]"
+
         for parameter_key, parameter_value in parameter_values.items():
             text = re.sub(r"{{ " + re.escape(parameter_key) + " }}", parameter_value, text)
+
         return text
 
     def get_flattened_control_as_dict(self, control):
-        """Return a control as a simplified, flattened Python dictionary"""
+        """
+        Return a control as a simplified, flattened Python dictionary.
+        If parameter_values is supplied, it will override any paramters set
+        in the catalog.
+        """
         family_id = self.get_group_id_by_control_id(control['id'])
         cl_dict = {
             "id": control['id'],
@@ -290,7 +314,8 @@ class Catalog (object):
             "family_id": family_id,
             "family_title": self.get_group_title_by_id(family_id),
             "class": control['class'],
-            "description": self.get_control_prose_as_markdown(control, part_types={ "statement" }),
+            "description": self.get_control_prose_as_markdown(control, part_types={ "statement" },
+                                                              parameter_values=self.parameter_values),
             "guidance": self.get_control_prose_as_markdown(control, part_types={ "guidance" }),
             "catalog_file": self.catalog_file,
             "catalog_id": self.catalog_id,
@@ -299,7 +324,7 @@ class Catalog (object):
         # cl_dict = {"id": "te-1", "title": "Test Control"}
         return cl_dict
 
-    def get_flattended_controls_all_as_dict(self):
+    def get_flattened_controls_all_as_dict(self):
         """Return all controls as a simplified flattened Python dictionary indexed by control ids"""
         # Create an empty dictionary
         cl_all_dict = {}
