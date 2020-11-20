@@ -325,7 +325,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         # Fill out form
         self.browser.find_element_by_id("producer_element_name").send_keys(name)
-       # self.browser.find_elements_by_name("body")[-1].send_keys(statement)
+        self.browser.find_elements_by_name("body")[-1].send_keys(statement)
         self.browser.find_elements_by_name("pid")[-1].send_keys(part)
         select = self.dropdown_option(status)
         select.select_by_value(statusvalue)
