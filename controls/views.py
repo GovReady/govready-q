@@ -926,7 +926,14 @@ def certify_smt(request):
         return HttpResponseNotAllowed(["POST"])
 
     else:
+        form_dict = dict(request.POST)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+
+        statement = Statement.objects.get(pk=form_values['smt_id'])
         system = statement.consumer_element
+
         if not request.user.has_perm('change_system', system):
             # User does not have write permissions
             # Log permission to certify answer denied
@@ -936,13 +943,6 @@ def certify_smt(request):
                 user={"id": request.user.id, "username": request.user.username}
             )
             return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
-
-        form_dict = dict(request.POST)
-        form_values = {}
-        for key in form_dict.keys():
-            form_values[key] = form_dict[key][0]
-
-        statement = Statement.objects.get(pk=form_values['smt_id'])
 
         if statement is None:
             statement_status = "error"
