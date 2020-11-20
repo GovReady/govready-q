@@ -264,6 +264,7 @@ Remove contextbar from top of page
                         <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; margin-top: 12px;color: #666;">
                           {{ smt.diff_prototype_prettyHtml|safe }}
                           <div><a href="" onclick="$('#body_{{ forloop.counter }}').text('{{ smt.prototype.body }}');$('#diff_{{ forloop.counter }}').text('');$('#diff_alert_{{ forloop.counter }}').text('');return false;" style="font-size:10pt; margin-top: 12px;color: #666;font-weight: normal;">Update local</a></div>
+                          <div><a href="" onclick="return certify_statement();" style="font-size:10pt; margin-top: 12px;color: firebrick;font-weight: normal;">Update certified</a></div>
                         </div>
                     {% endif %}
                     </label>
@@ -530,5 +531,23 @@ Remove contextbar from top of page
         });
 
       </script>
-
+      <script>
+        function certify_statement() {
+          show_modal_confirm(
+            "Certify statement",
+            "Are you sure you want to certify this statement?",
+            "Certify",
+            function() {
+              ajax_with_indicator({
+                url: '',
+                method: "POST",
+                success: function(res) {
+                // redirect to home to see other projects
+                window.location = res.redirect;
+                }
+              });
+            }
+          )
+        }
+      </script>
   {% endblock %}
