@@ -1,6 +1,10 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.46.5 (November 28, 2020)
+-----------------------------
+* Removed instance of using sys.stderr and replaced with logger for proper logging.
+
 v0.9.1.46.4 (November 25, 2020)
 -----------------------------
 
