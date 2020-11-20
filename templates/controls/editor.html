@@ -264,7 +264,9 @@ Remove contextbar from top of page
                         <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; margin-top: 12px;color: #666;">
                           {{ smt.diff_prototype_prettyHtml|safe }}
                           <div><a href="" onclick="$('#body_{{ forloop.counter }}').text('{{ smt.prototype.body }}');$('#diff_{{ forloop.counter }}').text('');$('#diff_alert_{{ forloop.counter }}').text('');return false;" style="font-size:10pt; margin-top: 12px;color: #666;font-weight: normal;">Update local</a></div>
-                          <div><a href="" onclick="return certify_statement();" style="font-size:10pt; margin-top: 12px;color: firebrick;font-weight: normal;">Update certified</a></div>
+                          {% if user.is_superuser %}
+                            <div><a href="" onclick="return certify_statement();" style="font-size:10pt; margin-top: 12px;color: firebrick;font-weight: normal;">Update certified</a></div>
+                          {% endif %}
                         </div>
                     {% endif %}
                     </label>
