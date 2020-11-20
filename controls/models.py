@@ -86,7 +86,6 @@ class Statement(models.Model):
         #     # Prototype already exists for statement
         #     return self.prototype
         #     # check if prototype content is the same, report error if not, or overwrite if permission approved
-        from copy import deepcopy
         instance = deepcopy(self)
         instance.statement_type="control_implementation"
         instance.consumer_element_id = consumer_element_id
