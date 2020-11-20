@@ -283,8 +283,10 @@ def get_question_context(answers, question):
     return context_sorted
 
 
-def render_content(content, answers, output_format, source, additional_context={},
-    demote_headings=True, show_answer_metadata=False, use_data_urls=False, is_computing_title=False):
+def render_content(content, answers, output_format, source,
+                   additional_context={}, demote_headings=True,
+                   show_answer_metadata=False, use_data_urls=False,
+                   is_computing_title=False):
 
     # Renders content (which is a dict with keys "format" and "template")
     # into the requested output format, using the ModuleAnswers in answers
@@ -310,6 +312,7 @@ def render_content(content, answers, output_format, source, additional_context={
     # If the output format is plain-text, treat the Markdown as if it is plain text.
     #
     # No other output formats are supported.
+
     if template_format == "markdown":
         if output_format == "html" or output_format == "PARSE_ONLY":
             # Convert the template first to HTML using CommonMark.
@@ -435,7 +438,7 @@ def render_content(content, answers, output_format, source, additional_context={
                     answers,
                     output_format,
                     source + " " + "->".join(path),
-                    additional_context,
+                    additional_context
                 )
             elif isinstance(value, list):
                 return [walk(i, path+[str(i)]) for i in value]
@@ -1085,9 +1088,10 @@ class ModuleAnswers(object):
         # module's output. The output is a set of documents. The
         # documents are lazy-rendered because not all of them may
         # be used by the caller.
-        output_formats = ("html", "text", "markdown")
 
-        class LazyRenderedDocument:
+        class LazyRenderedDocument(object):
+            output_formats = ("html", "text", "markdown")
+
             def __init__(self, module_answers, document, index, use_data_urls):
                 self.module_answers = module_answers
                 self.document = document
@@ -1100,12 +1104,14 @@ class ModuleAnswers(object):
                 # specification, plus all of the output formats which are
                 # keys in our returned dict that lazily render the document.
                 for key, value in self.document.items():
-                    if key not in output_formats:
+                    if key not in self.output_formats:
                         yield key
-                for key in output_formats:
+                for key in self.output_formats:
                     yield key
+
             def __getitem__(self, key):
-                if key in output_formats:
+                if key in self.output_formats:
+
                     # key is an output format -> lazy render.
 
                     if key not in self.rendered_content:
@@ -1124,11 +1130,11 @@ class ModuleAnswers(object):
                         task_cache_key = "output_r1_{}_{}_{}".format(
                             self.index,
                             key,
-                            1 if use_data_urls else 0,
+                            1 if self.use_data_urls else 0,
                         )
                         def do_render():
                             try:
-                                return render_content(self.document, self.module_answers, key, doc_name, show_answer_metadata=True, use_data_urls=use_data_urls)
+                                return render_content(self.document, self.module_answers, key, doc_name, show_answer_metadata=True, use_data_urls=self.use_data_urls)
                             except Exception as e:
                                 # Put errors into the output. Errors should not occur if the
                                 # template is designed correctly.
@@ -1138,7 +1144,6 @@ class ModuleAnswers(object):
                                     ret = "<p class=text-danger>" + html.escape(ret) + "</p>"
                                 return ret
                         self.rendered_content[key] = self.module_answers.task._get_cached_state(task_cache_key, do_render)
-
                     return self.rendered_content[key]
 
                 elif key in self.document:
@@ -1147,10 +1152,11 @@ class ModuleAnswers(object):
                     return self.document[key]
 
                 raise KeyError(key)
-                
+
             def get(self, key, default=None):
-                if key in output_formats or key in self.document:
+                if key in self.output_formats or key in self.document:
                     return self[key]
+
 
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 
@@ -1211,7 +1217,7 @@ class TemplateContext(Mapping):
 
     def getitem(self, item):
         self._execute_lazy_module_answers()
-
+        
         # If 'item' matches a question ID, wrap the internal Pythonic/JSON-able value
         # with a RenderedAnswer instance which take care of converting raw data values
         # into how they are rendered in templates (escaping, iteration, property accessors)
@@ -1245,12 +1251,15 @@ class TemplateContext(Mapping):
                 #       Will need a better way to determine the catalogs on a system so we can retrieve at once
                 #       Maybe get the catalogs as a property of the system
                 # Retrieve a Django dictionary of dictionaries object of full control catalog
+
                 from controls.oscal import Catalog
                 # Detect single control catalog from first control
                 try:
                     catalog_key = self.module_answers.task.project.system.root_element.controls.first().oscal_catalog_key
-                    sca = Catalog.GetInstance(catalog_key=catalog_key)
-                    control_catalog = sca.flattended_controls_all_as_dict
+                    parameter_values = self.module_answers.task.project.get_parameter_values(catalog_key)
+                    sca = Catalog.GetInstance(catalog_key=catalog_key, 
+                                              parameter_values=parameter_values)
+                    control_catalog = sca.flattened_controls_all_as_dict
                 except:
                     control_catalog = None
                 return control_catalog

@@ -1,24 +1,33 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.45.2 (November 13, 2020)
--------------------------------
-
-**Feature changes**
-
-- Support Compliance As Code reuse of statements by adding a "control_implementation_prototype" statement type that seeds all instances of a component's control implementation statements.
+v0.9.1.46.2 (November 19, 2020)
+------------------------------
 
 **UI changes**
 
-- Add components (system elements) via an autocomplete to a system on system's selected components page.
-- Add alert link above implementation statement edit box when control implementation differs from certified control implementation statement. Clicking link displays visual diff of prototype statement and existing statement.
-- Add link to update implementation statement with latest certified control implementation statement.
+* Omitting the group breadcrumb if it is None for a given question
+
+v0.9.1.46.1 (November 19, 2020)
+-----------------------------
 
 **Developer changes**
 
-- Modified controls.Statement model to link `control_implementation` statements to
-  `control_implementation_prototype` statements. See commit 5083af.
-- Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
+* Replace the word 'password' with 'pwd' in comments to reduce false positives in code scanners.
+
+v0.9.1.46 (November 17, 2020)
+-----------------------------
+
+Add organizational parameter value substitution for Control guidance and OSCAL.
+
+**Data changes**
+
+* Add `OrganizationalSettings` data model for tracking organizational defined parameters.
+
+**Test fixes**
+
+* Fix siteapp.test to make sure a proper login is performed before testing `/settings` page.
+
 
 v0.9.1.45.1 (November 5, 2020)
 ------------------------------
@@ -123,7 +132,6 @@ Enable upgrade of project root_task to more recent version.
 **Documentation changes**
 
 * Document new logger entries for successful and failed attempts to upgrade project's root_task app.
->>>>>>> master
 
 v0.9.1.38.2 (September 20, 2020)
 --------------------------------
@@ -131,7 +139,6 @@ v0.9.1.38.2 (September 20, 2020)
 **Developer changes**
 
 * Remove no longer maintained code for deploying to Pivotal Web Services.
-
 
 v0.9.1.38 (August 28, 2020)
 ---------------------------
