@@ -919,6 +919,43 @@ def save_smt(request):
     # Return successful save result to web page's Ajax request
     return JsonResponse({ "status": "success", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg, "statement": serialized_obj })
 
+def certify_smt(request):
+    """Certify a statement"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    else:
+        if not request.user.has_perm('change_system', system):
+            system = statement.consumer_element
+            # User does not have write permissions
+            # Log permission to save answer denied
+            logger.info(
+                event="delete_smt permission_denied",
+                object={"object": "statement", "id": statement.id},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
+        if statement is None:
+            # Statement from received has an id no longer in the database.
+            # Report error. Alternatively, in future save as new Statement object
+            statement_status = "error"
+            statement_msg = "The id for this statement is no longer valid in the database."
+            return JsonResponse({ "status": "error", "message": statement_msg })
+
+        try:
+            statement.delete()
+            statement_status = "ok"
+            statement_msg = "Statement certified."
+        except Exception as e:
+            statement_status = "error"
+            statement_msg = "Statement certification failed. Error reported {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg })
+
+        return JsonResponse({ "status": "success", "message": statement_msg })
+
+
 def delete_smt(request):
     """Delete a statement"""
 

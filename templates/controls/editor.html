@@ -265,7 +265,7 @@ Remove contextbar from top of page
                           {{ smt.diff_prototype_prettyHtml|safe }}
                           <div><a href="" onclick="$('#body_{{ forloop.counter }}').text('{{ smt.prototype.body }}');$('#diff_{{ forloop.counter }}').text('');$('#diff_alert_{{ forloop.counter }}').text('');return false;" style="font-size:10pt; margin-top: 12px;color: #666;font-weight: normal;">Update local</a></div>
                           {% if user.is_superuser %}
-                            <div><a href="" onclick="return certify_statement();" style="font-size:10pt; margin-top: 12px;color: firebrick;font-weight: normal;">Update certified</a></div>
+                            <div><a href="" onclick="return certify_statement({{ smt.body }}, {{smt.prototype.body}});" style="font-size:10pt; margin-top: 12px;color: firebrick;font-weight: normal;">Update certified</a></div>
                           {% endif %}
                         </div>
                     {% endif %}
@@ -534,18 +534,20 @@ Remove contextbar from top of page
 
       </script>
       <script>
-        function certify_statement() {
+        function certify_statement(smt, smt_proto) {
+          data = { smt: smt, smt_proto: smt_proto }
           show_modal_confirm(
             "Certify statement",
             "Are you sure you want to certify this statement?",
             "Certify",
             function() {
               ajax_with_indicator({
-                url: '',
+                url: "controls/_smt/certify",
                 method: "POST",
+                data: data,
                 success: function(res) {
                 // redirect to home to see other projects
-                window.location = res.redirect;
+                  window.location = res.redirect;
                 }
               });
             }
