@@ -1,18 +1,17 @@
+import uuid
+from collections import OrderedDict
+
+from django.conf import settings
 from django.db import models, transaction
 from django.utils import timezone
-from django.conf import settings
-
-from jsonfield import JSONField
-
-from collections import OrderedDict
-import uuid
-
-from .module_logic import ModuleAnswers, render_content
-from .answer_validation import validator
-from siteapp.models import User, Organization, Project, ProjectMembership
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
+from jsonfield import JSONField
+from siteapp.models import Organization, Project, ProjectMembership, User
+
+from .answer_validation import validator
+from .module_logic import ModuleAnswers, render_content
 
 
 class AppSource(models.Model):
@@ -64,7 +63,9 @@ class AppSource(models.Model):
             return "github.com/%s" % self.spec.get("repo")
 
     def make_cache_stale_key(self):
-        import xxhash, json
+        import json
+
+        import xxhash
         payload = b""
         payload += json.dumps(self.spec).encode("utf8")
         payload += self.updated.isoformat().encode("ascii")
@@ -182,6 +183,7 @@ class AppVersion(models.Model):
         # to the organization the request is for, which is true if the AppSoure
         # is available to all organizations or the organization has been whitelisted.
         from django.db.models import Q
+
         # Get user permissions and they have the right one then return boolean
         #     ['guidedmodules.add_appsource', 'guidedmodules.delete_appsource', 'guidedmodules.change_appsource',
         #      'guidedmodules.view_appsource']
@@ -378,7 +380,8 @@ class Module(models.Model):
 
     def questions_dependencies(self):
         # For the admin.
-        from .module_logic import get_all_question_dependencies, get_question_dependencies_with_type
+        from .module_logic import (get_all_question_dependencies,
+                                   get_question_dependencies_with_type)
         _, root_questions = get_all_question_dependencies(self)
         def get_question_dependencies(node):
             ret = { }
@@ -420,8 +423,9 @@ class Module(models.Model):
         """Write out the in-memory module specification."""
 
         import os.path
-        import yaml
+
         import rtyaml
+        import yaml
 
         spec = OrderedDict(self.spec)
         if self.module_name == "app" and self.app:
@@ -452,8 +456,9 @@ class Module(models.Model):
         """Write out the in-memory module specification to disk."""
 
         import os.path
+
         import rtyaml
-        from django.http import HttpResponse, Http404
+        from django.http import Http404, HttpResponse
 
         spec = OrderedDict(self.spec)
         if self.module_name == "app" and self.app:
@@ -531,7 +536,8 @@ class ModuleQuestion(models.Model):
 
     def choices_as_csv(self):
         # Helper method for module authoring.
-        import csv, io
+        import csv
+        import io
         buf = io.StringIO()
         wr = csv.writer(buf, delimiter="|")
         for choice in self.spec.get("choices", []):
@@ -541,7 +547,9 @@ class ModuleQuestion(models.Model):
     @staticmethod
     def choices_from_csv(choices):
         # Helper method for module authoring.
-        import csv, io, collections
+        import collections
+        import csv
+        import io
         ret = []
         buf = io.StringIO(choices)
         for choice in csv.reader(buf, delimiter="|"):
@@ -1208,7 +1216,7 @@ class Task(models.Model):
                 html = doc["html"]
                 html = '<meta charset="UTF-8" />' + html
 
-                import subprocess # nosec
+                import subprocess  # nosec
                 cmd = ["/usr/bin/xvfb-run", "--", "/usr/bin/wkhtmltopdf",
                     "-q", # else errors go to stdout
                     "--disable-javascript",
@@ -1236,24 +1244,34 @@ class Task(models.Model):
 
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
-            import tempfile, os.path, subprocess # nosec
+            import os.path
+            # import subprocess
+            import tempfile  # nosec
+
+            from docx.shared import Cm
+            from docxtpl import DocxTemplate
+
             with tempfile.TemporaryDirectory() as tempdir:
                 # convert from HTML to something else, writing to a temporary file
                 outfn = os.path.join(tempdir, filename)
-                # Append '# nosec' to line below to tell Bandit to ignore the low risk problem
-                # with not specifying the entire path to pandoc.
-                with subprocess.Popen(# nosec
-                    ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
-                    stdin=subprocess.PIPE
-                    ) as proc:
-                    proc.communicate(
-                        doc["html"].encode("utf8"),
-                        timeout=30)
-                    if proc.returncode != 0: raise subprocess.CalledProcessError(0, '')
+            #     # Append '# nosec' to line below to tell Bandit to ignore the low risk problem
+            #     # with not specifying the entire path to pandoc.
+            #     with subprocess.Popen(# nosec
+            #         ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+            #         stdin=subprocess.PIPE
+            #         ) as proc:
+            #         proc.communicate(
+            #             doc["html"].encode("utf8"),
+            #             timeout=30)
+            #         if proc.returncode != 0: raise subprocess.CalledProcessError(0, '')
+                docx = DocxTemplate("./templates/FedRAMP-SSP-Low-Baseline-Template.docx")
+                docx.render({ 'content' : doc["text"] })
+                docx.save(outfn)
 
                 # return the content of the temporary file
                 with open(outfn, "rb") as f:
                     blob = f.read()
+
         return blob, filename, mime_type
 
     def render_snippet(self):
@@ -2051,7 +2069,7 @@ class TaskAnswerHistory(models.Model):
                 if settings.GR_IMG_GENERATOR == 'wkhtmltopdf':
                     if sf.mime_type == "text/html":
                         # Use wkhtmltoimage.
-                        import subprocess # nosec
+                        import subprocess  # nosec
                         try:
                             # Pipe to subprocess.
                             # xvfb is required to run wkhtmltopdf in headless mode on Debian, see https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2037#issuecomment-62019521.
@@ -2175,7 +2193,8 @@ class TaskAnswerHistory(models.Model):
             if q.spec["type"] == "longtext":
                 # Longtext is Markdown. Turn into HTML.
                 from commonmark_extensions.tables import \
-                    ParserWithTables as CommonMarkParser, \
+                    ParserWithTables as CommonMarkParser
+                from commonmark_extensions.tables import \
                     RendererWithTables as CommonMarkHtmlRenderer
                 human_readable_text_key = "html"
                 human_readable_text = CommonMarkHtmlRenderer().render(CommonMarkParser().parse(value)).strip()
@@ -2343,9 +2362,10 @@ class InstrumentationEvent(models.Model):
         ]
 
 def image_to_dataurl(f, size):
-    from PIL import Image
-    from io import BytesIO
     import base64
+    from io import BytesIO
+
+    from PIL import Image
     if isinstance(f, Image.Image):
         # If a PIL.Image is passed in, then use it.
         im = f.copy()
