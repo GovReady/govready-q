@@ -7,7 +7,8 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from .oscal import Catalogs, Catalog
 import uuid
-
+from copy import deepcopy
+from controls.models import Baselines
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
 class Statement(models.Model):
@@ -69,7 +70,6 @@ class Statement(models.Model):
             # Prototype already exists for statement
             return self.prototype
             # check if prototype content is the same, report error if not, or overwrite if permission approved
-        from copy import deepcopy
         prototype = deepcopy(self)
         prototype.statement_type="control_implementation_prototype"
         prototype.consumer_element_id = None
@@ -87,7 +87,6 @@ class Statement(models.Model):
         #     # Prototype already exists for statement
         #     return self.prototype
         #     # check if prototype content is the same, report error if not, or overwrite if permission approved
-        from copy import deepcopy
         instance = deepcopy(self)
         instance.statement_type="control_implementation"
         instance.consumer_element_id = consumer_element_id
@@ -157,7 +156,7 @@ class Element(models.Model):
         can_assign_controls = user.has_perm('change_element', self)
         # Does user have edit permissions on system?
         if  can_assign_controls:
-            from controls.models import Baselines
+
             bs = Baselines()
             controls = bs.get_baseline_controls(baselines_key, baseline_name)
             for oscal_ctl_id in controls:

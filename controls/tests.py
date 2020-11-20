@@ -14,9 +14,8 @@
 
 from django.test import TestCase
 from selenium.webdriver.support.select import Select
-
 from siteapp.models import User
-from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests
+from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests, var_sleep
 from .models import *
 
 
@@ -43,15 +42,6 @@ from .models import *
 # from guidedmodules.models import Module, Task, TaskAnswer
 # from guidedmodules.module_logic import *
 # from guidedmodules.app_loading import load_app_into_database
-
-
-def var_sleep(duration):
-    '''
-    Tweak sleep globally by multple, a fraction, or depend on env
-    '''
-    from time import sleep
-    sleep(duration*2)
-
 
 
 #####################################################################
@@ -283,7 +273,6 @@ class PoamUnitTests(TestCase):
             consumer_element = e
         )
         smt.save()
-        import uuid
         poam = Poam.objects.create(statement = smt, poam_group = "New POA&M Group")
         self.assertTrue(poam.poam_group == "New POA&M Group")
         # self.assertTrue(poam.name == "New Element")
