@@ -10,21 +10,15 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 
-import os
 # import os.path
-import re
-from unittest import skip
 
-from django.conf import settings
-from django.forms import Select
 from django.test import TestCase
+from selenium.webdriver.support.select import Select
 
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-
-from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests
-from .oscal import Catalogs, Catalog
-from .models import *
 from siteapp.models import User
+from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests
+from .models import *
+
 
 # from controls.oscal import Catalogs, Catalog
 
