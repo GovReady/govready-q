@@ -311,6 +311,8 @@ def render_content(content, answers, output_format, source,
     #
     # If the output format is plain-text, treat the Markdown as if it is plain text.
     #
+    # If the output format is docxtpl, use docxtpl package to process jinja tags in MS Word docx file.
+    #
     # No other output formats are supported.
 
     if template_format == "markdown":
@@ -481,6 +483,50 @@ def render_content(content, answers, output_format, source,
             return output
         else:
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
+
+    elif template_format in ("docxtpl"):
+        # The docxtpl template type is rendered using the Python-docx library
+        # within the docxtpl library enabling jinja2 templates within a MS Word docx file.
+
+        print("DEBUG *** Inside 'module_logic.py if template_format in (\"docxtpl\"):'")
+
+        def escapefunc(question, task, has_answer, answerobj, value):
+            # Don't perform any escaping. The caller will wrap the
+            # result in jinja2.Markup().
+            return str(value)
+
+        def errorfunc(message, short_message, long_message, **format_vars):
+            # Wrap in jinja2.Markup to prevent auto-escaping.
+            return jinja2.Markup("<" + message.format(**format_vars) + ">")
+
+        # odt and some other formats cannot pipe to stdout, so we always
+        # generate a temporary file.
+        import os.path
+        # # import subprocess
+        # import tempfile  # nosec
+
+        from docx.shared import Cm
+        from docxtpl import DocxTemplate
+
+        filename = "test_word.docx"
+        # with tempfile.TemporaryDirectory() as tempdir:
+        with os.path("/tmp") as tempdir:
+            # convert from HTML to something else, writing to a temporary file
+            outfn = os.path.join(tempdir, filename)
+            # TODO: Pull from compliance app instead of hard coded
+            # temp hardcode path
+            hc_file_dir = "/codedata/code/govready-q-master/" # local laptop
+            docx = DocxTemplate(hc_file_dir + "q-files/vendors/govready/govready-q-files-startpack/q-files/ice-cream-docx-demo/templates/ice_cream_order.docx")
+            docx.render({ 'content' : "sample content" })
+            docx.save(outfn)
+
+            # return the content of the temporary file
+            with open(outfn, "rb") as f:
+                blob = f.read()
+
+        print("DEBUG *** Finished 'module_logic.py if template_format in (\"docxtpl\"):'")
+
+        return blob
 
     elif template_format in ("text", "markdown", "html", "oscal_json", "oscal_xml"):
         # The plain-text and HTML template types are rendered using Jinja2.
@@ -1156,7 +1202,6 @@ class ModuleAnswers(object):
             def get(self, key, default=None):
                 if key in self.output_formats or key in self.document:
                     return self[key]
-
 
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 

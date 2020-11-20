@@ -85,6 +85,7 @@
                           {% elif document.format == "oscal_xml" %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/oscal_xml">OSCAL (xml)</a>&nbsp;&nbsp;
                           {% else %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docxtpl">New Word (docxtpl)</a>&nbsp;&nbsp;
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a>&nbsp;&nbsp;
                             {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/odt">Open Office (odt)</a>&nbsp;&nbsp;

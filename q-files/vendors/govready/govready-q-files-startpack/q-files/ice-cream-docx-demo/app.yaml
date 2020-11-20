@@ -1,0 +1,32 @@
+id: app
+title: Ice Cream in MS Word DOCX
+type: project
+protocol:
+- govready.com/apps/compliance/2017/nist-sp-800-53-r4-ssp
+- govready.com/apps/compliance/2017/rules-of-behavior
+version: 0.7
+icon: app.png
+
+catalog:
+  category: Demo
+  vendor: GovReady
+  vendor_url: http://www.govready.com
+  status: draft
+  version: 0.7
+  source_url: https://github.com/GovReady/GovReady-Q/q-files/vendors/govready-q-files-startpack/q-files/ice-cream-docx-demo
+  description:
+    short: Demonstration of a Word Docx template displaying your ice cream order
+    long: Demonstration of a Word Docx template displaying your ice cream order
+
+introduction:
+  format: markdown
+  template: >-
+    Demonstration of a Word Docx template displaying your ice cream order
+
+questions:
+- id: ice_cream_module
+  title: Ice Cream
+  type: module
+  module-id: ice_cream_module
+
+output: []

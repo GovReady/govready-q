@@ -1,0 +1,19 @@
+id: ice_cream_module
+title: Ice Cream Order
+introduction:
+  format: markdown
+  template: |
+    Ice Cream 
+
+    In this module, you will order ice cream. 
+
+questions:
+- id: ice_cream_order
+  title: Ice cream order
+  prompt: What flavor of ice cream would you like?
+  type: text
+  help: |
+    Choose whatever you'd like.
+
+output:
+- templates/ice_cream_order_docxtpl.md

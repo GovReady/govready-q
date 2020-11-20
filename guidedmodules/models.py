@@ -1150,6 +1150,7 @@ class Task(models.Model):
             "oscal_yaml": ("markdown_github", "md", "text/plain"),
             "oscal_xml": ("markdown_github", "md", "text/plain"),
             "docx": ("docx", "docx", "application/octet-stream"),
+            "docxtpl": ("docx", "docx", "application/octet-stream"),
             "odt": ("odt", "odt", "application/octet-stream"),
         }
 
@@ -1196,6 +1197,7 @@ class Task(models.Model):
             # When Markdown output is requested for a template that is
             # authored in markdown, we can render directly to markdown.
             blob = doc["markdown"].encode("utf8")
+
         elif download_format == "oscal_yaml" and doc["format"] == "oscal_yaml":
             # When Markdown output is requested for a template that is
             # authored in markdown, we can render directly to markdown.
@@ -1241,9 +1243,7 @@ class Task(models.Model):
                 filename = filename + 'txt'
                 mime_type = "text/plain"
 
-        else:
-            # Render to HTML and convert using pandoc.
-
+        elif download_format == "docxtpl":
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
             import os.path
@@ -1285,7 +1285,6 @@ class Task(models.Model):
             "html",
             "%s snippet" % repr(self.module)
         )
-
 
     def get_app_icon_url(self):
         if not hasattr(self, "_get_app_icon_url"):
