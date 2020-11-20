@@ -265,7 +265,7 @@ Remove contextbar from top of page
                           {{ smt.diff_prototype_prettyHtml|safe }}
                           <div><a href="" onclick="$('#body_{{ forloop.counter }}').text('{{ smt.prototype.body }}');$('#diff_{{ forloop.counter }}').text('');$('#diff_alert_{{ forloop.counter }}').text('');return false;" style="font-size:10pt; margin-top: 12px;color: #666;font-weight: normal;">Update local</a></div>
                           {% if user.is_superuser %}
-                            <div><a href="" onclick="return certify_statement('smt_{{ forloop.counter }}');" style="font-size:10pt; margin-top: 12px;color: firebrick;font-weight: normal;">Update certified</a></div>
+                            <div><a href="" onclick="return certify_statement('smt_{{ forloop.counter }}', '{{ smt.prototype.body }}');return false;" style="font-size:10pt; margin-top: 12px;color: firebrick;font-weight: normal;">Update certified</a></div>
                           {% endif %}
                         </div>
                     {% endif %}
@@ -535,23 +535,19 @@ Remove contextbar from top of page
       </script>
       <script>
         
-      function certify_statement(smt_panel_num) {
-        console.log("Certifying statement button pressed "+smt_panel_num)
-        
+      function certify_statement(smt_panel_num, smt_proto_body) {
         var data = $( '#'+smt_panel_num ).serialize()
-        console.log(data)
+        data = data + encodeURI("&smt_proto_body=" + smt_proto_body)
         show_modal_confirm(
           "Certify statement",
           "Are you sure you want to certify this statement?",
           "Certify",
           function() {
             ajax_with_indicator({
-              url: "controls/_smt/certify",
+              url: "/controls/smt/_certify/",
               method: "POST",
-              //data: {"smt": smt, "smt_proto": smt_proto},
               data: data,
               success: function(res) {
-              // redirect to home to see other projects
                 console.log(res);
               }
             });

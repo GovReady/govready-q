@@ -926,18 +926,17 @@ def certify_smt(request):
         return HttpResponseNotAllowed(["POST"])
 
     else:
-        """
+        system = statement.consumer_element
         if not request.user.has_perm('change_system', system):
-            system = statement.consumer_element
             # User does not have write permissions
-            # Log permission to save answer denied
+            # Log permission to certify answer denied
             logger.info(
-                event="delete_smt permission_denied",
+                event="certify_smt permission_denied",
                 object={"object": "statement", "id": statement.id},
                 user={"id": request.user.id, "username": request.user.username}
             )
             return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
-        """
+
         form_dict = dict(request.POST)
         form_values = {}
         for key in form_dict.keys():
@@ -953,7 +952,8 @@ def certify_smt(request):
         # needs self.body == self.prototype.body
         
         try:
-            statement.body = form_values['body']
+            statement.body = form_values['smt_proto_body']
+            statement.save()
             statement_status = "ok"
             statement_msg = "Statement certified."
         except Exception as e:
@@ -961,10 +961,7 @@ def certify_smt(request):
             statement_msg = "Statement certification failed. Error reported {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg })
 
-        # return JsonResponse({ "status": "success", "message": statement_msg })
-
-        return statement_msg
-
+        return JsonResponse({ "status": "success", "message": statement_msg })
 
 def delete_smt(request):
     """Delete a statement"""
