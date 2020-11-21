@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.45.2 (November 13, 2020)
+v0.9.1.45.3 (November 21, 2020)
 -------------------------------
 
 **Feature changes**
@@ -19,6 +19,33 @@ v0.9.1.45.2 (November 13, 2020)
 - Modified controls.Statement model to link `control_implementation` statements to
   `control_implementation_prototype` statements. See commit 5083af.
 - Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
+
+v0.9.1.46.2 (November 19, 2020)
+------------------------------
+
+**UI changes**
+
+* Omitting the group breadcrumb if it is None for a given question
+
+v0.9.1.46.1 (November 19, 2020)
+-----------------------------
+
+**Developer changes**
+
+* Replace the word 'password' with 'pwd' in comments to reduce false positives in code scanners.
+
+v0.9.1.46 (November 17, 2020)
+-----------------------------
+
+Add organizational parameter value substitution for Control guidance and OSCAL.
+
+**Data changes**
+
+* Add `OrganizationalSettings` data model for tracking organizational defined parameters.
+
+**Test fixes**
+
+* Fix siteapp.test to make sure a proper login is performed before testing `/settings` page.
 
 v0.9.1.45.1 (November 5, 2020)
 ------------------------------

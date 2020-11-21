@@ -100,7 +100,7 @@ class Command(BaseCommand):
                 print("Let's create your first Q user. This user will have superuser privileges in the Q administrative interface.")
                 call_command('createsuperuser')
             else:
-                # Create an "admin" account with a random password and
+                # Create an "admin" account with a random pwd and
                 # print it on stdout.
                 user = User.objects.create(username="admin", is_superuser=True, is_staff=True)
                 password = User.objects.make_random_password(length=24)
