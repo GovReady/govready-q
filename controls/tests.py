@@ -10,32 +10,43 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 
-import os
 # import os.path
-import re
-from unittest import skip
 
-from django.conf import settings
 from django.test import TestCase
-from django.utils.crypto import get_random_string
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-
-from .oscal import Catalogs, Catalog
-from siteapp.models import (Organization, Portfolio, Project,
-                            ProjectMembership, User)
-from .models import *
+from selenium.webdriver.support.select import Select
 from siteapp.models import User
+from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests, var_sleep
+from .models import *
 
-# Import SeleniumTest and OrganizationSiteFunctionalTests from siteapp to keep things DRY
-from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests
 
-def var_sleep(duration):
-    '''
-    Tweak sleep globally by multple, a fraction, or depend on env
-    '''
-    from time import sleep
-    sleep(duration*2)
+# from controls.oscal import Catalogs, Catalog
 
+# ####### siteapp.test
+# import os
+# import os.path
+# import re
+# from unittest import skip
+
+# from django.conf import settings
+# from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+# from django.utils.crypto import get_random_string
+
+# from siteapp.models import (Organization, Portfolio, Project,
+#                             ProjectMembership, User)
+
+# ######guidedmodules.test
+# from django.test import TestCase
+# from django.conf import settings
+
+# from siteapp.models import Organization, Project, User
+# from guidedmodules.models import Module, Task, TaskAnswer
+# from guidedmodules.module_logic import *
+# from guidedmodules.app_loading import load_app_into_database
+
+
+#####################################################################
+
+# Control Tests
 
 class SampleTest(TestCase):
     ## Simply dummy test ##
@@ -43,7 +54,7 @@ class SampleTest(TestCase):
         self.assertEqual(1,1)
 
 class Oscal80053Tests(TestCase):
-    # Test 
+    # Test
     def test_catalog_load_control(self):
         cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
         cg_flat = cg.get_flattened_controls_all_as_dict()
@@ -106,33 +117,10 @@ class Oscal80053Tests(TestCase):
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
 
-        
 
 #####################################################################
 
-class GeneralTests(OrganizationSiteFunctionalTests):
-
-    def test_homepage(self):
-        self.browser.get(self.url("/"))
-        self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
-
-    def test_login(self):
-        # Test that a wrong password doesn't log us in.
-        self._login(password=get_random_string(4))
-        self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
-
-        # Test that a wrong username doesn't log us in.
-        self._login(username="notme")
-        self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
-
-        # Log in as a new user, log out, then log in a second time.
-        # We should only get the account settings questions on the
-        # first login.
-        self._login()
-        self.browser.get(self.url("/accounts/logout/"))
-        self._login()
-
-class ControlUITests(OrganizationSiteFunctionalTests):
+class ControlUITests(SeleniumTest):
     def test_homepage(self):
         self.browser.get(self.url("/controls/"))
 
@@ -152,10 +140,10 @@ class ControlUITests(OrganizationSiteFunctionalTests):
     #     self.assertInNodeText("XX-2", "#control-heading")
     #     self.assertInNodeText("The control XX-2 was not found in the control catalog.", "#control-message")
 
-class ControlUIControlEditorTests(OrganizationSiteFunctionalTests):
-    def test_homepage(self):
-        self.browser.get(self.url("/controls/editor"))
-        self.assertInNodeText("Test works", "p")
+# class ControlUIControlEditorTests(SeleniumTest):
+#     def test_homepage(self):
+#         self.browser.get(self.url("/controls/editor"))
+#         self.assertInNodeText("Test works", "p")
 
     # def test_control_lookup(self):
     #     self.browser.get(self.url("/controls/800-53/AU-2/"))
@@ -177,7 +165,7 @@ class StatementUnitTests(TestCase):
     def test_smt_status(self):
         # Create a smt
         smt = Statement.objects.create(
-            sid = "au.3",
+            sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is a test statement.",
             statement_type = "control",
@@ -185,7 +173,7 @@ class StatementUnitTests(TestCase):
         )
         self.assertIsNotNone(smt.id)
         self.assertEqual(smt.status, "Implemented")
-        self.assertEqual(smt.sid, "au.3")
+        self.assertEqual(smt.sid, "au-3")
         self.assertEqual(smt.body, "This is a test statement.")
         self.assertEqual(smt.sid_class, "NIST_SP-800-53_rev4")
         # Test updating status and retrieving statement
@@ -317,5 +305,128 @@ class PoamUnitTests(TestCase):
         # poam.delete()
         # self.assertTrue(poam.uuid is None)
 
+class ControlComponentTests(OrganizationSiteFunctionalTests):
+
+    def click_components_tab(self):
+        self.browser.find_element_by_partial_link_text("Component Statements").click()
+
+    def dropdown_option(self, dropdownid):
+        """
+        Allows for viewing of attributes of a given dropdown/select
+        """
+
+        dropdown = Select(self.browser.find_element_by_id(dropdownid))
+        return dropdown
+
+    def create_test_statement(self, sid, sid_class, body, statement_type, status):
+        """
+        Creates and saves a new statement
+        """
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = sid,
+            sid_class = sid_class,
+            body = body,
+            statement_type = statement_type,
+            status = status
+        )
+        smt.save()
+        return smt
+
+    def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks):
+        """
+        In the component statements tab create and then fill a new component statement with the given information.
+        """
+
+        self.click_components_tab()
+
+        # Click to add new component statement
+        self.click_element("#new_component_statement")
+
+        # Open the new component form open
+        self.browser.find_element_by_link_text("New Component Statement").click()
+
+        # Fill out form
+        self.browser.find_element_by_id("producer_element_name").send_keys(name)
+        self.browser.find_elements_by_name("body")[-1].send_keys(statement)
+        self.browser.find_elements_by_name("pid")[-1].send_keys(part)
+        select = self.dropdown_option(status)
+        select.select_by_value(statusvalue)
+        self.browser.find_elements_by_name("remarks")[-1].send_keys(remarks)
+        # Save form
+        self.browser.find_elements_by_name("save")[-1].click()
+        self.browser.refresh()
+
+    def test_smt_autocomplete(self):
+        """
+        Testing if the textbox can autocomplete and filter for existing components
+        """
+
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+        var_sleep(1)
+
+        # Baseline selection
+        self.navigateToPage("/systems/1/controls/selected")
+        # Select moderate
+        self.navigateToPage("/systems/1/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
+        # Head to the control ac-3
+        self.navigateToPage("/systems/1/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
+
+        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
+        assert len(statement_title_list) == 0
+
+        # Creating a few components
+        self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
+
+        self.click_components_tab()
+
+        # Confirm the dropdown sees all components
+        comps_dropdown = self.dropdown_option("selected_producer_element_form_id")
+        assert len(comps_dropdown.options) == 6
+        # Click on search bar
+        search_comps_txtbar = self.browser.find_elements_by_id("producer_element_search")
+
+        # Type a few text combinations and make sure filtering is working
+        # Need to click the new dropdown after sending keys
+
+        ## Search for Component
+        search_comps_txtbar[-1].click()
+        search_comps_txtbar[-1].clear()
+        search_comps_txtbar[-1].send_keys("Component")
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(3)
+        assert len(comps_dropdown.options) == 3
+
+        ## Search for 2
+        search_comps_txtbar[-1].click()
+        search_comps_txtbar[-1].clear()
+        search_comps_txtbar[-1].send_keys("2")
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(3)
+        assert len(comps_dropdown.options) == 2
+
+        # Add a new component based on one of the options available in the filtered dropdown
+
+        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        self.select_option("select#selected_producer_element_form_id", "6")
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
+
+        self.select_option("select#selected_producer_element_form_id", "3")
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+
+        # Adding an existing component
+        add_existing_component_btn = self.browser.find_elements_by_id("add_existing_component")
+        add_existing_component_btn[-1].click()
+        self.click_components_tab()
+
+        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
+        assert len(statement_title_list) == 7
 
 
