@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.46.3 (November 20, 2020)
+------------------------------
+
+**Deployment changes**
+
+* Updated base docker image to centos7.9.2009
+
 v0.9.1.46.2 (November 19, 2020)
 ------------------------------
 
