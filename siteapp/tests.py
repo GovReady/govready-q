@@ -68,7 +68,12 @@ class SeleniumTest(StaticLiveServerTestCase):
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
         options.add_argument("--incognito")
-        cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+        # Set up selenium Chrome browser for Windows or Linux
+        import platform
+        if platform.system() == "Windows":
+            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+        else:
+            cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
 
         # Clean up and quit tests if Q is in SSO mode
@@ -1294,7 +1299,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         dropdown = Select(self.browser.find_element_by_id(dropdownid))
         return dropdown
-
 
     def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks):
         """
