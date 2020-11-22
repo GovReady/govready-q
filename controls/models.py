@@ -8,6 +8,7 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
 from .oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
+from copy import deepcopy
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
@@ -70,7 +71,6 @@ class Statement(models.Model):
             # Prototype already exists for statement
             return self.prototype
             # check if prototype content is the same, report error if not, or overwrite if permission approved
-        from copy import deepcopy
         prototype = deepcopy(self)
         prototype.statement_type="control_implementation_prototype"
         prototype.consumer_element_id = None
@@ -88,7 +88,6 @@ class Statement(models.Model):
         #     # Prototype already exists for statement
         #     return self.prototype
         #     # check if prototype content is the same, report error if not, or overwrite if permission approved
-        from copy import deepcopy
         instance = deepcopy(self)
         instance.statement_type="control_implementation"
         instance.consumer_element_id = consumer_element_id
@@ -212,6 +211,7 @@ class Element(models.Model):
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
         return oscal_ctl_ids
+
 
 class ElementControl(models.Model):
     element = models.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")

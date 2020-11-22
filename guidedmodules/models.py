@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.conf import settings
 
 from jsonfield import JSONField
-
+from copy import deepcopy
 from collections import OrderedDict
 import uuid
 
@@ -235,7 +235,7 @@ def recombine_catalog_metadata(app_module):
     # A new dict is returned which should replace app_module.spec['catalog'].
 
     # Move the data into a 'catalog' key.
-    from copy import deepcopy
+
     ret = deepcopy(app_module.app.catalog_metadata)
 
     # Move the version_number and version_name fields back.

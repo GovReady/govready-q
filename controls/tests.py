@@ -180,8 +180,8 @@ class StatementUnitTests(TestCase):
         smt.status = "Partially Implemented"
         smt.save()
         smt2 = Statement.objects.get(pk=smt.id)
-        self.assertEqual(smt.sid, "au.3")
-        self.assertEqual(smt.status, "Partially Implemented")
+        self.assertEqual(smt2.sid, "au-3")
+        self.assertEqual(smt2.status, "Partially Implemented")
 
     def test_control_implementation_vs_prototype(self):
         # Detection of difference in statement
@@ -295,7 +295,6 @@ class PoamUnitTests(TestCase):
             consumer_element = e
         )
         smt.save()
-        import uuid
         poam = Poam.objects.create(statement = smt, poam_group = "New POA&M Group")
         self.assertTrue(poam.poam_group == "New POA&M Group")
         # self.assertTrue(poam.name == "New Element")

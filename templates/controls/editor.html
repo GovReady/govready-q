@@ -201,7 +201,7 @@ Remove contextbar from top of page
                       <div>
                         <form>
                           <div class="form-group">
-                            <label for="compoment">Component</label>
+                            <label for="component">Component</label>
                             <input type="text" class="form-control" id="component" placeholder="Name of component" value="{{control.name}}">
                           </div>
                           <div class="form-group">
@@ -254,7 +254,7 @@ Remove contextbar from top of page
 
                   <div class="form-group">
                     <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                    <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" style="color: black;">{{ smt.producer_element.name }}</a></label>
+                    <label for="component"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" style="color: black;">{{ smt.producer_element.name }}</a></label>
                   </div>
 
                   <div class="form-group">
@@ -340,10 +340,40 @@ Remove contextbar from top of page
 
             {% endfor %}
           </div><!--/smt-list-->
-          <!-- Add component button -->
-          <div><h3><button type="submit" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+              <!-- Add existing component -->
+          <div id="tab-content" class="row row-control" style="">
+              <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
+                  {% csrf_token %}
+                  <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+                      <div class="form-group" >
+                          <label for="component">Add existing component</label>&nbsp;&nbsp;
+  <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
+                    onchange="producer_autocomplete($(this).val(), {{ system.id }})">
+                      </div>
+                       <div class="form-group">
+                          <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
 
-      </div>
+                              {% for component in elements %}
+                                  <option value="{{ component.id }}">{{ component.name }}</option>
+                              {% endfor %}
+                          </select>
+                           <div hidden id="statement_alert" class="alert alert-danger">
+                               <strong>Danger!</strong> This alert box could indicate a dangerous or potentially negative action.
+                           </div>
+                          <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
+                          <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                          <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+
+                      </div>
+                      &nbsp;&nbsp;<button type="submit" id="add_existing_component" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
+                  </div>
+
+              </form>
+          </div>
+
+ <!-- Add component button -->
+          <div><h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+</div>
 
       <!-- Tab panel: combined -->
       {% if enable_experimental_oscal %}
@@ -363,7 +393,7 @@ Remove contextbar from top of page
 
   {% block scripts %}
       <script>
-        // Submits control id for Control look up box
+      // Submits control id for Control look up box
         function show_control_by_id() {
           var control_id = $('#control-lookup').find('input[name="id"]').val();
           var url = "/systems/{{ system.id }}/controls/catalogs/{{ catalog.catalog_key }}/control/"+control_id;
@@ -391,6 +421,7 @@ Remove contextbar from top of page
         // Adds statement form to page
         function add_smt() {
           var panel_num = $('.panel').length + 1
+        // call django view for composing new statement form
           var smt_form = `
             <div id="panel-panel_num" class="panel panel-default">
             <div class="panel-heading" role="tabx" id="document-panel_num-title">
@@ -408,7 +439,7 @@ Remove contextbar from top of page
               <form id="smt_panel_num" class="smt_form">
                 <div class="form-group">
                   <input type="hidden" id="producer_element_id" name="producer_element_id" value="">
-                  <label for="compoment">Producer Component</label>
+                  <label for="component">Producer Component</label>
                   <input type="text" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
                     onchange="$('#producer_element-panel_num-title').text($(this).val());">
                 </div>
@@ -461,6 +492,13 @@ Remove contextbar from top of page
           // Save a statement
           // serialize data from the identified statement form
           var data = $( '#'+smt_panel_num ).serialize();
+          var dataarray = $( '#'+smt_panel_num ).serializeArray();
+              dataObj = {};
+
+          $(dataarray).each(function(i, field){
+  dataObj[field.name] = field.value;
+});
+            console.log("datadata", dataObj['producer_element_name'])
 
           // send data via ajax to be saved
           ajax_with_indicator({
@@ -500,6 +538,7 @@ Remove contextbar from top of page
               setTimeout(function() {
                 $('#success-msg-'+smt_panel_num).fadeOut("fast");
               }, 1000 );
+                 $('#selected_producer_element_form_id').append("<option value='" + smt_saved[0]['fields']['producer_element'] + "'>" + dataObj['producer_element_name'] + "</option>" );
             }
           });
 
@@ -553,7 +592,6 @@ Remove contextbar from top of page
 
       </script>
       <script>
-
         function copy_smt_prototype(smt_panel_num) {
           // User wants to copy the certified statement locally
           // Copy the statement's prototype body text into statement body textarea
@@ -593,4 +631,77 @@ Remove contextbar from top of page
           return false;
         }
       </script>
+
+       <script>
+           var helpers = {
+
+               buildDropdown: function (result, dropdown, emptyMessage) {
+
+                   //Remove current options
+                   dropdown.html('');
+
+
+                   //Check result isn't empty
+                   if (result != '') {
+                       // loop
+                       $.each(result['producer_element_name_value'], function (k, v) {
+                           console.log("k, v");
+                           console.log(k, v);
+
+                           dropdown.append("<option value='" + v["id"] + "'>" + v["name"] + "</option>");
+                       });
+                   }
+                   if (dropdown.html() === '') {
+
+                       dropdown.append("<option disabled>" + emptyMessage + "</option>");
+
+                       $('#statement_alert')
+                           .text("No statements found. Please check the spelling of the component's name.", result)
+                           .fadeIn('fast');
+                       setTimeout(function () {
+                           $('#statement_alert').fadeOut()
+                       }, 5000);
+                   }
+
+               }
+           }
+
+      function producer_autocomplete(text, system_id) {
+  // Update the producer component autocomplete
+    // Create an AJAX request to upload all of the files at once.
+          var producer_element_form_id = $('#selected_producer_element_form_id :selected').val();
+          var control_id = $('#control_id').val();
+          console.log("text", text)
+          console.log("system_id", system_id)
+          console.log("producer_element_form_id", producer_element_form_id)
+
+
+       var location_input=$('input[id="location_input"]');
+          console.log(location_input)
+
+
+    // Submit the ajax request.
+    ajax_with_indicator({
+      url: "{% url 'search_system_component' %}",
+        data: {
+            "text": text,
+            "system_id": system_id,
+            "producer_element_form_id": producer_element_form_id | $('#producer_element_id').val(),
+            "control_id": control_id
+        },
+        dataType: "json",
+       method: "GET",
+      success: function(res) {
+          helpers.buildDropdown(res , $('#selected_producer_element_form_id'), "No existing statements found!");
+
+      }, error: function(res){
+          alert("errorrrr")
+          var errorjson = $.parseJSON(res);
+            show_modal_error("Search Error", errorjson["message"]);
+        }
+    });
+
+}
+      </script>
+
   {% endblock %}
