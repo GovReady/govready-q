@@ -428,4 +428,3 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 7
 
-

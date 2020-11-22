@@ -1241,6 +1241,53 @@ def save_smt(request):
          "statement": serialized_obj})
 
 
+def update_smt_prototype(request):
+    """Certify a statement"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    else:
+        form_dict = dict(request.POST)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+
+        statement = Statement.objects.get(pk=form_values['smt_id'])
+        system = statement.consumer_element
+
+        # Test if user is admin
+        if not request.user.is_superuser:
+            # User is not Admin and does not have permission to update statement prototype
+            # Log permission update statement prototype answer denied
+            logger.info(
+                event="update_smt_permission permission_denied",
+                object={"object": "statement", "id": statement.id},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden("Permission denied. {} does not have change privileges to update statement prototype.".format(request.user.username))
+
+        if statement is None:
+            statement_status = "error"
+            statement_msg = "The id for this statement is no longer valid in the database."
+            return JsonResponse({ "status": "error", "message": statement_msg })
+
+        # needs self.body == self.prototype.body
+
+        try:
+            print("statement.body", statement.body)
+            print("statement.prototype.body", statement.prototype.body)
+            statement.prototype.body = statement.body
+            statement.prototype.save()
+            statement_status = "ok"
+            statement_msg = "Update to statement prototype succeeded."
+        except Exception as e:
+            statement_status = "error"
+            statement_msg = "Update to statement prototype failed. Error reported {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg })
+
+        return JsonResponse({ "status": "success", "message": statement_msg })
+
 def delete_smt(request):
     """Delete a statement"""
 
@@ -1304,8 +1351,8 @@ def delete_smt(request):
             # Report error. Alternatively, in future save as new Statement object
             statement_status = "error"
             statement_msg = "The id for this statement is no longer valid in the database."
-            return JsonResponse({"status": "error", "message": statement_msg})
-        # Save Statement object
+            return JsonResponse({ "status": "error", "message": statement_msg })
+        # Delete Statement object
         try:
             statement.delete()
             statement_status = "ok"
