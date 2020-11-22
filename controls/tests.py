@@ -306,6 +306,21 @@ class PoamUnitTests(TestCase):
 
 class ControlComponentTests(OrganizationSiteFunctionalTests):
 
+   def create_test_statement(self, sid, sid_class, body, statement_type, status):
+       """
+       Creates and saves a new statement
+       """
+       # Create a smt
+       smt = Statement.objects.create(
+           sid = sid,
+           sid_class = sid_class,
+           body = body,
+           statement_type = statement_type,
+           status = status
+       )
+       smt.save()
+       return smt
+
     def click_components_tab(self):
         self.browser.find_element_by_partial_link_text("Component Statements").click()
 
@@ -316,21 +331,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         dropdown = Select(self.browser.find_element_by_id(dropdownid))
         return dropdown
-
-    def create_test_statement(self, sid, sid_class, body, statement_type, status):
-        """
-        Creates and saves a new statement
-        """
-        # Create a smt
-        smt = Statement.objects.create(
-            sid = sid,
-            sid_class = sid_class,
-            body = body,
-            statement_type = statement_type,
-            status = status
-        )
-        smt.save()
-        return smt
 
     def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks):
         """
