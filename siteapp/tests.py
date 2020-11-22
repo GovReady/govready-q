@@ -19,6 +19,7 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
+from selenium.webdriver.support.select import Select
 
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
@@ -45,8 +46,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Override ALLOWED_HOSTS, SITE_ROOT_URL, etc.
         # because they may not be set or set properly in the local environment's
         # non-test settings for the URL assigned by the LiveServerTestCase server.
+        # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
         settings.ALLOWED_HOSTS = ['localhost', 'testserver']
         settings.SITE_ROOT_URL = cls.live_server_url
+        settings.DEBUG = True
 
         # In order for these tests to succeed when not connected to the
         # Internet, disable email deliverability checks which query DNS.
@@ -59,11 +62,13 @@ class SeleniumTest(StaticLiveServerTestCase):
         import selenium.webdriver
         from selenium.webdriver.chrome.options import Options as ChromeOptions
         options = selenium.webdriver.ChromeOptions()
+        options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
-            options.add_argument("--start-maximized") # too small screens make clicking some things difficult
+            options.add_argument("start-maximized") # too small screens make clicking some things difficult
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
-        cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+        options.add_argument("--incognito")
+        cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
         cls.browser.implicitly_wait(3) # seconds
 
         # Clean up and quit tests if Q is in SSO mode
@@ -120,6 +125,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         elem = self.browser.find_element_by_css_selector(css_selector)
         self.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
         elem.click()
+        
+    def find_selected_option(self, css_selector):
+        selected_option = self.browser.find_element_by_css_selector(f"{css_selector}")
+        return selected_option
 
     def select_option(self, css_selector, value):
         from selenium.webdriver.support.select import Select
@@ -138,7 +147,6 @@ class SeleniumTest(StaticLiveServerTestCase):
 
     def assertInNodeText(self, search_text, css_selector):
         self.assertIn(search_text, self._getNodeText(css_selector))
-
     def assertNotInNodeText(self, search_text, css_selector):
         self.assertNotIn(search_text, self._getNodeText(css_selector))
 
@@ -158,7 +166,6 @@ class SeleniumTest(StaticLiveServerTestCase):
         # instance is initialized when the first message is sent.
         outbox = getattr(django.core.mail, 'outbox', [])
         return len(outbox) > 0
-
 #####################################################################
 
 class SupportPageTests(SeleniumTest):
@@ -182,8 +189,6 @@ class SupportPageTests(SeleniumTest):
         self.browser.get(self.url("/support"))
         self.assertInNodeText("Updated support text.", "#support_content")
         self.assertInNodeText("support@govready.com", "#support_content")
-
-
 
 class LandingSiteFunctionalTests(SeleniumTest):
     def test_homepage(self):
@@ -230,7 +235,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
 
-        self.user = User.objects.create(
+        self.user = User.objects.create_superuser(
             username="me",
             email="test+user@q.govready.com",
             is_staff=True
@@ -311,6 +316,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
         self.click_element("#select_portfolio_submit")
+        # TODO add permissions to the user to see certain things by role and individuals
+        #
         var_sleep(2)
 
         # Click Add Button
@@ -1274,3 +1281,114 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
         # # email-address
         # self.assertRegex(self.browser.title, "Next Question: email-address")
+
+class ControlComponentTests(OrganizationSiteFunctionalTests):
+
+    def click_components_tab(self):
+        self.browser.find_element_by_partial_link_text("Component Statements").click()
+
+    def dropdown_option(self, dropdownid):
+        """
+        Allows for viewing of attributes of a given dropdown/select
+        """
+
+        dropdown = Select(self.browser.find_element_by_id(dropdownid))
+        return dropdown
+
+
+    def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks):
+        """
+        In the component statements tab create and then fill a new component statement with the given information.
+        """
+
+        self.click_components_tab()
+
+        # Click to add new component statement
+        self.click_element("#new_component_statement")
+
+        # Open the new component form open
+        self.browser.find_element_by_link_text("New Component Statement").click()
+
+        # Fill out form
+        self.browser.find_element_by_id("producer_element_name").send_keys(name)
+        self.browser.find_elements_by_name("body")[-1].send_keys(statement)
+        self.browser.find_elements_by_name("pid")[-1].send_keys(part)
+        select = self.dropdown_option(status)
+        select.select_by_value(statusvalue)
+        self.browser.find_elements_by_name("remarks")[-1].send_keys(remarks)
+        # Save form
+        self.browser.find_elements_by_name("save")[-1].click()
+        self.browser.refresh()
+
+    def test_smt_autocomplete(self):
+        """
+        Testing if the textbox can autocomplete and filter for existing components
+        """
+
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+        var_sleep(1)
+
+        # Baseline selection
+        self.navigateToPage("/systems/1/controls/selected")
+        # Select moderate
+        self.navigateToPage("/systems/1/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
+        # Head to the control ac-3
+        self.navigateToPage("/systems/1/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
+
+        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
+        assert len(statement_title_list) == 0
+
+        # Creating a few components
+        self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
+
+        self.click_components_tab()
+
+        # Confirm the dropdown sees all components
+        comps_dropdown = self.dropdown_option("selected_producer_element_form_id")
+        assert len(comps_dropdown.options) == 6
+        # Click on search bar
+        search_comps_txtbar = self.browser.find_elements_by_id("producer_element_search")
+
+        # Type a few text combinations and make sure filtering is working
+        # Need to click the new dropdown after sending keys
+
+        ## Search for Component
+        search_comps_txtbar[-1].click()
+        search_comps_txtbar[-1].clear()
+        search_comps_txtbar[-1].send_keys("Component")
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(3)
+        assert len(comps_dropdown.options) == 3
+
+        ## Search for 2
+        search_comps_txtbar[-1].click()
+        search_comps_txtbar[-1].clear()
+        search_comps_txtbar[-1].send_keys("2")
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(3)
+        assert len(comps_dropdown.options) == 2
+
+        # Add a new component based on one of the options available in the filtered dropdown
+
+        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        self.select_option("select#selected_producer_element_form_id", "6")
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
+
+        self.select_option("select#selected_producer_element_form_id", "3")
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+
+        # Adding an existing component
+        add_existing_component_btn = self.browser.find_elements_by_id("add_existing_component")
+        add_existing_component_btn[-1].click()
+        self.click_components_tab()
+
+        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
+        assert len(statement_title_list) == 7
+

@@ -70,6 +70,10 @@ download \
   $VENDOR/jquery.js \
   'f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d'
 
+download \
+  https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery-ui.min.js \
+  $VENDOR/jquery.js \
+  '9c91926607aed9b1835502e25124cdab5ac1218c3b0cbd27b1b1ce5ab0b73837'
 # Bootstrap (MIT License)
 download \
   https://github.com/twbs/bootstrap/releases/download/v3.4.1/bootstrap-3.4.1-dist.zip \

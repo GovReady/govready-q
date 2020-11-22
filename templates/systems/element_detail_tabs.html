@@ -184,7 +184,7 @@
 
                   <div class="form-group">
                     <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                    <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" style="color: black;">{{ smt.producer_element.name }}</a></label>
+                    <label for="component"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" style="color: black;">{{ smt.producer_element.name }}</a></label>
                   </div>
 
                   <div class="form-group">
@@ -241,8 +241,8 @@
 
             {% endfor %}
           </div><!--/smt-list-->
-          <div><h3><button type="submit" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
-      </div>
+          <div><h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+</div>
 
       <!-- Tab panel: combined -->
       {% if enable_experimental_oscal %}
@@ -294,15 +294,15 @@
               <form id="smt_panel_num" class="smt_form">
                 <div class="form-group">
                   <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
-                  <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ element.id }}" style="color: black;">{{ element.name }}</a></label>
-                  <!-- <label for="compoment">Producer Component</label> -->
+                  <label for="component"><a href="/systems/{{ system.id }}/component/{{ element.id }}" style="color: black;">{{ element.name }}</a></label>
+                  <!-- <label for="component">Producer Component</label> -->
                   <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
                     onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
                 </div>
 
                 <div class="form-group">
 
-                  <label for="compoment">Control</label>
+                  <label for="component">Control</label>
                   <select class=form-control id="sid_panel_num" name="sid" style="">
                     {% for ctl in catalog_controls %}
                       <option value='{{ ctl.id }}'>{{ ctl.id|upper }} - {{ ctl.title }}</option>
