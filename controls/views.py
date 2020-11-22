@@ -764,23 +764,17 @@ def editor(request, system_id, catalog_key, cl_id):
         # Define status options
         impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
 
-      #   # Only elements for the given control id
-      #  # all_elements= Element.objects.exclude(element_type='system').filter(id=Statement.objects.producer_element_id)
-      #   statesate= Statement.objects.filter(sid=cl_id)
-      #   related_states = Statement.objects.select_related('producer_element')
-      #   # UserAccount.objects.filter(bank__bank_type='international')
-      #   related_states222 = Element.objects.exclude(element_type='system').filter(statements_produced_producer_element_id=2)
-      # #  statementfilter =  Statement.objects.filter(statement_type="control_implementation_prototype").filter(sid=cl_id)
-      #  # blah = Element.objects.exclude(element_type='system').select_related("id")
-      #   print("statesate")
-      #   print(statesate)
-      #   print("related_states")
-      #   print(related_states)
-      #   print(str(related_states.query))
-      #   print("related_states222")
-      #   print(related_states222.name)
+      # Only elements for the given control id, sid, and statement type
+        elements = Element.objects.exclude(element_type='system').filter(
+            element_type="system_element",
+            statements_produced__sid=cl_id,
+            statements_produced__statement_type="control_implementation_prototype",
+        )
+        print("elements queryset")
+        print(elements)
+        print(len(elements))
 
-        elements =  Element.objects.all().exclude(element_type='system')
+       # elements =  Element.objects.all().exclude(element_type='system')
 
         context = {
             "system": system,
@@ -869,7 +863,12 @@ class EditorAutocomplete(View):
             print("text")
             print(text)
             # The final elements that are returned to the new dropdown created...
-            producer_system_elements = Element.objects.filter(element_type="system_element").filter(name__contains=text)
+            #producer_system_elements = Element.objects.filter(element_type="system_element").filter(name__contains=text)
+            producer_system_elements = Element.objects.exclude(element_type='system').filter(
+                element_type="system_element",
+                statements_produced__sid=cl_id,
+                statements_produced__statement_type="control_implementation_prototype",
+            ).filter(name__contains=text)
             print("producer_system_elements")
             print(producer_system_elements)
 
@@ -1052,7 +1051,6 @@ def get_control_elements(request):
         search_qs = Element.objects.filter(name__contains=q)
         print("search_qs")
         print(search_qs)
-        #Element.objects.all().exclude(element_type='system')
         data = serializers.serialize('json', search_qs)
         data = json.loads(data)
         # city_names = [c['good_name'] for c in all_city_names if q in c["input_name"].lower()]
