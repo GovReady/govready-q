@@ -919,7 +919,7 @@ def save_smt(request):
     # Return successful save result to web page's Ajax request
     return JsonResponse({ "status": "success", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg, "statement": serialized_obj })
 
-def certify_smt(request):
+def update_smt_prototype(request):
     """Certify a statement"""
 
     if request.method != "POST":
@@ -934,15 +934,16 @@ def certify_smt(request):
         statement = Statement.objects.get(pk=form_values['smt_id'])
         system = statement.consumer_element
 
-        if not request.user.has_perm('change_system', system):
-            # User does not have write permissions
-            # Log permission to certify answer denied
+        # Test if user is admin
+        if not request.user.is_superuser:
+            # User is not Admin and does not have permission to update statement prototype
+            # Log permission update statement prototype answer denied
             logger.info(
-                event="certify_smt permission_denied",
+                event="update_smt_permission permission_denied",
                 object={"object": "statement", "id": statement.id},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+            return HttpResponseForbidden("Permission denied. {} does not have change privileges to update statement prototype.".format(request.user.username))
 
         if statement is None:
             statement_status = "error"
@@ -950,15 +951,17 @@ def certify_smt(request):
             return JsonResponse({ "status": "error", "message": statement_msg })
 
         # needs self.body == self.prototype.body
-        
+
         try:
-            statement.body = form_values['smt_proto_body']
-            statement.save()
+            print("statement.body", statement.body)
+            print("statement.prototype.body", statement.prototype.body)
+            statement.prototype.body = statement.body
+            statement.prototype.save()
             statement_status = "ok"
-            statement_msg = "Statement certified."
+            statement_msg = "Update to statement prototype succeeded."
         except Exception as e:
             statement_status = "error"
-            statement_msg = "Statement certification failed. Error reported {}".format(e)
+            statement_msg = "Update to statement prototype failed. Error reported {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg })
 
         return JsonResponse({ "status": "success", "message": statement_msg })
