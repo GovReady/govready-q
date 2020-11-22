@@ -7,6 +7,7 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from .oscal import Catalogs, Catalog
 import uuid
+import tools.diff_match_patch.python3 as dmp_module
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
