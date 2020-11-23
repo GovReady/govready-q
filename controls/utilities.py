@@ -63,3 +63,18 @@ def oscalize_control_id(cl_id):
 
     return cl_id
 
+
+def oscalize_catalog_key(catalogkey):
+    """ Covers empty catalog key case. Otherwise, outputs an oscal standard catalog key from various common formats for catalog keys
+    NIST_SP_800_53_rev4 --> NIST_SP-800-53_rev4
+    """
+
+    # A default catalog key
+    if catalogkey=='':
+        catalogkey = 'NIST_SP-800-53_rev4'
+    # Handle improperly formatted control id
+    if catalogkey.count("_") > 2:
+        split_key_list = catalogkey.split("_800_")
+        catalogkey = split_key_list[0] + "-800-" + split_key_list[1]
+
+    return catalogkey

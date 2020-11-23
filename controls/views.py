@@ -105,6 +105,7 @@ def group(request, catalog_key, g_id):
 def control(request, catalog_key, cl_id):
     """Control detail view"""
     cl_id = oscalize_control_id(cl_id)
+    catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get catalog
     catalog = Catalog(catalog_key)
@@ -112,8 +113,7 @@ def control(request, catalog_key, cl_id):
 
     # Handle properly formatted control id that does not exist
     if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", {"control": {}})
-
+        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
     # Get and return the control
     context = {
         "catalog": catalog,
@@ -654,6 +654,7 @@ def editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
     cl_id = oscalize_control_id(cl_id)
+    catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get control catalog
     catalog = Catalog(catalog_key)
@@ -665,7 +666,7 @@ def editor(request, system_id, catalog_key, cl_id):
 
     # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", {"control": {}})
+        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
@@ -987,7 +988,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", {"control": {}})
+        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
