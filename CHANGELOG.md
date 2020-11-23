@@ -1,24 +1,39 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.45.3 (November 21, 2020)
--------------------------------
+v0.9.1.46 (November 22, 2020)
+-----------------------------
 
 **Feature changes**
 
-- Support Compliance As Code reuse of statements by adding a "control_implementation_prototype" statement type that seeds all instances of a component's control implementation statements.
+- Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
+
+1. Add a component to the system while on components page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
+1. Add a component to the system while on control edit page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
+1. Notify user that the local statement for a component-control (e.g., `control_implementation`) was different than the "certified" statement for the component-control (e.g., `control_implementation_prototype`).
+1. Enable viewer to view differences between a component-control (e.g., `control_implementation`) was different than the "certified" statement for the component-control (e.g., `control_implementation_prototype`).
+1. To update a "certified" statement, enable an administrator to update (e.g. push) the "certified" statement for the component-control (e.g., `control_implementation_prototype`) text from the a systems' component-control (e.g., `control_implementation`) text.
+1. After a "certified" statement was updated, enable user to copy (e.g. pull) the updated "certified" statement for the component-control (e.g., `control_implementation_prototype`) text into other systems' a component-control (e.g., `control_implementation`) text.
 
 **UI changes**
 
 - Add components (system elements) via an autocomplete to a system on system's selected components page.
-- Add alert link above implementation statement edit box when control implementation differs from certified control implementation statement. Clicking link displays visual diff of prototype statement and existing statement.
-- Add link to update implementation statement with latest certified control implementation statement.
+- Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
+- Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
+- Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
+- Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
 
 **Developer changes**
 
 - Modified controls.Statement model to link `control_implementation` statements to
   `control_implementation_prototype` statements. See commit 5083af.
 - Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
+
+The work for this capability was performed across three branches that were eventually synchronized (approximately commit 18934669) and merged into the master branch :
+
+- `autocomplete_statements_#1066`
+- `ge/reuse-0903`
+- `automated-tests-statements`
 
 v0.9.1.46.2 (November 19, 2020)
 ------------------------------
