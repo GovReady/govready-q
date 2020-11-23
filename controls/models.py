@@ -7,7 +7,9 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from .oscal import Catalogs, Catalog
 import uuid
+import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
+
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
 class Statement(models.Model):
@@ -94,6 +96,43 @@ class Statement(models.Model):
         instance.prototype = self
         instance.save()
         return instance
+
+    @property
+    def prototype_synched(self):
+        """Return True if statement of type `control_implementation` and its prototype"""
+
+        if self.body == self.prototype.body:
+            return True
+        else:
+            return False
+
+    @property
+    def diff_prototype_main(self):
+        """Generate a diff of statement of type `control_implementation` and its prototype"""
+
+        if self.statement_type != 'control_implementation':
+            # TODO: Should we return None or raise error because statement is not of type control_implementation?
+            return None
+        if self.prototype is None:
+            # TODO: Should we return None or raise error because statement does not have a prototype?
+            return None
+        dmp = dmp_module.diff_match_patch()
+        diff = dmp.diff_main(self.prototype.body, self.body)
+        return diff
+
+    @property
+    def diff_prototype_prettyHtml(self):
+        """Generate a diff of statement of type `control_implementation` and its prototype"""
+
+        if self.statement_type != 'control_implementation':
+            # TODO: Should we return None or raise error because statement is not of type control_implementation?
+            return None
+        if self.prototype is None:
+            # TODO: Should we return None or raise error because statement does not have a prototype?
+            return None
+        dmp = dmp_module.diff_match_patch()
+        diff = dmp.diff_main(self.prototype.body, self.body)
+        return dmp.diff_prettyHtml(diff)
 
     # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel

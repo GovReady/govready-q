@@ -29,9 +29,11 @@ urlpatterns = [
 
     url(r'^smt/_save/$', views.save_smt),
     url(r'^smt/_delete/$', views.delete_smt),
+    url(r'^smt/_update_smt_prototype/$', views.update_smt_prototype),
     url(r'^(?P<system_id>.*)/components/selected$', views.components_selected, name="components_selected"),
     url(r'^(?P<system_id>.*)/components/selected/export/opencontrol$', views.export_system_opencontrol, name="export_system_opencontrol"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
+    url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
 
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
 
@@ -41,8 +43,6 @@ urlpatterns = [
 
     # Baselines
     url(r'^(?P<system_id>.*)/controls/baseline/(?P<catalog_key>.*)/(?P<baseline_name>.*)/_assign$', views.assign_baseline, name="assign_baseline"),
-
-    # Components
 
     # Poams
     url(r'^(?P<system_id>.*)/poams$', views.poams_list, name="poams_list"),

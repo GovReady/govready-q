@@ -724,15 +724,6 @@ def editor(request, system_id, catalog_key, cl_id):
                             "{}_smt".format(cl_id): {
                                 "description": "N/A",
                                 "by-components": {
-                                    "component-logging-policy": {
-                                        "description": "The legal department develops, documents, and disseminates this policy to all staff and contractors within the organization.",
-                                        "role-ids": "legal-officer",
-                                        "set-params": {
-                                            "{}_prm_1".format(cl_id): {
-                                                "value": ""
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }  #statements
@@ -1201,6 +1192,15 @@ def save_smt(request):
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
                 return JsonResponse({"status": "error", "message": statement_msg})
 
+        # Create new Prototype Statement object on new statement creation (not statement edit)
+        if new_statement:
+            try:
+                statement_prototype = statement.create_prototype()
+            except Exception as e:
+                statement_status = "error"
+                statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
+                return JsonResponse({ "status": "error", "message": statement_msg })
+
         # Associate Statement and System's root_element
         # TODO Only associate if we have created new statement object.
         # print("** System.objects.get(pk=form_values['system_id']).root_element", System.objects.get(pk=form_values['system_id']).root_element)
@@ -1239,6 +1239,53 @@ def save_smt(request):
         {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg,
          "statement": serialized_obj})
 
+
+def update_smt_prototype(request):
+    """Certify a statement"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    else:
+        form_dict = dict(request.POST)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+
+        statement = Statement.objects.get(pk=form_values['smt_id'])
+        system = statement.consumer_element
+
+        # Test if user is admin
+        if not request.user.is_superuser:
+            # User is not Admin and does not have permission to update statement prototype
+            # Log permission update statement prototype answer denied
+            logger.info(
+                event="update_smt_permission permission_denied",
+                object={"object": "statement", "id": statement.id},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden("Permission denied. {} does not have change privileges to update statement prototype.".format(request.user.username))
+
+        if statement is None:
+            statement_status = "error"
+            statement_msg = "The id for this statement is no longer valid in the database."
+            return JsonResponse({ "status": "error", "message": statement_msg })
+
+        # needs self.body == self.prototype.body
+
+        try:
+            print("statement.body", statement.body)
+            print("statement.prototype.body", statement.prototype.body)
+            statement.prototype.body = statement.body
+            statement.prototype.save()
+            statement_status = "ok"
+            statement_msg = "Update to statement prototype succeeded."
+        except Exception as e:
+            statement_status = "error"
+            statement_msg = "Update to statement prototype failed. Error reported {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg })
+
+        return JsonResponse({ "status": "success", "message": statement_msg })
 
 def delete_smt(request):
     """Delete a statement"""
@@ -1303,8 +1350,8 @@ def delete_smt(request):
             # Report error. Alternatively, in future save as new Statement object
             statement_status = "error"
             statement_msg = "The id for this statement is no longer valid in the database."
-            return JsonResponse({"status": "error", "message": statement_msg})
-        # Save Statement object
+            return JsonResponse({ "status": "error", "message": statement_msg })
+        # Delete Statement object
         try:
             statement.delete()
             statement_status = "ok"
@@ -1427,78 +1474,75 @@ def search_system_component(request):
     # # Redirect to selected element page
     # return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
+# Components
+
 def add_system_component(request, system_id):
     """Add an existing element and its statements to a system"""
-    print("addinggggg_system_component request")
-    print(request)
-    print(request.method)
-    print("system_id")
+
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    print(dict(request.POST))
+    # Form values from ajax data
+    # print(dict(request.POST))
     form_dict = dict(request.POST)
     form_values = {}
     for key in form_dict.keys():
         form_values[key] = form_dict[key][0]
-    # Form values from ajax data
+    # Does user have permission to add element?
+    # Check user permissions
+    # system = system.objects.get(pk=form_values['system_id'])
+    system = System.objects.get(pk=system_id)
+    if not request.user.has_perm('change_system', system):
+        # User does not have write permissions
+        # Log permission to save answer denied
+        logger.info(
+            event="change_system permission_denied",
+            object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
 
-    if "system_id" in form_values.keys():
-        # This returns all the elements by system element and control id
-        # for system_ele in producer_system_elements:
-        #     filtered_by_element_name2 = Statement.objects.filter(sid=cl_id).filter(producer_element_id=system_ele)
-        #     # Element.objects.get(pk=producer_element_id)
-        #     # filtered_by_element_name = Element.filter(name__contains= text)
-        #     print("filtered_by_element_name2")
-        #     print(filtered_by_element_name2)
+    # It is possible that the producer_element has statements (data) for more controls
+    # than the controls that are selected for the system.
+    # So get the selected controls for system identified by system_id
+    # to support adding control_implementation_prototype statements related to producer_element
+    # only for those controls that are selected for the system.
+    selected_controls = system.root_element.controls.all()
+    selected_controls_ids = set()
+    for sc in selected_controls:
+        selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
 
+    # Add element
+    # Look up the element
+    producer_element = Element.objects.get(pk=form_values['producer_element_id'])
+    # TODO: Handle case of element already associated with system
 
-        system_id = form_values['system_id']
-        producer_element_id = form_values['selected_producer_element_form_id']
-        # Does user have permission to add element?
-        # Check user permissions
-        system = System.objects.get(pk=system_id)
-        print("system")
-        print(system)
-       #system = System.objects.get(pk=system_id)
-        if not request.user.has_perm('change_system', system):
-            # User does not have write permissions
-            # Log permission to save answer denied
-            logger.info(
-                event="change_system permission_denied",
-                object={"object": "element", "entered_producer_element_name": form_values['text']},
-                user={"id": request.user.id, "username": request.user.username}
-            )
-            return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+    # Loop through element's prototype statements and add to control implementation statements
+    print("Adding {} to system_id {}".format(producer_element.name, system_id))
+    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+        # Only add statements for controls selected for system
+        if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
+            print("smt", smt)
+            smt.create_instance_from_prototype(system.root_element.id)
+        else:
+            print("not adding smt not selected controls for system", smt)
 
-        selected_controls = system.root_element.controls.all()
-        selected_controls_ids = set()
-        for sc in selected_controls:
-            selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
+    # Below from DA's Autocomplete code
+    # if "system_id" in form_values.keys(): # GE: Not necessary to get system_id via form_values b/c we get system_id from URL
 
-        # Add element
-        # Look up the element
-        producer_element = Element.objects.get(pk=producer_element_id)
-        # TODO: Handle case of element already associated with system
+    producer_element_id = form_values['selected_producer_element_form_id']
 
-        # Loop through element's prototype statements and add to control implementation statements
-        print("Adding {} to system_id {}".format(producer_element.name, system_id))
-        for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
-            # Only add statements for controls selected for system
-            if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
-                print("smt", smt)
-                smt.create_instance_from_prototype(system.root_element.id)
-            else:
-                print("not adding smt not selected controls for system", smt)
+    results = [{'producer_element_name_value': producer_element.name}]
+    data = json.dumps(results)
+    mimetype = 'application/json'
+    #return HttpResponse(data, mimetype)
 
-        results = [{'producer_element_name_value': producer_element.name}]
-        data = json.dumps(results)
-        mimetype = 'application/json'
-        #return HttpResponse(data, mimetype)
     # Redirect to selected element page
-   # return HttpResponse('systems/{}/controls/catalogs/{}/control/{}'.format(system_id, form_values['catalog_key'], form_values['control_id']))
+    # return HttpResponse('systems/{}/controls/catalogs/{}/control/{}'.format(system_id, form_values['catalog_key'], form_values['control_id']))
     return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
 # Baselines
+
 def assign_baseline(request, system_id, catalog_key, baseline_name):
     """Assign a baseline to a system root element thereby showing selected controls for the system."""
 

@@ -183,6 +183,28 @@ class StatementUnitTests(TestCase):
         self.assertEqual(smt2.sid, "au-3")
         self.assertEqual(smt2.status, "Partially Implemented")
 
+    def test_control_implementation_vs_prototype(self):
+        # Detection of difference in statement
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = "au.3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is a test statement.",
+            statement_type = "control_implementation",
+            status = "Implemented"
+        )
+        smt.save()
+        # Create statement prototype
+        smt.create_prototype()
+        self.assertEqual(smt.body, smt.prototype.body)
+        self.assertNotEqual(smt.id, smt.prototype.id)
+        self.assertTrue(smt.prototype_synched)
+        # Change statement compared to prototype
+        smt.prototype.body = smt.prototype.body + "\nModified statememt"
+        smt.prototype.save()
+        self.assertFalse(smt.prototype_synched)
+        self.assertEqual(smt.diff_prototype_main, [(0, 'This is a test statement.'), (-1, '\nModified statememt')])
+
 class ElementUnitTests(TestCase):
     ## Simply dummy test ##
     def test_tests(self):
@@ -283,6 +305,21 @@ class PoamUnitTests(TestCase):
         # self.assertTrue(poam.uuid is None)
 
 class ControlComponentTests(OrganizationSiteFunctionalTests):
+
+    def create_test_statement(self, sid, sid_class, body, statement_type, status):
+        """
+        Creates and saves a new statement
+        """
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = sid,
+            sid_class = sid_class,
+            body = body,
+            statement_type = statement_type,
+            status = status
+        )
+        smt.save()
+        return smt
 
     def click_components_tab(self):
         self.browser.find_element_by_partial_link_text("Component Statements").click()
@@ -390,5 +427,4 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 7
-
 

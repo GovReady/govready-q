@@ -1,6 +1,47 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.46 (November 22, 2020)
+-----------------------------
+
+**Feature changes**
+
+- Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
+
+1. Add a component to the system while on components page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
+1. Add a component to the system while on control edit page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
+1. Notify user that the local statement for a component-control (e.g., `control_implementation`) was different than the "certified" statement for the component-control (e.g., `control_implementation_prototype`).
+1. Enable viewer to view differences between a component-control (e.g., `control_implementation`) was different than the "certified" statement for the component-control (e.g., `control_implementation_prototype`).
+1. To update a "certified" statement, enable an administrator to update (e.g. push) the "certified" statement for the component-control (e.g., `control_implementation_prototype`) text from the a systems' component-control (e.g., `control_implementation`) text.
+1. After a "certified" statement was updated, enable user to copy (e.g. pull) the updated "certified" statement for the component-control (e.g., `control_implementation_prototype`) text into other systems' a component-control (e.g., `control_implementation`) text.
+
+**UI changes**
+
+- Add components (system elements) via an autocomplete to a system on system's selected components page.
+- Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
+- Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
+- Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
+- Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
+
+**Developer changes**
+
+- Modified controls.Statement model to link `control_implementation` statements to
+  `control_implementation_prototype` statements. See commit 5083af.
+- Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
+
+The work for this capability was performed across three branches that were eventually synchronized (approximately commit 18934669) and merged into the master branch :
+
+- `autocomplete_statements_#1066`
+- `ge/reuse-0903`
+- `automated-tests-statements`
+
+v0.9.1.46.2 (November 19, 2020)
+------------------------------
+
+**UI changes**
+
+* Omitting the group breadcrumb if it is None for a given question
+
 v0.9.1.46.1 (November 19, 2020)
 -----------------------------
 
@@ -124,6 +165,7 @@ Enable upgrade of project root_task to more recent version.
 **Documentation changes**
 
 * Document new logger entries for successful and failed attempts to upgrade project's root_task app.
+>>>>>>> master
 
 v0.9.1.38.2 (September 20, 2020)
 --------------------------------
@@ -131,6 +173,7 @@ v0.9.1.38.2 (September 20, 2020)
 **Developer changes**
 
 * Remove no longer maintained code for deploying to Pivotal Web Services.
+
 
 v0.9.1.38 (August 28, 2020)
 ---------------------------

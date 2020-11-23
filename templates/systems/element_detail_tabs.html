@@ -166,7 +166,6 @@
                 <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
                     <span id="producer_element-panel_num-control">{{ smt.sid|upper }}</span>&nbsp;
-                    <!--<span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;-->
                     <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
                     {% if smt.pid is not None %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
                     <div class="panel-heading-smt">{{ smt.body }}</div>
@@ -190,8 +189,19 @@
 
                   <div class="form-group">
                     <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
-                    <label for="statement">Statement</label>
+                    <label for="statement">Statement
+                      {% if not smt.prototype_synched %} <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> Differs from certified</a></span>
+                        <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; margin-top: 12px;color: #666;">
+                          {{ smt.diff_prototype_prettyHtml|safe }}
+                          <div><a href="" onclick="$('#body_{{ forloop.counter }}').text('{{ smt.prototype.body }}');$('#diff_{{ forloop.counter }}').text('');$('#diff_alert_{{ forloop.counter }}').text('');return false;" style="font-size:10pt; margin-top: 12px;color: #666;font-weight: normal;">Update local</a></div>
+                        </div>
+                    {% endif %}
+                    </label>
                     <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="statement">Part</label>
+                    <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{smt.pid}}" style="width:180px;">
                   </div>
                   <div class="form-group">
                     <label for="status">Status</label>
@@ -306,6 +316,10 @@
                   <input type="hidden" id="smt_id" name="smt_id" value="">
                   <label for="statement">Statement</label>
                   <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="statement">Part</label>
+                  <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="" style="width:180px;">
                 </div>
                 <div class="form-group">
                   <label for="status">Status</label>
