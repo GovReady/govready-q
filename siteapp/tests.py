@@ -69,8 +69,8 @@ class SeleniumTest(StaticLiveServerTestCase):
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
         options.add_argument("--incognito")
         # Set up selenium Chrome browser for Windows or Linux
-        import platform
-        if platform.system() == "Windows":
+        from platform import uname, system
+        if system() == "Windows" or 'Microsoft' in uname().release:
             cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
         else:
             cls.browser = selenium.webdriver.Chrome(chrome_options=options)
