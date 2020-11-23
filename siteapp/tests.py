@@ -12,7 +12,9 @@
 
 import os
 import os.path
+import pathlib
 import re
+import tempfile
 from unittest import skip
 
 from django.conf import settings
@@ -63,9 +65,21 @@ class SeleniumTest(StaticLiveServerTestCase):
             options.add_argument("--start-maximized") # too small screens make clicking some things difficult
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
+
+        
+        # enable Selenium support for downloads
+        
+        cls.download_path = temp_path = pathlib.Path(tempfile.gettempdir())
+        options.add_experimental_option("prefs", {
+            "download.default_directory": str(cls.download_path),
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True
+        })
         cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
 
+        
         # Clean up and quit tests if Q is in SSO mode
         if getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', None):
             print("Cannot run tests.")
