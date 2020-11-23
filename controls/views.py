@@ -1014,53 +1014,6 @@ def editor_compare(request, system_id, catalog_key, cl_id):
         raise Http404
 
 
-def get_control_elements(request):
-    #what was in the question an array is now a python list of dicts.
-    #it can also be in some other file and just imported.
-    # all_city_names = [
-    # { "good_name": 'Palma', "input_name": 'Palma de Mallorca' },
-    # { "good_name": 'Mallorca', "input_name": 'Mallorca' },
-    # { "good_name": 'Majorca', "input_name": 'Majorca' },
-    # # etc
-    # ]
-
-    if request.method == 'POST':
-        q = request.POST.get('autocomplete_name', '')
-
-        cl_id = "ac-2"#oscalize_control_id(cl_id)
-        # only prototype implementation statements for the given control
-        proto_impl_smts = Statement.objects.filter(statement_type="control_implementation_prototype").filter(sid=cl_id)
-        print("proto_impl_smts")
-        print(proto_impl_smts)
-        proto_data = serializers.serialize('json', proto_impl_smts)
-        proto_data = json.loads(proto_data)
-        print("proto_data")
-        print(proto_data)
-        for p_data in proto_data:
-            print(p_data.get('fields').get('sid'))
-        # STEP 1
-        # Getting elements that contain the name provided in the text search
-        search_qs = Element.objects.filter(name__contains=q)
-        print("search_qs")
-        print(search_qs)
-        data = serializers.serialize('json', search_qs)
-        data = json.loads(data)
-        # city_names = [c['good_name'] for c in all_city_names if q in c["input_name"].lower()]
-        # city_names = set(city_names) #removing duplicates
-        # print("city_names")
-        # print(city_names)
-        results = []
-        for control_element in data:
-            ce_json = {'value': control_element}
-            results.append(ce_json)
-        print(results)
-        data = json.dumps(results)
-
-    else:
-        data = 'fail'
-    mimetype = 'application/json'
-    return HttpResponse(data, mimetype)
-
 # @task_view
 def save_smt(request):
     """Save a statement"""

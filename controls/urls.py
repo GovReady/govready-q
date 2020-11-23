@@ -23,8 +23,6 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
-    # url(r'^api/get_control_elements/', views.get_control_elements, name="get_control_elements"),
-    #url(r'^search_system_component', views.search_system_component, name="search_system_component"),
     url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="add_system_component"),
 
     url(r'^smt/_save/$', views.save_smt),
