@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.46.3 (November 20, 2020)
+-------------------------------
+
+**UI changes**
+
+* Add OSCAL downlink link to system component page.
+
+
 v0.9.1.46.2 (November 19, 2020)
 ------------------------------
 
