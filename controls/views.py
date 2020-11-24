@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
@@ -233,6 +235,7 @@ class OSCALComponentSerializer(ComponentSerializer):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
         uuid = str(self.element.uuid)
+        control_implementations = []
         of = {
             "component-definition": {
                 "metadata": {
@@ -248,13 +251,16 @@ class OSCALComponentSerializer(ComponentSerializer):
                         "component-type": self.element.element_type or "software",
                         "title": self.element.full_name or "",
                         "description": self.element.description,
-                        "control-implementations": []
+                        "control-implementations": control_implementations
                     }
-                },
-                "back-matter": []
-            }
+                }
+            },
+            "back-matter": []
         }
-        control_implementations = of["component-definition"]["components"][uuid]["control-implementations"]
+
+        # create requirements and organize by source
+
+        by_class = defaultdict(list)
         
         for smt in self.impl_smts:
             requirement = {
@@ -263,11 +269,22 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "description": smt.body,
                 "remarks": smt.remarks
             }
+            if smt.pid:
+                requirement['properties'] = [
+                    {
+                        'name': 'label',
+                        'value': smt.pid
+                    }
+                ]
+                    
+            by_class[smt.sid_class].append(requirement)
+
+        for sid_class, requirements in by_class.items():
             control_implementation = {
-                "uuid": str(smt.uuid),
-                "source": smt.sid_class,
-                "description": f"Partial implementation of {smt.sid_class}",
-                "implemented-requirements": [requirement]
+                "uuid": requirements[0]['uuid'], # REMIND: need a real UUID?
+                "source": sid_class,
+                "description": f"Partial implementation of {smt.sid_class} {smt.sid}",
+                "implemented-requirements": [req for req in requirements]
             }
 
             control_implementations.append(control_implementation)
