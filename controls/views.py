@@ -258,7 +258,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             "back-matter": []
         }
 
-        # create requirements and organize by source
+        # create requirements and organize by source (sid_class)
 
         by_class = defaultdict(list)
         
@@ -269,24 +269,18 @@ class OSCALComponentSerializer(ComponentSerializer):
                 "description": smt.body,
                 "remarks": smt.remarks
             }
+            # if there is a part ID, add it as a label property
             if smt.pid:
-                requirement['properties'] = [
-                    {
-                        'name': 'label',
-                        'value': smt.pid
-                    }
-                ]
-                    
+                requirement['properties'] = dict(name='label', value=smt.pid)
             by_class[smt.sid_class].append(requirement)
 
         for sid_class, requirements in by_class.items():
             control_implementation = {
                 "uuid": requirements[0]['uuid'], # REMIND: need a real UUID?
                 "source": sid_class,
-                "description": f"Partial implementation of {smt.sid_class} {smt.sid}",
+                "description": f"Partial implementation of {sid_class}",
                 "implemented-requirements": [req for req in requirements]
             }
-
             control_implementations.append(control_implementation)
 
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
