@@ -6,7 +6,7 @@ from django.forms import ModelForm
 from django.utils.text import slugify
 from siteapp.models import Project, User, Organization
 from siteapp.forms import PortfolioForm, ProjectForm
-from datetime import datetime
+from datetime import datetime, timezone
 from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
 from .utilities import *
@@ -232,53 +232,46 @@ class OSCALComponentSerializer(ComponentSerializer):
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
+        uuid = str(self.element.uuid)
         of = {
-            "metadata": {
-                "title": "{} Component-to-Control Narratives".format(self.element.name),
-                "published": datetime.now().replace(microsecond=0).isoformat(),
-                "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
-                "version": "string",
-                "oscal-version": "1.0.0-milestone2",
-            },
-            "component": {
-                "name": self.element.name,
-                "component-type": self.element.element_type,
-                "title": self.element.full_name,
-                "description": self.element.description,
-                "properties": [],
-                "links": [],
-                "control-implementation": {
-                    "description": "",
-                    "can-meet-requirement-sets": [
-                        {
-                            "source": "url-reference",
-                            "description": "text",
-                            "properties": [],
-                            "links": [],
-                            "implemented-requirement": {
-                                "requirement-id": "",
-                                "id": "",
-                                "control-id": "",
-                            },
-                            "remarks": ""
-                        }
-                    ]
+            "component-definition": {
+                "metadata": {
+                    "title": "{} Component-to-Control Narratives".format(self.element.name),
+                    "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+                    "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
+                    "version": "string",
+                    "oscal-version": "1.0.0-milestone2",
                 },
-                "remarks": "text, parsed as Markdown (multiple lines) [0 or 1]"
-            },
-            "back-matter": []
-        }
-        implemented_requirement = of["component"]["control-implementation"]["can-meet-requirement-sets"][0]["implemented-requirement"]
-        for smt in self.impl_smts:
-            my_dict = {
-                smt.sid + "_smt": {
-                    "description": smt.body,
-                    "properties": [],
-                    "links": [],
-                    "remarks": smt.remarks
+                "components": {
+                    uuid: {
+                        "name": self.element.name,
+                        "component-type": self.element.element_type or "software",
+                        "title": self.element.full_name or "",
+                        "description": self.element.description,
+                        "control-implementations": []
+                    }
                 },
+                "back-matter": []
             }
-            implemented_requirement.update(my_dict)
+        }
+        control_implementations = of["component-definition"]["components"][uuid]["control-implementations"]
+        
+        for smt in self.impl_smts:
+            requirement = {
+                "uuid": str(smt.uuid),
+                "control-id": smt.sid,
+                "description": smt.body,
+                "remarks": smt.remarks
+            }
+            control_implementation = {
+                "uuid": str(smt.uuid),
+                "source": smt.sid_class,
+                "description": f"Partial implementation of {smt.sid_class}",
+                "implemented-requirements": [requirement]
+            }
+
+            control_implementations.append(control_implementation)
+
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
         return oscal_string
 
