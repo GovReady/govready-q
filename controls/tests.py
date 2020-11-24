@@ -10,6 +10,7 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 
+import json
 import os
 # import os.path
 from pathlib import PurePath
@@ -376,7 +377,11 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         var_sleep(2)            # need to wait for download, alas
         # assert download exists!
         self.assertTrue(self.json_download.is_file())
-
+        # assert that it is valid JSON by trying to load it
+        with open(self.json_download, 'r') as f:
+            json_data = json.load(f)
+                
+            
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
     def test_tests(self):
