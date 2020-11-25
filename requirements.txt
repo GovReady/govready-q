@@ -160,9 +160,8 @@ dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9 \
     # via -r requirements.in
-django-allauth==0.43.0 \
-    --hash=sha256:0bfb975fe46e8bff67effb3fa46dea5acd7c66140cb78b5ed92c533f639898e2 \
-    # via -r requirements.in
+django-allauth==0.44.0 \
+    --hash=sha256:e51af457466022f52154d74c8523ac69375120fad2acce6e239635d85e610b25    # via -r requirements.in
 django-bootstrap3==14.2.0 \
     --hash=sha256:1fc3db37f29bcd159c0b00e1f15fd2d6dedf7551ce8bcca09072e33663c110de \
     --hash=sha256:c7e6912b5127bea913bc8504399613758760954140162e048184624765e61904 \
