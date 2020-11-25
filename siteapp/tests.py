@@ -12,10 +12,13 @@
 
 import os
 import os.path
+import pathlib
 import re
+import tempfile
 from unittest import skip
 
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.crypto import get_random_string
 
@@ -62,9 +65,21 @@ class SeleniumTest(StaticLiveServerTestCase):
             options.add_argument("--start-maximized") # too small screens make clicking some things difficult
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
+
+        
+        # enable Selenium support for downloads
+        
+        cls.download_path = temp_path = pathlib.Path(tempfile.gettempdir())
+        options.add_experimental_option("prefs", {
+            "download.default_directory": str(cls.download_path),
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True
+        })
         cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
 
+        
         # Clean up and quit tests if Q is in SSO mode
         if getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', None):
             print("Cannot run tests.")
@@ -238,6 +253,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user.set_password(self.user.clear_password)
         self.user.save()
         self.user.reset_api_keys()
+        self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user.username, password=self.user.clear_password)
 
         # Create a Portfolio and Grant Access
@@ -259,6 +275,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user2.set_password(self.user2.clear_password)
         self.user2.save()
         self.user2.reset_api_keys()
+        self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user2.username, password=self.user2.clear_password)
         portfolio = Portfolio.objects.create(title=self.user2.username)
         portfolio.assign_owner_permissions(self.user2)
@@ -271,6 +288,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         self.user3.set_password(self.user3.clear_password)
         self.user3.save()
         self.user3.reset_api_keys()
+        self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.client.login(username=self.user3.username, password=self.user3.clear_password)
         portfolio = Portfolio.objects.create(title=self.user3.username)
         portfolio.assign_owner_permissions(self.user3)

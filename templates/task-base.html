@@ -95,7 +95,7 @@
       </a>
     </li>
 
-    {% if is_question_page %}
+    {% if is_question_page and current_group %}
          <li class="hidden-xs">
       <a href="{{task.project.get_absolute_url}}#{{current_group}}">
         {{current_group}}
