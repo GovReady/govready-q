@@ -114,3 +114,36 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* New CSS based on removing inline CSS */
+
+/* within navbar and base.html */
+.navbar-brand img { margin: -2px 20px; width:110px; }
+.dropdown-menu { width: 300px; }
+
+.nav-dropdown-item-text { margin: 0px 12px 8px 20px; }
+.nav-profile { margin: -5px 5px; }
+
+.message-margin { margin-top: 1em; }
+
+.footer-row { width: 768px; margin: auto; border-top: 1px solid #eee; padding-top: 24px; }
+
+.invite-message-size { width: 100%; height: 4em; }
+.invite-message-container { margin-top: 1em; }
+
+.center-text { text-align: center; }
+.right-text { text-align: right;}
+
+.form-by-email { margin-right: 1em; display: none; }
+
+.form-group-margin { margin-right: 1em; }
+.form-checkbox { margin-top: 1em; }
+
+.modal-text { margin: 1em 0 2em 0; }
+
+.form-email-width { width: 25em; }
+
+.no-display { display: none; }
+
+/* within app-store */
+a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none; }
