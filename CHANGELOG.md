@@ -1,6 +1,28 @@
 GovReady-Q Release Notes
 ========================
 
+v0.9.1.46.4 (November 25, 2020)
+-----------------------------
+
+**UI changes**
+
+* Adding a url pattern for accounts login to ensure proper styling. Also added conditionals the views landing that constructs the signup and login forms.
+
+v0.9.1.46.3 (November 20, 2020)
+-------------------------------
+
+**UI changes**
+
+* Add OSCAL downlink link to system component page.
+
+
+v0.9.1.46.2 (November 19, 2020)
+------------------------------
+
+**UI changes**
+
+* Omitting the group breadcrumb if it is None for a given question
+
 v0.9.1.46.1 (November 19, 2020)
 -------------------------------
 
@@ -21,6 +43,7 @@ Add organizational parameter value substitution for Control guidance and OSCAL.
 **Test fixes**
 
 * Fix siteapp.test to make sure a proper login is performed before testing `/settings` page.
+
 
 v0.9.1.45.1 (November 5, 2020)
 ------------------------------
