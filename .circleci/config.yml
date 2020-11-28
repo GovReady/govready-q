@@ -5,7 +5,7 @@ version: 2
 jobs:
   build:
     docker:
-    - image: circleci/python:3.7-stretch-browsers # when upgrading, check that it works with selenium
+    - image: circleci/python:3.8.1-browsers # when upgrading, check that it works with selenium
 
     steps:
     # Add .local/bin to PATH for utilities install by `pip install --user`.
@@ -29,6 +29,7 @@ jobs:
             fetch-vendor-resources.sh lists other external software packages needed by the program.
             In both cases, package versions are pinned using version numbers and package hashes.
         command: |
+            pip install --user --upgrade pip
             pip install --user -r requirements.txt
             pip install --user -r requirements_mysql.txt
             # pip install --user -r requirements_util.txt

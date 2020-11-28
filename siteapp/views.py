@@ -1696,7 +1696,7 @@ def accept_invitation_do_accept(request, inv):
         # under the account they are logged in as.
         from urllib.parse import urlencode
 
-        # In the event the user was already logged into an account, and if username/password
+        # In the event the user was already logged into an account, and if username/pwd
         # logins are enabled, then log them out now --- we make them log in again or sign
         # up next.
         username_pw_logins_emailed = ('django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKENDS)

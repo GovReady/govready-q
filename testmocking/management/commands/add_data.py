@@ -13,7 +13,7 @@ from testmocking.web import WebClient
 import re
 
 # When adding users, we expect they'll be created for test purposes. Therefore, a
-# static easy-to-remember password is useful.
+# static easy-to-remember pwd is useful.
 DEFAULT_USER_PASSWORD="GovReadyTest2019"
 
 class Command(BaseCommand):

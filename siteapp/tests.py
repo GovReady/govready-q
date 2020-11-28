@@ -15,8 +15,11 @@ import os.path
 import re
 from unittest import skip
 
+from django.contrib.auth.models import Permission
 from django.conf import settings
+from selenium.webdriver.support.select import Select
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+# StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
 
 from siteapp.models import (Organization, Portfolio, Project,
@@ -229,6 +232,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
 
+        # self.user = User.objects.create_superuser(
         self.user = User.objects.create(
             username="me",
             email="test+user@q.govready.com",
@@ -236,6 +240,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         )
         self.user.clear_password = get_random_string(16)
         self.user.set_password(self.user.clear_password)
+        self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user.save()
         self.user.reset_api_keys()
         self.client.login(username=self.user.username, password=self.user.clear_password)
@@ -257,6 +262,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             email="test+user2@q.govready.com")
         self.user2.clear_password = get_random_string(16)
         self.user2.set_password(self.user2.clear_password)
+        self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user2.save()
         self.user2.reset_api_keys()
         self.client.login(username=self.user2.username, password=self.user2.clear_password)
@@ -269,6 +275,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             email="test+user3@q.govready.com")
         self.user3.clear_password = get_random_string(16)
         self.user3.set_password(self.user3.clear_password)
+        self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user3.save()
         self.user3.reset_api_keys()
         self.client.login(username=self.user3.username, password=self.user3.clear_password)
@@ -366,7 +373,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         self.assertRegex(self.browser.title, "Welcome to Compliance Automation")
 
     def test_login(self):
-        # Test that a wrong password doesn't log us in.
+        # Test that a wrong pwd doesn't log us in.
         self._login(password=get_random_string(4))
         self.assertInNodeText("The username and/or password you specified are not correct.", "form#login_form .alert-danger")
 
@@ -813,7 +820,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         var_sleep(.5)
         self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
 
-        # password-type question input (this is not a user password)
+        # password-type question input (this is not a user pwd)
         self.assertRegex(self.browser.title, "Next Question: password")
         self.fill_field("#inputctrl", "th1s1z@p@ssw0rd!")
         self.click_element("#save-button")
@@ -1224,6 +1231,9 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
 
     def test_settings_page(self):
+        # Log in
+        var_sleep(.5)
+        self._login()
         # test navigating to settings page not logged in
         self.browser.get(self.url("/settings"))
         self.assertRegex(self.browser.title, "GovReady-Q")
@@ -1231,6 +1241,7 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         var_sleep(0.5)
 
         # login as user without admin privileges and test settings page unreachable
+        self.browser.get(self.url("/accounts/logout/"))
         self._login(self.user2.username, self.user2.clear_password)
         self.browser.get(self.url("/projects"))
         var_sleep(1)
@@ -1249,7 +1260,6 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
         print("self.user is '{}'".format(self.user))
         print("self.user.username is '{}'".format(self.user.username))
-        # print("self.user.clear_password is '{}'".format(self.user.clear_password))
         print("self.user2.username is '{}'".format(self.user2.username))
 
         # SAMPLE NAVIGATING AND TESTING

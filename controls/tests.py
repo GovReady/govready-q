@@ -199,13 +199,68 @@ class SampleTest(TestCase):
 class Oscal80053Tests(TestCase):
     # Test 
     def test_catalog_load_control(self):
-        cg = Catalog.GetInstance('NIST_SP-800-53_rev4')
-        cg_flat = cg.get_flattended_controls_all_as_dict()
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
+        cg_flat = cg.get_flattened_controls_all_as_dict()
         control = cg_flat['au-2']
         self.assertEqual(control['id'].upper(), "AU-2")
         # self.assertEqual(control.class, "NIST.800.53")
         # TODO: ADD Class into object
         self.assertEqual(control['title'].upper(), "AUDIT EVENTS")
+
+    def test_catalog_all_controls_with_organizational_parameters(self):
+        parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, 
+                                 parameter_values=parameter_values)
+        cg_flat = cg.get_flattened_controls_all_as_dict()
+        control = cg_flat['ac-1']
+        description = control['description']
+        self.assertTrue('every 12 parsecs' in description, description)
+
+    def test_catalog_one_control_with_organizational_parameters(self):
+        parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
+                                 parameter_values=parameter_values)
+        control = cg.get_control_by_id('ac-1')
+        flat = cg.get_flattened_control_as_dict(control)
+        description = flat['description']
+        self.assertTrue('every 12 parsecs' in description, description)
+
+    def test_catalog_control_organization_parameters_hashing(self):
+        # no org params
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
+        cg_flat = cg.get_flattened_controls_all_as_dict()
+        control = cg_flat['ac-1']
+        description = control['description']
+        self.assertTrue('Access control policy [organization-defined frequency]' in description,
+                        description)
+
+        # set org params
+        parameter_values_1 = { 'ac-1_prm_2': 'every 12 parsecs' }
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values_1)
+        cg_flat = cg.get_flattened_controls_all_as_dict()
+        control = cg_flat['ac-1']
+        description = control['description']
+        self.assertTrue('Access control policy every 12 parsecs' in description,
+                        description)
+
+        # different org params, we should get back a different instance
+        parameter_values_2 = { 'ac-1_prm_2': 'every 13 parsecs' }
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values_2)
+        cg_flat = cg.get_flattened_controls_all_as_dict()
+        control = cg_flat['ac-1']
+        description = control['description']
+        self.assertTrue('Access control policy every 13 parsecs' in description,
+                        description)
+
+        # switch back to prev org params, we should get an appropriate instance
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, parameter_values=parameter_values_1)
+        cg_flat = cg.get_flattened_controls_all_as_dict()
+        control = cg_flat['ac-1']
+        description = control['description']
+        self.assertTrue('Access control policy every 12 parsecs' in description,
+                        description)
+
+        
 
 #####################################################################
 
