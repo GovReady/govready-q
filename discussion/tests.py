@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.utils.crypto import get_random_string
 
 from siteapp.models import User, ProjectMembership, Organization, Portfolio
@@ -53,6 +54,8 @@ class DiscussionTests(SeleniumTest):
         self.user_pw = get_random_string(4)
         self.user = User.objects.create(username="me")
         self.user.set_password(self.user_pw)
+        # Grant user permission to view appsource
+        self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user.save()
 
         # Create the Organization.
