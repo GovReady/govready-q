@@ -84,7 +84,10 @@
           </li>
 
         {% elif LOGIN_ENABLED %}
-          <li><a href="{% url "account_login" %}">Log In</a></li>
+          <li><a><form name="form" method="post" action={% url 'homepage' %}>
+               {% csrf_token %}
+    <input type="submit" name="action" value="login"/>
+</form></a></li>
         {% endif %}
       </ul>
     </div><!-- /.navbar-collapse -->
