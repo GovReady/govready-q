@@ -17,9 +17,12 @@ import re
 import tempfile
 from unittest import skip
 
+from django.contrib.auth.models import Permission
 from django.conf import settings
+from selenium.webdriver.support.select import Select
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+# StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
 
 from siteapp.models import (Organization, Portfolio, Project,
@@ -244,6 +247,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
 
+        # self.user = User.objects.create_superuser(
         self.user = User.objects.create(
             username="me",
             email="test+user@q.govready.com",
@@ -251,6 +255,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         )
         self.user.clear_password = get_random_string(16)
         self.user.set_password(self.user.clear_password)
+        self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user.save()
         self.user.reset_api_keys()
         self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
@@ -273,6 +278,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             email="test+user2@q.govready.com")
         self.user2.clear_password = get_random_string(16)
         self.user2.set_password(self.user2.clear_password)
+        self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user2.save()
         self.user2.reset_api_keys()
         self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
@@ -286,6 +292,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             email="test+user3@q.govready.com")
         self.user3.clear_password = get_random_string(16)
         self.user3.set_password(self.user3.clear_password)
+        self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user3.save()
         self.user3.reset_api_keys()
         self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))

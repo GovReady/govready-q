@@ -15,7 +15,6 @@ v0.9.1.46.3 (November 20, 2020)
 
 * Add OSCAL downlink link to system component page.
 
-
 v0.9.1.46.2 (November 19, 2020)
 ------------------------------
 
@@ -24,11 +23,12 @@ v0.9.1.46.2 (November 19, 2020)
 * Omitting the group breadcrumb if it is None for a given question
 
 v0.9.1.46.1 (November 19, 2020)
------------------------------
+-------------------------------
 
 **Developer changes**
 
 * Replace the word 'password' with 'pwd' in comments to reduce false positives in code scanners.
+* Replace the word 'key' with 'entry' where possible to reduce false positives in code scanners.
 
 v0.9.1.46 (November 17, 2020)
 -----------------------------
