@@ -226,6 +226,13 @@ def components_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+def components_library(request):
+    """Display the library of components"""
+
+    context = {
+            "elements": Element.objects.all().exclude(element_type='system'),
+        }
+    return render(request, "components/components_library.html", context)
 
 class ComponentSerializer(object):
 

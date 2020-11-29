@@ -6,6 +6,13 @@ v9.9.9 (November 29, 2020)
 
 Add methods to Element model to copy (e.g., clone) an existing component and its "prototype" statements to save time of building a similar component from scratch.
 
+Add Component Library pages
+
+**UI changes**
+
+* Add Component Library page listing all available components.
+* Add global navbar link to Component Library.
+
 **Data changes**
 
 * Add `copy` method to `Element` data model.

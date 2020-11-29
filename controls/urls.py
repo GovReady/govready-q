@@ -28,6 +28,8 @@ urlpatterns = [
     url(r'^smt/_save/$', views.save_smt),
     url(r'^smt/_delete/$', views.delete_smt),
     url(r'^smt/_update_smt_prototype/$', views.update_smt_prototype),
+
+    # System Components/Elements
     url(r'^(?P<system_id>.*)/components/selected$', views.components_selected, name="components_selected"),
     url(r'^(?P<system_id>.*)/components/selected/export/opencontrol$', views.export_system_opencontrol, name="export_system_opencontrol"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/download/oscal/json$', 
@@ -37,6 +39,9 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
 
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
+
+    # Component Library
+    url(r'^components$', views.components_library, name="components_library"),
 
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
