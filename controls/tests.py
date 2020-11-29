@@ -10,14 +10,21 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 
-# import os.path
+import json
+import os
+from pathlib import PurePath
+import re
+from unittest import skip
 
 from django.test import TestCase
 from selenium.webdriver.support.select import Select
 from siteapp.models import User
 from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests, var_sleep
 from .models import *
-
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.utils.text import slugify
+from .oscal import Catalogs, Catalog
+from system_settings.models import SystemSettings
 
 # from controls.oscal import Catalogs, Catalog
 
@@ -157,6 +164,83 @@ class ControlUITests(SeleniumTest):
 
 #####################################################################
 
+
+from siteapp.tests import OrganizationSiteFunctionalTests
+
+class ComponentUITests(OrganizationSiteFunctionalTests):
+
+    component_name = "XYZZY"
+
+    def setUp(self):
+        super().setUp()
+
+        self. json_download = \
+            self.download_path / PurePath(slugify(self.component_name)).with_suffix(".json")
+
+        # we need a system and a component
+        root_element = Element(name="My Root Element",
+                               description="Description of my root element")
+        root_element.save()
+        self.system = System()
+        self.system.root_element = root_element
+        self.system.save()
+        project = self.org.get_organization_project()
+        project.system = self.system
+        project.save()
+        self.system.assign_owner_permissions(self.user)
+        statement = Statement(sid='ac-1', 
+                              sid_class=Catalogs.NIST_SP_800_53_rev4,
+                              body='My statement body',
+                              status='Not Implmented')
+        statement.save()
+        producer_element, created = Element.objects.get_or_create(name=self.component_name)
+        statement.producer_element = producer_element
+        statement.consumer_element = root_element
+        statement.save()
+
+        self.component = producer_element
+        
+        # enable experimental OSCAL -and- OpenControl support
+        
+        enable_experimental_oscal = \
+            SystemSettings.objects.get(setting='enable_experimental_oscal')
+        enable_experimental_oscal.active = True
+        enable_experimental_oscal.save()
+
+        enable_experimental_opencontrol = \
+            SystemSettings.objects.get(setting='enable_experimental_opencontrol')
+        enable_experimental_opencontrol.active = True
+        enable_experimental_opencontrol.save()
+
+        
+    def tearDown(self):
+        # clean up downloaded file
+        if self.json_download.is_file():
+            self.json_download.unlink()
+        super().tearDown()
+        
+    def test_component_download_oscal_json(self):
+        self._login()
+        url = self.url(f"/systems/{self.system.id}/component/{self.component.id}")
+        self.browser.get(url)
+        self.click_element('a[href="#oscal"]')
+
+        # sigh; selenium doesn't really let us find out the name of the
+        # downloaded file, so let's make sure it doesn't exist before we
+        # download
+        # definite race condition possibility
+        
+        if self.json_download.is_file():
+            self.json_download.unlink()
+        self.click_element("a#oscal_download_json_link")
+        var_sleep(2)            # need to wait for download, alas
+        # assert download exists!
+        self.assertTrue(self.json_download.is_file())
+        # assert that it is valid JSON by trying to load it
+        with open(self.json_download, 'r') as f:
+            json_data = json.load(f)
+                
+            
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
     def test_tests(self):

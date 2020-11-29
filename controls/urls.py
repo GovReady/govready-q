@@ -30,6 +30,9 @@ urlpatterns = [
     url(r'^smt/_update_smt_prototype/$', views.update_smt_prototype),
     url(r'^(?P<system_id>.*)/components/selected$', views.components_selected, name="components_selected"),
     url(r'^(?P<system_id>.*)/components/selected/export/opencontrol$', views.export_system_opencontrol, name="export_system_opencontrol"),
+    url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/download/oscal/json$', 
+        views.system_element_download_oscal_json, 
+        name="system_element_download_oscal_json"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
 

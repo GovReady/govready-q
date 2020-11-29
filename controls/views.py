@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
@@ -5,9 +7,10 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
     HttpResponseNotAllowed
 from django.forms import ModelForm
 from django.views import View
+from django.utils.text import slugify
 from siteapp.models import Project, User, Organization
 from siteapp.forms import PortfolioForm, ProjectForm
-from datetime import datetime
+from datetime import datetime, timezone
 from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
 from .utilities import *
@@ -17,6 +20,7 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
 
+from pathlib import PurePath
 import logging
 logging.basicConfig()
 import structlog
@@ -222,6 +226,99 @@ def components_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+
+class ComponentSerializer(object):
+
+    def __init__(self, element, impl_smts):
+        self.element = element
+        self.impl_smts = impl_smts
+
+class OSCALComponentSerializer(ComponentSerializer):
+
+    def as_json(self):
+        # Build OSCAL
+        # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
+        uuid = str(self.element.uuid)
+        control_implementations = []
+        of = {
+            "component-definition": {
+                "metadata": {
+                    "title": "{} Component-to-Control Narratives".format(self.element.name),
+                    "published": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+                    "last-modified": self.element.updated.replace(microsecond=0).isoformat(),
+                    "version": "string",
+                    "oscal-version": "1.0.0-milestone2",
+                },
+                "components": {
+                    uuid: {
+                        "name": self.element.name,
+                        "component-type": self.element.element_type or "software",
+                        "title": self.element.full_name or "",
+                        "description": self.element.description,
+                        "control-implementations": control_implementations
+                    }
+                }
+            },
+            "back-matter": []
+        }
+
+        # create requirements and organize by source (sid_class)
+
+        by_class = defaultdict(list)
+        
+        for smt in self.impl_smts:
+            requirement = {
+                "uuid": str(smt.uuid),
+                "control-id": smt.sid,
+                "description": smt.body,
+                "remarks": smt.remarks
+            }
+            # if there is a part ID, add it as a label property
+            if smt.pid:
+                requirement['properties'] = dict(name='label', value=smt.pid)
+            by_class[smt.sid_class].append(requirement)
+
+        for sid_class, requirements in by_class.items():
+            control_implementation = {
+                "uuid": requirements[0]['uuid'], # REMIND: need a real UUID?
+                "source": sid_class,
+                "description": f"Partial implementation of {sid_class}",
+                "implemented-requirements": [req for req in requirements]
+            }
+            control_implementations.append(control_implementation)
+
+        oscal_string = json.dumps(of, sort_keys=False, indent=2)
+        return oscal_string
+
+class OpenControlComponentSerializer(ComponentSerializer):
+
+    def as_yaml(self):
+        ocf = {
+                "name": self.element.name,
+                "schema_version": "3.0.0",
+                "documentation_complete": False,
+                "satisfies": []
+               }
+
+        satisfies_smts = ocf["satisfies"]
+        for smt in self.impl_smts:
+            my_dict = {
+                "control_key": smt.sid.upper(),
+                "control_name": smt.catalog_control_as_dict['title'],
+                "standard_key": smt.sid_class,
+                "covered_by": [],
+                "security_control_type": "Hybrid | Inherited | ...",
+                "narrative": [
+                    {"text": smt.body}
+                ],
+                "remarks": [
+                    {"text": smt.remarks}
+                ]
+            }
+            satisfies_smts.append(my_dict)
+        opencontrol_string = rtyaml.dump(ocf)
+        return opencontrol_string
+    
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
 
@@ -238,8 +335,7 @@ def system_element(request, system_id, element_id):
 
         # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(consumer_element=system.root_element,
-                                                       statement_type="control_implementation")
+        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
 
         # Retrieve used catalog_key
         catalog_key = impl_smts[0].sid_class
@@ -247,83 +343,9 @@ def system_element(request, system_id, element_id):
         # Retrieve control ids
         catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
 
-        # Build OSCAL
-        # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
-        of = {
-            "metadata": {
-                "title": "{} Component-to-Control Narratives".format(element.name),
-                "published": datetime.now().replace(microsecond=0).isoformat(),
-                "last-modified": element.updated.replace(microsecond=0).isoformat(),
-                "version": "string",
-                "oscal-version": "1.0.0-milestone2",
-            },
-            "component": {
-                "name": element.name,
-                "component-type": element.element_type,
-                "title": element.full_name,
-                "description": element.description,
-                "properties": [],
-                "links": [],
-                "control-implementation": {
-                    "description": "",
-                    "can-meet-requirement-sets": [
-                        {
-                            "source": "url-reference",
-                            "description": "text",
-                            "properties": [],
-                            "links": [],
-                            "implemented-requirement": {
-                                "requirement-id": "",
-                                "id": "",
-                                "control-id": "",
-                            },
-                            "remarks": ""
-                        }
-                    ]
-                },
-                "remarks": "text, parsed as Markdown (multiple lines) [0 or 1]"
-            },
-            "back-matter": []
-        }
-        implemented_requirement = of["component"]["control-implementation"]["can-meet-requirement-sets"][0][
-            "implemented-requirement"]
-        for smt in impl_smts:
-            my_dict = {
-                smt.sid + "_smt": {
-                    "description": smt.body,
-                    "properties": [],
-                    "links": [],
-                    "remarks": smt.remarks
-                },
-            }
-            implemented_requirement.update(my_dict)
-        oscal_string = json.dumps(of, sort_keys=False, indent=2)
-
-        # Build OpenControl
-        ocf = {
-            "name": element.name,
-            "schema_version": "3.0.0",
-            "documentation_complete": False,
-            "satisfies": []
-        }
-
-        satisfies_smts = ocf["satisfies"]
-        for smt in impl_smts:
-            my_dict = {
-                "control_key": smt.sid.upper(),
-                "control_name": smt.catalog_control_as_dict['title'],
-                "standard_key": smt.sid_class,
-                "covered_by": [],
-                "security_control_type": "Hybrid | Inherited | ...",
-                "narrative": [
-                    {"text": smt.body}
-                ],
-                "remarks": [
-                    {"text": smt.remarks}
-                ]
-            }
-            satisfies_smts.append(my_dict)
-        opencontrol_string = rtyaml.dump(ocf)
+        # Build OSCAL and OpenControl
+        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
 
         # Return the system's element information
         context = {
@@ -340,6 +362,30 @@ def system_element(request, system_id, element_id):
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
+
+def system_element_download_oscal_json(request, system_id, element_id):
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+        # Retrieve primary system Project
+        # Temporarily assume only one project and get first project
+        project = system.projects.all()[0]
+
+        # Retrieve element
+        element = Element.objects.get(id=element_id)
+
+        # Retrieve impl_smts produced by element and consumed by system
+        # Get the impl_smts contributed by this component to system
+        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+
+        response = HttpResponse(content_type="application/json")
+        filename = str(PurePath(slugify(element.name)).with_suffix('.json'))
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        body = OSCALComponentSerializer(element, impl_smts).as_json()
+        response.write(body)
+
+        return response
 
 def controls_selected_export_xacta_xslx(request, system_id):
     """Export System's selected controls compatible with Xacta 360"""

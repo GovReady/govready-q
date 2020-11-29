@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v0.9.1.46 (November 22, 2020)
+v0.9.1.47 (November 28, 2020)
 -----------------------------
 
 **Feature changes**
@@ -35,6 +35,21 @@ The work for this capability was performed across three branches that were event
 - `ge/reuse-0903`
 - `automated-tests-statements`
 
+v0.9.1.46.4 (November 25, 2020)
+-----------------------------
+
+**UI changes**
+
+* Adding a url pattern for accounts login to ensure proper styling. Also added conditionals the views landing that constructs the signup and login forms.
+
+v0.9.1.46.3 (November 20, 2020)
+-------------------------------
+
+**UI changes**
+
+* Add OSCAL downlink link to system component page.
+
+
 v0.9.1.46.2 (November 19, 2020)
 ------------------------------
 
@@ -43,11 +58,12 @@ v0.9.1.46.2 (November 19, 2020)
 * Omitting the group breadcrumb if it is None for a given question
 
 v0.9.1.46.1 (November 19, 2020)
------------------------------
+-------------------------------
 
 **Developer changes**
 
 * Replace the word 'password' with 'pwd' in comments to reduce false positives in code scanners.
+* Replace the word 'key' with 'entry' where possible to reduce false positives in code scanners.
 
 v0.9.1.46 (November 17, 2020)
 -----------------------------
@@ -165,7 +181,6 @@ Enable upgrade of project root_task to more recent version.
 **Documentation changes**
 
 * Document new logger entries for successful and failed attempts to upgrade project's root_task app.
->>>>>>> master
 
 v0.9.1.38.2 (September 20, 2020)
 --------------------------------
