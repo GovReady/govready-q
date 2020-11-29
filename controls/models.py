@@ -222,7 +222,7 @@ class Element(models.Model):
         # Copy only elements that are components. Do not copy an element of type "system"
         # Components that are systems should always be associated with a project (at least currently).
         # Also, statement structure for a system would be very different.
-        if self.element_type = "system":
+        if self.element_type == "system":
             raise SystemException("Copying an entire system is not permitted.")
 
         e_copy = deepcopy(self)
