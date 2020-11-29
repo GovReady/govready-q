@@ -12,6 +12,7 @@ from .settings import *
 
 urlpatterns = [
     url(r"^$", views.homepage, name="homepage"),
+    url(r"^login$", views.homepage, name="homepage"),
     url(r"^(privacy|terms-of-service|love-assessments)$", views.shared_static_pages),
 
     url(r'^api/v1/projects/(?P<project_id>\d+)/answers$', views_landing.project_api),
@@ -100,8 +101,11 @@ if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKEN
         # auth
         # next line overrides signup with our own view so we can monitor signup attempts, can comment out to go back to allauth's functionality
         url(r'^accounts/signup/', signup_wrapper, name="account_signup"),
+        # Disregard re-routing login to home page. Instead, use custom templates to style aullauth templates
+        # Necessary to keep existing routing in place to support links from invitation acceptance page
+        # and proper routing of "NEXT" url to project after after accepting invitation
         # login button will redirect to the homepage with a login form
-        url(r'^accounts/login/', views.homepage, name="account_login"),
+        # url(r'^accounts/login/', views.homepage, name="account_login"),
         url(r'^accounts/', include('allauth.urls')),
     ]
 

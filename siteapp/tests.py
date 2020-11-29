@@ -373,14 +373,16 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Extract the URL in the email and visit it.
         invitation_body = self.pop_email().body
         invitation_url_pattern = re.escape(self.url("/invitation/")) + r"\S+"
+        print("invitation_url_pattern", invitation_url_pattern)
         self.assertRegex(invitation_body, invitation_url_pattern)
         m = re.search(invitation_url_pattern, invitation_body)
+        print("m.group(0)", m.group(0))
         self.browser.get(m.group(0))
-
+        var_sleep(0.5) # wait for page to load
         # Since we're not logged in, we hit the invitation splash page.
         self.click_element('#button-sign-in')
-        var_sleep(.5) # wait for page to load
-
+        print("###################################")
+        var_sleep(0.5) # wait for page to load
         self.assertRegex(self.browser.title, "Sign In")
 
         # TODO check if the below should still be happening

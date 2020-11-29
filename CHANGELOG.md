@@ -23,6 +23,8 @@ v0.9.1.47 (November 28, 2020)
 - Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
 - Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
 
+- Replace the url pattern routing in v0.9.1.46.4 for directing accounts login to home page with custom templates to override default aullauth templates.
+
 **Developer changes**
 
 - Modified controls.Statement model to link `control_implementation` statements to
