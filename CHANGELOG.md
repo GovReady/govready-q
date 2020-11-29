@@ -1,12 +1,22 @@
 GovReady-Q Release Notes
 ========================
 
+v9.9.9 (November 29, 2020)
+-----------------------------
+
+Add methods to Element model to copy (e.g., clone) an existing component and its "prototype" statements to save time of building a similar component from scratch.
+
+**Data changes**
+
+* Add `copy` method to `Element` data model.
+* Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`
+
 v0.9.1.47 (November 28, 2020)
 -----------------------------
 
 **Feature changes**
 
-- Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
+* Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
 
 1. Add a component to the system while on components page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
 1. Add a component to the system while on control edit page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
@@ -17,25 +27,25 @@ v0.9.1.47 (November 28, 2020)
 
 **UI changes**
 
-- Add components (system elements) via an autocomplete to a system on system's selected components page.
-- Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
-- Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
-- Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
-- Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
+* Add components (system elements) via an autocomplete to a system on system's selected components page.
+* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
+* Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
+* Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
+* Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
 
-- Replace the url pattern routing in v0.9.1.46.4 for directing accounts login to home page with custom templates to override default aullauth templates.
+* Replace the url pattern routing in v0.9.1.46.4 for directing accounts login to home page with custom templates to override default aullauth templates.
 
 **Developer changes**
 
-- Modified controls.Statement model to link `control_implementation` statements to
+* Modified controls.Statement model to link `control_implementation` statements to
   `control_implementation_prototype` statements. See commit 5083af.
-- Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
+* Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
 
 The work for this capability was performed across three branches that were eventually synchronized (approximately commit 18934669) and merged into the master branch :
 
-- `autocomplete_statements_#1066`
-- `ge/reuse-0903`
-- `automated-tests-statements`
+* `autocomplete_statements_#1066`
+* `ge/reuse-0903`
+* `automated-tests-statements`
 
 v0.9.1.46.4 (November 25, 2020)
 -----------------------------
