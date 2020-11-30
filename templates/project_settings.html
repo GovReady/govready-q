@@ -34,7 +34,7 @@
 }
   .question-group h3 {
     font-size: inherit;
-    font-weight: bold;    
+    font-weight: bold;
   }
   .question-group > .row {
     margin: 5px 0;
@@ -235,17 +235,17 @@ h3.question-group-title {
 
       <center style="font-size: 90%;" class="authoring-tool-hidden">
       <p>
-      <a href="#" onclick="show_authoring_tool_module_editor(); return false;" style="margin: 0 1em;">
+      <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="project-settings-glyicons">
         <span class="glyphicon glyphicon-pencil"></span>
         Edit App
       </a>
 
-      <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
+      <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" class="project-settings-glyicons">
       <span class="glyphicon glyphicon-plus"></span>
       Add Question
       </a>
 
-      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
+      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" class="project-settings-glyicons">
       <span class="glyphicon glyphicon-download"></span>
       Download Source
       </a>
@@ -265,17 +265,17 @@ h3.question-group-title {
         <div>
           <div class="row">
             <div class="col-sm-12">
-              <h2 style="border-bottom:1px solid #ccc;">About</h2>
+              <h2 class="project-settings-header">About</h2>
             </div>
           </div>
-          <div class="row" style="margin: 8px 0 20px 0;">
-            <div class="col-sm-12" style="margin-bottom:8px;  "><small>{{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}</small></div>
+          <div class="row project-settings-row">
+            <div class="col-sm-12 project-settings-description"><small>{{project.root_task.module.app.catalog_metadata.description.short|safe|truncatewords_html:18}}</small></div>
             <div class="col-sm-3"><small><span class="text-muted">App Source:</span><br>{{project.root_task.module.app.source.slug|safe}}</small></div>
             <div class="col-sm-3"><small><span class="text-muted">Compliance App:</span><br>{{project.root_task.module.spec.title}}</small></div>
             <div class="col-sm-3"><small><span class="text-muted">Project ID:</span><br>{{project.id}}</small></div>
             <div class="col-sm-3"><small><span class="text-muted">Started:</span><br>{{project.created}}</small></div>
           </div>
-          <div class="row" style="margin: 8px 0 20px 0;">
+          <div class="row project-settings-row">
             <div class="col-sm-3"><small><span class="text-muted">App Version:</span><br>{{project.root_task.module.app.version_number|safe}}</small></div>
           </div>
         </div>
@@ -290,14 +290,14 @@ h3.question-group-title {
 
       {% endif %}
 
-        <div class="row" style="margin-top:12px;">
+        <div class="row project-settings-rows">
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">Participants</h2>
+            <h2 class="project-settings-header">Participants</h2>
           </div>
           <div class="col-sm-12">
               {% for user, authz in project.get_all_participants %}
-                <div class="clearfix" style="margin-bottom: 2px;">
-                  <div style="width: 28px; height: 24px; border: 1px solid #444; margin-right: .5em; float: left; margin-top: -2px; border-radius: 2px;">
+                <div class="clearfix project-settings-all-participants">
+                  <div class="project-settings-user-details">
                   {% if authz.user_details.picture %}
                     <img src="{{authz.user_details.picture.url}}" alt="{{authz.user_details.name}} Profile Picture"
                       style="display:block; width: 100%; height: 100%;">
@@ -334,7 +334,7 @@ h3.question-group-title {
                   {% endif %}
               {% endfor %}
               {% if send_invitation.can_add_invitee_to_team %}
-                <div style="margin: 1em 0">
+                <div class="project-settings-invite">
                   <button id="invite-user-to-project" class="btn btn-default" onclick="return invite_user_into_project();"><span class="glyphicon glyphicon-plus"></span>&nbsp; Grant access to member</button>
                 </div>
               {% endif %}
@@ -356,7 +356,7 @@ h3.question-group-title {
           </div>
         </div>
 
-        <div class="row" style="margin-top:12px;">
+        <div class="row" style="">
           <div class="col-sm-12">
             <h2 style="border-bottom:1px solid #ccc;">Permissions</h2>
           </div>
@@ -366,19 +366,19 @@ h3.question-group-title {
         </div>
 
         {% if is_admin or can_upgrade_app %}
-        <div class="row" style="margin-top:12px;">
+        <div class="row project-settings-rows">
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">Upgrade Project</h2>
+            <h2 class="project-settings-header">Upgrade Project</h2>
           </div>
           <div class="col-sm-12">Available versions</div>
             <div class="col-sm-12">
               <table class="table" style="width: auto;">
               <thead>
                 <tr>
-                  <th style="width:200px;">AppName</th>
-                  <th style="width:200px;">Version</th>
-                  <th style="width:200px;">Compatibility</th>
-                  <th style="width:200px;">Action</th>
+                  <th class="project-settings-table-head">AppName</th>
+                  <th class="project-settings-table-head">Version</th>
+                  <th class="project-settings-table-head">Compatibility</th>
+                  <th class="project-settings-table-head">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -398,9 +398,9 @@ h3.question-group-title {
           </div>
           {% endif %}
 
-        <div class="row" style="margin-top:12px;">
+        <div class="row project-settings-rows>
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">Share Data</h2>
+            <h2 class="project-settings-header">Share Data</h2>
           </div>
           <div class="col-sm-12">
             {# export #}
@@ -424,9 +424,9 @@ h3.question-group-title {
           </div>
 
       {% if project.is_deletable and is_admin %}
-        <div class="row" style="margin-top: 12px;">
+        <div class="row project-settings-rows">
           <div class="col-sm-12">
-            <h2 style="border-bottom:1px solid #ccc;">DANGER</h2>
+            <h2 class="project-settings-header">DANGER</h2>
           </div>
           <div class="col-sm-12">
             <button class="btn btn-danger" onclick="return delete_project();">Delete Project</button>

@@ -31,6 +31,8 @@ Compliance Apps
 
   .app-category-nav {
     font-size: 85%;
+    width:96%;
+    margin:0 20px 1em 20px; /* removed from inline below, which is why there is px and em */
   }
 
   .app-category-nav > *[data-category] {
@@ -130,11 +132,11 @@ Compliance Apps
         </a>
         / Compliance Apps
 
-      <div class="pull-right" style="margin-bottom: 1em">
+      <div class="pull-right create-nav">
         <form class="form-inline" onsubmit="return false;">
           <div class="form-group">
             {% if authoring_tool_enabled %}
-            <span style="margin: 0 0.5em 0em 0;">
+            <span class="create-new-project">
               <a id="new-project" href="#" class="btn btn-success" onclick="authoring_tool_create_q_form('argument'); return false;">Create New Project</a>
             </span>
             {% endif %}
@@ -149,11 +151,11 @@ Compliance Apps
 
 
 {% if filter_description %}
-<p style="margin-bottom: 30px">These apps can help you with <em>{{filter_description}}</em>.</p>
+<p class="app-bottom-margin">These apps can help you with <em>{{filter_description}}</em>.</p>
 {% endif %}
 
 {# since the category links disappear in response to search queries, this should come after the search box so the search box's position doesn't jump around if this element changes size or disappears #}
-<div class="pull-left app-category-nav" style="margin-bottom: 1em; width:96%; margin:0 20px 0 20px;">
+<div class="pull-left app-category-nav">
   {% for app_category in apps %}
     <span data-category="{{app_category.title}}" {% if forloop.first %}class="first"{% endif %}>
       <a href="#" onclick="smooth_scroll_to($('.app-category').filter(function() { return this.getAttribute('data-category') == '{{app_category.title|escapejs}}' })); return false;">{{app_category.title}}</a>
@@ -188,7 +190,7 @@ Compliance Apps
             Admin approval required</div>
           </div>
           {% endif %}
-          <div style="margin-top: .5em">
+          <div class="app-quick-start-form">
             {# If the user can only start the app in a single organization context, we can offer a quick start button. #}
             {% if app.organizations|length == 1 %}
             <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
@@ -205,9 +207,9 @@ Compliance Apps
           </div>
         </td>
         {% if app.icon %}
-        <td class="app-icon" style="padding-top: 1px; padding-right: 12px;">
+        <td class="app-icon app-icon-appstore">
           <img src="{{app.icon}}" class="img-responsive" alt="App Icon">
-          <div style="text-align: center;"><small>{{ app.version }}</small></div>
+          <div class="center-text"><small>{{ app.version }}</small></div>
         </td>
         {% endif %}
         </tr>
