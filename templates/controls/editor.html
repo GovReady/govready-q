@@ -247,7 +247,7 @@ Remove contextbar from top of page
 
               <div>
                 <form id="smt_{{ forloop.counter }}" class="smt_form">
-                  
+
                     <!-- Never change name of the producer element already associated with a statement -->
                     <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
                     <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
@@ -365,15 +365,16 @@ Remove contextbar from top of page
                           <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
 
                       </div>
-                      &nbsp;&nbsp;<button type="submit" id="add_existing_component" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
+                      &nbsp;&nbsp;<button type="submit" class="small btn btn-sm btn-success" style="color: white;">Add</button>
                   </div>
 
               </form>
-          </div>
-
- <!-- Add component button -->
+           <!-- Add component button -->
           <div><h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
 </div>
+
+          </div>
+
 
       <!-- Tab panel: combined -->
       {% if enable_experimental_oscal %}
@@ -702,6 +703,5 @@ Remove contextbar from top of page
     });
 
 }
-      </script>
-
+</script>
   {% endblock %}
