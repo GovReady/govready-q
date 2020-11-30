@@ -226,13 +226,13 @@ def components_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
-def components_library(request):
+def component_library(request):
     """Display the library of components"""
 
     context = {
             "elements": Element.objects.all().exclude(element_type='system'),
         }
-    return render(request, "components/components_library.html", context)
+    return render(request, "components/component_library.html", context)
 
 class ComponentSerializer(object):
 
@@ -325,7 +325,7 @@ class OpenControlComponentSerializer(ComponentSerializer):
             satisfies_smts.append(my_dict)
         opencontrol_string = rtyaml.dump(ocf)
         return opencontrol_string
-    
+
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
 
@@ -369,6 +369,56 @@ def system_element(request, system_id, element_id):
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
+
+def component_library_component(request, element_id):
+    """Display certified component's element detail view"""
+
+    # Retrieve element
+    element = Element.objects.get(id=element_id)
+
+    # Retrieve impl_smts produced by element and consumed by system
+    # Get the impl_smts contributed by this component to system
+    impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
+
+    # TODO: We may have multiple catalogs in this case in the future
+    # Retrieve used catalog_key
+    catalog_key = impl_smts[0].sid_class
+
+    # Retrieve control ids
+    catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+
+    # Build OSCAL and OpenControl
+    oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+    opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+
+    # Return the system's element information
+    context = {
+        "element": element,
+        "impl_smts": impl_smts,
+        "catalog_controls": catalog_controls,
+        "catalog_key": catalog_key,
+        "oscal": oscal_string,
+        "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+        "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+        "opencontrol": opencontrol_string,
+        # "project_form": ProjectForm(request.user),
+    }
+    return render(request, "components/element_detail_tabs.html", context)
+
+def component_library_component_copy(request, element_id):
+    """Copy a component"""
+
+    # Retrieve element
+    element = Element.objects.get(id=element_id)
+
+    e_copy = element.copy()
+
+    # Create message to display to user
+    messages.add_message(request, messages.INFO,
+                         'Component "{}" copied to "{}".'.format(element.name, e_copy.name))
+
+    # Redirect to the new page for the component
+    return HttpResponseRedirect("/controls/components/{}".format(e_copy.id))
 
 def system_element_download_oscal_json(request, system_id, element_id):
     # Retrieve identified System
@@ -1016,11 +1066,8 @@ class EditorAutocomplete(View):
                 else:
                     print("not adding smt not selected controls for system", smt)
 
-
         # Redirect to the page where the component was added from
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-
 
 def editor_compare(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
@@ -1076,30 +1123,30 @@ def save_smt(request):
 
     else:
         # EXAMPLE CODE FOR GUARDIAN PERMISSIONS
-        # # does user have write privs?
-        # # if not task.has_write_priv(request.user):
-        # #     return HttpResponseForbidden()
+        # does user have write privs?
+        # if not task.has_write_priv(request.user):
+        #     return HttpResponseForbidden()
 
-        # # validate question
-        # # q = task.module.questions.get(id=request.POST.get("question"))
+        # validate question
+        # q = task.module.questions.get(id=request.POST.get("question"))
 
-        # # validate and parse value
-        # # if request.POST.get("method") == "clear":
-        # #     # Clear means that the question returns to an unanswered state.
-        # #     # This method is only offered during debugging to make it easier
-        # #     # to test the application's behavior when questions are unanswered.
-        # #     value = None
-        # #     cleared = True
-        # #     skipped_reason = None
-        # #     unsure = False
+        # validate and parse value
+        # if request.POST.get("method") == "clear":
+        #     # Clear means that the question returns to an unanswered state.
+        #     # This method is only offered during debugging to make it easier
+        #     # to test the application's behavior when questions are unanswered.
+        #     value = None
+        #     cleared = True
+        #     skipped_reason = None
+        #     unsure = False
 
-        # # elif request.POST.get("method") == "skip":
-        # #     # The question is being skipped, i.e. answered with a null value,
-        # #     # because the user doesn't know the answer, it doesn't apply to
-        # #     # the user's circumstances, or they want to return to it later.
-        # #     value = None
-        # #     cleared = False
-        # #     skipped_reason = request.POST.get("skipped_reason") or None
+        # elif request.POST.get("method") == "skip":
+        #     # The question is being skipped, i.e. answered with a null value,
+        #     # because the user doesn't know the answer, it doesn't apply to
+        #     # the user's circumstances, or they want to return to it later.
+        #     value = None
+        #     cleared = False
+        #     skipped_reason = request.POST.get("skipped_reason") or None
         #     unsure = bool(request.POST.get("unsure"))
 
         # Track if we are creating a new statement
@@ -1176,18 +1223,18 @@ def save_smt(request):
             producer_element_msg = "Producer Element save failed. Error reported {}".format(e)
             return JsonResponse({"status": "error", "message": producer_element_msg})
 
-        # Associate Statement and Producer Element
-        # TODO Only associate if we have created new statement object.
-        try:
-            statement.producer_element = producer_element
-            statement.save()
-            statement_element_status = "ok"
-            statement_element_msg = "Statement associated with Producer Element."
-        except Exception as e:
-            statement_element_status = "error"
-            statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
-            return JsonResponse(
-                {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
+        # Associate Statement and Producer Element if creating new statement
+        if new_statement:
+            try:
+                statement.producer_element = producer_element
+                statement.save()
+                statement_element_status = "ok"
+                statement_element_msg = "Statement associated with Producer Element."
+            except Exception as e:
+                statement_element_status = "error"
+                statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
+                return JsonResponse(
+                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
 
         # Create new Prototype Statement object on new statement creation (not statement edit)
         if new_statement:
@@ -1208,31 +1255,34 @@ def save_smt(request):
                 return JsonResponse({ "status": "error", "message": statement_msg })
 
         # Associate Statement and System's root_element
-        # TODO Only associate if we have created new statement object.
         # print("** System.objects.get(pk=form_values['system_id']).root_element", System.objects.get(pk=form_values['system_id']).root_element)
-        try:
-            statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
-            statement.save()
-            statement_consumer_status = "ok"
-            statement_consumer_msg = "Statement associated with System/Consumer Element."
-        except Exception as e:
-            statement_consumer_status = "error"
-            statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
-            return JsonResponse(
-                {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
+        if new_statement and system_id is not None:
+            try:
+                statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
+                statement.save()
+                statement_consumer_status = "ok"
+                statement_consumer_msg = "Statement associated with System/Consumer Element."
+            except Exception as e:
+                statement_consumer_status = "error"
+                statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
+                return JsonResponse(
+                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
 
-        # Update ElementControl smts_updated to know when control element on system was recently updated
-        try:
-            print("Updating ElementControl smts_updated")
-            ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid,
-                                            oscal_catalog_key=statement.sid_class)
-            ec.smts_updated = statement.updated
-            ec.save()
-        except Exception as e:
-            statement_element_status = "error"
-            statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
-            return JsonResponse(
-                {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
+        # If we are updating a smt of type control_implementation_prototype
+        # then update ElementControl smts_updated to know when control element on system was recently updated
+        statement_element_msg = ""
+        if statement.statement_type == "control_implementation":
+            try:
+                print("Updating ElementControl smts_updated")
+                ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid,
+                                                oscal_catalog_key=statement.sid_class)
+                ec.smts_updated = statement.updated
+                ec.save()
+            except Exception as e:
+                statement_element_status = "error"
+                statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
+                return JsonResponse(
+                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
 
     # Serialize saved data object(s) to send back to update web page
     # The submitted form needs to be updated with the object primary keys (ids)

@@ -38,10 +38,12 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
     url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
 
-    url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
+    url(r'^(?P<system_id>.*)/controls/updated$', views.system_element, name="system_element"),
 
     # Component Library
-    url(r'^components$', views.components_library, name="components_library"),
+    url(r'^components$', views.component_library, name="component_library"),
+    url(r'^components/(?P<element_id>.*)/_copy$', views.component_library_component_copy, name="component_library_component_copy"),
+    url(r'^components/(?P<element_id>.*)$', views.component_library_component, name="component_library_component"),
 
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),

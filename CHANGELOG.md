@@ -6,7 +6,7 @@ v9.9.9 (November 29, 2020)
 
 Add methods to Element model to copy (e.g., clone) an existing component and its "prototype" statements to save time of building a similar component from scratch.
 
-Add Component Library pages
+Add Component Library pages.
 
 **UI changes**
 
@@ -17,6 +17,14 @@ Add Component Library pages
 
 * Add `copy` method to `Element` data model.
 * Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`
+
+**Bug fixes**
+
+* Fix multiple loadings of updated smt.body into bootstrap's panel heading section by improved naming of div classes in panel and better targeted update.
+
+**Other**
+
+* Updated link to `jquery-ui.min.js` library in `fetch-vendor-resources`.
 
 v0.9.1.47 (November 28, 2020)
 -----------------------------

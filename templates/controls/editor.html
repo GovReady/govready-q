@@ -71,7 +71,7 @@
     font-size: 0.8em; font-weight: 600;
   }
 
-  .panel-heading-smt {
+  .panel-heading-smt, .panel-heading-smt-body {
     white-space: pre-line;
   }
 
@@ -238,7 +238,7 @@ Remove contextbar from top of page
                     <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;
                     <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
                     {% if smt.pid is not None and smt.pid != "" %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
-                    <div class="panel-heading-smt">{{ smt.body }}</div>
+                    <div class="panel-heading-smt-body">{{ smt.body }}</div>
                   </a>
                 </h4>
               </div>
@@ -524,7 +524,7 @@ Remove contextbar from top of page
                 }
 
                 // Update panel statement
-                $( '#'+smt_panel_num.replace("smt_","panel-")+' .panel-heading-smt' ).html(smt_saved[0]['fields']['body']);
+                $( '#'+smt_panel_num.replace("smt_","panel-")+' .panel-heading-smt-body' ).html(smt_saved[0]['fields']['body']);
 
                 $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
                 $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
