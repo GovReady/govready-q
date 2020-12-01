@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.47 (December 01, 2020)
+------------------------------
+
+**Developer changes**
+
+* Significant refactoring of CSS to replace inline styles from as many pages as possible with classes defined in `css/govready-q.css` stylesheet.
+
 v0.9.1.46.4 (November 25, 2020)
 -----------------------------
 
