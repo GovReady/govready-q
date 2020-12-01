@@ -199,7 +199,7 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 .smidge-right { margin-right: .25em } /* spaces words from glyphicon */
 .smidge-left { margin-left: .25em }
 
-.project-settings-glyicons { margin: 0 1em; }
+.project-settings-glyphicons { margin: 0 1em; }
 .project-settings-header { border-bottom:1px solid #ccc; }
 .project-settings-row { margin: 8px 0 20px 0;}
 .project-settings-description { margin-bottom:8px; }
