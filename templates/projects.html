@@ -100,11 +100,11 @@ Your Compliance Projects
 
 {% block body %}
 
-<div style="margin-top: 30px">
+<div class="projects-top">
 
 <div class="container">
 
-<div style="float: right; margin: 0 0.5em 0em 5em;">
+<div class="project-main">
   <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#"" class=" btn btn-success">Start a project</a>
 </div>
 
@@ -130,7 +130,7 @@ Your Compliance Projects
 {% endif %}
 
 {% for project in projects %}
-<div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+<div class="row projects-row">
   <div class="col-xs-10 col-md-5">
     {% if project.root_task.get_app_icon_url %}
       <span class="project-image">
@@ -140,7 +140,7 @@ Your Compliance Projects
     {% else %}
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endif %}
-    <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
+    <a href="{{project.get_absolute_url}}" class="projects-link">{{project.title}}</a>
   </div>
 
   <div class="col-xs-6 col-sm-1">{{project.id}}</div>
@@ -156,7 +156,7 @@ Your Compliance Projects
   <div class="col-xs-6 col-sm-2">Portfolio Member</div>
   {% endif %}
 
-  <div class="col-xs-12 col-md-2" style="text-align: left;">
+  <div class="col-xs-12 col-md-2 left-text">
       <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
       {{project.root_task.updated|naturaltime}}
       <!-- Started: {{project.created|naturaltime}} -->

@@ -93,17 +93,12 @@ Your Compliance Projects
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-
-<div style="margin-top: 30px">
-
+<div class="org-top">
 <div class="container">
-
 {% if org_groups|length > 0 %}
-
-<div style="float: right; margin: 0 0.5em 0em 5em;">
-  <a id="new-group" href="/groups/new" class="btn btn-success">Create a group</a>
+<div class="org-main">
+<a id="new-group" href="/groups/new" class="btn btn-success">Create a group</a>
 </div>
-
 <h2 class="">Groups</h2>
 {% endif %}
 

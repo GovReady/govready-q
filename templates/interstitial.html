@@ -25,13 +25,13 @@ h1 { margin-top: 0; }
     <div id="focus-area-wrapper">
         {{body|safe}}
 
-        <div style="text-align: center; margin: 1.5em 0 .5em 0;">
+        <div class="interstitial-success">
           {% if alt_url %}
-            <a id="alt-btn" class="btn btn-success" style="margin-right: 3em" 
+            <a id="alt-btn" class="btn btn-success" class="interstitial-link"
               href="{{alt_url}}">{{alt_text}} &raquo;</a>
           {% endif %}
 
-          <a id="continue-btn" class="btn btn-success" style="margin-right: 3em" 
+          <a id="continue-btn" class="btn btn-success" class="interstitial-link "
             href="{{continue_url}}">{{continue_text}} &raquo;</a>
         </div>
     </div>
