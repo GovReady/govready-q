@@ -32,19 +32,19 @@ h2 { margin-top: 1.5em; }
       {% if not forloop.first %}<hr>{% endif %}
 
       {% if section.path %}
-      <p style="font-size: 90%; font-weight: 400; margin: 2em 0 .5em -2px;">
+      <p class="project-list-text">
         {% for item in section.path %}
-          <span style="color: #666">{{item}}</span>
+          <span class="project-list-text-item">{{item}}</span>
           {% if not forloop.last %}→{% endif %}
         {% endfor %}
       </p>
       {% endif %}
 
-      <h2 id="task-{{section.task.id}}" style="margin-top: 0">
-        <a href="{{section.task.get_absolute_url}}" style="color: #224;">
-        
+      <h2 id="task-{{section.task.id}}" class="project-list-section-task-id">
+        <a href="{{section.task.get_absolute_url}}" class="project-list-section-task-link">
+
         {% if section.task.get_app_icon_url %}
-          <img src="{{section.task.get_app_icon_url}}" style="height: 1em" alt="App Icon">
+          <img src="{{section.task.get_app_icon_url}}" class="project-list-app-icon" alt="App Icon">
         {% else %}
           <span class="glyphicon glyphicon-list-alt"></span>
         {% endif %}
@@ -53,11 +53,11 @@ h2 { margin-top: 1.5em; }
         </a>
       </h2>
 
-      <div style="margin: 0 0 .5em 0">
-      <p style="margin: 0 0 .25em 0">Started: {{section.task.created|date}}</p>
+      <div class="project-list-section-task">
+      <p class="project-list-section-task-text">Started: {{section.task.created|date}}</p>
       {% with m=section.task.get_last_modification %}
       {% if m %}
-        <p style="margin: 0 0 .25em 0">Last change: {{m.answered_by}} answered <a href="{{m.taskanswer.get_absolute_url}}">{{m.taskanswer.question.spec.title}}</a> on {{m.created|date}}.</p>
+        <p class="project-list-section-task-text">Last change: {{m.answered_by}} answered <a href="{{m.taskanswer.get_absolute_url}}">{{m.taskanswer.question.spec.title}}</a> on {{m.created|date}}.</p>
       {% endif %}
       {% endwith %}
       </div>

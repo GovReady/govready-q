@@ -37,8 +37,8 @@ div.subtitle {
 
 {% block breadcrumbs %}
   <li>
-    <a href="/">
-      <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
+    <a href="/" class="glyphicon-home-icon">
+      <span class="glyphicon glyphicon-home"></span>
     </a>
   </li>
   <li class="hidden-xs">
@@ -49,7 +49,7 @@ div.subtitle {
   {% for parent_project in project.get_parent_projects %}
     {% if not forloop.counter == 1 %} &gt; {% endif %}
     <li>
-    <a href="{{parent_project.get_absolute_url}}" class="parent-project" style="margin-left: .25em">
+    <a href="{{parent_project.get_absolute_url}}" class="parent-project smidge-left">
       {{parent_project.title}}
     </a>
     </li>
@@ -66,7 +66,7 @@ div.subtitle {
 <div class="row">
   {% if is_project_page %}
   <div class="col-md-push-10 col-md-2">
-    <div id="action-buttons" style="margin-bottom: 1em">
+    <div id="action-buttons action-row">
       {% block action_buttons %}
       {% endblock %}
     </div>
@@ -103,7 +103,7 @@ div.subtitle {
         <div class="clearfix"></div>
       </div>
       <div class="col-sm-2">
-        <div id="btn-edit-title" style="text-align: center;">
+        <div id="btn-edit-title" class="center-text">
           {% if not project.is_account_project or project.is_deletable %}
             {% if project.is_deletable and is_admin %}
               <button class="btn btn-default btn-small" onclick="return rename_project();">Edit</button>
@@ -124,8 +124,8 @@ div.subtitle {
       </div>
       {% endwith %}
       {% endif %}
-      
-      <div style="margin-top: 1em">
+
+      <div class="project-body-block">
       {% block body_content %}
       {% endblock %}
       </div>

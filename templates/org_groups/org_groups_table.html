@@ -4,20 +4,19 @@
 <div class="container">
 
 {% for org_group in org_groups %}
-<div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+<div class="row org-row">
 
   <div class="col-md-5">
     <div>
       <span class="glyphicon glyphicon-folder-close"></span>&nbsp;&nbsp;&nbsp;
-      <a href="/{{org_group.slug}}/projects" style="color: black;">{{org_group.name}}</a>
+      <a href="/{{org_group.slug}}/projects" class="org-group">{{org_group.name}}</a>
     </div>
     <!-- <div><small>This is the group description</small></div> -->
   </div>
 
   <div class="col-md-4">&nbsp;</div>
-  <div class="col-md-1"><small style="color: #888;">ID: {{org_group.id}}</small></div>
-
-  <div class="col-md-2" style="text-align: right;"><small style="color: #888;">Created {{org_group.created|naturaltime}}</small></div>
+  <div class="col-md-1"><small class="org-small">ID: {{org_group.id}}</small></div>
+  <div class="col-md-2" style="text-align: right;"><small >Created {{org_group.created|naturaltime}}</small></div>
 </div>
 {% endfor %}
 
