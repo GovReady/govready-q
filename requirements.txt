@@ -181,10 +181,9 @@ django-html-emailer==0.0.8.1 \
     --hash=sha256:1ea72561355587952d2f6582bff14cc3cfd27aaac52a4bce83e57eb8a8d90f1e \
     --hash=sha256:4d9954d67005843be1768fa39b6e6f1d2eff1ac2353cec7c742aff81bb613a46 \
     # via -r requirements.in
-django-model-utils==4.0.0 \
-    --hash=sha256:9cf882e5b604421b62dbe57ad2b18464dc9c8f963fc3f9831badccae66c1139c \
-    --hash=sha256:adf09e5be15122a7f4e372cb5a6dd512bbf8d78a23a90770ad0983ee9d909061 \
-    # via django-notifications-hq
+django-model-utils==4.1.1 \
+    --hash=sha256:eb5dd05ef7d7ce6bc79cae54ea7c4a221f6f81e2aad7722933aee66489e7264b \
+    --hash=sha256:ef7c440024e797796a3811432abdd2be8b5225ae64ef346f8bfc6de7d8e5d73c    # via django-notifications-hq
 django-notifications-hq==1.6 \
     --hash=sha256:debeb71b7076b08487b40bf07664d1cc43b9977c4480bbc969b30236dda7a461 \
     --hash=sha256:dfc6f8bd4034ceae91143bc3802ddfb6e276eaec90e63dd23e2584c052561576 \
