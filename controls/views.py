@@ -1,7 +1,11 @@
 from collections import defaultdict
 
+from django.urls import reverse_lazy
+
+from .forms import RelatedStatementForm
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
@@ -813,7 +817,11 @@ def editor(request, system_id, catalog_key, cl_id):
         print(len(elements))
 
        # elements =  Element.objects.all().exclude(element_type='system')
-
+       #  statement_form = RelatedStatementForm(status="Open", statement_type="POAM", consumer_element=system.root_element)
+       #  context = {
+       #
+       #      "statement_form": statement_form,  #RelatedStatementForm(request.user),
+       #  }
         context = {
             "system": system,
             "project": project,
@@ -836,9 +844,113 @@ def editor(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
+class RelatedControls(View):
+    template_name = 'controls/editor.html'
+    form_class = RelatedStatementForm
+
+    def get(self, request):
+        """Add an existing element and its statements to a system"""
+        print("lllll_related_system_component request")
+        print(request)
+        print(request.method)
+        print("system_id")
+        if request.method != "GET":
+            return HttpResponseNotAllowed(["GET"])
+
+        print(dict(request.GET))
+        form_dict = dict(request.GET)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+        # Form values from ajax data
+
+        if "system_id" in form_values.keys():
+            system_id = form_values['system_id']
+
+            producer_element_id = form_values['producer_element_form_id']
+            # Does user have permission to add element?
+            # Check user permissions
+            system = System.objects.get(pk=system_id)
+            print("system")
+            print(system)
+            #system = System.objects.get(pk=system_id)
+            if not request.user.has_perm('change_system', system):
+                # User does not have write permissions
+                # Log permission to save answer denied
+                logger.info(
+                    event="change_system permission_denied",
+                    object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return HttpResponseForbidden(
+                    "Permission denied. {} does not have change privileges to system and/or project.".format(
+                        request.user.username))
+
+            selected_controls = system.root_element.controls.all()
+            selected_controls_ids = set()
+            for sc in selected_controls:
+                selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
+            print("selected_controls_ids")
+            print(selected_controls_ids)
+            print("selected_controls")
+            print(selected_controls)
+            # Add element
+            # Look up the element
+            producer_element = Element.objects.get(pk=producer_element_id)
+            print("producer_element")
+            print(producer_element)
+
+            cl_id = form_values['control_id']  #"ac-2"#oscalize_control_id(cl_id)
+            #text = form_values['text']
+            print("cl_id")
+            print(cl_id)
+
+            # The final elements that are returned to the new dropdown created...
+            #producer_system_elements = Element.objects.filter(element_type="system_element").filter(name__contains=text)
+            producer_system_elements = Element.objects.exclude(element_type='system').filter(
+                element_type="system_element",
+                statements_produced__sid=cl_id,
+                statements_produced__statement_type="control_implementation_prototype",
+            )#.filter(name__contains=text)
+            print("producer_system_elements")
+            print(producer_system_elements)
+
+            # only prototype implementation statements for the given control
+            #control_ids = Statement.objects.filter(statement_type="control_implementation_prototype").filter(sid=cl_id)
+            # print("control_ids")
+            # print(control_ids)
+            #  for contorl_id in control_ids:
+            #      filtered_by_element_name = Element.objects.filter(id=contorl_id.producer_element_id)
+            #      # Element.objects.get(pk=producer_element_id)
+            #      # filtered_by_element_name = Element.filter(name__contains= text)
+            #      print("filtered_by_element_name")
+            #      print(filtered_by_element_name)
+            # Loop through element's prototype statements and add to control implementation statements
+            #print("Adding {} to system_id {}".format(producer_element.name, system_id))
+            # for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+            #     # Only add statements for controls selected for system
+            #     if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
+            #         print("smt", smt)
+            #         smt.create_instance_from_prototype(system.root_element.id)
+            #     else:
+            #         print("not adding smt not selected controls for system", smt)
+
+            producer_elements = [{"id": str(ele.id), "name": ele.name} for ele in producer_system_elements]
+            print("producer_elements")
+            print(producer_elements)
+            results = {'producer_element_name_value': producer_elements}
+            data = json.dumps(results)
+            mimetype = 'application/json'
+            if data:
+                return HttpResponse(data, mimetype)
+            else:
+                return JsonResponse(status=400, data={'status': 'error', 'message': f"No DATA!: {data}"})
+        else:
+            return JsonResponse(status=400, data={'status': 'error', 'message': "There is no current system id present"})
 
 class EditorAutocomplete(View):
     template_name = 'controls/editor.html'
+    form_class = RelatedStatementForm
 
     def get(self, request):
         """Add an existing element and its statements to a system"""

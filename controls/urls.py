@@ -11,7 +11,7 @@ from siteapp.settings import *
 
 urlpatterns = [
     url(r'^test$', views.test),
-    
+
     # Catalogs
     url(r'^$', views.catalogs),
     url(r'^catalogs$', views.catalogs),
@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
+    url(r'^related_system_components/', views.RelatedControls.as_view(), name="related_system_components"),
     url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="add_system_component"),
 
     url(r'^smt/_save/$', views.save_smt),

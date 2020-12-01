@@ -60,3 +60,31 @@ class PoamForm(ModelForm):
         }
 
 
+
+class RelatedStatementForm(ModelForm):
+    print("hiii")
+    def __init__(self, *args, **kwargs):
+        self._status = kwargs.pop('status', None)
+        self._statement_type = kwargs.pop('statement_type', None)
+        self._consumer_element = kwargs.pop('consumer_element', None)
+        super().__init__(*args, **kwargs)
+        # print(self.fields['status'].__dict__)
+        self.fields['status'].initial = self._status
+        self.fields['statement_type'].initial = self._statement_type
+        self.fields['statement_type'].widget = HiddenInput()
+        self.fields['consumer_element'].initial = self._consumer_element
+        self.fields['consumer_element'].widget = HiddenInput()
+
+    class Meta:
+        model = Statement
+        fields = ['id', 'statement_type', 'body', 'status', 'consumer_element' ]
+        labels = {
+            "body": "Description"
+        }
+        help_texts = {
+            "body": "Description of the finding, deficiency, or issue requiring a Plan of Action",
+            "status": "The current status of the POAM (e.g., Open, Closed, In progress, ...)",
+            "remarks": "Internal remarks about this POAM",
+        }
+        widgets = {
+        }

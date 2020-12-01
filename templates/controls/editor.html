@@ -341,6 +341,7 @@ Remove contextbar from top of page
             {% endfor %}
           </div><!--/smt-list-->
               <!-- Add existing component -->
+
           <div id="tab-content" class="row row-control" style="">
               <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
                   {% csrf_token %}
@@ -365,13 +366,72 @@ Remove contextbar from top of page
                           <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
 
                       </div>
-                      &nbsp;&nbsp;<button type="submit" class="small btn btn-sm btn-success" style="color: white;">Add</button>
+                  <div class="form-group" >
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="col-md-12 dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">{{ field.label_tag }}
+                <span class="caret"></span>
+            </button>
+            <div class="dropdown-menu">fff
+                <div><a href="#">{{ field }}</a></div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+                      &nbsp;&nbsp;<button type="submit" class="small btn btn-sm btn-success" style="color: white;">Submit</button>
                   </div>
 
               </form>
            <!-- Add component button -->
           <div><h3><button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
 </div>
+
+                            &nbsp;&nbsp;<button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }})" >Submit for related</button>
+          <!-- Modal -->
+          <div class="modal fade" id="getCodeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg">
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                          <h4 class="modal-title"></h4>
+                      </div>
+
+                      <div class="modal-footer">
+                          <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
+                              {% csrf_token %}
+                              <a href="#" class="btn btn-white" data-dismiss="modal">Close</a>
+
+                              <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+                                  <div class="form-group">
+                                      <label for="component">Select from related components</label>&nbsp;&nbsp;
+                                      <select class="selectpicker" multiple data-live-search="true" id="getCode">
+                                      </select>
+                                  </div>
+                                  <div class="form-group">
+                                      <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
+
+                                          {% for component in elements %}
+                                              <option value="{{ component.id }}">{{ component.name }}</option>
+                                          {% endfor %}
+                                      </select>
+                                      <div hidden id="statement_alert" class="alert alert-danger">
+                                          <strong>Danger!</strong> This alert box could indicate a dangerous or potentially negative action.
+                                      </div>
+                                      <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
+                                      <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                                      <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+
+                                  </div>
+                                  <button type="submit" class="small btn btn-sm btn-success" style="color: white;">Submit components</button>
+                              </div>
+
+                          </form>
+
+                      </div>
+                  </div><!-- /.modal-content -->
+              </div><!-- /.modal-dialog -->
+          </div>
 
           </div>
 
@@ -387,6 +447,7 @@ Remove contextbar from top of page
 
 
     </div>
+
   </div>
 
   {{ block.super }}
@@ -664,7 +725,36 @@ Remove contextbar from top of page
                        }, 5000);
                    }
 
-               }
+               },
+               buildModalselect: function (result, modal, emptyMessage) {
+
+                   //Remove current options
+                   modal.html('');
+
+
+                   //Check result isn't empty
+                   if (result != '') {
+                       // loop
+                       $.each(result['producer_element_name_value'], function (k, v) {
+                           console.log("k, v");
+                           console.log(k, v);
+
+                           modal.append("<option value='" + v["id"] + "'>" + v["name"] + "</option>");
+                       });
+                   }
+                   if (modal.html() === '') {
+
+                       modal.append("<option disabled>" + emptyMessage + "</option>");
+
+                       $('#statement_alert')
+                           .text("No statements found. Please check the spelling of the component's name.", result)
+                           .fadeIn('fast');
+                       setTimeout(function () {
+                           $('#statement_alert').fadeOut()
+                       }, 5000);
+                   }
+
+               },
            }
 
       function producer_autocomplete(text, system_id) {
@@ -675,11 +765,6 @@ Remove contextbar from top of page
           console.log("text", text)
           console.log("system_id", system_id)
           console.log("producer_element_form_id", producer_element_form_id)
-
-
-       var location_input=$('input[id="location_input"]');
-          console.log(location_input)
-
 
     // Submit the ajax request.
     ajax_with_indicator({
@@ -696,7 +781,7 @@ Remove contextbar from top of page
           helpers.buildDropdown(res , $('#selected_producer_element_form_id'), "No existing statements found!");
 
       }, error: function(res){
-          alert("errorrrr")
+          
           var errorjson = $.parseJSON(res);
             show_modal_error("Search Error", errorjson["message"]);
         }
@@ -704,4 +789,80 @@ Remove contextbar from top of page
 
 }
 </script>
+
+      <script type="text/javascript">
+$(document).ready(function(){
+   $("#statementForm").submit(function(e){
+	// prevent from normal form behaviour
+
+      	e.preventDefault();
+    	// serialize the form data
+
+      	var serializedData = $(this).serialize();
+      	$.ajax({
+      		type : 'POST',
+      		url :  "{% url 'add_system_component' system_id=system.id %}",
+      		data : serializedData,
+      		success : function(response){
+			//reset the form after successful submit
+
+      			$("#statementForm")[0].reset();
+      		},
+      		error : function(response){
+      			console.log(response)
+      		}
+      	});
+   });
+});
+
+$(document).on("click", ".open-AddBookDialog", function () {
+     var myBookId = $(this).data('id');
+     $(".modal-body #bookId").val( myBookId );
+     // As pointed out in comments,
+     // it is unnecessary to have to manually call the modal.
+     // $('#addBookDialog').modal('show');
+});
+
+
+      function show_related_controls(system_id) {
+  // Update the modal to show the related controls
+          // TODO: producer_element_form_id becomes the list of related control components to the current selected component
+          var producer_element_form_id = $('#selected_producer_element_form_id :selected').val();
+          var control_id = $('#control_id').val();
+          console.log("system_id", system_id)
+          console.log("producer_element_form_id", producer_element_form_id)
+
+    // Submit the ajax request.
+    ajax_with_indicator({
+      url: "{% url 'related_system_components' %}",
+        data: {
+            "system_id": system_id,
+            "producer_element_form_id": producer_element_form_id | $('#producer_element_id').val(),
+            "control_id": control_id
+        },
+        dataType: "json",
+       method: "GET",
+      success: function(res) {
+                  helpers.buildModalselect(res , $('#getCode'), "No existing statements found!");
+
+
+    $("#getCodeModal").modal('show');
+
+
+                      console.log(res)
+
+
+            }, error: function(res){
+          
+          var errorjson = $.parseJSON(res);
+            show_modal_error("Search Error", errorjson["message"]);
+        }
+    });
+
+}
+</script>
+
+      <script>$(document).ready(function() {
+    $('#getCode').select2();
+});</script>
   {% endblock %}
