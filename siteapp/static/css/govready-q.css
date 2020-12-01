@@ -275,3 +275,24 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 
 /* MISC */
 .love-assessments { max-width: 650px; }
+
+/* systems */
+.systems-top { margin-top: 30px; }
+.systems-title { float: left;}
+.systems-link { color: black; }
+.systems-control-lookup { float: right; }
+.systems-selected-components { font-size: 14pt; font-weight: bold;}
+.systems-control-heading { float: left; padding: 0 0 0 0em; }
+.systems-smt-list { width: 90%; }
+
+.systems-element-form-status { width:180px; }
+.systems-element-statement { min-height:130px; overflow-y: scroll; }
+.systems-element-form-remarks { min-height:70px; overflow-y: scroll; }
+.systems-element-modal-footer { display: inline; margin-right: 20px; color: gray; }
+.systems-element-button { color: white; }
+.systems-element-oscal { font-family: monospace; font-size:12px; white-space: pre; }
+.systems-element-opencontrol { font-family: monospace; font-size:12px; white-space: pre; }
+
+.systems-element-name { font-size: 14pt; font-weight: bold;}
+.systems-poam { margin-top: 4px; }
+.systems-poam-glyphicon {  margin-top: 6px; }
