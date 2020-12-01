@@ -1,10 +1,11 @@
+# pylint: disable=C0116
+# Missing function docstrings
 import os
 import secrets
-from random import sample
 
 from django.utils.crypto import get_random_string
-from siteapp.models import User, Organization, Portfolio
-from guidedmodules.models import Task, TaskAnswer, Module, Project
+from siteapp.models import User, Portfolio
+from guidedmodules.models import TaskAnswer
 
 TMP_BASE_PATH = "/tmp/govready-q/datagen"
 rand = secrets.SystemRandom()  # Initialize secure random generator
@@ -14,7 +15,7 @@ os.makedirs(TMP_BASE_PATH, exist_ok=True)
 
 # Returns a list of length count of randomly placed items in choices
 def generate_sample(choices, count):
-    return list(secrets.choice(choices) for _num in count)
+    return list(secrets.choice(choices) for _num in range(count))
 
 
 def get_file_dir():
@@ -26,11 +27,13 @@ wordlists = {}
 
 def get_wordlist(path="eff_short_wordlist_1.txt"):
     global wordlists
-    if not path in wordlists:
+    if path not in wordlists:
         with open(get_file_dir() + "/" + path, 'r') as file:
-            wordlists[path] = [line.split("\t")[-1].rstrip() for line in file.readlines() if line[0] != '#']
+            wordlists[path] = [line.split("\t")[-1].rstrip()
+                               for line in file.readlines()
+                               if line[0] != '#']
     return wordlists[path]
-        
+
 
 def _getpath(model):
     return TMP_BASE_PATH + ("/%s.idlist" % model._meta.db_table)
@@ -41,8 +44,8 @@ def get_name(count, separator=' ', path='eff_short_wordlist_1.txt', filter=[]):
     if len(filter) >= len(wordlist) ** count:
         raise Exception("Cannot get a unique name for this entity")
     name = None
-    while name == None:
-        name = separator.join([name.title() for name in sample(wordlist, count)])
+    while name is None:
+        name = separator.join([name.title() for name in generate_sample(wordlist, count)])
         if name in filter:
             name = None
     return name
@@ -75,9 +78,9 @@ def get_random_url():
 
 
 def create_user(username=None, password=None, pw_hash=None):
-    if username == None:
+    if username is None:
         username = get_name(1, '_', path='names.txt', filter=[u.username for u in User.objects.all()])
-    if password == None:
+    if password is None:
         password = get_random_string(16)
 
     with open(_getpath(User), 'a+') as file:
@@ -95,7 +98,7 @@ def create_user(username=None, password=None, pw_hash=None):
         u.save()
         file.write(str(u.id))
         file.write("\n")
-    return u 
+    return u
 
 
 def create_portfolio(user):
@@ -114,7 +117,7 @@ def delete_objects(model):
 
 
 def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, quiet=False):
-    
+
     def log(item):
         if not quiet:
             print(item)
@@ -128,9 +131,9 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
     did_anything = False
 
     for question in task.module.questions.order_by('definition_order'):
-        type = question.spec['type']
+        type_t = question.spec['type']
 
-        if type == 'raw':
+        if type_t == 'raw':
             print("'raw' question type is out-of-scope, skipping")
             continue
 
@@ -147,50 +150,50 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
                 continue
 
         answer = None
-        if type == 'yesno':
+        if type_t == 'yesno':
             answer = generate_sample(['yes', 'no'],1)[0]
-        elif type == 'text':
+        elif type_t == 'text':
             answer = get_random_sentence()
-        elif type == 'longtext':
+        elif type_t == 'longtext':
             answer = get_random_paragraph()
-        elif type == 'choice':
+        elif type_t == 'choice':
             answer = generate_sample(question.spec['choices'], 1)[0]['key']
-        elif type == 'multiple-choice':
+        elif type_t == 'multiple-choice':
             choices = question.spec['choices']
             amount = rand.randint(question.spec['min'], len(choices))
             answer = [x['key'] for x in generate_sample(choices, amount)]
-        elif type == 'datagrid':
+        elif type_t == 'datagrid':
             choices = question.spec['fields']
             amount = rand.randint(question.spec['min'], len(fields))
             answer = [x['key'] for x in generate_sample(fields, amount)]
-        elif type == 'module' and 'module-id' in question.spec:
+        elif type_t == 'module' and 'module-id' in question.spec:
             subtask = task.get_or_create_subtask(dummy_user, question, create=True)
             log("doing subtask")
             did_anything = True
             continue
-        
-        if not answer and not (type == 'interstitial' or type == 'raw'):
-            print("Cannot answer question of type '" + type + "'")
+
+        if not answer and type_t not in ('interstitial', 'raw'):
+            print("Cannot answer question of type '" + type_t + "'")
             continue
 
         did_anything = True
         
-        log(str((question.key, type, answer)))
+        log(str((question.key, type_t, answer)))
         taskans, isnew = TaskAnswer.objects.get_or_create(task=task, question=question)
 
         from guidedmodules.answer_validation import validator
         try:
             value = validator.validate(question, answer)
-        except ValueError as e:
-            print("Answering {}: {}...".format(question.key, e))
+        except ValueError as err:
+            print("Answering {}: {}...".format(question.key, err))
             #return False
             break
-        except Error as e:
+        except Error as err:
             print("------\nUnknown error occurred, debug info follows.\n")
-            print("Next line is: 'str((question.key, type, answer, question.spec))'")
-            print(str((question.key, type, answer, question.spec)))
+            print("Next line is: 'str((question.key, type_t, answer, question.spec))'")
+            print(str((question.key, type_t, answer, question.spec)))
             print("------")
-            raise e
+            raise err
 
         # Save the value.
         if taskans.save_answer(value, [], None, dummy_user, "api"):
@@ -200,11 +203,3 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
             break
 
         return did_anything
-
-
-import requests
-import parsel
-def login(username, password, domain):
-    session = requests.Session()
-    response = session.get(domain)
-    return parsel.Selector(text=response.text)
