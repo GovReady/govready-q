@@ -46,6 +46,9 @@ rm -rf $VENDOR
 
 # Create the directory.
 mkdir -p $VENDOR
+mkdir -p $VENDOR/css
+mkdir -p $VENDOR/js
+
 
 # Fetch resources.
 
@@ -71,9 +74,21 @@ download \
   'f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d'
 
 download \
-  https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery-ui.min.js \
-  $VENDOR/jquery.js \
-  '9c91926607aed9b1835502e25124cdab5ac1218c3b0cbd27b1b1ce5ab0b73837'
+  https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js \
+  $VENDOR/jquery-ui.js \
+  '55accff7b642c2d7a402cbe03c1494c0f14a76bc03dee9d47d219562b6a152a5'
+
+# jQuery-based select2.js
+download \
+  https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js \
+  $VENDOR/js/select2.min.js \
+  '00501810e93307a8882a74d864e7547fd1458deea539361dc1124ac133799a4b'
+
+download \
+  https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css \
+  $VENDOR/css/select2.min.css \
+  '15d6ad4dfdb43d0affad683e70029f97a8f8fc8637a28845009ee0542dccdf81'
+
 # Bootstrap (MIT License)
 download \
   https://github.com/twbs/bootstrap/releases/download/v3.4.1/bootstrap-3.4.1-dist.zip \

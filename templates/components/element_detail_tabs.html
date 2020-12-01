@@ -94,7 +94,7 @@
         <!-- Page Title-->
         <div style="float: left;">
             <h2 class="control-heading" style="">
-              <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{system.id}}/components/selected" style="color: black;">Selected Components</a>
+              <a href="/controls/components" style="color: black;">Component Library</a> &gt; <a href="/systems/{{system.id}}/components/selected" style="color: black;">Component Detail</a>
             </h2>
         </div>
       </div>
@@ -135,7 +135,7 @@
             {% endif %}
           </div>
           <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-            <div>&nbsp;</div>
+            <div><h3><a id="copy_component" class="btn btn-sm btn-success" href="/controls/components/{{ element.id }}/_copy" role="button" style="color: white;">Copy component</a></h3></div>
           </div>
         </div>
       </div>
@@ -170,41 +170,13 @@
                       </div>
                       <div class="form-group">
                         <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
-                      <div class="form-group">
-                        <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
-                        <label for="statement">What is the solution and how is it implemented?
-                          {% if smt.prototype_synched %}
-                          <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as certified</a></span>
-                          {% else %}
-                          <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> Differs from certified</a></span>
-                          {% endif %}
-                          <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; font-weight: normal; margin-top: 12px;color: #666;">
-                              <div style="text-decoration: underline;font-weight: bold;">
-                                Certified statement for {{ smt.producer_element.name }} {{ control.id_display|upper }} is:
-                              </div>
-                              <div id="prototype_body_display_{{ forloop.counter }}">{{ smt.prototype.body|linebreaks }}</div>
-                              <div id="prototype_body_{{ forloop.counter }}" style="display: none;">{{ smt.prototype.body }}</div>
-                              <br/>
-                              <div style="text-decoration: underline;font-weight: bold;">
-                                Comparison of current statement to certified statement:
-                              </div>
-                              <div id="diff_comparison_{{ forloop.counter }}">
-                                {% if smt.prototype_synched %}Texts are identical.{% else %}{{ smt.diff_prototype_prettyHtml|safe }}{% endif %}
-                              </div>
-                              <br/>
-                              <div style="text-decoration: underline;font-weight: bold;">
-                                {% if not smt.prototype_synched %}Options:{% endif %}
-                              </div>
-                              <div>
-                                {% if not smt.prototype_synched %}
-                                  <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Overwrite current statement</button>
-
-                                  {% if user.is_superuser %}
-                                    <button type="button" name="update_certified" value="update_certified" class="btn btn-xs btn-danger" onclick="update_smt_prototype('{{ forloop.counter }}');return false;">Update certified text</button>
-                                  {% endif %}
-                                {% endif %}
-                              </div>
+                        <label for="statement">Statement
+                          {% if not smt.prototype_synched %} <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span class="glyphicon glyphicon-alert"></span> Differs from certified</a></span>
+                            <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; margin-top: 12px;color: #666;">
+                              {{ smt.diff_prototype_prettyHtml|safe }}
+                              <div><a href="" onclick="$('#body_{{ forloop.counter }}').text('{{ smt.prototype.body }}');$('#diff_{{ forloop.counter }}').text('');$('#diff_alert_{{ forloop.counter }}').text('');return false;" style="font-size:10pt; margin-top: 12px;color: #666;font-weight: normal;">Update local</a></div>
                             </div>
+                        {% endif %}
                         </label>
                         <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
                       </div>
@@ -274,7 +246,6 @@
 
     </div>
   </div>
-
 
   </div>
 </div>
@@ -453,48 +424,4 @@
         });
 
       </script>
-      <script>
-        function copy_smt_prototype(smt_panel_num) {
-          // User wants to copy the certified statement locally
-          // Copy the statement's prototype body text into statement body textarea
-          smt_prototype = $('#prototype_body_' + smt_panel_num).text();
-          $('#body_' + smt_panel_num).val($('#prototype_body_' + smt_panel_num).text().trim());
-          // Update comparison label
-          $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as certified</a></span>');
-          // Update comparison
-          $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
-        }
-
-        function update_smt_prototype(smt_panel_num) {
-          var data = $( '#smt_'+smt_panel_num ).serialize();
-          data = data + "&smt_panel_num="+smt_panel_num;
-          // console.log(data);
-          show_modal_confirm(
-            "Warning!",
-            "Are you sure you want to update the certified statement?",
-            "Update",
-            function() {
-              ajax_with_indicator({
-                url: "/controls/smt/_update_smt_prototype/",
-                method: "POST",
-                data: data,
-                success: function(res) {
-                  console.log(res);
-                  // Update comparison label
-                  $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as certified</a></span>');
-                  // Update comparison
-                  $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
-                  // Update certified text
-                  // TODO: improve translating `smt_body` to clean html
-                  $('#prototype_body_display_' + smt_panel_num).html(res["data"]["smt_body"].replace(/\n/g,"<br/>"));
-                  // $( '#diff_'+smt_panel_num.replace("smt_","") ).hide();
-                  // $( '#diff_alert_'+smt_panel_num.replace("smt_","") ).hide();
-                }
-              });
-            }
-          );
-          return false;
-        }
-      </script>
-
 {% endblock %}
