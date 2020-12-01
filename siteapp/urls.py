@@ -100,6 +100,8 @@ if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKEN
         # auth
         # next line overrides signup with our own view so we can monitor signup attempts, can comment out to go back to allauth's functionality
         url(r'^accounts/signup/', signup_wrapper, name="account_signup"),
+        # login button will redirect to the homepage with a login form
+        url(r'^accounts/login/', views.homepage, name="account_login"),
         url(r'^accounts/', include('allauth.urls')),
     ]
 
