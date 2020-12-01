@@ -1,18 +1,29 @@
 import os
-from random import sample, randint
+import secrets
+from random import sample
 
 from django.utils.crypto import get_random_string
 from siteapp.models import User, Organization, Portfolio
 from guidedmodules.models import Task, TaskAnswer, Module, Project
 
-TMP_BASE_PATH="/tmp/govready-q/datagen"
+TMP_BASE_PATH = "/tmp/govready-q/datagen"
+rand = secrets.SystemRandom()  # Initialize secure random generator
 
 os.makedirs(TMP_BASE_PATH, exist_ok=True)
+
+
+# Returns a list of length count of randomly placed items in choices
+def generate_sample(choices, count):
+    return list(secrets.choice(choices) for _num in count)
+
 
 def get_file_dir():
     return os.path.dirname(os.path.realpath(__file__))
 
-wordlists = {} 
+
+wordlists = {}
+
+
 def get_wordlist(path="eff_short_wordlist_1.txt"):
     global wordlists
     if not path in wordlists:
@@ -23,6 +34,7 @@ def get_wordlist(path="eff_short_wordlist_1.txt"):
 
 def _getpath(model):
     return TMP_BASE_PATH + ("/%s.idlist" % model._meta.db_table)
+
 
 def get_name(count, separator=' ', path='eff_short_wordlist_1.txt', filter=[]):
     wordlist = get_wordlist(path=path)
@@ -38,38 +50,29 @@ def get_name(count, separator=' ', path='eff_short_wordlist_1.txt', filter=[]):
 
 def get_random_sentence():
     # Potential future improvement: generate some lorem ipsum instead
-    count = randint(5, 10)
+    count = rand.randint(5, 10)
     wordlist = get_wordlist()
-    words = ' '.join(sample(wordlist, count))
+    words = ' '.join(generate_sample(wordlist, count))
     return words
 
+
 def get_random_paragraph():
-    count = randint(2, 5)
+    count = rand.randint(2, 5)
     sents = [get_random_sentence() + '.' for x in range(0, count)]
     return '\n\n'.join(sents)
+
 
 def get_random_email():
     wordlist = get_wordlist()
-    word = sample(wordlist, 1)[0]
+    word = generate_sample(wordlist, 1)[0]
     return "{}@example.com".format(word)
+
 
 def get_random_url():
     wordlist = get_wordlist()
-    word = sample(wordlist, 1)[0]
+    word = generate_sample(wordlist, 1)[0]
     return "http://example.com/some_path/{}".format(word)
 
-
-def get_random_sentence():
-    # Potential future improvement: generate some lorem ipsum instead
-    count = randint(5, 10)
-    wordlist = get_wordlist()
-    words = ' '.join(sample(wordlist, count))
-    return words
-
-def get_random_paragraph():
-    count = randint(2, 5)
-    sents = [get_random_sentence() + '.' for x in range(0, count)]
-    return '\n\n'.join(sents)
 
 def create_user(username=None, password=None, pw_hash=None):
     if username == None:
@@ -94,9 +97,11 @@ def create_user(username=None, password=None, pw_hash=None):
         file.write("\n")
     return u 
 
+
 def create_portfolio(user):
     portfolio = Portfolio.objects.create(title=user.username)
     portfolio.assign_owner_permissions(user)
+
 
 def delete_objects(model):
     with open(_getpath(model), 'r') as file:
@@ -105,7 +110,8 @@ def delete_objects(model):
         print("cleared " + str(model) + " IDs: " + str(id_list))
     # truncate the file
     with open(_getpath(model), 'w') as file:
-        file.write('');
+        file.write('')
+
 
 def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, quiet=False):
     
@@ -142,21 +148,21 @@ def answer_randomly(task, overwrite=False, halt_impute=True, skip_impute=False, 
 
         answer = None
         if type == 'yesno':
-            answer = sample(['yes', 'no'],1)[0]
+            answer = generate_sample(['yes', 'no'],1)[0]
         elif type == 'text':
             answer = get_random_sentence()
         elif type == 'longtext':
             answer = get_random_paragraph()
         elif type == 'choice':
-            answer = sample(question.spec['choices'], 1)[0]['key']
+            answer = generate_sample(question.spec['choices'], 1)[0]['key']
         elif type == 'multiple-choice':
             choices = question.spec['choices']
-            amount = randint(question.spec['min'], len(choices))
-            answer = [x['key'] for x in sample(choices, amount)]
+            amount = rand.randint(question.spec['min'], len(choices))
+            answer = [x['key'] for x in generate_sample(choices, amount)]
         elif type == 'datagrid':
             choices = question.spec['fields']
-            amount = randint(question.spec['min'], len(fields))
-            answer = [x['key'] for x in sample(fields, amount)]
+            amount = rand.randint(question.spec['min'], len(fields))
+            answer = [x['key'] for x in generate_sample(fields, amount)]
         elif type == 'module' and 'module-id' in question.spec:
             subtask = task.get_or_create_subtask(dummy_user, question, create=True)
             log("doing subtask")
