@@ -865,9 +865,6 @@ def editor(request, system_id, catalog_key, cl_id):
             statements_produced__sid=cl_id,
             statements_produced__statement_type="control_implementation_prototype",
         )
-        print("elements queryset")
-        print(elements)
-        print(len(elements))
 
        # elements =  Element.objects.all().exclude(element_type='system')
 
@@ -1273,7 +1270,6 @@ def save_smt(request):
         statement_element_msg = ""
         if statement.statement_type == "control_implementation":
             try:
-                print("Updating ElementControl smts_updated")
                 ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid,
                                                 oscal_catalog_key=statement.sid_class)
                 ec.smts_updated = statement.updated
@@ -1297,7 +1293,7 @@ def save_smt(request):
 
 
 def update_smt_prototype(request):
-    """Certify a statement"""
+    """Update a certified statement"""
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -1330,8 +1326,6 @@ def update_smt_prototype(request):
         # needs self.body == self.prototype.body
 
         try:
-            print("statement.body", statement.body)
-            print("statement.prototype.body", statement.prototype.body)
             statement.prototype.body = statement.body
             statement.prototype.save()
             statement_status = "ok"
@@ -1341,7 +1335,7 @@ def update_smt_prototype(request):
             statement_msg = "Update to statement prototype failed. Error reported {}".format(e)
             return JsonResponse({ "status": "error", "message": statement_msg })
 
-        return JsonResponse({ "status": "success", "message": statement_msg })
+        return JsonResponse({ "status": "success", "message": statement_msg, "data": { "smt_body": statement.body } })
 
 def delete_smt(request):
     """Delete a statement"""
