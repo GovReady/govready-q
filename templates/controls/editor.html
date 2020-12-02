@@ -292,7 +292,7 @@
                                         {% endfor %}
                                     </select>
                                     <div hidden id="statement_alert" class="alert alert-danger">
-                                        <strong>Danger!</strong> This alert box could indicate a dangerous or potentially negative action.
+                                        <strong>Danger!</strong>
                                     </div>
                                     <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
                                     <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
@@ -323,7 +323,7 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                <h4 class="modal-title" id="related_title">Select components related to (selected)</h4>
+                                <h4 class="modal-title" id="related_title">Select component statements related to (selected)</h4>
                             </div>
 
                             <div class="modal-footer">
@@ -341,20 +341,22 @@
                                         <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
                                         <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                                         <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-                                        <button type="submit" class="small btn btn-sm btn-success" style="color: white;">Submit components</button>
+                                        <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="check_for_selection()">Submit component statements</button>
                                         <a href="#" class="btn btn-white" data-dismiss="modal">Close</a>
                                             <label><input type="checkbox" class="selectall">Select all</label>
 
                                     </div>
-                                    <div hidden id="related_statement_alert" class="alert alert-danger">
-                                        <strong>Danger!</strong> This alert box could indicate a dangerous or potentially negative action.
-                                    </div>
+
 
                                 </form>
-
                             </div>
                         </div><!-- /.modal-content -->
+                        <div hidden id="related_statement_alert" class="alert alert-danger">
+                                        <strong>Danger!</strong>
+                                    </div>
                     </div><!-- /.modal-dialog -->
+
+
                 </div>
 
             </div>
@@ -656,7 +658,7 @@
                 //Check result isn't empty
                 if (result != '') {
                     // loop
-                    $.each(result['producer_element_name_value'], function (k, v) {
+                    $.each(result['producer_element_statement_values'], function (k, v) {
                         console.log("k, v");
                         console.log(k, v);
 
@@ -664,17 +666,7 @@
                     });
 
                 }
-                if (modal.html() === '') {
 
-                    modal.append("<option disabled>" + emptyMessage + "</option>");
-
-                    $('#related_statement_alert')
-                        .text("No related components found. Please make sure to check at least one name.", result)
-                        .fadeIn('fast');
-                    setTimeout(function () {
-                        $('#related_statement_alert').fadeOut()
-                    }, 5000);
-                }
 
             },
         }
@@ -691,7 +683,7 @@
                 data: {
                     "text": text,
                     "system_id": system_id,
-                    "producer_element_form_id": producer_element_form_id | $('#producer_element_id').val(),
+                    "producer_element_form_id": producer_element_form_id || $('#producer_element_id').val(),
                     "control_id": control_id
                 },
                 dataType: "json",
@@ -724,13 +716,13 @@
             // TODO: producer_element_form_id becomes the list of related control components to the current selected component
             var producer_element_form_id = $('#selected_producer_element_form_id :selected').val();
             var control_id = $('#control_id').val();
-
+            console.log("producer_element_form_id",producer_element_form_id)
             // Submit the ajax request.
             ajax_with_indicator({
                 url: "{% url 'related_system_components' %}",
                 data: {
                     "system_id": system_id,
-                    "producer_element_form_id": producer_element_form_id | $('#producer_element_id').val(),
+                    "producer_element_form_id": producer_element_form_id || $('#producer_element_id').val(),
                     "control_id": control_id
                 },
                 dataType: "json",
@@ -739,7 +731,7 @@
                     helpers.buildModalcheckbox(res, $('#relatedcomp'), "Related components were not added!");
                     $('#relatedcomp').append("<input type='hidden' id='selected_producer_element_form_id' name='selected_producer_element_form_id' value=" + res['selected_producer_element_form_id'] + '>')
 
-                    $("#relatedcompModal .modal-title").text("Select components related to " + res['selected_component'])
+                    $("#relatedcompModal .modal-title").text("Select component statements related to " + res['selected_component'])
                     $("#relatedcompModal").modal('show');
 
                 }, error: function (res) {
@@ -750,6 +742,20 @@
             });
 
         }
+
+        function check_for_selection() {
+            var checked = $('#relatedcomp').find(':checked').length;
+
+if (!checked)
+{
+    $('#related_statement_alert')
+                .text("No related components selected.")
+                .fadeIn('fast');
+            setTimeout(function () {
+                $('#related_statement_alert').fadeOut()
+            }, 150000);}
+        }
+
     </script>
 
 {% endblock %}
