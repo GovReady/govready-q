@@ -8,6 +8,10 @@ v.0.9.1.47 (December 01, 2020)
 
 * Significant refactoring of CSS to replace inline styles from as many pages as possible with classes defined in `css/govready-q.css` stylesheet.
 
+**Bug fix**
+
+* Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
+
 v0.9.1.46.4 (November 25, 2020)
 -----------------------------
 
