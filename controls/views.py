@@ -1077,6 +1077,7 @@ def save_smt(request):
 
         # Associate Statement and System's root_element
         # print("** System.objects.get(pk=form_values['system_id']).root_element", System.objects.get(pk=form_values['system_id']).root_element)
+        system_id = form_values['system_id']
         if new_statement and system_id is not None:
             try:
                 statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
@@ -1527,10 +1528,6 @@ class EditorAutocomplete(View):
                             smt.create_instance_from_prototype(system.root_element.id)
                         else:
                             logger.error(f"not adding smt from selected controls for the current system: {smt}")
-            else:
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
-
-
 
         # Redirect to the page where the component was added from
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

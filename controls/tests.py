@@ -491,8 +491,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self._new_project()
         var_sleep(1)
 
-        # Baseline selection
-        self.navigateToPage("/systems/1/controls/selected")
+
         # Select moderate
         self.navigateToPage("/systems/1/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
         # Head to the control ac-3
@@ -546,8 +545,8 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
 
         # Adding an existing component
-        add_existing_component_btn = self.browser.find_elements_by_id("add_existing_component")
-        add_existing_component_btn[-1].click()
+        add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")
+        add_related_statements_btn[-1].click()
         self.click_components_tab()
 
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
