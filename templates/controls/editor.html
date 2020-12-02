@@ -662,7 +662,7 @@
                         console.log("k, v");
                         console.log(k, v);
 
-                        modal.append("<input type='checkbox' class='justone' name='relatedcomps' value='" + v["id"] + "'>" + v['name'] + "<br/>");
+                        modal.append("<input type='checkbox' name='relatedcomps' value='" + v["id"] + "'>" + v['name'] + "<br/>");
                     });
 
                 }
@@ -748,20 +748,27 @@
                     .fadeIn('fast');
                 setTimeout(function () {
                     $('#related_statement_alert').fadeOut()
-                }, 3000);
+                }, 5000);
                 return false;
             }
-            if (!checked) {
-                $('#related_statement_alert')
-                    .text("No related components selected.")
+
+            if (checked) {
+                var smts_selected = [];
+                $('#relatedcomp :checked').each(function () {
+                    smts_selected.push($(this).val());
+                });
+                var alert_section = $('#related_statement_alert')
+
+                alert_section.text("Added new statement implementation(s) with prototype id(s) : " + smts_selected.join(', '))
                     .fadeIn('fast');
+                alert_section.attr('class', 'alert alert-success');
                 setTimeout(function () {
                     $('#related_statement_alert').fadeOut()
-                }, 3000);
-                return false;
+                }, 5000);
+                return true;
             }
             // Add a success message to related_statement_alert
-            return true;
+
         }
 
 
