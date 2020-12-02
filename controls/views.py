@@ -9,6 +9,8 @@ from django.shortcuts import render
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
 from django.forms import ModelForm
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from django.views import View
 from django.utils.text import slugify
 from siteapp.models import Project, User, Organization
@@ -422,6 +424,24 @@ def component_library_component_copy(request, element_id):
 
     # Redirect to the new page for the component
     return HttpResponseRedirect("/controls/components/{}".format(e_copy.id))
+
+
+@login_required
+def import_component(request):
+    """Import a Component in JSON"""
+
+    if "systems" not in request.GET and "components" not in request.GET:
+        messages.add_message(request, messages.ERROR, "Please import a component to a specific Project or to the Component Library.")
+        return HttpResponseRedirect(reverse("component_library"))
+    elif "systems" in request.GET:
+        # TODO: Determine _which_ system from the query string and add that in, redirect back to that.
+        messages.add_message(request, messages.ERROR, "Component created in project X.")
+        component_container = "system X"
+        return render(request, "projects.html", {"component_container": component_container})
+    elif "components" in request.GET:
+        messages.add_message(request, messages.ERROR, "Component created in Component Library.")
+        component_container = "component_library"
+        return render(request, "components/component_library.html", {"component_container": component_container})
 
 def system_element_download_oscal_json(request, system_id, element_id):
     # Retrieve identified System
