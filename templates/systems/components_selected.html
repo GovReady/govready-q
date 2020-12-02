@@ -79,19 +79,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static "js/select2.min.js" %}"></script>
-<link href="{% static "css/select2.min.css" %}" rel="stylesheet" />
-
-<script type="text/javascript">
-  function show_control_by_id() {
-    var control_id = $('#control_lookup').find('input[name="id"]').val();
-    var url = "/controls/"+"800-53"+"/"+control_id+"/";
-    window.location.href = url;
-  }
-
-  $(document).ready(function() {
-    $('.producer_element_id').select2();
-  });
-</script>
+<script src="{% static "vendor/js/select2.min.js" %}"></script>
+<link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
 
 {% endblock %}

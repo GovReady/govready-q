@@ -9,8 +9,13 @@ from .oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
 from copy import deepcopy
+from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
+
+class SystemException(Exception):
+    """Class for raising custom exceptions with Systems"""
+    pass
 
 class Statement(models.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=True, null=True)
@@ -141,7 +146,7 @@ class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=False, null=False)
-    element_type = models.CharField(max_length=150, help_text="Statement type", unique=False, blank=True, null=True)
+    element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
@@ -205,13 +210,43 @@ class Element(models.Model):
             # print("User does not have permission to assign selected controls to element's system.")
             return False
 
+    def statements(self, statement_type):
+        """Return on the statements of statement_type produced by this element"""
+        smts = Statement.objects.filter(producer_element = self, statement_type = statement_type)
+        return smts
+
+    @transaction.atomic
+    def copy(self, name=None):
+        """Return a copy of an existing system element as a new element with duplicate control_implementation_prototype statements"""
+
+        # Copy only elements that are components. Do not copy an element of type "system"
+        # Components that are systems should always be associated with a project (at least currently).
+        # Also, statement structure for a system would be very different.
+        if self.element_type == "system":
+            raise SystemException("Copying an entire system is not permitted.")
+
+        e_copy = deepcopy(self)
+        e_copy.id = None
+        if name is not None:
+            e_copy.name = name
+        else:
+            e_copy.name = self.name + " copy"
+        e_copy.save()
+        # Copy prototype statements from existing element
+        for smt in self.statements("control_implementation_prototype"):
+            smt_copy = deepcopy(smt)
+            smt_copy.producer_element = e_copy
+            smt_copy.consumer_element_id = None
+            smt_copy.id = None
+            smt_copy.save()
+        return e_copy
+
     @property
     def selected_controls_oscal_ctl_ids(self):
         """Return array of selectecd controls oscal ids"""
         # oscal_ids = self.controls.all()
         oscal_ctl_ids = [control.oscal_ctl_id for control in self.controls.all()]
         return oscal_ctl_ids
-
 
 class ElementControl(models.Model):
     element = models.ForeignKey(Element, related_name="controls", on_delete=models.CASCADE, help_text="The Element (e.g., System, Component, Host) to which controls are associated.")

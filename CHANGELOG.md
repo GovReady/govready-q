@@ -1,12 +1,44 @@
 GovReady-Q Release Notes
 ========================
 
+v9.9.9 (December 01, 2020)
+--------------------------
+
+Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
+
+**UI changes**
+
+* Add Component Library page listing all available components.
+* Add global navbar link to Component Library.
+* Remove Common Control tab from control editor.
+* Remove redundent listing of control statements from component description tab.
+* Display filler text when component does not have a description.
+* Move component implementation statement tab to left of combined statement tab in control editor.
+* Updating certified text also updates the HTML block showing the certified text with updated certified text on edit pages.
+
+**Data changes**
+
+* Add `copy` method to `Element` data model to create a new element (e.g. component) as a copy of existing component.
+* Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`.
+
+**Bug fixes**
+
+* Fix multiple loadings of updated `smt.body` into bootstrap's panel heading section by improved naming of div classes in panel and better targeted update.
+
+**Developer changes**
+
+* Significantly refactored indentations in control edtor pages to make code folding and div analysis easier.
+
+**Other**
+
+* Updated link to `jquery-ui.min.js` library in `fetch-vendor-resources`.
+
 v0.9.1.47 (November 28, 2020)
 -----------------------------
 
 **Feature changes**
 
-- Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
+* Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
 
 1. Add a component to the system while on components page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
 1. Add a component to the system while on control edit page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
@@ -17,25 +49,25 @@ v0.9.1.47 (November 28, 2020)
 
 **UI changes**
 
-- Add components (system elements) via an autocomplete to a system on system's selected components page.
-- Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
-- Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
-- Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
-- Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
+* Add components (system elements) via an autocomplete to a system on system's selected components page.
+* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
+* Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
+* Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
+* Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
 
-- Replace the url pattern routing in v0.9.1.46.4 for directing accounts login to home page with custom templates to override default aullauth templates.
+* Replace the url pattern routing in v0.9.1.46.4 for directing accounts login to home page with custom templates to override default aullauth templates.
 
 **Developer changes**
 
-- Modified controls.Statement model to link `control_implementation` statements to
+* Modified controls.Statement model to link `control_implementation` statements to
   `control_implementation_prototype` statements. See commit 5083af.
-- Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
+* Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
 
 The work for this capability was performed across three branches that were eventually synchronized (approximately commit 18934669) and merged into the master branch :
 
-- `autocomplete_statements_#1066`
-- `ge/reuse-0903`
-- `automated-tests-statements`
+* `autocomplete_statements_#1066`
+* `ge/reuse-0903`
+* `automated-tests-statements`
 
 v0.9.1.46.4 (November 25, 2020)
 -----------------------------
@@ -50,7 +82,6 @@ v0.9.1.46.3 (November 20, 2020)
 **UI changes**
 
 * Add OSCAL downlink link to system component page.
-
 
 v0.9.1.46.2 (November 19, 2020)
 ------------------------------

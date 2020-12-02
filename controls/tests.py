@@ -239,8 +239,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # assert that it is valid JSON by trying to load it
         with open(self.json_download, 'r') as f:
             json_data = json.load(f)
-                
-            
+
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
     def test_tests(self):
@@ -322,6 +321,48 @@ class ElementUnitTests(TestCase):
         self.assertIn('change_element', perms)
         self.assertIn('delete_element', perms)
         self.assertIn('view_element', perms)
+
+    def test_element_copy(self):
+        """Test copying an element"""
+
+        # Create an element
+        e = Element.objects.create(name="OAuth", full_name="OAuth Service", element_type="component")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "OAuth")
+        e.save()
+
+        # Create smts of type control_implementation_prototype for element
+        smt_1 = Statement.objects.create(
+            sid = "au-3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is the first test statement.",
+            statement_type = "control_implementation_prototype",
+            status = "Implemented",
+            producer_element = e
+        )
+        smt_1.save()
+        smt_2 = Statement.objects.create(
+            sid = "au-4",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is the first test statement.",
+            statement_type = "control_implementation_prototype",
+            status = "Implemented",
+            producer_element = e
+        )
+        smt_2.save()
+
+        # Make a copy of the element
+        e_copy = e.copy()
+        e_copy.save()
+
+        # Test element copied
+        self.assertTrue(e_copy.id is not None)
+        self.assertFalse(e_copy.id == e.id)
+        self.assertTrue(e_copy.name == "OAuth copy")
+
+        # Test statements copied
+        smts = e_copy.statements("control_implementation_prototype")
+        self.assertEqual(len(smts), 2)
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
