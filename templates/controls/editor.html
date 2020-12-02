@@ -302,8 +302,8 @@
                             </div>
 
                         </form>
-                  <!-- Search for related components -->
-                    <button type="submit" id="add_related_statements" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }})">Submit for related</button>
+                        <!-- Search for related components -->
+                        <button type="submit" id="add_related_statements" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }})">Submit for related</button>
 
                     </div>
 
@@ -318,47 +318,47 @@
 
 
                 <!-- Modal -->
-                <div class="modal fade" id="relatedcompModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                <h4 class="modal-title" id="related_title">Select component statements related to (selected)</h4>
+                <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
+                    {% csrf_token %}
+                    <div class="modal fade" id="relatedcompModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title" id="related_title">Select component statements related to (selected)</h4>
+                                </div>
+
+                                <div class="form-group">
+
+                                    <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
+                                    <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                                    <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+
+
+                                </div>
+                                <div class="modal-body form-group">
+
+                                    <div id="relatedcomp">
+                                    </div>
+
+
+                                </div>
+
+
+                                <div class="modal-footer">
+                                    <label><input type="checkbox" class="selectall">Select all</label>
+                                    <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="return check_for_selection()">Submit component statements</button>
+                                    <a href="#" class="btn btn-white" data-dismiss="modal">Close</a>
+                                </div>
+                            </div><!-- /.modal-content -->
+                            <div hidden id="related_statement_alert" class="alert alert-danger">
+                                <strong>Danger!</strong>
                             </div>
-
-                            <div class="modal-footer">
-                                <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
-                                    {% csrf_token %}
-                                    <div class="modal-body">
-
-                                            <div id="relatedcomp">
-                                            </div>
+                        </div><!-- /.modal-dialog -->
 
 
-                                    </div>
-                                    <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-
-                                        <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
-                                        <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
-                                        <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-                                        <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="check_for_selection()">Submit component statements</button>
-                                            <label><input type="checkbox" class="selectall">Select all</label>
-                                        <a href="#" class="btn btn-white" data-dismiss="modal">Close</a>
-
-                                    </div>
-
-
-                                </form>
-                            </div>
-                        </div><!-- /.modal-content -->
-                        <div hidden id="related_statement_alert" class="alert alert-danger">
-                                        <strong>Danger!</strong>
-                                    </div>
-                    </div><!-- /.modal-dialog -->
-
-
-                </div>
-
+                    </div>
+                </form>
             </div>
 
 
@@ -643,11 +643,11 @@
                     dropdown.append("<option disabled>" + emptyMessage + "</option>");
 
                     $('#statement_alert')
-                        .text("No statements found. Please check the spelling of the component's name.", result)
+                        .text("No statements found.", result)
                         .fadeIn('fast');
                     setTimeout(function () {
                         $('#statement_alert').fadeOut()
-                    }, 5000);
+                    }, 3000);
                 }
 
             },
@@ -742,15 +742,28 @@
         function check_for_selection() {
             var checked = $('#relatedcomp').find(':checked').length;
 
-if (!checked)
-{
-    $('#related_statement_alert')
-                .text("No related components selected.")
-                .fadeIn('fast');
-            setTimeout(function () {
-                $('#related_statement_alert').fadeOut()
-            }, 150000);}
+            if (!checked) {
+                $('#related_statement_alert')
+                    .text("No related components selected.")
+                    .fadeIn('fast');
+                setTimeout(function () {
+                    $('#related_statement_alert').fadeOut()
+                }, 3000);
+                return false;
+            }
+            if (!checked) {
+                $('#related_statement_alert')
+                    .text("No related components selected.")
+                    .fadeIn('fast');
+                setTimeout(function () {
+                    $('#related_statement_alert').fadeOut()
+                }, 3000);
+                return false;
+            }
+            // Add a success message to related_statement_alert
+            return true;
         }
+
 
     </script>
 
