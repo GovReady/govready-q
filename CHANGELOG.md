@@ -1,6 +1,31 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.47 (December 01, 2020)
+------------------------------
+
+**Developer changes**
+
+* Significant refactoring of CSS to replace inline styles from as many pages as possible with classes defined in `css/govready-q.css` stylesheet.
+
+**Bug fix**
+
+* Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
+
+v0.9.1.46.4 (November 25, 2020)
+-----------------------------
+
+**UI changes**
+
+* Adding a url pattern for accounts login to ensure proper styling. Also added conditionals the views landing that constructs the signup and login forms.
+
+v0.9.1.46.3 (November 20, 2020)
+-------------------------------
+
+**UI changes**
+
+* Add OSCAL downlink link to system component page.
+
 v0.9.1.46.2 (November 19, 2020)
 ------------------------------
 
@@ -9,11 +34,12 @@ v0.9.1.46.2 (November 19, 2020)
 * Omitting the group breadcrumb if it is None for a given question
 
 v0.9.1.46.1 (November 19, 2020)
------------------------------
+-------------------------------
 
 **Developer changes**
 
 * Replace the word 'password' with 'pwd' in comments to reduce false positives in code scanners.
+* Replace the word 'key' with 'entry' where possible to reduce false positives in code scanners.
 
 v0.9.1.46 (November 17, 2020)
 -----------------------------

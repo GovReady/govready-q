@@ -140,11 +140,11 @@ class AppSourceSpecWidget(forms.Widget):
     	value = rtyaml.load(data[name + "__remaining_"]) or collections.OrderedDict()
 
     	# Add other values.
-    	for key, label, widget, help_text, show_for_types in self.fields:
-    		if key == "_remaining_": continue # already got this
-    		val = data.get(name + "_" + key)
+    	for entry, label, widget, help_text, show_for_types in self.fields:
+    		if entry == "_remaining_": continue # already got this
+    		val = data.get(name + "_" + entry)
     		if val:
-    			value[key] = val
+    			value[entry] = val
 
     	# Map some data.
     	if value is None:
