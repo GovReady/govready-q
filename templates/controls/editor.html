@@ -342,8 +342,8 @@
                                         <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                                         <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
                                         <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="check_for_selection()">Submit component statements</button>
-                                        <a href="#" class="btn btn-white" data-dismiss="modal">Close</a>
                                             <label><input type="checkbox" class="selectall">Select all</label>
+                                        <a href="#" class="btn btn-white" data-dismiss="modal">Close</a>
 
                                     </div>
 
@@ -674,8 +674,7 @@
         function producer_autocomplete(text, system_id) {
             // Update the producer component autocomplete
             // Create an AJAX request to upload all of the files at once.
-            var producer_element_form_id = $('#selected_producer_element_form_id :selected').val();
-            var control_id = $('#control_id').val();
+
 
             // Submit the ajax request.
             ajax_with_indicator({
@@ -683,8 +682,6 @@
                 data: {
                     "text": text,
                     "system_id": system_id,
-                    "producer_element_form_id": producer_element_form_id || $('#producer_element_id').val(),
-                    "control_id": control_id
                 },
                 dataType: "json",
                 method: "GET",

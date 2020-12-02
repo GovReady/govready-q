@@ -1258,14 +1258,10 @@ def delete_smt(request):
 
 def search_system_component(request):
     """Add an existing element and its statements to a system"""
-    print("searchhhh_system_component request")
-    print(request)
-    print(request.method)
-    print("system_id")
+
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])
 
-    print(dict(request.GET))
     form_dict = dict(request.GET)
     form_values = {}
     for key in form_dict.keys():
@@ -1274,15 +1270,11 @@ def search_system_component(request):
 
     if "system_id" in form_values.keys():
         system_id = form_values['system_id']
-        # TODO: get producer element id from system id and/or statement
 
-        producer_element_id = form_values['producer_element_form_id'][0]#form_values['producer_element_id']
         # Does user have permission to add element?
         # Check user permissions
         system = System.objects.get(pk=system_id)
-        print("system")
-        print(system)
-       #system = System.objects.get(pk=system_id)
+
         if not request.user.has_perm('change_system', system):
             # User does not have write permissions
             # Log permission to save answer denied
@@ -1297,51 +1289,17 @@ def search_system_component(request):
         selected_controls_ids = set()
         for sc in selected_controls:
             selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
-        print("selected_controls_ids")
-        print(selected_controls_ids)
-        print("selected_controls")
-        print(selected_controls)
+
         # Add element
         # Look up the element
-        producer_element = Element.objects.get(pk=producer_element_id)
-        print("producer_element")
-        print(producer_element)
-        # TODO: Handle case of element already associated with system
 
-        cl_id =  form_values['control_id']#"ac-2"#oscalize_control_id(cl_id)
         text =  form_values['text']
-        print("cl_id")
-        print(cl_id)
-        print("text")
-        print(text)
+
         # The final elements that are returned to the new dropdown created...
         producer_system_elements = Element.objects.filter(element_type="system_element").filter(name__contains= text)
-        print("producer_system_elements")
-        print(producer_system_elements)
-
-        # only prototype implementation statements for the given control
-        #control_ids = Statement.objects.filter(statement_type="control_implementation_prototype").filter(sid=cl_id)
-       # print("control_ids")
-       # print(control_ids)
-       #  for contorl_id in control_ids:
-       #      filtered_by_element_name = Element.objects.filter(id=contorl_id.producer_element_id)
-       #      # Element.objects.get(pk=producer_element_id)
-       #      # filtered_by_element_name = Element.filter(name__contains= text)
-       #      print("filtered_by_element_name")
-       #      print(filtered_by_element_name)
-        # Loop through element's prototype statements and add to control implementation statements
-        #print("Adding {} to system_id {}".format(producer_element.name, system_id))
-        # for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
-        #     # Only add statements for controls selected for system
-        #     if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
-        #         print("smt", smt)
-        #         smt.create_instance_from_prototype(system.root_element.id)
-        #     else:
-        #         print("not adding smt not selected controls for system", smt)
 
         producer_elements = [{"id":str(ele.id), "name": ele.name} for ele in producer_system_elements]
-        print("producer_elements")
-        print(producer_elements)
+
         results = {'producer_element_statement_values': producer_elements}
         data = json.dumps(results)
         mimetype = 'application/json'
@@ -1402,7 +1360,7 @@ class RelatedControls(View):
 
             producer_element_statements_vals = [{"id": str(smt.id), "name": smt.sid} for smt in producer_element_statements]
 
-            results = {'producer_element_statement_values': producer_element_statements_vals, "selected_producer_element_form_id": producer_element_id, "selected_component": producer_element.name}
+            results = {'producer_element_statement_values': producer_element_statements_vals,  "selected_component": producer_element.name}
             data = json.dumps(results)
             mimetype = 'application/json'
             if data:
@@ -1430,7 +1388,6 @@ class EditorAutocomplete(View):
         if "system_id" in form_values.keys():
             system_id = form_values['system_id']
 
-            producer_element_id = form_values['producer_element_form_id']
             # Does user have permission to add element?
             # Check user permissions
             system = System.objects.get(pk=system_id)
@@ -1454,9 +1411,7 @@ class EditorAutocomplete(View):
 
             # Add element
             # Look up the element
-            producer_element = Element.objects.get(pk=producer_element_id)
 
-            cl_id = form_values['control_id']
             text = form_values['text']
 
             # The final elements that are returned to the new dropdown created...
@@ -1491,7 +1446,6 @@ class EditorAutocomplete(View):
 
         if "system_id" in form_values.keys():
             system_id = form_values['system_id']
-            producer_element_id = form_values['selected_producer_element_form_id']
             # Does user have permission to add element?
             # Check user permissions
             system = System.objects.get(pk=system_id)
@@ -1514,14 +1468,13 @@ class EditorAutocomplete(View):
 
             # Add element
             if form_values.get("relatedcomps", ""):
-                for related_element in form_values['relatedcomps']:
-                    # Look up the element
-                    producer_element = Element.objects.get(pk=related_element)
-                    # Loop through element's prototype statements and add to control implementation statements
-                    logger.info(f"Adding {producer_element.name} to system_id {system_id}")
-                    for smt in Statement.objects.filter(producer_element_id=producer_element.id,
-                                                        statement_type="control_implementation_prototype"):
 
+                for related_element in form_values['relatedcomps']:
+
+                    # Look up the element
+                    for smt in Statement.objects.filter(id=related_element, statement_type="control_implementation_prototype"):
+                        logger.info(
+                            f"Adding an element with the id {smt.id} and sid class {smt.sid} to system_id {system_id}")
                         # Only add statements for controls selected for system
                         if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
                             logger.info(f"smt {smt}")
