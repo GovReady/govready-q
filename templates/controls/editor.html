@@ -299,7 +299,9 @@
                                     <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
 
                                 </div>
-                                &nbsp;&nbsp;<button type="submit" id="add_existing_component" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
+      <!-- Search for related components -->
+                    <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }})">Submit for related</button>
+
                             </div>
 
                         </form>
@@ -311,8 +313,6 @@
                             <button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button>
                         </h3>
                     </div>
-                    <!-- Search for related components -->
-                    <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }})">Submit for related</button>
 
                 </div>
 
