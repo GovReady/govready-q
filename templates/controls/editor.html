@@ -276,9 +276,9 @@
                     </div><!--/smt-list-->
                     <!-- Add existing component -->
                     <div id="tab-content" class="row row-control" style="">
-                        <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
+                        <form class="form-inline" method="post" action="">
                             {% csrf_token %}
-                            <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+                            <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
                                 <div class="form-group">
                                     <label for="component">Add existing component</label>&nbsp;&nbsp;
                                     <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
@@ -299,12 +299,12 @@
                                     <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
 
                                 </div>
-      <!-- Search for related components -->
-                    <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }})">Submit for related</button>
-
                             </div>
 
                         </form>
+                  <!-- Search for related components -->
+                    <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }})">Submit for related</button>
+
                     </div>
 
                     <!-- Add component button -->
@@ -716,7 +716,6 @@
             // TODO: producer_element_form_id becomes the list of related control components to the current selected component
             var producer_element_form_id = $('#selected_producer_element_form_id :selected').val();
             var control_id = $('#control_id').val();
-            console.log("producer_element_form_id",producer_element_form_id)
             // Submit the ajax request.
             ajax_with_indicator({
                 url: "{% url 'related_system_components' %}",

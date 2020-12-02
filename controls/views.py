@@ -1528,12 +1528,12 @@ class EditorAutocomplete(View):
                         else:
                             logger.error(f"not adding smt from selected controls for the current system: {smt}")
             else:
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 
         # Redirect to the page where the component was added from
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 # Baselines
