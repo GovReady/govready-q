@@ -87,19 +87,20 @@
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-<div style="margin-top: 30px">
+
+<div class="systems-top">
   <div class="container">
 
-  <div class="row" style="">
+  <div class="row">
     <div id="above-tab-content" class="row">
       <!-- Page Title-->
-      <div style="float: left;">
-          <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{system.id}}/components/selected" style="color: black;">Selected Components</a>
+      <div class="systems-title">
+          <h2 class="control-heading">
+            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{system.id}}/components/selected" class="systems-link">Selected Components</a>
           </h2>
       </div>
       <!-- Control Lookup-->
-      <div style="float: right;">
+      <div class="systems-control-lookup">
           <!-- <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
             <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
                 <button type="submit" class="btn btn-success">Look up</button>
@@ -110,8 +111,8 @@
   </div><!--/row-->
 
   <div id="above-tab-content" class="row">
-    <div style="float: left; padding: 0 0 0 0em;">
-        <h2 class="control-heading" style="">
+    <div class="systems-control-heading">
+        <h2 class="control-heading">
             {{ element.name }}
         </h2>
     </div>
@@ -158,7 +159,7 @@
       <!-- Tab panel: component_controls -->
       <div role="tabpanel" class="tab-pane" id="component_controls">
           <div id="control-description" class="control-text"><h3>Component Implementations Statements</h3></div>
-          <div id="smt-list" class="" style="width: 90%">
+          <div id="smt-list" class="systems-smt-list">
             {% for smt in impl_smts %}
             <div id="panel-{{ forloop.counter }}" class="panel panel-default">
               <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
@@ -177,24 +178,24 @@
 
               <div>
                 <form id="smt_{{ forloop.counter }}" class="smt_form">
-                  
+
                     <!-- Never change name of the producer element already associated with a statement -->
                     <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
                     <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
 
                   <div class="form-group">
                     <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                    <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" style="color: black;">{{ smt.producer_element.name }}</a></label>
+                    <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" class="systems-link">{{ smt.producer_element.name }}</a></label>
                   </div>
 
                   <div class="form-group">
                     <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
                     <label for="statement">Statement</label>
-                    <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
+                    <textarea class="form-control systems-element-statement" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
                   </div>
                   <div class="form-group">
                     <label for="status">Status</label>
-                    <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
+                    <select class="form-control systems-element-form-status" id="status_{{ forloop.counter }}" name="status">
                     <option value='' {% if '' == smt.status %}selected="selected"{% endif %}></option>
                     <option value='Not Implemented' {% if 'Not Implemented' == smt.status %}selected="selected"{% endif %}>Not Implemented</option>
                     <option value='Planned' {% if 'Planned' == smt.status %}selected="selected"{% endif %}>Planned</option>
@@ -205,7 +206,7 @@
                   </div>
                   <div class="form-group">
                     <label for="remarks">Remarks</label>
-                    <textarea style="min-height:70px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
+                    <textarea class="" class="form-control systems-element-form-remarks" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
                   </div>
 
                   <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
@@ -215,7 +216,7 @@
                   <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
 
                 <div class="modal-footer">
-                  <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
+                  <div id="success-msg-smt_{{ forloop.counter }}" class="systems-element-modal-footer"></div>
                   <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">Close</a>&nbsp;
                   <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
                   <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
@@ -230,7 +231,7 @@
 
             {% endfor %}
           </div><!--/smt-list-->
-          <div><h3><button type="submit" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
+          <div><h3><button type="submit" class="small btn btn-md btn-success systems-element-button" onclick="add_smt()">Add component statement</button></h3></div>
       </div>
 
       <!-- Tab panel: oscal -->
@@ -245,7 +246,7 @@
           </a>
         </p>
         <div id="combined_smt" class="control-text"><h3>OSCAL</h3></div>
-        <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
+        <div class="systems-element-oscal">{{ oscal }}</div>
       </div>
       {% endif %}
 
@@ -253,7 +254,7 @@
       {% if enable_experimental_opencontrol %}
       <div role="tabpanel" class="tab-pane" id="opencontrol">
         <div id="combined_smt" class="control-text"><h3>OpenControl (under development)</h3></div>
-        <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ opencontrol }}</div>
+        <div class="systems-element-opencontrol">{{ opencontrol }}</div>
       </div>
       {% endif %}
 
@@ -291,7 +292,7 @@
               <form id="smt_panel_num" class="smt_form">
                 <div class="form-group">
                   <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ element.id }}">
-                  <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ element.id }}" style="color: black;">{{ element.name }}</a></label>
+                  <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ element.id }}" class="systems-link">{{ element.name }}</a></label>
                   <!-- <label for="compoment">Producer Component</label> -->
                   <input type="hidden" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
                     onchange="$('#producer_element-panel_num-title').text($(this).val());" value="{{ element.name }}">
@@ -300,7 +301,7 @@
                 <div class="form-group">
 
                   <label for="compoment">Control</label>
-                  <select class=form-control id="sid_panel_num" name="sid" style="">
+                  <select class=form-control id="sid_panel_num" name="sid">
                     {% for ctl in catalog_controls %}
                       <option value='{{ ctl.id }}'>{{ ctl.id|upper }} - {{ ctl.title }}</option>
                     {% endfor %}
@@ -316,7 +317,7 @@
                 </div>
                 <div class="form-group">
                   <label for="status">Status</label>
-                    <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
+                    <select class="form-control systems-element-form-status" id="status_{{ forloop.counter }}" name="status">
                       <option value=''></option>
                       <option value='Not Implemented'>Not Implemented</option>
                       <option value='Planned'>Planned</option>
@@ -334,7 +335,7 @@
                 <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
 
               <div class="modal-footer">
-                <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
+                <div id="success-msg-smt_panel_num" class="systems-element-modal-footer"></div>
                 <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_panel_num');return false;">Delete</button>
                 <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false;">Save</button>
               </div>
@@ -382,7 +383,7 @@
                 $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
                 $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
                 // Update combined statement
-                if (typeof update_combined_smt === "function") { 
+                if (typeof update_combined_smt === "function") {
                   update_combined_smt();
                 }
               } else {

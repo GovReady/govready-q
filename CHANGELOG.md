@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.47.1 (December 02, 2020)
+------------------------------
+
+**Developer changes**
+
+* Minor further tweaks to CSS refactoring. 
+
 v.0.9.1.47 (December 01, 2020)
 ------------------------------
 
