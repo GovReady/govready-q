@@ -377,6 +377,8 @@ def apps_catalog(request):
     from collections import defaultdict
     catalog_by_category = defaultdict(lambda : { "title": None, "apps": [] })
     for app in catalog:
+        source_slug, _ = app["key"].split('/')
+        app['source_slug'] = source_slug
         for category in app["categories"]:
             catalog_by_category[category]["title"] = (category or "Uncategorized")
             catalog_by_category[category]["apps"].append(app)
@@ -397,7 +399,7 @@ def apps_catalog(request):
 
     # If user is superuser, enable creating new apps
     authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
-    
+
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
         "filter_description": filter_description,
