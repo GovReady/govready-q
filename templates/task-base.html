@@ -73,7 +73,7 @@
     {% if not task.project.is_account_project %}
     <li>
       <a href="/">
-        <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
+        <span class="glyphicon glyphicon-home smidge-right"></span>
       </a>
     </li>
     <li class="hidden-xs">
@@ -115,19 +115,19 @@
     {% endif %}
 
     {% if authoring_tool_enabled %}
-    <div id="author-tools" class="pull-right" style="font-size: 80%; margin-right: 8px;">
+    <div id="author-tools" class="pull-right task-authortools">
       <a id="show_question_authoring_tool" href="#" onclick="show_question_authoring_tool('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-pencil" title="Edit" style="color: #aaa;"></span>
+        <span class="glyphicon glyphicon-pencil task-glypicons" title="Edit"></span>
         <!-- Edit -->
       </a>
       &nbsp;&nbsp;
       <a id="add_new_question" href="#" target="_blank" onclick="authoring_tool_new_question({{task.id}}, false); return false;">
-        <span class="glyphicon glyphicon-plus-sign" title="New Question" style="color: #aaa;"></span>
+        <span class="glyphicon glyphicon-plus-sign task-glypicons" title="New Question"></span>
         <!-- New -->
       </a>
       &nbsp;&nbsp;
       <a id="download_questionnaire" href="#" target="_blank" onclick="authoring_tool_download_app('{{q.key|escapejs}}'); return false;">
-        <span class="glyphicon glyphicon-eye-open" title="View Source" style="color: #aaa;"></span>
+        <span class="glyphicon glyphicon-eye-open task-glypicons" title="View Source"></span>
         <!-- Source -->
       </a>
     </div>
@@ -140,7 +140,7 @@
 {% if task.editor == request.user %}
 
     {% for inv in open_invitations %}
-      <div data-invitation-id="{{inv.id}}" class="panel panel-warning" style="margin-bottom: 1em">
+      <div data-invitation-id="{{inv.id}}" class="panel panel-warning task-invitation">
         <div class="panel-body">
           You invited {{inv.to_display}} {{inv.purpose}} on {{inv.created|date}}.
           (<a href="#" onclick="return cancel_invitation(this);">cancel</a>)
@@ -151,7 +151,7 @@
 
 {% elif is_discussion_guest %}
 
-<div class="text-danger small" style="margin-bottom: 1em">
+<div class="text-danger small task-invitation">
     You are participating in the discussion on this question as a guest.
 </div>
 

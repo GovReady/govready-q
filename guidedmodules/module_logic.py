@@ -426,9 +426,32 @@ def render_content(content, answers, output_format, source,
         # dict keys) with what we get by calling render_content recursively
         # on the string value, assuming it is a template of plain-text type.
 
+        import re
         from collections import OrderedDict
 
-        def walk(value, path):
+        import jinja2
+        env = Jinja2Environment(
+            autoescape=True,
+            undefined=jinja2.StrictUndefined) # see below - we defined any undefined variables
+        context = dict(additional_context) # clone
+        if answers:
+            def escapefunc(question, task, has_answer, answerobj, value):
+                # Don't perform any escaping. The caller will wrap the
+                # result in jinja2.Markup().
+                return str(value)
+            def errorfunc(message, short_message, long_message, **format_vars):
+                # Wrap in jinja2.Markup to prevent auto-escaping.
+                return jinja2.Markup("<" + message.format(**format_vars) + ">")
+            tc = TemplateContext(answers, escapefunc,
+                root=True,
+                errorfunc=errorfunc,
+                source=source,
+                show_answer_metadata=show_answer_metadata,
+                is_computing_title=is_computing_title)
+            context.update(tc)
+
+        def walk(value, path, additional_context_2 = {}):
+            # Render string values through the templating logic.
             if isinstance(value, str):
                 return render_content(
                     {
@@ -436,19 +459,85 @@ def render_content(content, answers, output_format, source,
                         "template": value
                     },
                     answers,
-                    output_format,
+                    "text",
                     source + " " + "->".join(path),
-                    additional_context
+                    { **additional_context, **additional_context_2 }
                 )
+
+            # Process objects with a special "%___" key specially.
+            # If it has a %for key with a string value, then interpret the string value as
+            # an expression in Jinja2 which we assume evaluates to a sequence-like object
+            # and loop over the items in the sequence. For each item, the "%body" key
+            # of this object is rendered with the context amended with variable name
+            # assigned the sequence item.
+            elif isinstance(value, dict) and isinstance(value.get("%for"), str):
+                # The value of the "%for" key is "variable in expression". Parse that
+                # first.
+                m = re.match(r"^(\w+) in (.*)", value.get("%for"), re.I)
+                if not m:
+                    raise ValueError("%for directive needs 'variable in expression' value")
+                varname = m.group(1)
+                expr = m.group(2)
+
+                condition_func = compile_jinja2_expression(expr)
+                if output_format == "PARSE_ONLY":
+                    return value
+
+                # Evaluate the expression.
+                context.update(additional_context_2)
+                seq = condition_func(context)
+
+                # Render the %body key for each item in sequence.
+                return [
+                    walk(
+                        value.get("%loop"),
+                        path+[str(i)],
+                        { **additional_context_2, **{ varname: item } })
+                    for i, item in enumerate(seq)
+                ]
+
+            elif isinstance(value, dict) and isinstance(value.get("%if"), str):
+                # The value of the "%if" key is an expression.
+                condition_func = compile_jinja2_expression(value["%if"])
+                if output_format == "PARSE_ONLY":
+                    return value
+
+                # Evaluate the expression.
+                context.update(additional_context_2)
+                test = condition_func(context)
+
+                # If the expression is true, then we render the "%then" key.
+                if test:
+                    return walk(
+                            value.get("%then"),
+                            path+["%then"],
+                            additional_context_2)
+                else:
+                    return None
+
+            # All other JSON data passes through unchanged.
             elif isinstance(value, list):
-                return [walk(i, path+[str(i)]) for i in value]
+                # Recursively enter each value in the list and re-assemble a new list with
+                # the return value of this function on each item in the list.
+                return [
+                    walk(i, path+[str(i)], additional_context_2)
+                    for i in value]
             elif isinstance(value, dict):
-                return OrderedDict([ (k, walk(v, path+[k])) for k, v in value.items() ])
+                # Recursively enter each value in each key-value pair in the JSON object.
+                # Return a new JSON object with the same keys but with the return value
+                # of this function applied to the value.
+                return OrderedDict([
+                    ( k,
+                      walk(v, path+[k], additional_context_2)
+                    )
+                    for k, v in value.items()
+                    ])
             else:
                 # Leave unchanged.
                 return value
 
-        # Render strings within the data structure.
+        # Render the template. Recursively walk the JSON data structure and apply the walk()
+        # function to each value in it.
         value = walk(template_body, [])
 
         # If we're just testing parsing the template, return
