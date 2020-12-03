@@ -1,0 +1,57 @@
+<div id="panel-panel_num" class="panel panel-default">
+              <div class="panel-heading" role="tabx" id="document-panel_num-title">
+                <h4 id="panel-panel_num-title" class="panel-title">
+                  <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body">
+                    <span id="producer_element-panel_num-title">New Component Statement</span>
+                    <div class="panel-heading-smt"></div>
+                  </a>
+                </h4>
+              </div>
+              <div id="document-panel_num-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %}" role="tabpanel" aria-labelledby="document-panel_num-title">
+                <div class="panel-body">
+                  <div class="smt_block">
+                    <form id="smt_panel_num" class="smt_form">
+                      <div class="form-group">
+                        <input type="hidden" id="producer_element_id" name="producer_element_id" value="">
+                        <label for="component">Producer Component</label>
+                        <input type="text" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
+                          onchange="$('#producer_element-panel_num-title').text($(this).val());">
+                      </div>
+                      <div class="form-group">
+                        <input type="hidden" id="smt_id" name="smt_id" value="">
+                        <label for="statement">Statement</label>
+                        <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
+                      </div>
+                      <div class="form-group">
+                        <label for="statement">Part</label>
+                        <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="" style="width:180px;">
+                      </div>
+                      <div class="form-group">
+                        <label for="status">Status</label>
+                          <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
+                            <option value=''></option>
+                            <option value='Not Implemented'>Not Implemented</option>
+                            <option value='Planned'>Planned</option>
+                            <option value='Partially Implemented'>Partially Implemented</option>
+                            <option value='Implemented'>Implemented</option>
+                            <option value='Unknown'>Unknown</option>
+                          </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="remarks">Remarks</label>
+                        <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team"  rows="4" cols="50"></textarea>
+                      </div>
+                      <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
+                      <input type="hidden" id="sid_panel_num" name="sid" value="{{ control.id }}">
+                      <input type="hidden" id="sid_class_panel_num" name="sid_class" value="{{ catalog.catalog_key }}">
+                      <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
+                      <div class="modal-footer">
+                        <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
+                        <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_panel_num');return false;">Delete</button>
+                        <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false;">Save</button>
+                      </div>
+                    </form>
+                  </div>
+                </div><!-- end div class="panel-body"-->
+              </div>
+            </div>
