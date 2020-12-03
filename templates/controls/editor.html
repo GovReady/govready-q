@@ -339,6 +339,9 @@
                                 <div class="modal-body form-group">
 
                                     <div id="relatedcomp">
+                                        <ol>
+
+                                        </ol>
                                     </div>
 
 
@@ -654,26 +657,26 @@
             buildModalcheckbox: function (result, modal, emptyMessage) {
                 //Remove current options
                 modal.html('');
-
                 //Check result isn't empty
                 if (result != '') {
                     // loop
-                    $.each(result['producer_element_statement_values'], function (k, v) {
-                        console.log("k, v");
-                        console.log(k, v);
-
-                        modal.append(`                            <div id="panel-{{ forloop.counter }}" class="panel panel-default">
-                                <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
-                                    <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
-                                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
-                                            <span id="producer_element-panel_num-title">"producer_element_name"</span>&nbsp;
+                    $.each(result['producer_element_statement_values'], function (loopcount, v) {
+                        console.log("loopcount, v");
+                        console.log(loopcount, v);
+                        var startlist = "<li>";
+                        var endlist = "</li>";
+                        var data = `                            <div id="related-panel-loopcount" class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="document-loopcount-title">
+                                    <h4 id="related-panel-loopcount-title" class="panel-title">
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#related-document-loopcount-body" aria-expanded="false" aria-controls="related-document-loopcount-body">
+                                             <span id="producer_element-panel_num-title">"producer_element_name"</span>&nbsp;
                                         </a>
                                     </h4>
                                 </div>
-                                <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
+                                <div id="related-document-loopcount-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="related-document-loopcount-title">
                                     <div class="panel-body">
                                         <div class="smt_block">
-                                            <form id="smt_{{ forloop.counter }}" class="smt_form">
+                                            <form id="related-smt_loopcount" class="smt_form">
                                                 <div class="form-group">
                                                     <ul>
                                                         statement id : smt_id
@@ -696,8 +699,8 @@
                                                 </div>
 
                                                 <div class="modal-footer">
-                                                    <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
-                                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">Close</a>&nbsp;
+                                                    <div id="related-success-msg-smt_loopcount" style="display: inline; margin-right: 20px; color: gray;"></div>
+                                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#related-document-loopcount-body" aria-expanded="false" aria-controls="related-document-loopcount-body">Close</a>&nbsp;
                                                     Select this implementation statement: <input type='checkbox' name='relatedcomps' value='smt_id'>
                                                 </div>
                                             </form>
@@ -705,8 +708,9 @@
                                     </div>
                                 </div>
                             </div>
-`.replace(/smt_id/g, v['smt_id']).replace(/smt_sid_class/g, v['smt_sid_class']).replace(/smt_sid/g, v['smt_sid']).replace(/producer_element_name/g, v['producer_element_name']).replace(/smt_body/g, v['smt_body']).replace(/smt_pid/g, v['smt_pid']).replace(/smt_status/g, v['smt_status'])
-)
+`.replace(/smt_id/g, v['smt_id']).replace(/smt_sid_class/g, v['smt_sid_class']).replace(/smt_sid/g, v['smt_sid']).replace(/producer_element_name/g, v['producer_element_name']).replace(/smt_body/g, v['smt_body']).replace(/smt_pid/g, v['smt_pid']).replace(/smt_status/g, v['smt_status']).replace(/loopcount/g, loopcount + 1)
+                        modal.append(startlist + data + endlist)
+
                         {#modal.append("<input type='checkbox' name='relatedcomps' value='" + v["id"] + "'>" + v['name'] + v['body'] + v['pid'] + "<br/>");#}
                     });
 
@@ -769,7 +773,7 @@
                 dataType: "json",
                 method: "GET",
                 success: function (res) {
-                    helpers.buildModalcheckbox(res, $('#relatedcomp'), "Related components were not added!");
+                    helpers.buildModalcheckbox(res, $('#relatedcomp ol'), "Related components were not added!");
                     $('#relatedcomp').append("<input type='hidden' id='selected_producer_element_form_id' name='selected_producer_element_form_id' value=" + res['selected_producer_element_form_id'] + '>')
 
                     $("#relatedcompModal .modal-title").text("Select component statements related to " + res['selected_component'])
