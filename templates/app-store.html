@@ -192,24 +192,34 @@ Compliance Apps
           {% endif %}
           <div class="app-quick-start-form">
             {# If the user can only start the app in a single organization context, we can offer a quick start button. #}
-            {% if app.organizations|length == 1 %}
+            {% if app.organizations|length >= 1 %}
+
             <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
               {% csrf_token %}
-              {% with app.organizations|first as first_org %}
-                <input type="hidden" name="organization" value="{{first_org.slug}}">
-              {% endwith %}
+                         <select id="app-org-select" class="" onchange="update_org_choice(event)">
+                  {% for org in app.organizations %}
+                      <option value="{{ org.slug }}">{{ org }}</option>
+                  {% endfor %}
+              </select>
+{#            select for organizations and then update first_org value#}
+                          {% with app.organizations|first as first_org %}
+                <input  type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{first_org.slug}}">
+            {% endwith %}
               <button type="submit" class="btn btn-success btn-sm start-app">
                 Add ►
               </button>&nbsp;
             </form>
             {% endif %}
             <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-default btn-sm view-app">Info</a>
+
           </div>
         </td>
         {% if app.icon %}
             <td class="app-icon app-icon-appstore">
                 <img src="{{ app.icon }}" class="img-responsive" alt="App Icon">
-                <div style="text-align: center;"><small>{{ app.source_slug }}</small></div>
+                                <label>AppSource: </label>
+                <div style="text-align: center;" id="{{ app.key }}"><small>{{ app.source_slug }}</small></div>
+                <label>AppVersion: </label>
                 <div class="center-text"><small>{{ app.version }}</small></div>
             </td>
         {% endif %}
@@ -247,7 +257,12 @@ Compliance Apps
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script>function update_org_choice(event) {
+    console.log(event)
+        document.getElementById("testorgdaveslug/light_ato_apps/organization_1").value = event.target.value
+
+}
+
 RegExp.escape = function(s) {
   // http://stackoverflow.com/a/18151038
   return String(s).replace(/([-()\[\]{}+?*.$\^|,:#<!\\])/g, '\\$1').
