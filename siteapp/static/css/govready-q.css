@@ -119,6 +119,13 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .btn-sm { width:95%; max-width:180px;  } /* this makes the action buttons all the same width.
 
 /* misc templates */
+.task-progress-project-truncate { margin: 12px 0 12px 6px; text-align: left;  }
+.task-progress-project-url { color:#444; }
+.task-progress-project-group { margin: 0 0 6px 0; padding: 2px; font-size: 1.0em;text-align:left; }
+.task-progress-project-question { font-size: 10px; line-height: 120%; padding-left: 2em; color: #222; }
+.task-progress-project-title { color: black; font-size: 1.0em; text-align: left; }
+.task-progress-project-truncate-link { color: black; }
+
 
 .question-source-invitation { margin-bottom: 2em; }
 .question-source-invitation-show { text-align: right; margin-bottom: -1.5em; }
@@ -136,6 +143,17 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 .question-datagrid { margin: 1em 0 1.5em 0; }
 .question-file { margin: 1em 0; }
 .question-current-answer { color: #666; }
+.question-absolute-url { color: #999; margin-left: 3px; font-size: 90%;}
+
+.question-radio { margin-bottom: 1.5em; }
+.question-button { color: #999; font-size: 0.9em; }
+.question-can-review { margin-top: -10px; }
+.question-select-review { display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em; }
+.question-review-status { margin-top: 1em; font-size: 85%; color: #666; }
+.question-progress-project { background-color:rgba(255,255,255,1); border-radius: 6px; }
+.question-form-group { width: auto; border:  none; padding: 0; display: inline-block; }
+.question-input-font { font-size: 14px; }
+.question-glyphicon-comment { color: #56A; }
 
 
 /* within navbar and base.html */
