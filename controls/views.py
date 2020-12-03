@@ -1307,7 +1307,11 @@ def search_system_component(request):
     # # Redirect to selected element page
     # return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
-class RelatedControls(View):
+class RelatedComponentStatements(View):
+    """
+    Returns the component statements that are produced(related) to one control implementation prototype
+    """
+
     template_name = 'controls/editor.html'
 
     def get(self, request):
@@ -1330,7 +1334,6 @@ class RelatedControls(View):
             # Check user permissions
             system = System.objects.get(pk=system_id)
 
-            #system = System.objects.get(pk=system_id)
             if not request.user.has_perm('change_system', system):
                 # User does not have write permissions
                 # Log permission to save answer denied
@@ -1353,14 +1356,12 @@ class RelatedControls(View):
             producer_element_id = form_values['producer_element_form_id']
             producer_element = Element.objects.get(pk=producer_element_id)
 
-            cl_id = form_values['control_id']
-
             # The final elements that are returned to the new dropdown created...
-            producer_element_statements = producer_element.statements("control_implementation_prototype")
+            producer_smt_imps = producer_element.statements("control_implementation")
 
-            producer_element_statements_vals = [{"id": str(smt.id), "name": smt.sid} for smt in producer_element_statements]
+            producer_smt_imps_vals = [{"smt_id": str(smt.id), "smt_sid": smt.sid, "smt_sid_class": smt.sid_class,  "producer_element_name": producer_element.name, "smt_body":str(smt.body), "smt_pid":str(smt.pid), "smt_status":str(smt.status)} for smt in producer_smt_imps]
 
-            results = {'producer_element_statement_values': producer_element_statements_vals,  "selected_component": producer_element.name}
+            results = {'producer_element_statement_values': producer_smt_imps_vals,  "selected_component": producer_element.name}
             data = json.dumps(results)
             mimetype = 'application/json'
             if data:
