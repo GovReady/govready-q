@@ -241,11 +241,13 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             json_data = json.load(f)
 
     def test_element_rename(self):
-        self.setUp()
+        # Ensures that the edit button doesnt appear for non-superusers
+        # Logs into a non-superuser account and goes to a components page
         self._login()
         url = self.url(f"controls/components/{self.component.id}")
         self.browser.get(url)
-        var_sleep(20)
+        # Asserts that the edit button element is not found on the page
+        self.assertTrue(len(self.browser.find_elements_by_css_selector('#edit-button'))<1)
 
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##

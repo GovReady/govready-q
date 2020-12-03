@@ -108,7 +108,7 @@
       <div class="col-sm-2">
         <div id="btn-edit-title" style="text-align: center;">
           {% if is_admin %}
-            <button class="btn btn-default btn-small" onclick="return rename_component();">Edit</button>
+            <button class="btn btn-default btn-small" id="edit-button" onclick="return rename_component();">Edit</button>
           {% endif %}
         </div>
       </div>
@@ -118,7 +118,9 @@
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="active"><a href="#component" aria-controls="component" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Component</a></li>
+      {% if impl_smts_length > 1 %}
       <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Implementation Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
+      {% endif %}
       {% if enable_experimental_opencontrol %}
       <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
       {% endif %}
