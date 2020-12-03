@@ -407,10 +407,9 @@ openpyxl==3.0.5 \
     --hash=sha256:18e11f9a650128a12580a58e3daba14e00a11d9e907c554a17ea016bf1a2c71b \
     --hash=sha256:f7d666b569f729257082cf7ddc56262431878f602dcc2bc3980775c59439cdab \
     # via -r requirements.in
-packaging==20.5 \
-    --hash=sha256:1a67848015ca7e7879eee30a7ae1053bc04d031e31eccbde6082820150f08621 \
-    --hash=sha256:5d21ed3d936beb102850195eadaa1371bfb4b93da6ad63d231410c6dca25a665 \
-    # via dparse, safety, sphinx
+packaging==20.7 \
+    --hash=sha256:05af3bb85d320377db281cf254ab050e1a7ebcbf5410685a9a407e18a1f81236 \
+    --hash=sha256:eb41423378682dadb7166144a4926e443093863024de508ca5c9737d6bc08376    # via dparse, safety, sphinx
 parsel==1.6.0 \
     --hash=sha256:70efef0b651a996cceebc69e55a85eb2233be0890959203ba7c3a03c72725c79 \
     --hash=sha256:9e1fa8db1c0b4a878bf34b35c043d89c9d1cbebc23b4d34dbc3c0ec33f2e087d \
