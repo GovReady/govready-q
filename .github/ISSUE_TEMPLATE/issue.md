@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: Issue
 about: Create a report to help us improve
 title: ''
 labels: ''
@@ -7,8 +7,8 @@ assignees: ''
 
 ---
 
-**Describe the bug as a Story**
-A clear and concise description of what the bug is.
+**Describe the issue as a Story**
+As a user of Govready, ...
 
 **To Reproduce**
 Steps to reproduce the behavior:
