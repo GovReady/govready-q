@@ -240,6 +240,13 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         with open(self.json_download, 'r') as f:
             json_data = json.load(f)
 
+    def test_element_rename(self):
+        self.setUp()
+        self._login()
+        url = self.url(f"controls/components/{self.component.id}")
+        self.browser.get(url)
+        var_sleep(20)
+
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
     def test_tests(self):
@@ -363,6 +370,19 @@ class ElementUnitTests(TestCase):
         # Test statements copied
         smts = e_copy.statements("control_implementation_prototype")
         self.assertEqual(len(smts), 2)
+        
+    def test_element_rename(self):
+        """Test renaming an element"""
+
+        # Create an element
+        e = Element.objects.create(name="Element A", full_name="Element A FN", element_type="component")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "Element A")
+        e.save() 
+        e.name = "Renamed Element A"
+        e.save()
+        self.assertTrue(e.name == "Renamed Element A")
+
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
