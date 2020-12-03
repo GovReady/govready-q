@@ -169,10 +169,9 @@ django-bootstrap3==14.2.0 \
 django-database-storage-backend==0.0.5 \
     --hash=sha256:130449ddb0604546769c818aab88b70dfaa207f75300bf7e370040447fae3278 \
     # via -r requirements.in
-django-debug-toolbar==3.1.1 \
-    --hash=sha256:a1ce0665f7ef47d27b8df4b5d1058748e1f08500a01421a30d35164f38aaaf4c \
-    --hash=sha256:c97921a9cd421d392e7860dc4b464db8e06c8628df4dc58fedab012888c293c6 \
-    # via -r requirements.in
+django-debug-toolbar==3.2 \
+    --hash=sha256:84e2607d900dbd571df0a2acf380b47c088efb787dce9805aefeb407341961d2 \
+    --hash=sha256:9e5a25d0c965f7e686f6a8ba23613ca9ca30184daa26487706d4829f5cfb697a    # via -r requirements.in
 django-guardian==2.3.0 \
     --hash=sha256:0e70706c6cda88ddaf8849bddb525b8df49de05ba0798d4b3506049f0d95cbc8 \
     --hash=sha256:ed2de26e4defb800919c5749fb1bbe370d72829fbd72895b6cf4f7f1a7607e1b \
