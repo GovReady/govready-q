@@ -207,10 +207,11 @@ Compliance Apps
           </div>
         </td>
         {% if app.icon %}
-        <td class="app-icon app-icon-appstore">
-          <img src="{{app.icon}}" class="img-responsive" alt="App Icon">
-          <div class="center-text"><small>{{ app.version }}</small></div>
-        </td>
+            <td class="app-icon app-icon-appstore">
+                <img src="{{ app.icon }}" class="img-responsive" alt="App Icon">
+                <div style="text-align: center;"><small>{{ app.source_slug }}</small></div>
+                <div class="center-text"><small>{{ app.version }}</small></div>
+            </td>
         {% endif %}
         </tr>
         </table>
