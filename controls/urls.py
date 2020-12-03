@@ -45,6 +45,9 @@ urlpatterns = [
     url(r'^components/(?P<element_id>.*)/_copy$', views.component_library_component_copy, name="component_library_component_copy"),
     url(r'^components/(?P<element_id>.*)$', views.component_library_component, name="component_library_component"),
 
+    # Elements
+    url(r'^elements/(\d+)/__rename$', views.rename_element, name="rename_element"),
+
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
     url(r'^catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)', views.control, name="control_info"),

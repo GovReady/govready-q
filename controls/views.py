@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
 from django.forms import ModelForm
@@ -203,6 +203,29 @@ def controls_updated(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+def rename_element(request,element_id):
+    """Update the component's name
+    Args:
+        request ([HttpRequest]): The network request
+    component_id ([int|str]): The id of the component
+    Returns:
+        [JsonResponse]: Either a ok status or an error 
+    """
+    try:
+        new_name = request.POST.get("name", "").strip() or None
+        element = get_object_or_404(Element, id=element_id)
+        element.name = new_name
+        element.save()
+        logger.info(
+            event="rename_element",
+            element={"id": element.id, "new_name": new_name}
+        )
+        return JsonResponse({ "status": "ok" }) 
+    except:
+        import sys
+        return JsonResponse({ "status": "error", "message": sys.exc_info() })
+
+
 def components_selected(request, system_id):
     """Display System's selected components view"""
 
@@ -398,6 +421,7 @@ def component_library_component(request, element_id):
         "catalog_controls": catalog_controls,
         "catalog_key": catalog_key,
         "oscal": oscal_string,
+        "is_admin": request.user.is_superuser,
         "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
         "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
         "opencontrol": opencontrol_string,

@@ -23,7 +23,7 @@
 
   h3 {
     color: #888;
-    #font-weight: bold;
+    font-weight: bold;
     margin-top: 20px;
   }
 
@@ -99,14 +99,20 @@
         </div>
       </div>
     </div><!--/row-->
-
-  <div id="above-tab-content" class="row">
-    <div style="float: left; padding: 0 0 0 0em;">
+    <div id="above-tab-content" class="row">
+      <div class="col-sm-10">
         <h2 class="control-heading" style="">
-            {{ element.name }}
+          {{ element.name }}
         </h2>
+      </div>
+      <div class="col-sm-2">
+        <div id="btn-edit-title" style="text-align: center;">
+          {% if is_admin %}
+            <button class="btn btn-default btn-small" onclick="return rename_component();">Edit</button>
+          {% endif %}
+        </div>
+      </div>
     </div>
-  </div>
   <div>&nbsp;</div>
   <div id="tab-content" class="row">
     <!-- Nav tabs -->
@@ -416,6 +422,19 @@
                 $( '#panel-'+smt_panel_num.replace("smt_","") ).remove()
               }
           }
+        }
+        function rename_component() {
+          var new_name = prompt("Rename this component?", "{{element.name|escapejs}}");
+          if (new_name === null || new_name == "{{element.name|escapejs}}") return;
+          ajax_with_indicator({
+            url: '{% url "rename_element" element.id %}',
+            method: "POST",
+            data: {name: new_name},
+            keep_indicator_forever: true,
+            success: function() {
+              window.location.reload();
+            }
+          });
         }
       </script>
       <script>
