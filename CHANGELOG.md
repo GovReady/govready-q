@@ -16,7 +16,6 @@ v.0.9.1.47.1 (December 02, 2020)
 * Minor further tweaks to CSS refactoring. 
 
 
-v999
 ------------------------------
 
 **Developer changes**
