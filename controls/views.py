@@ -1473,7 +1473,7 @@ class EditorAutocomplete(View):
                 for related_element in form_values['relatedcomps']:
 
                     # Look up the element
-                    for smt in Statement.objects.filter(id=related_element, statement_type="control_implementation_prototype"):
+                    for smt in Statement.objects.filter(id=related_element, statement_type="control_implementation"):
                         logger.info(
                             f"Adding an element with the id {smt.id} and sid class {smt.sid} to system_id {system_id}")
                         # Only add statements for controls selected for system
