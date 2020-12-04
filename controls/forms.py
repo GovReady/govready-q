@@ -58,5 +58,3 @@ class PoamForm(ModelForm):
         labels = {
             "poam_group": "Group"
         }
-
-
