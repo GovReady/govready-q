@@ -36,11 +36,11 @@ Welcome to GovReady Q - {{org.name}}
 % block body-wide %
 {% block body %}
 
-<div style="margin-top: 30px">
+<div class="org-top">
 
 <div class="container">
 
-<div style="float: right; margin: 0 0.5em 0em 5em;">
+<div class="org-main">
   <a id="new-project" href="/store" class="btn btn-success">Start a project</a>
   {% if can_invite_to_org %}
   <a href="#" onclick="show_invite_to_org(); return false;" class="btn btn-success"><i class="glyphicon glyphicon-send"></i> Invite colleague </a>
@@ -56,7 +56,7 @@ Welcome to GovReady Q - {{org.name}}
 
 <div class="container">
 {% for project in projects %}
-<div class="row" style="border-top: 1px solid #aaa;padding: 8px 0px 8px 0px;">
+<div class="row org-row">
   <div class="col-md-6">
     {% if project.root_task.get_app_icon_url %}
       <a href="{{project.get_absolute_url}}" class="project-image">
@@ -66,17 +66,17 @@ Welcome to GovReady Q - {{org.name}}
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     {% endif %}
     &nbsp;&nbsp;&nbsp;
-    <a href="{{project.get_absolute_url}}" style="color: black;">{{project.title}}</a>
+    <a href="{{project.get_absolute_url}}" class="org-project-link">{{project.title}}</a>
   </div>
 
   <div class="col-md-3">&nbsp;</div>
 
   <div class="col-md-1">
-    <small style="color: #888;">(ID: {{project.id}})</small>
+    <small class="org-small">(ID: {{project.id}})</small>
   </div>
 
   <div class="col-md-2">
-      <small style="color: #888;">
+      <small class="org-small">
       <!-- App version: {{project.root_task.module.spec.catalog.version|force_escape}} -->
       Updated {{project.root_task.updated|naturaltime}}
       <!-- Started: {{project.created|naturaltime}} -->
@@ -99,14 +99,14 @@ Welcome to GovReady Q - {{org.name}}
       <p>The owner of the group can manage group members.</p>
     </div>
     <div class="col-md-3">
-        <div class="glyphicon glyphicon-folder-open" style="font-size: 8em; color: rgb(160, 210, 160);"></div>
+        <div class="glyphicon glyphicon-folder-open org-glyphicons"></div>
     </div>
     <div class="col-md-2"></div>
   </div>
 </div>
 {% endif %}
 
-    {{ block.super }} 
+    {{ block.super }}
 {% endblock %}
 
 {% block scripts %}

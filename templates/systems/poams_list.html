@@ -17,40 +17,40 @@
 
 {% block body %}
 
-<div style="margin-top: 30px">
+<div  class="systems-top">
   <div class="container">
 
-  <div class="row" style="">
+  <div class="row">
     <div id="above-tab-content" class="row">
       <!-- Page Title-->
-      <div style="float: left;">
-          <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> > POA&Ms
+      <div class="systems-title">
+          <h2 class="control-heading">
+            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > POA&Ms
           </h2>
       </div>
     </div>
   </div><!--/row-->
     <p>&nbsp;</p>
 
-    <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2" style="margin-top: 4px;">POA&Ms</div>
+    <div id="tab-content" class="row rows-header">
+        <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 systems-poam">POA&Ms</div>
         <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">&nbsp;</div>
         <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-          <a href="/systems/{{ system.id }}/poams/new" class="btn btn-sm btn-success" style="color: white;">New POA&M</a>
-          <span class="glyphicon glyphicon-download-alt pull-right"
-                style="cursor: pointer; margin-top: 6px;"
+          <a href="/systems/{{ system.id }}/poams/new" class="btn btn-sm btn-success systems-element-button">New POA&M</a>
+          <span class="glyphicon glyphicon-download-alt pull-right systems-poam-glyphicon"
+                style="cursor: pointer;"
                 onclick="download_document('{{document.id|escapejs}}', {{ system.id }})"></span>
         </div>
     </div>
     {% if poam_smts|length < 1 %}
-      <div id="tab-content" class="row row-control" style="">
+      <div id="tab-content" class="row row-control">
         <div id="" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
           <p>No POA&Ms are currently identified for this system.</p>
         </div>
       </div>
     {% else %}
       {% for poam_smt in poam_smts %}
-        <div id="tab-content" class="row row-control" style="">
+        <div id="tab-content" class="row row-control">
             <div id="" class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
                 <a href="/systems/{{ system.id }}/poams/{{ poam_smt.id }}/edit">V-{{ poam_smt.poam.poam_id }}</a>
             </div>

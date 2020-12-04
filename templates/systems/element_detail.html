@@ -16,19 +16,19 @@
 
 {% block body %}
 
-<div style="margin-top: 30px">
+<div class="systems-top">
   <div class="container">
 
-  <div class="row" style="">
+  <div class="row">
     <div id="above-tab-content" class="row">
       <!-- Page Title-->
-      <div style="float: left;">
-          <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{system.id}}/components/selected" style="color: black;">Selected Components</a> &gt; {{ element.name }}
+      <div class="systems-title">
+          <h2 class="control-heading">
+            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> &gt; <a href="/systems/{{system.id}}/components/selected" class="systems-link">Selected Components</a> &gt; {{ element.name }}
           </h2>
       </div>
       <!-- Control Lookup-->
-      <div style="float: right;">
+      <div class="systems-control-lookup">
           <!-- <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
             <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
                 <button type="submit" class="btn btn-success">Look up</button>
@@ -38,10 +38,10 @@
   </div><!--/row-->
     <p>&nbsp;</p>
 
-    <div id="tab-content" class="row rows-header" style="">
-        <div id=""><span style="font-size: 14pt; font-weight: bold;">{{ element.name }}</span></div>
+    <div id="tab-content" class="row rows-header">
+        <div id=""><span class="systems-element-name">{{ element.name }}</span></div>
     </div>
-    <div id="tab-content" class="row row-control" style="">
+    <div id="tab-content" class="row row-control">
       <div>
         <h3>Description</h3>
         {{ element.description }}
