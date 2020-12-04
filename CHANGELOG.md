@@ -16,7 +16,7 @@ v.0.9.1.47.1 (December 02, 2020)
 * Minor further tweaks to CSS refactoring. 
 
 
-v.0.9.1.47 (December 01, 2020)
+v999
 ------------------------------
 
 **Developer changes**
@@ -96,7 +96,7 @@ The work for this capability was performed across three branches that were event
 
 
 v0.9.1.46.4 (November 25, 2020)
--------------------------------
+-----------------------------	
 
 **UI changes**
 
