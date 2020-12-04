@@ -19,4 +19,4 @@ class SystemSettings(models.Model):
 
   @classmethod
   def enable_experimental_oscal(cls):
-    return cls.objects.get(setting="enable_experimental_opencontrol").active
+    return cls.objects.get(setting="enable_experimental_oscal").active

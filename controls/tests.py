@@ -12,20 +12,18 @@
 
 import json
 import os
-# import os.path
 from pathlib import PurePath
 import re
 from unittest import skip
 
-from django.conf import settings
 from django.test import TestCase
-
+from selenium.webdriver.support.select import Select
+from siteapp.models import User
+from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests, var_sleep
+from .models import *
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.text import slugify
-
 from .oscal import Catalogs, Catalog
-from .models import *
-from siteapp.models import User
 from system_settings.models import SystemSettings
 
 # from controls.oscal import Catalogs, Catalog
@@ -53,144 +51,6 @@ from system_settings.models import SystemSettings
 # from guidedmodules.app_loading import load_app_into_database
 
 
-def var_sleep(duration):
-    '''
-    Tweak sleep globally by multple, a fraction, or depend on env
-    '''
-    from time import sleep
-    sleep(duration*2)
-
-class SeleniumTest(StaticLiveServerTestCase):
-    window_geometry = (1200, 1200)
-
-    @classmethod
-    def setUpClass(cls):
-        super(SeleniumTest, cls).setUpClass()
-
-        # Override the email backend so that we can capture sent emails.
-        from django.conf import settings
-        settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-
-        # Override ALLOWED_HOSTS, SITE_ROOT_URL, etc.
-        # because they may not be set or set properly in the local environment's
-        # non-test settings for the URL assigned by the LiveServerTestCase server.
-        settings.ALLOWED_HOSTS = ['localhost', 'testserver']
-        settings.SITE_ROOT_URL = cls.live_server_url
-
-        # In order for these tests to succeed when not connected to the
-        # Internet, disable email deliverability checks which query DNS.
-        settings.VALIDATE_EMAIL_DELIVERABILITY = False
-
-        ## Turn on DEBUG so we can see errors better.
-        #settings.DEBUG = True
-
-        # Start a headless browser.
-        import selenium.webdriver
-        from selenium.webdriver.chrome.options import Options as ChromeOptions
-        options = selenium.webdriver.ChromeOptions()
-        if os.path.exists("/usr/bin/chromium-browser"):
-            options.binary_location = "/usr/bin/chromium-browser"
-        options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
-        if SeleniumTest.window_geometry == "maximized":
-            options.add_argument("start-maximized") # too small screens make clicking some things difficult
-        else:
-            options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
-        options.add_argument("--incognito")
-        cls.browser = selenium.webdriver.Chrome(chrome_options=options)
-        cls.browser.implicitly_wait(3) # seconds
-
-        # Clean up and quit tests if Q is in SSO mode
-        if getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', None):
-            print("Cannot run tests.")
-            print("Tests will not run when IAM Proxy enabled (e.g., when `local/environment.json` sets `trust-user-authentication-headers` parameter.)")
-            cls.browser.quit()
-            super(SeleniumTest, cls).tearDownClass()
-            exit()
-
-    @classmethod
-    def tearDownClass(cls):
-        # Terminate the selenium browser.
-        cls.browser.quit()
-
-        # Run superclass termination.
-        super(SeleniumTest, cls).tearDownClass()
-
-    def setUp(self):
-        # clear the browser's cookies before each test
-        self.browser.delete_all_cookies()
-
-    def navigateToPage(self, path):
-        self.browser.get(self.url(path))
-
-    def url(self, path):
-        # Construct a URL to the desired page. Use self.live_server_url
-        # (set by StaticLiveServerTestCase) to determine the scheme, hostname,
-        # and port the test server is running on. Add the path.
-        import urllib.parse
-        return urllib.parse.urljoin(self.live_server_url, path)
-
-    def clear_field(self, css_selector):
-        self.browser.find_element_by_css_selector(css_selector).clear()
-
-    def fill_field(self, css_selector, text):
-        self.browser.find_element_by_css_selector(css_selector).send_keys(text)
-
-    def clear_and_fill_field(self, css_selector, text):
-        self.clear_field(css_selector)
-        self.fill_field(css_selector, text)
-
-    def click_element_with_link_text(self, text):
-        elem = self.browser.find_elements_by_link_text(text)
-        elem[0].click()
-
-    def click_element_with_xpath(self, xpath):
-        elem = self.browser.find_elements_by_xpath(xpath)
-        elem[0].click()
-
-    def click_element(self, css_selector):
-        # ensure element is on screen or else it can't be clicked
-        # see https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
-        elem = self.browser.find_element_by_css_selector(css_selector)
-        self.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
-        elem.click()
-
-    def select_option(self, css_selector, value):
-        from selenium.webdriver.support.select import Select
-        e = self.browser.find_element_by_css_selector(css_selector)
-        Select(e).select_by_value(value)
-
-    def select_option_by_visible_text(self, css_selector, text):
-        from selenium.webdriver.support.select import Select
-        e = self.browser.find_element_by_css_selector(css_selector)
-        Select(e).select_by_visible_text(text)
-
-    def _getNodeText(self, css_selector):
-        node_text = self.browser.find_element_by_css_selector(css_selector).text
-        node_text = re.sub(r"\s+", " ", node_text) # normalize whitespace
-        return node_text
-
-    def assertInNodeText(self, search_text, css_selector):
-        self.assertIn(search_text, self._getNodeText(css_selector))
-    def assertNotInNodeText(self, search_text, css_selector):
-        self.assertNotIn(search_text, self._getNodeText(css_selector))
-
-    def assertNodeNotVisible(self, css_selector):
-        from selenium.common.exceptions import NoSuchElementException
-        with self.assertRaises(NoSuchElementException):
-            self.browser.find_element_by_css_selector(css_selector)
-
-    def pop_email(self):
-        self.assertTrue(self.has_more_email())
-        import django.core.mail
-        return django.core.mail.outbox.pop(0)
-
-    def has_more_email(self):
-        import django.core.mail
-        # The outbox attribute doesn't exist until the backend
-        # instance is initialized when the first message is sent.
-        outbox = getattr(django.core.mail, 'outbox', [])
-        return len(outbox) > 0
-
 #####################################################################
 
 # Control Tests
@@ -201,7 +61,7 @@ class SampleTest(TestCase):
         self.assertEqual(1,1)
 
 class Oscal80053Tests(TestCase):
-    # Test 
+    # Test
     def test_catalog_load_control(self):
         cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4)
         cg_flat = cg.get_flattened_controls_all_as_dict()
@@ -264,7 +124,6 @@ class Oscal80053Tests(TestCase):
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
 
-        
 
 #####################################################################
 
@@ -380,8 +239,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # assert that it is valid JSON by trying to load it
         with open(self.json_download, 'r') as f:
             json_data = json.load(f)
-                
-            
+
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
     def test_tests(self):
@@ -390,7 +248,7 @@ class StatementUnitTests(TestCase):
     def test_smt_status(self):
         # Create a smt
         smt = Statement.objects.create(
-            sid = "au.3",
+            sid = "au-3",
             sid_class = "NIST_SP-800-53_rev4",
             body = "This is a test statement.",
             statement_type = "control",
@@ -398,15 +256,37 @@ class StatementUnitTests(TestCase):
         )
         self.assertIsNotNone(smt.id)
         self.assertEqual(smt.status, "Implemented")
-        self.assertEqual(smt.sid, "au.3")
+        self.assertEqual(smt.sid, "au-3")
         self.assertEqual(smt.body, "This is a test statement.")
         self.assertEqual(smt.sid_class, "NIST_SP-800-53_rev4")
         # Test updating status and retrieving statement
         smt.status = "Partially Implemented"
         smt.save()
         smt2 = Statement.objects.get(pk=smt.id)
-        self.assertEqual(smt.sid, "au.3")
-        self.assertEqual(smt.status, "Partially Implemented")
+        self.assertEqual(smt2.sid, "au-3")
+        self.assertEqual(smt2.status, "Partially Implemented")
+
+    def test_control_implementation_vs_prototype(self):
+        # Detection of difference in statement
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = "au.3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is a test statement.",
+            statement_type = "control_implementation",
+            status = "Implemented"
+        )
+        smt.save()
+        # Create statement prototype
+        smt.create_prototype()
+        self.assertEqual(smt.body, smt.prototype.body)
+        self.assertNotEqual(smt.id, smt.prototype.id)
+        self.assertTrue(smt.prototype_synched)
+        # Change statement compared to prototype
+        smt.prototype.body = smt.prototype.body + "\nModified statememt"
+        smt.prototype.save()
+        self.assertFalse(smt.prototype_synched)
+        self.assertEqual(smt.diff_prototype_main, [(0, 'This is a test statement.'), (-1, '\nModified statememt')])
 
 class ElementUnitTests(TestCase):
     ## Simply dummy test ##
@@ -441,6 +321,48 @@ class ElementUnitTests(TestCase):
         self.assertIn('change_element', perms)
         self.assertIn('delete_element', perms)
         self.assertIn('view_element', perms)
+
+    def test_element_copy(self):
+        """Test copying an element"""
+
+        # Create an element
+        e = Element.objects.create(name="OAuth", full_name="OAuth Service", element_type="component")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "OAuth")
+        e.save()
+
+        # Create smts of type control_implementation_prototype for element
+        smt_1 = Statement.objects.create(
+            sid = "au-3",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is the first test statement.",
+            statement_type = "control_implementation_prototype",
+            status = "Implemented",
+            producer_element = e
+        )
+        smt_1.save()
+        smt_2 = Statement.objects.create(
+            sid = "au-4",
+            sid_class = "NIST_SP-800-53_rev4",
+            body = "This is the first test statement.",
+            statement_type = "control_implementation_prototype",
+            status = "Implemented",
+            producer_element = e
+        )
+        smt_2.save()
+
+        # Make a copy of the element
+        e_copy = e.copy()
+        e_copy.save()
+
+        # Test element copied
+        self.assertTrue(e_copy.id is not None)
+        self.assertFalse(e_copy.id == e.id)
+        self.assertTrue(e_copy.name == "OAuth copy")
+
+        # Test statements copied
+        smts = e_copy.statements("control_implementation_prototype")
+        self.assertEqual(len(smts), 2)
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
@@ -498,7 +420,6 @@ class PoamUnitTests(TestCase):
             consumer_element = e
         )
         smt.save()
-        import uuid
         poam = Poam.objects.create(statement = smt, poam_group = "New POA&M Group")
         self.assertTrue(poam.poam_group == "New POA&M Group")
         # self.assertTrue(poam.name == "New Element")
@@ -508,5 +429,126 @@ class PoamUnitTests(TestCase):
         # poam.delete()
         # self.assertTrue(poam.uuid is None)
 
+class ControlComponentTests(OrganizationSiteFunctionalTests):
 
+    def create_test_statement(self, sid, sid_class, body, statement_type, status):
+        """
+        Creates and saves a new statement
+        """
+        # Create a smt
+        smt = Statement.objects.create(
+            sid = sid,
+            sid_class = sid_class,
+            body = body,
+            statement_type = statement_type,
+            status = status
+        )
+        smt.save()
+        return smt
+
+    def click_components_tab(self):
+        self.browser.find_element_by_partial_link_text("Component Statements").click()
+
+    def dropdown_option(self, dropdownid):
+        """
+        Allows for viewing of attributes of a given dropdown/select
+        """
+
+        dropdown = Select(self.browser.find_element_by_id(dropdownid))
+        return dropdown
+
+    def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks):
+        """
+        In the component statements tab create and then fill a new component statement with the given information.
+        """
+
+        self.click_components_tab()
+
+        # Click to add new component statement
+        self.click_element("#new_component_statement")
+
+        # Open the new component form open
+        self.browser.find_element_by_link_text("New Component Statement").click()
+
+        # Fill out form
+        self.browser.find_element_by_id("producer_element_name").send_keys(name)
+        self.browser.find_elements_by_name("body")[-1].send_keys(statement)
+        self.browser.find_elements_by_name("pid")[-1].send_keys(part)
+        select = self.dropdown_option(status)
+        select.select_by_value(statusvalue)
+        self.browser.find_elements_by_name("remarks")[-1].send_keys(remarks)
+        # Save form
+        self.browser.find_elements_by_name("save")[-1].click()
+        self.browser.refresh()
+
+    def test_smt_autocomplete(self):
+        """
+        Testing if the textbox can autocomplete and filter for existing components
+        """
+
+        # login as the first user and create a new project
+        self._login()
+        self._new_project()
+        var_sleep(1)
+
+
+        # Select moderate
+        self.navigateToPage("/systems/1/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
+        # Head to the control ac-3
+        self.navigateToPage("/systems/1/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
+
+        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
+        assert len(statement_title_list) == 0
+
+        # Creating a few components
+        self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
+        self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
+
+        self.click_components_tab()
+
+        # Confirm the dropdown sees all components
+        comps_dropdown = self.dropdown_option("selected_producer_element_form_id")
+        assert len(comps_dropdown.options) == 6
+        # Click on search bar
+        search_comps_txtbar = self.browser.find_elements_by_id("producer_element_search")
+
+        # Type a few text combinations and make sure filtering is working
+        # Need to click the new dropdown after sending keys
+
+        ## Search for Component
+        search_comps_txtbar[-1].click()
+        search_comps_txtbar[-1].clear()
+        search_comps_txtbar[-1].send_keys("Component")
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(3)
+        assert len(comps_dropdown.options) == 3
+
+        ## Search for 2
+        search_comps_txtbar[-1].click()
+        search_comps_txtbar[-1].clear()
+        search_comps_txtbar[-1].send_keys("2")
+        self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
+        var_sleep(3)
+        assert len(comps_dropdown.options) == 2
+
+        # Add a new component based on one of the options available in the filtered dropdown
+
+        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        self.select_option("select#selected_producer_element_form_id", "6")
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
+
+        self.select_option("select#selected_producer_element_form_id", "3")
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+
+        # Adding an existing component
+        add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")
+        add_related_statements_btn[-1].click()
+        self.click_components_tab()
+
+        statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
+        assert len(statement_title_list) == 7
 

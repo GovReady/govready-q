@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Components Selected
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+  <div class="row" style="">
+    <div id="above-tab-content" class="row">
+      <!-- Page Title-->
+      <div style="float: left;">
+          <h2 class="control-heading" style="">
+            <a href="{{ project.get_absolute_url }}" style="color: black;">Component Library
+          </h2>
+      </div>
+    </div>
+  </div><!--/row-->
+    <p>&nbsp;</p>
+
+    <div id="tab-content" class="row rows-header" style="">
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Available Components</div>
+    </div>
+   {% for component in elements %}
+    <div id="tab-content" class="row row-control" style="">
+        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+            <a href="/controls/components/{{ component.id }}">{{ component.name }}</a>
+        </div>
+        <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+            {{ component.description }}
+        </div>
+
+    </div>
+    {% endfor %}
+
+      </form>
+  </div>
+
+  </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static "js/select2.min.js" %}"></script>
+<link href="{% static "css/select2.min.css" %}" rel="stylesheet" />
+
+{% endblock %}

@@ -4,7 +4,7 @@ set -euo pipefail
 
 # retrieve 'static' from local/environment.json
 if [ -f local/environment.json ] ; then
-  VENDOR=$(python -c "import json; f=open('local/environment.json', 'r'); env=json.load(f); print(env.get('static',''))")
+  VENDOR=$(python3 -c "import json; f=open('local/environment.json', 'r'); env=json.load(f); print(env.get('static',''))")
 fi
 
 # if VENDOR not set above, use default

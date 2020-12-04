@@ -5,516 +5,721 @@
 {% load q %}
 
 {% block title %}
-{{ portfolio.title }} Control
+    {{ portfolio.title }} Control
 {% endblock %}
 
 {% block head %}
-<style>
-  .project-image {
-    width: 20px;
-    float: left;
-    margin: 4px 0 5px 8px;
-  }
+    <style>
+        .project-image {
+            width: 20px;
+            float: left;
+            margin: 4px 0 5px 8px;
+        }
 
-  .inline {
-    display: inline;
-  }
+        .inline {
+            display: inline;
+        }
 
-  h3 {
-    color: #888;
-    #font-weight: bold;
-    margin-top: 20px;
-  }
+        h3 {
+            color: #888;
+            #font-weight: bold;
+            margin-top: 20px;
+        }
 
-  #above-tab-content, #tab-content {
-    max-width: 950px;
-    margin: auto;
-  }
+        #above-tab-content, #tab-content {
+            max-width: 950px;
+            margin: auto;
+        }
 
-  .control-text {
-    white-space: pre-wrap;
-    font-size: 11pt;
-    /*max-width: 700px;*/
-    font-family: trebuchet ms, sans-serif;
-    text-align: justify;
-    /*text-justify: inter-word;*/
-    line-height: 24px;
-  }
+        .control-text {
+            white-space: pre-wrap;
+            font-size: 11pt;
+            /*max-width: 700px;*/
+            font-family: trebuchet ms, sans-serif;
+            text-align: justify;
+            /*text-justify: inter-word;*/
+            line-height: 24px;
+        }
 
-  #control-lookup input {
-    width: 130px;
-  }
+        #control-lookup input {
+            width: 130px;
+        }
 
-  #combined_smt {
-    width: 80%;
-    /*margin: 12px 0 16px 0px;*/
-    padding: 8px;
-    /*display: none;*/
-  }
+        #combined_smt {
+            width: 80%;
+            /*margin: 12px 0 16px 0px;*/
+            padding: 8px;
+            /*display: none;*/
+        }
 
-  textarea {
-    overflow-y: scroll;
-    resize: vertical;
-  }
+        textarea {
+            overflow-y: scroll;
+            resize: vertical;
+        }
 
-  a {
-    color: #666;
-  }
+        a {
+            color: #666;
+        }
 
-  #common-tab-count, #component-tab-count {
-    display: inline-block;
-    color: #666;
-    background-color: #dedede;
-    border-radius: 20px;
-    line-height: 1;
-    padding: 2px 6px;
-    font-size: 0.8em; font-weight: 600;
-  }
+        #common-tab-count, #component-tab-count {
+            display: inline-block;
+            color: #666;
+            background-color: #dedede;
+            border-radius: 20px;
+            line-height: 1;
+            padding: 2px 6px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
 
-  .panel-heading-smt {
-    white-space: pre-line;
-  }
+        .panel-heading-smt, .panel-heading-smt-body {
+            white-space: pre-line;
+        }
 
-  .panel-heading a:hover {
-    text-decoration: none;
-    color: #000;
-  }
+        .panel-heading a:hover {
+            text-decoration: none;
+            color: #000;
+        }
 
-</style>
+    </style>
 {% endblock %}
 
-Remove contextbar from top of page
 {% block contextbar %}{% endblock %}
 
-% block body-wide %
 {% block body %}
+    <div style="margin-top: 30px">
+        <!-- <div class="container"> -->
+        <div class="row" style="">
+            <div id="above-tab-content" class="row">
+                <!-- Page Title-->
+                <div style="float: left;">
+                    <h2 class="control-heading" style="">
+                        <a href="{{ project.get_absolute_url }}">{{ system.root_element.name }}</a> > <a href="/systems/{{ system.id }}/controls/selected">Selected Controls</a>
+                    </h2>
+                </div>
+                <!-- Control Lookup-->
+                <div style="float: right;">
+                    <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
+                        <input type="text" name="id" placeholder="Enter control id" title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
+                        <button type="submit" class="btn btn-success">Look up</button>
+                        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <a href="/">families</a> -->
+                    </form>
+                </div>
+            </div>
+        </div><!--/row-->
 
+        <div id="above-tab-content" class="row">
+            <div style="float: left; padding: 0 0 0 0em;">
+                <h2 class="control-heading" style="">
+                    {{ control.id_display|upper }} {{ control.title }}
+                </h2>
 
-<div style="margin-top: 30px">
-
-
-  <div class="row" style="">
-    <div id="above-tab-content" class="row">
-      <!-- Page Title-->
-      <div style="float: left;">
-          <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}">{{ system.root_element.name }}</a> > <a href="/systems/{{ system.id }}/controls/selected">Selected Controls</a>
-          </h2>
-      </div>
-      <!-- Control Lookup-->
-      <div style="float: right;">
-          <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-            <input type="text" name="id" placeholder="Enter control id" title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
-                <button type="submit" class="btn btn-success">Look up</button>
-                <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="/">families</a> -->
-          </form>
-      </div>
-    </div>
-  </div><!--/row-->
-
-  <div id="above-tab-content" class="row">
-    <div style="float: left; padding: 0 0 0 0em;">
-        <h2 class="control-heading" style="">
-            {{ control.id_display|upper }} {{ control.title }}
-        </h2>
-
-         {% if control.title is not None %}
-          <h2 class="control-heading" style="">
-             <small style="color: #888;">{{ catalog.catalog_key_display }}</small>
-          </h2>
-          {% else %}
-          <h2 class="control-heading" style="">
-            <small style="color: #888;">{{ catalog.catalog_key_display }}</small><br>
-            {{ control.id }}
-          </h2>
-          <div id="control-message">
-            <p>The control {{ control.id }} was not found in the control catalog.</p>
-          </div>
-        {% endif %}
-    </div>
-  </div>
-
-  <div id="tab-content" class="row">
-    <!-- Nav tabs -->
-    <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active"><a href="#control" aria-controls="control" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-book"></span> Control</a></li>
-      <li role="presentation"><a href="#combined" aria-controls="combined" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Combined Statement </a></li>
-      <li role="presentation"><a href="#common_controls" aria-controls="common_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-ok-circle"></span> Common Controls &nbsp;<div id="common-tab-count">{{ common_controls|length }}</div></a></li>
-      <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
-      {% if enable_experimental_opencontrol %}
-        <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL  &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div></a></li>
-      {% endif %}
-    </ul>
-
-  <!-- Tab panes -->
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane active" id="control">
-
-        {% if control.title is not None %}
-          <div class="row" style="width:90%; padding: 0 0 0 1em;">
-            <div id="control-description" class="control-text"><h3>Control Description</h3>{{ control.description }}</div>
-            <div id="control-guidance"  class="control-text"><h3>Control Guidance</h3>{{ control.guidance }}</div>
-          </div>
-          {% else %}
-          <div id="control-message">
-            <p>The control {{ control.id }} was not found in the control catalog.</p>
-          </div>
-        {% endif %}
-      
-      </div>
-
-      <div role="tabpanel" class="tab-pane" id="combined">
-        <div id="combined_smt" class="control-text" style="white-space: pre-line; word-break: keep-all;"><h3>Component Implementations Statement</h3>
-          {{ combined_smt|safe }}
+                {% if control.title is not None %}
+                    <h2 class="control-heading" style="">
+                        <small style="color: #888;">{{ catalog.catalog_key_display }}</small>
+                    </h2>
+                {% else %}
+                    <h2 class="control-heading" style="">
+                        <small style="color: #888;">{{ catalog.catalog_key_display }}</small><br>
+                        {{ control.id }}
+                    </h2>
+                    <div id="control-message">
+                        <p>The control {{ control.id }} was not found in the control catalog.</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-<!-- OLD computing of controls in the template
-{% for smt in impl_smts %}{% if smt.pid %}{{ smt.pid}}.<br/>{% endif %}<b>{{ smt.producer_element.name}}</b>
-{% for status in impl_statuses %}{% if smt.status|lower == status|lower %}[x] {{ status }} {% else %}<span style="color: #888;">[ ] {{ status }}</span> {% endif %}&nbsp;{% endfor %}
+        <div id="tab-content" class="row">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#control" aria-controls="control" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-book"></span> Control</a></li>
+                <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div>
+                </a></li>
+                <li role="presentation"><a href="#combined" aria-controls="combined" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Combined Statement </a></li>
+                {% if enable_experimental_opencontrol %}
+                    <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div>
+                    </a></li>
+                {% endif %}
+            </ul>
 
-{{ smt.body }}
+            <!-- Tab panels -->
+            <div class="tab-content">
+                <!-- Tab panel: control -->
+                <div role="tabpanel" class="tab-pane active" id="control">
+                    {% if control.title is not None %}
+                        <div class="row" style="width:90%; padding: 0 0 0 1em;">
+                            <div id="control-description" class="control-text"><h3>Control Description</h3>{{ control.description }}</div>
+                            <div id="control-guidance" class="control-text"><h3>Control Guidance</h3>{{ control.guidance }}</div>
+                        </div>
+                    {% else %}
+                        <div id="control-message">
+                            <p>The control {{ control.id }} was not found in the control catalog.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div role="tabpanel" class="tab-pane" id="combined">
+                    <div id="combined_smt" class="control-text" style="white-space: pre-line; word-break: keep-all;"><h3>Component Implementations Statement</h3>
+                        {{ combined_smt|safe }}
+                    </div>
+                    <div id="combined_smt" class="control-text">{% for control in common_controls %}{{ control.legacy_imp_smt }}
+                    {% endfor %}
+                    </div>
+                </div>
 
-{% endfor %}</div>
--->
-<div id="combined_smt" class="control-text">{% for control in common_controls %}{{control.legacy_imp_smt}}
-{% endfor %}
-</div>
+                <!-- Tab panel: component control -->
+                <div role="tabpanel" class="tab-pane" id="component_controls">
+                    <div id="control-description" class="control-text"><h3>Component Implementations Statements</h3></div>
+                    <div id="smt-list" class="" style="width: 90%">
+                        <!-- Loop through existing component-control statements -->
+                        {% for smt in impl_smts %}
+                            <div id="panel-{{ forloop.counter }}" class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
+                                    <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
+                                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
+                                            <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;
+                                            <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
+                                            {% if smt.pid is not None and smt.pid != "" %}
+                                                <div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
+                                            <div class="panel-heading-smt-body">{{ smt.body }}</div>
+                                        </a>
+                                    </h4>
+                                </div>
+                                <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
+                                    <div class="panel-body">
+                                        <div class="smt_block">
+                                            <form id="smt_{{ forloop.counter }}" class="smt_form">
+                                                <!-- Never change name of the producer element already associated with a statement -->
+                                                <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                                                <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
+                                                <div class="form-group">
+                                                    <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
+                                                    <label for="component"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" style="color: black;">{{ smt.producer_element.name }}</a></label>
+                                                </div>
+                                                <div class="form-group">
+                                                    <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
+                                                    <label for="statement">What is the solution and how is it implemented?
+                                                        {% if smt.prototype_synched %}
+                                                            <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span
+                                                                    class="glyphicon glyphicon-check"></span> Same as certified</a></span>
+                                                        {% else %}
+                                                            <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span
+                                                                    class="glyphicon glyphicon-alert"></span> Differs from certified</a></span>
+                                                        {% endif %}
+                                                        <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; font-weight: normal; margin-top: 12px;color: #666;">
+                                                            <div style="text-decoration: underline;font-weight: bold;">
+                                                                Certified statement for {{ smt.producer_element.name }} {{ control.id_display|upper }} is:
+                                                            </div>
+                                                            <div id="prototype_body_display_{{ forloop.counter }}">{{ smt.prototype.body|linebreaks }}</div>
+                                                            <div id="prototype_body_{{ forloop.counter }}" style="display: none;">{{ smt.prototype.body }}</div>
+                                                            <br/>
+                                                            <div style="text-decoration: underline;font-weight: bold;">
+                                                                Comparison of current statement to certified statement:
+                                                            </div>
+                                                            <div id="diff_comparison_{{ forloop.counter }}">
+                                                                {% if smt.prototype_synched %}Texts are identical.{% else %}{{ smt.diff_prototype_prettyHtml|safe }}{% endif %}
+                                                            </div>
+                                                            <br/>
+                                                            <div style="text-decoration: underline;font-weight: bold;">
+                                                                {% if not smt.prototype_synched %}Options:{% endif %}
+                                                            </div>
+                                                            <div>
+                                                                {% if not smt.prototype_synched %}
+                                                                    <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Overwrite current statement</button>
 
-      </div>
+                                                                    {% if user.is_superuser %}
+                                                                        <button type="button" name="update_certified" value="update_certified" class="btn btn-xs btn-danger" onclick="update_smt_prototype('{{ forloop.counter }}');return false;">Update certified text</button>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                    <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control" cols="50">{{ smt.body }}</textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="statement">Part</label>
+                                                    <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{ smt.pid }}" style="width:180px;">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="status">Status</label>
+                                                    <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
+                                                        <option value='' {% if '' == smt.status %}selected="selected"{% endif %}></option>
+                                                        <option value='Not Implemented' {% if 'Not Implemented' == smt.status %}selected="selected"{% endif %}>Not Implemented</option>
+                                                        <option value='Planned' {% if 'Planned' == smt.status %}selected="selected"{% endif %}>Planned</option>
+                                                        <option value='Partially Implemented' {% if 'Partially Implemented' == smt.status %}selected="selected"{% endif %}>Partially Implemented</option>
+                                                        <option value='Implemented' {% if 'Implemented' == smt.status %}selected="selected"{% endif %}>Implemented</option>
+                                                        <option value='Unknown' {% if 'Unknown' == smt.status %}selected="selected"{% endif %}>Unknown</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="remarks">Remarks</label>
+                                                    <textarea style="min-height:70px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
+                                                </div>
+                                                <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                                                <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+                                                <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
+                                                <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
+                                                <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
+                                                <div class="modal-footer">
+                                                    <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
+                                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">Close</a>&nbsp;
+                                                    <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
+                                                    <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div><!--/smt-list-->
+                    <!-- Add existing component -->
+                    <div id="tab-content" class="row row-control" style="">
+                        <form class="form-inline" method="post" action="">
+                            {% csrf_token %}
+                            <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+                                <div class="form-group">
+                                    <label for="component">Add existing component</label>&nbsp;&nbsp;
+                                    <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
+                                           onchange="producer_autocomplete($(this).val(), {{ system.id }})">
+                                </div>
+                                <div class="form-group">
+                                    <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
 
-      <div role="tabpanel" class="tab-pane" id="common_controls">
-        <div id="control-description" class="control-text"><h3>Common Controls</h3></div>
-          {% if control.title is not None %}
-            {% if common_controls|length > 0 %}
-              {% for control in common_controls %}
-                <div class="panel panel-default">
-                  <div class="panel-heading" role="tabx" id="document-cc-panel_num-title">
-                    <h4 class="panel-title">
-                      <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-cc-panel_num-body" aria-expanded="true" aria-controls="document-cc-panel_num-body">
-                        {{control.name}} ...
-                      </a>
-                    </h4>
-                  </div>
-                  <div id="document-cc-panel_num-body" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="document-cc-panel_num-title">
-                    <div class="panel-body output-document">
+                                        {% for component in elements %}
+                                            <option value="{{ component.id }}">{{ component.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div hidden id="statement_alert" class="alert alert-danger">
+                                        <strong>Danger!</strong>
+                                    </div>
+                                    <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
+                                    <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                                    <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
 
-                      <div>
-                        <form>
-                          <div class="form-group">
-                            <label for="compoment">Component</label>
-                            <input type="text" class="form-control" id="component" placeholder="Name of component" value="{{control.name}}">
-                          </div>
-                          <div class="form-group">
-                            <label for="statement">Statement</label>
-                            <textarea class="form-control" id="statement" placeholder="Place control text here" rows="8" cols="50">{{control.legacy_imp_smt}}</textarea>
-                          </div>
-                          <div class="form-group">
-                            <label for="statement">Part</label>
-                            <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{smt.pid}}" style="width:180px;">
-                          </div>
-                          <div class="form-group">
-                            <label for="remarks">Remarks</label>
-                            <textarea class="form-control" id="app_remarks" placeholder="Place control text here" cols="50"></textarea>
-                          </div>
+                                </div>
+                            </div>
+
                         </form>
-                      </div>
+                        <!-- Search for related components -->
+                        <button type="submit" id="add_related_statements" class="small btn btn-sm btn-success" style="color: white;" onclick="show_related_controls({{ system.id }})">Submit for related</button>
 
                     </div>
-                  </div>
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endif %}
-      </div>
-      <div role="tabpanel" class="tab-pane" id="component_controls">
-          <div id="control-description" class="control-text"><h3>Component Implementations Statements</h3></div>
-          <div id="smt-list" class="" style="width: 90%">
-            <!-- Loop through existing component-control statements -->
-            {% for smt in impl_smts %}
-            <div id="panel-{{ forloop.counter }}" class="panel panel-default">
-              <div class="panel-heading" role="tab" id="document-{{ forloop.counter }}-title">
-                <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
-                  <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">
-                    <span id="producer_element-panel_num-title">{{ smt.producer_element.name }}</span>&nbsp;
-                    <div class="panel-heading-smt">Status: {% if smt.status != "" and smt.status is not None %}{{ smt.status }}{% else %}TBD{% endif %}</div>
-                    {% if smt.pid is not None %}<div class="panel-heading-smt">{{ smt.pid }}.</div>{% endif %}
-                    <div class="panel-heading-smt">{{ smt.body }}</div>
-                  </a>
-                </h4>
-              </div>
-              <div id="document-{{ forloop.counter }}-body" class="panel-collapse collapse" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
-                <div class="panel-body output-document">
 
-              <div>
-                <form id="smt_{{ forloop.counter }}" class="smt_form">
-                  
-                    <!-- Never change name of the producer element already associated with a statement -->
-                    <input type="hidden" id="producer_element_id_{{ forloop.counter }}" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                    <input type="hidden" class="form-control" id="producer_element_name_{{ forloop.counter }}" name="producer_element_name" value="{{ smt.producer_element.name }}">
+                    <!-- Add component button -->
+                    <div>
+                        <h3>
+                            <button type="submit" id="new_component_statement" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button>
+                        </h3>
+                    </div>
 
-                  <div class="form-group">
-                    <input type="hidden" id="producer_element_id" name="producer_element_id" value="{{ smt.producer_element.id }}">
-                    <label for="compoment"><a href="/systems/{{ system.id }}/component/{{ smt.producer_element.id }}" style="color: black;">{{ smt.producer_element.name }}</a></label>
-                  </div>
-
-                  <div class="form-group">
-                    <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
-                    <label for="statement">Statement</label>
-                    <textarea style="min-height:130px;overflow-y: scroll;" class="form-control" id="body_{{ forloop.counter }}" name="body" placeholder="How component contributes to control"  cols="50">{{ smt.body }}</textarea>
-                  </div>
-                  <div class="form-group">
-                    <label for="statement">Part</label>
-                    <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="{{smt.pid}}" style="width:180px;">
-                  </div>
-                  <div class="form-group">
-                    <label for="status">Status</label>
-                    <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
-                    <option value='' {% if '' == smt.status %}selected="selected"{% endif %}></option>
-                    <option value='Not Implemented' {% if 'Not Implemented' == smt.status %}selected="selected"{% endif %}>Not Implemented</option>
-                    <option value='Planned' {% if 'Planned' == smt.status %}selected="selected"{% endif %}>Planned</option>
-                    <option value='Partially Implemented' {% if 'Partially Implemented' == smt.status %}selected="selected"{% endif %}>Partially Implemented</option>
-                    <option value='Implemented' {% if 'Implemented' == smt.status %}selected="selected"{% endif %}>Implemented</option>
-                    <option value='Unknown' {% if 'Unknown' == smt.status %}selected="selected"{% endif %}>Unknown</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label for="remarks">Remarks</label>
-                    <textarea style="min-height:70px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
-                  </div>
-
-                  <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
-                  <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
-                  <input type="hidden" id="sid" name="sid" value="{{ control.id }}">
-                  <input type="hidden" id="sid_class" name="sid_class" value="{{ smt.sid_class }}">
-                  <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
-
-                <div class="modal-footer">
-                  <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
-                  <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">Close</a>&nbsp;
-                  <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
-                  <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
                 </div>
 
+
+                <!-- Modal -->
+                <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
+                    {% csrf_token %}
+                    <div class="modal fade" id="relatedcompModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h2 class="modal-title" id="related_title">Select component statements related to (selected)</h2>
+                                </div>
+
+                                <div class="form-group">
+
+                                    <input type="hidden" id="catalog_key" name="catalog_key" value="{{ catalog.catalog_key }}">
+                                    <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
+                                    <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
+
+
+                                </div>
+                                <div class="modal-body form-group">
+
+                                    <div id="relatedcomp">
+                                        <ol>
+
+                                        </ol>
+                                    </div>
+
+
+                                </div>
+
+
+                                <div class="modal-footer">
+                                    <label><input type="checkbox" class="selectall">Select all</label>
+                                    <button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="return check_for_selection()">Submit component statements</button>
+                                    <a href="#" class="btn btn-white" data-dismiss="modal">Close</a>
+                                </div>
+                            </div><!-- /.modal-content -->
+                            <div hidden id="related_statement_alert" class="alert alert-danger">
+                                <strong>Danger!</strong>
+                            </div>
+                        </div><!-- /.modal-dialog -->
+
+
+                    </div>
                 </form>
-              </div>
-
-                </div>
-              </div>
             </div>
 
-            {% endfor %}
-          </div><!--/smt-list-->
-          <!-- Add component button -->
-          <div><h3><button type="submit" class="small btn btn-md btn-success" style="color: white;" onclick="add_smt()">Add component statement</button></h3></div>
 
-      </div>
-
-      <!-- Tab panel: combined -->
-      {% if enable_experimental_oscal %}
-      <div role="tabpanel" class="tab-pane" id="oscal">
-        <div id="combined_smt" class="control-text"><h3>OSCAL (under development)</h3></div>
-        <div>See reference <a href="https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json">https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json</a></div>
-        <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
-      </div>
-      {% endif %}
+            <!-- Tab panel: combined -->
+            {% if enable_experimental_oscal %}
+                <div role="tabpanel" class="tab-pane" id="oscal">
+                    <div id="combined_smt" class="control-text"><h3>OSCAL (under development)</h3></div>
+                    <div>See reference <a href="https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json">https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json</a></div>
+                    <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
+                </div>
+            {% endif %}
 
 
+        </div>
     </div>
-  </div>
 
-  {{ block.super }}
-  {% endblock %}
+    {{ block.super }}
+{% endblock %}
 
-  {% block scripts %}
-      <script>
+{% block scripts %}
+    <script>
         // Submits control id for Control look up box
         function show_control_by_id() {
-          var control_id = $('#control-lookup').find('input[name="id"]').val();
-          var url = "/systems/{{ system.id }}/controls/catalogs/{{ catalog.catalog_key }}/control/"+control_id;
-          window.location.href = url;
+            var control_id = $('#control-lookup').find('input[name="id"]').val();
+            var url = "/systems/{{ system.id }}/controls/catalogs/{{ catalog.catalog_key }}/control/" + control_id;
+            window.location.href = url;
         }
-      </script>
+    </script>
 
-      <script>
+    <script>
         // View combined implementation statement
 
         function update_combined_smt() {
-          // Read through existing statements and combine into single statement
-          combined_smt = $( ".smt_form" ).map(function(){
-            pid = $(this).find('input[name=pid]')[0].value;
-            body = $(this).find('textarea[name=body]')[0].value;
-            if (pid != null) {
-              c_smt = pid + "\n" + body;
-            } else {
-              c_smt = body;
-            }
-            return c_smt}).get().join("\n\n");
-          // Add combined statement to #combined_smt
-          $( "#combined_smt" ).html("<h3>Component Implementations Statement</h3><textarea style=\"border: none; min-height:300px;overflow-y: scroll;\" class=\"form-control\" cols=\"50\" onkeypress=\"$(this).keypress(function(e) {return false});\">"+combined_smt+"</textarea>");
+            // Read through existing statements and combine into single statement
+            combined_smt = $(".smt_form").map(function () {
+                pid = $(this).find('input[name=pid]')[0].value;
+                body = $(this).find('textarea[name=body]')[0].value;
+                if (pid != null) {
+                    c_smt = pid + "\n" + body;
+                } else {
+                    c_smt = body;
+                }
+                return c_smt
+            }).get().join("\n\n");
+            // Add combined statement to #combined_smt
+            $("#combined_smt").html("<h3>Component Implementations Statement</h3><textarea style=\"border: none; min-height:300px;overflow-y: scroll;\" class=\"form-control\" cols=\"50\" onkeypress=\"$(this).keypress(function(e) {return false});\">" + combined_smt + "</textarea>");
         }
+
         // Adds statement form to page
         function add_smt() {
-          var panel_num = $('.panel').length + 1
-          var smt_form = `
-            <div id="panel-panel_num" class="panel panel-default">
-            <div class="panel-heading" role="tabx" id="document-panel_num-title">
-              <h4 id="panel-panel_num-title" class="panel-title">
-                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-panel_num-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-panel_num-body">
-                  <span id="producer_element-panel_num-title">New Component Statement</span>
-                  <div class="panel-heading-smt"></div>
-                </a>
-              </h4>
-            </div>
-            <div id="document-panel_num-body" class="panel-collapse collapse {% if forloop.first %}in{% endif %} output-document" role="tabpanel" aria-labelledby="document-panel_num-title">
-              <div class="panel-body output-document">
-
-            <div>
-              <form id="smt_panel_num" class="smt_form">
-                <div class="form-group">
-                  <input type="hidden" id="producer_element_id" name="producer_element_id" value="">
-                  <label for="compoment">Producer Component</label>
-                  <input type="text" class="form-control" id="producer_element_name" name="producer_element_name" placeholder="Name of component"
-                    onchange="$('#producer_element-panel_num-title').text($(this).val());">
-                </div>
-                <div class="form-group">
-                  <input type="hidden" id="smt_id" name="smt_id" value="">
-                  <label for="statement">Statement</label>
-                  <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
-                </div>
-                <div class="form-group">
-                  <label for="statement">Part</label>
-                  <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="" style="width:180px;">
-                </div>
-                <div class="form-group">
-                  <label for="status">Status</label>
-                    <select class=form-control id="status_{{ forloop.counter }}" name="status" style="width:180px;">
-                      <option value=''></option>
-                      <option value='Not Implemented'>Not Implemented</option>
-                      <option value='Planned'>Planned</option>
-                      <option value='Partially Implemented'>Partially Implemented</option>
-                      <option value='Implemented'>Implemented</option>
-                      <option value='Unknown'>Unknown</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                  <label for="remarks">Remarks</label>
-                  <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team"  rows="4" cols="50"></textarea>
-                </div>
-
-                <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
-                <input type="hidden" id="sid_panel_num" name="sid" value="{{ control.id }}">
-                <input type="hidden" id="sid_class_panel_num" name="sid_class" value="{{ catalog.catalog_key }}">
-                <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
-
-              <div class="modal-footer">
-                <div id="success-msg-smt_panel_num" style="display: inline; margin-right: 20px; color: gray;"></div>
-                <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_panel_num');return false;">Delete</button>
-                <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_panel_num');return false;">Save</button>
-              </div>
-
-              </form>
-            </div>
-
-              </div>
-            </div>
-          </div>`.replace(/panel_num/g, panel_num);
-          $( "#smt-list" ).append(smt_form);
+            var panel_num = $('.panel').length + 1
+            // call django view for composing new statement form
+            var smt_form = `{% include 'controls/add_smt_form.html' %}`.replace(/panel_num/g, panel_num);
+        $("#smt-list").append(smt_form);
         }
 
         function save_smt(smt_panel_num) {
-          // Save a statement
-          // serialize data from the identified statement form
-          var data = $( '#'+smt_panel_num ).serialize();
+            // Save a statement
+            // serialize data from the identified statement form
+            var data = $('#' + smt_panel_num).serialize();
+            var dataarray = $('#' + smt_panel_num).serializeArray();
+            dataObj = {};
 
-          // send data via ajax to be saved
-          ajax_with_indicator({
-            url: "/controls/smt/_save/",
-            method: "POST",
-            data: data,
-            indicator_parent: $('#page-content'),
-            keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
-            success: function(res) {
-              console.log('success');
-              console.log(res);
-              if (res['status'] == "success") {
-                // Update field values from saved
-                // Initially update a few fields
-                smt_saved = JSON.parse(res['statement']);
-                console.log("printing smt_saved");
-                console.log(smt_saved);
-                $( '#'+smt_panel_num+' input[name=smt_id]' ).val(smt_saved[0]['pk']);
+            $(dataarray).each(function (i, field) {
+                dataObj[field.name] = field.value;
+            });
+            console.log("datadata", dataObj['producer_element_name'])
 
-                // If saving first time remove producer_element_name input field
-                if ($( '#'+smt_panel_num+' input[name=producer_element_id]' ).val().length == 0) {
-                  $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
+            // send data via ajax to be saved
+            ajax_with_indicator({
+                url: "/controls/smt/_save/",
+                method: "POST",
+                data: data,
+                indicator_parent: $('#page-content'),
+                keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+                success: function (res) {
+                    console.log('success');
+                    console.log(res);
+                    if (res['status'] == "success") {
+                        // Update field values from saved
+                        // Initially update a few fields
+                        smt_saved = JSON.parse(res['statement']);
+                        console.log("printing smt_saved");
+                        console.log(smt_saved);
+                        $('#' + smt_panel_num + ' input[name=smt_id]').val(smt_saved[0]['pk']);
+
+                        // If saving first time remove producer_element_name input field
+                        if ($('#' + smt_panel_num + ' input[name=producer_element_id]').val().length == 0) {
+                            $('#' + smt_panel_num + ' input[name=producer_element_id]').val(smt_saved[0]['fields']['producer_element']);
+                        }
+
+                        // Update panel statement
+                        $('#' + smt_panel_num.replace("smt_", "panel-") + ' .panel-heading-smt-body').html(smt_saved[0]['fields']['body']);
+
+                        $('#' + smt_panel_num + ' input[name=producer_element_id]').val(smt_saved[0]['fields']['producer_element']);
+                        $('#success-msg-' + smt_panel_num).fadeIn().text('Saved');
+                        // Update combined statement
+                        if (typeof update_combined_smt === "function") {
+                            update_combined_smt();
+                        }
+                    } else {
+                        $('#success-msg-' + smt_panel_num).fadeIn().text('Error ' + res['message']);
+                    }
+                    setTimeout(function () {
+                        $('#success-msg-' + smt_panel_num).fadeOut("fast");
+                    }, 1000);
+                    $('#selected_producer_element_form_id').append("<option value='" + smt_saved[0]['fields']['producer_element'] + "'>" + dataObj['producer_element_name'] + "</option>");
                 }
+            });
 
-                // Update panel statement
-                $( '#'+smt_panel_num.replace("smt_","panel-")+' .panel-heading-smt' ).html(smt_saved[0]['fields']['body']);
-
-                $( '#'+smt_panel_num+' input[name=producer_element_id]' ).val(smt_saved[0]['fields']['producer_element']);
-                $('#success-msg-'+smt_panel_num).fadeIn().text('Saved');
-                // Update combined statement
-                if (typeof update_combined_smt === "function") {
-                  update_combined_smt();
-                }
-              } else {
-                $('#success-msg-'+smt_panel_num).fadeIn().text('Error '+res['message']);
-              }
-              setTimeout(function() {
-                $('#success-msg-'+smt_panel_num).fadeOut("fast");
-              }, 1000 );
-            }
-          });
-
-          // Stop <form> submit
-          return false;
+            // Stop <form> submit
+            return false;
 
         }; // /save_smt
 
         function delete_smt(smt_panel_num) {
-          console.log("Deleting statement button pressed "+smt_panel_num);
-          // Confirm deletion
-          var result = confirm("Delete statement?");
-          if (result) {
-              // Delete statement object in database if it exists
-              if ($( '#'+smt_panel_num+' input[name=producer_element_id]' ).val().length > 0) {
-                // console.log("deleting db object")
-                // serialize data from the identified statement form
-                var data = $( '#'+smt_panel_num ).serialize()
-                // send data via ajax to delete object
-                ajax_with_indicator({
-                  url: "/controls/smt/_delete/",
-                  method: "POST",
-                  data: data,
-                  indicator_parent: $('#page-content'),
-                  keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
-                  success: function(res) {
-                    console.log('success');
-                    console.log(res);
-                    if (res['status'] == "success") {
-                      // Update field values from saved
-                      // Initially update a few fields
-                      console.log("smt_deleted");
-                    }
+            console.log("Deleting statement button pressed " + smt_panel_num);
+            // Confirm deletion
+            var result = confirm("Delete statement?");
+            if (result) {
+                // Delete statement object in database if it exists
+                if ($('#' + smt_panel_num + ' input[name=producer_element_id]').val().length > 0) {
+                    // console.log("deleting db object")
+                    // serialize data from the identified statement form
+                    var data = $('#' + smt_panel_num).serialize()
+                    // send data via ajax to delete object
+                    ajax_with_indicator({
+                        url: "/controls/smt/_delete/",
+                        method: "POST",
+                        data: data,
+                        indicator_parent: $('#page-content'),
+                        keep_indicator_forever: false, // keep the ajax indicator up forever --- it'll go away when we issue the redirect
+                        success: function (res) {
+                            console.log('success');
+                            console.log(res);
+                            if (res['status'] == "success") {
+                                // Update field values from saved
+                                // Initially update a few fields
+                                console.log("smt_deleted");
+                            }
+                            // Remove statement accordian from page
+                            console.log("removing from page " + '#panel-' + smt_panel_num)
+                            $('#panel-' + smt_panel_num.replace("smt_", "")).remove()
+                        }
+                    });
+                } else {
                     // Remove statement accordian from page
-                    console.log("removing from page "+'#panel-'+smt_panel_num)
-                    $( '#panel-'+smt_panel_num.replace("smt_","") ).remove()
-                  }
-                });
-              } else {
-                // Remove statement accordian from page
-                console.log("removing from page "+'#panel-'+smt_panel_num)
-                $( '#panel-'+smt_panel_num.replace("smt_","") ).remove()
-              }
-          }
+                    console.log("removing from page " + '#panel-' + smt_panel_num)
+                    $('#panel-' + smt_panel_num.replace("smt_", "")).remove()
+                }
+            }
         }
-      </script>
-      <script>
-        $( document ).ready(function() {
+    </script>
+    <script>
+        $(document).ready(function () {
             //console.log("document ready");
         });
 
-      </script>
+    </script>
+    <script>
+        function copy_smt_prototype(smt_panel_num) {
+            // User wants to copy the certified statement locally
+            // Copy the statement's prototype body text into statement body textarea
+            smt_prototype = $('#prototype_body_' + smt_panel_num).text();
+            $('#body_' + smt_panel_num).val($('#prototype_body_' + smt_panel_num).text().trim());
+            // Update comparison label
+            $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as certified</a></span>');
+            // Update comparison
+            $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
+        }
 
-  {% endblock %}
+        function update_smt_prototype(smt_panel_num) {
+            var data = $('#smt_' + smt_panel_num).serialize();
+            data = data + "&smt_panel_num=" + smt_panel_num;
+            // console.log(data);
+            show_modal_confirm(
+                "Warning!",
+                "Are you sure you want to update the certified statement?",
+                "Update",
+                function () {
+                    ajax_with_indicator({
+                        url: "/controls/smt/_update_smt_prototype/",
+                        method: "POST",
+                        data: data,
+                        success: function (res) {
+                            // console.log(res);
+                            // Update comparison label
+                            $('#diff_alert_' + smt_panel_num).html('<span id="diff_alert_' + smt_panel_num + '"><a href="#diff_' + smt_panel_num + '" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span class="glyphicon glyphicon-check"></span> Same as certified</a></span>');
+                            // Update comparison
+                            $('#diff_comparison_' + smt_panel_num).text('Texts are identical.');
+                            // Update certified text
+                            // TODO: improve translating `smt_body` to clean html
+                            $('#prototype_body_display_' + smt_panel_num).html(res["data"]["smt_body"].replace(/\n/g, "<br/>"));
+                            // $( '#diff_'+smt_panel_num.replace("smt_","") ).hide();
+                            // $( '#diff_alert_'+smt_panel_num.replace("smt_","") ).hide();
+                        }
+                    });
+                }
+            );
+            return false;
+        }
+    </script>
+
+    <script>
+        var helpers = {
+
+            buildDropdown: function (result, dropdown, emptyMessage) {
+
+                //Remove current options
+                dropdown.html('');
+
+
+                //Check result isn't empty
+                if (result != '') {
+                    // loop
+                    $.each(result['producer_element_name_value'], function (k, v) {
+                        console.log("k, v");
+                        console.log(k, v);
+
+                        dropdown.append("<option value='" + v["id"] + "'>" + v["name"] + "</option>");
+                    });
+                }
+                if (dropdown.html() === '') {
+
+                    dropdown.append("<option disabled>" + emptyMessage + "</option>");
+
+                    $('#statement_alert')
+                        .text("No statements found.", result)
+                        .fadeIn('fast');
+                    setTimeout(function () {
+                        $('#statement_alert').fadeOut()
+                    }, 3000);
+                }
+
+            },
+            buildModalcheckbox: function (result, modal, emptyMessage) {
+                //Remove current options
+                modal.html('');
+                //Check result isn't empty
+                if (result != '') {
+                    // loop
+                    $.each(result['producer_element_statement_values'], function (loopcount, v) {
+                        console.log("loopcount, v");
+                        console.log(loopcount, v);
+                        var startlist = "<li>";
+                        var endlist = "</li>";
+                        var data = `{% include 'controls/modalcheckbox.html' %}
+`.replace(/smt_id/g, v['smt_id']).replace(/smt_sid_class/g, v['smt_sid_class']).replace(/smt_sid/g, v['smt_sid']).replace(/producer_element_name/g, v['producer_element_name']).replace(/smt_body/g, v['smt_body']).replace(/smt_pid/g, v['smt_pid']).replace(/smt_status/g, v['smt_status']).replace(/loopcount/g, loopcount + 1)
+                        modal.append(startlist + data + endlist)
+
+                    });
+
+                }
+
+
+            },
+        }
+
+        function producer_autocomplete(text, system_id) {
+            // Update the producer component autocomplete
+            // Create an AJAX request to upload all of the files at once.
+
+
+            // Submit the ajax request.
+            ajax_with_indicator({
+                url: "{% url 'search_system_component' %}",
+                data: {
+                    "text": text,
+                    "system_id": system_id,
+                },
+                dataType: "json",
+                method: "GET",
+                success: function (res) {
+                    helpers.buildDropdown(res, $('#selected_producer_element_form_id'), "No existing statements found!");
+
+                }, error: function (res) {
+
+                    var errorjson = $.parseJSON(res);
+                    show_modal_error("Search Error", errorjson["message"]);
+                }
+            });
+
+        }
+    </script>
+
+    <script type="text/javascript">
+        $('.selectall').click(function () {
+            if ($(this).is(':checked')) {
+                $('input:checkbox').prop('checked', true);
+            } else {
+                $('input:checkbox').prop('checked', false);
+            }
+        });
+
+
+        function show_related_controls(system_id) {
+            // Update the modal to show the related controls
+            // TODO: producer_element_form_id becomes the list of related control components to the current selected component
+            var producer_element_form_id = $('#selected_producer_element_form_id :selected').val();
+            var control_id = $('#control_id').val();
+            // Submit the ajax request.
+            ajax_with_indicator({
+                url: "{% url 'related_system_components' %}",
+                data: {
+                    "system_id": system_id,
+                    "producer_element_form_id": producer_element_form_id || $('#producer_element_id').val(),
+                    "control_id": control_id
+                },
+                dataType: "json",
+                method: "GET",
+                success: function (res) {
+                    helpers.buildModalcheckbox(res, $('#relatedcomp ol'), "Related components were not added!");
+                    $('#relatedcomp').append("<input type='hidden' id='selected_producer_element_form_id' name='selected_producer_element_form_id' value=" + res['selected_producer_element_form_id'] + '>')
+
+                    $("#relatedcompModal .modal-title").text("Select component statements related to " + res['selected_component'])
+                    $("#relatedcompModal").modal('show');
+
+                }, error: function (res) {
+
+                    var errorjson = $.parseJSON(res);
+                    show_modal_error("Search Error", errorjson["message"]);
+                }
+            });
+
+        }
+
+        function check_for_selection() {
+            var checked = $('#relatedcomp').find(':checked').length;
+
+            if (!checked) {
+                $('#related_statement_alert')
+                    .text("No related components selected.")
+                    .fadeIn('fast');
+                setTimeout(function () {
+                    $('#related_statement_alert').fadeOut()
+                }, 5000);
+                return false;
+            }
+
+            if (checked) {
+                var smts_selected = [];
+                $('#relatedcomp :checked').each(function () {
+                    smts_selected.push($(this).val());
+                });
+                var alert_section = $('#related_statement_alert')
+
+                alert_section.text("Added new statement implementation(s) with prototype id(s) : " + smts_selected.join(', '))
+                    .fadeIn('fast');
+                alert_section.attr('class', 'alert alert-success');
+                setTimeout(function () {
+                    $('#related_statement_alert').fadeOut()
+                }, 5000);
+                return true;
+            }
+            // Add a success message to related_statement_alert
+
+        }
+
+
+    </script>
+
+{% endblock %}
