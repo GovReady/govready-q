@@ -281,7 +281,7 @@
                                 <div class="form-group">
                                     <label for="component">Add existing component</label>&nbsp;&nbsp;
                                     <input type="text" class="form-control" id="producer_element_search" name="text" placeholder="Name of component"
-                                           onchange="producer_autocomplete($(this).val(), {{ system.id }})">
+                                           onchange="search_components($(this).val(), {{ system.id }})">
                                 </div>
                                 <div class="form-group">
                                     <select name="selected_producer_element_form_id" id="selected_producer_element_form_id" style="width:340px;">
@@ -336,16 +336,12 @@
 
                                 </div>
                                 <div class="modal-body form-group">
-
                                     <div id="relatedcomp">
                                         <ol>
 
                                         </ol>
                                     </div>
-
-
                                 </div>
-
 
                                 <div class="modal-footer">
                                     <label><input type="checkbox" class="selectall">Select all</label>
@@ -357,8 +353,6 @@
                                 <strong>Danger!</strong>
                             </div>
                         </div><!-- /.modal-dialog -->
-
-
                     </div>
                 </form>
             </div>
@@ -603,8 +597,7 @@
                 if (result != '') {
                     // loop
                     $.each(result['producer_element_statement_values'], function (loopcount, v) {
-                        console.log("loopcount, v");
-                        console.log(loopcount, v);
+
                         var startlist = "<li>";
                         var endlist = "</li>";
                         var data = `{% include 'controls/modalcheckbox.html' %}
@@ -619,12 +612,8 @@
             },
         }
 
-        function producer_autocomplete(text, system_id) {
-            // Update the producer component autocomplete
-            // Create an AJAX request to upload all of the files at once.
-
-
-            // Submit the ajax request.
+        function search_components(text, system_id) {
+                // Submit the ajax request to search
             ajax_with_indicator({
                 url: "{% url 'search_system_component' %}",
                 data: {
@@ -658,7 +647,6 @@
 
         function show_related_controls(system_id) {
             // Update the modal to show the related controls
-            // TODO: producer_element_form_id becomes the list of related control components to the current selected component
             var producer_element_form_id = $('#selected_producer_element_form_id :selected').val();
             var control_id = $('#control_id').val();
             // Submit the ajax request.
@@ -673,7 +661,6 @@
                 method: "GET",
                 success: function (res) {
                     helpers.buildModalcheckbox(res, $('#relatedcomp ol'), "Related components were not added!");
-                    $('#relatedcomp').append("<input type='hidden' id='selected_producer_element_form_id' name='selected_producer_element_form_id' value=" + res['selected_producer_element_form_id'] + '>')
 
                     $("#relatedcompModal .modal-title").text("Select component statements related to " + res['selected_component'])
                     $("#relatedcompModal").modal('show');
@@ -715,7 +702,6 @@
                 }, 5000);
                 return true;
             }
-            // Add a success message to related_statement_alert
 
         }
 
