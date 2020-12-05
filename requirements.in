@@ -68,6 +68,3 @@ markupsafe==1.1.1 # BSD 3
 
 # Excel exports
 openpyxl # MIT License
-
-# pin gevent to working version; we're getting Docker build errors with gevent==20.5.0
-gevent==1.4.0
