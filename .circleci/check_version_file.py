@@ -38,6 +38,6 @@ if not DEVEL_BUILD and v.local:
 	print("ERROR: The version number {} is not a PEP440-compliant public version number. It should not have a + component.".format(repr(VERSION)))
 	sys.exit(1)
 
-if DEVEL_BUILD and v.local != "devel":
+if DEVEL_BUILD and v.local != "v999":
 	print("ERROR: CHANGELOG has content before a version heading while VERSION file does not include '+devel'. For version releases, VERSION should not include '+devel' and no information should come before the version heading in CHANGELOG. Alternatively, the version number {} should end with +devel to signal that this is a development build.".format(repr(VERSION)))
 	sys.exit(1)
