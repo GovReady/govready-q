@@ -8,7 +8,7 @@
   <div class="col-xs-10 col-md-5"><strong>Portfolio</strong></div>
   <div class="col-xs-6 col-sm-1"><strong>ID</strong></div>
   <div class="col-xs-6 col-sm-2"><strong>Role</strong></div>
-  <div class="col-md-2">&nbsp;</div>
+  <div class="col-xs-6 col-sm-2"><strong>Manage</strong></div>{#  check for permission to change portfolio#}
   <div class="col-xs-12 col-md-2"><strong>Created</strong></div>
 </div>
 {% endif %}
@@ -28,12 +28,24 @@
     {% get_obj_perms request.user for portfolio as "perms" %}
     {% if "can_grant_portfolio_owner_permission" in perms %}
     <div class="col-md-2">Owner</div>
+        <div class="col-md-2">
+            <span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;&nbsp;
+            <a id="new-project" class="portfolio-project-link" onclick="show_manage_portfolio_modal(); return false;" href="#">Manage Portfolio</a>
+        </div>
     {% elif "change_portfolio" in perms%}
     <div class="col-md-2">Portfolio Member</div>
+    <div class="col-md-2">
+        <div class="col-md-2">
+            <span class="glyphicon glyphicon-pencil"></span>&nbsp;&nbsp;&nbsp;
+            <a id="new-project" class="portfolio-project-link" onclick="show_manage_portfolio_modal(); return false;" href="#">Manage Portfolio</a>
+        </div>
     {% else %}
     <div class="col-md-2">Project Member</div>
+        <div class="col-md-2">
+            <span class="glyphicon glyphicon-minus"></span>&nbsp;&nbsp;&nbsp;
+        No Permission
+        </div>
     {% endif %}
-    <div class="col-md-2">&nbsp;</div>
 
     <div class="col-xs-12 col-md-2 left-text">
         {{portfolio.created|naturaltime}}</div>

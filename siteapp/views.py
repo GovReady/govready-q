@@ -1418,6 +1418,74 @@ def new_portfolio(request):
         "project_form": ProjectForm(request.user),
     })
 
+@login_required
+def delete_portfolio(request, pk):
+    """Form to delete portfolios"""
+
+    # TODO: change from new portfolio to delete a specific portfolio
+    if request.method == 'POST':
+      form = PortfolioForm(request.POST)
+      if form.is_valid():
+        form.save()
+        portfolio = form.instance
+        logger.info(
+            event="new_portfolio",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        portfolio.assign_owner_permissions(request.user)
+        logger.info(
+            event="new_portfolio assign_owner_permissions",
+            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+            receiving_user={"id": request.user.id, "username": request.user.username},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        return redirect('portfolio_projects', pk=portfolio.pk)
+    else:
+        form = PortfolioForm()
+
+    return render(request, 'portfolios/form.html', {
+        'form': form,
+        "project_form": ProjectForm(request.user),
+    })
+
+@login_required
+def edit_portfolio(request, pk):
+    """Form to create new portfolios"""
+    portfolio = Portfolio.objects.get(pk=pk)
+    project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
+    if request.method == 'GET':
+        portfolio = Portfolio.objects.get(pk=pk)
+        project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
+    if request.method == 'POST':
+        portfolio = Portfolio.objects.get(pk=pk)
+        project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
+        form = PortfolioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            portfolio = form.instance
+            logger.info(
+                event="new_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            portfolio.assign_owner_permissions(request.user)
+            logger.info(
+                event="new_portfolio assign_owner_permissions",
+                object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
+                receiving_user={"id": request.user.id, "username": request.user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('portfolio_projects', pk=portfolio.pk)
+    else:
+        form = PortfolioForm()
+
+    return render(request, 'portfolios/form.html', {
+        'form': form,
+        "project_form": ProjectForm(request.user),
+        "can_change_portfolio": request.user.has_perm('change_portfolio', portfolio),
+    })
+
 def portfolio_read_required(f):
     @login_required
     def g(request, pk):
@@ -1449,6 +1517,7 @@ def portfolio_projects(request, pk):
       "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
       "project_form": project_form,
       "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
+      "can_change_portfolio": request.user.has_perm('change_portfolio', portfolio),
       "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
       "users_with_perms": portfolio.users_with_perms(),
       "display_users_with_perms": len(portfolio.users_with_perms()),
