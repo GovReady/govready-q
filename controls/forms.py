@@ -59,11 +59,15 @@ class PoamForm(ModelForm):
 
 class ImportOSCALComponentForm(forms.Form):
 
-    # TODO: Determine whether to upload JSON as file or paste as text.
-    # file = forms.FileField(label="Select OSCAL file (.json)", widget=forms.FileInput, validators=[FileExtensionValidator(['json'])])
+    file = forms.FileField(label="Select OSCAL file (.json)", widget=forms.FileInput(
+        attrs={
+            'onchange': "fillJSONContent(this);"
+        }),
+       validators=[FileExtensionValidator(['json'])]
+    )
     json_content = forms.CharField(label='OSCAL (JSON)', widget=forms.Textarea(
         attrs={
             "rows": 10,
-            "cols": 50
+            "cols": 75,
         }),
     )
