@@ -12,6 +12,7 @@ from django.forms import ModelForm
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.db import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
 from django.views import View
 from django.utils.text import slugify
 from siteapp.models import Project, User, Organization
@@ -337,17 +338,27 @@ class OpenControlComponentSerializer(ComponentSerializer):
 
 class ComponentImporter(object):
 
-    def import_component_as_json(self, json_object):
-        """Imports a Component from a JSON object"""
+    def import_component_as_json(self, json_object, request):
+        """Imports a Component from a JSON object
+
+        @type json_object: dict
+        @param json_object: Element attributes from JSON object
+        @rtype: list if success, bool (false) if failure
+        @returns: List of created components (if success) or False is failure
+        """
+
         # Validates the format of the JSON object
         try:
             oscal_json = json.loads(json_object)
         except ValueError:
+            messages.add_message(request, messages.ERROR, f"Invalid JSON. Component(s) not created.")
             return False
         if self.validate_oscal_json(oscal_json):
-            # TODO: Since format is verified, check if component name already exists in system before creating it
-            had_success = self.create_components(oscal_json)
-            return had_success
+            # Returns list of created components
+            return self.create_components(oscal_json, request)
+        else:
+            messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
+            return False
 
     def validate_oscal_json(self, oscal_json):
         """Validates the JSON object is valid OSCAL format"""
@@ -358,33 +369,84 @@ class ComponentImporter(object):
         # (Will throw error if validation fails)
         return True
 
-    def create_components(self, oscal_json):
+    def create_components(self, oscal_json, request):
         """Creates Elements (Components) from valid OSCAL JSON"""
-        #TODO: Return the Element (Component) if successful creation.
-        #TODO: Throw errors/return false/post error messages if fail
+        components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
-            self.create_component(components[component])
+            new_component = self.create_component(component, components[component], request)
+            if new_component is not None:
+                components_created.append(new_component)
 
-        return True
+        return components_created
 
-    def create_component(self, component_json):
+    def create_component(self, component_uuid, component_json, request):
+        """Creates a component from a JSON dict
+
+        @type component_uuid: str
+        @param component_uuid: UUID of imported component
+        @type component_json: dict
+        @param component_json: Component attributes from JSON object
+        @rtype: Element
+        @returns: Element object if created, None otherwise
+        """
+        existing_element_uuids = Element.objects.filter(uuid=component_uuid).count()
+        if existing_element_uuids > 0:
+            messages.add_message(request, messages.ERROR, f"Component with this uuid already exists. Skipping...")
+            return None
         try:
-            new_component = Element.objects.create(name=component_json['name'], description=component_json['description'])
+            new_component = Element.objects.create(
+                name=component_json['name'] if 'name' in component_json else None,
+                description=component_json['description'] if 'description' in component_json else None,
+                element_type=component_json['component-type'] if 'component-type' in component_json else None,
+                uuid=component_uuid
+            )
             # TODO: Error checking on whether or not these json fields are there
             # (Don't need to do this validation if we use the json schema checker previously)
-            # TODO: Create and link the control implementation statements (prototypes) from the OSCAL JSON
             new_component.save()
+            control_implementation_statements = component_json['control-implementations']
+            for control in control_implementation_statements:
+                self.create_control_implementation_statements(control, new_component, request)
+            messages.add_message(request, messages.INFO, f"Component {component_json['name']} created.")
+            return new_component
         except IntegrityError:
-            new_component = None
-        control_implementation_statements = component_json['control-implementations']
-        for control in control_implementation_statements:
-            self.create_control_implementation_statements(control)
-        return True
+            messages.add_message(request, messages.ERROR, f"Component with this name already exists. Skipping...")
+            return None
 
-    def create_control_implementation_statements(self, control_impl_json):
-        #TODO: Consider going one level lower, for the control (AC-7)
-        return True
+    def create_control_implementation_statements(self, impl_stmnt_json, parent_component, request):
+        """Creates a Statement from a JSON dict
+
+        @type parent_component: str
+        @param parent_component: UUID of parent component
+        @type impl_stmnt_json: dict
+        @param impl_stmnt_json: Statement attributes from JSON object
+        @rtype: Statement
+        @returns: Statement object if created, None otherwise
+        """
+
+        existing_statement_uuids = Statement.objects.filter(uuid=impl_stmnt_json['uuid']).count()
+        if existing_statement_uuids > 0:
+            messages.add_message(request, messages.ERROR, f"Statement with this uuid already exists. Skipping...")
+            return None
+        try:
+            new_statement = Statement.objects.create(
+                sid=impl_stmnt_json['implemented-requirements'][0]['control-id'] if 'control-id' in impl_stmnt_json['implemented-requirements'][0] else None,
+                sid_class=impl_stmnt_json['source'] if 'source' in impl_stmnt_json else None,
+                pid=impl_stmnt_json['implemented-requirements'][0]['properties']['value'] if 'properties' in impl_stmnt_json['implemented-requirements'][0] and 'value' in impl_stmnt_json['implemented-requirements'][0]['properties'] else None,
+                body=impl_stmnt_json['description'] if 'description' in impl_stmnt_json else None,
+                statement_type="control_implementation_prototype",
+                remarks=impl_stmnt_json['implemented-requirements'][0]['remarks'] if 'remarks' in impl_stmnt_json['implemented-requirements'][0] else None,
+                status = impl_stmnt_json['status'] if 'status' in impl_stmnt_json else None,
+                producer_element=parent_component,
+                # TODO: Check existence of these before using them.
+                # TODO: Include other fields that may be included.
+                # TODO: Loop and link more Implemented Reqs
+            )
+            new_statement.save()
+            return new_statement
+        except IntegrityError:
+            messages.add_message(request, messages.ERROR, f"Statement already exists. Skipping...")
+            return None
 
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
@@ -492,11 +554,7 @@ def import_component(request):
 
     oscal_component_json = request.POST['json_content']
 
-    result = ComponentImporter().import_component_as_json(oscal_component_json)
-    if result:
-        messages.add_message(request, messages.INFO, f"Component(s) created in Component Library.")
-    else:
-        messages.add_message(request, messages.ERROR, f"Component(s) not created. (Invalid OSCAL JSON or Components already existed.)")
+    result = ComponentImporter().import_component_as_json(oscal_component_json, request)
 
     return render(request, "components/component_library.html", {})
 
@@ -546,10 +604,8 @@ def controls_selected_export_xacta_xslx(request, system_id):
                 impl_smts_by_sid[smt.sid] = [smt]
 
         for control in controls:
-            # print(control)
             if control.oscal_ctl_id in impl_smts_by_sid:
                 setattr(control, 'impl_smts', impl_smts_by_sid[control.oscal_ctl_id])
-                # print(control.oscal_ctl_id, control.impl_smts)
             else:
                 setattr(control, 'impl_smts', None)
 
@@ -918,7 +974,6 @@ def editor(request, system_id, catalog_key, cl_id):
         by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"][
             "{}_smt".format(cl_id)]["by-components"]
         for smt in impl_smts:
-            # print(smt.id, smt.body)
             my_dict = {
                 smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-")): {
                     "description": smt.body,
@@ -1049,7 +1104,6 @@ def save_smt(request):
 
         # Track if we are creating a new statement
         new_statement = False
-        #print(dict(request.POST))
         form_dict = dict(request.POST)
         form_values = {}
         for key in form_dict.keys():
@@ -1153,7 +1207,6 @@ def save_smt(request):
                 return JsonResponse({ "status": "error", "message": statement_msg })
 
         # Associate Statement and System's root_element
-        # print("** System.objects.get(pk=form_values['system_id']).root_element", System.objects.get(pk=form_values['system_id']).root_element)
         system_id = form_values['system_id']
         if new_statement and system_id is not None:
             try:
@@ -1274,7 +1327,6 @@ def delete_smt(request):
         # #     skipped_reason = request.POST.get("skipped_reason") or None
         #     unsure = bool(request.POST.get("unsure"))
 
-        #print(dict(request.POST))
         form_dict = dict(request.POST)
         form_values = {}
         for key in form_dict.keys():
@@ -1608,7 +1660,6 @@ def export_system_opencontrol(request, system_id):
         import tempfile
         temp_dir = tempfile.TemporaryDirectory(dir=".")
         repo_path = os.path.join(temp_dir.name, system.root_element.name.replace(" ", "_"))
-        # print(temp_dir.name)
         if not os.path.exists(repo_path):
             os.makedirs(repo_path)
 
