@@ -5,14 +5,12 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="invitation_modal_title">Import OSCAL Component</h4>
       </div>
-      <form action="{% url 'import_component' %}" role="form" method="get">
+      <form action="{% url 'import_component' %}" role="form" method="POST">{% csrf_token %}
         <div class="modal-body">
-          <!-- TODO: Replace with form class fields -->
-          <label>Upload OSCAL Component (.json)</label>:
-         </div>
+          {{ import_form.as_p }}
          <div class="modal-footer">
            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-           <button id="import_component_submit" class="btn btn-success btn-submit" type="submit">Import Component</button>
+           <input id="import_component_submit" class="btn btn-success btn-submit" type="submit" value="Import" />
           </div>
         </form>
       </div>

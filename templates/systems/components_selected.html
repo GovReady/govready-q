@@ -28,9 +28,6 @@
             <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > Selected Components
           </h2>
       </div>
-      <div style="float: right; margin: 0 0.5em 0em 5em;">
-        <button id="component-import-oscal" class="btn btn-success" onclick="show_import_component_modal(); return false;" href="#" ">Import OSCAL Component</button>
-      </div>
     </div>
   </div><!--/row-->
     <p>&nbsp;</p>
@@ -70,8 +67,6 @@
 
   </div>
 </div>
-
-  {% include "components/import-component-modal.html" %}
 
 {{ block.super }}
 {% endblock %}

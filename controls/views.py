@@ -11,10 +11,12 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.forms import ModelForm
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.db import IntegrityError
 from django.views import View
 from django.utils.text import slugify
 from siteapp.models import Project, User, Organization
 from siteapp.forms import PortfolioForm, ProjectForm
+from .forms import ImportOSCALComponentForm
 from datetime import datetime, timezone
 from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
@@ -235,8 +237,9 @@ def component_library(request):
     """Display the library of components"""
 
     context = {
-            "elements": Element.objects.all().exclude(element_type='system'),
-        }
+        "elements": Element.objects.all().exclude(element_type='system'),
+        "import_form": ImportOSCALComponentForm(),
+    }
     return render(request, "components/component_library.html", context)
 
 class ComponentSerializer(object):
@@ -331,6 +334,58 @@ class OpenControlComponentSerializer(ComponentSerializer):
         opencontrol_string = rtyaml.dump(ocf)
         return opencontrol_string
 
+
+class ComponentImporter(object):
+
+    def import_component_as_json(self, json_object):
+        """Imports a Component from a JSON object"""
+        # Validates the format of the JSON object
+        try:
+            oscal_json = json.loads(json_object)
+        except ValueError:
+            return False
+        if self.validate_oscal_json(oscal_json):
+            # TODO: Since format is verified, check if component name already exists in system before creating it
+            had_success = self.create_components(oscal_json)
+            return had_success
+
+    def validate_oscal_json(self, oscal_json):
+        """Validates the JSON object is valid OSCAL format"""
+        # TODO: Define a valid oscal json schema
+        oscal_json_schema = {}
+        # TODO: import a jsonschema validator, like so: from jsonschema import validate
+        # TODO: Do actual comparison of json with the following: validate(instance=oscal_json, schema=schema)
+        # (Will throw error if validation fails)
+        return True
+
+    def create_components(self, oscal_json):
+        """Creates Elements (Components) from valid OSCAL JSON"""
+        #TODO: Return the Element (Component) if successful creation.
+        #TODO: Throw errors/return false/post error messages if fail
+        components = oscal_json['component-definition']['components']
+        for component in components:
+            self.create_component(components[component])
+
+        return True
+
+    def create_component(self, component_json):
+        try:
+            new_component = Element.objects.create(name=component_json['name'], description=component_json['description'])
+            # TODO: Error checking on whether or not these json fields are there
+            # (Don't need to do this validation if we use the json schema checker previously)
+            # TODO: Create and link the control implementation statements (prototypes) from the OSCAL JSON
+            new_component.save()
+        except IntegrityError:
+            new_component = None
+        control_implementation_statements = component_json['control-implementations']
+        for control in control_implementation_statements:
+            self.create_control_implementation_statements(control)
+        return True
+
+    def create_control_implementation_statements(self, control_impl_json):
+        #TODO: Consider going one level lower, for the control (AC-7)
+        return True
+
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
 
@@ -385,12 +440,17 @@ def component_library_component(request, element_id):
     # Get the impl_smts contributed by this component to system
     impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
 
-    # TODO: We may have multiple catalogs in this case in the future
-    # Retrieve used catalog_key
-    catalog_key = impl_smts[0].sid_class
+    try:
+        # TODO: We may have multiple catalogs in this case in the future
+        # Retrieve used catalog_key
+        catalog_key = impl_smts[0].sid_class
 
-    # Retrieve control ids
-    catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+        # Retrieve control ids
+        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+    except IndexError:
+        catalog_key = None
+        catalog_controls = []
+
 
     # Build OSCAL and OpenControl
     oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
@@ -430,18 +490,15 @@ def component_library_component_copy(request, element_id):
 def import_component(request):
     """Import a Component in JSON"""
 
-    if "systems" not in request.GET and "components" not in request.GET:
-        messages.add_message(request, messages.ERROR, "Please import a component to a specific Project or to the Component Library.")
-        return HttpResponseRedirect(reverse("component_library"))
-    elif "systems" in request.GET:
-        # TODO: Determine _which_ system from the query string and add that in, redirect back to that.
-        messages.add_message(request, messages.ERROR, "Component created in project X.")
-        component_container = "system X"
-        return render(request, "projects.html", {"component_container": component_container})
-    elif "components" in request.GET:
-        messages.add_message(request, messages.ERROR, "Component created in Component Library.")
-        component_container = "component_library"
-        return render(request, "components/component_library.html", {"component_container": component_container})
+    oscal_component_json = request.POST['json_content']
+
+    result = ComponentImporter().import_component_as_json(oscal_component_json)
+    if result:
+        messages.add_message(request, messages.INFO, f"Component(s) created in Component Library.")
+    else:
+        messages.add_message(request, messages.ERROR, f"Component(s) not created. (Invalid OSCAL JSON or Components already existed.)")
+
+    return render(request, "components/component_library.html", {})
 
 def system_element_download_oscal_json(request, system_id, element_id):
     # Retrieve identified System

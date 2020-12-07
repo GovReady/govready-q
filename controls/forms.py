@@ -1,9 +1,8 @@
 from django import forms
 from django.forms import ModelForm
 from django.forms.widgets import HiddenInput
-# from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
-from django.db.models import Exists
+from django.core.validators import FileExtensionValidator
 
 from .models import Statement, Poam
 
@@ -13,7 +12,6 @@ class StatementPoamForm(ModelForm):
         self._statement_type = kwargs.pop('statement_type', None)
         self._consumer_element = kwargs.pop('consumer_element', None)
         super().__init__(*args, **kwargs)
-        # print(self.fields['status'].__dict__)
         self.fields['status'].initial = self._status
         self.fields['statement_type'].initial = self._statement_type
         self.fields['statement_type'].widget = HiddenInput()
@@ -58,3 +56,14 @@ class PoamForm(ModelForm):
         labels = {
             "poam_group": "Group"
         }
+
+class ImportOSCALComponentForm(forms.Form):
+
+    # TODO: Determine whether to upload JSON as file or paste as text.
+    # file = forms.FileField(label="Select OSCAL file (.json)", widget=forms.FileInput, validators=[FileExtensionValidator(['json'])])
+    json_content = forms.CharField(label='OSCAL (JSON)', widget=forms.Textarea(
+        attrs={
+            "rows": 10,
+            "cols": 50
+        }),
+    )
