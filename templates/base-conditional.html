@@ -57,7 +57,7 @@
     {% endblock %}
 
     {% if messages %}
-    <div class="container-fluid" style="margin-top: 1em;">
+    <div class="container-fluid message-margin">
       {% for message in messages %}
         {# Django levels are: debug (map to Boostrap 'info'), info, success, warning, error (map to Boostrap 'danger') #}
         {% if message.level_tag != "success" %}{# Skip success messages #}
@@ -95,7 +95,7 @@
                 <div class="col-xs-12">
                     &copy; GovReady {% now "Y" %}.
                     <a href="/privacy">Privacy Policy</a>.
-                    <a href="/terms-of-service">Terms of Service</a>. 
+                    <a href="/terms-of-service">Terms of Service</a>.
                 </div>
                 <div class="col-xs-12">
                   ver {{APP_VERSION_STRING}}
@@ -118,29 +118,29 @@
             <h4 class="modal-title" id="invitation_modal_title">...</h4>
           </div>
           <div class="modal-body">
-            <p style="margin: 1em 0 2em 0">Hmm text here.</p>
+            <p class="modal-text">Hmm text here.</p>
             <form class="form" onsubmit="return send_invitation()">
                 {% csrf_token %}
-                <div class="form-group" style="margin-right: 1em">
+                <div class="form-group form-group-margin">
                   <label for="invite-user-select">Select user to invite</label>
                   <br>
                   <select id="invite-user-select" class="form-control" name="user" onchange="invite_toggle_mode()">
                   </select>
                 </div>
-                <div class="form-group" style="margin-right: 1em; display: none">
+                <div class="form-group form-by-email">
                   <label for="invite-user-email">
                     Invite by Email
                     <span>(<a onclick="$('#invite-user-select').val(''); invite_toggle_mode()">back</a>)</span>
                   </label>
                   <br>
-                  <input id="invite-user-email" class="form-control" name="email" type="email" placeholder="person@your-agency.gov" style="width: 25em;">
+                  <input id="invite-user-email" class="form-control form-email-width" name="email" type="email" placeholder="person@your-agency.gov">
                 </div>
-                <div id="invite-message-container" style="margin-top: 1em">
+                <div id="invite-message-container message-margin">
                   <label for="invite-message">Include a message about why you are sending this invitation:</label>
-                  <textarea id="invite-message" class="form-control" style="width: 100%; height: 4em"></textarea>
+                  <textarea id="invite-message invite-message-size" class="form-control"></textarea>
                 </div>
                 <div id="invite-addtoteam-container" style="display: none">
-                  <div class="checkbox" style="margin-top: 1em">
+                  <div class="checkbox form-checkbox">
                     <label>
                       <input name="add-to-team" type="checkbox"> Add user to system team
                     </label>

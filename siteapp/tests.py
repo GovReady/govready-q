@@ -89,7 +89,6 @@ class SeleniumTest(StaticLiveServerTestCase):
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True
         })
-        cls.browser = selenium.webdriver.Chrome(chrome_options=options)
         cls.browser.implicitly_wait(3) # seconds
 
         # Clean up and quit tests if Q is in SSO mode

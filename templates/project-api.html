@@ -34,7 +34,7 @@ API
     .highlight .p, .highlight .nt { color: #337ab7; font-weight: bold; }
     .highlight .s2 { color: black; }
     </style>
-    <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
+    <div class="project-api-sample">
     {{sample|safe}}
     </div>
 
@@ -51,7 +51,7 @@ API
 
     <h2>Updating answers using a POST request with key-value pairs</h2>
 
-    <p>There are two types of POST requests that can be used to update app data. In the first type, described in this section, data values are provided as key-value pairs using the regular web browser form submission method. (In the second form, described below, answers are provided using a JSON data structure that is formatted the same as the JSON data structure returned by a GET request, which may be more appropriate when submitting non-textual and non-binary content.) 
+    <p>There are two types of POST requests that can be used to update app data. In the first type, described in this section, data values are provided as key-value pairs using the regular web browser form submission method. (In the second form, described below, answers are provided using a JSON data structure that is formatted the same as the JSON data structure returned by a GET request, which may be more appropriate when submitting non-textual and non-binary content.)
 
     <p>In each of the key-value pairs submitted in the POST request, the <strong>key</strong> is a dotted-path question ID. The key always begins with <code>project.</code> and is followed by the property names on the path to the question being updated, according to the JSON data structure, with property names separated by the <code>.</code> character.</p>
 
@@ -59,7 +59,7 @@ API
 
     <p>For example:</p>
 
-    <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
+    <div class="project-api-sample">
     <pre>{% for key, value in sample_post_keyvalue %}{{key}}={{value}}
 {% endfor %}</pre>
     </div>
@@ -87,7 +87,7 @@ API
 
     <p>The POST request body always includes:</p>
 
-    <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
+    <div class="project-api-sample">
     <div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="nt">"schema"</span><span class="p">:</span> <span class="s2">"GovReady Q Project API 1.0"</span><span class="p">,</span>
   <span class="nt">"project"</span><span class="p">:</span> <span class="p">{</span>
@@ -101,7 +101,7 @@ API
 
     <p>For example:</p>
 
-    <div style="max-height: 20em; overflow: auto; border: 1px solid #555; margin: 1.5em 0">
+    <div class="project-api-sample">
     {{sample_post_json|safe}}
     </div>
 
@@ -135,8 +135,8 @@ API
         {% ifchanged path module %}
         <tr>
           <th colspan=3>
-            <h3 style="font-weight: bold;">{{module.spec.title}}</h3>
-            <p style="font-size: 90%; font-weight: 400">
+            <h3 class="project-api-title">{{module.spec.title}}</h3>
+            <p class="project-api-text">
               These fields occur within
               {% for item in path %}
                 <code>{{item}}</code>

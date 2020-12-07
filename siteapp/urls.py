@@ -105,7 +105,6 @@ if 'django.contrib.auth.backends.ModelBackend' in settings.AUTHENTICATION_BACKEN
         # Necessary to keep existing routing in place to support links from invitation acceptance page
         # and proper routing of "NEXT" url to project after after accepting invitation
         # login button will redirect to the homepage with a login form
-        # url(r'^accounts/login/', views.homepage, name="account_login"),
         url(r'^accounts/', include('allauth.urls')),
     ]
 

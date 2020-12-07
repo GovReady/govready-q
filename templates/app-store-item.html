@@ -101,13 +101,13 @@
 {% block body %}
 
       <div>
-        <a href="/" style="color: black;">
-          <span class="glyphicon glyphicon-home" style="margin-right: .25em"></span>
+        <a href="/" class="glyphicon-home-icon">
+          <span class="glyphicon glyphicon-home"></span>
         </a>
         /
         <!-- fix this to display if I am in another app or store -->
         {% if portfolio %}
-          <a href="/store?portfolio={{ portfolio.id }}" class="" style="color: black;">Compliance Apps</a>
+          <a href="/store?portfolio={{ portfolio.id }}" class="breadcrumb-link">Compliance Apps</a>
         {% else %}
           <a href="/store">Compliance Apps</a>
         {% endif %}
@@ -116,9 +116,9 @@
 
 <div class="app">
   <!-- App Header -->
-  <div class="row" style="max-width:968px; margin: auto; padding-top: 30px;">
+  <div class="row app-header">
     <div class="col-sm-2">
-      {% if app.icon %}<img src="{{app.icon}}" class="app-icon" style="" alt= "App Icon">{% endif %}
+      {% if app.icon %}<img src="{{app.icon}}" class="app-icon" alt= "App Icon">{% endif %}
     </div>
     <div class="col-sm-8">
       <h1>{{app.title}}</h1>
@@ -128,7 +128,7 @@
       {% endif %}
     </div>
     <div class="col-sm-2">
-      <form method="post" style="margin: 1em; text-align: center;">
+      <form method="post" class="text-center">
         {% csrf_token %}
         {# If the user is a member of more than one organization that can start this app, the user much choose which organization context to start this app in. #}
         {% if app.organizations|length == 1 %}
@@ -136,8 +136,8 @@
             <input type="hidden" name="organization" value="{{first_org.slug}}">
           {% endwith %}
         {% else %}
-          <div style="margin-bottom: 1em">
-            <label for="add-to-org" style="font-weight: normal; margin: 0; font-size: 90%;">Add to:</label>
+          <div class="app-margin-bottom">
+            <label for="add-to-org" class="app-add-to-label">Add to:</label>
             <select id="add-to-org" name="organization" class="form-control">
               {% for org in app.organizations %}
                 <option value="{{org.slug}}">{{org.name}}</option>
@@ -145,7 +145,7 @@
             </select>
           </div>
         {% endif %}
-        <button id="start-project" type="submit" class="btn btn-success" style="width: 100%;">
+        <button id="start-project" type="submit" class="btn btn-success app-button-width">
           {% if not request.GET.q %}
           Add
           {% else %}
@@ -154,35 +154,35 @@
           ►
         </button>
       </form>
-      <button id="start-project" type="submit" class="btn btn-link" style="width: 100%;">
+      <button id="start-project" type="submit" class="btn btn-link btn-start-project">
           {% if portfolio %}
-            <a href="/store?portfolio={{ portfolio.id }}" style="color: #888;">Back to Apps</a>
+            <a href="/store?portfolio={{ portfolio.id }}" class="back-to-link">Back to Apps</a>
           {% else %}
-            <a href="/store" style="color: #888;">Back to Apps</a>
+            <a href="/store" class="back-to-link">Back to Apps</a>
           {% endif %}
       </button>
     </div>
   </div>
   <!-- Divider -->
-  <div class="row" style="max-width:968px; margin: auto;"><hr></div>
+  <div class="row" class="app-max-width-row"><hr></div>
   <!-- App Description -->
-  <div class="row" style="max-width:968px; margin: auto;">
+  <div class="row" class="app-max-width-row">
     <div class="col-sm-12">
-      <div class="body" style="margin-top:20px;">
+      <div class="body app-description">
         {{app.description.long|safe}}
       </div>
     </div>
   </div>
   <!-- App Information -->
-  <div class="row" style="max-width:968px; margin: auto; height: 24px;">
+  <div class="row app-max-width-row app-info-height">
     &nbsp;
   </div>
-  <div class="row" style="max-width:968px; margin: auto; border-top: 1px solid #eee; padding-top: 0px;">
+  <div class="row" class="app-max-width-row app-information-row">
     <div class="col-lg-12 col-sm-12">
       <div class="meta-heading"><strong>Information</strong></div>
     </div>
   </div>
-  <div class="row" style="max-width:968px; margin: auto;">
+  <div class="row" class="app-max-width-row">
     <div class="col-lg-4 col-sm-4">
       <div><span class="meta-key">Provider</span><br>
         {% if app.vendor_url is not None %}
@@ -201,8 +201,8 @@
       <div><span class="meta-key">AppSource</span><br>{{source_slug}}</span>
     </div>
   </div>
-  <div class="row" style="max-width:968px; margin: auto;"><p>&nbsp;</p></div>
-  <div class="row" style="max-width:968px; margin: auto;">
+  <div class="row" class="app-max-width-row"><p>&nbsp;</p></div>
+  <div class="row" class="app-max-width-row">
     <div class="col-lg4 col-sm-4">
         <div><span class="meta-key">Startable</span><br>
       {% if app.authz == "none" %}
@@ -216,5 +216,5 @@
 </div>
 
 <!-- Spacer bottom of page -->
-<div style="height:40px;">&nbsp;</div>
+<div class="app-bottom-spacer">&nbsp;</div>
 {% endblock %}

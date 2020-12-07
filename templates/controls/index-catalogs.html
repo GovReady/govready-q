@@ -18,14 +18,14 @@ Remove contextbar from top of page
 % block body-wide %
 {% block body %}
 
-<div style="margin-top: 30px">
+<div class="index-catalog-top">
   <div class="container">
 
-    <div class="row" style="">
+    <div class="row">
       <div id="above-tab-content" class="row">
         <!-- Page Title-->
         <div style="float: left;">
-          <h2 id="control-heading" class="">
+          <h2 id="control-heading">
             Control Catalogs
           </h2>
         </div>
@@ -33,11 +33,11 @@ Remove contextbar from top of page
     </div><!--/row-->
     <p>&nbsp;</p>
 
-    <div id="tab-content" class="row rows-header" style="">
+    <div id="tab-content" class="row rows-header">
         <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">Catalogs</div>
     </div>
    {% for catalog in catalogs.index %}
-    <div id="tab-content" class="row row-control" style="">
+    <div id="tab-content" class="row row-control">
         <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
             <a href="./catalogs/{{ catalog.catalog_key }}">{{ catalog.catalog_key_display }}</a>
         </div>

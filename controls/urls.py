@@ -11,7 +11,7 @@ from siteapp.settings import *
 
 urlpatterns = [
     url(r'^test$', views.test),
-    
+
     # Catalogs
     url(r'^$', views.catalogs),
     url(r'^catalogs$', views.catalogs),
@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
     url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
+    url(r'^related_system_components/', views.RelatedComponentStatements.as_view(), name="related_system_components"),
     url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="add_system_component"),
 
     url(r'^smt/_save/$', views.save_smt),
@@ -36,8 +37,6 @@ urlpatterns = [
         views.system_element_download_oscal_json, 
         name="system_element_download_oscal_json"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
-    url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
-
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
 
     # Component Library

@@ -1,6 +1,23 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.47.1 (December 02, 2020)
+------------------------------
+
+**Developer changes**
+
+* Minor further tweaks to CSS refactoring. 
+
+v.0.9.1.47 (December 01, 2020)
+------------------------------
+
+**Developer changes**
+
+* Significant refactoring of CSS to replace inline styles from as many pages as possible with classes defined in `css/govready-q.css` stylesheet.
+
+**Bug fix**
+
+* Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 v9.9.9 (December 01, 2020)
 --------------------------
 
@@ -68,6 +85,7 @@ The work for this capability was performed across three branches that were event
 * `autocomplete_statements_#1066`
 * `ge/reuse-0903`
 * `automated-tests-statements`
+
 
 v0.9.1.46.4 (November 25, 2020)
 -----------------------------

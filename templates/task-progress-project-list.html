@@ -1,10 +1,10 @@
-<div class="truncate" style="margin: 12px 0 12px 6px; text-align: left; ">
-    PROJECT:&nbsp; <a href="{{task.project.get_absolute_url}}" style="color:#444;">
+<div class="truncate task-progress-project-truncate">
+    PROJECT:&nbsp; <a href="{{task.project.get_absolute_url}}" class="task-progress-project-url">
       {{task.project.title}}
     </a>
     {% if current_group %}
     <br>
-    SECTION:&nbsp; <a href="{{task.project.get_absolute_url}}#{{current_group}}" style="color:#444;">{{current_group}}
+    SECTION:&nbsp; <a href="{{task.project.get_absolute_url}}#{{current_group}}" class="task-progress-project-url">{{current_group}}
     </a>
     {% endif %}
 </div>
@@ -12,7 +12,7 @@
 <div>
 {% for pt in task_progress_project_list %}
   {% if pt.group == current_group %}
-    <div class="truncate" style="margin: 0 0 6px 0; padding: 2px; font-size: 1.0em;text-align:left;">
+    <div class="truncate task-progress-project-group">
       {% if pt.task_id == task.id %}
         <span class="glyphicon glyphicon-play-circle"> </span> <b>{{task.title}}</b>
         {% if context|length > 0 %}
@@ -21,7 +21,7 @@
           {% if context %}
             <!-- <p>Progress:</p> -->
             {% include "task-progress-question-list.html" with previous="question" %}
-            <div style="font-size: 10px; line-height: 120%; padding-left: 2em; color: #222;">
+            <div class="task-progress-project-question">
             <li>&nbsp;</li>
             </div>
             <li>
@@ -47,18 +47,18 @@
               onclick="$(this).submit();" style="cursor: pointer; display: inline">
               <input type="hidden" name="q" value="{{task.project.root_task.id}}/{{q.question.key}}">
           {% endif %}
-              <div class="btn btn-sm btn-link truncate" style="color: black; font-size: 1.0em; text-align: left;">
+              <div class="btn btn-sm btn-link truncate task-progress-project-title">
                 <span class="glyphicon glyphicon-unchecked"> </span> <!-- Start --> {{pt.title}}
               </div>
             </form>
         {% else %}
           <form class="truncate">&nbsp;&nbsp;
             {% if pt.task_started and pt.task_answered %}
-              <span class="glyphicon glyphicon-check"> </span><a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
+              <span class="glyphicon glyphicon-check"> </span><a href="{{pt.link}}" class="task-progress-project-truncate-link"> {{pt.title}}</a>
             {% elif pt.task_started %}
-              <span class="glyphicon glyphicon-edit"> </span> <a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
+              <span class="glyphicon glyphicon-edit"> </span> <a href="{{pt.link}}" class="task-progress-project-truncate-link"> {{pt.title}}</a>
             {% else %}
-              <span class="glyphicon glyphicon-unchecked"> </span> <a href="{{pt.link}}" style="color: black;"> {{pt.title}}</a>
+              <span class="glyphicon glyphicon-unchecked"> </span> <a href="{{pt.link}}" class="task-progress-project-truncate-link"> {{pt.title}}</a>
             {% endif %}
           </form>
           {% endif %}
