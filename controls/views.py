@@ -553,10 +553,8 @@ def import_component(request):
     """Import a Component in JSON"""
 
     oscal_component_json = request.POST['json_content']
-
     result = ComponentImporter().import_component_as_json(oscal_component_json, request)
-
-    return render(request, "components/component_library.html", {})
+    return component_library(request)
 
 def system_element_download_oscal_json(request, system_id, element_id):
     # Retrieve identified System
