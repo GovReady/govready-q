@@ -1236,6 +1236,11 @@ class Task(models.Model):
         else:
             # Render to HTML and convert using pandoc.
 
+            # TODO: Currently this works with only one reference file;
+            # /assets/custom-reference.docx. We should be able to point to a
+            # reference file in a Compliance App.
+            template = "assets/custom-reference.docx"
+
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
             import tempfile, os.path, subprocess # nosec
@@ -1245,7 +1250,7 @@ class Task(models.Model):
                 # Append '# nosec' to line below to tell Bandit to ignore the low risk problem
                 # with not specifying the entire path to pandoc.
                 with subprocess.Popen(# nosec
-                    ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+                    ["pandoc", "-f", "html", "--toc", "--toc-depth=4", "-s", "--reference-doc", template, "-t", pandoc_format, "-o", outfn],
                     stdin=subprocess.PIPE
                     ) as proc:
                     proc.communicate(
