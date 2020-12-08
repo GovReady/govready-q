@@ -10,7 +10,7 @@ from django.conf import settings
 from guidedmodules.models import AppSource, Module, Task
 from siteapp.models import User, Organization
 
-from testmocking.data_management import answer_randomly
+from loadtesting.data_management import answer_randomly
 
 from time import sleep, ctime
 

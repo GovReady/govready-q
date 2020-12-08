@@ -8,7 +8,7 @@ from django.db.utils import OperationalError
 from django.conf import settings
 
 from random import sample
-from testmocking.web import WebClient
+from loadtesting.web import WebClient
 
 import re
 
