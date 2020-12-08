@@ -1153,7 +1153,6 @@ def update_smt_prototype(request):
         try:
             proto_statement = Statement.objects.get(pk=statement.prototype_id)
             proto_statement.prototype.body = statement.body
-
             proto_statement.prototype.save()
             statement_status = "ok"
             statement_msg = f"Update to statement prototype {proto_statement.prototype_id} succeeded."
