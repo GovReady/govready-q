@@ -241,6 +241,7 @@ def component_library(request):
         "elements": Element.objects.all().exclude(element_type='system'),
         "import_form": ImportOSCALComponentForm(),
     }
+
     return render(request, "components/component_library.html", context)
 
 class ComponentSerializer(object):

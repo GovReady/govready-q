@@ -1,8 +1,6 @@
 from django import forms
 from django.forms import ModelForm
 from django.forms.widgets import HiddenInput
-from django.core.exceptions import ValidationError
-from django.core.validators import FileExtensionValidator
 
 from .models import Statement, Poam
 
@@ -59,11 +57,14 @@ class PoamForm(ModelForm):
 
 class ImportOSCALComponentForm(forms.Form):
 
-    file = forms.FileField(label="Select OSCAL file (.json)", widget=forms.FileInput(
-        attrs={
-            'onchange': "fillJSONContent(this);"
-        }),
-       validators=[FileExtensionValidator(['json'])]
+    file = forms.FileField(label="Select OSCAL file (.json)",
+        widget=forms.FileInput(
+            attrs={
+                'onchange': "fillJSONContent(this);",
+                'accept':'application/json'
+            }
+        ),
+        required=False
     )
     json_content = forms.CharField(label='OSCAL (JSON)', widget=forms.Textarea(
         attrs={
