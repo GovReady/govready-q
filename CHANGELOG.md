@@ -6,9 +6,10 @@ v.999 (December XX, 2020)
 
 Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
 
+Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML) output template in the compliance app `output` section. The JSON, YAML output documents are first converted to Python data structures and then populated with information in a variant of Jinja2 substitutions.
+
 **Feature changes**
 
-* Support generation of Word DOCX outup templates with page numbers, headers, footers, TOC (using pandoc custom reference doc feature).
 * Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
 
 1. Add a component to the system while on components page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
@@ -17,6 +18,10 @@ Add Component Library feature pages and improve UI for managing reuse and "certi
 1. Enable viewer to view differences between a component-control (e.g., `control_implementation`) was different than the "certified" statement for the component-control (e.g., `control_implementation_prototype`).
 1. To update a "certified" statement, enable an administrator to update (e.g. push) the "certified" statement for the component-control (e.g., `control_implementation_prototype`) text from the a systems' component-control (e.g., `control_implementation`) text.
 1. After a "certified" statement was updated, enable user to copy (e.g. pull) the updated "certified" statement for the component-control (e.g., `control_implementation_prototype`) text into other systems' a component-control (e.g., `control_implementation`) text.
+
+* Support generation of JSON, YAML questionnaire output documents with Jinja2 style substitutions, loops, and conditionals. Re-do the 'json' template format to recognize a new %for control structure objects that execute loops.
+
+* Support generation of Word DOCX questionnaire output documents with page numbers, headers, footers, TOC (using pandoc custom reference doc feature).
 
 **UI changes**
 
@@ -42,6 +47,7 @@ Add Component Library feature pages and improve UI for managing reuse and "certi
 **Bug fixes**
 
 * Fix multiple loadings of updated `smt.body` into bootstrap's panel heading section by improved naming of div classes in panel and better targeted update.
+* Fix enable_experimental_oscal control. Model method was set incorrectly requiring both enable_experimental_oscal and enable_experimental_opencontrol had to be enabled for either to show up.
 
 **Developer changes**
 
