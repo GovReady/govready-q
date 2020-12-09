@@ -1151,10 +1151,11 @@ def update_smt_prototype(request):
         # needs self.body == self.prototype.body
 
         try:
-            statement.prototype.body = statement.body
-            statement.prototype.save()
+            proto_statement = Statement.objects.get(pk=statement.prototype_id)
+            proto_statement.prototype.body = statement.body
+            proto_statement.prototype.save()
             statement_status = "ok"
-            statement_msg = "Update to statement prototype succeeded."
+            statement_msg = f"Update to statement prototype {proto_statement.prototype_id} succeeded."
         except Exception as e:
             statement_status = "error"
             statement_msg = "Update to statement prototype failed. Error reported {}".format(e)
