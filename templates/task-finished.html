@@ -81,7 +81,8 @@
                         <td>{{document.title}}</td>
                         <td>
                           {% if document.format == "json" %}
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">OSCAL (json)</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/json">Download OSCAL JSON</a>&nbsp;&nbsp;
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">View OSCAL JSON</a>&nbsp;&nbsp;
                           {% elif document.format == "oscal_xml" %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/oscal_xml">OSCAL (xml)</a>&nbsp;&nbsp;
                           {% else %}
