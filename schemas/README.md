@@ -16,7 +16,10 @@ The source for our copy of `oscal_component_schema.json` came from
 OSCAL](https://github.com/usnistgov/OSCAL/tree/master/json/schema).
 It required a couple of tweaks to actually work (I think there is a
 bug in the way NIST generates JSON schemas from what I believe to be
-the XML Schema "source of truth")
+the XML Schema "source of truth".)  Basically, the JSON schema
+included many "minItems: 1" and "minProperties: 1" which should be
+"minItems: 0" and "minProperties: 0".
+
 
 
 
