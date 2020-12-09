@@ -12,7 +12,9 @@ from django.forms import ModelForm
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.db import IntegrityError
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
+from jsonschema import validate
+from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from django.views import View
 from django.utils.text import slugify
 from siteapp.models import Project, User, Organization
@@ -363,12 +365,16 @@ class ComponentImporter(object):
 
     def validate_oscal_json(self, oscal_json):
         """Validates the JSON object is valid OSCAL format"""
-        # TODO: Define a valid oscal json schema
-        oscal_json_schema = {}
-        # TODO: import a jsonschema validator, like so: from jsonschema import validate
-        # TODO: Do actual comparison of json with the following: validate(instance=oscal_json, schema=schema)
-        # (Will throw error if validation fails)
-        return True
+
+        project_root = os.path.abspath(os.path.dirname(__name__))
+        oscal_schema_path = os.path.join(project_root, "schemas", "oscal_component_schema.json")
+        with open(oscal_schema_path, "r") as schema_content:
+            oscal_json_schema = json.load(schema_content)
+        try:
+            validate(instance=oscal_json, schema=oscal_json_schema)
+            return True
+        except (SchemaError, SchemaValidationError):
+            return False
 
     def create_components(self, oscal_json, request):
         """Creates Elements (Components) from valid OSCAL JSON"""
@@ -391,19 +397,23 @@ class ComponentImporter(object):
         @rtype: Element
         @returns: Element object if created, None otherwise
         """
-        existing_element_uuids = Element.objects.filter(uuid=component_uuid).count()
+        try:
+            existing_element_uuids = Element.objects.filter(uuid=component_uuid).count()
+        except ValidationError:
+            messages.add_message(request, messages.ERROR, f"Invalid Component UUID ({component_uuid}). Skipping Component...")
+            return None
         if existing_element_uuids > 0:
-            messages.add_message(request, messages.ERROR, f"Component with this uuid already exists. Skipping...")
+            messages.add_message(request, messages.ERROR, f"Component already exists with UUID {component_uuid}. Skipping Component...")
             return None
         try:
             new_component = Element.objects.create(
-                name=component_json['name'] if 'name' in component_json else None,
-                description=component_json['description'] if 'description' in component_json else None,
-                element_type=component_json['component-type'] if 'component-type' in component_json else None,
+                name=component_json['name'],
+                description=component_json['description'],
+                # Components uploaded to the Component Library are all system_element types
+                # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
+                element_type="system_element",
                 uuid=component_uuid
             )
-            # TODO: Error checking on whether or not these json fields are there
-            # (Don't need to do this validation if we use the json schema checker previously)
             new_component.save()
             control_implementation_statements = component_json['control-implementations']
             for control in control_implementation_statements:
@@ -411,7 +421,7 @@ class ComponentImporter(object):
             messages.add_message(request, messages.INFO, f"Component {component_json['name']} created.")
             return new_component
         except IntegrityError:
-            messages.add_message(request, messages.ERROR, f"Component with this name already exists. Skipping...")
+            messages.add_message(request, messages.ERROR, f"Component with name {component_json['name']} already exists. Skipping Component...")
             return None
 
     def create_control_implementation_statements(self, impl_stmnt_json, parent_component, request):
@@ -425,7 +435,11 @@ class ComponentImporter(object):
         @returns: Statement object if created, None otherwise
         """
 
-        existing_statement_uuids = Statement.objects.filter(uuid=impl_stmnt_json['uuid']).count()
+        try:
+            existing_statement_uuids = Statement.objects.filter(uuid=impl_stmnt_json['uuid']).count()
+        except ValidationError:
+            messages.add_message(request, messages.ERROR, f"Statement has an invalid UUID. Skipping...")
+            return None
         if existing_statement_uuids > 0:
             messages.add_message(request, messages.ERROR, f"Statement with this uuid already exists. Skipping...")
             return None
@@ -433,15 +447,13 @@ class ComponentImporter(object):
             new_statement = Statement.objects.create(
                 sid=impl_stmnt_json['implemented-requirements'][0]['control-id'] if 'control-id' in impl_stmnt_json['implemented-requirements'][0] else None,
                 sid_class=impl_stmnt_json['source'] if 'source' in impl_stmnt_json else None,
-                pid=impl_stmnt_json['implemented-requirements'][0]['properties']['value'] if 'properties' in impl_stmnt_json['implemented-requirements'][0] and 'value' in impl_stmnt_json['implemented-requirements'][0]['properties'] else None,
+                pid=impl_stmnt_json['implemented-requirements'][0]['properties'][0]['value'] if 'properties' in impl_stmnt_json['implemented-requirements'][0] and 'value' in impl_stmnt_json['implemented-requirements'][0]['properties'][0] else None,
                 body=impl_stmnt_json['description'] if 'description' in impl_stmnt_json else None,
                 statement_type="control_implementation_prototype",
                 remarks=impl_stmnt_json['implemented-requirements'][0]['remarks'] if 'remarks' in impl_stmnt_json['implemented-requirements'][0] else None,
-                status = impl_stmnt_json['status'] if 'status' in impl_stmnt_json else None,
+                status=impl_stmnt_json['status'] if 'status' in impl_stmnt_json else None,
                 producer_element=parent_component,
-                # TODO: Check existence of these before using them.
-                # TODO: Include other fields that may be included.
-                # TODO: Loop and link more Implemented Reqs
+                uuid=impl_stmnt_json['uuid'] if 'uuid' in impl_stmnt_json else None,
             )
             new_statement.save()
             return new_statement
