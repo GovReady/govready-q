@@ -7,7 +7,7 @@
 Use the Node.js [ajv](https://ajv.js.org/) tool to validate against
 the OSCAL JSON schemas.  E.g.,
 
-``1
+```
 ajv validate -s oscal_component_schema.json -d component.json --extend-refs=true --verbose
 ```
 
