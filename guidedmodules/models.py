@@ -1134,6 +1134,8 @@ class Task(models.Model):
             # these two don't use pandoc
             "html": (None, "html", "text/html"),
             "pdf": (None, "pdf", "application/pdf"),
+            "json": (None, "json", "application/json"),
+            "yaml": (None, "yaml", "application/x-yaml"),
 
             # the rest use pandoc
             "plain": ("plain", "txt", "text/plain"),
@@ -1184,10 +1186,12 @@ class Task(models.Model):
             # authored in markdown, we can render directly to markdown.
             blob = doc["markdown"].encode("utf8")
 
-        elif download_format == "oscal_json" and doc["format"] == "oscal_json":
-            # When Markdown output is requested for a template that is
-            # authored in markdown, we can render directly to markdown.
-            blob = doc["markdown"].encode("utf8")
+        elif download_format in ("json", "yaml") and doc["format"] in download_format:
+            # When JSON or YAML output is requested for a template that is
+            # authored in the same format, then it is available in the "text"
+            # format for the document output.
+            blob = doc["text"].encode("utf8")
+
         elif download_format == "oscal_yaml" and doc["format"] == "oscal_yaml":
             # When Markdown output is requested for a template that is
             # authored in markdown, we can render directly to markdown.
@@ -1236,6 +1240,11 @@ class Task(models.Model):
         else:
             # Render to HTML and convert using pandoc.
 
+            # TODO: Currently this works with only one reference file;
+            # /assets/custom-reference.docx. We should be able to point to a
+            # reference file in a Compliance App.
+            template = "assets/custom-reference.docx"
+
             # odt and some other formats cannot pipe to stdout, so we always
             # generate a temporary file.
             import tempfile, os.path, subprocess # nosec
@@ -1245,7 +1254,7 @@ class Task(models.Model):
                 # Append '# nosec' to line below to tell Bandit to ignore the low risk problem
                 # with not specifying the entire path to pandoc.
                 with subprocess.Popen(# nosec
-                    ["pandoc", "-f", "html", "-t", pandoc_format, "-o", outfn],
+                    ["pandoc", "-f", "html", "--toc", "--toc-depth=4", "-s", "--reference-doc", template, "-t", pandoc_format, "-o", outfn],
                     stdin=subprocess.PIPE
                     ) as proc:
                     proc.communicate(
