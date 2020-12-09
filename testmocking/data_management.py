@@ -202,4 +202,3 @@ def login(username, password, domain):
     session = requests.Session()
     response = session.get(domain)
     return parsel.Selector(text=response.text)
-
