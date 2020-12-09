@@ -55,6 +55,7 @@ class PoamForm(ModelForm):
             "poam_group": "Group"
         }
 
+
 class ImportOSCALComponentForm(forms.Form):
 
     file = forms.FileField(label="Select OSCAL file (.json)",
@@ -66,9 +67,4 @@ class ImportOSCALComponentForm(forms.Form):
         ),
         required=False
     )
-    json_content = forms.CharField(label='OSCAL (JSON)', widget=forms.Textarea(
-        attrs={
-            "rows": 10,
-            "cols": 75,
-        }),
-    )
+    json_content = forms.CharField(label='OSCAL (JSON)', widget=forms.Textarea())
