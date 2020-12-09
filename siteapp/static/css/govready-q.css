@@ -128,7 +128,8 @@ div.question-answer[data-reviewed] a { text-decoration: underline; }
 
 .task-question-debug-links { color: #999; font-size: 80%; margin-top: 20px; }
 
-
+.glyphicon-refresh {}
+.btn-refresh { font-size: 12px; }
 
 .question-source-invitation { margin-bottom: 2em; }
 .question-source-invitation-show { text-align: right; margin-bottom: -1.5em; }
