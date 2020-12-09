@@ -4,6 +4,11 @@ GovReady-Q Release Notes
 v.999 (December XX, 2020)
 -------------------------
 
+Update version checking for v999 develop branch designation.
+
+v.999 (December XX, 2020)
+-------------------------
+
 Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
 
 Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML) output template in the compliance app `output` section. The JSON, YAML output documents are first converted to Python data structures and then populated with information in a variant of Jinja2 substitutions.
