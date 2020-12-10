@@ -1134,8 +1134,9 @@ class Task(models.Model):
             # these two don't use pandoc
             "html": (None, "html", "text/html"),
             "pdf": (None, "pdf", "application/pdf"),
-            "json": (None, "json", "application/json"),
+            "json": (None, "json", "application/x-json"),
             "yaml": (None, "yaml", "application/x-yaml"),
+            "xml": (None, "xml", "application/x-xml"),
 
             # the rest use pandoc
             "plain": ("plain", "txt", "text/plain"),
@@ -1186,21 +1187,23 @@ class Task(models.Model):
             # authored in markdown, we can render directly to markdown.
             blob = doc["markdown"].encode("utf8")
 
-        elif download_format in ("json", "yaml") and doc["format"] in download_format:
-            # When JSON or YAML output is requested for a template that is
+        elif download_format in ("json", "yaml", "xml") and doc["format"] in download_format:
+            # When JSON YAML, or XML output is requested for a template that is
             # authored in the same format, then it is available in the "text"
             # format for the document output.
             blob = doc["text"].encode("utf8")
 
-        elif download_format == "oscal_yaml" and doc["format"] == "oscal_yaml":
-            # When Markdown output is requested for a template that is
-            # authored in markdown, we can render directly to markdown.
-            blob = doc["markdown"].encode("utf8")
+        # DEPRECATING oscal_json, ocal_yaml, and oscal_xml as December 2020
+        # REMOVE THIS COMMENTED OUT CODE IN FUTURE VERSIONS
+        # elif download_format == "oscal_yaml" and doc["format"] == "oscal_yaml":
+        #     # When Markdown output is requested for a template that is
+        #     # authored in markdown, we can render directly to markdown.
+        #     blob = doc["markdown"].encode("utf8")
 
-        elif download_format == "oscal_xml" and doc["format"] == "oscal_xml":
-            # When Markdown output is requested for a template that is
-            # authored in markdown, we can render directly to markdown.
-            blob = doc["markdown"].encode("utf8")
+        # elif download_format == "oscal_xml" and doc["format"] == "oscal_xml":
+        #     # When Markdown output is requested for a template that is
+        #     # authored in markdown, we can render directly to markdown.
+        #     blob = doc["markdown"].encode("utf8")
 
         elif download_format == "html":
             # When HTML output is requested, render to HTML.
