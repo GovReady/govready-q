@@ -6,6 +6,7 @@ from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Permission
 from django.db import transaction
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
                          HttpResponseNotAllowed, HttpResponseRedirect,
@@ -57,7 +58,9 @@ def homepage(request):
                 if not request.user.is_authenticated:
                     # Create account.
                     new_user = signup_form.save(request)
-
+                    # Add default permission, view AppSource
+                    new_user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
+                    new_user.save()
                     # Log them in.
                     from django.contrib.auth import authenticate, login
                     user = authenticate(request, username=signup_form.cleaned_data['username'], password=signup_form.cleaned_data['password1'])
