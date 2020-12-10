@@ -447,7 +447,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         return smt
 
     def click_components_tab(self):
-        self.browser.find_element_by_partial_link_text("Component Statements").click()
+        self.browser.find_element_by_partial_link_text("Component Statements  ").click()
 
     def dropdown_option(self, dropdownid):
         """
