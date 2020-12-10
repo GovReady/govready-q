@@ -45,9 +45,6 @@ if not DEVEL_BUILD and v.local:
 	print("ERROR: The version number {} is not a PEP440-compliant public version number. It should not have a + component.".format(repr(VERSION)))
 	sys.exit(1)
 
-print(CURRENT_VERSION)
-print(str(v))
-
 # check to ensure that if either the CHANGELOG or VERSION indicates a development build, the other does so as well
 if not DEVEL_BUILD and str(v) == "999":
 	print("The VERSION file indicates a development build version of {}, while the CHANGELOG does not, indicating a version of {}.".format(VERSION, CURRENT_VERSION))
