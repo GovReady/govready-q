@@ -285,7 +285,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             }
             # if there is a part ID, add it as a label property
             if smt.pid:
-                requirement['properties'] = dict(name='label', value=smt.pid)
+                requirement['properties'] = [dict(name='label', value=smt.pid)]
             by_class[smt.sid_class].append(requirement)
 
         for sid_class, requirements in by_class.items():
