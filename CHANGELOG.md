@@ -1,7 +1,7 @@
 GovReady-Q Release Notes
 ========================
 
-v999 (December XX, 2020)
+v.000 (December XX, 2020)
 -------------------------
 
 Update version checking for v999 develop branch designation.
