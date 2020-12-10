@@ -115,7 +115,7 @@ Example:
 * Updated link to `jquery-ui.min.js` library in `fetch-vendor-resources`.
 
 v.0.9.1.47.1 (December 02, 2020)
-------------------------------
+--------------------------------
 
 **Developer changes**
 
