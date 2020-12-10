@@ -212,7 +212,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()
 
-        
     def tearDown(self):
         # clean up downloaded file
         if self.json_download.is_file():
@@ -239,6 +238,81 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # assert that it is valid JSON by trying to load it
         with open(self.json_download, 'r') as f:
             json_data = json.load(f)
+
+    def test_component_import_invalid_oscal(self):
+        self._login()
+        url = self.url(f"/controls/components")
+        self.browser.get(url)
+        self.click_element('button#component-import-oscal')
+        app_root = os.path.dirname(os.path.realpath(__file__))
+        oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
+
+        file_input = self.find_selected_option('input#id_file')
+        file_input.send_keys(oscal_json_path)
+
+        # Verify that the contents got copied correctly from the file to the textfield
+        try:
+            # Load contents from file
+            with open(oscal_json_path, 'r') as f:
+                loaded_oscal_file_json = json.load(f)
+
+            # Load contents from textarea
+            file_contents = self.find_selected_option('textarea#id_json_content').get_attribute("value")
+            oscal_json_contents = json.loads(file_contents)
+
+            self.assertEqual(loaded_oscal_file_json, oscal_json_contents)
+
+        except ValueError:
+            pass
+
+        self.click_element('input#import_component_submit')
+
+        element_count = Element.objects.filter(uuid='123456a7-b890-1234-cd56-e789fa012bcd').count()
+        self.assertEqual(element_count, 0)
+
+        statement1_count = Statement.objects.filter(uuid='1ab2c345-67d8-9e0f-1234-5a6bcd789efa').count()
+        self.assertEqual(statement1_count, 0)
+
+        statement2_count = Statement.objects.filter(uuid='2bc3d456-78e9-0f1a-2345-6b7cde890fab').count()
+        self.assertEqual(statement2_count, 0)
+
+    def test_component_import_oscal_json(self):
+        self._login()
+        url = self.url(f"/controls/components")
+        self.browser.get(url)
+
+        # Test initial import of Component(s) and Statement(s)
+        self.click_element('button#component-import-oscal')
+        app_root = os.path.dirname(os.path.realpath(__file__))
+        oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
+
+        file_input = self.find_selected_option('input#id_file')
+        file_input.send_keys(oscal_json_path)
+
+        self.click_element('input#import_component_submit')
+
+        element_count = Element.objects.filter(name='Test OSCAL Component').count()
+        self.assertEqual(element_count, 1)
+
+        statement1_count = Statement.objects.filter(uuid='0ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement1_count, 1)
+
+        statement2_count = Statement.objects.filter(uuid='2ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement2_count, 1)
+
+        # Test that duplicate Components and Statements are not re-imported
+        self.click_element('button#component-import-oscal')
+        file_input = self.find_selected_option('input#id_file')
+        file_input.send_keys(oscal_json_path)
+
+        self.click_element('input#import_component_submit')
+
+        element_count = Element.objects.filter(name='Test OSCAL Component').count()
+        self.assertEqual(element_count, 1)
+
+        statement1_count = Statement.objects.filter(uuid='0ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement1_count, 1)
+
 
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
