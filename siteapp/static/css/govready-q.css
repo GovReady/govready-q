@@ -46,6 +46,7 @@ h3 { font-size: 18px; }
 
 .btn { white-space: normal; font-size: inherit; }
 .btn.btn-sm { font-size: 12px; }
+.btn.btn-xs { font-size: 12px; }
 
 footer { margin-top:60px;
   font-size: .75em;

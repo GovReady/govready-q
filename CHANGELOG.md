@@ -61,12 +61,61 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
     * `ge/reuse-0903`
     * `automated-tests-statements`
 
+Under development output document formats `oscal_json`, `oscal_yaml`,
+and `oscal_xml` are now replaced with `json`, `yaml`, and `xml` respectively.
+
+Format `xml` still under development and not recommended for regular use.
+
+Formats for `json` and `yaml` now support new Jinja2-like tags to enable
+parameter substituion and loops inside those formats while Django handles
+them as Python objects:
+
+```
+%for
+%loop
+
+%if
+%then
+
+{{ param }}
+```
+
+Example:
+
+```
+{ "title" : "{{project.system_info.system_name}}",
+"published" : "2020-07-01T00:00:00.00-04:00",
+"last-modified" : "2020-07-01T00:00:00.00-04:00",
+"version" : "0.0",
+"oscal-version" : "1.0-Milestone3",
+"new-control-stuff": {
+  "%for": "control in system.root_element.selected_controls_oscal_ctl_ids",
+  "%loop": {
+    "%if": "control.lower() in control_catalog",
+    "%then":  {
+      "uuid": "{{ system.control_implementation_as_dict[control]['elementcontrol_uuid'] }}",
+      "control-id": "{{ control.lower() }}",
+      "by-component": {
+        "%for": "smt in system.control_implementation_as_dict[control]['control_impl_smts']",
+        "%loop": {
+          "key": "{{ smt.producer_element.uuid }}", 
+          "value": { "uuid" : "{{ smt.uuid }}",
+            "component-name": "{{   smt.producer_element.name|safe }}",
+            "description" : "{{ smt.body|safe }}"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 **Other**
 
 * Updated link to `jquery-ui.min.js` library in `fetch-vendor-resources`.
 
 v.0.9.1.47.1 (December 02, 2020)
-------------------------------
+--------------------------------
 
 **Developer changes**
 
