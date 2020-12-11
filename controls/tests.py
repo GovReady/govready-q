@@ -294,11 +294,21 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         element_count = Element.objects.filter(name='Test OSCAL Component').count()
         self.assertEqual(element_count, 1)
 
-        statement1_count = Statement.objects.filter(uuid='0ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        statement1_count = Statement.objects.filter(uuid='1ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
         self.assertEqual(statement1_count, 1)
 
         statement2_count = Statement.objects.filter(uuid='2ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
         self.assertEqual(statement2_count, 1)
+
+        # Verify that statements without a proper Catalog don't get entered
+        statement3_count = Statement.objects.filter(uuid='4ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement3_count, 0)
+
+        # Verify that statements without a proper Control don't get entered
+        statement4_count = Statement.objects.filter(uuid='6ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement4_count, 0)
+
+        var_sleep(1) # Needed to allow page to refresh and messages to render
 
         # Test that duplicate Components and Statements are not re-imported
         self.click_element('button#component-import-oscal')
@@ -310,7 +320,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         element_count = Element.objects.filter(name='Test OSCAL Component').count()
         self.assertEqual(element_count, 1)
 
-        statement1_count = Statement.objects.filter(uuid='0ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        statement1_count = Statement.objects.filter(uuid='1ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
         self.assertEqual(statement1_count, 1)
 
 
