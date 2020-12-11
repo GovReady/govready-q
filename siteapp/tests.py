@@ -1218,7 +1218,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         def do_submodule(answer_text):
             var_sleep(1.25)
-            self.assertRegex(self.browser.title, "Next Question: Introduction")
+            self.assertRegex(self.browser.title, "Next Question:")
             self.click_element("#save-button")
             var_sleep(1.25)
             self.assertRegex(self.browser.title, "Next Question: The Question")
