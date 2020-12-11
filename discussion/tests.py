@@ -9,6 +9,8 @@ from siteapp.tests import SeleniumTest, var_sleep
 from selenium.common.exceptions import NoSuchElementException
 
 import os
+from tools.utils.linux_to_dos import convert_w
+from platform import uname, system
 
 class DiscussionTests(SeleniumTest):
 
@@ -158,10 +160,12 @@ class DiscussionTests(SeleniumTest):
             'testimage.png'
         )
 
+        if system() == "Windows" or 'Microsoft' in uname().release:
+            testFilePath = convert_w(testFilePath)
         self.fill_field("#discussion-attach-file", testFilePath)
-        var_sleep(1)
+        var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
-        var_sleep(1) # Give time for the image to upload.
+        var_sleep(.5)
 
         # Test that we have an image.
         img = self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img')

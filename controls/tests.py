@@ -233,7 +233,11 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         if self.json_download.is_file():
             self.json_download.unlink()
         self.click_element("a#oscal_download_json_link")
-        var_sleep(2)            # need to wait for download, alas
+        print(self.json_download)
+        var_sleep(200000)            # need to wait for download, alas
+
+        self. json_download = \
+            self.download_path / PurePath(slugify(self.component_name)).with_suffix(".json")
         # assert download exists!
         self.assertTrue(self.json_download.is_file())
         # assert that it is valid JSON by trying to load it

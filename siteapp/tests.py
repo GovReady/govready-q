@@ -28,6 +28,8 @@ from selenium.webdriver.support.select import Select
 
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
+from tools.utils.linux_to_dos import convert_w
+from platform import uname, system
 
 
 def var_sleep(duration):
@@ -1168,11 +1170,13 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             'fixtures',
             'testimage.png'
         )
+        if system() == "Windows" or 'Microsoft' in uname().release:
+            testFilePath = convert_w(testFilePath)
         var_sleep(1)
         self.fill_field("#inputctrl", testFilePath)
 
         self.click_element("#save-button")
-        var_sleep(1)
+        var_sleep(.5)
 
         # interstitial
         # nothing to really test in terms of functionality, but check that
