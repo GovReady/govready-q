@@ -74,12 +74,6 @@ class SeleniumTest(StaticLiveServerTestCase):
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
 
         options.add_argument("--incognito")
-        # Set up selenium Chrome browser for Windows or Linux
-        from platform import uname, system
-        if system() == "Windows" or 'Microsoft' in uname().release:
-            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
-        else:
-            cls.browser = selenium.webdriver.Chrome(chrome_options=options)
 
         # enable Selenium support for downloads
         cls.download_path = temp_path = pathlib.Path(tempfile.gettempdir())
@@ -89,6 +83,14 @@ class SeleniumTest(StaticLiveServerTestCase):
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True
         })
+
+        # Set up selenium Chrome browser for Windows or Linux
+        from platform import uname, system
+        if system() == "Windows" or 'Microsoft' in uname().release:
+            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+        else:
+            cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+
         cls.browser.implicitly_wait(3) # seconds
 
         # Clean up and quit tests if Q is in SSO mode
