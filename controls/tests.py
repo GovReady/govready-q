@@ -199,9 +199,9 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         statement.save()
 
         self.component = producer_element
-        
+
         # enable experimental OSCAL -and- OpenControl support
-        
+
         enable_experimental_oscal = \
             SystemSettings.objects.get(setting='enable_experimental_oscal')
         enable_experimental_oscal.active = True
@@ -212,13 +212,12 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()
 
-        
     def tearDown(self):
         # clean up downloaded file
         if self.json_download.is_file():
             self.json_download.unlink()
         super().tearDown()
-        
+
     def test_component_download_oscal_json(self):
         self._login()
         url = self.url(f"/systems/{self.system.id}/component/{self.component.id}")
@@ -229,7 +228,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # downloaded file, so let's make sure it doesn't exist before we
         # download
         # definite race condition possibility
-        
+
         if self.json_download.is_file():
             self.json_download.unlink()
         self.click_element("a#oscal_download_json_link")
