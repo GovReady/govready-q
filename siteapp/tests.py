@@ -684,7 +684,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
-class PortfolioProjetTests(OrganizationSiteFunctionalTests):
+class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
     def _fill_in_signup_form(self, email, username=None):
         if username:
@@ -1257,7 +1257,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question input[name="value"][value="%d"]' % task_id)
         self.click_element("#save-button")
         var_sleep(.5)
-        self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
+        self.assertRegex(self.browser.title, "Test The Module Question Types - ")
 
 class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 

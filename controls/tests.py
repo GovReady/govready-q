@@ -202,6 +202,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.component = producer_element
 
         # enable experimental OSCAL -and- OpenControl support
+
         enable_experimental_oscal = \
             SystemSettings.objects.get(setting='enable_experimental_oscal')
         enable_experimental_oscal.active = True
@@ -446,7 +447,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         return smt
 
     def click_components_tab(self):
-        self.browser.find_element_by_partial_link_text("Component Statements  ").click()
+        self.browser.find_element_by_partial_link_text("Component Statements ").click()
 
     def dropdown_option(self, dropdownid):
         """
@@ -456,7 +457,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         dropdown = Select(self.browser.find_element_by_id(dropdownid))
         return dropdown
 
-    def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks):
+    def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks, num):
         """
         In the component statements tab create and then fill a new component statement with the given information.
         """
@@ -467,8 +468,13 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self.click_element("#new_component_statement")
 
         # Open the new component form open
-        self.browser.find_element_by_link_text("New Component Statement").click()
+        try:
+            new_comp_btn = self.browser.find_element_by_link_text("New Component Statement")
 
+        except:
+            new_comp_btn = self.browser.find_element_by_id(f"producer_element-{num}-title")
+        new_comp_btn.click()
+        var_sleep(2)
         # Fill out form
         self.browser.find_element_by_id("producer_element_name").send_keys(name)
         self.browser.find_elements_by_name("body")[-1].send_keys(statement)
@@ -490,7 +496,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self._new_project()
         var_sleep(1)
 
-
         # Select moderate
         self.navigateToPage("/systems/1/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
         # Head to the control ac-3
@@ -498,17 +503,29 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 0
-
+        # Starts at 4
+        num = 4
         # Creating a few components
-        self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
 
+        self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num)
+        var_sleep(1)
         self.click_components_tab()
-
+        var_sleep(1)
         # Confirm the dropdown sees all components
         comps_dropdown = self.dropdown_option("selected_producer_element_form_id")
         assert len(comps_dropdown.options) == 6
@@ -546,17 +563,17 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # Open a modal will with component statements related to the select component prototype
         add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")
         add_related_statements_btn[-1].click()
-
+        var_sleep(2)
         # Ensure we can't submit no component statements and that the alert pops up.
         self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button").click()
 
         # Open the first panel
         component_element_btn = self.browser.find_element_by_id("related-panel-1")
         component_element_btn.click()
-
+        var_sleep(1)
         select_comp_statement_check = self.browser.find_element_by_name("relatedcomps")
         select_comp_statement_check.click()
-
+        var_sleep(1)
         # Add component statement
         submit_comp_statement = self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button")
         submit_comp_statement.click()
