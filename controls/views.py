@@ -1493,15 +1493,22 @@ def add_system_component(request, system_id):
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
     # Loop through element's prototype statements and add to control implementation statements
-    messages.add_message(request, messages.INFO,
-                         f'OK. I\'ve the control implementation statements for component "{producer_element.name}" to the system.')
     for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
-        # Only add statements for controls selected for system
-        if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
-            # print("smt", smt)
-            smt.create_instance_from_prototype(system.root_element.id)
-        else:
-            print("not adding smt not selected controls for system", smt)
+        # Add all existsing control statements for a component to a system even if system does not use controls.
+        # This guarantees that control statements are associated.
+        # The selected controls will serve as the primary filter on what content to display.
+        smt.create_instance_from_prototype(system.root_element.id)
+
+    # Make sure some controls were added to the system. Report error otherwise.
+    smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation")
+    print("DEBUG smts_added ", smts_added)
+    smts_added_count = len(smts_added)
+    if smts_added_count > 0:
+        messages.add_message(request, messages.INFO,
+                         f'OK. I\'ve added {smts_added_count} control implementation statements for component "{producer_element.name}" to the system.')
+    else:
+        messages.add_message(request, messages.WARNING,
+                         f'OK. I tried adding the control implementation statements for component "{producer_element.name}" to the system, but added 0 controls.')
 
     # Redirect to selected element page
     return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))

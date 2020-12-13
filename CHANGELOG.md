@@ -61,6 +61,7 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 * Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch.
 * Avoid duplicative adding of a component to a system causing duplicate statements.
 * Avoiding adding a component with no control implementation statements to a system.
+* Add all available control implementation statements of a component to a system, even for controls that are not selected controls.
 * Avoid adding duplicate control implementation instance statements to a system by checking in the statement model that we are not creating an instance statement when such and statement from prototype already exists.
 * Use Django messaging when adding a component to system's selected component to provide user with better feedback.
 * Delete already commented-out contol id look up from system's selected components page.
