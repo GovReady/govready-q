@@ -415,12 +415,12 @@ class ComponentImporter(object):
                 uuid=component_uuid
             )
             new_component.save()
-            control_implementation_statements = component_json['control-implementations']
-            for control in control_implementation_statements:
-                catalog = control['source'] if 'source' in control else None
-                implementation_statements = control['implemented-requirements'] if 'implemented-requirements' in control else []
-                self.create_control_implementation_statements(catalog, implementation_statements, new_component, request)
             messages.add_message(request, messages.INFO, f"Component {component_json['name']} created.")
+            control_implementation_statements = component_json['control-implementations']
+            for control_element in control_implementation_statements:
+                catalog = control_element['source'] if 'source' in control_element else None
+                implementation_statements = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
+                self.create_control_implementation_statements(catalog, implementation_statements, new_component, request)
             return new_component
         except IntegrityError:
             messages.add_message(request, messages.ERROR, f"Component with name {component_json['name']} already exists. Skipping Component...")
@@ -470,6 +470,7 @@ class ComponentImporter(object):
                         uuid=stmnt_uuid,
                     )
                     new_statement.save()
+                    messages.add_message(request, messages.INFO, f"New statement with UUID {stmnt_uuid} created.")
                     new_statements.append(new_statement)
                 except IntegrityError:
                     messages.add_message(request, messages.ERROR, f"Statement with UUID {stmnt_uuid} already exists. Skipping Statement...")
