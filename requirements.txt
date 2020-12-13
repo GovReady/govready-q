@@ -14,10 +14,9 @@ babel==2.9.0 \
     --hash=sha256:9d35c22fcc79893c3ecc85ac4a56cde1ecf3f19c540bba0922308a6c06ca6fa5 \
     --hash=sha256:da031ab54472314f210b0adcff1588ee5d1d1d0ba4dbd07b94dba82bde791e05 \
     # via sphinx
-bandit==1.6.2 \
-    --hash=sha256:336620e220cf2d3115877685e264477ff9d9abaeb0afe3dc7264f55fa17a3952 \
-    --hash=sha256:41e75315853507aa145d62a78a2a6c5e3240fe14ee7c601459d0df9418196065 \
-    # via -r requirements.in
+bandit==1.7.0 \
+    --hash=sha256:216be4d044209fa06cf2a3e51b319769a51be8318140659719aa7a115c35ed07 \
+    --hash=sha256:8a4c7415254d75df8ff3c3b15cfe9042ecee628a1e40b44c15a98890fbfc2608    # via -r requirements.in
 beautifulsoup4==4.9.3 \
     --hash=sha256:4c98143716ef1cb40bf7f39a8e3eec8f8b009509e74904ba3a7b315431577e35 \
     --hash=sha256:84729e322ad1d5b4d25f805bfa05b902dd96450f43842c4e99067d5e1369eb25 \
