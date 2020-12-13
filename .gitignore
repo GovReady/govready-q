@@ -105,6 +105,9 @@ sonar-project.properties
 # vscode
 .vscode/
 
+#pycharm
+.idea/
+
 # notes
 _notes/
 
