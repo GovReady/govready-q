@@ -50,16 +50,21 @@
     <div id="tab-content" class="row row-control" style="">
       <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">
         {% csrf_token %}
-        <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-        <div class="form-group">
-            <label for="compoment">Add component</label>&nbsp;&nbsp;
-              <select class="producer_element_id" id="producer_element_id" name="producer_element_id" style="width:340px;">
-                {% for component in elements %}
-                <option value="{{ component.id }}">{{ component.name }}</option>
-                {% endfor %}
-              </select>
+        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
+          <div class="form-group">
+              <label for="compoment">Add component</label>&nbsp;&nbsp;
+                <select class="producer_element_id" id="producer_element_id" name="producer_element_id" style="width:340px;">
+                  {% for component in elements %}
+                    {% if component not in system.producer_elements %}
+                      <option value="{{ component.id }}">{{ component.name }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+          </div>
         </div>
-          &nbsp;&nbsp;<button type="submit" class="small btn btn-sm btn-success" style="color: white;" onclick="add_smt()">Add</button>
+        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
+          <button type="submit" class="btn btn-xs btn-success" style="color: white;" onclick="add_smt()">Add</button>
+        </div>
       </div>
     </div>
       </form>
@@ -74,5 +79,11 @@
 {% block scripts %}
 <script src="{% static "vendor/js/select2.min.js" %}"></script>
 <link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
+<script>
+  // Convert select field for Add Component to jQuery Select2 box
+  $(document).ready(function() {
+      $('.producer_element_id').select2();
+  });
+</script>
 
 {% endblock %}

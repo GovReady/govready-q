@@ -1068,8 +1068,6 @@ def editor(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
-
-
 def editor_compare(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
@@ -1294,7 +1292,6 @@ def save_smt(request):
         {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg,
          "statement": serialized_obj})
 
-
 def update_smt_prototype(request):
     """Update a certified statement"""
 
@@ -1433,6 +1430,81 @@ def delete_smt(request):
 
 # Components
 
+def add_system_component(request, system_id):
+    """Add an existing element and its statements to a system"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+
+    # Does user have permission to add element?
+    # Check user permissions
+    system = System.objects.get(pk=system_id)
+    if not request.user.has_perm('change_system', system):
+        # User does not have write permissions
+        # Log permission to save answer denied
+        logger.info(
+            event="change_system permission_denied",
+            object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
+    # DEBUG
+    # print(f"Atempting to add {producer_element.name} (id:{producer_element.id}) to system_id {system_id}")
+
+    # Get system's existing components selected
+    elements_selected = system.producer_elements
+    elements_selected_ids = [e.id for e in elements_selected]
+
+    # Get system's selected controls because we only want to add statements for selected controls
+    selected_controls = system.root_element.controls.all()
+    selected_controls_ids = set([f"{sc.oscal_ctl_id} {sc.oscal_catalog_key}" for sc in selected_controls])
+    # TODO: Refactor above line selected_controls into a system model function if not already existing
+
+    # Add element to system's selected components
+    # Look up the element rto add
+    producer_element = Element.objects.get(pk=form_values['producer_element_id'])
+
+    # TODO: various use cases
+        # - component previously added but element has statements not yet added to system
+        #   this issue may be best addressed elsewhere.
+
+    # Component already added to system. Do not add the component (element) to the system again.
+    if producer_element.id in elements_selected_ids:
+        messages.add_message(request, messages.ERROR,
+                            f'Component "{producer_element.name}" already exists in selected components.')
+        # Redirect to selected element page
+        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype")
+
+    # Component does not have any statements of type control_implementation_prototype to
+    # add to system. So we cannot add the component (element) to the system.
+    if len(smts) == 0:
+        # print(f"The component {producer_element.name} does not have any control implementation statements.")
+        messages.add_message(request, messages.ERROR,
+                            f'I could\'t add the Component "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
+        # Redirect to selected element page
+        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+    # Loop through element's prototype statements and add to control implementation statements
+    messages.add_message(request, messages.INFO,
+                         f'OK. I\'ve the control implementation statements for component "{producer_element.name}" to the system.')
+    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+        # Only add statements for controls selected for system
+        if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
+            # print("smt", smt)
+            smt.create_instance_from_prototype(system.root_element.id)
+        else:
+            print("not adding smt not selected controls for system", smt)
+
+    # Redirect to selected element page
+    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
 def search_system_component(request):
     """Add an existing element and its statements to a system"""

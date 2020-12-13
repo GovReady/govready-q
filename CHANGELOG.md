@@ -37,7 +37,10 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 * Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
 * Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
 * Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
+* Use Select2 box to add component to system's selected component.
+* Add route `add_system_component` and related view to add a component to a system's selected component.
 * Replace the url pattern routing in v0.9.1.46.4 for directing accounts login to home page with custom templates to override default aullauth templates.
+* Use Django messaging when adding a component to system's selected component to provide user with better feedback.
 
 **Data changes**
 
@@ -56,7 +59,12 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 * Modified controls.Statement model to link `control_implementation` statements to
   `control_implementation_prototype` statements. See commit 5083af.
 * Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch.
-* The work for a componet library and certified controls was performed across three branches that were eventually synchronized (approximately commit 18934669) and merged into the master branch:
+* Avoid duplicative adding of a component to a system causing duplicate statements.
+* Avoiding adding a component with no control implementation statements to a system.
+* Avoid adding duplicate control implementation instance statements to a system by checking in the statement model that we are not creating an instance statement when such and statement from prototype already exists.
+* Use Django messaging when adding a component to system's selected component to provide user with better feedback.
+* Delete already commented-out contol id look up from system's selected components page.
+* The work for a component library and certified controls was performed across three branches that were eventually synchronized (approximately commit 18934669) and merged into the master branch:
     * `autocomplete_statements_#1066`
     * `ge/reuse-0903`
     * `automated-tests-statements`
