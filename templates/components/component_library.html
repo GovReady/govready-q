@@ -17,16 +17,21 @@
 
 {% block body %}
 
-  <div class="row" style="">
-    <div id="above-tab-content" class="row">
-      <!-- Page Title-->
-      <div style="float: left;">
-          <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}" style="color: black;">Component Library
-          </h2>
-      </div>
+
+<div class="portfolio-top">
+  <div class="container">
+    <div class="portfolio-main">
+      <a id="new-portfolio" href="/controls/components/new" class="btn btn-success">Create a Component</a>
     </div>
-  </div><!--/row-->
+
+    <h2 class="">Component Library</h2>
+
+    {% if elements|length > 0 %}
+    <p>You have access to {{ elements|length }} components{{ component|pluralize }}.</p>
+    {% else %}
+    <p>You do not have access to any components.</p>
+    {% endif %}
+
     <p>&nbsp;</p>
 
     <div id="tab-content" class="row rows-header" style="">

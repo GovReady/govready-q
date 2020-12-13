@@ -5,7 +5,8 @@ from django.urls import reverse_lazy
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
 from django.forms import ModelForm
@@ -13,6 +14,7 @@ from django.views import View
 from django.utils.text import slugify
 from siteapp.models import Project, User, Organization
 from siteapp.forms import PortfolioForm, ProjectForm
+from .forms import StatementPoamForm, PoamForm, ElementForm
 from datetime import datetime, timezone
 from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
@@ -373,6 +375,28 @@ def system_element(request, system_id, element_id):
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
+@login_required
+def new_element(request):
+    """Form to create new system element (aka component)"""
+
+    if request.method == 'POST':
+      form = ElementForm(request.POST)
+      if form.is_valid():
+        form.save()
+        element = form.instance
+        logger.info(
+            event="new_element",
+            object={"object": "element", "id": element.id, "name":element.name},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        return redirect('component_library_component', element_id=element.id)
+    else:
+        form = ElementForm()
+
+    return render(request, 'components/element_form.html', {
+        'form': form,
+    })
+
 def component_library_component(request, element_id):
     """Display certified component's element detail view"""
 
@@ -383,16 +407,21 @@ def component_library_component(request, element_id):
     # Get the impl_smts contributed by this component to system
     impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
 
-    # TODO: We may have multiple catalogs in this case in the future
-    # Retrieve used catalog_key
-    catalog_key = impl_smts[0].sid_class
-
-    # Retrieve control ids
-    catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
-
-    # Build OSCAL and OpenControl
-    oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-    opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+    if len(impl_smts) == 0:
+        # New component, no control statements assigned yet
+        catalog_key = "catalog_key_missing"
+        catalog_controls = None
+        oscal_string = None
+        opencontrol_string = None
+    elif len(impl_smts) > 0:
+        # TODO: We may have multiple catalogs in this case in the future
+        # Retrieve used catalog_key
+        catalog_key = impl_smts[0].sid_class
+        # Retrieve control ids
+        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+        # Build OSCAL and OpenControl
+        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
 
     # Return the system's element information
     context = {
@@ -1692,7 +1721,7 @@ def poams_list(request, system_id):
 
 def new_poam(request, system_id):
     """Form to create new POAM"""
-    from .forms import StatementPoamForm, PoamForm
+
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
@@ -1738,8 +1767,6 @@ def new_poam(request, system_id):
 
 def edit_poam(request, system_id, poam_id):
     """Form to create new POAM"""
-    from .forms import StatementPoamForm, PoamForm
-    from django.shortcuts import get_object_or_404
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
