@@ -22,35 +22,34 @@
       <!-- Page Title-->
       <div style="float: left;">
           <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}" style="color: black;">Component Library
+            <a href="{{ project.get_absolute_url }}" style="color: black;">Component Library</a>
           </h2>
+      </div>
+      <div style="float: right;">
+        <button id="component-import-oscal" class="btn btn-success" onclick="show_import_component_modal(); return false;" href="#" ">Import OSCAL Component</button>
       </div>
     </div>
   </div><!--/row-->
     <p>&nbsp;</p>
 
-    <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Available Components</div>
-    </div>
-   {% for component in elements %}
+
+  <div id="tab-content" class="row rows-header" style="">
+    <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Available Components</div>
+  </div>
+  {% for component in elements %}
     <div id="tab-content" class="row row-control" style="">
-        <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
-            <a href="/controls/components/{{ component.id }}">{{ component.name }}</a>
-        </div>
-        <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-            {{ component.description }}
-        </div>
-
+      <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+        <a href="/controls/components/{{ component.id }}">{{ component.name }}</a>
+      </div>
+      <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+        {{ component.description }}
+      </div>
     </div>
-    {% endfor %}
+  {% endfor %}
 
-      </form>
-  </div>
+  {% include "components/import-component-modal.html" %}
 
-  </div>
-</div>
-
-{{ block.super }}
+  {{ block.super }}
 {% endblock %}
 
 {% block scripts %}

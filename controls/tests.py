@@ -15,7 +15,7 @@ import os
 from pathlib import PurePath
 import re
 from unittest import skip
-
+from tools.utils.linux_to_dos import convert_w
 from django.test import TestCase
 from selenium.webdriver.support.select import Select
 from siteapp.models import User
@@ -174,8 +174,9 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
     def setUp(self):
         super().setUp()
 
-        self. json_download = \
+        self.json_download = \
             self.download_path / PurePath(slugify(self.component_name)).with_suffix(".json")
+        print("********* self.json_download", self.json_download)
 
         # we need a system and a component
         root_element = Element(name="My Root Element",
@@ -199,9 +200,9 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         statement.save()
 
         self.component = producer_element
-        
+
         # enable experimental OSCAL -and- OpenControl support
-        
+
         enable_experimental_oscal = \
             SystemSettings.objects.get(setting='enable_experimental_oscal')
         enable_experimental_oscal.active = True
@@ -212,13 +213,12 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()
 
-        
     def tearDown(self):
         # clean up downloaded file
         if self.json_download.is_file():
             self.json_download.unlink()
         super().tearDown()
-        
+
     def test_component_download_oscal_json(self):
         self._login()
         url = self.url(f"/systems/{self.system.id}/component/{self.component.id}")
@@ -241,6 +241,97 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             json_data = json.load(f)
             self.assertIsNotNone(json_data)
         os.remove(self.json_download.name)
+
+    def test_component_import_invalid_oscal(self):
+        self._login()
+        url = self.url(f"/controls/components")
+        self.browser.get(url)
+        self.click_element('button#component-import-oscal')
+        app_root = os.path.dirname(os.path.realpath(__file__))
+        oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
+
+        file_input = self.find_selected_option('input#id_file')
+        file_input.send_keys(oscal_json_path)
+
+        # Verify that the contents got copied correctly from the file to the textfield
+        try:
+            # Load contents from file
+            with open(oscal_json_path, 'r') as f:
+                loaded_oscal_file_json = json.load(f)
+
+            # Load contents from textarea
+            file_contents = self.find_selected_option('textarea#id_json_content').get_attribute("value")
+            oscal_json_contents = json.loads(file_contents)
+
+            self.assertEqual(loaded_oscal_file_json, oscal_json_contents)
+
+        except ValueError:
+            pass
+
+        self.click_element('input#import_component_submit')
+
+        element_count = Element.objects.filter(uuid='123456a7-b890-1234-cd56-e789fa012bcd').count()
+        self.assertEqual(element_count, 0)
+
+        statement1_count = Statement.objects.filter(uuid='1ab2c345-67d8-9e0f-1234-5a6bcd789efa').count()
+        self.assertEqual(statement1_count, 0)
+
+        statement2_count = Statement.objects.filter(uuid='2bc3d456-78e9-0f1a-2345-6b7cde890fab').count()
+        self.assertEqual(statement2_count, 0)
+
+    def test_component_import_oscal_json(self):
+        self._login()
+        url = self.url(f"/controls/components")
+        self.browser.get(url)
+
+        # Test initial import of Component(s) and Statement(s)
+        self.click_element('button#component-import-oscal')
+        app_root = os.path.dirname(os.path.realpath(__file__))
+        oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
+
+        file_input = self.find_selected_option('input#id_file')
+        try:
+            # Current file system path might be incongruent linux-dos
+            file_input.send_keys(oscal_json_path)
+        except Exception as ex:
+            print(ex)
+            oscal_json_path = convert_w(oscal_json_path)
+            file_input.send_keys(oscal_json_path)
+
+        self.click_element('input#import_component_submit')
+
+        element_count = Element.objects.filter(name='Test OSCAL Component').count()
+        self.assertEqual(element_count, 1)
+
+        statement1_count = Statement.objects.filter(uuid='1ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement1_count, 1)
+
+        statement2_count = Statement.objects.filter(uuid='2ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement2_count, 1)
+
+        # Verify that statements without a proper Catalog don't get entered
+        statement3_count = Statement.objects.filter(uuid='4ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement3_count, 0)
+
+        # Verify that statements without a proper Control don't get entered
+        statement4_count = Statement.objects.filter(uuid='6ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement4_count, 0)
+
+        var_sleep(1) # Needed to allow page to refresh and messages to render
+
+        # Test that duplicate Components and Statements are not re-imported
+        self.click_element('button#component-import-oscal')
+        file_input = self.find_selected_option('input#id_file')
+        file_input.send_keys(oscal_json_path)
+
+        self.click_element('input#import_component_submit')
+
+        element_count = Element.objects.filter(name='Test OSCAL Component').count()
+        self.assertEqual(element_count, 1)
+
+        statement1_count = Statement.objects.filter(uuid='1ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(statement1_count, 1)
+
 
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
@@ -449,7 +540,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         return smt
 
     def click_components_tab(self):
-        self.browser.find_element_by_partial_link_text("Component Statements  ").click()
+        self.browser.find_element_by_partial_link_text("Component Statements ").click()
 
     def dropdown_option(self, dropdownid):
         """

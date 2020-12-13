@@ -75,6 +75,7 @@ class SeleniumTest(StaticLiveServerTestCase):
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
 
         options.add_argument("--incognito")
+
         if system() == "Windows" or 'Microsoft' in uname().release:
             # WSL has a hard time finding tempdir so we feed it the dos conversion
             tempfile.tempdir = convert_w(os.getcwd())
@@ -86,11 +87,14 @@ class SeleniumTest(StaticLiveServerTestCase):
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True
         })
+
         # Set up selenium Chrome browser for Windows or Linux
         if system() == "Windows" or 'Microsoft' in uname().release:
-            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', chrome_options=options)
+            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
         else:
             cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+
+        cls.browser.implicitly_wait(3) # seconds
 
         # Clean up and quit tests if Q is in SSO mode
         if getattr(settings, 'PROXY_HEADER_AUTHENTICATION_HEADERS', None):
@@ -681,7 +685,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
-class PortfolioProjetTests(OrganizationSiteFunctionalTests):
+class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
     def _fill_in_signup_form(self, email, username=None):
         if username:
@@ -1221,7 +1225,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         def do_submodule(answer_text):
             var_sleep(1.25)
-            self.assertRegex(self.browser.title, "Next Question: Introduction")
+            self.assertRegex(self.browser.title, "Next Question:")
             self.click_element("#save-button")
             var_sleep(1.25)
             self.assertRegex(self.browser.title, "Next Question: The Question")
@@ -1254,7 +1258,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question input[name="value"][value="%d"]' % task_id)
         self.click_element("#save-button")
         var_sleep(.5)
-        self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
+        self.assertRegex(self.browser.title, "Test The Module Question Types - ")
 
 class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
