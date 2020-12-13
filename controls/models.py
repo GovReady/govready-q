@@ -87,12 +87,22 @@ class Statement(models.Model):
         return self.prototype
 
     def create_instance_from_prototype(self, consumer_element_id):
-        """Creates a control_implementation statement instance for root_element of a system from an existing control implementation prototype statement"""
+        """Creates a control_implementation statement instance for a system's root_element from an existing control implementation prototype statement"""
 
-        # if self.prototype is not None:
-        #     # Prototype already exists for statement
-        #     return self.prototype
+        # TODO: Check statement is a prototype
+
+        # System already has instance of the prototype statement
+        # TODO: write check for this logic
+        # Get all statements for consumer element
+        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id)
+        # Get prototype ids for all consumer element statements
+        smts_existing_prototype_id = [smt.prototype.id for smt in smts_existing]
+        if self.id is smts_existing_prototype_id:
+            return self.prototype
+
+        #     # TODO:
         #     # check if prototype content is the same, report error if not, or overwrite if permission approved
+
         instance = deepcopy(self)
         instance.statement_type="control_implementation"
         instance.consumer_element_id = consumer_element_id
