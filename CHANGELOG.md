@@ -119,10 +119,12 @@ Example:
 }
 ```
 * Update various libraries. See changes in `requirements.txt`.
+* Removed instance of using sys.stderr and replaced with logger for proper logging.
 
 **Other**
 
 * Updated link to `jquery-ui.min.js` library in `fetch-vendor-resources`.
+* Update version checking for v999 develop branch designation.
 
 v.0.9.1.47.1 (December 02, 2020)
 --------------------------------
