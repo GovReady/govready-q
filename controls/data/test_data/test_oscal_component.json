@@ -1,0 +1,91 @@
+{
+  "component-definition": {
+    "metadata": {
+      "title": "AWS IAMS Component-to-Control Narratives",
+      "published": "2020-12-01T20:38:51+00:00",
+      "last-modified": "2020-12-01T20:25:29+00:00",
+      "version": "string",
+      "oscal-version": "1.0.0-milestone2"
+    },
+    "components": {
+      "998040f9-a453-4854-ad88-f093bb683dab": {
+        "name": "Test OSCAL Component",
+        "component-type": "software",
+        "title": "",
+        "description": "",
+        "control-implementations": [
+          {
+            "uuid": "0ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "Valid Catalog, Partial implementation of NIST_SP-800-53_rev4",
+            "implemented-requirements": [
+              {
+                "uuid": "1ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                "control-id": "ac-7",
+                "description": "Allow a user 5 login attempts before locking them out.",
+                "remarks": "",
+                "properties": [
+                  {
+                  "name": "label",
+                  "value": "a"
+                  }
+                ]
+              },
+              {
+                "uuid": "2ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                "control-id": "ac-7",
+                "description": "Disable user account for 5 minutes after lockout.",
+                "remarks": "",
+                "properties": [
+                  {
+                  "name": "label",
+                  "value": "b"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "3ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+            "source": "SMPL_SP-800-53_rev20",
+            "description": "Invalid Catalog",
+            "implemented-requirements": [
+              {
+                "uuid": "4ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                "control-id": "ac-5",
+                "description": "Allow a user 5 login attempts before locking them out.",
+                "remarks": "",
+                "properties": [
+                  {
+                  "name": "label",
+                  "value": "c"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "5ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+            "source": "NIST_SP-800-53_rev4",
+            "description": "Valid Catalog, Partial implementation of NIST_SP-800-53_rev4",
+            "implemented-requirements": [
+              {
+                "uuid": "6ab0b252-90d3-4d2c-9785-0c4efb254dfc",
+                "control-id": "xz-0",
+                "description": "Invalid Control ID",
+                "remarks": "",
+                "properties": [
+                  {
+                  "name": "label",
+                  "value": "d"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "back-matter": []
+}
