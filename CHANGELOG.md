@@ -124,6 +124,7 @@ Example:
 **Other**
 
 * Updated link to `jquery-ui.min.js` library in `fetch-vendor-resources`.
+* Update version checking for v999 develop branch designation.
 
 v.0.9.1.47.1 (December 02, 2020)
 --------------------------------
