@@ -10,7 +10,6 @@ from selenium.common.exceptions import NoSuchElementException
 
 import os
 from tools.utils.linux_to_dos import convert_w
-from platform import uname, system
 
 class DiscussionTests(SeleniumTest):
 
@@ -123,6 +122,7 @@ class DiscussionTests(SeleniumTest):
         # We're now on the first actual question.
         # Start a team conversation.
         self.click_element("#start-a-discussion")
+        var_sleep(1)
         self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
@@ -160,9 +160,13 @@ class DiscussionTests(SeleniumTest):
             'testimage.png'
         )
 
-        if system() == "Windows" or 'Microsoft' in uname().release:
+        try:
+            # Current file system path might be incongruent linux-dos
+            self.fill_field("#discussion-attach-file", testFilePath)
+        except Exception as ex:
+            print(ex)
             testFilePath = convert_w(testFilePath)
-        self.fill_field("#discussion-attach-file", testFilePath)
+            self.fill_field("#discussion-attach-file", testFilePath)
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
         var_sleep(.5)

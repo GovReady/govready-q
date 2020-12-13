@@ -229,16 +229,18 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # downloaded file, so let's make sure it doesn't exist before we
         # download
         # definite race condition possibility
-
-        if self.json_download.is_file():
-            self.json_download.unlink()
+        
+        if os.path.isfile(self.json_download.name):
+            os.remove(self.json_download.name)
         self.click_element("a#oscal_download_json_link")
         var_sleep(2)            # need to wait for download, alas
         # assert download exists!
-        self.assertTrue(self.json_download.is_file())
+        self.assertTrue(os.path.isfile(self.json_download.name))
         # assert that it is valid JSON by trying to load it
-        with open(self.json_download, 'r') as f:
+        with open(self.json_download.name, 'r') as f:
             json_data = json.load(f)
+            self.assertIsNotNone(json_data)
+        os.remove(self.json_download.name)
 
     def test_component_import_invalid_oscal(self):
         self._login()
