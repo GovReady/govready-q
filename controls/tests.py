@@ -15,7 +15,7 @@ import os
 from pathlib import PurePath
 import re
 from unittest import skip
-
+from tools.utils.linux_to_dos import convert_w
 from django.test import TestCase
 from selenium.webdriver.support.select import Select
 from siteapp.models import User
@@ -287,7 +287,13 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
 
         file_input = self.find_selected_option('input#id_file')
-        file_input.send_keys(oscal_json_path)
+        try:
+            # Current file system path might be incongruent linux-dos
+            file_input.send_keys(oscal_json_path)
+        except Exception as ex:
+            print(ex)
+            oscal_json_path = convert_w(oscal_json_path)
+            file_input.send_keys(oscal_json_path)
 
         self.click_element('input#import_component_submit')
 
