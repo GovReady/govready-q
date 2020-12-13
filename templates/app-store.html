@@ -192,25 +192,36 @@ Compliance Apps
           {% endif %}
           <div class="app-quick-start-form">
             {# If the user can only start the app in a single organization context, we can offer a quick start button. #}
-            {% if app.organizations|length == 1 %}
-            <form action="/store/{{app.key|urlencode}}{{forward_qsargs}}" method="post" style="display: inline-block;">
-              {% csrf_token %}
-              {% with app.organizations|first as first_org %}
-                <input type="hidden" name="organization" value="{{first_org.slug}}">
-              {% endwith %}
-              <button type="submit" class="btn btn-success btn-sm start-app">
-                Add ►
-              </button>&nbsp;
-            </form>
-            {% endif %}
+              {% if app.organizations|length >= 1 %}
+                  <form action="/store/{{ app.key|urlencode }}{{ forward_qsargs }}" method="post" style="display: inline-block;">
+                      {% csrf_token %}
+                      {% if app.organizations|length > 1 %}
+                          <select id="app-org-select" class="" onchange="update_org_choice('{{ app.key }}/organization_{{ forloop.counter }}', event)">
+                              {% for org in app.organizations %}
+                                  <option value="{{ org.slug }}">{{ org }}</option>
+                              {% endfor %}
+                          </select>
+                      {% endif %}
+                      {% with app.organizations|first as first_org %}
+                          <input type="hidden" id="{{ app.key }}/organization_{{ forloop.counter }}" name="organization" value="{{ first_org.slug }}">
+                      {% endwith %}
+                      <button type="submit" class="btn btn-success btn-sm start-app">
+                          Add ►
+                      </button>&nbsp;
+                  </form>
+              {% endif %}
             <a href="/store/{{app.key|urlencode}}{{forward_qsargs}}" class="btn btn-default btn-sm view-app">Info</a>
+
           </div>
         </td>
         {% if app.icon %}
-        <td class="app-icon app-icon-appstore">
-          <img src="{{app.icon}}" class="img-responsive" alt="App Icon">
-          <div class="center-text"><small>{{ app.version }}</small></div>
-        </td>
+            <td class="app-icon app-icon-appstore">
+                <img src="{{ app.icon }}" class="img-responsive" alt="App Icon">
+                                <label>AppSource: </label>
+                <div style="text-align: center;" id="{{ app.key }}"><small>{{ app.source_slug }}</small></div>
+                <label>AppVersion: </label>
+                <div class="center-text"><small>{{ app.version }}</small></div>
+            </td>
         {% endif %}
         </tr>
         </table>
@@ -246,7 +257,10 @@ Compliance Apps
 {% endblock %}
 
 {% block scripts %}
-<script>
+    <script>function update_org_choice(comporg, event) {
+        document.getElementById(comporg).value = event.target.value
+    }
+
 RegExp.escape = function(s) {
   // http://stackoverflow.com/a/18151038
   return String(s).replace(/([-()\[\]{}+?*.$\^|,:#<!\\])/g, '\\$1').

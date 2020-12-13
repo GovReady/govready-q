@@ -135,9 +135,9 @@ label:hover .onhover { display: inline; }
 
   <div id="focus-area-wrapper" class="col-xs-12 col-sm-9 col-md-7 col-lg-6 col-xl-5 ">
     {% if source_invitation %}
-      <div style="margin-bottom: 2em">
-        <div id="source-invitation-show" style="text-align: right; margin-bottom: -1.5em; {% if not task.is_started %}display: none;{% endif %}">
-          <a href="#" onclick="$('#source-invitation').fadeIn(); $('#source-invitation-show').hide(); return false;" style="color: #448; font-size: 85%">
+      <div class="question-source-invitation">
+        <div id="source-invitation-show" class="question-source-invitation-show" style="{% if not task.is_started %}display: none;{% endif %}">
+          <a href="#" onclick="$('#source-invitation').fadeIn(); $('#source-invitation-show').hide(); return false;" class="question-source-invitation-link">
             Show Invitation from {{source_invitation.from_user}}
           </a>
         </div>
@@ -165,19 +165,18 @@ label:hover .onhover { display: inline; }
             {# ADDITIONAL INFORMATION BELOW THE PROMPT #}
 
             {% if example_answers %}
-              <div id="example-answers" class="expandable" style="margin: 35px 0; font-size: 80%; border-left: 2px solid #CCC; padding-left: 8px;">
-                <div class="expandy" style="max-height: 4.25em; overflow: hidden;">
+              <div id="example-answers" class="expandable question-example-answer">
+                <div class="expandy question-example-answer-expand">
                   <div>
                     {% for ex in example_answers %}
                       <div>
-                        <div><small style="color: #666;">Example{% if example_answers|length > 1 %} {{forloop.counter}}{% endif %}</small></div>
+                        <div><small class="question-example-small">Example{% if example_answers|length > 1 %} {{forloop.counter}}{% endif %}</small></div>
                         {{ex|safe}}
                       </div>
                     {% endfor %}
                   </div>
                 </div>
-                <div class="toggler"
-                     style="text-align: left; font-style: italic; font-size: 90%;">
+                <div class="toggler question-toggle">
                   <a
                      href="#more"
                      onclick="$(this).parents('.expandable').find('.expandy').data('original-height', $(this).parents('.expandable').find('.expandy').height()); $(this).parents('.expandable').find('.expandy').animate({ minHeight: $(this).parents('.expandable').find('.expandy>div').outerHeight() + $(this).parents('.expandable').find('.toggler').outerHeight() }); $(this).parents('.expandable').find('a[href=&quot;#more&quot;]').hide(); $(this).parents('.expandable').find('a[href=&quot;#less&quot;]').show(); return false;">Show more</a>
@@ -189,12 +188,12 @@ label:hover .onhover { display: inline; }
             {% endif %}
 
             {% if reference_text %}
-              <p style="font-size: 80%; color: #666;">
+              <p class="question-reference-text">
                 <a href="#" onclick="$(this).hide(); $('#reference-text').slideDown(); return false;">
                   Additional information...
                 </a>
               </p>
-              <div id="reference-text" style="display: none; font-size: 80%;" class="well">
+              <div id="reference-text" class="well question-reference-well">
                 <p><strong><small>Additional Information</small></strong></p>
                 {{reference_text|safe}}
               </div>
@@ -278,21 +277,21 @@ label:hover .onhover { display: inline; }
             {% elif q.spec.type == "date" %}
               {# The HTML5 date input type is only properly supported on Chrome, so we don't use it yet. Other browsers just show a text box, and we expect YYYY-MM-DD format, which is hard for users to enter manually. #}
               <div class="form-group">
-                <select name="value_month" class="form-control" style="width: auto; display: inline-block;">
+                <select name="value_month" class="form-control question-form-style">
                   <option value="" disabled="1">(month)</option>
                   {% for month_str, value in date_l8n.months %}
                   <option value="{{value}}">{{month_str}}</option>
                   {% endfor %}
                 </select>
 
-                <select name="value_day" class="form-control" style="width: auto; display: inline-block;">
+                <select name="value_day" class="form-control question-form-style">
                   <option value="" disabled="1">(day)</option>
                   {% for value in date_l8n.days %}
                   <option value="{{value}}">{{value}}</option>
                   {% endfor %}
                 </select>
 
-                <select name="value_year" class="form-control" style="width: auto; display: inline-block;">
+                <select name="value_year" class="form-control question-form-style">
                   <option value="" disabled="1">(year)</option>
                   {% for value in date_l8n.years %}
                   <option value="{{value}}">{{value}}</option>
@@ -304,10 +303,10 @@ label:hover .onhover { display: inline; }
               </div>
 
             {% elif q.spec.type == "choice" %}
-              <div style="margin: 1em 0 1.5em 0">
+              <div class="question-choice">
               {% for choice in q.spec.choices %}
               <div class="radio">
-                <label style="text-align: left;">
+                <label class="left-text">
                   <input name="value" value="{{choice.key}}" type="radio" {% if answer == choice.key %}checked{% endif %}> {{choice.text}}
                   <p class="help-block">{{choice.help}}</p>
                 </label>
@@ -316,7 +315,7 @@ label:hover .onhover { display: inline; }
               </div>
 
             {% elif q.spec.type == "yesno" %}
-              <div style="margin: 1em 0 1.5em 0">
+              <div class="question-yesno">
               <div class="radio">
                 <label>
                   <input name="value" value="no"  type="radio" {% if answer == "no" %}checked{% endif %}> No
@@ -331,10 +330,10 @@ label:hover .onhover { display: inline; }
               </div>
 
             {% elif q.spec.type == "multiple-choice" %}
-              <div style="margin: 1em 0 1.5em 0;">
+              <div class="question-multiple-choice">
               {% for choice in q.spec.choices %}
               <div class="checkbox">
-                <label style="text-align: left;">
+                <label class="left-text">
                   <input name="value" value="{{choice.key}}" type="checkbox" {% if choice.key in answer %}checked{% endif %}> {{choice.text}}
                   <p class="help-block">{{choice.help}}</p>
                 </label>
@@ -352,7 +351,7 @@ label:hover .onhover { display: inline; }
 
             {% elif q.spec.type == "datagrid" %}
               <div id="jsGrid"></div>
-              <div style="margin: 1em 0 1.5em 0;">
+              <div class="question-datagrid">
               {% if q.spec.min > 0 and q.spec.min == q.spec.max %}
                   <p class="help-block">You must choose exactly {{q.spec.min}} option{{q.spec.min|pluralize}}.</p>
               {% elif q.spec.min > 0 %}
@@ -391,7 +390,7 @@ label:hover .onhover { display: inline; }
             {% elif q.spec.type == "file" %}
               {# When there is an existing answer, the UI shows a thumbnail of it. If the user doesn't choose a new file, the existing value is kept. #}
               {% if answer %}
-              <div style="margin: 1em 0">
+              <div class="question-file">
                 <p>The following file is uploaded:</p>
                 {{answer_rendered|safe}}
                 <p>Select a new file if you would like to replace it:</p>
@@ -399,9 +398,8 @@ label:hover .onhover { display: inline; }
               {% endif %}
 
               <div class="form-group">
-                <input name="value" type="file" id="inputctrl" class="form-control"
-                  style="width: auto; border:  none; padding: 0; display: inline-block"/>
-                <input type="reset" value="x" style="font-size: 14px;">
+                <input name="value" type="file" id="inputctrl" class="form-control question-form-group"/>
+                <input type="reset" value="x" class="question-input-font">
                 <p class="help-block">{{q.spec.help}}</p>
               </div>
 
@@ -422,7 +420,7 @@ label:hover .onhover { display: inline; }
                     <input name="value" value="{{m.id}}" type="radio" {% if m == current_answer %}checked{% endif %}>
                       {% with m.title as title %}
                       {{title}}
-                      <div class="small" style="color: #666">
+                      <div class="small question-current-answer">
                         {% if m == current_answer %}
                           <strong>Current Answer</strong>.
                         {% endif %}
@@ -433,14 +431,14 @@ label:hover .onhover { display: inline; }
 
                         {% if answer_tasks_show_user %}Edited by {% if m.editor == request.user %}you{% else %}{{m.editor}}{% endif %}; {% endif %}{{m.get_status_display}}.
 
-                        <a href="{{m.get_absolute_url}}" class="onhover" style="color: #999; margin-left: 3px; font-size: 90%;"><span class="glyphicon glyphicon-pencil"> </span></a>
+                        <a href="{{m.get_absolute_url}}" class="onhover question-absolute-url"><span class="glyphicon glyphicon-pencil"> </span></a>
                       </div>
                       {% endwith %}
                   </label>
                 </div>
               {% endfor %}
 
-              <div class="radio" style="margin-bottom: 1.5em">
+              <div class="radio question-radio">
                 <label>
                   <input name="value" value="__new" type="radio">
                   {% if current_answer %}
@@ -493,7 +491,7 @@ label:hover .onhover { display: inline; }
                       {% if not task.project.is_account_project %} {# discussions can't be tied to answers of tasks that aren't in a project #}
                         <button id="start-a-discussion" onclick="start_a_discussion();" type=button data-toggleable=false>
                             {# if you can see this page, you can start a conversation #}
-                            <span class="glyphicon glyphicon-comment" style="color: #56A;"></span> Discuss
+                            <span class="glyphicon glyphicon-comment question-glyphicon-comment"></span> Discuss
                         </button>
                       {% endif %}
                       {% if task.can_transfer_owner and write_priv %}
@@ -528,7 +526,7 @@ label:hover .onhover { display: inline; }
                   {# This is DEBUG functionality for reverting a question to an un-answered state, which differs from being answered but with null via the Skip/Clear button. #}
                   {% if answer_obj and DEBUG %}
                     <button id="clear-button"
-                      type="submit" class="btn btn-link" style="color: #999; font-size: 0.9em;"
+                      type="submit" class="btn btn-link question-button"
                       onclick="$('#question > form input[name=method]').val('clear')">
                         Mark as Unanswered
                         <!-- &raquo; -->
@@ -536,9 +534,9 @@ label:hover .onhover { display: inline; }
                   {% endif %}
                 </div> {# /.pull-left #}
 
-                <div class="pull-right" style="margin-top: -10px;">
+                <div class="pull-right question-can-review">
                   {% if answer_obj and can_review %}
-                  <select style="display: block; margin: 1em 0; font-size: 80%; background-color: white; padding: .2em .2em .15em .2em" onchange="update_review_status(this)">
+                  <select class="question-select-review" onchange="update_review_status(this)">
                     {% for key, label in review_choices %}
                       <option value="{{key}}" {% if answer_obj.reviewed == key %}selected{% endif %}>
                         {{label}}
@@ -555,7 +553,7 @@ label:hover .onhover { display: inline; }
             {% if answer_obj %}
               {% for key, label in review_choices %}
                 {% if answer_obj.reviewed == key %}
-                  <p style="margin-top: 1em; font-size: 85%; color: #666">This question&rsquo;s review status is {{label}}.</p>
+                  <p class="question-review-status">This question&rsquo;s review status is {{label}}.</p>
                 {% endif %}
               {% endfor %}
             {% endif %}
@@ -574,8 +572,7 @@ label:hover .onhover { display: inline; }
     &nbsp;
   </div>
 
-  <div id="progress-project-area-wrapper" class="col-xs-8 col-sm-6 col-md-3 col-lg-3 col-xl-2"
-       style="background-color: rgb(230, 230, 230); border-radius: 6px;">
+  <div id="progress-project-area-wrapper" class="col-xs-8 col-sm-6 col-md-3 col-lg-3 col-xl-2 question-progress-project">
     {% include "task-progress-project-list.html" with previous="question" %}
   </div>
 

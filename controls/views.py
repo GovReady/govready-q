@@ -1,13 +1,25 @@
 from collections import defaultdict
 
+from django.urls import reverse_lazy
+
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
+    HttpResponseNotAllowed
 from django.forms import ModelForm
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
+from jsonschema import validate
+from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
+from django.views import View
 from django.utils.text import slugify
 from siteapp.models import Project, User, Organization
 from siteapp.forms import PortfolioForm, ProjectForm
+from .forms import ImportOSCALComponentForm
 from datetime import datetime, timezone
 from .oscal import Catalog, Catalogs
 import json, rtyaml, shutil, re, os
@@ -83,11 +95,11 @@ def catalog(request, catalog_key, system_id=None):
 def group(request, catalog_key, g_id):
     """Temporary index page for catalog control group"""
 
-     # Get catalog
+    # Get catalog
     catalog = Catalog(catalog_key)
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     control_groups = catalog.get_groups()
-    group =  None
+    group = None
     # Get group/family of controls
     for g in control_groups:
         if g['id'].lower() == g_id:
@@ -107,6 +119,7 @@ def group(request, catalog_key, g_id):
 def control(request, catalog_key, cl_id):
     """Control detail view"""
     cl_id = oscalize_control_id(cl_id)
+    catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get catalog
     catalog = Catalog(catalog_key)
@@ -114,8 +127,7 @@ def control(request, catalog_key, cl_id):
 
     # Handle properly formatted control id that does not exist
     if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", { "control": {} })
-
+        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
     # Get and return the control
     context = {
         "catalog": catalog,
@@ -139,7 +151,7 @@ def controls_selected(request, system_id):
 
         # sort controls
         controls = list(controls)
-        controls.sort(key = lambda control:control.get_flattened_oscal_control_as_dict()['sort_id'])
+        controls.sort(key=lambda control: control.get_flattened_oscal_control_as_dict()['sort_id'])
         # controls.sort(key = lambda control:list(reversed(control.get_flattened_oscal_control_as_dict()['sort_id'])))
 
         impl_smts_count = {}
@@ -147,7 +159,8 @@ def controls_selected(request, system_id):
         for c in controls:
             impl_smts_count[c.oscal_ctl_id] = 0
             if c.oscal_ctl_id in ikeys:
-                impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+                impl_smts_count[c.oscal_ctl_id] = len(
+                    system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
 
         # Return the controls
         context = {
@@ -182,7 +195,8 @@ def controls_updated(request, system_id):
         for c in controls:
             impl_smts_count[c.oscal_ctl_id] = 0
             if c.oscal_ctl_id in ikeys:
-                impl_smts_count[c.oscal_ctl_id] = len(system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
+                impl_smts_count[c.oscal_ctl_id] = len(
+                    system.smts_control_implementation_as_dict[c.oscal_ctl_id]['control_impl_smts'])
 
         # Return the controls
         context = {
@@ -214,6 +228,7 @@ def components_selected(request, system_id):
         context = {
             "system": system,
             "project": project,
+            "elements": Element.objects.all().exclude(element_type='system'),
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/components_selected.html", context)
@@ -221,16 +236,24 @@ def components_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+def component_library(request):
+    """Display the library of components"""
+
+    context = {
+        "elements": Element.objects.all().exclude(element_type='system'),
+        "import_form": ImportOSCALComponentForm(),
+    }
+
+    return render(request, "components/component_library.html", context)
 
 class ComponentSerializer(object):
 
     def __init__(self, element, impl_smts):
         self.element = element
         self.impl_smts = impl_smts
-        
 
 class OSCALComponentSerializer(ComponentSerializer):
-    
+
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
@@ -271,7 +294,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             }
             # if there is a part ID, add it as a label property
             if smt.pid:
-                requirement['properties'] = dict(name='label', value=smt.pid)
+                requirement['properties'] = [dict(name='label', value=smt.pid)]
             by_class[smt.sid_class].append(requirement)
 
         for sid_class, requirements in by_class.items():
@@ -299,22 +322,182 @@ class OpenControlComponentSerializer(ComponentSerializer):
         satisfies_smts = ocf["satisfies"]
         for smt in self.impl_smts:
             my_dict = {
-                        "control_key": smt.sid.upper(),
-                        "control_name": smt.catalog_control_as_dict['title'],
-                        "standard_key": smt.sid_class,
-                        "covered_by": [],
-                        "security_control_type": "Hybrid | Inherited | ...",
-                        "narrative": [
-                            {"text": smt.body}
-                        ],
-                        "remarks": [
-                            {"text": smt.remarks}
-                        ]
-                     }
+                "control_key": smt.sid.upper(),
+                "control_name": smt.catalog_control_as_dict['title'],
+                "standard_key": smt.sid_class,
+                "covered_by": [],
+                "security_control_type": "Hybrid | Inherited | ...",
+                "narrative": [
+                    {"text": smt.body}
+                ],
+                "remarks": [
+                    {"text": smt.remarks}
+                ]
+            }
             satisfies_smts.append(my_dict)
         opencontrol_string = rtyaml.dump(ocf)
         return opencontrol_string
-    
+
+
+class ComponentImporter(object):
+
+    def import_component_as_json(self, json_object, request):
+        """Imports a Component from a JSON object
+
+        @type json_object: dict
+        @param json_object: Element attributes from JSON object
+        @rtype: list if success, bool (false) if failure
+        @returns: List of created components (if success) or False is failure
+        """
+
+        # Validates the format of the JSON object
+        try:
+            oscal_json = json.loads(json_object)
+        except ValueError:
+            messages.add_message(request, messages.ERROR, f"Invalid JSON. Component(s) not created.")
+            return False
+        if self.validate_oscal_json(oscal_json):
+            # Returns list of created components
+            return self.create_components(oscal_json, request)
+        else:
+            messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
+            return False
+
+    def validate_oscal_json(self, oscal_json):
+        """Validates the JSON object is valid OSCAL format"""
+
+        project_root = os.path.abspath(os.path.dirname(__name__))
+        oscal_schema_path = os.path.join(project_root, "schemas", "oscal_component_schema.json")
+        with open(oscal_schema_path, "r") as schema_content:
+            oscal_json_schema = json.load(schema_content)
+        try:
+            validate(instance=oscal_json, schema=oscal_json_schema)
+            return True
+        except (SchemaError, SchemaValidationError):
+            return False
+
+    def create_components(self, oscal_json, request):
+        """Creates Elements (Components) from valid OSCAL JSON"""
+        components_created = []
+        components = oscal_json['component-definition']['components']
+        for component in components:
+            new_component = self.create_component(component, components[component], request)
+            if new_component is not None:
+                components_created.append(new_component)
+
+        return components_created
+
+    def create_component(self, component_uuid, component_json, request):
+        """Creates a component from a JSON dict
+
+        @type component_uuid: str
+        @param component_uuid: UUID of imported component
+        @type component_json: dict
+        @param component_json: Component attributes from JSON object
+        @rtype: Element
+        @returns: Element object if created, None otherwise
+        """
+        try:
+            existing_element_uuids = Element.objects.filter(uuid=component_uuid).count()
+        except ValidationError:
+            messages.add_message(request, messages.ERROR, f"Invalid Component UUID ({component_uuid}). Skipping Component...")
+            return None
+        if existing_element_uuids > 0:
+            messages.add_message(request, messages.ERROR, f"Component already exists with UUID {component_uuid}. Skipping Component...")
+            return None
+        try:
+            new_component = Element.objects.create(
+                name=component_json['name'],
+                description=component_json['description'],
+                # Components uploaded to the Component Library are all system_element types
+                # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
+                element_type="system_element",
+                uuid=component_uuid
+            )
+            new_component.save()
+            messages.add_message(request, messages.INFO, f"Component {component_json['name']} created.")
+            control_implementation_statements = component_json['control-implementations']
+            for control_element in control_implementation_statements:
+                catalog = control_element['source'] if 'source' in control_element else None
+                implementation_statements = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
+                self.create_control_implementation_statements(catalog, implementation_statements, new_component, request)
+            return new_component
+        except IntegrityError:
+            messages.add_message(request, messages.ERROR, f"Component with name {component_json['name']} already exists. Skipping Component...")
+            return None
+
+    def create_control_implementation_statements(self, catalog_key, implementation_statements, parent_component, request):
+        """Creates a Statement from a JSON dictimplemented-requirements
+
+        @type catalog_key: str
+        @param catalog_key: Catalog of the control statements
+        @type implementation_statements: list
+        @param implementation_statements: Implementation statements
+        @type parent_component: str
+        @param parent_component: UUID of parent component
+        @rtype: dict
+        @returns: New statement objects created
+        """
+
+        new_statements = []
+
+        for impl_stmnt in implementation_statements:
+
+            control_id = impl_stmnt['control-id'] if 'control-id' in impl_stmnt else ''
+            stmnt_uuid = impl_stmnt['uuid'] if 'uuid' in impl_stmnt else ''
+
+            try:
+                existing_statement_uuids = Statement.objects.filter(uuid=stmnt_uuid).count()
+            except ValidationError:
+                messages.add_message(request, messages.ERROR, f"Statement UUID {stmnt_uuid} is invalid. Skipping Statement...")
+                continue
+
+            if existing_statement_uuids > 0:
+                messages.add_message(request, messages.ERROR, f"Statement with UUID {stmnt_uuid} already exists. Skipping Statement...")
+                continue
+
+            if self.control_exists_in_catalog(catalog_key, control_id):
+                try:
+                    new_statement = Statement.objects.create(
+                        sid=control_id,
+                        sid_class=catalog,
+                        pid=impl_stmnt['properties'][0]['value'] if 'properties' in impl_stmnt and 'value' in impl_stmnt['properties'][0] else None,
+                        body=impl_stmnt['description'] if 'description' in impl_stmnt else None,
+                        statement_type="control_implementation_prototype",
+                        remarks=impl_stmnt['remarks'] if 'remarks' in impl_stmnt else None,
+                        status=impl_stmnt['status'] if 'status' in impl_stmnt else None,
+                        producer_element=parent_component,
+                        uuid=stmnt_uuid,
+                    )
+                    new_statement.save()
+                    messages.add_message(request, messages.INFO, f"New statement with UUID {stmnt_uuid} created.")
+                    new_statements.append(new_statement)
+                except IntegrityError:
+                    messages.add_message(request, messages.ERROR, f"Statement with UUID {stmnt_uuid} already exists. Skipping Statement...")
+            else:
+                messages.add_message(request, messages.ERROR, f"Control {control_id} doesn't exist in this Catalog. Skipping Statement with UUID {stmnt_uuid}...")
+
+        return new_statements
+
+    def control_exists_in_catalog(self, catalog_key, control_id):
+        """Searches for the presence of a specific control id in a catalog.
+
+        @type catalog_key: str
+        @param catalog_key: Catalog Key
+        @type control_id: str
+        @param control_id: Control id
+        @rtype: bool
+        @returns: True if control id exists in the catalog. False otherwise
+        """
+
+        if catalog_key not in Catalogs()._list_catalog_keys():
+            return False
+        else:
+            catalog = Catalog.GetInstance(catalog_key)
+            control = catalog.get_control_by_id(control_id)
+            return True if control is not None else False
+
+
 def system_element(request, system_id, element_id):
     """Display System's selected element detail view"""
 
@@ -358,6 +541,70 @@ def system_element(request, system_id, element_id):
             "project_form": ProjectForm(request.user),
         }
         return render(request, "systems/element_detail_tabs.html", context)
+
+def component_library_component(request, element_id):
+    """Display certified component's element detail view"""
+
+    # Retrieve element
+    element = Element.objects.get(id=element_id)
+
+    # Retrieve impl_smts produced by element and consumed by system
+    # Get the impl_smts contributed by this component to system
+    impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
+
+    try:
+        # TODO: We may have multiple catalogs in this case in the future
+        # Retrieve used catalog_key
+        catalog_key = impl_smts[0].sid_class
+
+        # Retrieve control ids
+        catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
+    except IndexError:
+        catalog_key = None
+        catalog_controls = []
+
+
+    # Build OSCAL and OpenControl
+    oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+    opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+
+    # Return the system's element information
+    context = {
+        "element": element,
+        "impl_smts": impl_smts,
+        "catalog_controls": catalog_controls,
+        "catalog_key": catalog_key,
+        "oscal": oscal_string,
+        "enable_experimental_opencontrol": SystemSettings.enable_experimental_opencontrol,
+        "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
+        "opencontrol": opencontrol_string,
+        # "project_form": ProjectForm(request.user),
+    }
+    return render(request, "components/element_detail_tabs.html", context)
+
+def component_library_component_copy(request, element_id):
+    """Copy a component"""
+
+    # Retrieve element
+    element = Element.objects.get(id=element_id)
+
+    e_copy = element.copy()
+
+    # Create message to display to user
+    messages.add_message(request, messages.INFO,
+                         'Component "{}" copied to "{}".'.format(element.name, e_copy.name))
+
+    # Redirect to the new page for the component
+    return HttpResponseRedirect("/controls/components/{}".format(e_copy.id))
+
+
+@login_required
+def import_component(request):
+    """Import a Component in JSON"""
+
+    oscal_component_json = request.POST['json_content']
+    result = ComponentImporter().import_component_as_json(oscal_component_json, request)
+    return component_library(request)
 
 def system_element_download_oscal_json(request, system_id, element_id):
     # Retrieve identified System
@@ -405,10 +652,8 @@ def controls_selected_export_xacta_xslx(request, system_id):
                 impl_smts_by_sid[smt.sid] = [smt]
 
         for control in controls:
-            # print(control)
             if control.oscal_ctl_id in impl_smts_by_sid:
                 setattr(control, 'impl_smts', impl_smts_by_sid[control.oscal_ctl_id])
-                # print(control.oscal_ctl_id, control.impl_smts)
             else:
                 setattr(control, 'impl_smts', None)
 
@@ -427,134 +672,157 @@ def controls_selected_export_xacta_xslx(request, system_id):
         c = ws.cell(row=1, column=1, value="Paragraph/ReqID")
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"),
+                          bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Stated Requirement (Control statement/Requirement)
         c = ws.cell(row=1, column=2, value="Title")
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
         ws.column_dimensions['B'].width = 30
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Private Implementation
         c = ws.cell(row=1, column=3, value="Private Implementation")
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
         ws.column_dimensions['C'].width = 80
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Public Implementation
         c = ws.cell(row=1, column=4, value="Public Implementation")
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
         ws.column_dimensions['D'].width = 80
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Notes
         c = ws.cell(row=1, column=5, value="Notes")
         ws.column_dimensions['E'].width = 60
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Status ["Implemented", "Planned"]
         c = ws.cell(row=1, column=6, value="Status")
         ws.column_dimensions['F'].width = 15
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Expected Completion (expected implementation)
         c = ws.cell(row=1, column=7, value="Expected Completion")
         ws.column_dimensions['G'].width = 20
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Class ["Management", "Operational", "Technical",
         c = ws.cell(row=1, column=8, value="Class")
         ws.column_dimensions['H'].width = 15
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Priority ["p0", "P1", "P2", "P3"]
         c = ws.cell(row=1, column=9, value="Priority")
         ws.column_dimensions['I'].width = 15
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Responsible Entities
         c = ws.cell(row=1, column=10, value="Responsible Entities")
         ws.column_dimensions['J'].width = 20
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Control Owner(s)
         c = ws.cell(row=1, column=11, value="Control Owner(s)")
         ws.column_dimensions['K'].width = 15
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Type ["System-Specific", "Hybrid", "Inherited", "Common", "blank"]
         c = ws.cell(row=1, column=12, value="Type")
         ws.column_dimensions['L'].width = 15
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Inherited From
         c = ws.cell(row=1, column=13, value="Inherited From")
         ws.column_dimensions['M'].width = 20
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Provide As ["Do Not Share", "blank"]
         c = ws.cell(row=1, column=14, value="Provide As")
         ws.column_dimensions['N'].width = 15
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Evaluation Status ["Evaluated", "Expired", "Not Evaluated", "Unknown", "blank"]
         c = ws.cell(row=1, column=15, value="Evaluation Status")
         ws.column_dimensions['O'].width = 15
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # Control Origination
         c = ws.cell(row=1, column=16, value="Control Origination")
         ws.column_dimensions['P'].width = 15
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
         # History
         c = ws.cell(row=1, column=17, value="History")
         ws.column_dimensions['Q'].width = 15
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
-        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+        c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"),
+                          outline=Side(border_style="thin", color="444444"))
 
-        for row in range(2,len(controls)+1):
+        for row in range(2, len(controls) + 1):
             control = controls[row - 2]
 
             # Paragraph/ReqID
             c = ws.cell(row=row, column=1, value=control.get_flattened_oscal_control_as_dict()['id_display'].upper())
             c.fill = PatternFill("solid", fgColor="FFFF99")
             c.alignment = Alignment(vertical='top', wrapText=True)
-            c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
-            
+            c.border = Border(left=Side(border_style="thin", color="444444"),
+                              right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
+
             # Title
             c = ws.cell(row=row, column=2, value=control.get_flattened_oscal_control_as_dict()['title'])
             c.fill = PatternFill("solid", fgColor="FFFF99")
             c.alignment = Alignment(vertical='top', wrapText=True)
-            c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Private Implementation
             smt_combined = ""
@@ -563,63 +831,93 @@ def controls_selected_export_xacta_xslx(request, system_id):
                     smt_combined += smt.body
             c = ws.cell(row=row, column=3, value=smt_combined)
             c.alignment = Alignment(vertical='top', wrapText=True)
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Public Implementation
             c.alignment = Alignment(vertical='top', wrapText=True)
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Notes
             c = ws.cell(row=1, column=5, value="Notes")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Status ["Implemented", "Planned"]
             c = ws.cell(row=1, column=6, value="Status")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Expected Completion (expected implementation)
             c = ws.cell(row=1, column=7, value="Expected Completion")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Class ["Management", "Operational", "Technical",
             c = ws.cell(row=1, column=8, value="Class")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Priority ["p0", "P1", "P2", "P3"]
             c = ws.cell(row=1, column=9, value="Priority")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Responsible Entities
             c = ws.cell(row=1, column=10, value="Responsible Entities")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Control Owner(s)
             c = ws.cell(row=1, column=11, value="Control Owner(s)")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Type ["System-Specific", "Hybrid", "Inherited", "Common", "blank"]
             c = ws.cell(row=1, column=12, value="Type")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Inherited From
             c = ws.cell(row=1, column=13, value="Inherited From")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Provide As ["Do Not Share", "blank"]
             c = ws.cell(row=1, column=14, value="Provide As")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Evaluation Status ["Evaluated", "Expired", "Not Evaluated", "Unknown", "blank"]
             c = ws.cell(row=1, column=15, value="Evaluation Status")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # Control Origination
             c = ws.cell(row=1, column=16, value="Control Origination")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
             # History
             c = ws.cell(row=1, column=17, value="History")
-            c.border = Border(right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
 
         with NamedTemporaryFile() as tmp:
             wb.save(tmp.name)
@@ -628,7 +926,8 @@ def controls_selected_export_xacta_xslx(request, system_id):
             blob = stream
 
         mime_type = "application/octet-stream"
-        filename = "{}_control_implementations-{}.xlsx".format(system.root_element.name.replace(" ","_"),datetime.now().strftime("%Y-%m-%d-%H-%M"))
+        filename = "{}_control_implementations-{}.xlsx".format(system.root_element.name.replace(" ", "_"),
+                                                               datetime.now().strftime("%Y-%m-%d-%H-%M"))
 
         resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
@@ -637,10 +936,12 @@ def controls_selected_export_xacta_xslx(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+
 def editor(request, system_id, catalog_key, cl_id):
     """System Control detail view"""
 
     cl_id = oscalize_control_id(cl_id)
+    catalog_key = oscalize_catalog_key(catalog_key)
 
     # Get control catalog
     catalog = Catalog(catalog_key)
@@ -652,7 +953,7 @@ def editor(request, system_id, catalog_key, cl_id):
 
     # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", { "control": {} })
+        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
@@ -687,57 +988,48 @@ def editor(request, system_id, catalog_key, cl_id):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json
         of = {
-                "system-security-plan": {
-                    "id": "example-ssp",
-                    "metadata": {
-                        "title": "{} System Security Plan Excerpt".format(system.root_element.name),
-                        "published": datetime.now().replace(microsecond=0).isoformat(),
-                        "last-modified": "element.updated.replace(microsecond=0).isoformat()",
-                        "version": "1.0",
-                        "oscal-version": "1.0.0-milestone3",
-                        "roles": [],
-                        "parties": [],
-                        },
-                    "import-profile": {},
-                    "system-characteristics": {},
-                    "system-implementations": {},
-                    "control-implementation": {
+            "system-security-plan": {
+                "id": "example-ssp",
+                "metadata": {
+                    "title": "{} System Security Plan Excerpt".format(system.root_element.name),
+                    "published": datetime.now().replace(microsecond=0).isoformat(),
+                    "last-modified": "element.updated.replace(microsecond=0).isoformat()",
+                    "version": "1.0",
+                    "oscal-version": "1.0.0-milestone3",
+                    "roles": [],
+                    "parties": [],
+                },
+                "import-profile": {},
+                "system-characteristics": {},
+                "system-implementations": {},
+                "control-implementation": {
+                    "description": "",
+                    "implemented-requirements": {
+                        "control-id": "{}".format(cl_id),
                         "description": "",
-                        "implemented-requirements": {
-                            "control-id": "{}".format(cl_id),
-                            "description": "",
-                            "statements": {
-                                "{}_smt".format(cl_id): {
-                                    "description": "N/A",
-                                    "by-components": {
-                                        "component-logging-policy": {
-                                            "description": "The legal department develops, documents, and disseminates this policy to all staff and contractors within the organization.",
-                                            "role-ids": "legal-officer",
-                                            "set-params": {
-                                                "{}_prm_1".format(cl_id): {
-                                                    "value": ""
-                                                }
-                                            }
-                                        }
-                                    }
+                        "statements": {
+                            "{}_smt".format(cl_id): {
+                                "description": "N/A",
+                                "by-components": {
                                 }
-                            } #statements
-                        }, # implemented-requirements
-                    },
-                    "back-matter": []
-                }
+                            }
+                        }  #statements
+                    },  # implemented-requirements
+                },
+                "back-matter": []
             }
-        by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"]["{}_smt".format(cl_id)]["by-components"]
+        }
+        by_components = of["system-security-plan"]["control-implementation"]["implemented-requirements"]["statements"][
+            "{}_smt".format(cl_id)]["by-components"]
         for smt in impl_smts:
-            # print(smt.id, smt.body)
             my_dict = {
-                        smt.sid + "{}".format(smt.producer_element.name.replace(" ","-")): {
-                            "description": smt.body,
-                            "role-ids": "",
-                            "set-params": {},
-                            "remarks": smt.remarks
-                        },
-                     }
+                smt.sid + "{}".format(smt.producer_element.name.replace(" ", "-")): {
+                    "description": smt.body,
+                    "role-ids": "",
+                    "set-params": {},
+                    "remarks": smt.remarks
+                },
+            }
             by_components.update(my_dict)
         oscal_string = json.dumps(of, sort_keys=False, indent=2)
 
@@ -750,9 +1042,13 @@ def editor(request, system_id, catalog_key, cl_id):
         # Define status options
         impl_statuses = ["Not implemented", "Planned", "Partially implemented", "Implemented", "Unknown"]
 
+      # Only elements for the given control id, sid, and statement type
+
+        elements =  Element.objects.all().exclude(element_type='system')
+
         context = {
             "system": system,
-            "project": project, 
+            "project": project,
             "catalog": catalog,
             "control": cg_flat[cl_id.lower()],
             "common_controls": common_controls,
@@ -765,6 +1061,7 @@ def editor(request, system_id, catalog_key, cl_id):
             "enable_experimental_oscal": SystemSettings.enable_experimental_oscal,
             "opencontrol": "opencontrol_string",
             "project_form": ProjectForm(request.user),
+            "elements": elements,
         }
         return render(request, "controls/editor.html", context)
     else:
@@ -781,7 +1078,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
     cg_flat = catalog.get_flattened_controls_all_as_dict()
     # If control id does not exist in catalog
     if cl_id.lower() not in cg_flat:
-        return render(request, "controls/detail.html", { "control": {} })
+        return render(request, "controls/detail.html", {"catalog": catalog,"control": {}})
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
@@ -802,7 +1099,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
         impl_smts = Statement.objects.filter(sid=cl_id)
         context = {
             "system": system,
-            "project": project, 
+            "project": project,
             "catalog": catalog,
             "control": cg_flat[cl_id.lower()],
             "common_controls": common_controls,
@@ -815,6 +1112,7 @@ def editor_compare(request, system_id, catalog_key, cl_id):
         # User does not have permission to this system
         raise Http404
 
+
 # @task_view
 def save_smt(request):
     """Save a statement"""
@@ -824,33 +1122,34 @@ def save_smt(request):
 
     else:
         # EXAMPLE CODE FOR GUARDIAN PERMISSIONS
-        # # does user have write privs?
-        # # if not task.has_write_priv(request.user):
-        # #     return HttpResponseForbidden()
+        # does user have write privs?
+        # if not task.has_write_priv(request.user):
+        #     return HttpResponseForbidden()
 
-        # # validate question
-        # # q = task.module.questions.get(id=request.POST.get("question"))
+        # validate question
+        # q = task.module.questions.get(id=request.POST.get("question"))
 
-        # # validate and parse value
-        # # if request.POST.get("method") == "clear":
-        # #     # Clear means that the question returns to an unanswered state.
-        # #     # This method is only offered during debugging to make it easier
-        # #     # to test the application's behavior when questions are unanswered.
-        # #     value = None
-        # #     cleared = True
-        # #     skipped_reason = None
-        # #     unsure = False
+        # validate and parse value
+        # if request.POST.get("method") == "clear":
+        #     # Clear means that the question returns to an unanswered state.
+        #     # This method is only offered during debugging to make it easier
+        #     # to test the application's behavior when questions are unanswered.
+        #     value = None
+        #     cleared = True
+        #     skipped_reason = None
+        #     unsure = False
 
-        # # elif request.POST.get("method") == "skip":
-        # #     # The question is being skipped, i.e. answered with a null value,
-        # #     # because the user doesn't know the answer, it doesn't apply to
-        # #     # the user's circumstances, or they want to return to it later.
-        # #     value = None
-        # #     cleared = False
-        # #     skipped_reason = request.POST.get("skipped_reason") or None
+        # elif request.POST.get("method") == "skip":
+        #     # The question is being skipped, i.e. answered with a null value,
+        #     # because the user doesn't know the answer, it doesn't apply to
+        #     # the user's circumstances, or they want to return to it later.
+        #     value = None
+        #     cleared = False
+        #     skipped_reason = request.POST.get("skipped_reason") or None
         #     unsure = bool(request.POST.get("unsure"))
 
-        #print(dict(request.POST))
+        # Track if we are creating a new statement
+        new_statement = False
         form_dict = dict(request.POST)
         form_values = {}
         for key in form_dict.keys():
@@ -870,14 +1169,16 @@ def save_smt(request):
                     object={"object": "statement", "id": statement.id},
                     user={"id": request.user.id, "username": request.user.username}
                 )
-                return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+                return HttpResponseForbidden(
+                    "Permission denied. {} does not have change privileges to system and/or project.".format(
+                        request.user.username))
 
             if statement is None:
                 # Statement from received has an id no longer in the database.
                 # Report error. Alternatively, in future save as new Statement object
                 statement_status = "error"
                 statement_msg = "The id for this statement is no longer valid in the database."
-                return JsonResponse({ "status": "error", "message": statement_msg })
+                return JsonResponse({"status": "error", "message": statement_msg})
             # Update existing Statement object with received info
             statement.pid = form_values['pid']
             statement.body = form_values['body']
@@ -894,6 +1195,7 @@ def save_smt(request):
                 status=form_values['status'],
                 remarks=form_values['remarks'],
             )
+            new_statement = True
         # Save Statement object
         try:
             statement.save()
@@ -902,64 +1204,139 @@ def save_smt(request):
         except Exception as e:
             statement_status = "error"
             statement_msg = "Statement save failed. Error reported {}".format(e)
-            return JsonResponse({ "status": "error", "message": statement_msg })
+            return JsonResponse({"status": "error", "message": statement_msg})
 
         # Updating or saving a new producer_element?
         try:
             # Does the name match and existing element? (Element names are unique.)
             # TODO: Sanitize data entered in form?
             producer_element, created = Element.objects.get_or_create(name=form_values['producer_element_name'])
+            if created:
+                producer_element.element_type = "system_element"
+                producer_element.save()
             producer_element_status = "ok"
             producer_element_msg = "Producer Element saved."
         except Exception as e:
             producer_element_status = "error"
             producer_element_msg = "Producer Element save failed. Error reported {}".format(e)
-            return JsonResponse({ "status": "error", "message": producer_element_msg })
+            return JsonResponse({"status": "error", "message": producer_element_msg})
 
-        # Associate Statement and Producer Element
-        # TODO Only associate if we have created new statement object.
-        try:
-            statement.producer_element = producer_element
-            statement.save()
-            statement_element_status = "ok"
-            statement_element_msg = "Statement associated with Producer Element."
-        except Exception as e:
-            statement_element_status = "error"
-            statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
-            return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
+        # Associate Statement and Producer Element if creating new statement
+        if new_statement:
+            try:
+                statement.producer_element = producer_element
+                statement.save()
+                statement_element_status = "ok"
+                statement_element_msg = "Statement associated with Producer Element."
+            except Exception as e:
+                statement_element_status = "error"
+                statement_element_msg = "Failed to associate statement with Producer Element {}".format(e)
+                return JsonResponse(
+                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
+
+        # Create new Prototype Statement object on new statement creation (not statement edit)
+        if new_statement:
+            try:
+                statement_prototype = statement.create_prototype()
+            except Exception as e:
+                statement_status = "error"
+                statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
+                return JsonResponse({"status": "error", "message": statement_msg})
+
+        # Create new Prototype Statement object on new statement creation (not statement edit)
+        if new_statement:
+            try:
+                statement_prototype = statement.create_prototype()
+            except Exception as e:
+                statement_status = "error"
+                statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
+                return JsonResponse({ "status": "error", "message": statement_msg })
 
         # Associate Statement and System's root_element
-        # TODO Only associate if we have created new statement object.
-        # print("** System.objects.get(pk=form_values['system_id']).root_element", System.objects.get(pk=form_values['system_id']).root_element)
-        try:
-            statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
-            statement.save()
-            statement_consumer_status = "ok"
-            statement_consumer_msg = "Statement associated with System/Consumer Element."
-        except Exception as e:
-            statement_consumer_status = "error"
-            statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
-            return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_consumer_msg })
+        system_id = form_values['system_id']
+        if new_statement and system_id is not None:
+            try:
+                statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
+                statement.save()
+                statement_consumer_status = "ok"
+                statement_consumer_msg = "Statement associated with System/Consumer Element."
+            except Exception as e:
+                statement_consumer_status = "error"
+                statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
+                return JsonResponse(
+                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
 
-        # Update ElementControl smts_updated to know when control element on system was recently updated
-        try:
-            print("Updating ElementControl smts_updated")
-            ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid, oscal_catalog_key=statement.sid_class)
-            ec.smts_updated = statement.updated
-            ec.save()
-        except Exception as e:
-            statement_element_status = "error"
-            statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
-            return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
+        # If we are updating a smt of type control_implementation_prototype
+        # then update ElementControl smts_updated to know when control element on system was recently updated
+        statement_element_msg = ""
+        if statement.statement_type == "control_implementation":
+            try:
+                ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid,
+                                                oscal_catalog_key=statement.sid_class)
+                ec.smts_updated = statement.updated
+                ec.save()
+            except Exception as e:
+                statement_element_status = "error"
+                statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
+                return JsonResponse(
+                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
 
     # Serialize saved data object(s) to send back to update web page
     # The submitted form needs to be updated with the object primary keys (ids)
     # in order that future saves will be treated as updates.
     from django.core import serializers
-    serialized_obj = serializers.serialize('json', [ statement, ])
+    serialized_obj = serializers.serialize('json', [statement, ])
 
     # Return successful save result to web page's Ajax request
-    return JsonResponse({ "status": "success", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg, "statement": serialized_obj })
+    return JsonResponse(
+        {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg,
+         "statement": serialized_obj})
+
+def update_smt_prototype(request):
+    """Update a certified statement"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    else:
+        form_dict = dict(request.POST)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+
+        statement = Statement.objects.get(pk=form_values['smt_id'])
+        system = statement.consumer_element
+
+        # Test if user is admin
+        if not request.user.is_superuser:
+            # User is not Admin and does not have permission to update statement prototype
+            # Log permission update statement prototype answer denied
+            logger.info(
+                event="update_smt_permission permission_denied",
+                object={"object": "statement", "id": statement.id},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden("Permission denied. {} does not have change privileges to update statement prototype.".format(request.user.username))
+
+        if statement is None:
+            statement_status = "error"
+            statement_msg = "The id for this statement is no longer valid in the database."
+            return JsonResponse({ "status": "error", "message": statement_msg })
+
+        # needs self.body == self.prototype.body
+
+        try:
+            proto_statement = Statement.objects.get(pk=statement.prototype_id)
+            proto_statement.prototype.body = statement.body
+            proto_statement.prototype.save()
+            statement_status = "ok"
+            statement_msg = f"Update to statement prototype {proto_statement.prototype_id} succeeded."
+        except Exception as e:
+            statement_status = "error"
+            statement_msg = "Update to statement prototype failed. Error reported {}".format(e)
+            return JsonResponse({ "status": "error", "message": statement_msg })
+
+        return JsonResponse({ "status": "success", "message": statement_msg, "data": { "smt_body": statement.body } })
 
 def delete_smt(request):
     """Delete a statement"""
@@ -996,7 +1373,6 @@ def delete_smt(request):
         # #     skipped_reason = request.POST.get("skipped_reason") or None
         #     unsure = bool(request.POST.get("unsure"))
 
-        #print(dict(request.POST))
         form_dict = dict(request.POST)
         form_values = {}
         for key in form_dict.keys():
@@ -1015,7 +1391,9 @@ def delete_smt(request):
                 object={"object": "statement", "id": statement.id},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+            return HttpResponseForbidden(
+                "Permission denied. {} does not have change privileges to system and/or project.".format(
+                    request.user.username))
 
         if statement is None:
             # Statement from received has an id no longer in the database.
@@ -1023,7 +1401,7 @@ def delete_smt(request):
             statement_status = "error"
             statement_msg = "The id for this statement is no longer valid in the database."
             return JsonResponse({ "status": "error", "message": statement_msg })
-        # Save Statement object
+        # Delete Statement object
         try:
             statement.delete()
             statement_status = "ok"
@@ -1031,7 +1409,7 @@ def delete_smt(request):
         except Exception as e:
             statement_status = "error"
             statement_msg = "Statement delete failed. Error reported {}".format(e)
-            return JsonResponse({ "status": "error", "message": statement_msg })
+            return JsonResponse({"status": "error", "message": statement_msg})
 
         # TODO Record fact statement deleted
         # Below will not work because statement is deleted
@@ -1047,9 +1425,327 @@ def delete_smt(request):
         #     statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
         #     return JsonResponse({ "status": "error", "message": statement_msg + " " + producer_element_msg + " " +statement_element_msg })
 
-        return JsonResponse({ "status": "success", "message": statement_msg })
+        return JsonResponse({"status": "success", "message": statement_msg})
+
+
+# Components
+
+def add_system_component(request, system_id):
+    """Add an existing element and its statements to a system"""
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    form_dict = dict(request.POST)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+
+    # Does user have permission to add element?
+    # Check user permissions
+    system = System.objects.get(pk=system_id)
+    if not request.user.has_perm('change_system', system):
+        # User does not have write permissions
+        # Log permission to save answer denied
+        logger.info(
+            event="change_system permission_denied",
+            object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+            user={"id": request.user.id, "username": request.user.username}
+        )
+        return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
+    # DEBUG
+    # print(f"Atempting to add {producer_element.name} (id:{producer_element.id}) to system_id {system_id}")
+
+    # Get system's existing components selected
+    elements_selected = system.producer_elements
+    elements_selected_ids = [e.id for e in elements_selected]
+
+    # Get system's selected controls because we only want to add statements for selected controls
+    selected_controls = system.root_element.controls.all()
+    selected_controls_ids = set([f"{sc.oscal_ctl_id} {sc.oscal_catalog_key}" for sc in selected_controls])
+    # TODO: Refactor above line selected_controls into a system model function if not already existing
+
+    # Add element to system's selected components
+    # Look up the element rto add
+    producer_element = Element.objects.get(pk=form_values['producer_element_id'])
+
+    # TODO: various use cases
+        # - component previously added but element has statements not yet added to system
+        #   this issue may be best addressed elsewhere.
+
+    # Component already added to system. Do not add the component (element) to the system again.
+    if producer_element.id in elements_selected_ids:
+        messages.add_message(request, messages.ERROR,
+                            f'Component "{producer_element.name}" already exists in selected components.')
+        # Redirect to selected element page
+        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+    smts = Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype")
+
+    # Component does not have any statements of type control_implementation_prototype to
+    # add to system. So we cannot add the component (element) to the system.
+    if len(smts) == 0:
+        # print(f"The component {producer_element.name} does not have any control implementation statements.")
+        messages.add_message(request, messages.ERROR,
+                            f'I could\'t add the Component "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
+        # Redirect to selected element page
+        return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+    # Loop through element's prototype statements and add to control implementation statements
+    for smt in Statement.objects.filter(producer_element_id = producer_element.id, statement_type="control_implementation_prototype"):
+        # Add all existsing control statements for a component to a system even if system does not use controls.
+        # This guarantees that control statements are associated.
+        # The selected controls will serve as the primary filter on what content to display.
+        smt.create_instance_from_prototype(system.root_element.id)
+
+    # Make sure some controls were added to the system. Report error otherwise.
+    smts_added = Statement.objects.filter(producer_element_id = producer_element.id, consumer_element_id = system.root_element.id, statement_type="control_implementation")
+    print("DEBUG smts_added ", smts_added)
+    smts_added_count = len(smts_added)
+    if smts_added_count > 0:
+        messages.add_message(request, messages.INFO,
+                         f'OK. I\'ve added {smts_added_count} control implementation statements for component "{producer_element.name}" to the system.')
+    else:
+        messages.add_message(request, messages.WARNING,
+                         f'OK. I tried adding the control implementation statements for component "{producer_element.name}" to the system, but added 0 controls.')
+
+    # Redirect to selected element page
+    return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+def search_system_component(request):
+    """Add an existing element and its statements to a system"""
+
+    if request.method != "GET":
+        return HttpResponseNotAllowed(["GET"])
+
+    form_dict = dict(request.GET)
+    form_values = {}
+    for key in form_dict.keys():
+        form_values[key] = form_dict[key][0]
+    # Form values from ajax data
+
+    if "system_id" in form_values.keys():
+        system_id = form_values['system_id']
+
+        # Does user have permission to add element?
+        # Check user permissions
+        system = System.objects.get(pk=system_id)
+
+        if not request.user.has_perm('change_system', system):
+            # User does not have write permissions
+            # Log permission to save answer denied
+            logger.info(
+                event="change_system permission_denied",
+                object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return HttpResponseForbidden("Permission denied. {} does not have change privileges to system and/or project.".format(request.user.username))
+
+        selected_controls = system.root_element.controls.all()
+        selected_controls_ids = set()
+        for sc in selected_controls:
+            selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
+
+        # Add element
+        # Look up the element
+
+        text =  form_values['text']
+
+        # The final elements that are returned to the new dropdown created...
+        producer_system_elements = Element.objects.filter(element_type="system_element").filter(name__contains= text)
+
+        producer_elements = [{"id":str(ele.id), "name": ele.name} for ele in producer_system_elements]
+
+        results = {'producer_element_statement_values': producer_elements}
+        data = json.dumps(results)
+        mimetype = 'application/json'
+        return HttpResponse(data, mimetype)
+    # # Redirect to selected element page
+    # return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
+
+class RelatedComponentStatements(View):
+    """
+    Returns the component statements that are produced(related) to one control implementation prototype
+    """
+
+    template_name = 'controls/editor.html'
+
+    def get(self, request):
+        """Add an existing element and its statements to a system"""
+
+        if request.method != "GET":
+            return HttpResponseNotAllowed(["GET"])
+
+        logger.info(f"Related controls GET: {dict(request.GET)}")
+        form_dict = dict(request.GET)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+        # Form values from ajax data
+
+        if "system_id" in form_values.keys():
+            system_id = form_values['system_id']
+
+            # Does user have permission to add element?
+            # Check user permissions
+            system = System.objects.get(pk=system_id)
+
+            if not request.user.has_perm('change_system', system):
+                # User does not have write permissions
+                # Log permission to save answer denied
+                logger.info(
+                    event="change_system permission_denied",
+                    object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return HttpResponseForbidden(
+                    "Permission denied. {} does not have change privileges to system and/or project.".format(
+                        request.user.username))
+
+            selected_controls = system.root_element.controls.all()
+            selected_controls_ids = set()
+            for sc in selected_controls:
+                selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
+
+            # Add element
+            # Look up the element
+            producer_element_id = form_values['producer_element_form_id']
+            producer_element = Element.objects.get(pk=producer_element_id)
+
+            # The final elements that are returned to the new dropdown created...
+            producer_smt_imps = producer_element.statements("control_implementation")
+
+            producer_smt_imps_vals = [{"smt_id": str(smt.id), "smt_sid": smt.sid, "smt_sid_class": smt.sid_class,  "producer_element_name": producer_element.name, "smt_body":str(smt.body), "smt_pid":str(smt.pid), "smt_status":str(smt.status)} for smt in producer_smt_imps]
+
+            results = {'producer_element_statement_values': producer_smt_imps_vals,  "selected_component": producer_element.name}
+            data = json.dumps(results)
+            mimetype = 'application/json'
+            if data:
+                return HttpResponse(data, mimetype)
+            else:
+                return JsonResponse(status=400, data={'status': 'error', 'message': f"No DATA!: {data}"})
+        else:
+            return JsonResponse(status=400, data={'status': 'error', 'message': "There is no current system id present"})
+
+class EditorAutocomplete(View):
+    template_name = 'controls/editor.html'
+
+    def get(self, request):
+        """Add an existing element and its statements to a system"""
+
+        if request.method != "GET":
+            return HttpResponseNotAllowed(["GET"])
+
+        form_dict = dict(request.GET)
+        form_values = {}
+        for key in form_dict.keys():
+            form_values[key] = form_dict[key][0]
+        # Form values from ajax data
+
+        if "system_id" in form_values.keys():
+            system_id = form_values['system_id']
+
+            # Does user have permission to add element?
+            # Check user permissions
+            system = System.objects.get(pk=system_id)
+
+            if not request.user.has_perm('change_system', system):
+                # User does not have write permissions
+                # Log permission to save answer denied
+                logger.info(
+                    event="change_system permission_denied",
+                    object={"object": "element", "producer_element_name": form_values['producer_element_name']},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return HttpResponseForbidden(
+                    "Permission denied. {} does not have change privileges to system and/or project.".format(
+                        request.user.username))
+
+            selected_controls = system.root_element.controls.all()
+            selected_controls_ids = set()
+            for sc in selected_controls:
+                selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
+
+            # Add element
+            # Look up the element
+
+            text = form_values['text']
+
+            # The final elements that are returned to the new dropdown created...
+            producer_system_elements = Element.objects.filter(element_type="system_element").filter(name__contains=text)
+
+            producer_elements = [{"id": str(ele.id), "name": ele.name} for ele in producer_system_elements]
+
+            results = {'producer_element_name_value': producer_elements}
+            data = json.dumps(results)
+            mimetype = 'application/json'
+            if data:
+                return HttpResponse(data, mimetype)
+            else:
+                return JsonResponse(status=400, data={'status': 'error', 'message': f"No statements found with the search: {text}"})
+        else:
+            return JsonResponse(status=400, data={'status': 'error', 'message': "There is no current system id present"})
+
+    def post(self, request, system_id):
+        """Add an existing element and its statements to a system"""
+        if request.method != "POST":
+            return HttpResponseNotAllowed(["POST"])
+
+        form_dict = dict(request.POST)
+
+        form_values = {}
+        for key in form_dict.keys():
+            if key == 'relatedcomps':
+                form_values[key] = form_dict[key]
+            else:
+                form_values[key] = form_dict[key][0]
+        # Form values from ajax data
+
+        if "system_id" in form_values.keys():
+            system_id = form_values['system_id']
+            # Does user have permission to add element?
+            # Check user permissions
+            system = System.objects.get(pk=system_id)
+            if not request.user.has_perm('change_system', system):
+                # User does not have write permissions
+                # Log permission to save answer denied
+                logger.info(
+                    event="change_system permission_denied",
+                    object={"object": "element", "entered_producer_element_name": form_values['text'] or "None"},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return HttpResponseForbidden(
+                    "Permission denied. {} does not have change privileges to system and/or project.".format(
+                        request.user.username))
+
+            selected_controls = system.root_element.controls.all()
+            selected_controls_ids = set()
+            for sc in selected_controls:
+                selected_controls_ids.add("{} {}".format(sc.oscal_ctl_id, sc.oscal_catalog_key))
+
+            # Add element
+            if form_values.get("relatedcomps", ""):
+
+                for related_element in form_values['relatedcomps']:
+
+                    # Look up the element
+                    for smt in Statement.objects.filter(id=related_element, statement_type="control_implementation"):
+                        logger.info(
+                            f"Adding an element with the id {smt.id} and sid class {smt.sid} to system_id {system_id}")
+                        # Only add statements for controls selected for system
+                        if "{} {}".format(smt.sid, smt.sid_class) in selected_controls_ids:
+                            logger.info(f"smt {smt}")
+                            smt.create_instance_from_prototype(system.root_element.id)
+                        else:
+                            logger.error(f"not adding smt from selected controls for the current system: {smt}")
+
+        # Redirect to the page where the component was added from
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
 
 # Baselines
+
 def assign_baseline(request, system_id, catalog_key, baseline_name):
     """Assign a baseline to a system root element thereby showing selected controls for the system."""
 
@@ -1057,7 +1753,8 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
     #system.root_element.assign_baseline_controls(user, 'NIST_SP-800-53_rev4', 'low')
     assign_results = system.root_element.assign_baseline_controls(request.user, catalog_key, baseline_name)
     if assign_results:
-        messages.add_message(request, messages.INFO, 'Baseline "{} {}" assigned.'.format(catalog_key.replace("_", " "), baseline_name.title()))
+        messages.add_message(request, messages.INFO,
+                             'Baseline "{} {}" assigned.'.format(catalog_key.replace("_", " "), baseline_name.title()))
         # Log start app / new project
         logger.info(
             event="assign_baseline",
@@ -1066,9 +1763,12 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
             user={"id": request.user.id, "username": request.user.username}
         )
     else:
-        messages.add_message(request, messages.ERROR, 'Baseline "{} {}" assignment failed.'.format(catalog_key.replace("_", " "), baseline_name.title()))
+        messages.add_message(request, messages.ERROR,
+                             'Baseline "{} {}" assignment failed.'.format(catalog_key.replace("_", " "),
+                                                                          baseline_name.title()))
 
     return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
+
 
 # Export OpenControl
 
@@ -1088,7 +1788,6 @@ def export_system_opencontrol(request, system_id):
         import tempfile
         temp_dir = tempfile.TemporaryDirectory(dir=".")
         repo_path = os.path.join(temp_dir.name, system.root_element.name.replace(" ", "_"))
-        # print(temp_dir.name)
         if not os.path.exists(repo_path):
             os.makedirs(repo_path)
 
@@ -1128,12 +1827,17 @@ certifications:
             outfile.write(rtyaml.dump(cfg))
 
         # Populate reference directories from reference
-        OPENCONTROL_PATH = os.path.join(os.path.dirname(__file__),'data','opencontrol')
-        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "NIST-SP-800-53-rev4.yaml"), os.path.join(repo_path, "standards", "NIST-SP-800-53-rev4.yaml"))
-        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "NIST-SP-800-171r1.yaml"), os.path.join(repo_path, "standards", "NIST-SP-800-53-rev4.yaml"))
-        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "opencontrol.yaml"), os.path.join(repo_path, "standards", "opencontrol.yaml"))
-        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "hipaa-draft.yaml"), os.path.join(repo_path, "standards", "hipaa-draft.yaml"))
-        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "certifications", "fisma-low-impact.yaml"), os.path.join(repo_path, "certifications", "fisma-low-impact.yaml"))
+        OPENCONTROL_PATH = os.path.join(os.path.dirname(__file__), 'data', 'opencontrol')
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "NIST-SP-800-53-rev4.yaml"),
+                        os.path.join(repo_path, "standards", "NIST-SP-800-53-rev4.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "NIST-SP-800-171r1.yaml"),
+                        os.path.join(repo_path, "standards", "NIST-SP-800-53-rev4.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "opencontrol.yaml"),
+                        os.path.join(repo_path, "standards", "opencontrol.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "standards", "hipaa-draft.yaml"),
+                        os.path.join(repo_path, "standards", "hipaa-draft.yaml"))
+        shutil.copyfile(os.path.join(OPENCONTROL_PATH, "certifications", "fisma-low-impact.yaml"),
+                        os.path.join(repo_path, "certifications", "fisma-low-impact.yaml"))
 
         # # Make stub README.md file
         # with open(os.path.join(repo_path, "README.md"), 'w') as outfile:
@@ -1148,29 +1852,29 @@ certifications:
         for element in system.producer_elements:
             # Build OpenControl
             ocf = {
-                    "name": element.name,
-                    "schema_version": "3.0.0",
-                    "documentation_complete": False,
-                    "satisfies": []
-                   }
+                "name": element.name,
+                "schema_version": "3.0.0",
+                "documentation_complete": False,
+                "satisfies": []
+            }
             satisfies_smts = ocf["satisfies"]
             # Retrieve impl_smts produced by element and consumed by system
             # Get the impl_smts contributed by this component to system
             impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
             for smt in impl_smts:
                 my_dict = {
-                            "control_key": smt.sid.upper(),
-                            "control_name": smt.catalog_control_as_dict['title'],
-                            "standard_key": smt.sid_class,
-                            "covered_by": [],
-                            "security_control_type": "Hybrid | Inherited | ...",
-                            "narrative": [
-                                {"text": smt.body}
-                            ],
-                            "remarks": [
-                                {"text": smt.remarks}
-                            ]
-                         }
+                    "control_key": smt.sid.upper(),
+                    "control_name": smt.catalog_control_as_dict['title'],
+                    "standard_key": smt.sid_class,
+                    "covered_by": [],
+                    "security_control_type": "Hybrid | Inherited | ...",
+                    "narrative": [
+                        {"text": smt.body}
+                    ],
+                    "remarks": [
+                        {"text": smt.remarks}
+                    ]
+                }
                 satisfies_smts.append(my_dict)
             opencontrol_string = rtyaml.dump(ocf)
             # Write component file
@@ -1188,7 +1892,8 @@ certifications:
             stream = tmp.read()
             blob = stream
         mime_type = "application/octet-stream"
-        filename = "{}-opencontrol-{}.zip".format(system.root_element.name.replace(" ","_"),datetime.now().strftime("%Y-%m-%d-%H-%M"))
+        filename = "{}-opencontrol-{}.zip".format(system.root_element.name.replace(" ", "_"),
+                                                  datetime.now().strftime("%Y-%m-%d-%H-%M"))
 
         resp = HttpResponse(blob, mime_type)
         resp['Content-Disposition'] = 'inline; filename=' + filename
@@ -1201,6 +1906,7 @@ certifications:
     else:
         # User does not have permission to this system
         raise Http404
+
 
 # PoamS
 def poams_list(request, system_id):
@@ -1238,6 +1944,7 @@ def poams_list(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+
 def new_poam(request, system_id):
     """Form to create new POAM"""
     from .forms import StatementPoamForm, PoamForm
@@ -1258,11 +1965,11 @@ def new_poam(request, system_id):
                 poam_form = PoamForm(request.POST)
                 if poam_form.is_valid():
                     poam = poam_form.save()
-                    print('POAM ID',poam.get_next_poam_id(system))
+                    print('POAM ID', poam.get_next_poam_id(system))
                     poam.poam_id = poam.get_next_poam_id(system)
                     poam.statement = statement
                     poam.save()
-                return HttpResponseRedirect('/systems/{}/poams'.format(system_id),{})
+                return HttpResponseRedirect('/systems/{}/poams'.format(system_id), {})
                 #url(r'^(?P<system_id>.*)/poams$', views.poams_list, name="poams_list"),
             else:
                 pass
@@ -1282,6 +1989,7 @@ def new_poam(request, system_id):
     else:
         # User does not have permission to this system
         raise Http404
+
 
 def edit_poam(request, system_id, poam_id):
     """Form to create new POAM"""
@@ -1306,29 +2014,29 @@ def edit_poam(request, system_id, poam_id):
                 # Save statement after updating values
                 statement_form.save()
                 poam_form.save()
-                return HttpResponseRedirect('/systems/{}/poams'.format(system_id),{})
+                return HttpResponseRedirect('/systems/{}/poams'.format(system_id), {})
             else:
                 pass
                 #TODO: What if form invalid?
         else:
             statement_form = StatementPoamForm(initial={
-                    'statement_type': poam_smt.statement_type,
-                    'status': poam_smt.status,
-                    'consumer_element': system.root_element,
-                    'body': poam_smt.body,
-                    'remarks': poam_smt.remarks,
-                })
+                'statement_type': poam_smt.statement_type,
+                'status': poam_smt.status,
+                'consumer_element': system.root_element,
+                'body': poam_smt.body,
+                'remarks': poam_smt.remarks,
+            })
             poam_form = PoamForm(initial={
-                    'weakness_name': poam_smt.poam.weakness_name,
-                    'controls': poam_smt.poam.controls,
-                    'poam_group': poam_smt.poam.poam_group,
-                    'risk_rating_original': poam_smt.poam.risk_rating_original,
-                    'risk_rating_adjusted': poam_smt.poam.risk_rating_adjusted,
-                    'weakness_detection_source': poam_smt.poam.weakness_detection_source,
-                    'remediation_plan': poam_smt.poam.remediation_plan,
-                    'milestones': poam_smt.poam.milestones,
-                    'scheduled_completion_date': poam_smt.poam.scheduled_completion_date,
-                })
+                'weakness_name': poam_smt.poam.weakness_name,
+                'controls': poam_smt.poam.controls,
+                'poam_group': poam_smt.poam.poam_group,
+                'risk_rating_original': poam_smt.poam.risk_rating_original,
+                'risk_rating_adjusted': poam_smt.poam.risk_rating_adjusted,
+                'weakness_detection_source': poam_smt.poam.weakness_detection_source,
+                'remediation_plan': poam_smt.poam.remediation_plan,
+                'milestones': poam_smt.poam.milestones,
+                'scheduled_completion_date': poam_smt.poam.scheduled_completion_date,
+            })
             return render(request, 'systems/poam_edit_form.html', {
                 'statement_form': statement_form,
                 'poam_form': poam_form,
@@ -1342,11 +2050,14 @@ def edit_poam(request, system_id, poam_id):
         # User does not have permission to this system
         raise Http404
 
+
 def poam_export_xlsx(request, system_id):
     return poam_export(request, system_id, 'xlsx')
 
+
 def poam_export_csv(request, system_id):
     return poam_export(request, system_id, 'csv')
+
 
 def poam_export(request, system_id, format='xlsx'):
     """Export POA&M in either xlsx or csv"""
@@ -1372,20 +2083,20 @@ def poam_export(request, system_id, format='xlsx'):
             csv_writer = csv.writer(csv_buffer)
 
         poam_fields = [
-            {'var_name':'poam_id', 'name':'POA&M ID', 'width':8},
-            {'var_name':'poam_group', 'name':'POA&M Group', 'width':16},
-            {'var_name':'weakness_name', 'name':'Weakness Name', 'width':24},
-            {'var_name':'controls', 'name':'Controls', 'width':16},
-            {'var_name':'body', 'name':'Description', 'width':60},
-            {'var_name':'status', 'name':'Status', 'width':8},
-            {'var_name':'risk_rating_original', 'name':'Risk Rating Original', 'width':16},
-            {'var_name':'risk_rating_adjusted', 'name':'Risk Rating Adjusted', 'width':16},
-            {'var_name':'weakness_detection_source', 'name':'Weakness Detection Source', 'width':24},
-            {'var_name':'weakness_source_identifier', 'name':'Weakness Source Identifier', 'width':24},
-            {'var_name':'remediation_plan', 'name':'Remediation Plan', 'width':60},
-            {'var_name':'milestones', 'name':'Milestones', 'width':60},
-            {'var_name':'milestone_changes', 'name':'Milestone Changes', 'width':30},
-            {'var_name':'scheduled_completion_date', 'name':'Scheduled Completion Date', 'width':18},
+            {'var_name': 'poam_id', 'name': 'POA&M ID', 'width': 8},
+            {'var_name': 'poam_group', 'name': 'POA&M Group', 'width': 16},
+            {'var_name': 'weakness_name', 'name': 'Weakness Name', 'width': 24},
+            {'var_name': 'controls', 'name': 'Controls', 'width': 16},
+            {'var_name': 'body', 'name': 'Description', 'width': 60},
+            {'var_name': 'status', 'name': 'Status', 'width': 8},
+            {'var_name': 'risk_rating_original', 'name': 'Risk Rating Original', 'width': 16},
+            {'var_name': 'risk_rating_adjusted', 'name': 'Risk Rating Adjusted', 'width': 16},
+            {'var_name': 'weakness_detection_source', 'name': 'Weakness Detection Source', 'width': 24},
+            {'var_name': 'weakness_source_identifier', 'name': 'Weakness Source Identifier', 'width': 24},
+            {'var_name': 'remediation_plan', 'name': 'Remediation Plan', 'width': 60},
+            {'var_name': 'milestones', 'name': 'Milestones', 'width': 60},
+            {'var_name': 'milestone_changes', 'name': 'Milestone Changes', 'width': 30},
+            {'var_name': 'scheduled_completion_date', 'name': 'Scheduled Completion Date', 'width': 18},
         ]
 
         # create header row
@@ -1399,7 +2110,10 @@ def poam_export(request, system_id, format='xlsx'):
                 c = ws.cell(row=1, column=column, value=poam_field['name'])
                 c.fill = PatternFill("solid", fgColor="5599FE")
                 c.font = Font(color="FFFFFF", bold=True)
-                c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                c.border = Border(left=Side(border_style="thin", color="444444"),
+                                  right=Side(border_style="thin", color="444444"),
+                                  bottom=Side(border_style="thin", color="444444"),
+                                  outline=Side(border_style="thin", color="444444"))
                 ws.column_dimensions[chr(ord_zeroth_column + column)].width = poam_field['width']
             else:
                 csv_row.append(poam_field['name'])
@@ -1408,7 +2122,10 @@ def poam_export(request, system_id, format='xlsx'):
             c = ws.cell(row=1, column=column, value="URL")
             c.fill = PatternFill("solid", fgColor="5599FE")
             c.font = Font(color="FFFFFF", bold=True)
-            c.border = Border(left=Side(border_style="thin", color="444444"), right=Side(border_style="thin", color="444444"), bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+            c.border = Border(left=Side(border_style="thin", color="444444"),
+                              right=Side(border_style="thin", color="444444"),
+                              bottom=Side(border_style="thin", color="444444"),
+                              outline=Side(border_style="thin", color="444444"))
             ws.column_dimensions[chr(ord_zeroth_column + column)].width = 60
         else:
             csv_row.append('URL')
@@ -1433,12 +2150,15 @@ def poam_export(request, system_id, format='xlsx'):
                         c = ws.cell(row=row, column=column, value=getattr(poam_smt, poam_field['var_name']))
                     else:
                         if poam_field['var_name'] == 'poam_id':
-                            c = ws.cell(row=row, column=column, value="V-{}".format(getattr(poam_smt.poam, poam_field['var_name'])))
+                            c = ws.cell(row=row, column=column,
+                                        value="V-{}".format(getattr(poam_smt.poam, poam_field['var_name'])))
                         else:
                             c = ws.cell(row=row, column=column, value=getattr(poam_smt.poam, poam_field['var_name']))
                     c.fill = PatternFill("solid", fgColor="FFFFFF")
                     c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
-                    c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                    c.border = Border(right=Side(border_style="thin", color="444444"),
+                                      bottom=Side(border_style="thin", color="444444"),
+                                      outline=Side(border_style="thin", color="444444"))
                 else:
                     if poam_field['var_name'] in ['body', 'status']:
                         csv_row.append(getattr(poam_smt, poam_field['var_name']))
@@ -1449,12 +2169,14 @@ def poam_export(request, system_id, format='xlsx'):
                             csv_row.append(getattr(poam_smt.poam, poam_field['var_name']))
 
             # Add URL column
-            poam_url = settings.SITE_ROOT_URL+"/systems/{}/poams/{}/edit".format(system_id,poam_smt.id)
+            poam_url = settings.SITE_ROOT_URL + "/systems/{}/poams/{}/edit".format(system_id, poam_smt.id)
             if format == 'xlsx':
                 c = ws.cell(row=row, column=column, value=poam_url)
                 c.fill = PatternFill("solid", fgColor="FFFFFF")
                 c.alignment = Alignment(vertical='top', horizontal='left', wrapText=True)
-                c.border = Border(right=Side(border_style="thin", color="444444"),bottom=Side(border_style="thin", color="444444"), outline=Side(border_style="thin", color="444444"))
+                c.border = Border(right=Side(border_style="thin", color="444444"),
+                                  bottom=Side(border_style="thin", color="444444"),
+                                  outline=Side(border_style="thin", color="444444"))
             else:
                 csv_row.append(poam_url)
 
@@ -1472,8 +2194,8 @@ def poam_export(request, system_id, format='xlsx'):
             csv_buffer.close()
 
         # Determine filename based on system name
-        system_name = system.root_element.name.replace(" ","_") + "_" + system_id
-        filename = "{}_poam_export-{}.{}".format(system_name,datetime.now().strftime("%Y-%m-%d-%H-%M"),format)
+        system_name = system.root_element.name.replace(" ", "_") + "_" + system_id
+        filename = "{}_poam_export-{}.{}".format(system_name, datetime.now().strftime("%Y-%m-%d-%H-%M"), format)
         mime_type = "application/octet-stream"
 
         resp = HttpResponse(blob, mime_type)
