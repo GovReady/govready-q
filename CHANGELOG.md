@@ -119,6 +119,7 @@ Example:
 }
 ```
 * Update various libraries. See changes in `requirements.txt`.
+* Removed instance of using sys.stderr and replaced with logger for proper logging.
 
 **Other**
 
