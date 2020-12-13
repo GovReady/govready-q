@@ -121,6 +121,7 @@ Example:
   }
 }
 ```
+* Update various libraries. See changes in `requirements.txt`.
 
 **Other**
 
