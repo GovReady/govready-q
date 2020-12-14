@@ -2,6 +2,13 @@ GovReady-Q Release Notes
 ========================
 
 v.999 (December XX, 2020)
+------------------------------
+
+**Deployment changes**
+
+* Updated base docker image to centos7.9.2009
+
+v.999 (December XX, 2020)
 -------------------------
 
 Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
