@@ -1,39 +1,30 @@
+import logging
 from collections import defaultdict
+from datetime import datetime, timezone
+from pathlib import PurePath
 
-from django.urls import reverse_lazy
-
+import rtyaml
+import shutil
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
-from django.forms import ModelForm
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse
-from django.db import IntegrityError
-from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
+from django.views import View
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
-from django.views import View
-from django.utils.text import slugify
-from siteapp.models import Project, User, Organization
-from siteapp.forms import PortfolioForm, ProjectForm
-from .forms import StatementPoamForm, PoamForm, ElementForm
-from .forms import ImportOSCALComponentForm
-from datetime import datetime, timezone
-from .oscal import Catalog, Catalogs
-import json, rtyaml, shutil, re, os
-from .utilities import *
-from .models import *
-from system_settings.models import SystemSettings
-from guardian.shortcuts import (assign_perm, get_objects_for_user,
-                                get_perms_for_model, get_user_perms,
-                                get_users_with_perms, remove_perm)
 
-from pathlib import PurePath
-import logging
+from siteapp.forms import ProjectForm
+from system_settings.models import SystemSettings
+from .forms import ImportOSCALComponentForm
+from .forms import StatementPoamForm, PoamForm, ElementForm
+from .models import *
+from .utilities import *
+
 logging.basicConfig()
 import structlog
 from structlog import get_logger
