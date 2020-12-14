@@ -1512,7 +1512,7 @@ def add_system_component(request, system_id):
     if len(smts) == 0:
         # print(f"The component {producer_element.name} does not have any control implementation statements.")
         messages.add_message(request, messages.ERROR,
-                            f'I could\'t add the Component "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
+                            f'I couldn\'t add "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
         # Redirect to selected element page
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
@@ -1529,10 +1529,10 @@ def add_system_component(request, system_id):
     smts_added_count = len(smts_added)
     if smts_added_count > 0:
         messages.add_message(request, messages.INFO,
-                         f'OK. I\'ve added {smts_added_count} control implementation statements for component "{producer_element.name}" to the system.')
+                         f'OK. I\'ve added "{producer_element.name}" to the system and its {smts_added_count} control implementation statements to the system.')
     else:
         messages.add_message(request, messages.WARNING,
-                         f'OK. I tried adding the control implementation statements for component "{producer_element.name}" to the system, but added 0 controls.')
+                         f'Oops. I tried adding "{producer_element.name}" to the system, but the component added 0 controls.')
 
     # Redirect to selected element page
     return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))

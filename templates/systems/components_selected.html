@@ -48,7 +48,7 @@
     {% endfor %}
 
     <div id="tab-content" class="row row-control" style="">
-      <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">
+      <form id="add_component" class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">
         {% csrf_token %}
         <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
           <div class="form-group">
@@ -61,9 +61,6 @@
                   {% endfor %}
                 </select>
           </div>
-        </div>
-        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 col-xl-2">
-          <button type="submit" class="btn btn-xs btn-success" style="color: white;" onclick="add_smt()">Add</button>
         </div>
       </div>
     </div>
@@ -82,7 +79,11 @@
 <script>
   // Convert select field for Add Component to jQuery Select2 box
   $(document).ready(function() {
-      $('.producer_element_id').select2();
+    $('.producer_element_id').select2();
+  });
+  // Submit the add_component form when selection changed
+  $('.producer_element_id').on("select2:select", function(e) {
+    document.getElementById('add_component').submit();
   });
 </script>
 
