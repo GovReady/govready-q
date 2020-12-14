@@ -60,6 +60,8 @@ class ElementForm(ModelForm):
     class Meta:
         model = Element
         fields = ['name', 'full_name', 'description', 'element_type']
+        
+    element_type = forms.CharField(widget=forms.HiddenInput(), initial='system_element')
 
     def clean(self):
         """Extend clean to validate element name is not reused."""
