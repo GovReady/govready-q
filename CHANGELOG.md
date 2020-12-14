@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v999
+-------------------------------
+**Developer changes**
+
+* Refactored use of random package to use secure secrets module
+* Added minor pylint fixes
+
 v.999 (December XX, 2020)
 -------------------------
 
@@ -156,7 +163,7 @@ v.0.9.1.47 (December 01, 2020)
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
 
 v0.9.1.46.4 (November 25, 2020)
------------------------------
+-----------------------------	
 
 **UI changes**
 
