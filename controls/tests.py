@@ -176,7 +176,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.json_download = \
             self.download_path / PurePath(slugify(self.component_name)).with_suffix(".json")
-        print("********* self.json_download", self.json_download)
 
         # we need a system and a component
         root_element = Element(name="My Root Element",
@@ -203,19 +202,28 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         # enable experimental OSCAL -and- OpenControl support
 
-        enable_experimental_oscal = \
-            SystemSettings.objects.get(setting='enable_experimental_oscal')
+        enable_experimental_oscal, created = \
+            SystemSettings.objects.get_or_create(setting='enable_experimental_oscal',
+                                                 defaults={'active': True})
+        if created:
+            print("warning!  get_or_create(enable_experimental_oscal) returned True")
+
         enable_experimental_oscal.active = True
         enable_experimental_oscal.save()
 
-        enable_experimental_opencontrol = \
-            SystemSettings.objects.get(setting='enable_experimental_opencontrol')
+        enable_experimental_opencontrol, created = \
+            SystemSettings.objects.get_or_create(setting='enable_experimental_opencontrol',
+                                                 defaults={'active': True})
+        if created:
+            print("warning!  get_or_create(enable_experimental_opencontrol) returned True")
+
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()
 
     def tearDown(self):
         # clean up downloaded file
         if self.json_download.is_file():
+            print("unlink", self.json_download)
             self.json_download.unlink()
         super().tearDown()
 
@@ -230,23 +238,24 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # download
         # definite race condition possibility
         
-        if os.path.isfile(self.json_download.name):
-            os.remove(self.json_download.name)
+        if self.json_download.is_file():
+            self.json_download.unlink()
         self.click_element("a#oscal_download_json_link")
         var_sleep(2)            # need to wait for download, alas
         # assert download exists!
-        self.assertTrue(os.path.isfile(self.json_download.name))
+        self.assertTrue(self.json_download.is_file())
         # assert that it is valid JSON by trying to load it
-        with open(self.json_download.name, 'r') as f:
+        with open(self.json_download, 'r') as f:
             json_data = json.load(f)
             self.assertIsNotNone(json_data)
-        os.remove(self.json_download.name)
+        self.json_download.unlink()
 
     def test_component_import_invalid_oscal(self):
         self._login()
         url = self.url(f"/controls/components")
         self.browser.get(url)
-        self.click_element('button#component-import-oscal')
+        var_sleep(2)
+        self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
 
@@ -283,9 +292,10 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self._login()
         url = self.url(f"/controls/components")
         self.browser.get(url)
-
+        var_sleep(2)
+        
         # Test initial import of Component(s) and Statement(s)
-        self.click_element('button#component-import-oscal')
+        self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
 
@@ -320,7 +330,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         var_sleep(1) # Needed to allow page to refresh and messages to render
 
         # Test that duplicate Components and Statements are not re-imported
-        self.click_element('button#component-import-oscal')
+        self.click_element('a#component-import-oscal')
         file_input = self.find_selected_option('input#id_file')
         file_input.send_keys(oscal_json_path)
 
@@ -331,7 +341,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         statement1_count = Statement.objects.filter(uuid='1ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
         self.assertEqual(statement1_count, 1)
-
 
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
