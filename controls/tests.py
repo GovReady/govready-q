@@ -202,14 +202,11 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.component = producer_element
 
         # enable experimental OSCAL -and- OpenControl support
-
-        enable_experimental_oscal = \
-            SystemSettings.objects.get(setting='enable_experimental_oscal')
+        enable_experimental_oscal, _ = SystemSettings.objects.get_or_create(setting='enable_experimental_oscal')
         enable_experimental_oscal.active = True
         enable_experimental_oscal.save()
 
-        enable_experimental_opencontrol = \
-            SystemSettings.objects.get(setting='enable_experimental_opencontrol')
+        enable_experimental_opencontrol, _  = SystemSettings.objects.get_or_create(setting='enable_experimental_opencontrol')
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()
 
@@ -246,12 +243,17 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self._login()
         url = self.url(f"/controls/components")
         self.browser.get(url)
-        self.click_element('button#component-import-oscal')
+        self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
-
         file_input = self.find_selected_option('input#id_file')
-        file_input.send_keys(oscal_json_path)
+        try:
+            # Current file system path might be incongruent linux-dos
+            file_input.send_keys(oscal_json_path)
+        except Exception as ex:
+            print(ex)
+            dos_oscal_json_path = convert_w(oscal_json_path)
+            file_input.send_keys(dos_oscal_json_path)
 
         # Verify that the contents got copied correctly from the file to the textfield
         try:
@@ -285,7 +287,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.browser.get(url)
 
         # Test initial import of Component(s) and Statement(s)
-        self.click_element('button#component-import-oscal')
+        self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
 
@@ -320,7 +322,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         var_sleep(1) # Needed to allow page to refresh and messages to render
 
         # Test that duplicate Components and Statements are not re-imported
-        self.click_element('button#component-import-oscal')
+        self.click_element('a#component-import-oscal')
         file_input = self.find_selected_option('input#id_file')
         file_input.send_keys(oscal_json_path)
 
@@ -540,7 +542,8 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         return smt
 
     def click_components_tab(self):
-        self.browser.find_element_by_partial_link_text("Component Statements ").click()
+        comp_tab = self.browser.find_element_by_partial_link_text("Component Statements ")
+        comp_tab.click()
 
     def dropdown_option(self, dropdownid):
         """
