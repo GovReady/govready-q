@@ -73,7 +73,7 @@ class Oscal80053Tests(TestCase):
 
     def test_catalog_all_controls_with_organizational_parameters(self):
         parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
-        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, 
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
                                  parameter_values=parameter_values)
         cg_flat = cg.get_flattened_controls_all_as_dict()
         control = cg_flat['ac-1']
@@ -189,7 +189,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         project.system = self.system
         project.save()
         self.system.assign_owner_permissions(self.user)
-        statement = Statement(sid='ac-1', 
+        statement = Statement(sid='ac-1',
                               sid_class=Catalogs.NIST_SP_800_53_rev4,
                               body='My statement body',
                               status='Not Implmented')
@@ -211,8 +211,10 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         enable_experimental_opencontrol.save()
 
     def tearDown(self):
-        # clean up downloaded file
-        if os.path.isfile(self.json_download.name):
+        # clean up downloaded file if linux elif dos
+        if self.json_download.is_file():
+            self.json_download.unlink()
+        elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
         super().tearDown()
 
@@ -226,18 +228,29 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # downloaded file, so let's make sure it doesn't exist before we
         # download
         # definite race condition possibility
-        
-        if os.path.isfile(self.json_download.name):
+
+        if self.json_download.is_file():
+            self.json_download.unlink()
+        elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
         self.click_element("a#oscal_download_json_link")
         var_sleep(2)            # need to wait for download, alas
         # assert download exists!
-        self.assertTrue(os.path.isfile(self.json_download.name))
-        # assert that it is valid JSON by trying to load it
-        with open(self.json_download.name, 'r') as f:
+        try:
+            self.assertTrue(self.json_download.is_file())
+            filetoopen = self.json_download
+        except:
+            self.assertTrue(os.path.isfile(self.json_download.name))
+            # assert that it is valid JSON by trying to load it
+            filetoopen = self.json_download.name
+        with open(filetoopen, 'r') as f:
             json_data = json.load(f)
             self.assertIsNotNone(json_data)
-        os.remove(self.json_download.name)
+
+        if self.json_download.is_file():
+            self.json_download.unlink()
+        elif os.path.isfile(self.json_download.name):
+            os.remove(self.json_download.name)
 
     def test_component_import_invalid_oscal(self):
         self._login()
