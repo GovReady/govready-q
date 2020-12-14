@@ -8,6 +8,7 @@ v.999 (December XX, 2020)
 
 * Updated base docker image to centos7.9.2009
 
+<<<<<<< HEAD
 v.999 (December XX, 2020)
 -------------------------
 
@@ -168,6 +169,8 @@ v0.9.1.46.3 (November 20, 2020)
 
 * Add OSCAL downlink link to system component page.
 
+=======
+>>>>>>> 06797adc1ec25d47f0058a0bcdcd41d9502ce1d7
 v0.9.1.46.2 (November 19, 2020)
 ------------------------------
 
