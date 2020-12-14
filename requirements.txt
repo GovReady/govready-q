@@ -187,9 +187,9 @@ django-notifications-hq==1.6 \
     --hash=sha256:debeb71b7076b08487b40bf07664d1cc43b9977c4480bbc969b30236dda7a461 \
     --hash=sha256:dfc6f8bd4034ceae91143bc3802ddfb6e276eaec90e63dd23e2584c052561576 \
     # via -r requirements.in
-django==3.1.4 \
-    --hash=sha256:5c866205f15e7a7123f1eec6ab939d22d5bde1416635cab259684af66d8e48a2 \
-    --hash=sha256:edb10b5c45e7e9c0fb1dc00b76ec7449aca258a39ffd613dbd078c51d19c9f03 \
+django==3.0.11 \
+    --hash=sha256:8c334df4160f7c89f6a8a359dd4e95c688ec5ac0db5db75fcc6fec8f590dc8cf \
+    --hash=sha256:96436d3d2f744d26e193bfb5a1cff3e01b349f835bb0ea16f71743accf9c6fa9 \
     # via -r requirements.in, django-allauth, django-bootstrap3, django-debug-toolbar, django-guardian, django-model-utils, django-notifications-hq, jsonfield
 dnspython==2.0.0 \
     --hash=sha256:044af09374469c3a39eeea1a146e8cac27daec951f1f1f157b1962fc7cb9d1b7 \
@@ -296,9 +296,9 @@ imagesize==1.2.0 \
     --hash=sha256:6965f19a6a2039c7d48bca7dba2473069ff854c36ae6f19d2cde309d998228a1 \
     --hash=sha256:b1f6b5a4eab1f73479a50fb79fcf729514a900c341d8503d62a62dbc4127a2b1 \
     # via sphinx
-importlib-metadata==3.2.0 \
-    --hash=sha256:3314a7d37120371fd6b4eb91d46e28c062c5a9e113be14d2cc5620062f86e210 \
-    --hash=sha256:8f3c7e27824aa3283b384ee1f9238770e4fafe479150fa7012830dfae110e7d0 \
+importlib-metadata==3.3.0 \
+    --hash=sha256:5c5a2720817414a6c41f0a49993908068243ae02c1635a228126519b509c8aed \
+    --hash=sha256:bf792d480abbd5eda85794e4afb09dd538393f7d6e6ffef6e9f03d2014cf9450 \
     # via -r requirements.in
 importlib-resources==1.5.0 \
     --hash=sha256:6f87df66833e1942667108628ec48900e02a4ab4ad850e25fbf07cb17cf734ca \
