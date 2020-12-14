@@ -212,8 +212,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
     def tearDown(self):
         # clean up downloaded file
-        if self.json_download.is_file():
-            self.json_download.unlink()
+        if os.path.isfile(self.json_download.name):
+            os.remove(self.json_download.name)
         super().tearDown()
 
     def test_component_download_oscal_json(self):
