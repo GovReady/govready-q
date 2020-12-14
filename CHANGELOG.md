@@ -10,8 +10,12 @@ v.999 (December XX, 2020)
 * Support defining multiple allowed hosts via the `local/environment.json` file.
 * Allow administrators to change component name in Component Library.
 * Existing projects can be moved between existing portfolios.
+<<<<<<< HEAD
 * Edit existing portfolio's title and description.
 * Delete existing portfolio.
+=======
+* Add default Organizational Defined Parameter values.
+>>>>>>> f7d52da9... Add default Org Defined Parameter data.
 
 **UI changes**
 
@@ -53,6 +57,9 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 
 Fix tests so they execute successfully in CircleCI.
 
+
+
+
 **Feature changes**
 
 * Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
@@ -93,6 +100,7 @@ Fix tests so they execute successfully in CircleCI.
 
 * Add `copy` method to `Element` data model to create a new element (e.g. component) as a copy of existing component.
 * Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`.
+* Add default Organizational Defined Parameter values in `controls/data/org_defined_parameters`.
 
 **Bug fixes**
 
@@ -171,6 +179,7 @@ Example:
 * Update various libraries. See changes in `requirements.txt`.
 * Removed instance of using sys.stderr and replaced with logger for proper logging.
 * Fix tests so they execute successfully in CircleCI.
+* Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 
 **Other**
 
