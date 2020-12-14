@@ -87,6 +87,7 @@ class SeleniumTest(StaticLiveServerTestCase):
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True
         })
+       # options.add_argument('--headless')
 
         # Set up selenium Chrome browser for Windows or Linux
         if system() == "Windows" or 'Microsoft' in uname().release:

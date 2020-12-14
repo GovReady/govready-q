@@ -542,8 +542,10 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         return smt
 
     def click_components_tab(self):
-        comp_tab = self.browser.find_element_by_partial_link_text("Component Statements ")
+        var_sleep(.5)
+        comp_tab = self.browser.find_element_by_partial_link_text("Component Statements  ")
         comp_tab.click()
+        var_sleep(.5)
 
     def dropdown_option(self, dropdownid):
         """
