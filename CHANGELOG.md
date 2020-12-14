@@ -8,6 +8,8 @@ Add Component Library feature pages and improve UI for managing reuse and "certi
 
 Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML) output template in the compliance app `output` section. The JSON, YAML output documents are first converted to Python data structures and then populated with information in a variant of Jinja2 substitutions.
 
+Add default Organizational Defined Parameter values.
+
 **Feature changes**
 
 * Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
@@ -46,6 +48,7 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 
 * Add `copy` method to `Element` data model to create a new element (e.g. component) as a copy of existing component.
 * Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`.
+* Add default Organizational Defined Parameter values in `controls/data/org_defined_parameters`.
 
 **Bug fixes**
 
@@ -120,6 +123,8 @@ Example:
 ```
 * Update various libraries. See changes in `requirements.txt`.
 * Removed instance of using sys.stderr and replaced with logger for proper logging.
+* Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
+
 
 **Other**
 

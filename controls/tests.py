@@ -332,7 +332,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         statement1_count = Statement.objects.filter(uuid='1ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
         self.assertEqual(statement1_count, 1)
 
-
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
     def test_tests(self):
@@ -521,6 +520,29 @@ class PoamUnitTests(TestCase):
         poam.save()
         # poam.delete()
         # self.assertTrue(poam.uuid is None)
+
+class OrgParamTests(TestCase):
+    """Class for OrgParam Unit Tests"""
+
+    def test_org_params(self):
+        odp = OrgParams()
+        self.assertIn('org_params_low_fedramp', odp.odp_keys)
+        odp53 = odp._load_json('org_params_mod_fedramp')
+        self.assertTrue('at least every 3 years' == odp53['ac-1_prm_2'])
+        self.assertEqual(177, len(odp.get_org_params('org_params_mod_fedramp')))
+
+    def test_catalog_all_controls_with_organizational_parameters(self):
+        odp = OrgParams()
+        self.assertIn('org_params_low_fedramp', odp.odp_keys)
+        odp53 = odp._load_json('org_params_mod_fedramp')
+        # parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
+        parameter_values = odp53
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
+                                 parameter_values=parameter_values)
+        cg_flat = cg.get_flattened_controls_all_as_dict()
+        control = cg_flat['ac-1']
+        description = control['description']
+        self.assertTrue('at least every 3 years' in description, description)
 
 class ControlComponentTests(OrganizationSiteFunctionalTests):
 
