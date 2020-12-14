@@ -79,10 +79,10 @@
 <script>
   // Convert select field for Add Component to jQuery Select2 box
   $(document).ready(function() {
-    $('.producer_element_id').select2();
+    $('#producer_element_id').select2();
   });
   // Submit the add_component form when selection changed
-  $('.producer_element_id').on("select2:select", function(e) {
+  $('#producer_element_id').on("select2:select", function(e) {
     document.getElementById('add_component').submit();
   });
 </script>

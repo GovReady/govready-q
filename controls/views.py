@@ -540,18 +540,16 @@ def new_element(request):
     """Form to create new system element (aka component)"""
 
     if request.method == 'POST':
-      form = ElementForm(request.POST)
-      if form.is_valid():
-        form.save()
-        element = form.instance
-        logger.info(
-            event="new_element",
-            object={"object": "element", "id": element.id, "name":element.name},
-            user={"id": request.user.id, "username": request.user.username}
-        )
-        return redirect('component_library_component', element_id=element.id)
-      else:
-          raise ValidationError("The form you sent was not valid!")
+        form = ElementForm(request.POST)
+        if form.is_valid():
+            form.save()
+            element = form.instance
+            logger.info(
+                event="new_element",
+                object={"object": "element", "id": element.id, "name":element.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('component_library_component', element_id=element.id)
     else:
         form = ElementForm()
 
