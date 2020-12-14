@@ -28,6 +28,7 @@ from selenium.webdriver.support.select import Select
 
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
+from siteapp.settings import HEADLESS
 from tools.utils.linux_to_dos import convert_w
 
 
@@ -87,7 +88,8 @@ class SeleniumTest(StaticLiveServerTestCase):
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True
         })
-       # options.add_argument('--headless')
+        if HEADLESS:
+            options.add_argument('--headless')
 
         # Set up selenium Chrome browser for Windows or Linux
         if system() == "Windows" or 'Microsoft' in uname().release:
