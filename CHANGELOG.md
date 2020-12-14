@@ -23,6 +23,8 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 
 * Support generation of Word DOCX questionnaire output documents with page numbers, headers, footers, TOC (using pandoc custom reference doc feature).
 
+* Support creating a new component in the library.
+
 **UI changes**
 
 * Add Component Library page listing all available components.
@@ -56,6 +58,7 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 
 * Add `custom-reference.docx` MS Word DOCX document to `/assets` directory to be used by pandoc when generating MS Word output documents in order to provide page numbers, headers, footers, TOC.
 * Significantly refactored indentations in control edtor pages to make code folding and div analysis easier.
+* Add an ElementForm to create new components (AKA Elements).
 * Modified controls.Statement model to link `control_implementation` statements to
   `control_implementation_prototype` statements. See commit 5083af.
 * Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch.

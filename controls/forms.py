@@ -1,8 +1,10 @@
 from django import forms
 from django.forms import ModelForm
+from django.core.exceptions import ValidationError
 from django.forms.widgets import HiddenInput
+from django.db.models import Exists
 
-from .models import Statement, Poam
+from .models import Statement, Poam, Element
 
 class StatementPoamForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -55,6 +57,24 @@ class PoamForm(ModelForm):
             "poam_group": "Group"
         }
 
+class ElementForm(ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.initial['element_type'] = 'system_element'
+        self.fields['element_type'].widget = forms.HiddenInput()
+
+    class Meta:
+        model = Element
+        fields = ['name', 'full_name', 'description', 'element_type']
+
+    def clean(self):
+        """Extend clean to validate element name is not reused."""
+        cd = self.cleaned_data
+        # Validate element name does not exist case insensitive
+        if Element.objects.filter(name__iexact=cd['name']).exists():
+            raise ValidationError("Component (aka Element) name {} not available.".format(cd['name']))
+        return cd
 
 class ImportOSCALComponentForm(forms.Form):
 

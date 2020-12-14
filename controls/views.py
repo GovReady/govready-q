@@ -1,37 +1,30 @@
+import logging
 from collections import defaultdict
+from datetime import datetime, timezone
+from pathlib import PurePath
 
-from django.urls import reverse_lazy
-
+import rtyaml
+import shutil
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
-from django.forms import ModelForm
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse
-from django.db import IntegrityError
-from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
+from django.views import View
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
-from django.views import View
-from django.utils.text import slugify
-from siteapp.models import Project, User, Organization
-from siteapp.forms import PortfolioForm, ProjectForm
-from .forms import ImportOSCALComponentForm
-from datetime import datetime, timezone
-from .oscal import Catalog, Catalogs
-import json, rtyaml, shutil, re, os
-from .utilities import *
-from .models import *
-from system_settings.models import SystemSettings
-from guardian.shortcuts import (assign_perm, get_objects_for_user,
-                                get_perms_for_model, get_user_perms,
-                                get_users_with_perms, remove_perm)
 
-from pathlib import PurePath
-import logging
+from siteapp.forms import ProjectForm
+from system_settings.models import SystemSettings
+from .forms import ImportOSCALComponentForm
+from .forms import StatementPoamForm, PoamForm, ElementForm
+from .models import *
+from .utilities import *
+
 logging.basicConfig()
 import structlog
 from structlog import get_logger
@@ -542,6 +535,28 @@ def system_element(request, system_id, element_id):
         }
         return render(request, "systems/element_detail_tabs.html", context)
 
+@login_required
+def new_element(request):
+    """Form to create new system element (aka component)"""
+
+    if request.method == 'POST':
+        form = ElementForm(request.POST)
+        if form.is_valid():
+            form.save()
+            element = form.instance
+            logger.info(
+                event="new_element",
+                object={"object": "element", "id": element.id, "name":element.name},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('component_library_component', element_id=element.id)
+    else:
+        form = ElementForm()
+
+    return render(request, 'components/element_form.html', {
+        'form': form,
+    })
+
 def component_library_component(request, element_id):
     """Display certified component's element detail view"""
 
@@ -552,21 +567,21 @@ def component_library_component(request, element_id):
     # Get the impl_smts contributed by this component to system
     impl_smts = element.statements_produced.filter(statement_type="control_implementation_prototype")
 
-    try:
+    if len(impl_smts) == 0:
+        # New component, no control statements assigned yet
+        catalog_key = "catalog_key_missing"
+        catalog_controls = None
+        oscal_string = None
+        opencontrol_string = None
+    elif len(impl_smts) > 0:
         # TODO: We may have multiple catalogs in this case in the future
         # Retrieve used catalog_key
         catalog_key = impl_smts[0].sid_class
-
         # Retrieve control ids
         catalog_controls = Catalog.GetInstance(catalog_key=catalog_key).get_controls_all()
-    except IndexError:
-        catalog_key = None
-        catalog_controls = []
-
-
-    # Build OSCAL and OpenControl
-    oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
-    opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
+        # Build OSCAL and OpenControl
+        oscal_string = OSCALComponentSerializer(element, impl_smts).as_json()
+        opencontrol_string = OpenControlComponentSerializer(element, impl_smts).as_yaml()
 
     # Return the system's element information
     context = {
@@ -1488,7 +1503,7 @@ def add_system_component(request, system_id):
     if len(smts) == 0:
         # print(f"The component {producer_element.name} does not have any control implementation statements.")
         messages.add_message(request, messages.ERROR,
-                            f'I could\'t add the Component "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
+                            f'I couldn\'t add "{producer_element.name}" to the system because the component does not currently have any control implementation statements to add.')
         # Redirect to selected element page
         return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
 
@@ -1505,10 +1520,10 @@ def add_system_component(request, system_id):
     smts_added_count = len(smts_added)
     if smts_added_count > 0:
         messages.add_message(request, messages.INFO,
-                         f'OK. I\'ve added {smts_added_count} control implementation statements for component "{producer_element.name}" to the system.')
+                         f'OK. I\'ve added "{producer_element.name}" to the system and its {smts_added_count} control implementation statements to the system.')
     else:
         messages.add_message(request, messages.WARNING,
-                         f'OK. I tried adding the control implementation statements for component "{producer_element.name}" to the system, but added 0 controls.')
+                         f'Oops. I tried adding "{producer_element.name}" to the system, but the component added 0 controls.')
 
     # Redirect to selected element page
     return HttpResponseRedirect("/systems/{}/components/selected".format(system_id))
@@ -1947,7 +1962,7 @@ def poams_list(request, system_id):
 
 def new_poam(request, system_id):
     """Form to create new POAM"""
-    from .forms import StatementPoamForm, PoamForm
+
     # Retrieve identified System
     system = System.objects.get(id=system_id)
     # Retrieve related selected controls if user has permission on system
@@ -1993,8 +2008,6 @@ def new_poam(request, system_id):
 
 def edit_poam(request, system_id, poam_id):
     """Form to create new POAM"""
-    from .forms import StatementPoamForm, PoamForm
-    from django.shortcuts import get_object_or_404
 
     # Retrieve identified System
     system = System.objects.get(id=system_id)
