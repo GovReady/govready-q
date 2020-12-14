@@ -453,7 +453,7 @@ class ComponentImporter(object):
                 try:
                     new_statement = Statement.objects.create(
                         sid=control_id,
-                        sid_class=catalog,
+                        sid_class=catalog_key,
                         pid=impl_stmnt['properties'][0]['value'] if 'properties' in impl_stmnt and 'value' in impl_stmnt['properties'][0] else None,
                         body=impl_stmnt['description'] if 'description' in impl_stmnt else None,
                         statement_type="control_implementation_prototype",
