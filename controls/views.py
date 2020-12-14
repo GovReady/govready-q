@@ -550,6 +550,8 @@ def new_element(request):
             user={"id": request.user.id, "username": request.user.username}
         )
         return redirect('component_library_component', element_id=element.id)
+      else:
+          raise ValidationError("The form you sent was not valid!")
     else:
         form = ElementForm()
 
