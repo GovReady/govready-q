@@ -53,7 +53,8 @@
         <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
           <div class="form-group">
               <label for="compoment">Add component</label>&nbsp;&nbsp;
-                <select class="producer_element_id" id="producer_element_id" name="producer_element_id" style="width:340px;">
+                <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+                <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:340px;">
                   {% for component in elements %}
                     {% if component not in system.producer_elements %}
                       <option value="{{ component.id }}">{{ component.name }}</option>
@@ -80,10 +81,6 @@
   // Convert select field for Add Component to jQuery Select2 box
   $(document).ready(function() {
     $('#producer_element_id').select2();
-  });
-  // Submit the add_component form when selection changed
-  $('#producer_element_id').on("select2:select", function(e) {
-    document.getElementById('add_component').submit();
   });
 </script>
 
