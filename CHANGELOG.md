@@ -8,6 +8,8 @@ Add Component Library feature pages and improve UI for managing reuse and "certi
 
 Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML) output template in the compliance app `output` section. The JSON, YAML output documents are first converted to Python data structures and then populated with information in a variant of Jinja2 substitutions.
 
+Fix tests so they execute successfully in CircleCI.
+
 **Feature changes**
 
 * Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
@@ -53,10 +55,12 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 
 * Fix multiple loadings of updated `smt.body` into bootstrap's panel heading section by improved naming of div classes in panel and better targeted update.
 * Fix enable_experimental_oscal control. Model method was set incorrectly requiring both enable_experimental_oscal and enable_experimental_opencontrol had to be enabled for either to show up.
+* Fix testing issues. Fix tests so they execute successfully in CircleCI.
 
 **Developer changes**
 
-* Add `custom-reference.docx` MS Word DOCX document to `/assets` directory to be used by pandoc when generating MS Word output documents in order to provide page numbers, headers, footers, TOC.
+* Default Selenium tests to headless mode. Add new `test_visible` parameter option for `local/environment.json` to force Selenium tests to run in visible or headless mode.
+Add `custom-reference.docx` MS Word DOCX document to `/assets` directory to be used by pandoc when generating MS Word output documents in order to provide page numbers, headers, footers, TOC.
 * Significantly refactored indentations in control edtor pages to make code folding and div analysis easier.
 * Add an ElementForm to create new components (AKA Elements).
 * Modified controls.Statement model to link `control_implementation` statements to
@@ -123,6 +127,7 @@ Example:
 ```
 * Update various libraries. See changes in `requirements.txt`.
 * Removed instance of using sys.stderr and replaced with logger for proper logging.
+* Fix tests so they execute successfully in CircleCI.
 
 **Other**
 
