@@ -399,7 +399,7 @@ if environment.get("branding"):
 	TEMPLATES[0].setdefault('DIRS', [])\
 		.insert(0, os.path.join(environment["branding"], 'templates'))
 
-HEADLESS = True if environment.get("test_headless") else False
+HEADLESS = False if environment.get("test_visible") else True
 DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
 # Load all additional settings from settings_application.py.
 from .settings_application import *

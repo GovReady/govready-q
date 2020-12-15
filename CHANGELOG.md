@@ -59,7 +59,7 @@ Fix tests so they execute successfully in CircleCI.
 
 **Developer changes**
 
-* Add new `test_headless` paramter option for `local/environment.json` to force Selenium function tests to run in headless mode.
+* Default Selenium tests to headless mode. Add new `test_visible` parameter option for `local/environment.json` to force Selenium tests to run in visible or headless mode.
 Add `custom-reference.docx` MS Word DOCX document to `/assets` directory to be used by pandoc when generating MS Word output documents in order to provide page numbers, headers, footers, TOC.
 * Significantly refactored indentations in control edtor pages to make code folding and div analysis easier.
 * Add an ElementForm to create new components (AKA Elements).
