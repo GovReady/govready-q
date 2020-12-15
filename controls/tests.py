@@ -10,25 +10,22 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 
-import json
-import os
 from pathlib import PurePath
-import re
-from unittest import skip
-from tools.utils.linux_to_dos import convert_w
+
 from django.test import TestCase
-from selenium.webdriver.support.select import Select
-from siteapp.models import User
-from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests, var_sleep
-from .models import *
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.text import slugify
-from .oscal import Catalogs, Catalog
-from system_settings.models import SystemSettings
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.select import Select
+from selenium.webdriver.support.ui import WebDriverWait
+
 from controls.models import System
+from siteapp.models import User
+from siteapp.tests import SeleniumTest, var_sleep
+from system_settings.models import SystemSettings
+from .models import *
+from .oscal import Catalogs, Catalog
+
 
 # from controls.oscal import Catalogs, Catalog
 
@@ -264,16 +261,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
         file_input = self.find_selected_option('input#id_file')
-        # TODO: modularize this into a helper function for selenium tests. Probably use if DOS
-        try:
-            # Current file system path might be incongruent linux-dos
-            file_input.send_keys(oscal_json_path)
-        except Exception as ex:
-            print("Changing file path from linux to dos")
-            print(ex)
-            dos_oscal_json_path = convert_w(oscal_json_path)
-            file_input.send_keys(dos_oscal_json_path)
-
+        self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
+        
         # Verify that the contents got copied correctly from the file to the textfield
         try:
             # Load contents from file
@@ -309,16 +298,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
-
         file_input = self.find_selected_option('input#id_file')
-        try:
-            # Current file system path might be incongruent linux-dos
-            file_input.send_keys(oscal_json_path)
-        except Exception as ex:
-            print("Changing file path from linux to dos")
-            print(ex)
-            oscal_json_path = convert_w(oscal_json_path)
-            file_input.send_keys(oscal_json_path)
+        self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         self.click_element('input#import_component_submit')
 

@@ -15,16 +15,11 @@ import os.path
 import pathlib
 import re
 import tempfile
-from unittest import skip
-from platform import uname, system
-from django.contrib.auth.models import Permission
-from django.conf import settings
-from selenium.webdriver.support.select import Select
+import selenium.webdriver
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
-from selenium.webdriver.support.select import Select
 
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
@@ -66,8 +61,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         #settings.DEBUG = True
 
         # Start a headless browser.
-        import selenium.webdriver
-        from selenium.webdriver.chrome.options import Options as ChromeOptions
+
         options = selenium.webdriver.ChromeOptions()
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
@@ -196,6 +190,28 @@ class SeleniumTest(StaticLiveServerTestCase):
         # instance is initialized when the first message is sent.
         outbox = getattr(django.core.mail, 'outbox', [])
         return len(outbox) > 0
+
+    def filepath_conversion(self, file_input, filepath, conversion_type):
+        if conversion_type.lower() == "sendkeys":
+            try:
+                # Current file system path might be incongruent linux-dos
+                file_input.send_keys(filepath)
+            except Exception as ex:
+                print("Changing file path from linux to dos")
+                print(ex)
+                dos_oscal_json_path = convert_w(filepath)
+                file_input.send_keys(dos_oscal_json_path)
+        elif conversion_type.lower() == "fill":
+            try:
+                # Current file system path might be incongruent linux-dos
+                self.fill_field(file_input, filepath)
+            except Exception as ex:
+                print("Changing file path from linux to dos")
+                print(ex)
+                testFilePath = convert_w(filepath)
+                self.fill_field(file_input, testFilePath)
+
+
 #####################################################################
 
 class SupportPageTests(SeleniumTest):
