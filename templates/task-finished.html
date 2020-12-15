@@ -36,9 +36,9 @@
 
 <div class="row">
   <div id="focus-area-wrapper" class="col-xs-12 col-sm-12 col-md-9 col-lg-8">
-    <h1 style="margin:0.5em 0 1em 0;">...and we&rsquo;re done</h1>
+    <h1 class="task-done">...and we&rsquo;re done</h1>
     {% if top_of_page_output %}
-      <div style="margin-bottom: 30px;">
+      <div class="task-bottom-margin">
         {{top_of_page_output.html|safe}}
       </div>
     {% elif had_any_questions %}
@@ -56,13 +56,13 @@
 
       {% if outputs|length > 0 %}
         <div class="panel panel-default">
-          <div class="panel-heading" rol="tab" id="your-answers-title-2" style="height: 50px;">
+          <div class="panel-heading task-panel-heading-height" rol="tab" id="your-answers-title-2">
             <h4 class="panel-title">
               <a role="button" data-toggle="collapse" data-parent="#accordion" href="#your-answers-body-2" aria-expanded="true" aria-controls="your-answers-body-2">
                 Available documents
               </a>
               <div class="pull-right">
-                <a id="force-refresh" class="btn btn-success btn-sm" onclick="refresh_output_doc({{project.root_task.module.app.id}});return false;"><span class="glyphicon glyphicon-refresh"></span> Force Refresh</a>
+                <button type="button" id="force-refresh" class="btn btn-warning btn-xs" onclick="refresh_output_doc({{project.root_task.module.app.id}});return false;"> Refresh documents <span class="glyphicon glyphicon-refresh"></span></button>
               </div>
             </h4>
           </div>
@@ -80,10 +80,13 @@
                     <tr>
                         <td>{{document.title}}</td>
                         <td>
-                          {% if document.format == "oscal_json" %}
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/oscal_json">OSCAL (json)</a>&nbsp;&nbsp;
-                          {% elif document.format == "oscal_xml" %}
-                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/oscal_xml">OSCAL (xml)</a>&nbsp;&nbsp;
+                          {% if document.format == "json" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/json">OSCAL (json)</a>&nbsp;&nbsp;
+                            <!-- <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/plain">View as text</a>&nbsp;&nbsp; -->
+                          {% elif document.format == "yaml" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/yaml">Download OSCAL (yaml)</a>&nbsp;&nbsp;
+                          {% elif document.format == "xml" %}
+                            <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/xml">OSCAL (xml)</a>&nbsp;&nbsp;
                           {% else %}
                             <a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/docx">Word (docx)</a>&nbsp;&nbsp;
                             {% if gr_pdf_generator == 'wkhtmltopdf' %}<a href="{{task.get_absolute_url}}/download/document/{{document.id | urlencode }}/pdf">PDF</a>&nbsp;&nbsp;{% endif %}
@@ -137,7 +140,7 @@
                       {% endif %}
                     </td>
                     <td>
-                      <div style="float: right; margin: 0 0 .5em .25em;">
+                      <div class="task-imputed">
                         {% if not a %}
                           <span class="label label-warning">Imputed</span>
                         {% endif %}
@@ -157,7 +160,7 @@
       {% endif %}
 
     </div> <!-- /accordion -->
-    <div id="continue-nav "style="margin: 2em 0">
+    <div id="continue-nav" class="task-answers">
       {% with answers_question=task.is_answer_to_unique %}
         {% if answers_question and answers_question.task.editor == request.user %}
           {% if task.project.is_account_project %}
@@ -235,8 +238,7 @@
     &nbsp;
   </div>
 
-  <div id="progress-project-area-wrapper" class="col-xs-6 col-sm-6 col-md-3 col-lg-3"
-       style="background-color: rgb(230, 230, 230); border-radius: 6px;">
+  <div id="progress-project-area-wrapper" class="col-xs-6 col-sm-6 col-md-3 col-lg-3 task-progress-project">
     {% include "task-progress-project-list.html" with previous="question" %}
   </div>
 </div>

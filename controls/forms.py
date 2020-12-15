@@ -1,11 +1,10 @@
 from django import forms
 from django.forms import ModelForm
-from django.forms.widgets import HiddenInput
-# from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
+from django.forms.widgets import HiddenInput
 from django.db.models import Exists
 
-from .models import Statement, Poam
+from .models import Statement, Poam, Element
 
 class StatementPoamForm(ModelForm):
     def __init__(self, *args, **kwargs):
@@ -13,7 +12,6 @@ class StatementPoamForm(ModelForm):
         self._statement_type = kwargs.pop('statement_type', None)
         self._consumer_element = kwargs.pop('consumer_element', None)
         super().__init__(*args, **kwargs)
-        # print(self.fields['status'].__dict__)
         self.fields['status'].initial = self._status
         self.fields['statement_type'].initial = self._statement_type
         self.fields['statement_type'].widget = HiddenInput()
@@ -59,4 +57,34 @@ class PoamForm(ModelForm):
             "poam_group": "Group"
         }
 
+class ElementForm(ModelForm):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.initial['element_type'] = 'system_element'
+        self.fields['element_type'].widget = forms.HiddenInput()
+
+    class Meta:
+        model = Element
+        fields = ['name', 'full_name', 'description', 'element_type']
+
+    def clean(self):
+        """Extend clean to validate element name is not reused."""
+        cd = self.cleaned_data
+        # Validate element name does not exist case insensitive
+        if Element.objects.filter(name__iexact=cd['name']).exists():
+            raise ValidationError("Component (aka Element) name {} not available.".format(cd['name']))
+        return cd
+
+class ImportOSCALComponentForm(forms.Form):
+
+    file = forms.FileField(label="Select OSCAL file (.json)",
+        widget=forms.FileInput(
+            attrs={
+                'onchange': "fillJSONContent(this);",
+                'accept':'application/json'
+            }
+        ),
+        required=False
+    )
+    json_content = forms.CharField(label='OSCAL (JSON)', widget=forms.Textarea())

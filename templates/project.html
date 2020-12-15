@@ -34,7 +34,7 @@
 }
   .question-group h3 {
     font-size: inherit;
-    font-weight: bold;    
+    font-weight: bold;
   }
   .question-group > .row {
     margin: 5px 0;
@@ -208,21 +208,21 @@ h3.question-group-title {
     {# action buttons #}
     {% if action_buttons %}
       {% for q in action_buttons %}
-        <div style="margin-top: 1em">
+        <div class="action-button-box">
           {% if can_start_task and q.can_start_new_task %}
             <form id="question-{{q.question.key}}" class="start-task" method="post" action="/tasks/start" style="display:inline;">
               {% csrf_token %}
               <input type="hidden" name="project" value="{{project.id}}"/>
               <input type="hidden" name="question" value="{{q.question.key}}"/>
               <input type="hidden" name="previous" value="project"/>
-              <a class="btn btn-default" style="background: white"
+              <a class="btn btn-default" class="action-button"
                 href="#" onclick="$(this).parent('form').submit(); return false;">
                 {{q.question.spec.title}} &raquo;
               </a>
             </form>
           {% else %}
           <a id="question-{{q.question.key}}"
-            class="btn btn-default" style="background: white"
+            class="btn btn-default" class="action-button"
             href="{{q.task.get_absolute_url}}?previous=project">
             {{q.question.spec.title}} &raquo; {# use a stable title - dont make it depend on the task #}
           </a>
@@ -234,23 +234,23 @@ h3.question-group-title {
 
 {% block above_title %}
     {% if authoring_tool_enabled %}
-      <center style="font-size: 90%;" class="authoring-tool-hidden"><p class="text-info">
+      <center class="authoring-tool-hidden authoring-tool-box"><p class="text-info">
         You are in author mode. Authoring tools have been enabled for this module.
       </p></center>
 
-      <center style="font-size: 90%;" class="authoring-tool-hidden">
+      <center class="authoring-tool-hidden authoring-tool-box">
       <p>
-      <a href="#" onclick="show_authoring_tool_module_editor(); return false;" style="margin: 0 1em;">
+      <a href="#" onclick="show_authoring_tool_module_editor(); return false;" class="authoring-tool-style">
         <span class="glyphicon glyphicon-pencil"></span>
         Edit App
       </a>
 
-      <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
+      <a href="#" onclick="authoring_tool_new_question({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
       <span class="glyphicon glyphicon-plus"></span>
       Add Question
       </a>
 
-      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" style="margin: 0 1em;">
+      <a href="#" onclick="authoring_tool_download_app_project({{project.root_task.id}}, true); return false;" class="authoring-tool-style">
       <span class="glyphicon glyphicon-download"></span>
       Download Source
       </a>
@@ -261,9 +261,9 @@ h3.question-group-title {
 
 {% block body_content %}
     <div class="row">
-      <div class="col-sm-12" style="margin-bottom:1em;">
+      <div class="col-sm-12" class="project-row-style">
         {% if project.root_task.module.spec.introduction %}
-          <p style="margin: 1em 0;">
+          <p class="project-text">
           {{project.root_task.render_introduction|safe}}
           </p>
         {% endif %}
@@ -325,7 +325,7 @@ h3.question-group-title {
                           <input type="hidden" name="project" value="{{project.id}}"/>
                           <input type="hidden" name="question" value="{{q.question.key}}"/>
                           <input type="hidden" name="previous" value="project"/>
-                      
+
                       {% else %}
                         {# Go to the Apps Catalog to select an app that implements the protocol specified on the question. #}
                         <form method="get" action="/store" onclick="$(this).submit();" style="cursor: pointer">
@@ -348,11 +348,11 @@ h3.question-group-title {
                     {% endif %}
 
                     {% if not q.hide_icon %}
-                    <div class="question-icon" style="position: relative;">
+                    <div class="question-icon project-question-icon">
                         {# Show a checkmark if the question has been answered, can only be answered once (i.e. is a module-type question), and its Task has been completed. #}
-                        <div style="position: absolute; left: -1px; top: -1px;">
+                        <div class="project-new-task">
                           {% if not q.can_start_new_task and q.task.is_finished %}
-                            <span class="glyphicon glyphicon-ok" style="color: #96B"></span>
+                            <span class="glyphicon glyphicon-ok project-glyphicon-ok"></span>
                           {% endif %}
                         </div>
 
@@ -402,12 +402,12 @@ h3.question-group-title {
                         {# In the rows layout mode, indicate the question's progress and show a button to start or continue the task #}
                         {% if layout_mode != "grid" %}
                           {% with task=q.task %}
-                            <div class="progress" style="width:80%; height: 5px;margin: 8px 0 0 0;">
+                            <div class="progress project-progress">
                               <div class="progress-bar progress-bar-success" role="progressbar" style="width: {{task.get_progress_percent}}%" aria-valuenow="{{task.get_progress_percent}}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                             {% if layout_mode == "rows" %}
                             {% if task.is_finished %}
-                            <div class="btn btn-sm btn-default" style="color: rgb(57, 139, 37);">Finished</div>
+                            <div class="btn btn-sm btn-default project-button-finished">Finished</div>
                             {% elif task.is_started %}
                             <div class="btn btn-sm btn-default">In progress</div>
                             {% else %}
@@ -432,7 +432,7 @@ h3.question-group-title {
                         </form>
                       {% endif %}
                     {% endif %}
-                    
+
                   {# Show invitations and discussions for this question below the icon and label. #}
 
                   <div class="question-body">
@@ -462,7 +462,7 @@ h3.question-group-title {
 
             {% comment %}
             {% if columns|length > 0 and column.groups|length == 0 %}
-              <p style="line-height: 122%; font-size: italic; font-size: 95%;">
+              <p class="project-question-comment">
                 {% if column.has_tasks_on_left %}
                   There are no tasks in this column yet.
                 {% else %}

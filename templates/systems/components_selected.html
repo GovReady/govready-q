@@ -5,44 +5,38 @@
 {% load q %}
 
 {% block title %}
-{{ portfolio.title }} Controls Selected
+{{ portfolio.title }} Components Selected
 {% endblock %}
 
 {% block head %}
 {% include "controls/_style-controls.html" %}
+
 {% endblock %}
 
 {% block contextbar %}{% endblock %}
 
 {% block body %}
 
-<div style="margin-top: 30px">
+<div class="systems-top">
   <div class="container">
 
   <div class="row" style="">
     <div id="above-tab-content" class="row">
       <!-- Page Title-->
-      <div style="float: left;">
-          <h2 class="control-heading" style="">
-            <a href="{{ project.get_absolute_url }}" style="color: black;">{{ system.root_element.name }}</a> > Selected Components
+      <div class="systems-title">
+          <h2 class="control-heading">
+            <a href="{{ project.get_absolute_url }}" class="systems-link">{{ system.root_element.name }}</a> > Selected Components
           </h2>
-      </div>
-      <!-- Control Lookup-->
-      <div style="float: right;">
-          <!-- <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
-            <input type="text" name="id" placeholder="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
-                <button type="submit" class="btn btn-success">Look up</button>
-          </form> -->
       </div>
     </div>
   </div><!--/row-->
     <p>&nbsp;</p>
 
-    <div id="tab-content" class="row rows-header" style="">
-        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Selected Components</div>
+    <div id="tab-content" class="row rows-header">
+        <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span class="systems-selected-components">Selected Components</div>
     </div>
    {% for component in system.producer_elements %}
-    <div id="tab-content" class="row row-control" style="">
+    <div id="tab-content" class="row row-control">
         <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
             <a href="/systems/{{ system.id }}/component/{{ component.id }}">{{ component.name }}</a>
         </div>
@@ -53,6 +47,28 @@
     </div>
     {% endfor %}
 
+    <div id="tab-content" class="row row-control" style="">
+      <form id="add_component" class="form-inline" method="post" action="/systems/{{ system.id }}/components/add_system_component">
+        {% csrf_token %}
+        <div id="" class="col-xs-7 col-sm-7 col-md-7 col-lg-7 col-xl-7">
+          <div class="form-group">
+              <label for="compoment">Add component</label>&nbsp;&nbsp;
+                <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
+                <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:340px;">
+                  <option value="None" selected disabled hidden>Select a Component</option>
+                  {% for component in elements %}
+                    {% if component not in system.producer_elements %}
+                      <option value="{{ component.id }}">{{ component.name }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+          </div>
+        </div>
+      </div>
+    </div>
+      </form>
+  </div>
+
   </div>
 </div>
 
@@ -60,11 +76,13 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static "vendor/js/select2.min.js" %}"></script>
+<link href="{% static "vendor/css/select2.min.css" %}" rel="stylesheet" />
 <script>
-  function show_control_by_id() {
-    var control_id = $('#control_lookup').find('input[name="id"]').val();
-    var url = "/controls/"+"800-53"+"/"+control_id+"/";
-    window.location.href = url;
-  }
+  // Convert select field for Add Component to jQuery Select2 box
+  $(document).ready(function() {
+    $('#producer_element_id').select2();
+  });
 </script>
+
 {% endblock %}

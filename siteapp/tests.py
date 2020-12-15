@@ -12,16 +12,23 @@
 
 import os
 import os.path
+import pathlib
 import re
+import tempfile
 from unittest import skip
-
+from platform import uname, system
+from django.contrib.auth.models import Permission
 from django.conf import settings
+from selenium.webdriver.support.select import Select
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+# StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
+from selenium.webdriver.support.select import Select
 
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
+from tools.utils.linux_to_dos import convert_w
 
 
 def var_sleep(duration):
@@ -45,8 +52,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         # Override ALLOWED_HOSTS, SITE_ROOT_URL, etc.
         # because they may not be set or set properly in the local environment's
         # non-test settings for the URL assigned by the LiveServerTestCase server.
+        # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
         settings.ALLOWED_HOSTS = ['localhost', 'testserver']
         settings.SITE_ROOT_URL = cls.live_server_url
+        settings.DEBUG = True
 
         # In order for these tests to succeed when not connected to the
         # Internet, disable email deliverability checks which query DNS.
@@ -59,11 +68,32 @@ class SeleniumTest(StaticLiveServerTestCase):
         import selenium.webdriver
         from selenium.webdriver.chrome.options import Options as ChromeOptions
         options = selenium.webdriver.ChromeOptions()
+        options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
-            options.add_argument("--start-maximized") # too small screens make clicking some things difficult
+            options.add_argument("start-maximized") # too small screens make clicking some things difficult
         else:
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
-        cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+
+        options.add_argument("--incognito")
+
+        if system() == "Windows" or 'Microsoft' in uname().release:
+            # WSL has a hard time finding tempdir so we feed it the dos conversion
+            tempfile.tempdir = convert_w(os.getcwd())
+        # enable Selenium support for downloads
+        cls.download_path = temp_path = pathlib.Path(tempfile.gettempdir())
+        options.add_experimental_option("prefs", {
+            "download.default_directory": str(cls.download_path),
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True
+        })
+
+        # Set up selenium Chrome browser for Windows or Linux
+        if system() == "Windows" or 'Microsoft' in uname().release:
+            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+        else:
+            cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+
         cls.browser.implicitly_wait(3) # seconds
 
         # Clean up and quit tests if Q is in SSO mode
@@ -120,6 +150,10 @@ class SeleniumTest(StaticLiveServerTestCase):
         elem = self.browser.find_element_by_css_selector(css_selector)
         self.browser.execute_script("arguments[0].scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });", elem)
         elem.click()
+        
+    def find_selected_option(self, css_selector):
+        selected_option = self.browser.find_element_by_css_selector(f"{css_selector}")
+        return selected_option
 
     def select_option(self, css_selector, value):
         from selenium.webdriver.support.select import Select
@@ -138,7 +172,6 @@ class SeleniumTest(StaticLiveServerTestCase):
 
     def assertInNodeText(self, search_text, css_selector):
         self.assertIn(search_text, self._getNodeText(css_selector))
-
     def assertNotInNodeText(self, search_text, css_selector):
         self.assertNotIn(search_text, self._getNodeText(css_selector))
 
@@ -158,7 +191,6 @@ class SeleniumTest(StaticLiveServerTestCase):
         # instance is initialized when the first message is sent.
         outbox = getattr(django.core.mail, 'outbox', [])
         return len(outbox) > 0
-
 #####################################################################
 
 class SupportPageTests(SeleniumTest):
@@ -182,8 +214,6 @@ class SupportPageTests(SeleniumTest):
         self.browser.get(self.url("/support"))
         self.assertInNodeText("Updated support text.", "#support_content")
         self.assertInNodeText("support@govready.com", "#support_content")
-
-
 
 class LandingSiteFunctionalTests(SeleniumTest):
     def test_homepage(self):
@@ -230,6 +260,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # tests. The Selenium tests require a separate log in via the
         # headless browser.
 
+        # self.user = User.objects.create_superuser(
         self.user = User.objects.create(
             username="me",
             email="test+user@q.govready.com",
@@ -237,6 +268,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         )
         self.user.clear_password = get_random_string(16)
         self.user.set_password(self.user.clear_password)
+        self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user.save()
         self.user.reset_api_keys()
         self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
@@ -259,6 +291,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             email="test+user2@q.govready.com")
         self.user2.clear_password = get_random_string(16)
         self.user2.set_password(self.user2.clear_password)
+        self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user2.save()
         self.user2.reset_api_keys()
         self.user2.user_permissions.add(Permission.objects.get(codename='view_appsource'))
@@ -272,6 +305,7 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
             email="test+user3@q.govready.com")
         self.user3.clear_password = get_random_string(16)
         self.user3.set_password(self.user3.clear_password)
+        self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user3.save()
         self.user3.reset_api_keys()
         self.user3.user_permissions.add(Permission.objects.get(codename='view_appsource'))
@@ -311,6 +345,8 @@ class OrganizationSiteFunctionalTests(SeleniumTest):
         # Select Portfolio
         self.select_option_by_visible_text('#id_portfolio', self.user.username)
         self.click_element("#select_portfolio_submit")
+        # TODO add permissions to the user to see certain things by role and individuals
+        #
         var_sleep(2)
 
         # Click Add Button
@@ -341,14 +377,16 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # Extract the URL in the email and visit it.
         invitation_body = self.pop_email().body
         invitation_url_pattern = re.escape(self.url("/invitation/")) + r"\S+"
+        print("invitation_url_pattern", invitation_url_pattern)
         self.assertRegex(invitation_body, invitation_url_pattern)
         m = re.search(invitation_url_pattern, invitation_body)
+        print("m.group(0)", m.group(0))
         self.browser.get(m.group(0))
-
+        var_sleep(0.5) # wait for page to load
         # Since we're not logged in, we hit the invitation splash page.
         self.click_element('#button-sign-in')
-        var_sleep(.5) # wait for page to load
-
+        print("###################################")
+        var_sleep(0.5) # wait for page to load
         self.assertRegex(self.browser.title, "Sign In")
 
         # TODO check if the below should still be happening
@@ -647,7 +685,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
-class PortfolioProjetTests(OrganizationSiteFunctionalTests):
+class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
     def _fill_in_signup_form(self, email, username=None):
         if username:
@@ -1135,11 +1173,13 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             'fixtures',
             'testimage.png'
         )
+        if system() == "Windows" or 'Microsoft' in uname().release:
+            testFilePath = convert_w(testFilePath)
         var_sleep(1)
         self.fill_field("#inputctrl", testFilePath)
 
         self.click_element("#save-button")
-        var_sleep(1)
+        var_sleep(.5)
 
         # interstitial
         # nothing to really test in terms of functionality, but check that
@@ -1185,7 +1225,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         def do_submodule(answer_text):
             var_sleep(1.25)
-            self.assertRegex(self.browser.title, "Next Question: Introduction")
+            self.assertRegex(self.browser.title, "Next Question:")
             self.click_element("#save-button")
             var_sleep(1.25)
             self.assertRegex(self.browser.title, "Next Question: The Question")
@@ -1218,7 +1258,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question input[name="value"][value="%d"]' % task_id)
         self.click_element("#save-button")
         var_sleep(.5)
-        self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
+        self.assertRegex(self.browser.title, "Test The Module Question Types - ")
 
 class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 
@@ -1274,3 +1314,4 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
         # # email-address
         # self.assertRegex(self.browser.title, "Next Question: email-address")
+

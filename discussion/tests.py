@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.utils.crypto import get_random_string
+from django.contrib.auth.models import Permission
 
 from siteapp.models import User, ProjectMembership, Organization, Portfolio
 from siteapp.tests import SeleniumTest, var_sleep
@@ -7,6 +9,7 @@ from siteapp.tests import SeleniumTest, var_sleep
 from selenium.common.exceptions import NoSuchElementException
 
 import os
+from tools.utils.linux_to_dos import convert_w
 
 class DiscussionTests(SeleniumTest):
 
@@ -53,7 +56,11 @@ class DiscussionTests(SeleniumTest):
         self.user_pw = get_random_string(4)
         self.user = User.objects.create(username="me")
         self.user.set_password(self.user_pw)
+        # Grant user permission to view appsource
+        self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
         self.user.save()
+        # Grant user permission to view appsource
+        self.user.user_permissions.add(Permission.objects.get(codename='view_appsource'))
 
         # Create the Organization.
 
@@ -115,6 +122,7 @@ class DiscussionTests(SeleniumTest):
         # We're now on the first actual question.
         # Start a team conversation.
         self.click_element("#start-a-discussion")
+        var_sleep(1)
         self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
@@ -152,10 +160,16 @@ class DiscussionTests(SeleniumTest):
             'testimage.png'
         )
 
-        self.fill_field("#discussion-attach-file", testFilePath)
-        var_sleep(1)
+        try:
+            # Current file system path might be incongruent linux-dos
+            self.fill_field("#discussion-attach-file", testFilePath)
+        except Exception as ex:
+            print(ex)
+            testFilePath = convert_w(testFilePath)
+            self.fill_field("#discussion-attach-file", testFilePath)
+        var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
-        var_sleep(1) # Give time for the image to upload.
+        var_sleep(.5)
 
         # Test that we have an image.
         img = self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img')

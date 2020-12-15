@@ -24,7 +24,7 @@ class ExportCsvMixin:
     export_as_csv.short_description = "Export Selected as CSV"
 
 class StatementAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('id', 'sid', 'sid_class', 'producer_element', 'uuid')
+    list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
 

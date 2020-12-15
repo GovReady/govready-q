@@ -5,6 +5,7 @@
 from collections import OrderedDict
 import re
 
+import json
 import rtyaml
 
 from guidedmodules.module_logic import render_content
@@ -108,6 +109,16 @@ def validate_document(doc, error_message_name, app):
         # Trim the template so that it looks good if the revised
         # module spec is serialized to YAML.
         template = template.rstrip() + "\n"
+
+        # If the template format is json or yaml, then parse that format.
+        # Other template formats are loaded as strings.
+        try:
+            if data.get("format") == "json":
+                template = json.loads(template)
+            if data.get("format") == "yaml":
+                template = rtyaml.load(template)
+        except Exception as e:
+            raise ValidationError(error_message_name, "Invalid %s template syntax: %s" % (data["format"], str(e)))
 
         # Store the filename and template in it.
         data['filename'] = doc

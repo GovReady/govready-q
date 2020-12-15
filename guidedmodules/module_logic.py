@@ -426,9 +426,32 @@ def render_content(content, answers, output_format, source,
         # dict keys) with what we get by calling render_content recursively
         # on the string value, assuming it is a template of plain-text type.
 
+        import re
         from collections import OrderedDict
 
-        def walk(value, path):
+        import jinja2
+        env = Jinja2Environment(
+            autoescape=True,
+            undefined=jinja2.StrictUndefined) # see below - we defined any undefined variables
+        context = dict(additional_context) # clone
+        if answers:
+            def escapefunc(question, task, has_answer, answerobj, value):
+                # Don't perform any escaping. The caller will wrap the
+                # result in jinja2.Markup().
+                return str(value)
+            def errorfunc(message, short_message, long_message, **format_vars):
+                # Wrap in jinja2.Markup to prevent auto-escaping.
+                return jinja2.Markup("<" + message.format(**format_vars) + ">")
+            tc = TemplateContext(answers, escapefunc,
+                root=True,
+                errorfunc=errorfunc,
+                source=source,
+                show_answer_metadata=show_answer_metadata,
+                is_computing_title=is_computing_title)
+            context.update(tc)
+
+        def walk(value, path, additional_context_2 = {}):
+            # Render string values through the templating logic.
             if isinstance(value, str):
                 return render_content(
                     {
@@ -436,19 +459,85 @@ def render_content(content, answers, output_format, source,
                         "template": value
                     },
                     answers,
-                    output_format,
+                    "text",
                     source + " " + "->".join(path),
-                    additional_context
+                    { **additional_context, **additional_context_2 }
                 )
+
+            # Process objects with a special "%___" key specially.
+            # If it has a %for key with a string value, then interpret the string value as
+            # an expression in Jinja2 which we assume evaluates to a sequence-like object
+            # and loop over the items in the sequence. For each item, the "%body" key
+            # of this object is rendered with the context amended with variable name
+            # assigned the sequence item.
+            elif isinstance(value, dict) and isinstance(value.get("%for"), str):
+                # The value of the "%for" key is "variable in expression". Parse that
+                # first.
+                m = re.match(r"^(\w+) in (.*)", value.get("%for"), re.I)
+                if not m:
+                    raise ValueError("%for directive needs 'variable in expression' value")
+                varname = m.group(1)
+                expr = m.group(2)
+
+                condition_func = compile_jinja2_expression(expr)
+                if output_format == "PARSE_ONLY":
+                    return value
+
+                # Evaluate the expression.
+                context.update(additional_context_2)
+                seq = condition_func(context)
+
+                # Render the %body key for each item in sequence.
+                return [
+                    walk(
+                        value.get("%loop"),
+                        path+[str(i)],
+                        { **additional_context_2, **{ varname: item } })
+                    for i, item in enumerate(seq)
+                ]
+
+            elif isinstance(value, dict) and isinstance(value.get("%if"), str):
+                # The value of the "%if" key is an expression.
+                condition_func = compile_jinja2_expression(value["%if"])
+                if output_format == "PARSE_ONLY":
+                    return value
+
+                # Evaluate the expression.
+                context.update(additional_context_2)
+                test = condition_func(context)
+
+                # If the expression is true, then we render the "%then" key.
+                if test:
+                    return walk(
+                            value.get("%then"),
+                            path+["%then"],
+                            additional_context_2)
+                else:
+                    return None
+
+            # All other JSON data passes through unchanged.
             elif isinstance(value, list):
-                return [walk(i, path+[str(i)]) for i in value]
+                # Recursively enter each value in the list and re-assemble a new list with
+                # the return value of this function on each item in the list.
+                return [
+                    walk(i, path+[str(i)], additional_context_2)
+                    for i in value]
             elif isinstance(value, dict):
-                return OrderedDict([ (k, walk(v, path+[k])) for k, v in value.items() ])
+                # Recursively enter each value in each key-value pair in the JSON object.
+                # Return a new JSON object with the same keys but with the return value
+                # of this function applied to the value.
+                return OrderedDict([
+                    ( k,
+                      walk(v, path+[k], additional_context_2)
+                    )
+                    for k, v in value.items()
+                    ])
             else:
                 # Leave unchanged.
                 return value
 
-        # Render strings within the data structure.
+        # Render the template. Recursively walk the JSON data structure and apply the walk()
+        # function to each value in it.
         value = walk(template_body, [])
 
         # If we're just testing parsing the template, return
@@ -482,7 +571,7 @@ def render_content(content, answers, output_format, source,
         else:
             raise ValueError("Cannot render %s to %s in %s." % (template_format, output_format, source))
 
-    elif template_format in ("text", "markdown", "html", "oscal_json", "oscal_xml"):
+    elif template_format in ("text", "markdown", "html", "xml"):
         # The plain-text and HTML template types are rendered using Jinja2.
         #
         # The only difference is in how escaping of substituted variables works.
@@ -492,7 +581,7 @@ def render_content(content, answers, output_format, source,
         # For other values we perform standard HTML escaping.
         import jinja2
 
-        if template_format in ("text", "markdown", "oscal_json", "oscal_xml"):
+        if template_format in ("text", "markdown", "xml"):
             def escapefunc(question, task, has_answer, answerobj, value):
                 # Don't perform any escaping. The caller will wrap the
                 # result in jinja2.Markup().
@@ -591,16 +680,7 @@ def render_content(content, answers, output_format, source,
             elif output_format == "markdown":
                 # markdown => markdown -- nothing to do
                 return output
-        elif template_format == "oscal_json":
-            if output_format == "text":
-                # TODO: markdown => text, for now just return the Markdown markup
-                return output
-            elif output_format == "markdown":
-                # markdown => markdown -- nothing to do
-                return output
-            # markdown => html never occurs because we convert the Markdown to
-            # HTML earlier and then we see it as html => html.
-        elif template_format == "oscal_xml":
+        elif template_format == "xml":
             if output_format == "text":
                 # TODO: markdown => text, for now just return the Markdown markup
                 return output
@@ -1100,21 +1180,19 @@ class ModuleAnswers(object):
                 self.use_data_urls = use_data_urls
 
             def __iter__(self):
-                # Yield all of the keys that are in the output document
+                # Yield all of the keys (entry) that are in the output document
                 # specification, plus all of the output formats which are
-                # keys in our returned dict that lazily render the document.
-                for key, value in self.document.items():
-                    if key not in self.output_formats:
-                        yield key
-                for key in self.output_formats:
-                    yield key
+                # keys (entry) in our returned dict that lazily render the document.
+                for entry, value in self.document.items():
+                    if entry not in self.output_formats:
+                        yield entry
+                for entry in self.output_formats:
+                    yield entry
+            def __getitem__(self, entry):
+                if entry in self.output_formats:
+                    # entry is an output format -> lazy render.
 
-            def __getitem__(self, key):
-                if key in self.output_formats:
-
-                    # key is an output format -> lazy render.
-
-                    if key not in self.rendered_content:
+                    if entry not in self.rendered_content:
                         # Cache miss.
 
                         # For errors, what is the name of this document?
@@ -1127,36 +1205,36 @@ class ModuleAnswers(object):
                         doc_name = "'%s' output document '%s'" % (self.module_answers.module.module_name, doc_name)
 
                         # Try to render it.
-                        task_cache_key = "output_r1_{}_{}_{}".format(
+                        task_cache_entry = "output_r1_{}_{}_{}".format(
                             self.index,
-                            key,
+                            entry,
                             1 if self.use_data_urls else 0,
                         )
                         def do_render():
                             try:
-                                return render_content(self.document, self.module_answers, key, doc_name, show_answer_metadata=True, use_data_urls=self.use_data_urls)
+                                return render_content(self.document, self.module_answers, entry, doc_name, show_answer_metadata=True, use_data_urls=self.use_data_urls)
                             except Exception as e:
                                 # Put errors into the output. Errors should not occur if the
                                 # template is designed correctly.
                                 ret = str(e)
-                                if key == "html":
+                                if entry == "html":
                                     import html
                                     ret = "<p class=text-danger>" + html.escape(ret) + "</p>"
                                 return ret
-                        self.rendered_content[key] = self.module_answers.task._get_cached_state(task_cache_key, do_render)
-                    return self.rendered_content[key]
+                        self.rendered_content[entry] = self.module_answers.task._get_cached_state(task_cache_entry, do_render)
 
-                elif key in self.document:
-                    # key is a key in the specification for the document.
+                    return self.rendered_content[entry]
+
+                elif entry in self.document:
+                    # entry is a entry in the specification for the document.
                     # Return it unchanged.
-                    return self.document[key]
+                    return self.document[entry]
 
-                raise KeyError(key)
-
-            def get(self, key, default=None):
-                if key in self.output_formats or key in self.document:
-                    return self[key]
-
+                raise KeyError(entry)
+                
+            def get(self, entry, default=None):
+                if entry in self.output_formats or entry in self.document:
+                    return self[entry]
 
         return [ LazyRenderedDocument(self, d, i, use_data_urls) for i, d in enumerate(self.module.spec.get("output", [])) ]
 

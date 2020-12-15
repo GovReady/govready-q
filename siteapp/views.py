@@ -377,6 +377,8 @@ def apps_catalog(request):
     from collections import defaultdict
     catalog_by_category = defaultdict(lambda : { "title": None, "apps": [] })
     for app in catalog:
+        source_slug, _ = app["key"].split('/')
+        app['source_slug'] = source_slug
         for category in app["categories"]:
             catalog_by_category[category]["title"] = (category or "Uncategorized")
             catalog_by_category[category]["apps"].append(app)
@@ -397,7 +399,7 @@ def apps_catalog(request):
 
     # If user is superuser, enable creating new apps
     authoring_tool_enabled = request.user.has_perm('guidedmodules.change_module')
-    
+
     return render(request, "app-store.html", {
         "apps": catalog_by_category,
         "filter_description": filter_description,
@@ -1018,9 +1020,9 @@ def project_api(request, project):
                 # This looks like a file field.
                 flatten_json(path, "<binary file content>", output)
             else:
-                for key, value in node.items():
-                    if "." in key: continue # a read-only field
-                    flatten_json(path+[key], value, output)
+                for entry, value in node.items():
+                    if "." in entry: continue # a read-only field
+                    flatten_json(path+[entry], value, output)
         elif isinstance(node, list):
             for item in node:
                 flatten_json(path, item, output)
@@ -1614,8 +1616,12 @@ def send_invitation(request):
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
     except Exception as e:
-        import sys
-        sys.stderr.write(str(e) + "\n")
+        logger.error(
+            event="send invitation",
+            object={"status": "error",
+                    "message": " ".join(["There was a problem -- sorry!", str(e)])},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         return JsonResponse({ "status": "error", "message": "There was a problem -- sorry!" })
 
 @login_required

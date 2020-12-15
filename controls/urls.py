@@ -11,7 +11,7 @@ from siteapp.settings import *
 
 urlpatterns = [
     url(r'^test$', views.test),
-    
+
     # Catalogs
     url(r'^$', views.catalogs),
     url(r'^catalogs$', views.catalogs),
@@ -22,13 +22,30 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/controls/selected$', views.controls_selected, name="controls_selected"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)/compare$', views.editor_compare, name="control_compare"),
     url(r'^(?P<system_id>.*)/controls/catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)$', views.editor, name="control_editor"),
+    url(r'^editor_autocomplete/', views.EditorAutocomplete.as_view(), name="search_system_component"),
+    url(r'^related_system_components/', views.RelatedComponentStatements.as_view(), name="related_system_components"),
+    url(r'^(?P<system_id>.*)/components/add_system_component$', views.add_system_component, name="add_system_component"),
+    url(r'^(?P<system_id>.*)/components/editor_autocomplete$',  views.EditorAutocomplete.as_view(), name="editor_autocomplete"),
+
     url(r'^smt/_save/$', views.save_smt),
     url(r'^smt/_delete/$', views.delete_smt),
+    url(r'^smt/_update_smt_prototype/$', views.update_smt_prototype),
+
+    # System Components/Elements
     url(r'^(?P<system_id>.*)/components/selected$', views.components_selected, name="components_selected"),
     url(r'^(?P<system_id>.*)/components/selected/export/opencontrol$', views.export_system_opencontrol, name="export_system_opencontrol"),
+    url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)/download/oscal/json$', 
+        views.system_element_download_oscal_json, 
+        name="system_element_download_oscal_json"),
     url(r'^(?P<system_id>.*)/component/(?P<element_id>.*)$', views.system_element, name="system_element"),
-
     url(r'^(?P<system_id>.*)/controls/updated$', views.controls_updated, name="controls_updated"),
+
+    # Component Library
+    url(r'^components$', views.component_library, name="component_library"),
+    url(r'^components/new$', views.new_element),
+    url(r'^components/(?P<element_id>.*)/_copy$', views.component_library_component_copy, name="component_library_component_copy"),
+    url(r'^components/(?P<element_id>.*)$', views.component_library_component, name="component_library_component"),
+    url(r'^import_component$', views.import_component, name="import_component"),
 
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
@@ -36,8 +53,6 @@ urlpatterns = [
 
     # Baselines
     url(r'^(?P<system_id>.*)/controls/baseline/(?P<catalog_key>.*)/(?P<baseline_name>.*)/_assign$', views.assign_baseline, name="assign_baseline"),
-
-    # Components
 
     # Poams
     url(r'^(?P<system_id>.*)/poams$', views.poams_list, name="poams_list"),
