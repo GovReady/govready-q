@@ -1,8 +1,8 @@
 GovReady-Q Release Notes
 ========================
 
-v.999 (December XX, 2020)
--------------------------
+v.0.9.1.48 (December 15, 2020)
+------------------------------
 
 Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
 
