@@ -22,7 +22,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from .oscal import Catalogs, Catalog
 from .models import *
-from siteapp.models import User
+from siteapp.models import User, Project, Portfolio
 
 # from controls.oscal import Catalogs, Catalog
 
@@ -360,6 +360,27 @@ class ElementUnitTests(TestCase):
         self.assertIn('change_element', perms)
         self.assertIn('delete_element', perms)
         self.assertIn('view_element', perms)
+
+class ProjectUnitTests(TestCase):
+    ## Simply dummy test ##
+    def test_tests(self):
+        self.assertEqual(1,1)
+
+    def test_move_project_create(self):
+        """Test moving a project to another portfolio"""
+        initial_porfolio = Portfolio.objects.create(title="Portfolio 1") 
+        new_portfolio = Portfolio.objects.create(title="Portfolio 2") 
+        project = Project.objects.create(portfolio=initial_porfolio)
+        project.portfolio = initial_porfolio
+        self.assertTrue(initial_porfolio.id is not None)
+        self.assertTrue(new_portfolio.id is not None)
+        self.assertTrue(project.id is not None)
+        self.assertTrue(project.portfolio.id is not None)
+        self.assertTrue(project.portfolio.title == "Portfolio 1")
+        project.portfolio = new_portfolio
+        self.assertTrue(project.portfolio.title == "Portfolio 2")
+        project.delete()
+        self.assertTrue(project.id is None)
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
