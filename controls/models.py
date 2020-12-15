@@ -7,8 +7,15 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_users_with_perms, remove_perm)
 from .oscal import Catalogs, Catalog
 import uuid
+import tools.diff_match_patch.python3 as dmp_module
+from copy import deepcopy
+from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
+
+class SystemException(Exception):
+    """Class for raising custom exceptions with Systems"""
+    pass
 
 class Statement(models.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=True, null=True)
@@ -23,6 +30,7 @@ class Statement(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
 
     parent = models.ForeignKey('self', help_text="Parent statement", related_name="children", on_delete=models.SET_NULL, blank=True, null=True)
+    prototype = models.ForeignKey('self', help_text="Prototype statement", related_name="instances", on_delete=models.SET_NULL, blank=True, null=True)
     producer_element = models.ForeignKey('Element', related_name='statements_produced', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element producing this statement.")
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
@@ -61,6 +69,87 @@ class Statement(models.Model):
         # Look up control by ID
         return catalog_control_dict[self.sid]
 
+    def create_prototype(self):
+        """Creates a prototype statement from an existing statement and prototype object"""
+
+        if self.prototype is not None:
+            # Prototype already exists for statement
+            return self.prototype
+            # check if prototype content is the same, report error if not, or overwrite if permission approved
+        prototype = deepcopy(self)
+        prototype.statement_type="control_implementation_prototype"
+        prototype.consumer_element_id = None
+        prototype.id = None
+        prototype.save()
+        # Set prototype attribute on the instances to newly created prototype
+        self.prototype = prototype
+        self.save()
+        return self.prototype
+
+    def create_instance_from_prototype(self, consumer_element_id):
+        """Creates a control_implementation statement instance for a system's root_element from an existing control implementation prototype statement"""
+
+        # TODO: Check statement is a prototype
+
+        # System already has instance of the control_implementation statement
+        # TODO: write check for this logic
+        # Get all statements for consumer element so we can identify
+        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type = "control_implementation")
+        print(smts_existing)
+        # Get prototype ids for all consumer element statements
+        smts_existing_prototype_ids = [smt.prototype.id for smt in smts_existing]
+        if self.id is smts_existing_prototype_ids:
+            return self.prototype
+
+        #     # TODO:
+        #     # check if prototype content is the same, report error if not, or overwrite if permission approved
+
+        instance = deepcopy(self)
+        instance.statement_type="control_implementation"
+        instance.consumer_element_id = consumer_element_id
+        instance.id = None
+        # Set prototype attribute to newly created instance
+        instance.prototype = self
+        instance.save()
+        return instance
+
+    @property
+    def prototype_synched(self):
+        """Return True if statement of type `control_implementation` and its prototype"""
+
+        if self.body == self.prototype.body:
+            return True
+        else:
+            return False
+
+    @property
+    def diff_prototype_main(self):
+        """Generate a diff of statement of type `control_implementation` and its prototype"""
+
+        if self.statement_type != 'control_implementation':
+            # TODO: Should we return None or raise error because statement is not of type control_implementation?
+            return None
+        if self.prototype is None:
+            # TODO: Should we return None or raise error because statement does not have a prototype?
+            return None
+        dmp = dmp_module.diff_match_patch()
+        diff = dmp.diff_main(self.prototype.body, self.body)
+        return diff
+
+    @property
+    def diff_prototype_prettyHtml(self):
+        """Generate a diff of statement of type `control_implementation` and its prototype"""
+
+        if self.statement_type != 'control_implementation':
+            # TODO: Should we return None or raise error because statement is not of type control_implementation?
+            return None
+        if self.prototype is None:
+            # TODO: Should we return None or raise error because statement does not have a prototype?
+            return None
+        dmp = dmp_module.diff_match_patch()
+        diff = dmp.diff_main(self.prototype.body, self.body)
+        return dmp.diff_prettyHtml(diff)
+
     # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
@@ -68,7 +157,7 @@ class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
     description = models.CharField(max_length=255, help_text="Brief description of the Element", unique=False, blank=False, null=False)
-    element_type = models.CharField(max_length=150, help_text="Statement type", unique=False, blank=True, null=True)
+    element_type = models.CharField(max_length=150, help_text="Component type", unique=False, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
@@ -131,6 +220,37 @@ class Element(models.Model):
         else:
             # print("User does not have permission to assign selected controls to element's system.")
             return False
+
+    def statements(self, statement_type):
+        """Return on the statements of statement_type produced by this element"""
+        smts = Statement.objects.filter(producer_element = self, statement_type = statement_type)
+        return smts
+
+    @transaction.atomic
+    def copy(self, name=None):
+        """Return a copy of an existing system element as a new element with duplicate control_implementation_prototype statements"""
+
+        # Copy only elements that are components. Do not copy an element of type "system"
+        # Components that are systems should always be associated with a project (at least currently).
+        # Also, statement structure for a system would be very different.
+        if self.element_type == "system":
+            raise SystemException("Copying an entire system is not permitted.")
+
+        e_copy = deepcopy(self)
+        e_copy.id = None
+        if name is not None:
+            e_copy.name = name
+        else:
+            e_copy.name = self.name + " copy"
+        e_copy.save()
+        # Copy prototype statements from existing element
+        for smt in self.statements("control_implementation_prototype"):
+            smt_copy = deepcopy(smt)
+            smt_copy.producer_element = e_copy
+            smt_copy.consumer_element_id = None
+            smt_copy.id = None
+            smt_copy.save()
+        return e_copy
 
     @property
     def selected_controls_oscal_ctl_ids(self):
