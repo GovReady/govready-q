@@ -400,9 +400,6 @@ if environment.get("branding"):
 		.insert(0, os.path.join(environment["branding"], 'templates'))
 
 HEADLESS = True if environment.get("test_headless") else False
-
-
-
 # Load all additional settings from settings_application.py.
 from .settings_application import *
 
