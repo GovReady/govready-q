@@ -25,6 +25,10 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.text import slugify
 from .oscal import Catalogs, Catalog
 from system_settings.models import SystemSettings
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from controls.models import System
 
 # from controls.oscal import Catalogs, Catalog
 
@@ -264,6 +268,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             # Current file system path might be incongruent linux-dos
             file_input.send_keys(oscal_json_path)
         except Exception as ex:
+            print("Changing file path from linux to dos")
             print(ex)
             dos_oscal_json_path = convert_w(oscal_json_path)
             file_input.send_keys(dos_oscal_json_path)
@@ -309,6 +314,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
             # Current file system path might be incongruent linux-dos
             file_input.send_keys(oscal_json_path)
         except Exception as ex:
+            print("Changing file path from linux to dos")
             print(ex)
             oscal_json_path = convert_w(oscal_json_path)
             file_input.send_keys(oscal_json_path)
@@ -555,10 +561,15 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         return smt
 
     def click_components_tab(self):
-        var_sleep(.5)
-        comp_tab = self.browser.find_element_by_partial_link_text("Component Statements  ")
+        wait = WebDriverWait(self.browser, 15)
+        try:
+            # Using full Xpath
+            comp_tab = self.browser.find_element_by_xpath("/html/body/div[1]/div/div[3]/ul/li[2]/a")
+        except:
+            # Non-full Xpath with wait
+            comp_tab = wait.until(EC.visibility_of_element_located((By.XPATH, "//a[contains(@href, '#component_controls')]")))
+
         comp_tab.click()
-        var_sleep(.5)
 
     def dropdown_option(self, dropdownid):
         """
@@ -605,12 +616,17 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # login as the first user and create a new project
         self._login()
         self._new_project()
-        var_sleep(1)
+
+        # TODO: Why is system being overridden/conditional. system_id will be 1 in test class and 4 in full test suite
+        systemid = System.objects.all().first()
+        print("systemid")
+        print(systemid.id)
+        self.navigateToPage(f"/systems/{systemid.id}/controls/selected")
 
         # Select moderate
-        self.navigateToPage("/systems/1/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
+        self.navigateToPage(f"/systems/{systemid.id}/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
         # Head to the control ac-3
-        self.navigateToPage("/systems/1/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
+        self.navigateToPage(f"/systems/{systemid.id}/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
 
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 0
@@ -663,13 +679,21 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         assert len(comps_dropdown.options) == 2
 
         # Add a new component based on one of the options available in the filtered dropdown
+        try:
+            ## Test name 2 has a value of 6 and Component 2 has a value of 3
+            self.select_option("select#selected_producer_element_form_id", "6")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
+        except:
+            self.select_option("select#selected_producer_element_form_id", "13")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "13"
 
-        ## Test name 2 has a value of 6 and Component 2 has a value of 3
-        self.select_option("select#selected_producer_element_form_id", "6")
-        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
-
-        self.select_option("select#selected_producer_element_form_id", "3")
-        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+        try:
+            ## Test name 2 has a value of 6 and Component 2 has a value of 3
+            self.select_option("select#selected_producer_element_form_id", "3")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+        except:
+            self.select_option("select#selected_producer_element_form_id", "10")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "10"
 
         # Open a modal will with component statements related to the select component prototype
         add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")

@@ -164,6 +164,7 @@ class DiscussionTests(SeleniumTest):
             # Current file system path might be incongruent linux-dos
             self.fill_field("#discussion-attach-file", testFilePath)
         except Exception as ex:
+            print("Changing file path from linux to dos")
             print(ex)
             testFilePath = convert_w(testFilePath)
             self.fill_field("#discussion-attach-file", testFilePath)
