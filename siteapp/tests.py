@@ -199,8 +199,8 @@ class SeleniumTest(StaticLiveServerTestCase):
             except Exception as ex:
                 print("Changing file path from linux to dos")
                 print(ex)
-                dos_oscal_json_path = convert_w(filepath)
-                file_input.send_keys(dos_oscal_json_path)
+                filepath = convert_w(filepath)
+                file_input.send_keys(filepath)
         elif conversion_type.lower() == "fill":
             try:
                 # Current file system path might be incongruent linux-dos
@@ -208,8 +208,9 @@ class SeleniumTest(StaticLiveServerTestCase):
             except Exception as ex:
                 print("Changing file path from linux to dos")
                 print(ex)
-                testFilePath = convert_w(filepath)
-                self.fill_field(file_input, testFilePath)
+                filepath = convert_w(filepath)
+                self.fill_field(file_input, filepath)
+        return filepath
 
 
 #####################################################################

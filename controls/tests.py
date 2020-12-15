@@ -261,7 +261,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
         file_input = self.find_selected_option('input#id_file')
-        self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
+        oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
         
         # Verify that the contents got copied correctly from the file to the textfield
         try:
@@ -299,7 +299,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
         file_input = self.find_selected_option('input#id_file')
-        self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
+        oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         self.click_element('input#import_component_submit')
 
