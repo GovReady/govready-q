@@ -398,9 +398,10 @@ if environment.get("branding"):
 	INSTALLED_APPS.append(environment["branding"])
 	TEMPLATES[0].setdefault('DIRS', [])\
 		.insert(0, os.path.join(environment["branding"], 'templates'))
-HEADLESS = False
-if environment.get("headless"):
-	HEADLESS = True
+
+HEADLESS = True if environment.get("test_headless") else False
+
+
 
 # Load all additional settings from settings_application.py.
 from .settings_application import *
