@@ -261,8 +261,8 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
         file_input = self.find_selected_option('input#id_file')
-        oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
-        
+        self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
+
         # Verify that the contents got copied correctly from the file to the textfield
         try:
             # Load contents from file
@@ -325,6 +325,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # Test that duplicate Components and Statements are not re-imported
         self.click_element('a#component-import-oscal')
         file_input = self.find_selected_option('input#id_file')
+        # Using converted keys from above
         file_input.send_keys(oscal_json_path)
 
         self.click_element('input#import_component_submit')
