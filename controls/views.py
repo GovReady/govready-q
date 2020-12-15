@@ -621,29 +621,40 @@ def import_component(request):
     result = ComponentImporter().import_component_as_json(oscal_component_json, request)
     return component_library(request)
 
+
 def system_element_download_oscal_json(request, system_id, element_id):
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
-    # Retrieve related selected controls if user has permission on system
-    if request.user.has_perm('view_system', system):
-        # Retrieve primary system Project
-        # Temporarily assume only one project and get first project
-        project = system.projects.all()[0]
+
+    if system_id is not None and system_id != '':
+        # Retrieve identified System
+        system = System.objects.get(id=system_id)
+        # Retrieve related selected controls if user has permission on system
+        if request.user.has_perm('view_system', system):
+            # Retrieve primary system Project
+            # Temporarily assume only one project and get first project
+            project = system.projects.all()[0]
+
+            # Retrieve element
+            element = Element.objects.get(id=element_id)
+
+            # Retrieve impl_smts produced by element and consumed by system
+            # Get the impl_smts contributed by this component to system
+            impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+    else:
+        # Comes from Component Library, no system
 
         # Retrieve element
         element = Element.objects.get(id=element_id)
-
-        # Retrieve impl_smts produced by element and consumed by system
         # Get the impl_smts contributed by this component to system
-        impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+        impl_smts = Statement.objects.filter(producer_element=element)
 
-        response = HttpResponse(content_type="application/json")
-        filename = str(PurePath(slugify(element.name)).with_suffix('.json'))
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        body = OSCALComponentSerializer(element, impl_smts).as_json()
-        response.write(body)
+    response = HttpResponse(content_type="application/json")
+    filename = str(PurePath(slugify(element.name)).with_suffix('.json'))
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    body = OSCALComponentSerializer(element, impl_smts).as_json()
+    response.write(body)
 
-        return response
+    return response
+
 
 def controls_selected_export_xacta_xslx(request, system_id):
     """Export System's selected controls compatible with Xacta 360"""
