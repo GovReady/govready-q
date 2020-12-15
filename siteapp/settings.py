@@ -6,7 +6,7 @@
 ################################################################
 
 import os, os.path, json
-
+from platform import uname, system
 # What's the name of the app containing this file? That determines
 # the module for the main URLconf etc.
 primary_app = os.path.basename(os.path.dirname(__file__))
@@ -400,6 +400,7 @@ if environment.get("branding"):
 		.insert(0, os.path.join(environment["branding"], 'templates'))
 
 HEADLESS = True if environment.get("test_headless") else False
+DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
 # Load all additional settings from settings_application.py.
 from .settings_application import *
 

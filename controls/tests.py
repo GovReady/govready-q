@@ -264,6 +264,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
         file_input = self.find_selected_option('input#id_file')
+        # TODO: modularize this into a helper function for selenium tests. Probably use if DOS
         try:
             # Current file system path might be incongruent linux-dos
             file_input.send_keys(oscal_json_path)

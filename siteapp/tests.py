@@ -28,7 +28,7 @@ from selenium.webdriver.support.select import Select
 
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
-from siteapp.settings import HEADLESS
+from siteapp.settings import HEADLESS, DOS
 from tools.utils.linux_to_dos import convert_w
 
 
@@ -77,22 +77,24 @@ class SeleniumTest(StaticLiveServerTestCase):
 
         options.add_argument("--incognito")
 
-        if system() == "Windows" or 'Microsoft' in uname().release:
+        if DOS:
             # WSL has a hard time finding tempdir so we feed it the dos conversion
             tempfile.tempdir = convert_w(os.getcwd())
         # enable Selenium support for downloads
-        cls.download_path = temp_path = pathlib.Path(tempfile.gettempdir())
+        cls.download_path = pathlib.Path(tempfile.gettempdir())
         options.add_experimental_option("prefs", {
             "download.default_directory": str(cls.download_path),
             "download.prompt_for_download": False,
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True
         })
+
         if HEADLESS:
             options.add_argument('--headless')
 
         # Set up selenium Chrome browser for Windows or Linux
-        if system() == "Windows" or 'Microsoft' in uname().release:
+        if DOS:
+            # TODO: Find out a way to get chromedriver implicit executable path in WSL
             cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
         else:
             cls.browser = selenium.webdriver.Chrome(chrome_options=options)
@@ -1176,7 +1178,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             'fixtures',
             'testimage.png'
         )
-        if system() == "Windows" or 'Microsoft' in uname().release:
+        if DOS:
             testFilePath = convert_w(testFilePath)
         var_sleep(1)
         self.fill_field("#inputctrl", testFilePath)
