@@ -55,6 +55,7 @@
               <label for="compoment">Add component</label>&nbsp;&nbsp;
                 <!-- NOTE: Selection box converts to a Select2 selection box via script at bottom of page -->
                 <select class="producer_element_id" id="producer_element_id" name="producer_element_id" onchange="$(form).submit();" style="width:340px;">
+                  <option value="None" selected disabled hidden>Select a Component</option>
                   {% for component in elements %}
                     {% if component not in system.producer_elements %}
                       <option value="{{ component.id }}">{{ component.name }}</option>
