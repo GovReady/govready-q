@@ -2,7 +2,7 @@ GovReady-Q Release Notes
 ========================
 
 v.999 (December XX, 2020)
-----------------------------
+-------------------------
 
 **Data changes**
 
@@ -17,7 +17,6 @@ v.999 (December XX, 2020)
 * Update various Python libraries
 * Added file extension, size and type  validation for Comment Attachment uploads
 * Introducing request profiling with pyinstrument
-
 
 v.0.9.1.48.1 (December 17, 2020)
 --------------------------------
