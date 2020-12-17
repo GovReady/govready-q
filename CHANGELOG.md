@@ -1,6 +1,14 @@
 GovReady-Q Release Notes
 ========================
 
+v.0.9.1.48.1 (December 17, 2020)
+--------------------------------
+
+**Bug fixes**
+
+* Fix handling of static files. Create new `static-root` directory outside of `siteapp` into which to collect static files.
+* Remove bad path reference to select2 javascript libraries in component library page.
+
 v.0.9.1.48 (December 15, 2020)
 ------------------------------
 
