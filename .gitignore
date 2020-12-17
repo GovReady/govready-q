@@ -113,3 +113,6 @@ sonar-project.properties
 # notes
 _notes/
 
+# pyinstrument profiles
+profiles
+

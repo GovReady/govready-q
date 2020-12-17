@@ -1,15 +1,12 @@
-from django.db import models, transaction
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.utils import timezone
+from django.db import models
 from django.urls import reverse
-from django.conf import settings
-
-import re
-
+from django.utils import timezone
 from jsonfield import JSONField
-
 from siteapp.models import User
+from .validators import validate_file_extension
+
 
 class Discussion(models.Model):
     organization = models.ForeignKey('siteapp.Organization', related_name="discussions", on_delete=models.CASCADE, help_text="The Organization that this Discussion belongs to.")
@@ -269,8 +266,11 @@ class Comment(models.Model):
             ('discussion', 'user'),
         ]
 
-    # auth
+    def __str__(self):
+        # To see the comment text
+        return self.text
 
+    # auth
     def can_see(self, user):
         if self.deleted or self.draft:
             return False
@@ -410,7 +410,7 @@ class Comment(models.Model):
 class Attachment(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user uploading this attachment.")
     comment = models.ForeignKey(Comment, blank=True, null=True, related_name="attachments", on_delete=models.CASCADE, help_text="The Comment that this Attachment is attached to. Null when the file has been uploaded before the Comment has been saved.")
-    file = models.FileField(upload_to='discussion/attachments', help_text="The attached file.")
+    file = models.FileField(upload_to='discussion/attachments', validators=[validate_file_extension], help_text="The attached file.")
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)

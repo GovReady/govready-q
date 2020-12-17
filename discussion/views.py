@@ -4,8 +4,11 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
+import sys
 
+from siteapp.settings import DATA_UPLOAD_MAX_MEMORY_SIZE
 from .models import Discussion, Comment, Attachment
+from .validators import validate_file_extension
 
 @login_required
 @transaction.atomic
@@ -185,6 +188,17 @@ def create_attachments(request):
     # The user is uploading one or more files.
     ret = { }
     for fn in request.FILES:
+        # Validate before attachment object creation
+        uploaded_file = request.FILES[fn]
+
+        # 2.5MB
+        if sys.getsizeof(uploaded_file) >= DATA_UPLOAD_MAX_MEMORY_SIZE:
+            return JsonResponse(status=413, data={'status':'error','message': "413 Payload Too Large"})
+
+        validation_result = validate_file_extension(uploaded_file)
+        if validation_result != None:
+            return validation_result
+
         attachment = Attachment.objects.create(
             comment=comment,
             user=request.user,
