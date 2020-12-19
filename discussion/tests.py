@@ -160,6 +160,20 @@ class DiscussionTests(SeleniumTest):
             is_valid = validate_file_extension(file_model)
             self.assertIsNotNone(is_valid)
 
+            # Test file extension not in defined valid extensions
+            file_model = SimpleUploadedFile(
+                            test_file_name,
+                            test_file_contents
+                        )
+            _file, file_ext = os.path.splitext(test_file_name)
+            content_types = VALID_EXTS[file_ext] # Save original content type
+            VALID_EXTS[file_ext] = [] # Mock out list of valid content types
+            is_valid = validate_file_extension(file_model)
+            self.assertIsNotNone(is_valid)
+
+            # Restore list of valid content types
+            VALID_EXTS[file_ext] = content_types
+
     def test_discussion(self):
         # Log in and create a new project.
         self._login()

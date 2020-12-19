@@ -64,13 +64,12 @@ def validate_file_extension(file):
                     and file_ext in CONTENTTYPE_EXCEPTIONS[filechunk_content_type]):
                 return JsonResponse(status=400, data={'status': 'error', 'message': err_msg})
 
-        # If it is not a valid mime or extension that return http response with error message.
+        # If it is not a valid mime or extension then return http response with error message.
         is_match = False
         if file_ext in VALID_EXTS:
             is_match = (filechunk_content_type in VALID_EXTS[file_ext])
 
         if not is_match:
-            print(filechunk_content_type)
             return JsonResponse(status=400, data={'status': 'error',
                                                   'message': err_msg})
         break # Stop after one chunk
