@@ -1,5 +1,6 @@
 import sys
 import os.path
+import time
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
@@ -61,7 +62,16 @@ class Command(BaseCommand):
             print("")
             delay = self.prompt_for_time("It's possible to insert a delay between each action, while generating data. Enter the desired number of seconds to wait, or 0 for no delay.")
             
+        start = time.time()
+
         if int(user_count) > 0:
             call_command("populate", "--user-count", user_count, "--password", DEFAULT_USER_PASSWORD)
 
         call_command('create_and_fill_assessment', '--action-delay', delay, '--count', count)
+
+        end = time.time()
+
+        # we mostly care about runtime in seconds, so we'll report that
+        duration = int(end - start)
+
+        print("Took {} seconds with {} users and {} assessments".format(duration, user_count, count)) 

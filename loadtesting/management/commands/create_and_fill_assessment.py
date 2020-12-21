@@ -1,6 +1,7 @@
 import sys
 import os.path
 from random import sample
+import time
 
 
 from django.core.management import call_command
