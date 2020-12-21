@@ -375,10 +375,10 @@ X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
 # where "collectstatic" will put static files.
 #
 # Uncollected static files that ship with GovReady are located in `siteapp/static`.
-# In development (e.g. debug = false), Django will *ignore* the STATIC_ROOT setting and
+# In development (e.g. debug = true), Django will *ignore* the STATIC_ROOT setting and
 # search installed application paths when resolving STATIC_URL to find actual files.
 #
-# In production (e.g. debug = true), Django will use the STATIC_ROOT setting
+# In production (e.g. debug = false), Django will use the STATIC_ROOT setting
 # when resolving STATIC_URL to find the path to actual files.
 # Also, the `manage.py collectstatic` will copy found static files into the
 # STATIC_ROOT path.
