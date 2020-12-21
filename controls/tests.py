@@ -25,7 +25,6 @@ from siteapp.tests import SeleniumTest, var_sleep
 from system_settings.models import SystemSettings
 from .models import *
 from .oscal import Catalogs, Catalog
-from .models import *
 from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
 
