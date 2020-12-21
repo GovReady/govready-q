@@ -6,7 +6,8 @@
 ################################################################
 
 import os, os.path, json
-
+from platform import uname, system
+from django.core.exceptions import ValidationError
 # What's the name of the app containing this file? That determines
 # the module for the main URLconf etc.
 primary_app = os.path.basename(os.path.dirname(__file__))
@@ -371,13 +372,36 @@ X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
 
 # Put static files in the virtual path "/static/". When the "static"
 # environment setting is present, then it's a local directory path
-# where "collectstatic" will put static files. The ManifestStaticFilesStorage
-# is activated.
+# where "collectstatic" will put static files.
+#
+# Uncollected static files that ship with GovReady are located in `siteapp/static`.
+# In development (e.g. debug = false), Django will *ignore* the STATIC_ROOT setting and
+# search installed application paths when resolving STATIC_URL to find actual files.
+#
+# In production (e.g. debug = true), Django will use the STATIC_ROOT setting
+# when resolving STATIC_URL to find the path to actual files.
+# Also, the `manage.py collectstatic` will copy found static files into the
+# STATIC_ROOT path.
+#
+# A duplication of files can occur in production deployments when SITE_ROOT
+# is defined as `siteapp/static`. Collectstatic does post-processing on files and 
+# appends a hash and then builds a manifest for static files. As `collectstatic` command
+# repeatedly is run, the result is reading and aggregating static files from and into
+# the same directory. This will eventually cause an errors as file names grow too long
+# and the static file manifest and actual file names break.
+#
+# The ManifestStaticFilesStorage is activated, too, for alternaye storing/serving of static assets.
+#
+uncollected_static_files = "siteapp/static"
 STATIC_URL = '/static/'
-STATIC_ROOT = 'siteapp/static/'
+STATIC_ROOT = 'static_root/'
 if environment.get("static"):
 	STATIC_ROOT = environment["static"]
 	STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+# Check to make sure STATIC_ROOT is not `siteapp/static`
+siteapp_path = os.getcwd()
+if os.path.join(siteapp_path, STATIC_ROOT) == os.path.join(siteapp_path, "siteapp/static"):
+	raise ValidationError('STATIC_ROOT directory for collecting static files should never be set to source of uncollected static files (e.g. `siteapp/static`). Please fix environment `static` setting.')
 
 # Add a convenience setting "SITE_ROOT_URL" that stores the root URL of the website.
 # Construct value from preferred "govready-url" environment parameter and temporarily
@@ -399,6 +423,8 @@ if environment.get("branding"):
 	TEMPLATES[0].setdefault('DIRS', [])\
 		.insert(0, os.path.join(environment["branding"], 'templates'))
 
+HEADLESS = False if environment.get("test_visible") else True
+DOS = True if system() == "Windows" or 'Microsoft' in uname().release else False
 # Load all additional settings from settings_application.py.
 from .settings_application import *
 

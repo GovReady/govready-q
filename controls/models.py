@@ -92,13 +92,14 @@ class Statement(models.Model):
 
         # TODO: Check statement is a prototype
 
-        # System already has instance of the prototype statement
+        # System already has instance of the control_implementation statement
         # TODO: write check for this logic
-        # Get all statements for consumer element
-        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id)
+        # Get all statements for consumer element so we can identify
+        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type = "control_implementation")
+        print(smts_existing)
         # Get prototype ids for all consumer element statements
-        smts_existing_prototype_id = [smt.prototype.id for smt in smts_existing]
-        if self.id is smts_existing_prototype_id:
+        smts_existing_prototype_ids = [smt.prototype.id for smt in smts_existing]
+        if self.id is smts_existing_prototype_ids:
             return self.prototype
 
         #     # TODO:

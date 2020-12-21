@@ -10,21 +10,22 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 
-import json
-import os
 from pathlib import PurePath
-import re
-from unittest import skip
-from tools.utils.linux_to_dos import convert_w
+
 from django.test import TestCase
-from selenium.webdriver.support.select import Select
-from siteapp.models import User
-from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests, var_sleep
-from .models import *
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.text import slugify
-from .oscal import Catalogs, Catalog
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.select import Select
+from selenium.webdriver.support.ui import WebDriverWait
+
+from controls.models import System
+from siteapp.models import User
+from siteapp.tests import SeleniumTest, var_sleep
 from system_settings.models import SystemSettings
+from .models import *
+from .oscal import Catalogs, Catalog
+
 
 # from controls.oscal import Catalogs, Catalog
 
@@ -73,7 +74,7 @@ class Oscal80053Tests(TestCase):
 
     def test_catalog_all_controls_with_organizational_parameters(self):
         parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
-        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, 
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
                                  parameter_values=parameter_values)
         cg_flat = cg.get_flattened_controls_all_as_dict()
         control = cg_flat['ac-1']
@@ -189,7 +190,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         project.system = self.system
         project.save()
         self.system.assign_owner_permissions(self.user)
-        statement = Statement(sid='ac-1', 
+        statement = Statement(sid='ac-1',
                               sid_class=Catalogs.NIST_SP_800_53_rev4,
                               body='My statement body',
                               status='Not Implmented')
@@ -202,21 +203,20 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.component = producer_element
 
         # enable experimental OSCAL -and- OpenControl support
-
-        enable_experimental_oscal = \
-            SystemSettings.objects.get(setting='enable_experimental_oscal')
+        enable_experimental_oscal, _ = SystemSettings.objects.get_or_create(setting='enable_experimental_oscal')
         enable_experimental_oscal.active = True
         enable_experimental_oscal.save()
 
-        enable_experimental_opencontrol = \
-            SystemSettings.objects.get(setting='enable_experimental_opencontrol')
+        enable_experimental_opencontrol, _  = SystemSettings.objects.get_or_create(setting='enable_experimental_opencontrol')
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()
 
     def tearDown(self):
-        # clean up downloaded file
+        # clean up downloaded file if linux elif dos
         if self.json_download.is_file():
             self.json_download.unlink()
+        elif os.path.isfile(self.json_download.name):
+            os.remove(self.json_download.name)
         super().tearDown()
 
     def test_component_download_oscal_json(self):
@@ -229,29 +229,39 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # downloaded file, so let's make sure it doesn't exist before we
         # download
         # definite race condition possibility
-        
-        if os.path.isfile(self.json_download.name):
+
+        if self.json_download.is_file():
+            self.json_download.unlink()
+        elif os.path.isfile(self.json_download.name):
             os.remove(self.json_download.name)
         self.click_element("a#oscal_download_json_link")
         var_sleep(2)            # need to wait for download, alas
         # assert download exists!
-        self.assertTrue(os.path.isfile(self.json_download.name))
-        # assert that it is valid JSON by trying to load it
-        with open(self.json_download.name, 'r') as f:
+        try:
+            self.assertTrue(self.json_download.is_file())
+            filetoopen = self.json_download
+        except:
+            self.assertTrue(os.path.isfile(self.json_download.name))
+            # assert that it is valid JSON by trying to load it
+            filetoopen = self.json_download.name
+        with open(filetoopen, 'r') as f:
             json_data = json.load(f)
             self.assertIsNotNone(json_data)
-        os.remove(self.json_download.name)
+
+        if self.json_download.is_file():
+            self.json_download.unlink()
+        elif os.path.isfile(self.json_download.name):
+            os.remove(self.json_download.name)
 
     def test_component_import_invalid_oscal(self):
         self._login()
         url = self.url(f"/controls/components")
         self.browser.get(url)
-        self.click_element('button#component-import-oscal')
+        self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
-
         file_input = self.find_selected_option('input#id_file')
-        file_input.send_keys(oscal_json_path)
+        self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         # Verify that the contents got copied correctly from the file to the textfield
         try:
@@ -285,18 +295,11 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.browser.get(url)
 
         # Test initial import of Component(s) and Statement(s)
-        self.click_element('button#component-import-oscal')
+        self.click_element('a#component-import-oscal')
         app_root = os.path.dirname(os.path.realpath(__file__))
         oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
-
         file_input = self.find_selected_option('input#id_file')
-        try:
-            # Current file system path might be incongruent linux-dos
-            file_input.send_keys(oscal_json_path)
-        except Exception as ex:
-            print(ex)
-            oscal_json_path = convert_w(oscal_json_path)
-            file_input.send_keys(oscal_json_path)
+        oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
         self.click_element('input#import_component_submit')
 
@@ -320,8 +323,9 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         var_sleep(1) # Needed to allow page to refresh and messages to render
 
         # Test that duplicate Components and Statements are not re-imported
-        self.click_element('button#component-import-oscal')
+        self.click_element('a#component-import-oscal')
         file_input = self.find_selected_option('input#id_file')
+        # Using converted keys from above
         file_input.send_keys(oscal_json_path)
 
         self.click_element('input#import_component_submit')
@@ -562,7 +566,15 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         return smt
 
     def click_components_tab(self):
-        self.browser.find_element_by_partial_link_text("Component Statements ").click()
+        wait = WebDriverWait(self.browser, 15)
+        try:
+            # Using full Xpath
+            comp_tab = self.browser.find_element_by_xpath("/html/body/div[1]/div/div[3]/ul/li[2]/a")
+        except:
+            # Non-full Xpath with wait
+            comp_tab = wait.until(EC.visibility_of_element_located((By.XPATH, "//a[contains(@href, '#component_controls')]")))
+
+        comp_tab.click()
 
     def dropdown_option(self, dropdownid):
         """
@@ -609,12 +621,17 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # login as the first user and create a new project
         self._login()
         self._new_project()
-        var_sleep(1)
+
+        # TODO: Why is system being overridden/conditional. system_id will be 1 in test class and 4 in full test suite
+        systemid = System.objects.all().first()
+        #print("systemid")
+        #print(systemid.id)
+        self.navigateToPage(f"/systems/{systemid.id}/controls/selected")
 
         # Select moderate
-        self.navigateToPage("/systems/1/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
+        self.navigateToPage(f"/systems/{systemid.id}/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
         # Head to the control ac-3
-        self.navigateToPage("/systems/1/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
+        self.navigateToPage(f"/systems/{systemid.id}/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
 
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 0
@@ -667,13 +684,21 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         assert len(comps_dropdown.options) == 2
 
         # Add a new component based on one of the options available in the filtered dropdown
+        try:
+            ## Test name 2 has a value of 6 and Component 2 has a value of 3
+            self.select_option("select#selected_producer_element_form_id", "6")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
+        except:
+            self.select_option("select#selected_producer_element_form_id", "13")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "13"
 
-        ## Test name 2 has a value of 6 and Component 2 has a value of 3
-        self.select_option("select#selected_producer_element_form_id", "6")
-        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
-
-        self.select_option("select#selected_producer_element_form_id", "3")
-        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+        try:
+            ## Test name 2 has a value of 6 and Component 2 has a value of 3
+            self.select_option("select#selected_producer_element_form_id", "3")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+        except:
+            self.select_option("select#selected_producer_element_form_id", "10")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "10"
 
         # Open a modal will with component statements related to the select component prototype
         add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")
