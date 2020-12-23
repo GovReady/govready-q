@@ -10,7 +10,7 @@ from django.db import transaction, models
 from django.db.utils import OperationalError
 from django.conf import settings
 
-from guidedmodules.models import AppSource, Module
+from guidedmodules.models import AppSource, Module, Task
 from siteapp.models import User, Organization
 
 from django.utils.crypto import get_random_string
@@ -38,24 +38,33 @@ class Command(BaseCommand):
                 sleep(options['action_delay'])
 
         for x in range(0, options['count']):
+            initial_task_count = Task.objects.count()
+
             echo_section('Adding system...')
             sys_t0 = time.time()
             call_command('add_system', '--username', admin.username, '--org', org_slug)
             delay()
             sys_t1 = time.time()
+
             echo_section('Adding assessments...')
             assess_t0 = time.time()
             call_command('start_section', '--to-completion', '--username', admin.username, '--org', org_slug, '--delay', options['action_delay'])
             delay()
             assess_t1 = time.time()
+            echo_section('Adding assessments...')
+
+            current_task_count = Task.objects.count()
+
+            # only do the newly-added tasks. (should probably rejigger this so it doesn't rely on checking count)
+            task_ids = ','.join([str(x) for x in range(initial_task_count, current_task_count)])
 
             ans_t0 = time.time()
             echo_section('Prepping assessments (tasks, pass #1)...')
-            call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org_slug, '--delay', options['action_delay'])
+            call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org_slug, '--delay', options['action_delay'], '--task_ids', task_ids)
             delay()
 
             echo_section('Filling assessments (tasks, pass #2)...')
-            call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org_slug, '--delay', options['action_delay'])
+            call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org_slug, '--delay', options['action_delay'], '--task_ids', task_ids)
             ans_t1 = time.time()
             with open('benchmark.tmp', 'a') as file:
                 file.write("add_system: {} sec\n".format(sys_t1 - sys_t0))

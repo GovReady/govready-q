@@ -11,6 +11,7 @@ from siteapp.urls import urlpatterns
 from django.urls.exceptions import Resolver404 as Resolver404
 
 from siteapp.models import *
+from guidedmodules.models import *
 
 class WebClient():
     session = None
@@ -115,7 +116,7 @@ class WebClient():
         
 
     def start_section_for_proj(self, id):
-        url = [x for x in self.get_projects() if x.startswith('/projects/{}/'.format(id))][0]
+        url = Project.objects.get(id=id).get_absolute_url()
         self.load(url)
         all_forms = self.selector.css('form.start-task')
         if len(all_forms) == 0:
