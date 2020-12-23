@@ -411,7 +411,7 @@ class ComponentImporter(object):
             messages.add_message(request, messages.INFO, f"Component {component_json['name']} created.")
             control_implementation_statements = component_json['control-implementations']
             for control_element in control_implementation_statements:
-                catalog = control_element['source'] if 'source' in control_element else None
+                catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
                 implementation_statements = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
                 self.create_control_implementation_statements(catalog, implementation_statements, new_component, request)
             return new_component
@@ -436,7 +436,7 @@ class ComponentImporter(object):
 
         for impl_stmnt in implementation_statements:
 
-            control_id = impl_stmnt['control-id'] if 'control-id' in impl_stmnt else ''
+            control_id = oscalize_control_id(impl_stmnt['control-id']) if 'control-id' in impl_stmnt else ''
             stmnt_uuid = impl_stmnt['uuid'] if 'uuid' in impl_stmnt else ''
 
             try:
