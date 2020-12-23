@@ -300,10 +300,9 @@ importlib-metadata==3.3.0 \
     --hash=sha256:5c5a2720817414a6c41f0a49993908068243ae02c1635a228126519b509c8aed \
     --hash=sha256:bf792d480abbd5eda85794e4afb09dd538393f7d6e6ffef6e9f03d2014cf9450 \
     # via -r requirements.in
-importlib-resources==1.5.0 \
-    --hash=sha256:6f87df66833e1942667108628ec48900e02a4ab4ad850e25fbf07cb17cf734ca \
-    --hash=sha256:85dc0b9b325ff78c8bef2e4ff42616094e16b98ebd5e3b50fe7e2f0bbcdcde49 \
-    # via -r requirements.in
+importlib-resources==4.0.0 \
+    --hash=sha256:27402c31c21ae44522834f2c8e98865b4f9c6f282569ba294226aae7bb5435d1 \
+    --hash=sha256:28f02529d9ed1e66e9aad076d6022f0781d4ee90da13d133cba96e678a67af5c    # via -r requirements.in
 jdcal==1.4.1 \
     --hash=sha256:1abf1305fce18b4e8aa248cf8fe0c56ce2032392bc64bbd61b5dff2a19ec8bba \
     --hash=sha256:472872e096eb8df219c23f2689fc336668bdb43d194094b5cc1707e1640acfc8 \
