@@ -582,10 +582,9 @@ soupsieve==2.1 \
     --hash=sha256:4bb21a6ee4707bf43b61230e80740e71bfe56e55d1f1f50924b087bb2975c851 \
     --hash=sha256:6dc52924dc0bc710a5d16794e6b3480b2c7c08b07729505feab2b2c16661ff6e \
     # via beautifulsoup4
-sphinx==3.3.1 \
-    --hash=sha256:1e8d592225447104d1172be415bc2972bd1357e3e12fdc76edf2261105db4300 \
-    --hash=sha256:d4e59ad4ea55efbb3c05cde3bfc83bfc14f0c95aa95c3d75346fcce186a47960 \
-    # via sphinxcontrib-contentui
+sphinx==3.4.1 \
+    --hash=sha256:aeef652b14629431c82d3fe994ce39ead65b3fe87cf41b9a3714168ff8b83376 \
+    --hash=sha256:e450cb205ff8924611085183bf1353da26802ae73d9251a8fcdf220a8f8712ef    # via sphinxcontrib-contentui
 sphinxcontrib-applehelp==1.0.2 \
     --hash=sha256:806111e5e962be97c29ec4c1e7fe277bfd19e9652fb1a4392105b43e01af885a \
     --hash=sha256:a072735ec80e7675e3f432fcae8610ecf509c5f1869d17e2eecff44389cdbc58 \
