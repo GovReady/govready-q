@@ -256,10 +256,9 @@ gitpython==3.1.11 \
     --hash=sha256:6eea89b655917b500437e9668e4a12eabdcf00229a0df1762aabd692ef9b746b \
     --hash=sha256:befa4d101f91bad1b632df4308ec64555db684c360bd7d2130b4807d49ce86b8 \
     # via -r requirements.in, bandit
-graphviz==0.15 \
-    --hash=sha256:2b85f105024e229ec330fe5067abbe9aa0d7708921a585ecc2bf56000bf5e027 \
-    --hash=sha256:403b55553b235875fa521023a06d9c29b46f3a956f960d4e0a5b956bca9eb9ce \
-    # via -r requirements.in
+graphviz==0.16 \
+    --hash=sha256:3cad5517c961090dfc679df6402a57de62d97703e2880a1a46147bb0dc1639eb \
+    --hash=sha256:d2d25af1c199cad567ce4806f0449cb74eb30cf451fd7597251e1da099ac6e57    # via -r requirements.in
 greenlet==0.4.17 \
     --hash=sha256:1023d7b43ca11264ab7052cb09f5635d4afdb43df55e0854498fc63070a0b206 \
     --hash=sha256:124a3ae41215f71dc91d1a3d45cbf2f84e46b543e5d60b99ecc20e24b4c8f272 \
