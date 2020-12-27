@@ -1421,7 +1421,6 @@ def new_portfolio(request):
 @login_required
 def delete_portfolio(request, pk):
     """Form to delete portfolios"""
-    # import pdb;pdb.set_trace()
     if request.method == 'GET':
         portfolio = Portfolio.objects.get(pk=pk)
         Portfolio.objects.get(pk=pk).delete()
