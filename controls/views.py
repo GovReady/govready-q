@@ -229,6 +229,7 @@ def components_selected(request, system_id):
         # User does not have permission to this system
         raise Http404
 
+
 def component_library(request):
     """Display the library of components"""
 
@@ -238,6 +239,40 @@ def component_library(request):
     }
 
     return render(request, "components/component_library.html", context)
+
+
+def import_records(request):
+    """Display the records of component imports"""
+
+    import_records = ImportRecord.objects.all()
+    import_components = {}
+
+    for import_record in import_records:
+        import_components[import_record] = Element.objects.filter(import_record=import_record)
+
+    context = {
+        "import_components": import_components,
+    }
+
+    return render(request, "components/import_records.html", context)
+
+
+def import_record_details(request, import_record_id):
+    """Display the records of component imports"""
+
+    import_record = ImportRecord.objects.get(id=import_record_id)
+    components = Element.objects.filter(import_record=import_record)
+    component_statements = {}
+
+    for component in components:
+        component_statements[component] = Statement.objects.filter(producer_element=component)
+
+    context = {
+        "import_record": import_record,
+        "component_statements": component_statements,
+    }
+    return render(request, "components/import_record_details.html", context)
+
 
 class ComponentSerializer(object):
 
@@ -353,10 +388,32 @@ class ComponentImporter(object):
             # Returns list of created components
             created_components = self.create_components(oscal_json, request)
             messages.add_message(request, messages.INFO, f"Created {len(created_components)} components.")
-            return created_components
+            new_import_record = self.create_component_import_record(created_components)
+            return new_import_record
         else:
             messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
             return False
+
+    def create_component_import_record(self, components):
+        """Associates components and statements to an import record
+
+        @type components: list
+        @param components: List of components
+        @rtype: ImportRecord
+        @returns: New ImportRecord object with components and statements associated
+        """
+
+        new_import_record = ImportRecord.objects.create()
+        for component in components:
+            statements = Statement.objects.filter(producer_element=component)
+            for statement in statements:
+                statement.import_record = new_import_record
+                statement.save()
+            component.import_record = new_import_record
+            component.save()
+
+        return new_import_record
+
 
     def validate_oscal_json(self, oscal_json):
         """Validates the JSON object is valid OSCAL format"""
@@ -373,6 +430,7 @@ class ComponentImporter(object):
 
     def create_components(self, oscal_json, request):
         """Creates Elements (Components) from valid OSCAL JSON"""
+
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
