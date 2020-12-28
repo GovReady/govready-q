@@ -17,6 +17,7 @@ from django.utils.text import slugify
 from django.views import View
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
+from tablib import Dataset
 
 from siteapp.forms import ProjectForm
 from system_settings.models import SystemSettings
@@ -24,6 +25,7 @@ from .forms import ImportOSCALComponentForm
 from .forms import StatementPoamForm, PoamForm, ElementForm
 from .models import *
 from .utilities import *
+from .resources import StatementResource
 
 logging.basicConfig()
 import structlog
@@ -2228,3 +2230,56 @@ def poam_export(request, system_id, format='xlsx'):
     else:
         # User does not have permission to this system
         raise Http404
+
+
+def project_import(request, system_id):
+    """
+    Import an entire project's components and control content
+    """
+    # Retrieve identified System
+    if request.method == 'POST':
+        file_format = request.POST['file-format'] #  TODO: need modal for import format selection
+        statement_resource = StatementResource()
+        dataset = Dataset()
+        project_data = request.FILES['import_project_data']
+        if file_format == 'CSV':
+            imported_data = dataset.load(project_data.read().decode('utf-8'), format='csv')
+            result = statement_resource.import_data(dataset, dry_run=True)
+        elif file_format == 'JSON':
+            imported_data = dataset.load(project_data.read().decode('utf-8'), format='json')
+            # Testing data import
+            result = statement_resource.import_data(dataset, dry_run=True)
+
+            # No errors? Then do the actual import
+        if not result.has_errors():
+            statement_resource.import_data(dataset, dry_run=False)
+    # TODO: Need to validate ids, and uuid, also need to accommodate element info
+        return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
+
+
+def project_export(request, system_id):
+    """
+    Export an entire project's components and control content
+    """
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
+
+    # Retrieve related selected controls if user has permission on system
+    if request.user.has_perm('view_system', system):
+
+        # Iterate through the elements associated with the system get all statements produced for each
+        smts = []
+        for element in system.producer_elements:
+            smts += element.statements_produced.all()
+
+        # Get ids for statements and filter Statement on pk
+        smt_ids = [smt.id for smt in smts]
+        statements = Statement.objects.filter(pk__in=smt_ids).order_by('id')
+
+    # TODO: Need multiple export types
+    # StatementResource
+    statement_resource = StatementResource()
+    statement_dataset = statement_resource.export(queryset=statements)
+    response = HttpResponse(statement_dataset.csv, content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="elements_statements.csv"'
+    return response

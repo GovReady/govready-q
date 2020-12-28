@@ -61,4 +61,7 @@ urlpatterns = [
     url(r'^(?P<system_id>.*)/poams/export/csv$', views.poam_export_csv, name="poam_export_csv"),
     url(r'^(?P<system_id>.*)/poams/export/xlsx$', views.poam_export_xlsx, name="poam_export_xlsx"),
 
+    # Project
+    url(r'^(?P<system_id>.*)/import', views.project_import, name="project_import"),
+    url(r'^(?P<system_id>.*)/export', views.project_export, name="project_export"),
 ]

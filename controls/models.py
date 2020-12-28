@@ -42,11 +42,11 @@ class Statement(models.Model):
         ordering = ['producer_element__name', 'sid']
 
     def __str__(self):
-        return "'%s %s %s %s id=%d'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
+        return "'%s %s %s %s %s'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
 
     def __repr__(self):
         # For debugging.
-        return "'%s %s %s %s id=%d'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
+        return "'%s %s %s %s %s'" % (self.statement_type, self.sid, self.pid, self.sid_class, self.id)
 
     @cached_property
     def producer_element_name(self):

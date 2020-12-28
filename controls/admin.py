@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.http import HttpResponse
 from .models import Statement, Element, ElementControl, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam
 from guardian.admin import GuardedModelAdmin
+from import_export.admin import ImportExportModelAdmin
+from .resources import StatementResource
 
 class ExportCsvMixin:
     # From https://books.agiliq.com/projects/django-admin-cookbook/en/latest/export.html
@@ -23,12 +25,13 @@ class ExportCsvMixin:
 
     export_as_csv.short_description = "Export Selected as CSV"
 
-class StatementAdmin(admin.ModelAdmin, ExportCsvMixin):
+class StatementAdmin(ImportExportModelAdmin):
     list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
+    resource_class = StatementResource
 
-class ElementAdmin(GuardedModelAdmin, ExportCsvMixin):
+class ElementAdmin(GuardedModelAdmin, ImportExportModelAdmin):
     list_display = ('name', 'full_name', 'id', 'uuid')
     actions = ["export_as_csv"]
 
