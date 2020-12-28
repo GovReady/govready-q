@@ -87,9 +87,9 @@
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-    <div style="margin-top: 30px">
+    <div class="systems-top">
         <!-- <div class="container"> -->
-        <div class="row" style="">
+        <div class="row">
             <div id="above-tab-content" class="row">
                 <!-- Page Title-->
                 <div style="float: left;">
@@ -98,7 +98,7 @@
                     </h2>
                 </div>
                 <!-- Control Lookup-->
-                <div style="float: right;">
+                <div class="systems-control-lookup">
                     <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
                         <input type="text" name="id" placeholder="Enter control id" title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
                         <button type="submit" class="btn btn-success">Look up</button>
@@ -158,6 +158,7 @@
                         </div>
                     {% endif %}
                 </div>
+                <!-- Tab panel: combined -->
                 <div role="tabpanel" class="tab-pane" id="combined">
                     <div id="combined_smt" class="control-text" style="white-space: pre-line; word-break: keep-all;"><h3>Component Implementations Statement</h3>
                         {{ combined_smt|safe }}
@@ -170,7 +171,7 @@
                 <!-- Tab panel: component control -->
                 <div role="tabpanel" class="tab-pane" id="component_controls">
                     <div id="control-description" class="control-text"><h3>Component Implementations Statements</h3></div>
-                    <div id="smt-list" class="" style="width: 90%">
+                    <div id="smt-list" class="systems-smt-list">
                         <!-- Loop through existing component-control statements -->
                         {% for smt in impl_smts %}
                             <div id="panel-{{ forloop.counter }}" class="panel panel-default">
@@ -226,7 +227,6 @@
                                                             <div>
                                                                 {% if not smt.prototype_synched %}
                                                                     <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Overwrite current statement</button>
-
                                                                     {% if user.is_superuser %}
                                                                         <button type="button" name="update_certified" value="update_certified" class="btn btn-xs btn-danger" onclick="update_smt_prototype('{{ forloop.counter }}');return false;">Update certified text</button>
                                                                     {% endif %}
