@@ -485,7 +485,7 @@ h3.question-group-title {
 {% endblock %}
 
 {% block modals %}
-{% include "controls/import_modal" %}
+{% include "controls/import_modal.html" %}
 {% if authoring_tool_enabled %}
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
 {% include "authoring-tool-modal.html" %}
