@@ -21,8 +21,7 @@
 <div class="portfolio-top">
   <div class="container">
     <div class="portfolio-main">
-{#      <a id="component-new" href="/controls/components/new" class="btn btn-success">Create a Component</a>#}
-{#      <a id="component-import-oscal" class="btn btn-success" onclick="show_import_component_modal(); return false;" href="#">Import OSCAL Component</a>#}
+      <a id="delete-import" class="btn btn-danger" href="/controls/import_records/{{ import_record.id }}/delete_confirm">Delete</a>
     </div>
 
     <h2 class="">Import Record: {{ import_record.created }}</h2>

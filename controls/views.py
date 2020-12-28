@@ -261,17 +261,43 @@ def import_record_details(request, import_record_id):
     """Display the records of component imports"""
 
     import_record = ImportRecord.objects.get(id=import_record_id)
-    components = Element.objects.filter(import_record=import_record)
-    component_statements = {}
-
-    for component in components:
-        component_statements[component] = Statement.objects.filter(producer_element=component)
+    component_statements = import_record.get_components_statements()
 
     context = {
         "import_record": import_record,
         "component_statements": component_statements,
     }
     return render(request, "components/import_record_details.html", context)
+
+
+def confirm_import_record_delete(request, import_record_id):
+    """Delete the components and statements imported from a particular import record"""
+
+    import_record = ImportRecord.objects.get(id=import_record_id)
+    component_statements = import_record.get_components_statements()
+    component_count = len(component_statements)
+    statement_count = 0
+    for component in component_statements:
+        statement_count += component_statements[component].count()
+
+    context = {
+        "import_record": import_record,
+        "component_count": component_count,
+        "statement_count": statement_count,
+    }
+    return render(request, "components/confirm_import_record_delete.html", context)
+
+
+def import_record_delete(request, import_record_id):
+    """Delete the components and statements imported from a particular import record"""
+
+    import_record = ImportRecord.objects.get(id=import_record_id)
+    import_created = import_record.created
+    import_record.delete()
+
+    messages.add_message(request, messages.INFO, f"Deleted import: {import_created}")
+
+    return component_library(request)
 
 
 class ComponentSerializer(object):

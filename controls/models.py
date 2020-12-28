@@ -19,6 +19,14 @@ class ImportRecord(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier for this Import Record.")
 
+    def get_components_statements(self):
+        components = Element.objects.filter(import_record=self)
+        component_statements = {}
+
+        for component in components:
+            component_statements[component] = Statement.objects.filter(producer_element=component)
+
+        return component_statements
 
 class SystemException(Exception):
     """Class for raising custom exceptions with Systems"""
