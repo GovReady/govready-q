@@ -3,6 +3,7 @@ import logging
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import PurePath
+from uuid import uuid4
 
 import rtyaml
 import shutil
@@ -378,11 +379,14 @@ class OSCALComponentSerializer(ComponentSerializer):
         # emit an requirement for the control-id
         # iterate over each group
         # emit a statement for each member of the group
+        # notes:
+        # - OSCAL implemented_requirements and control_implementations need UUIDs
+        #   which we don't have in the db, so we construct them.
 
         for control_id, group in groupby(sorted(self.impl_smts, key=lambda ismt: ismt.sid),
                                          lambda ismt: ismt.sid):
             requirement = {
-                "uuid": "",      # TODO: GENERATE UUID
+                "uuid": str(uuid4()),
                 "control-id": control_id,
                 "description": "",
                 "remarks": "",
@@ -392,7 +396,7 @@ class OSCALComponentSerializer(ComponentSerializer):
             for smt in group:
                 statement = {
                     "uuid": str(smt.uuid),
-                    "text": smt.body,
+                    "description": smt.body,
                     "remarks": smt.remarks
                 }
                 statement_id = self.statement_id_from_control(control_id, smt.pid)
@@ -402,7 +406,7 @@ class OSCALComponentSerializer(ComponentSerializer):
 
         for sid_class, requirements in by_class.items():
             control_implementation = {
-                "uuid": requirements[0]['uuid'], # REMIND: need a real UUID?
+                "uuid": str(uuid4()),
                 "source": sid_class,
                 "description": f"Partial implementation of {sid_class}",
                 "implemented-requirements": [req for req in requirements]
