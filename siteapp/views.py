@@ -1445,7 +1445,6 @@ def edit_portfolio(request, pk):
     if request.method == 'GET':
         portfolio = Portfolio.objects.get(pk=pk)
         form = PortfolioForm(request.POST or None, instance=portfolio, initial={'portfolio': portfolio.id})
-        project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
         if form.is_valid():
             form.save()
 
@@ -1463,8 +1462,6 @@ def edit_portfolio(request, pk):
             )
             return redirect('portfolio_projects', pk=portfolio.pk)
     if request.method == 'POST':
-        portfolio = Portfolio.objects.get(pk=pk)
-        project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
         try:
             form = PortfolioForm(request.POST, instance=portfolio)
             if form.is_valid():
@@ -1472,10 +1469,9 @@ def edit_portfolio(request, pk):
         except IntegrityError:
             messages.add_message(request, messages.ERROR, "There is different Portfolio with this name.")
 
-
     return render(request, 'portfolios/edit_form.html', {
         'form': form,
-        "project_form": project_form,
+        'portfolio_title': portfolio.title,
         "can_change_portfolio": request.user.has_perm('change_portfolio', portfolio),
     })
 
