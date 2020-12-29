@@ -2,7 +2,7 @@
 {% load bootstrap3 %}
 
 {% block title %}
-Welcome to Compliance Automation
+Edit Portfolio
 {% endblock %}
 
 {% block body-wide %}
@@ -19,7 +19,6 @@ Welcome to Compliance Automation
             <div class="well">
                 <form method="post">
                     {% csrf_token %}
-                    <input type=hidden name=action value=neworg>
                     {% bootstrap_form form %}
                     <p><button type="submit" id="create-portfolio-button" class="btn btn-success">Update &raquo;</button>
                         <a type="button" class="btn btn-default" href="/portfolios">Cancel</a>
