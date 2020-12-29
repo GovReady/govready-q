@@ -148,11 +148,15 @@ cssutils==1.0.2 \
 defusedxml==0.6.0 \
     --hash=sha256:6687150770438374ab581bb7a1b327a847dd9c5749e396102de3fad4e8a3ef93 \
     --hash=sha256:f684034d135af4c6cbb949b8a4d2ed61634515257a67299e5f940fbaa34377f5 \
-    # via python3-openid
+    # via odfpy, python3-openid
 deprecated==1.2.10 \
     --hash=sha256:525ba66fb5f90b07169fdd48b6373c18f1ee12728ca277ca44567a367d9d7f74 \
     --hash=sha256:a766c1dccb30c5f6eb2b203f87edd1d8588847709c78589e1521d769addc8218 \
     # via pygithub
+diff-match-patch==20200713 \
+    --hash=sha256:8bf9d9c4e059d917b5c6312bac0c137971a32815ddbda9c682b949f2986b4d34 \
+    --hash=sha256:da6f5a01aa586df23dfc89f3827e1cafbb5420be9d87769eeb079ddfd9477a18 \
+    # via django-import-export
 dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9 \
@@ -179,6 +183,10 @@ django-html-emailer==0.0.8.1 \
     --hash=sha256:1ea72561355587952d2f6582bff14cc3cfd27aaac52a4bce83e57eb8a8d90f1e \
     --hash=sha256:4d9954d67005843be1768fa39b6e6f1d2eff1ac2353cec7c742aff81bb613a46 \
     # via -r requirements.in
+django-import-export==2.4.0 \
+    --hash=sha256:401d76eca0a5c6cf43bffed16c06e509b9044ce8f6bcff264b776e3952830f1a \
+    --hash=sha256:7610f6efff797d65f56c03ba34444507c0b0ccdffe9346c168b9894fc349c55e \
+    # via -r requirements.in
 django-model-utils==4.1.1 \
     --hash=sha256:eb5dd05ef7d7ce6bc79cae54ea7c4a221f6f81e2aad7722933aee66489e7264b \
     --hash=sha256:ef7c440024e797796a3811432abdd2be8b5225ae64ef346f8bfc6de7d8e5d73c \
@@ -190,7 +198,7 @@ django-notifications-hq==1.6 \
 django==3.0.11 \
     --hash=sha256:8c334df4160f7c89f6a8a359dd4e95c688ec5ac0db5db75fcc6fec8f590dc8cf \
     --hash=sha256:96436d3d2f744d26e193bfb5a1cff3e01b349f835bb0ea16f71743accf9c6fa9 \
-    # via -r requirements.in, django-allauth, django-bootstrap3, django-debug-toolbar, django-guardian, django-model-utils, django-notifications-hq, jsonfield
+    # via -r requirements.in, django-allauth, django-bootstrap3, django-debug-toolbar, django-guardian, django-import-export, django-model-utils, django-notifications-hq, jsonfield
 dnspython==2.0.0 \
     --hash=sha256:044af09374469c3a39eeea1a146e8cac27daec951f1f1f157b1962fc7cb9d1b7 \
     --hash=sha256:40bb3c24b9d4ec12500f0124288a65df232a3aa749bb0c39734b782873a2544d \
@@ -362,6 +370,9 @@ lxml==4.6.2 \
 m2r==0.2.1 \
     --hash=sha256:bf90bad66cda1164b17e5ba4a037806d2443f2a4d5ddc9f6a5554a0322aaed99 \
     # via -r requirements.in
+markuppy==1.14 \
+    --hash=sha256:1adee2c0a542af378fe84548ff6f6b0168f3cb7f426b46961038a2bcfaad0d5f \
+    # via tablib
 markupsafe==1.1.1 \
     --hash=sha256:00bc623926325b26bb9605ae9eae8a215691f33cae5df11ca5424f06f2d1f473 \
     --hash=sha256:09027a7803a62ca78792ad89403b1b7a73a01c8cb65909cd876f7fcebd79b161 \
@@ -405,10 +416,13 @@ oauthlib==3.1.0 \
     --hash=sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889 \
     --hash=sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea \
     # via requests-oauthlib
+odfpy==1.4.1 \
+    --hash=sha256:db766a6e59c5103212f3cc92ec8dd50a0f3a02790233ed0b52148b70d3c438ec \
+    # via tablib
 openpyxl==3.0.5 \
     --hash=sha256:18e11f9a650128a12580a58e3daba14e00a11d9e907c554a17ea016bf1a2c71b \
     --hash=sha256:f7d666b569f729257082cf7ddc56262431878f602dcc2bc3980775c59439cdab \
-    # via -r requirements.in
+    # via -r requirements.in, tablib
 packaging==20.8 \
     --hash=sha256:24e0da08660a87484d1602c30bb4902d74816b6985b93de36926f5bc95741858 \
     --hash=sha256:78598185a7008a470d64526a8059de9aaa449238f280fc9eb6b13ba6c4109093 \
@@ -541,7 +555,7 @@ pyyaml==5.3.1 \
     --hash=sha256:b8eac752c5e14d3eca0e6dd9199cd627518cb5ec06add0de9d32baeee6fe645d \
     --hash=sha256:cc8955cfbfc7a115fa81d85284ee61147059a753344bc51098f3ccd69b0d7e0c \
     --hash=sha256:d13155f591e6fcc1ec3b30685d50bf0711574e2c0dfffd7644babf8b5102ca1a \
-    # via bandit, dparse, rtyaml
+    # via bandit, dparse, rtyaml, tablib
 requests-oauthlib==1.3.0 \
     --hash=sha256:7f71572defaecd16372f9006f33c2ec8c077c3cfa6f5911a9a90202beb513f3d \
     --hash=sha256:b4261601a71fd721a8bd6d7aa1cc1d6a8a93b4a9f5e96626f8e4d91e8beeaa6a \
@@ -629,6 +643,10 @@ swapper==1.1.2.post1 \
     --hash=sha256:51651018fb027354dd27ff38d5eb47a225d3e642c99b04cff878ae65b1872f64 \
     --hash=sha256:f3bc7b77b76daf46fcbd41fda9b2f599974ac8c564e129f2a9bae73871c4116e \
     # via django-notifications-hq
+tablib[html,ods,xls,xlsx,yaml]==3.0.0 \
+    --hash=sha256:41aa40981cddd7ec4d1fabeae7c38d271601b306386bd05b5c3bcae13e5aeb20 \
+    --hash=sha256:f83cac08454f225a34a305daa20e2110d5e6335135d505f93bc66583a5f9c10d \
+    # via django-import-export
 termcolor==1.1.0 \
     --hash=sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b \
     # via -r requirements.in
@@ -659,6 +677,14 @@ whitenoise==5.2.0 \
 wrapt==1.12.1 \
     --hash=sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7 \
     # via deprecated
+xlrd==2.0.1 \
+    --hash=sha256:6a33ee89877bd9abc1158129f6e94be74e2679636b8a205b43b85206c3f0bbdd \
+    --hash=sha256:f72f148f54442c6b056bf931dbc34f986fd0c3b0b6b5a58d013c9aef274d0c88 \
+    # via tablib
+xlwt==1.3.0 \
+    --hash=sha256:a082260524678ba48a297d922cc385f58278b8aa68741596a87de01a9c628b2e \
+    --hash=sha256:c59912717a9b28f1a3c2a98fd60741014b06b043936dcecbc113eaaada156c88 \
+    # via tablib
 xxhash==2.0.0 \
     --hash=sha256:02476c5cef803cfd1350662b1e543e47ad64bd5f7f792033d94d590f9674da11 \
     --hash=sha256:0ecea927fd3df8f3f3a1d6e5bc85838eb44a69ea2f4c9263dfd0f68c4e17e483 \
