@@ -1465,6 +1465,7 @@ def edit_portfolio(request, pk):
                 form.save()
         except IntegrityError:
             messages.add_message(request, messages.ERROR, "There is different Portfolio with this name.")
+        return redirect("list_portfolios")
 
     return render(request, 'portfolios/edit_form.html', {
         'form': form,
