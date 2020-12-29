@@ -79,6 +79,7 @@ def oscalize_catalog_key(catalogkey):
 
     return catalogkey
 
+
 def get_control_statement_part(control_stmnt_id):
     """ Parses part from control statement id
     ra-5_smt.a --> a
@@ -87,11 +88,6 @@ def get_control_statement_part(control_stmnt_id):
     if "." not in control_stmnt_id and "_" not in control_stmnt_id:
         return control_stmnt_id
 
-    # Portion after the '.' is the part
-    split_stmnt = control_stmnt_id.split(".")
-    if len(split_stmnt) > 1:
-        return split_stmnt[1]
-    else:
-        # No part, get control id
-        split_stmnt = control_stmnt_id.split("_")
-        return split_stmnt[0]
+    # Portion after the '_smt.' is the part
+    split_stmnt = control_stmnt_id.split("_smt.")
+    return split_stmnt[1] if len(split_stmnt) > 1 else ""
