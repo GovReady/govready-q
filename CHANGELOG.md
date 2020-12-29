@@ -4,6 +4,11 @@ GovReady-Q Release Notes
 v.999 (December XX, 2020)
 --------------------------------
 
+**Bug fixes**
+
+* Fix missing "part" field on Component's component statement form and incorrectly displaying the "remarks" field (#1232)
+* Fix display of OSCAL into correct tab on system's component's page
+
 v.0.9.1.48.1 (December 17, 2020)
 --------------------------------
 

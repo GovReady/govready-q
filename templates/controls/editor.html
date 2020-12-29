@@ -87,9 +87,9 @@
 {% block contextbar %}{% endblock %}
 
 {% block body %}
-    <div style="margin-top: 30px">
+    <div class="systems-top">
         <!-- <div class="container"> -->
-        <div class="row" style="">
+        <div class="row">
             <div id="above-tab-content" class="row">
                 <!-- Page Title-->
                 <div style="float: left;">
@@ -98,7 +98,7 @@
                     </h2>
                 </div>
                 <!-- Control Lookup-->
-                <div style="float: right;">
+                <div class="systems-control-lookup">
                     <form id="control-lookup" method="get" action="/controls/" onsubmit="show_control_by_id(); return false;">
                         <input type="text" name="id" placeholder="Enter control id" title="Enter control id" value="{% if control %}{{ control.id_display|upper }}{% endif %}">
                         <button type="submit" class="btn btn-success">Look up</button>
@@ -137,10 +137,13 @@
                 <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div>
                 </a></li>
                 <li role="presentation"><a href="#combined" aria-controls="combined" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Combined Statement </a></li>
-                {% if enable_experimental_opencontrol %}
-                    <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div>
-                    </a></li>
+                {% if enable_experimental_oscal %}
+                    <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
                 {% endif %}
+                {% if enable_experimental_opencontrol %}
+                    <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
+                {% endif %}
+
             </ul>
 
             <!-- Tab panels -->
@@ -158,6 +161,7 @@
                         </div>
                     {% endif %}
                 </div>
+                <!-- Tab panel: combined -->
                 <div role="tabpanel" class="tab-pane" id="combined">
                     <div id="combined_smt" class="control-text" style="white-space: pre-line; word-break: keep-all;"><h3>Component Implementations Statement</h3>
                         {{ combined_smt|safe }}
@@ -170,7 +174,7 @@
                 <!-- Tab panel: component control -->
                 <div role="tabpanel" class="tab-pane" id="component_controls">
                     <div id="control-description" class="control-text"><h3>Component Implementations Statements</h3></div>
-                    <div id="smt-list" class="" style="width: 90%">
+                    <div id="smt-list" class="systems-smt-list">
                         <!-- Loop through existing component-control statements -->
                         {% for smt in impl_smts %}
                             <div id="panel-{{ forloop.counter }}" class="panel panel-default">
@@ -226,7 +230,6 @@
                                                             <div>
                                                                 {% if not smt.prototype_synched %}
                                                                     <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Overwrite current statement</button>
-
                                                                     {% if user.is_superuser %}
                                                                         <button type="button" name="update_certified" value="update_certified" class="btn btn-xs btn-danger" onclick="update_smt_prototype('{{ forloop.counter }}');return false;">Update certified text</button>
                                                                     {% endif %}
@@ -253,7 +256,7 @@
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="remarks">Remarks</label>
-                                                    <textarea style="min-height:70px; overflow-y: scroll;" class="form-control" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
+                                                    <textarea class="form-control systems-element-form-remarks" id="remarks_{{ forloop.counter }}" name="remarks" placeholder="Add remarks for team" cols="50">{{ smt.remarks }}</textarea>
                                                 </div>
                                                 <input type="hidden" id="control_id" name="control_id" value="{{ control.id }}">
                                                 <input type="hidden" id="system_id" name="system_id" value="{{ system.id }}">
@@ -315,6 +318,29 @@
 
                 </div>
 
+              <!-- Tab panel: oscal -->
+              {% if enable_experimental_oscal %}
+                <div role="tabpanel" class="tab-pane" id="oscal">
+                  <p id="oscal_download" class="navbar-text navbar-right">
+                    <a id="oscal_download_json_link"
+                       class="navbar-link"
+                       href="/systems/{{ system.id }}/component/{{ element.id }}/download/oscal/json">
+                      <span class="glyphicon glyphicon-download"></span>
+                      Download ...
+                    </a>
+                  </p>
+                  <div id="combined_smt" class="control-text"><h3>OSCAL</h3></div>
+                  <div class="systems-element-oscal">{{ oscal }}</div>
+                </div>
+              {% endif %}
+
+              <!-- Tab panel: opencontrol -->
+              {% if enable_experimental_opencontrol %}
+                <div role="tabpanel" class="tab-pane" id="opencontrol">
+                    <div id="combined_smt" class="control-text"><h3>OpenControl (under development)</h3></div>
+                    <div class="systems-element-opencontrol">{{ opencontrol }}</div>
+                </div>
+              {% endif %}
 
                 <!-- Modal -->
                 <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
@@ -356,17 +382,6 @@
                     </div>
                 </form>
             </div>
-
-
-            <!-- Tab panel: combined -->
-            {% if enable_experimental_oscal %}
-                <div role="tabpanel" class="tab-pane" id="oscal">
-                    <div id="combined_smt" class="control-text"><h3>OSCAL (under development)</h3></div>
-                    <div>See reference <a href="https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json">https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json</a></div>
-                    <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
-                </div>
-            {% endif %}
-
 
         </div>
     </div>
