@@ -1,3 +1,4 @@
+from itertools import groupby
 import logging
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -333,6 +334,14 @@ class ComponentSerializer(object):
 
 class OSCALComponentSerializer(ComponentSerializer):
 
+    @staticmethod
+    def statement_id_from_control(control_id, part_id):
+        if part_id:
+            return f"{control_id}_smt.{part_id}"
+        else:
+            return f"{control_id}_smt"
+
+
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
@@ -364,16 +373,31 @@ class OSCALComponentSerializer(ComponentSerializer):
 
         by_class = defaultdict(list)
         
-        for smt in self.impl_smts:
+        # work:
+        # group stmts by control-id
+        # emit an requirement for the control-id
+        # iterate over each group
+        # emit a statement for each member of the group
+
+        for control_id, group in groupby(sorted(self.impl_smts, key=lambda ismt: ismt.sid),
+                                         lambda ismt: ismt.sid):
             requirement = {
-                "uuid": str(smt.uuid),
-                "control-id": smt.sid,
-                "description": smt.body,
-                "remarks": smt.remarks
+                "uuid": "",      # TODO: GENERATE UUID
+                "control-id": control_id,
+                "description": "",
+                "remarks": "",
+                "statements": {}
             }
-            # if there is a part ID, add it as a label property
-            if smt.pid:
-                requirement['properties'] = [dict(name='label', value=smt.pid)]
+
+            for smt in group:
+                statement = {
+                    "uuid": str(smt.uuid),
+                    "text": smt.body,
+                    "remarks": smt.remarks
+                }
+                statement_id = self.statement_id_from_control(control_id, smt.pid)
+                requirement["statements"][statement_id] = statement
+                
             by_class[smt.sid_class].append(requirement)
 
         for sid_class, requirements in by_class.items():
@@ -838,7 +862,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
         ws.title = "Controls_Implementation"
 
         # Add in field name row
-        # Paragraph/ReqID
+
         c = ws.cell(row=1, column=1, value="Paragraph/ReqID")
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
