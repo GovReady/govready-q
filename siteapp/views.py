@@ -1,5 +1,5 @@
 import random
-
+from django.db import IntegrityError
 from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
@@ -1392,26 +1392,28 @@ def portfolio_list(request):
 @login_required
 def new_portfolio(request):
     """Form to create new portfolios"""
+    form = PortfolioForm()
     if request.method == 'POST':
-      form = PortfolioForm(request.POST)
-      if form.is_valid():
-        form.save()
-        portfolio = form.instance
-        logger.info(
-            event="new_portfolio",
-            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
-            user={"id": request.user.id, "username": request.user.username}
-        )
-        portfolio.assign_owner_permissions(request.user)
-        logger.info(
-            event="new_portfolio assign_owner_permissions",
-            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
-            receiving_user={"id": request.user.id, "username": request.user.username},
-            user={"id": request.user.id, "username": request.user.username}
-        )
-        return redirect('portfolio_projects', pk=portfolio.pk)
-    else:
-        form = PortfolioForm()
+        try:
+            form = PortfolioForm(request.POST)
+            if form.is_valid():
+                form.save()
+                portfolio = form.instance
+                logger.info(
+                    event="new_portfolio",
+                    object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                portfolio.assign_owner_permissions(request.user)
+                logger.info(
+                    event="new_portfolio assign_owner_permissions",
+                    object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                    receiving_user={"id": request.user.id, "username": request.user.username},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                return redirect('portfolio_projects', pk=portfolio.pk)
+        except IntegrityError:
+            messages.add_message(request, messages.ERROR, "Portfolio name not available." )
 
     return render(request, 'portfolios/form.html', {
         'form': form,
@@ -1463,8 +1465,13 @@ def edit_portfolio(request, pk):
     if request.method == 'POST':
         portfolio = Portfolio.objects.get(pk=pk)
         project_form = ProjectForm(request.user, initial={'portfolio': portfolio.id})
-        form = PortfolioForm(request.POST, instance=portfolio)
-        form.save()
+        try:
+            form = PortfolioForm(request.POST, instance=portfolio)
+            if form.is_valid():
+                form.save()
+        except IntegrityError:
+            messages.add_message(request, messages.ERROR, "There is different Portfolio with this name.")
+
 
     return render(request, 'portfolios/edit_form.html', {
         'form': form,

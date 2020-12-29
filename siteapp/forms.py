@@ -23,22 +23,10 @@ class ProjectForm(ModelForm):
 
 class PortfolioForm(ModelForm):
 
-    updateportfolio = forms.CharField(widget =
-    forms.HiddenInput(), help_text='update portfolio', label='update_portfolio', initial='updateportfolio')
-
     class Meta:
         model = Portfolio
         fields = ['title', 'description' ]
 
-    def clean(self):
-        """Extend clean to validate portfolio name is not reused."""
-        cd = self.cleaned_data
-        # Skip this validation when updating a portfolio
-        if "updateportfolio" not in cd:
-            # Validate portfolio name does not exist case insensitive
-            if Portfolio.objects.filter(title__iexact=cd['title']).exists():
-                raise ValidationError("Portfolio name {} not available.".format(cd['title']))
-        return cd
 
 class PortfolioSignupForm(ModelForm):
 
