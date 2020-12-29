@@ -1423,13 +1423,14 @@ def delete_portfolio(request, pk):
     """Form to delete portfolios"""
     if request.method == 'GET':
         portfolio = Portfolio.objects.get(pk=pk)
-        Portfolio.objects.get(pk=pk).delete()
-
         logger.info(
             event="delete_portfolio",
             object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
             user={"id": request.user.id, "username": request.user.username}
         )
+        Portfolio.objects.get(pk=pk).delete()
+
+
         return render(request, "portfolios/index.html", {
             "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
             "project_form": ProjectForm(request.user),
@@ -1437,7 +1438,7 @@ def delete_portfolio(request, pk):
 
 @login_required
 def edit_portfolio(request, pk):
-    """Form to create new portfolios"""
+    """Form to edit portfolios"""
 
     if request.method == 'GET':
         portfolio = Portfolio.objects.get(pk=pk)
