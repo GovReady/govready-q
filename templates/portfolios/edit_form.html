@@ -29,21 +29,7 @@ Edit Portfolio
         </div>
     </div>
 </div>
-
-
+    
 {{ block.super }}
 {% endblock %}
 
-{% block scripts %}
-<script>
-    $('#id_name').on('keyup', function () {
-        var slug = $(this).val();
-        slug = slug.toLowerCase().replace(/[^a-z0-9--]+/g, "-").replace(/^-+/, "").replace(/-+$/, "");
-        $('#id_slug').val(slug);
-    })
-
-    {% if request.method == "POST" %}
-    smooth_scroll_to($('input[name=action][value={{request.POST.action|escapejs}}]').parent('form'));
-    {% endif %}
-</script>
-{% endblock %}
