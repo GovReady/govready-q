@@ -5,7 +5,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="project_modal_title">Select a Project</h4>
       </div>
-<form method="post" enctype="multipart/form-data" action="/systems/{{project.system.id}}/im ">
+<form method="post" enctype="multipart/form-data" action="/systems/{{project.system.id}}/import ">
     {% csrf_token %}
     <input type="file" name="import_project_data">
     <p>Please select format of file.</p>
