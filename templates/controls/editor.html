@@ -137,10 +137,13 @@
                 <li role="presentation"><a href="#component_controls" aria-controls="component_controls" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-wrench"></span> Component Statements &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div>
                 </a></li>
                 <li role="presentation"><a href="#combined" aria-controls="combined" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> Combined Statement </a></li>
-                {% if enable_experimental_opencontrol %}
-                    <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL &nbsp;<div id="common-tab-count">{{ impl_smts|length }}</div>
-                    </a></li>
+                {% if enable_experimental_oscal %}
+                    <li role="presentation"><a href="#oscal" aria-controls="oscal" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OSCAL </a></li>
                 {% endif %}
+                {% if enable_experimental_opencontrol %}
+                    <li role="presentation"><a href="#opencontrol" aria-controls="opencontrol" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-file"></span> OpenControl </a></li>
+                {% endif %}
+
             </ul>
 
             <!-- Tab panels -->
@@ -315,6 +318,29 @@
 
                 </div>
 
+              <!-- Tab panel: oscal -->
+              {% if enable_experimental_oscal %}
+                <div role="tabpanel" class="tab-pane" id="oscal">
+                  <p id="oscal_download" class="navbar-text navbar-right">
+                    <a id="oscal_download_json_link"
+                       class="navbar-link"
+                       href="/systems/{{ system.id }}/component/{{ element.id }}/download/oscal/json">
+                      <span class="glyphicon glyphicon-download"></span>
+                      Download ...
+                    </a>
+                  </p>
+                  <div id="combined_smt" class="control-text"><h3>OSCAL</h3></div>
+                  <div class="systems-element-oscal">{{ oscal }}</div>
+                </div>
+              {% endif %}
+
+              <!-- Tab panel: opencontrol -->
+              {% if enable_experimental_opencontrol %}
+                <div role="tabpanel" class="tab-pane" id="opencontrol">
+                    <div id="combined_smt" class="control-text"><h3>OpenControl (under development)</h3></div>
+                    <div class="systems-element-opencontrol">{{ opencontrol }}</div>
+                </div>
+              {% endif %}
 
                 <!-- Modal -->
                 <form class="form-inline" method="post" action="/systems/{{ system.id }}/components/editor_autocomplete">
@@ -356,17 +382,6 @@
                     </div>
                 </form>
             </div>
-
-
-            <!-- Tab panel: combined -->
-            {% if enable_experimental_oscal %}
-                <div role="tabpanel" class="tab-pane" id="oscal">
-                    <div id="combined_smt" class="control-text"><h3>OSCAL (under development)</h3></div>
-                    <div>See reference <a href="https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json">https://github.com/usnistgov/OSCAL/blob/master/content/ssp-example/json/ssp-example.json</a></div>
-                    <div style="font-family: monospace; font-size:12px; white-space: pre;">{{ oscal }}</div>
-                </div>
-            {% endif %}
-
 
         </div>
     </div>
