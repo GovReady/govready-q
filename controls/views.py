@@ -297,7 +297,8 @@ def import_record_delete(request, import_record_id):
 
     messages.add_message(request, messages.INFO, f"Deleted import: {import_created}")
 
-    return component_library(request)
+    response = redirect('/controls/components')
+    return response
 
 
 class ComponentSerializer(object):
