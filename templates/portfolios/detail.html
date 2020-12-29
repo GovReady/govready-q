@@ -34,7 +34,7 @@ Remove contextbar from top of page
         <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn
         btn-success">Start a project</a>
         {% if can_change_portfolio %}
-            <a id="manage-portfolio" onclick="show_manage_portfolio_modal('{{ portfolio.id }}'); return false;" href="#"
+            <a id="manage-portfolio" onclick="show_manage_portfolio_modal('{{ portfolio.id }}', '{{ portfolio.title }}'); return false;" href="#"
                class=" btn btn-success">Manage Portfolio</a>
         {% endif %}
         {% if can_invite_to_portfolio %}

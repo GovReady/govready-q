@@ -1392,7 +1392,6 @@ def portfolio_list(request):
 @login_required
 def new_portfolio(request):
     """Form to create new portfolios"""
-    form = PortfolioForm()
     if request.method == 'POST':
         try:
             form = PortfolioForm(request.POST)
@@ -1414,7 +1413,8 @@ def new_portfolio(request):
                 return redirect('portfolio_projects', pk=portfolio.pk)
         except IntegrityError:
             messages.add_message(request, messages.ERROR, "Portfolio name not available." )
-
+    else:
+        form = PortfolioForm()
     return render(request, 'portfolios/form.html', {
         'form': form,
         "project_form": ProjectForm(request.user),
@@ -1431,12 +1431,8 @@ def delete_portfolio(request, pk):
             user={"id": request.user.id, "username": request.user.username}
         )
         Portfolio.objects.get(pk=pk).delete()
+        return redirect("list_portfolios")
 
-
-        return render(request, "portfolios/index.html", {
-            "portfolios": request.user.portfolio_list() if request.user.is_authenticated else None,
-            "project_form": ProjectForm(request.user),
-        })
 
 @login_required
 def edit_portfolio(request, pk):
@@ -1462,6 +1458,7 @@ def edit_portfolio(request, pk):
             )
             return redirect('portfolio_projects', pk=portfolio.pk)
     if request.method == 'POST':
+        portfolio = Portfolio.objects.get(pk=pk)
         try:
             form = PortfolioForm(request.POST, instance=portfolio)
             if form.is_valid():
