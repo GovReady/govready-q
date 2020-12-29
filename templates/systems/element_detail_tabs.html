@@ -333,12 +333,14 @@
                   </select>
                   <input type="hidden" id="sid_class_panel_num" name="sid_class" prompt="Enter catalog_key" value="{{ catalog_key }}">
                 </div>
-
-
                 <div class="form-group">
                   <input type="hidden" id="smt_id" name="smt_id" value="">
-                  <label for="statement">Statement</label>
+                  <label for="statement">What is the solution and how is it implemented?</label>
                   <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="statement">Part</label>
+                  <input type="text" class="form-control" id="pid" name="pid" placeholder="Statement part (e.g., h)" value="" style="width:180px;">
                 </div>
                 <div class="form-group">
                   <label for="status">Status</label>
@@ -387,7 +389,7 @@
                       </div>
                       <div class="form-group">
                         <input type="hidden" id="smt_id" name="smt_id" value="">
-                        <label for="statement">Statement</label>
+                        <label for="statement">What is the solution and how is it implemented?</label>
                         <textarea class="form-control" id="body_panel_num" name="body" placeholder="How component contributes to control" rows="5" cols="50"></textarea>
                       </div>
                       <div class="form-group">
@@ -407,7 +409,7 @@
                       </div>
                       <div class="form-group">
                         <label for="remarks">Remarks</label>
-                        <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team"  rows="4" cols="50"></textarea>
+                        <textarea class="form-control" id="remarks_panel_num" name="remarks" placeholder="Add remarks for team" rows="4" cols="50"></textarea>
                       </div>
                       <input type="hidden" id="system_id_panel_num" name="system_id" value="{{ system.id }}">
                       <input type="hidden" id="statement_type_panel_num" name="statement_type" value="control_implementation">
