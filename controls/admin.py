@@ -28,7 +28,6 @@ class ImportRecordAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('created', 'uuid')
     actions = ["export_as_csv"]
 
-
 class StatementAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
     actions = ["export_as_csv"]
