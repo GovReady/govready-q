@@ -27,6 +27,7 @@ from .good_settings_helpers import \
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
 from .notifications_helpers import *
 
+import sys
 import logging
 logging.basicConfig()
 import structlog
@@ -1182,7 +1183,6 @@ def move_project(request, project_id):
         )
         return JsonResponse({ "status": "ok" })
     except:
-        import sys
         return JsonResponse({ "status": "error", "message": sys.exc_info() })
    
     

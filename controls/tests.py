@@ -473,13 +473,13 @@ class ProjectUnitTests(TestCase):
         new_portfolio = Portfolio.objects.create(title="Portfolio 2") 
         project = Project.objects.create(portfolio=initial_porfolio)
         project.portfolio = initial_porfolio
-        self.assertTrue(initial_porfolio.id is not None)
-        self.assertTrue(new_portfolio.id is not None)
-        self.assertTrue(project.id is not None)
-        self.assertTrue(project.portfolio.id is not None)
-        self.assertTrue(project.portfolio.title == "Portfolio 1")
+        self.assertIsNotNone(initial_porfolio.id)
+        self.assertIsNotNone(new_portfolio.id)
+        self.assertIsNotNone(project.id)
+        self.assertIsNotNone(project.portfolio.id)
+        self.assertEqual(project.portfolio.title,"Portfolio 1")
         project.portfolio = new_portfolio
-        self.assertTrue(project.portfolio.title == "Portfolio 2")
+        self.assertEqual(project.portfolio.title,"Portfolio 2")
         project.delete()
         self.assertTrue(project.id is None)
 
