@@ -46,6 +46,7 @@ else:
 	# Show the defaults.
 	print("\nCouldn't find `local/environment.json` file. Generating default environment params.")
 	print("Please create a '%s' file containing something like this:" % local("environment.json"))
+	environment["secret-key"] = make_secret_key() # Generate a new key
 	print(json.dumps(environment, sort_keys=True, indent=2))
 	print()
 
