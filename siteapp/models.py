@@ -610,6 +610,20 @@ class Project(models.Model):
         users = list(chain(queryset1, queryset2))
         return users
 
+    # faster than checking `get_admins()` on many projects
+    @staticmethod
+    def is_admin_of_all(user, projects):
+        # Project members from 0.8.6 permissions structure with "is_admin" flag have Project admin rights
+        queryset1 = ProjectMembership.objects.filter(project__in=projects, is_admin=True, user=user)
+        # Project's Portfolio owner from 0.9.0 Django guardian permission structure have Project admin rights
+        queryset2 = get_objects_for_user(user, ['can_grant_portfolio_owner_permission'], klass=Project)
+
+        # convert everything to a Project (queryset1 isn't), filter out irrelevant projects, and filter out duplicates
+        has_admin_on = set(chain([x.project for x in queryset1], [proj for proj in queryset2 if proj in projects]))
+
+        return len(projects) == len(has_admin_on)
+
+
     def is_deletable(self):
         return not self.is_organization_project and not self.is_account_project
 

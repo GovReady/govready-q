@@ -170,10 +170,9 @@ class AppVersion(models.Model):
         if len(projects) == 0:
             # This AppVersion doesn't appear to be in use! Well, lock it down.
             return False
-        for project in projects:
-            if user not in Project.objects.get(id=project).get_admins():
-                return False
-        return True
+        if Project.is_admin_of_all(user, projects):
+            return True
+        return False
 
     @staticmethod
     def get_startable_apps(organization, userid):
