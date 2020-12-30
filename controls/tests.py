@@ -20,6 +20,7 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 
 from controls.models import System
+from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
 from siteapp.models import User
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests
 from system_settings.models import SystemSettings
@@ -402,15 +403,19 @@ class StatementUnitTests(TestCase):
             status = "Implemented"
         )
         smt.save()
+        # orphaned w/o prototype
+        self.assertEqual(smt.prototype_synched, STATEMENT_ORPHANED)
+
         # Create statement prototype
         smt.create_prototype()
         self.assertEqual(smt.body, smt.prototype.body)
         self.assertNotEqual(smt.id, smt.prototype.id)
-        self.assertTrue(smt.prototype_synched)
+        self.assertEqual(smt.prototype_synched, STATEMENT_SYNCHED)
+
         # Change statement compared to prototype
         smt.prototype.body = smt.prototype.body + "\nModified statememt"
         smt.prototype.save()
-        self.assertFalse(smt.prototype_synched)
+        self.assertEqual(smt.prototype_synched, STATEMENT_NOT_SYNCHED)
         self.assertEqual(smt.diff_prototype_main, [(0, 'This is a test statement.'), (-1, '\nModified statememt')])
 
 class ElementUnitTests(TestCase):
