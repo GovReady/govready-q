@@ -1,3 +1,4 @@
+from collections import ChainMap
 from itertools import chain
 from typing import Dict
 
@@ -12,7 +13,7 @@ from django.utils import crypto, timezone
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
-from controls.models import System, Element
+from controls.models import System, Element, OrgParams
 from jsonfield import JSONField
 
 import logging
@@ -399,11 +400,17 @@ class Organization(models.Model):
         Return a dictionary of organizational settings for a given catalog key
         Keys are OSCAL style parameter identifiers, e.g. 'ac-1_prm_1' would be the
         first parameter for ac-1.
+
+        Default values come from the baseline controls.models.OrgParams;
+        each Organization can override via OrganizationalSettings.
         """
 
-        settings = self.organizationalsetting_set.filter(catalog_key=catalog_key)
-        return dict((setting.parameter_key, setting.value) for setting in settings)
-    
+        default_params = OrgParams().get_org_params('org_params_low_fedramp')
+        org_settings = self.organizationalsetting_set.filter(catalog_key=catalog_key)
+        org_params = dict((setting.parameter_key, setting.value) for setting in org_settings)
+
+        return ChainMap(org_params, default_params)
+
 class OrganizationalSetting(models.Model):
     """
     Captures an organizationally-defined setting for a parameterized control

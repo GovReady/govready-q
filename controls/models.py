@@ -621,67 +621,45 @@ class Baselines (object):
     def body(self):
         return self.legacy_imp_smt
 
-class OrgParams (object):
-    """Represent list of organizational defined parameters. Temporary class to work with default org params."""
-    def __init__(self):
+class OrgParams(object):
+    """
+    Represent list of organizational defined parameters. Temporary
+    class to work with default org params.
+    """
+    
+    _singleton = None
+    
+    def __new__(cls):
+        if cls._singleton is None:
+            cls._singleton = super(OrgParams, cls).__new__(cls)
+            cls._singleton.init()
+            
+        return cls._singleton
+    
+    def init(self):
         global ORGPARAM_PATH
-        self.file_path = ORGPARAM_PATH
-        self.odp_keys = self._list_keys()
-        # self.index = self._build_index()
+        self.cache = {}
+        for f in ['org_params_low_fedramp.json',
+                  'org_params_mod_fedramp.json',
+                  'org_params_high_fedramp.json']:
+            path = Path(ORGPARAM_PATH) / Path(f)
+            key, values = self.load_param_file(path)
+            self.cache[key] = values
+    
+    def load_param_file(self, path):
+        with path.open("r") as json_file:
+            data = json.load(json_file)
+            if 'key' in data and 'values' in data:
+                return (data["key"], data["values"])
+            else:
+                raise Exception("Invalid organizational parameter file {}".format(path))
+                
+    def get_keys(self):
+        return self.cache.keys()
+    
+    def get_params(self, key):
+        return self.cache.get(key, {})
 
-        # Usage
-            # from controls.models import OrgParams
-            # odp = OrgParams()
-            # odp.odp_keys
-            # odp53 = odp._load_json('org_params_mod_fedramp')
-            # odp53['ac-1_prm_2']
-            # # Returns 'at least every 3 years'
-            # odp.get_org_params('org_params_mod_fedramp')
-
-    def _list_files(self):
-        return [
-            'org_params_low_fedramp.json',
-            'org_params_mod_fedramp.json',
-            'org_params_high_fedramp.json',
-        ]
-
-    def _list_keys(self):
-        return [
-            'org_params_low_fedramp',
-            'org_params_mod_fedramp',
-            'org_params_high_fedramp'
-        ]
-
-    def _load_json(self, odp_key):
-        """Read baseline file - JSON"""
-        # TODO Escape odp_key
-        self.data_file = odp_key + ".json"
-        data_file = os.path.join(self.file_path, self.data_file)
-        # Does file exist?
-        if not os.path.isfile(data_file):
-            print("ERROR: {} does not exist".format(data_file))
-            return False
-        # Load file as json
-        try:
-            with open(data_file, 'r') as json_file:
-                data = json.load(json_file)
-            return data
-        except:
-            print("ERROR: {} could not be read or could not be read as json".format(data_file))
-            return False
-
-    def get_org_params(self, odp_key):
-        """Return org defined param ids odp_key"""
-        if odp_key in self.odp_keys:
-            data = self._load_json(odp_key)
-        else:
-            print("Requested odp_key not found in odp_key data file")
-            return False
-        return data.keys()
-
-    @property
-    def body(self):
-        return self.legacy_imp_smt
 
 class Poam(models.Model):
     statement = models.OneToOneField(Statement, related_name="poam", unique=False, blank=True, null=True, on_delete=models.CASCADE, help_text="The Poam details for this statement. Statement must be type Poam.")
