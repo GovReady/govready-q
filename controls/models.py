@@ -13,7 +13,6 @@ from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
-
 class ImportRecord(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
@@ -27,6 +26,10 @@ class ImportRecord(models.Model):
             component_statements[component] = Statement.objects.filter(producer_element=component)
 
         return component_statements
+
+STATEMENT_SYNCHED = 'synched'
+STATEMENT_NOT_SYNCHED = 'not_synched'
+STATEMENT_ORPHANED = 'orphaned'
 
 class SystemException(Exception):
     """Class for raising custom exceptions with Systems"""
@@ -133,12 +136,18 @@ class Statement(models.Model):
 
     @property
     def prototype_synched(self):
-        """Return True if statement of type `control_implementation` and its prototype"""
+        """Returns one of STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED for control_implementations"""
 
-        if self.body == self.prototype.body:
-            return True
+        if self.statement_type == "control_implementation":
+            if self.prototype:
+                if self.body == self.prototype.body:
+                    return STATEMENT_SYNCHED
+                else:
+                    return STATEMENT_NOT_SYNCHED
+            else:
+                return STATEMENT_ORPHANED
         else:
-            return False
+            return STATEMENT_NOT_SYNCHED
 
     @property
     def diff_prototype_main(self):

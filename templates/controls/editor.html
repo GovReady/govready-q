@@ -203,10 +203,10 @@
                                                 <div class="form-group">
                                                     <input type="hidden" id="smt_id" name="smt_id" value="{{ smt.id }}">
                                                     <label for="statement">What is the solution and how is it implemented?
-                                                        {% if smt.prototype_synched %}
+                                                        {% if smt.prototype_synched == 'synched' %}
                                                             <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: green;"><span
                                                                     class="glyphicon glyphicon-check"></span> Same as certified</a></span>
-                                                        {% else %}
+                                                        {% elif smt.prototype_synched == 'not_synched' %}
                                                             <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span
                                                                     class="glyphicon glyphicon-alert"></span> Differs from certified</a></span>
                                                         {% endif %}
@@ -221,14 +221,18 @@
                                                                 Comparison of current statement to certified statement:
                                                             </div>
                                                             <div id="diff_comparison_{{ forloop.counter }}">
-                                                                {% if smt.prototype_synched %}Texts are identical.{% else %}{{ smt.diff_prototype_prettyHtml|safe }}{% endif %}
+                                                                {% if smt.prototype_synched == 'synched' %}
+                                                                  Texts are identical.
+                                                                {% elif smt.prototype_synched == 'not_synched' %}
+                                                                  {{ smt.diff_prototype_prettyHtml|safe }}
+                                                                {% endif %}
                                                             </div>
                                                             <br/>
                                                             <div style="text-decoration: underline;font-weight: bold;">
-                                                                {% if not smt.prototype_synched %}Options:{% endif %}
+                                                                {% if smt.prototype_synched == 'not_synched' %}Options:{% endif %}
                                                             </div>
                                                             <div>
-                                                                {% if not smt.prototype_synched %}
+                                                                {% if smt.prototype_synched == 'not_synched' %}
                                                                     <button type="button" name="overwrite" value="overwrite" class="btn btn-xs btn-primary" onclick="copy_smt_prototype('{{ forloop.counter }}');return false;">Overwrite current statement</button>
                                                                     {% if user.is_superuser %}
                                                                         <button type="button" name="update_certified" value="update_certified" class="btn btn-xs btn-danger" onclick="update_smt_prototype('{{ forloop.counter }}');return false;">Update certified text</button>
