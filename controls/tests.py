@@ -303,22 +303,19 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element('input#import_component_submit')
 
-        element_count = Element.objects.filter(name='Test OSCAL Component').count()
-        self.assertEqual(element_count, 1)
+        element_count = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count, 2)
 
-        statement1_count = Statement.objects.filter(uuid='1ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
-        self.assertEqual(statement1_count, 1)
-
-        statement2_count = Statement.objects.filter(uuid='2ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
-        self.assertEqual(statement2_count, 1)
+        statement_count = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count, 4)
 
         # Verify that statements without a proper Catalog don't get entered
-        statement3_count = Statement.objects.filter(uuid='4ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
-        self.assertEqual(statement3_count, 0)
+        bad_catalog_statement_count = Statement.objects.filter(uuid='1bb0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(bad_catalog_statement_count, 0)
 
         # Verify that statements without a proper Control don't get entered
-        statement4_count = Statement.objects.filter(uuid='6ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
-        self.assertEqual(statement4_count, 0)
+        bad_control_id_statement_count = Statement.objects.filter(uuid='3bb0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(bad_control_id_statement_count, 0)
 
         var_sleep(1) # Needed to allow page to refresh and messages to render
 
@@ -330,11 +327,11 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element('input#import_component_submit')
 
-        element_count = Element.objects.filter(name='Test OSCAL Component').count()
-        self.assertEqual(element_count, 1)
+        element_count = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count, 2)
 
-        statement1_count = Statement.objects.filter(uuid='1ab0b252-90d3-4d2c-9785-0c4efb254dfc').count()
-        self.assertEqual(statement1_count, 1)
+        statement_count = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count, 4)
 
 
 class StatementUnitTests(TestCase):

@@ -351,7 +351,9 @@ class ComponentImporter(object):
             return False
         if self.validate_oscal_json(oscal_json):
             # Returns list of created components
-            return self.create_components(oscal_json, request)
+            created_components = self.create_components(oscal_json, request)
+            messages.add_message(request, messages.INFO, f"Created {len(created_components)} components.")
+            return created_components
         else:
             messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
             return False
@@ -393,10 +395,10 @@ class ComponentImporter(object):
         try:
             existing_element_uuids = Element.objects.filter(uuid=component_uuid).count()
         except ValidationError:
-            messages.add_message(request, messages.ERROR, f"Invalid Component UUID ({component_uuid}). Skipping Component...")
+            logger.info(f"Invalid Component UUID ({component_uuid}). Skipping Component...")
             return None
         if existing_element_uuids > 0:
-            messages.add_message(request, messages.ERROR, f"Component already exists with UUID {component_uuid}. Skipping Component...")
+            logger.info(f"Component already exists with UUID {component_uuid}. Skipping Component...")
             return None
         try:
             new_component = Element.objects.create(
@@ -408,24 +410,24 @@ class ComponentImporter(object):
                 uuid=component_uuid
             )
             new_component.save()
-            messages.add_message(request, messages.INFO, f"Component {component_json['name']} created.")
+            logger.info(f"Component {component_json['name']} created.")
             control_implementation_statements = component_json['control-implementations']
             for control_element in control_implementation_statements:
-                catalog = control_element['source'] if 'source' in control_element else None
-                implementation_statements = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
-                self.create_control_implementation_statements(catalog, implementation_statements, new_component, request)
+                catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
+                implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
+                created_statements = self.create_control_implementation_statements(catalog, implemented_reqs, new_component, request)
             return new_component
         except IntegrityError:
-            messages.add_message(request, messages.ERROR, f"Component with name {component_json['name']} already exists. Skipping Component...")
+            logger.info(f"Component with name {component_json['name']} already exists. Skipping Component...")
             return None
 
-    def create_control_implementation_statements(self, catalog_key, implementation_statements, parent_component, request):
+    def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component, request):
         """Creates a Statement from a JSON dictimplemented-requirements
 
         @type catalog_key: str
         @param catalog_key: Catalog of the control statements
-        @type implementation_statements: list
-        @param implementation_statements: Implementation statements
+        @type implemented_reqs: list
+        @param implemented_reqs: Implemented controls
         @type parent_component: str
         @param parent_component: UUID of parent component
         @rtype: dict
@@ -434,41 +436,63 @@ class ComponentImporter(object):
 
         new_statements = []
 
-        for impl_stmnt in implementation_statements:
+        for implemented_control in implemented_reqs:
 
-            control_id = impl_stmnt['control-id'] if 'control-id' in impl_stmnt else ''
-            stmnt_uuid = impl_stmnt['uuid'] if 'uuid' in impl_stmnt else ''
+            control_id = oscalize_control_id(implemented_control['control-id']) if 'control-id' in implemented_control else ''
+            statements = implemented_control['statements'] if 'statements' in implemented_control else ''
 
-            try:
-                existing_statement_uuids = Statement.objects.filter(uuid=stmnt_uuid).count()
-            except ValidationError:
-                messages.add_message(request, messages.ERROR, f"Statement UUID {stmnt_uuid} is invalid. Skipping Statement...")
-                continue
+            for stmnt_id in statements:
+                statement = statements[stmnt_id]
 
-            if existing_statement_uuids > 0:
-                messages.add_message(request, messages.ERROR, f"Statement with UUID {stmnt_uuid} already exists. Skipping Statement...")
-                continue
+                # If the UUID already exists or is invalid, skip this statement
+                if 'uuid' in statement:
+                    stmnt_uuid = statement['uuid']
+                    try:
+                        existing_statement_uuids = Statement.objects.filter(uuid=stmnt_uuid).count()
+                    except ValidationError:
+                        logger.info(f"Statement UUID {stmnt_uuid} is invalid. Skipping Statement...")
+                        continue
+                    if existing_statement_uuids > 0:
+                        logger.info(f"Statement with UUID {stmnt_uuid} already exists. Skipping Statement...")
+                        continue
 
-            if self.control_exists_in_catalog(catalog_key, control_id):
-                try:
-                    new_statement = Statement.objects.create(
-                        sid=control_id,
-                        sid_class=catalog_key,
-                        pid=impl_stmnt['properties'][0]['value'] if 'properties' in impl_stmnt and 'value' in impl_stmnt['properties'][0] else None,
-                        body=impl_stmnt['description'] if 'description' in impl_stmnt else None,
-                        statement_type="control_implementation_prototype",
-                        remarks=impl_stmnt['remarks'] if 'remarks' in impl_stmnt else None,
-                        status=impl_stmnt['status'] if 'status' in impl_stmnt else None,
-                        producer_element=parent_component,
-                        uuid=stmnt_uuid,
-                    )
-                    new_statement.save()
-                    messages.add_message(request, messages.INFO, f"New statement with UUID {stmnt_uuid} created.")
-                    new_statements.append(new_statement)
-                except IntegrityError:
-                    messages.add_message(request, messages.ERROR, f"Statement with UUID {stmnt_uuid} already exists. Skipping Statement...")
-            else:
-                messages.add_message(request, messages.ERROR, f"Control {control_id} doesn't exist in this Catalog. Skipping Statement with UUID {stmnt_uuid}...")
+                part = get_control_statement_part(stmnt_id)
+                if 'description' in statement:
+                    description = statement['description']
+                elif 'description' in implemented_control:
+                    description = implemented_control['description']
+                else:
+                    description = ''
+
+                if 'remarks' in statement:
+                    remarks = statement['remarks']
+                elif 'remarks' in implemented_control:
+                    remarks = implemented_control['remarks']
+                else:
+                    remarks = ''
+
+                if self.control_exists_in_catalog(catalog_key, control_id):
+                    try:
+                        new_statement = Statement.objects.create(
+                            sid=control_id,
+                            sid_class=catalog_key,
+                            pid=part,
+                            body=description,
+                            statement_type="control_implementation_prototype",
+                            remarks=remarks,
+                            status=implemented_control['status'] if 'status' in implemented_control else None,
+                            producer_element=parent_component,
+                            uuid=stmnt_uuid,
+                        )
+                        new_statement.save()
+                        logger.info(f"New statement with UUID {stmnt_uuid} created.")
+                        new_statements.append(new_statement)
+                    except IntegrityError:
+                        logger.info(f"Statement with UUID {stmnt_uuid} already exists. Skipping Statement...")
+                        continue
+                else:
+                    logger.info(f"Control {control_id} doesn't exist in this Catalog. Skipping Statement with UUID {stmnt_uuid}...")
+                    continue
 
         return new_statements
 
