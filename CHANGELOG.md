@@ -4,6 +4,19 @@ GovReady-Q Release Notes
 v.999 (December XX, 2020)
 --------------------------------
 
+**Feature changes**
+
+* Track batch imports of components (via OSCAL) into component library for tracking and management purposes; enable deletes of batch imports.
+
+**UI changes**
+
+* New screens for tracking and deleting batch imports of components (via OSCAL) into component library.
+
+**Developer changes**
+
+* New `controls.models.ImportRecord` model for tracking batch imports of components (via OSCAL) into component library.
+* New routes and views related for tracking batch imports of components (via OSCAL) into component library.
+
 **Bug fixes**
 
 * Fix missing "part" field on Component's component statement form and incorrectly displaying the "remarks" field (#1232)
