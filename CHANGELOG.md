@@ -10,12 +10,14 @@ v.999 (December XX, 2020)
 
 **UI changes**
 
+* New dialog in Component Library for importing components in OSCAL JSON format
 * New screens for tracking and deleting batch imports of components (via OSCAL) into component library.
 
 **Developer changes**
 
 * New `controls.models.ImportRecord` model for tracking batch imports of components (via OSCAL) into component library.
 * New routes and views related for tracking batch imports of components (via OSCAL) into component library.
+* Fix OSCAL component import to use "statement" JSON property.
 
 **Bug fixes**
 
