@@ -4,6 +4,28 @@ GovReady-Q Release Notes
 v.999 (December XX, 2020)
 --------------------------------
 
+**Feature changes**
+
+* Track batch imports of components (via OSCAL) into component library for tracking and management purposes; enable deletes of batch imports.
+* Support defining multiple allowed hosts via the `local/environment.json` file.
+
+**UI changes**
+
+* New dialog in Component Library for importing components in OSCAL JSON format
+* New screens for tracking and deleting batch imports of components (via OSCAL) into component library.
+
+**Developer changes**
+
+* New `controls.models.ImportRecord` model for tracking batch imports of components (via OSCAL) into component library.
+* New routes and views related for tracking batch imports of components (via OSCAL) into component library.
+* Fix OSCAL component import to use "statement" JSON property.
+* Support defining multiple allowed hosts via the `local/environment.json` file via new `allowed_hosts` environment parameter.
+
+**Bug fixes**
+
+* Fix missing "part" field on Component's component statement form and incorrectly displaying the "remarks" field (#1232)
+* Fix display of OSCAL into correct tab on system's component's page
+
 v.0.9.1.48.1 (December 17, 2020)
 --------------------------------
 

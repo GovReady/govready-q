@@ -283,6 +283,8 @@ a.glyphicon-home-icon { color: black; margin-right: .25em; text-decoration:none;
 
 /* Component Library */
 #component-new, #component-import-oscal { margin-top: 0em; }
+#component_import_form #import_loading_spinner { width: 10em; }
+a#delete-import.btn {float: right; margin-top: 1em;}
 
 form #id_json_content { width: 100%; overflow: auto !important; } /* The !important is to fix a bug with textareas not allowing scrolling. */
 
