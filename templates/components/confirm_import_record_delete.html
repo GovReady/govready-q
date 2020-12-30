@@ -17,14 +17,13 @@
 
 {% block body %}
 
-    <h2 class="">Confirm Import Delete</h2>
-    <h3>Import Record: {{ import_record.created }}</h3>
+    <h2 class="">Confirm Import Delete: Import Record {{ import_record.id }}</h2>
+    <h3>{{ import_record.created }}</h3>
 
     <p>This import includes {{ component_count }} components{{ component|pluralize }} and {{ statement_count }} statements{{ statement|pluralize }}.</p>
-    <p>&nbsp;</p>
 
-  <a id="cancel-import-delete" class="btn btn-default" href="/controls/components">Cancel</a>
-  <a id="confirm-import-delete" class="btn btn-danger" href="/controls/import_records/{{ import_record.id }}/delete">Delete</a>
+  <a id="cancel-import-delete" class="btn btn-default" href="{% url 'component_library' %}">Cancel</a>
+  <a id="confirm-import-delete" class="btn btn-danger" href="{% url 'import_record_delete' import_record.id %}">Delete</a>
 
   {{ block.super }}
 {% endblock %}

@@ -34,16 +34,17 @@
     <p>&nbsp;</p>
 
   <div id="tab-content" class="row rows-header" style="">
-    <div id="" class="col-xs-3 col-sm-3 col-md-3 col-lg-3 col-xl-3"><span style="font-size: 14pt; font-weight: bold;">Available Imports</div>
+    <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">Import Record ID</div>
+    <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">Date</div>
+    <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">Components</div>
   </div>
   {% for import, components in import_components.items %}
     <div id="tab-content" class="row row-control" style="">
       <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
-        <a class="import_record_detail_link" href="/controls/import_records/{{ import.id }}/details">{{ import.created }}</a>
+        <a class="import_record_detail_link" href="/controls/import_records/{{ import.id }}/details">{{ import.id }}</a>
       </div>
-      <div id="" class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8">
-        {{ components|length }} components
-      </div>
+      <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">{{ import.created }}</div>
+      <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">{{ components|length }}</div>
     </div>
   {% endfor %}
 
