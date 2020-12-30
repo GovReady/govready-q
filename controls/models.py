@@ -13,9 +13,25 @@ from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
+
+class ImportRecord(models.Model):
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier for this Import Record.")
+
+    def get_components_statements(self):
+        components = Element.objects.filter(import_record=self)
+        component_statements = {}
+
+        for component in components:
+            component_statements[component] = Statement.objects.filter(producer_element=component)
+
+        return component_statements
+
 class SystemException(Exception):
     """Class for raising custom exceptions with Systems"""
     pass
+
 
 class Statement(models.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=True, null=True)
@@ -35,6 +51,8 @@ class Statement(models.Model):
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
+    import_record = models.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
+                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
 
     class Meta:
         indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'),]
@@ -153,6 +171,7 @@ class Statement(models.Model):
     # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
+
 class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
@@ -161,6 +180,8 @@ class Element(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
+    import_record = models.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
+                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)

@@ -21,35 +21,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from controls.models import System
 from siteapp.models import User
-from siteapp.tests import SeleniumTest, var_sleep
+from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests
 from system_settings.models import SystemSettings
 from .models import *
 from .oscal import Catalogs, Catalog
 
 
-# from controls.oscal import Catalogs, Catalog
-
-# ####### siteapp.test
-# import os
-# import os.path
-# import re
-# from unittest import skip
-
-# from django.conf import settings
-# from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-# from django.utils.crypto import get_random_string
-
-# from siteapp.models import (Organization, Portfolio, Project,
-#                             ProjectMembership, User)
-
-# ######guidedmodules.test
-# from django.test import TestCase
-# from django.conf import settings
-
-# from siteapp.models import Organization, Project, User
-# from guidedmodules.models import Module, Task, TaskAnswer
-# from guidedmodules.module_logic import *
-# from guidedmodules.app_loading import load_app_into_database
+from urllib.parse import urlparse
 
 
 #####################################################################
@@ -60,6 +38,7 @@ class SampleTest(TestCase):
     ## Simply dummy test ##
     def test_tests(self):
         self.assertEqual(1,1)
+
 
 class Oscal80053Tests(TestCase):
     # Test
@@ -143,30 +122,9 @@ class ControlUITests(SeleniumTest):
         self.assertInNodeText("AC-2 (4)", "#control-heading")
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
-    # def test_control_lookup_no_matching_id(self):
-    #     self.browser.get(self.url("/controls/800-53/XX-2/"))
-    #     self.assertInNodeText("XX-2", "#control-heading")
-    #     self.assertInNodeText("The control XX-2 was not found in the control catalog.", "#control-message")
-
-# class ControlUIControlEditorTests(SeleniumTest):
-#     def test_homepage(self):
-#         self.browser.get(self.url("/controls/editor"))
-#         self.assertInNodeText("Test works", "p")
-
-    # def test_control_lookup(self):
-    #     self.browser.get(self.url("/controls/800-53/AU-2/"))
-    #     self.assertInNodeText("AU-2", "#control-heading")
-    #     self.assertInNodeText("Audit Events", "#control-heading")
-
-    # def test_control_enhancement_lookup(self):
-    #     self.browser.get(self.url("/controls/800-53/AC-2 (4)/"))
-    #     self.assertInNodeText("AC-2 (4)", "#control-heading")
-    #     self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
 #####################################################################
 
-
-from siteapp.tests import OrganizationSiteFunctionalTests
 
 class ComponentUITests(OrganizationSiteFunctionalTests):
 
@@ -332,6 +290,79 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         statement_count = Statement.objects.filter(statement_type="control_implementation_prototype").count()
         self.assertEqual(statement_count, 4)
+
+    def test_import_tracker(self):
+        """Tests that imports are tracked correctly."""
+
+        self._login()
+        url = self.url(f"/controls/components")
+        self.browser.get(url)
+
+        # Test initial import of Component(s) and Statement(s)
+        self.click_element('a#component-import-oscal')
+        self.click_element('a#import_records_link')
+
+        current_path = urlparse(self.browser.current_url).path
+        self.assertEqual('/controls/import_records', current_path)
+
+        import_record_links = self.browser.find_elements_by_class_name('import_record_detail_link')
+        self.assertEqual(len(import_record_links), 0)
+
+        # Create an Import Record with a component and statement
+        helper = ControlTestHelper()
+        helper.create_simple_import_record()
+
+        self.browser.refresh()
+        var_sleep(1)
+
+        import_record_links = self.browser.find_elements_by_class_name('import_record_detail_link')
+        self.assertEqual(len(import_record_links), 1)
+
+    def test_import_delete(self):
+        """Tests that import deletions remove child components and statements."""
+
+        # Create an Import Record with a component and statement
+        helper = ControlTestHelper()
+        import_record = helper.create_simple_import_record()
+
+        self._login()
+        url = self.url(f"/controls/import_records")
+        self.browser.get(url)
+
+        self.click_element(f"a.import_record_detail_link")
+        self.click_element(f"a#delete-import")
+
+        # Test that cancel doesn't delete the import, and redirects to the component library
+        self.click_element(f"a#cancel-import-delete")
+
+        current_path = urlparse(self.browser.current_url).path
+        self.assertEqual('/controls/components', current_path)
+
+        import_records_count = ImportRecord.objects.all().count()
+        self.assertEqual(import_records_count, 1)
+        component_count = Element.objects.filter(import_record=import_record).count()
+        self.assertEqual(component_count, 1)
+        statement_count = Statement.objects.filter(import_record=import_record).count()
+        self.assertEqual(statement_count, 1)
+
+        # Test that confirming the deletion deletes the import, component, and statement
+        url = self.url(f"/controls/import_records")
+        self.browser.get(url)
+        self.click_element(f"a.import_record_detail_link")
+        self.click_element(f"a#delete-import")
+
+        self.click_element(f"a#confirm-import-delete")
+
+        var_sleep(1)
+        current_path = urlparse(self.browser.current_url).path
+        self.assertEqual('/controls/components', current_path)
+
+        import_records_count = ImportRecord.objects.all().count()
+        self.assertEqual(import_records_count, 0)
+        component_count = Element.objects.filter(import_record=import_record).count()
+        self.assertEqual(component_count, 0)
+        statement_count = Statement.objects.filter(import_record=import_record).count()
+        self.assertEqual(statement_count, 0)
 
 
 class StatementUnitTests(TestCase):
@@ -698,3 +729,31 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 7
 
+
+class ControlTestHelper(object):
+
+    def create_simple_import_record(self):
+        # Create an Import Record with a component and statement
+        import_record = ImportRecord.objects.create()
+        import_record.save()
+
+        component = Element.objects.create(
+            name='Test Component',
+            description='This is a test component',
+            element_type="system_element",
+            import_record=import_record,
+        )
+        component.save()
+
+        statement = Statement.objects.create(
+            sid='ac-7',
+            sid_class='NIST_SP-800-53_rev4',
+            pid='a',
+            body='This is a sample statement',
+            statement_type="control_implementation_prototype",
+            producer_element=component,
+            import_record=import_record,
+        )
+        statement.save()
+
+        return import_record

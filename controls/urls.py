@@ -42,10 +42,14 @@ urlpatterns = [
 
     # Component Library
     url(r'^components$', views.component_library, name="component_library"),
-    url(r'^components/new$', views.new_element),
+    url(r'^components/new$', views.new_element, name="new_element"),
     url(r'^components/(?P<element_id>.*)/_copy$', views.component_library_component_copy, name="component_library_component_copy"),
     url(r'^components/(?P<element_id>.*)$', views.component_library_component, name="component_library_component"),
     url(r'^import_component$', views.import_component, name="import_component"),
+    url(r'^import_records$', views.import_records, name="import_records"),
+    url(r'^import_records/(?P<import_record_id>.*)/details$', views.import_record_details, name="import_record_details"),
+    url(r'^import_records/(?P<import_record_id>.*)/delete_confirm$', views.confirm_import_record_delete, name="confirm_import_record_delete"),
+    url(r'^import_records/(?P<import_record_id>.*)/delete$', views.import_record_delete, name="import_record_delete"),
 
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
