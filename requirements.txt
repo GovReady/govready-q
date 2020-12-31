@@ -621,10 +621,9 @@ stevedore==3.3.0 \
     --hash=sha256:3a5bbd0652bf552748871eaa73a4a8dc2899786bc497a2aa1fcb4dcdb0debeee \
     --hash=sha256:50d7b78fbaf0d04cd62411188fa7eedcb03eb7f4c4b37005615ceebe582aa82a \
     # via bandit
-structlog==20.1.0 \
-    --hash=sha256:7a48375db6274ed1d0ae6123c486472aa1d0890b08d314d2b016f3aa7f35990b \
-    --hash=sha256:8a672be150547a93d90a7d74229a29e765be05bd156a35cdcc527ebf68e9af92 \
-    # via -r requirements.in
+structlog==20.2.0 \
+    --hash=sha256:33dd6bd5f49355e52c1c61bb6a4f20d0b48ce0328cc4a45fe872d38b97a05ccd \
+    --hash=sha256:af79dfa547d104af8d60f86eac12fb54825f54a46bc998e4504ef66177103174    # via -r requirements.in
 swapper==1.1.2.post1 \
     --hash=sha256:51651018fb027354dd27ff38d5eb47a225d3e642c99b04cff878ae65b1872f64 \
     --hash=sha256:f3bc7b77b76daf46fcbd41fda9b2f599974ac8c564e129f2a9bae73871c4116e \
