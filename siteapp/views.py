@@ -1174,18 +1174,32 @@ def move_project(request, project_id):
     try:
         new_portfolio_id = request.POST.get("new_portfolio", "").strip() or None
         project = get_object_or_404(Project, id=int(project_id))
+        cur_portfolio = project.portfolio
         new_portfolio = get_object_or_404(Portfolio, id=int(new_portfolio_id))
         project.portfolio = new_portfolio
         project.save()
+        # Log successful project move to a different portfolio
         logger.info(
-            event="move_project successful",
-            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id}
+            event="move_project_different_portfolio successful",
+            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id},
+            from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
+            to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
         )
+        # message = "Project {} successfully moved to portfolio {}".format(project, new_portfolio.title)
+        # messages.add_message(request, messages.INFO, message)
         return JsonResponse({ "status": "ok" })
     except:
+        # Log unsuccessful project move to a different portfolio
+        logger.info(
+            event="move_project_different_portfolio successful",
+            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id},
+            from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
+            to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
+        )
+        # message = "Project {} failed moved to portfolio {}".format(project, new_portfolio.title)
+        # messages.add_message(request, messages.ERROR, message)
         return JsonResponse({ "status": "error", "message": sys.exc_info() })
-   
-    
+
 @project_admin_login_post_required
 def upgrade_project(request, project):
     """Upgrade root task of project to newer version"""

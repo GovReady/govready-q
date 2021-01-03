@@ -212,7 +212,6 @@ class SeleniumTest(StaticLiveServerTestCase):
                 self.fill_field(file_input, filepath)
         return filepath
 
-
 #####################################################################
 
 class SupportPageTests(SeleniumTest):
@@ -719,7 +718,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_password1", new_test_user_password)
         self.fill_field("#id_password2", new_test_user_password)
 
- 
     def test_create_portfolios(self):
         # Create a new account
         self.browser.get(self.url("/"))
@@ -831,6 +829,22 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#me3_remove_permissions")
         self.assertNotInNodeText("me3", "#portfolio-members")
         self.assertNodeNotVisible("#portfolio-member-me3")
+
+    def test_move_project_create(self):
+            """Test moving a project to another portfolio"""
+            initial_porfolio = Portfolio.objects.create(title="Portfolio 1")
+            new_portfolio = Portfolio.objects.create(title="Portfolio 2")
+            project = Project.objects.create(portfolio=initial_porfolio)
+            project.portfolio = initial_porfolio
+            self.assertIsNotNone(initial_porfolio.id)
+            self.assertIsNotNone(new_portfolio.id)
+            self.assertIsNotNone(project.id)
+            self.assertIsNotNone(project.portfolio.id)
+            self.assertEqual(project.portfolio.title,"Portfolio 1")
+            project.portfolio = new_portfolio
+            self.assertEqual(project.portfolio.title,"Portfolio 2")
+            project.delete()
+            self.assertTrue(project.id is None)
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
@@ -1336,4 +1350,3 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
         # # email-address
         # self.assertRegex(self.browser.title, "Next Question: email-address")
-

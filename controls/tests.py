@@ -106,7 +106,6 @@ class Oscal80053Tests(TestCase):
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
 
-
 #####################################################################
 
 class ControlUITests(SeleniumTest):
@@ -124,9 +123,7 @@ class ControlUITests(SeleniumTest):
         self.assertInNodeText("AC-2 (4)", "#control-heading")
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
-
 #####################################################################
-
 
 class ComponentUITests(OrganizationSiteFunctionalTests):
 
@@ -515,28 +512,6 @@ class ElementUnitTests(TestCase):
         e.save()
         self.assertTrue(e.name == "Renamed Element A")
 
-
-class ProjectUnitTests(TestCase):
-    ## Simply dummy test ##
-    def test_tests(self):
-        self.assertEqual(1,1)
-
-    def test_move_project_create(self):
-        """Test moving a project to another portfolio"""
-        initial_porfolio = Portfolio.objects.create(title="Portfolio 1") 
-        new_portfolio = Portfolio.objects.create(title="Portfolio 2") 
-        project = Project.objects.create(portfolio=initial_porfolio)
-        project.portfolio = initial_porfolio
-        self.assertIsNotNone(initial_porfolio.id)
-        self.assertIsNotNone(new_portfolio.id)
-        self.assertIsNotNone(project.id)
-        self.assertIsNotNone(project.portfolio.id)
-        self.assertEqual(project.portfolio.title,"Portfolio 1")
-        project.portfolio = new_portfolio
-        self.assertEqual(project.portfolio.title,"Portfolio 2")
-        project.delete()
-        self.assertTrue(project.id is None)
-
 class SystemUnitTests(TestCase):
     def test_system_create(self):
         e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
@@ -776,7 +751,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 7
-
 
 class ControlTestHelper(object):
 
