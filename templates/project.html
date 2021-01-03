@@ -198,6 +198,11 @@ h3.question-group-title {
         Authoring Tool
       </button>
     {% endif %}
+
+    <button class="btn btn-sm btn-default"  onclick='move_project()'>
+      <em class="glyphicon glyphicon-sort"></em>
+      Move Project
+    </button>
   </div>
 
     {# action buttons #}
@@ -524,6 +529,21 @@ function invite_user_into_project() {
     function() { window.location.reload() }
   );
 
+  return false;
+}
+
+function move_project() {
+  show_move_project_modal((selectedPortfolioId)=>{
+    ajax_with_indicator({
+      url: '{% url "move_project" project.id %}',
+      method: "POST",
+      data: {new_portfolio: selectedPortfolioId},
+      keep_indicator_forever: true,
+      success: function() {
+        window.location.reload();
+      }
+    });
+  }); 
   return false;
 }
 

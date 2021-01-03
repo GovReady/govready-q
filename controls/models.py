@@ -13,9 +13,28 @@ from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
 
+class ImportRecord(models.Model):
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="Unique identifier for this Import Record.")
+
+    def get_components_statements(self):
+        components = Element.objects.filter(import_record=self)
+        component_statements = {}
+
+        for component in components:
+            component_statements[component] = Statement.objects.filter(producer_element=component)
+
+        return component_statements
+
+STATEMENT_SYNCHED = 'synched'
+STATEMENT_NOT_SYNCHED = 'not_synched'
+STATEMENT_ORPHANED = 'orphaned'
+
 class SystemException(Exception):
     """Class for raising custom exceptions with Systems"""
     pass
+
 
 class Statement(models.Model):
     sid = models.CharField(max_length=100, help_text="Statement identifier such as OSCAL formatted Control ID", unique=False, blank=True, null=True)
@@ -35,6 +54,8 @@ class Statement(models.Model):
     consumer_element = models.ForeignKey('Element', related_name='statements_consumed', on_delete=models.SET_NULL, blank=True, null=True, help_text="The element the statement is about.")
     mentioned_elements = models.ManyToManyField('Element', related_name='statements_mentioning', blank=True, help_text="All elements mentioned in a statement; elements with a first degree relationship to the statement.")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
+    import_record = models.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
+                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
 
     class Meta:
         indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'),]
@@ -87,12 +108,23 @@ class Statement(models.Model):
         return self.prototype
 
     def create_instance_from_prototype(self, consumer_element_id):
-        """Creates a control_implementation statement instance for root_element of a system from an existing control implementation prototype statement"""
+        """Creates a control_implementation statement instance for a system's root_element from an existing control implementation prototype statement"""
 
-        # if self.prototype is not None:
-        #     # Prototype already exists for statement
-        #     return self.prototype
+        # TODO: Check statement is a prototype
+
+        # System already has instance of the control_implementation statement
+        # TODO: write check for this logic
+        # Get all statements for consumer element so we can identify
+        smts_existing = Statement.objects.filter(consumer_element__id = consumer_element_id, statement_type = "control_implementation")
+        print(smts_existing)
+        # Get prototype ids for all consumer element statements
+        smts_existing_prototype_ids = [smt.prototype.id for smt in smts_existing]
+        if self.id is smts_existing_prototype_ids:
+            return self.prototype
+
+        #     # TODO:
         #     # check if prototype content is the same, report error if not, or overwrite if permission approved
+
         instance = deepcopy(self)
         instance.statement_type="control_implementation"
         instance.consumer_element_id = consumer_element_id
@@ -104,12 +136,18 @@ class Statement(models.Model):
 
     @property
     def prototype_synched(self):
-        """Return True if statement of type `control_implementation` and its prototype"""
+        """Returns one of STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED for control_implementations"""
 
-        if self.body == self.prototype.body:
-            return True
+        if self.statement_type == "control_implementation":
+            if self.prototype:
+                if self.body == self.prototype.body:
+                    return STATEMENT_SYNCHED
+                else:
+                    return STATEMENT_NOT_SYNCHED
+            else:
+                return STATEMENT_ORPHANED
         else:
-            return False
+            return STATEMENT_NOT_SYNCHED
 
     @property
     def diff_prototype_main(self):
@@ -142,6 +180,7 @@ class Statement(models.Model):
     # TODO:c
     #   - On Save be sure to replace any '\r\n' with '\n' added by round-tripping with excel
 
+
 class Element(models.Model):
     name = models.CharField(max_length=250, help_text="Common name or acronym of the element", unique=True, blank=False, null=False)
     full_name =models.CharField(max_length=250, help_text="Full name of the element", unique=False, blank=True, null=True)
@@ -150,6 +189,8 @@ class Element(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     updated = models.DateTimeField(auto_now=True, db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=True, help_text="A UUID (a unique identifier) for this Element.")
+    import_record = models.ForeignKey(ImportRecord, related_name="import_record_elements", on_delete=models.CASCADE,
+                                      unique=False, blank=True, null=True, help_text="The Import Record which created this Element.")
 
     # Notes
     # Retrieve Element controls where element is e to answer "What controls selected for a system?" (System is an element.)

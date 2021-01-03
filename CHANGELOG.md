@@ -1,8 +1,181 @@
 GovReady-Q Release Notes
 ========================
 
-v.0.9.1.47.1 (December 02, 2020)
+v.999 (December XX, 2020)
+--------------------------------
+
+**Feature changes**
+
+* Track batch imports of components (via OSCAL) into component library for tracking and management purposes; enable deletes of batch imports.
+* Support defining multiple allowed hosts via the `local/environment.json` file.
+* Allow administrators to change component name in Component Library.
+* Existing projects can be moved between existing portfolios.
+* Edit existing portfolio's title and description.
+* Delete existing portfolio.
+
+**UI changes**
+
+* New dialog in Component Library for importing components in OSCAL JSON format
+* New screens for tracking and deleting batch imports of components (via OSCAL) into component library.
+* Add "Edit" button in Component Library for Administrators to rename a component.
+* Add "Move Project" action button on project page to move project to a different portfolio.
+* Add "Manage Portofolio" links on portfolio page for editing portfolio details and deleting portfolio.
+
+**Developer changes**
+
+* New `controls.models.ImportRecord` model for tracking batch imports of components (via OSCAL) into component library.
+* New routes and views related for tracking batch imports of components (via OSCAL) into component library.
+* Fix OSCAL component import to use "statement" JSON property.
+* Support defining multiple allowed hosts via the `local/environment.json` file via new `allowed_hosts` environment parameter.
+
+**Bug fixes**
+
+* Fix missing "part" field on Component's component statement form and incorrectly displaying the "remarks" field (#1232)
+* Fix display of OSCAL into correct tab on system's component's page
+
+v.0.9.1.48.1 (December 17, 2020)
+--------------------------------
+
+**Bug fixes**
+
+* Fix handling of static files. Create new `static-root` directory outside of `siteapp` into which to collect static files.
+* Remove bad path reference to select2 javascript libraries in component library page.
+
+v.0.9.1.48 (December 15, 2020)
 ------------------------------
+
+Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
+
+Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML) output template in the compliance app `output` section. The JSON, YAML output documents are first converted to Python data structures and then populated with information in a variant of Jinja2 substitutions.
+
+Fix tests so they execute successfully in CircleCI.
+
+**Feature changes**
+
+* Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
+
+1. Add a component to the system while on components page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
+1. Add a component to the system while on control edit page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
+1. Notify user that the local statement for a component-control (e.g., `control_implementation`) was different than the "certified" statement for the component-control (e.g., `control_implementation_prototype`).
+1. Enable viewer to view differences between a component-control (e.g., `control_implementation`) was different than the "certified" statement for the component-control (e.g., `control_implementation_prototype`).
+1. To update a "certified" statement, enable an administrator to update (e.g. push) the "certified" statement for the component-control (e.g., `control_implementation_prototype`) text from the a systems' component-control (e.g., `control_implementation`) text.
+1. After a "certified" statement was updated, enable user to copy (e.g. pull) the updated "certified" statement for the component-control (e.g., `control_implementation_prototype`) text into other systems' a component-control (e.g., `control_implementation`) text.
+
+* Support generation of JSON, YAML questionnaire output documents with Jinja2 style substitutions, loops, and conditionals. Re-do the 'json' template format to recognize a new %for control structure objects that execute loops.
+
+* Support generation of Word DOCX questionnaire output documents with page numbers, headers, footers, TOC (using pandoc custom reference doc feature).
+
+* Support creating a new component in the library.
+
+**UI changes**
+
+* Add Component Library page listing all available components.
+* Add global navbar link to Component Library.
+* Remove Common Control tab from control editor.
+* Remove redundent listing of control statements from component description tab.
+* Display filler text when component does not have a description.
+* Move component implementation statement tab to left of combined statement tab in control editor.
+* Updating certified text also updates the HTML block showing the certified text with updated certified text on edit pages.
+* Add components (system elements) via an autocomplete to a system on system's selected components page.
+* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
+* Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
+* Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
+* Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
+* Use Select2 box to add component to system's selected component.
+* Add route `add_system_component` and related view to add a component to a system's selected component.
+* Replace the url pattern routing in v0.9.1.46.4 for directing accounts login to home page with custom templates to override default aullauth templates.
+* Use Django messaging when adding a component to system's selected component to provide user with better feedback.
+
+**Data changes**
+
+* Add `copy` method to `Element` data model to create a new element (e.g. component) as a copy of existing component.
+* Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`.
+
+**Bug fixes**
+
+* Fix multiple loadings of updated `smt.body` into bootstrap's panel heading section by improved naming of div classes in panel and better targeted update.
+* Fix enable_experimental_oscal control. Model method was set incorrectly requiring both enable_experimental_oscal and enable_experimental_opencontrol had to be enabled for either to show up.
+* Fix testing issues. Fix tests so they execute successfully in CircleCI.
+
+**Developer changes**
+
+* Default Selenium tests to headless mode. Add new `test_visible` parameter option for `local/environment.json` to force Selenium tests to run in visible or headless mode.
+Add `custom-reference.docx` MS Word DOCX document to `/assets` directory to be used by pandoc when generating MS Word output documents in order to provide page numbers, headers, footers, TOC.
+* Significantly refactored indentations in control edtor pages to make code folding and div analysis easier.
+* Add an ElementForm to create new components (AKA Elements).
+* Modified controls.Statement model to link `control_implementation` statements to
+  `control_implementation_prototype` statements. See commit 5083af.
+* Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch.
+* Avoid duplicative adding of a component to a system causing duplicate statements.
+* Avoiding adding a component with no control implementation statements to a system.
+* Add all available control implementation statements of a component to a system, even for controls that are not selected controls.
+* Avoid adding duplicate control implementation instance statements to a system by checking in the statement model that we are not creating an instance statement when such and statement from prototype already exists.
+* Use Django messaging when adding a component to system's selected component to provide user with better feedback.
+* Delete already commented-out contol id look up from system's selected components page.
+* The work for a component library and certified controls was performed across three branches that were eventually synchronized (approximately commit 18934669) and merged into the master branch:
+    * `autocomplete_statements_#1066`
+    * `ge/reuse-0903`
+    * `automated-tests-statements`
+
+Under development output document formats `oscal_json`, `oscal_yaml`,
+and `oscal_xml` are now replaced with `json`, `yaml`, and `xml` respectively.
+
+Format `xml` still under development and not recommended for regular use.
+
+Formats for `json` and `yaml` now support new Jinja2-like tags to enable
+parameter substituion and loops inside those formats while Django handles
+them as Python objects:
+
+```
+%for
+%loop
+
+%if
+%then
+
+{{ param }}
+```
+
+Example:
+
+```
+{ "title" : "{{project.system_info.system_name}}",
+"published" : "2020-07-01T00:00:00.00-04:00",
+"last-modified" : "2020-07-01T00:00:00.00-04:00",
+"version" : "0.0",
+"oscal-version" : "1.0-Milestone3",
+"new-control-stuff": {
+  "%for": "control in system.root_element.selected_controls_oscal_ctl_ids",
+  "%loop": {
+    "%if": "control.lower() in control_catalog",
+    "%then":  {
+      "uuid": "{{ system.control_implementation_as_dict[control]['elementcontrol_uuid'] }}",
+      "control-id": "{{ control.lower() }}",
+      "by-component": {
+        "%for": "smt in system.control_implementation_as_dict[control]['control_impl_smts']",
+        "%loop": {
+          "key": "{{ smt.producer_element.uuid }}", 
+          "value": { "uuid" : "{{ smt.uuid }}",
+            "component-name": "{{   smt.producer_element.name|safe }}",
+            "description" : "{{ smt.body|safe }}"
+          }
+        }
+      }
+    }
+  }
+}
+```
+* Update various libraries. See changes in `requirements.txt`.
+* Removed instance of using sys.stderr and replaced with logger for proper logging.
+* Fix tests so they execute successfully in CircleCI.
+
+**Other**
+
+* Updated link to `jquery-ui.min.js` library in `fetch-vendor-resources`.
+* Update version checking for v999 develop branch designation.
+
+v.0.9.1.47.1 (December 02, 2020)
+--------------------------------
 
 **Developer changes**
 
@@ -18,74 +191,6 @@ v.0.9.1.47 (December 01, 2020)
 **Bug fix**
 
 * Fix system_settings methods enable_experimental_oscal and enable_experimental_opencontrol to work properly.
-v9.9.9 (December 01, 2020)
---------------------------
-
-Add Component Library feature pages and improve UI for managing reuse and "certified" component library.
-
-**UI changes**
-
-* Add Component Library page listing all available components.
-* Add global navbar link to Component Library.
-* Remove Common Control tab from control editor.
-* Remove redundent listing of control statements from component description tab.
-* Display filler text when component does not have a description.
-* Move component implementation statement tab to left of combined statement tab in control editor.
-* Updating certified text also updates the HTML block showing the certified text with updated certified text on edit pages.
-
-**Data changes**
-
-* Add `copy` method to `Element` data model to create a new element (e.g. component) as a copy of existing component.
-* Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`.
-
-**Bug fixes**
-
-* Fix multiple loadings of updated `smt.body` into bootstrap's panel heading section by improved naming of div classes in panel and better targeted update.
-
-**Developer changes**
-
-* Significantly refactored indentations in control edtor pages to make code folding and div analysis easier.
-
-**Other**
-
-* Updated link to `jquery-ui.min.js` library in `fetch-vendor-resources`.
-
-v0.9.1.47 (November 28, 2020)
------------------------------
-
-**Feature changes**
-
-* Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
-
-1. Add a component to the system while on components page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
-1. Add a component to the system while on control edit page via autocomplete and create `control_implementation` statements from the `control_implementation_prototype` statements
-1. Notify user that the local statement for a component-control (e.g., `control_implementation`) was different than the "certified" statement for the component-control (e.g., `control_implementation_prototype`).
-1. Enable viewer to view differences between a component-control (e.g., `control_implementation`) was different than the "certified" statement for the component-control (e.g., `control_implementation_prototype`).
-1. To update a "certified" statement, enable an administrator to update (e.g. push) the "certified" statement for the component-control (e.g., `control_implementation_prototype`) text from the a systems' component-control (e.g., `control_implementation`) text.
-1. After a "certified" statement was updated, enable user to copy (e.g. pull) the updated "certified" statement for the component-control (e.g., `control_implementation_prototype`) text into other systems' a component-control (e.g., `control_implementation`) text.
-
-**UI changes**
-
-* Add components (system elements) via an autocomplete to a system on system's selected components page.
-* Add label/alert above implementation statement edit box when notifying user if local system statement is synchronized with certified control implementation statement. 
-* Make statement synchronization status lable/alert clickable to reveal certified statement and diff between local and certified.
-* Add buttons for copying certified statement into local statement and for admin to update certified statement from local statement.
-* Add autocompletes to make it easy to add a new component to a system and the component's respective certified controls.
-
-* Replace the url pattern routing in v0.9.1.46.4 for directing accounts login to home page with custom templates to override default aullauth templates.
-
-**Developer changes**
-
-* Modified controls.Statement model to link `control_implementation` statements to
-  `control_implementation_prototype` statements. See commit 5083af.
-* Add methods for diff'ing (e.g., comparing) a `control_implementation` statement against its prototype statement using Google diff-match-patch
-
-The work for this capability was performed across three branches that were eventually synchronized (approximately commit 18934669) and merged into the master branch :
-
-* `autocomplete_statements_#1066`
-* `ge/reuse-0903`
-* `automated-tests-statements`
-
 
 v0.9.1.46.4 (November 25, 2020)
 -----------------------------

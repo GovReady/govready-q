@@ -1,14 +1,12 @@
-from django.conf import settings
+import os
+
 from django.contrib.auth.models import Permission
 from django.utils.crypto import get_random_string
-from django.contrib.auth.models import Permission
-
-from siteapp.models import User, ProjectMembership, Organization, Portfolio
-from siteapp.tests import SeleniumTest, var_sleep
-
 from selenium.common.exceptions import NoSuchElementException
 
-import os
+from siteapp.models import User, Organization, Portfolio
+from siteapp.tests import SeleniumTest, var_sleep
+
 
 class DiscussionTests(SeleniumTest):
 
@@ -121,6 +119,7 @@ class DiscussionTests(SeleniumTest):
         # We're now on the first actual question.
         # Start a team conversation.
         self.click_element("#start-a-discussion")
+        var_sleep(1)
         self.fill_field("#discussion-your-comment", "Hello is anyone *here*?")
         var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
@@ -157,11 +156,11 @@ class DiscussionTests(SeleniumTest):
             'fixtures',
             'testimage.png'
         )
+        self.filepath_conversion("#discussion-attach-file", testFilePath, "fill")
 
-        self.fill_field("#discussion-attach-file", testFilePath)
-        var_sleep(1)
+        var_sleep(.5)
         self.click_element("#discussion .comment-input button.btn-primary")
-        var_sleep(1) # Give time for the image to upload.
+        var_sleep(.5)
 
         # Test that we have an image.
         img = self.browser.find_element_by_css_selector('.comment[data-id="4"] .comment-text p img')

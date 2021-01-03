@@ -10,45 +10,26 @@
 # If paths differ on your system, you may need to set the PATH system
 # environment variable and the options.binary_location field below.
 
-import json
-import os
 from pathlib import PurePath
-import re
-from unittest import skip
 
 from django.test import TestCase
-from selenium.webdriver.support.select import Select
-from siteapp.models import User
-from siteapp.tests import SeleniumTest, OrganizationSiteFunctionalTests, var_sleep
-from .models import *
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils.text import slugify
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.select import Select
+from selenium.webdriver.support.ui import WebDriverWait
+
+from controls.models import System
+from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
+from siteapp.models import User
+from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests
+from system_settings.models import SystemSettings
+from .models import *
 from .oscal import Catalogs, Catalog
+from siteapp.models import User, Project, Portfolio
 from system_settings.models import SystemSettings
 
-# from controls.oscal import Catalogs, Catalog
-
-# ####### siteapp.test
-# import os
-# import os.path
-# import re
-# from unittest import skip
-
-# from django.conf import settings
-# from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-# from django.utils.crypto import get_random_string
-
-# from siteapp.models import (Organization, Portfolio, Project,
-#                             ProjectMembership, User)
-
-# ######guidedmodules.test
-# from django.test import TestCase
-# from django.conf import settings
-
-# from siteapp.models import Organization, Project, User
-# from guidedmodules.models import Module, Task, TaskAnswer
-# from guidedmodules.module_logic import *
-# from guidedmodules.app_loading import load_app_into_database
+from urllib.parse import urlparse
 
 
 #####################################################################
@@ -59,6 +40,7 @@ class SampleTest(TestCase):
     ## Simply dummy test ##
     def test_tests(self):
         self.assertEqual(1,1)
+
 
 class Oscal80053Tests(TestCase):
     # Test
@@ -73,7 +55,7 @@ class Oscal80053Tests(TestCase):
 
     def test_catalog_all_controls_with_organizational_parameters(self):
         parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
-        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4, 
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
                                  parameter_values=parameter_values)
         cg_flat = cg.get_flattened_controls_all_as_dict()
         control = cg_flat['ac-1']
@@ -124,7 +106,6 @@ class Oscal80053Tests(TestCase):
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
 
-
 #####################################################################
 
 class ControlUITests(SeleniumTest):
@@ -142,30 +123,7 @@ class ControlUITests(SeleniumTest):
         self.assertInNodeText("AC-2 (4)", "#control-heading")
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
-    # def test_control_lookup_no_matching_id(self):
-    #     self.browser.get(self.url("/controls/800-53/XX-2/"))
-    #     self.assertInNodeText("XX-2", "#control-heading")
-    #     self.assertInNodeText("The control XX-2 was not found in the control catalog.", "#control-message")
-
-# class ControlUIControlEditorTests(SeleniumTest):
-#     def test_homepage(self):
-#         self.browser.get(self.url("/controls/editor"))
-#         self.assertInNodeText("Test works", "p")
-
-    # def test_control_lookup(self):
-    #     self.browser.get(self.url("/controls/800-53/AU-2/"))
-    #     self.assertInNodeText("AU-2", "#control-heading")
-    #     self.assertInNodeText("Audit Events", "#control-heading")
-
-    # def test_control_enhancement_lookup(self):
-    #     self.browser.get(self.url("/controls/800-53/AC-2 (4)/"))
-    #     self.assertInNodeText("AC-2 (4)", "#control-heading")
-    #     self.assertInNodeText("Automated Audit Actions", "#control-heading")
-
 #####################################################################
-
-
-from siteapp.tests import OrganizationSiteFunctionalTests
 
 class ComponentUITests(OrganizationSiteFunctionalTests):
 
@@ -174,8 +132,9 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
     def setUp(self):
         super().setUp()
 
-        self. json_download = \
+        self.json_download = \
             self.download_path / PurePath(slugify(self.component_name)).with_suffix(".json")
+        print("********* self.json_download", self.json_download)
 
         # we need a system and a component
         root_element = Element(name="My Root Element",
@@ -188,7 +147,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         project.system = self.system
         project.save()
         self.system.assign_owner_permissions(self.user)
-        statement = Statement(sid='ac-1', 
+        statement = Statement(sid='ac-1',
                               sid_class=Catalogs.NIST_SP_800_53_rev4,
                               body='My statement body',
                               status='Not Implmented')
@@ -199,26 +158,24 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         statement.save()
 
         self.component = producer_element
-        
+
         # enable experimental OSCAL -and- OpenControl support
-        
-        enable_experimental_oscal = \
-            SystemSettings.objects.get(setting='enable_experimental_oscal')
+        enable_experimental_oscal, _ = SystemSettings.objects.get_or_create(setting='enable_experimental_oscal')
         enable_experimental_oscal.active = True
         enable_experimental_oscal.save()
 
-        enable_experimental_opencontrol = \
-            SystemSettings.objects.get(setting='enable_experimental_opencontrol')
+        enable_experimental_opencontrol, _  = SystemSettings.objects.get_or_create(setting='enable_experimental_opencontrol')
         enable_experimental_opencontrol.active = True
         enable_experimental_opencontrol.save()
 
-        
     def tearDown(self):
-        # clean up downloaded file
+        # clean up downloaded file if linux elif dos
         if self.json_download.is_file():
             self.json_download.unlink()
+        elif os.path.isfile(self.json_download.name):
+            os.remove(self.json_download.name)
         super().tearDown()
-        
+
     def test_component_download_oscal_json(self):
         self._login()
         url = self.url(f"/systems/{self.system.id}/component/{self.component.id}")
@@ -229,16 +186,191 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # downloaded file, so let's make sure it doesn't exist before we
         # download
         # definite race condition possibility
-        
+
         if self.json_download.is_file():
             self.json_download.unlink()
+        elif os.path.isfile(self.json_download.name):
+            os.remove(self.json_download.name)
         self.click_element("a#oscal_download_json_link")
         var_sleep(2)            # need to wait for download, alas
         # assert download exists!
-        self.assertTrue(self.json_download.is_file())
-        # assert that it is valid JSON by trying to load it
-        with open(self.json_download, 'r') as f:
+        try:
+            self.assertTrue(self.json_download.is_file())
+            filetoopen = self.json_download
+        except:
+            self.assertTrue(os.path.isfile(self.json_download.name))
+            # assert that it is valid JSON by trying to load it
+            filetoopen = self.json_download.name
+        with open(filetoopen, 'r') as f:
             json_data = json.load(f)
+            self.assertIsNotNone(json_data)
+
+        if self.json_download.is_file():
+            self.json_download.unlink()
+        elif os.path.isfile(self.json_download.name):
+            os.remove(self.json_download.name)
+
+    def test_component_import_invalid_oscal(self):
+        self._login()
+        url = self.url(f"/controls/components")
+        self.browser.get(url)
+        self.click_element('a#component-import-oscal')
+        app_root = os.path.dirname(os.path.realpath(__file__))
+        oscal_json_path = os.path.join(app_root, "data/test_data", "test_invalid_oscal.json")
+        file_input = self.find_selected_option('input#id_file')
+        self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
+
+        # Verify that the contents got copied correctly from the file to the textfield
+        try:
+            # Load contents from file
+            with open(oscal_json_path, 'r') as f:
+                loaded_oscal_file_json = json.load(f)
+
+            # Load contents from textarea
+            file_contents = self.find_selected_option('textarea#id_json_content').get_attribute("value")
+            oscal_json_contents = json.loads(file_contents)
+
+            self.assertEqual(loaded_oscal_file_json, oscal_json_contents)
+
+        except ValueError:
+            pass
+
+        self.click_element('input#import_component_submit')
+
+        element_count = Element.objects.filter(uuid='123456a7-b890-1234-cd56-e789fa012bcd').count()
+        self.assertEqual(element_count, 0)
+
+        statement1_count = Statement.objects.filter(uuid='1ab2c345-67d8-9e0f-1234-5a6bcd789efa').count()
+        self.assertEqual(statement1_count, 0)
+
+        statement2_count = Statement.objects.filter(uuid='2bc3d456-78e9-0f1a-2345-6b7cde890fab').count()
+        self.assertEqual(statement2_count, 0)
+
+    def test_component_import_oscal_json(self):
+        self._login()
+        url = self.url(f"/controls/components")
+        self.browser.get(url)
+
+        # Test initial import of Component(s) and Statement(s)
+        self.click_element('a#component-import-oscal')
+        app_root = os.path.dirname(os.path.realpath(__file__))
+        oscal_json_path = os.path.join(app_root, "data/test_data", "test_oscal_component.json")
+        file_input = self.find_selected_option('input#id_file')
+        oscal_json_path = self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
+
+        self.click_element('input#import_component_submit')
+
+        element_count = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count, 2)
+
+        statement_count = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count, 4)
+
+        # Verify that statements without a proper Catalog don't get entered
+        bad_catalog_statement_count = Statement.objects.filter(uuid='1bb0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(bad_catalog_statement_count, 0)
+
+        # Verify that statements without a proper Control don't get entered
+        bad_control_id_statement_count = Statement.objects.filter(uuid='3bb0b252-90d3-4d2c-9785-0c4efb254dfc').count()
+        self.assertEqual(bad_control_id_statement_count, 0)
+
+        var_sleep(1) # Needed to allow page to refresh and messages to render
+
+        # Test that duplicate Components and Statements are not re-imported
+        self.click_element('a#component-import-oscal')
+        file_input = self.find_selected_option('input#id_file')
+        # Using converted keys from above
+        file_input.send_keys(oscal_json_path)
+
+        self.click_element('input#import_component_submit')
+
+        element_count = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count, 2)
+
+        statement_count = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count, 4)
+
+    def test_import_tracker(self):
+        """Tests that imports are tracked correctly."""
+
+        self._login()
+        url = self.url(f"/controls/components")
+        self.browser.get(url)
+
+        # Test initial import of Component(s) and Statement(s)
+        self.click_element('a#import_records_link')
+
+        current_path = urlparse(self.browser.current_url).path
+        self.assertEqual('/controls/import_records', current_path)
+
+        import_record_links = self.browser.find_elements_by_class_name('import_record_detail_link')
+        self.assertEqual(len(import_record_links), 0)
+
+        # Create an Import Record with a component and statement
+        helper = ControlTestHelper()
+        helper.create_simple_import_record()
+
+        self.browser.refresh()
+        var_sleep(1)
+
+        import_record_links = self.browser.find_elements_by_class_name('import_record_detail_link')
+        self.assertEqual(len(import_record_links), 1)
+
+    def test_import_delete(self):
+        """Tests that import deletions remove child components and statements."""
+
+        # Create an Import Record with a component and statement
+        helper = ControlTestHelper()
+        import_record = helper.create_simple_import_record()
+
+        self._login()
+        url = self.url(f"/controls/import_records")
+        self.browser.get(url)
+
+        self.click_element(f"a.import_record_detail_link")
+        self.click_element(f"a#delete-import")
+
+        # Test that cancel doesn't delete the import, and redirects to the component library
+        self.click_element(f"a#cancel-import-delete")
+
+        current_path = urlparse(self.browser.current_url).path
+        self.assertEqual('/controls/components', current_path)
+
+        import_records_count = ImportRecord.objects.all().count()
+        self.assertEqual(import_records_count, 1)
+        component_count = Element.objects.filter(import_record=import_record).count()
+        self.assertEqual(component_count, 1)
+        statement_count = Statement.objects.filter(import_record=import_record).count()
+        self.assertEqual(statement_count, 1)
+
+        # Test that confirming the deletion deletes the import, component, and statement
+        url = self.url(f"/controls/import_records")
+        self.browser.get(url)
+        self.click_element(f"a.import_record_detail_link")
+        self.click_element(f"a#delete-import")
+
+        self.click_element(f"a#confirm-import-delete")
+
+        var_sleep(1)
+        current_path = urlparse(self.browser.current_url).path
+        self.assertEqual('/controls/components', current_path)
+
+        import_records_count = ImportRecord.objects.all().count()
+        self.assertEqual(import_records_count, 0)
+        component_count = Element.objects.filter(import_record=import_record).count()
+        self.assertEqual(component_count, 0)
+        statement_count = Statement.objects.filter(import_record=import_record).count()
+        self.assertEqual(statement_count, 0)
+
+
+    def test_element_rename(self):
+        # Ensures that the edit button doesnt appear for non-superusers
+        # Logs into a non-superuser account and goes to a components page
+        self._login()
+        url = self.url(f"controls/components/{self.component.id}")
+        self.browser.get(url)
+        # Asserts that the edit button element is not found on the page
+        self.assertTrue(len(self.browser.find_elements_by_css_selector('#edit-button'))<1)
 
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
@@ -277,15 +409,19 @@ class StatementUnitTests(TestCase):
             status = "Implemented"
         )
         smt.save()
+        # orphaned w/o prototype
+        self.assertEqual(smt.prototype_synched, STATEMENT_ORPHANED)
+
         # Create statement prototype
         smt.create_prototype()
         self.assertEqual(smt.body, smt.prototype.body)
         self.assertNotEqual(smt.id, smt.prototype.id)
-        self.assertTrue(smt.prototype_synched)
+        self.assertEqual(smt.prototype_synched, STATEMENT_SYNCHED)
+
         # Change statement compared to prototype
         smt.prototype.body = smt.prototype.body + "\nModified statememt"
         smt.prototype.save()
-        self.assertFalse(smt.prototype_synched)
+        self.assertEqual(smt.prototype_synched, STATEMENT_NOT_SYNCHED)
         self.assertEqual(smt.diff_prototype_main, [(0, 'This is a test statement.'), (-1, '\nModified statememt')])
 
 class ElementUnitTests(TestCase):
@@ -363,6 +499,18 @@ class ElementUnitTests(TestCase):
         # Test statements copied
         smts = e_copy.statements("control_implementation_prototype")
         self.assertEqual(len(smts), 2)
+        
+    def test_element_rename(self):
+        """Test renaming an element"""
+
+        # Create an element
+        e = Element.objects.create(name="Element A", full_name="Element A FN", element_type="component")
+        self.assertTrue(e.id is not None)
+        self.assertTrue(e.name == "Element A")
+        e.save() 
+        e.name = "Renamed Element A"
+        e.save()
+        self.assertTrue(e.name == "Renamed Element A")
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
@@ -447,7 +595,15 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         return smt
 
     def click_components_tab(self):
-        self.browser.find_element_by_partial_link_text("Component Statements").click()
+        wait = WebDriverWait(self.browser, 15)
+        try:
+            # Using full Xpath
+            comp_tab = self.browser.find_element_by_xpath("/html/body/div[1]/div/div[3]/ul/li[2]/a")
+        except:
+            # Non-full Xpath with wait
+            comp_tab = wait.until(EC.visibility_of_element_located((By.XPATH, "//a[contains(@href, '#component_controls')]")))
+
+        comp_tab.click()
 
     def dropdown_option(self, dropdownid):
         """
@@ -457,7 +613,7 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         dropdown = Select(self.browser.find_element_by_id(dropdownid))
         return dropdown
 
-    def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks):
+    def create_fill_statement_form(self, name, statement, part, status, statusvalue, remarks, num):
         """
         In the component statements tab create and then fill a new component statement with the given information.
         """
@@ -468,8 +624,13 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self.click_element("#new_component_statement")
 
         # Open the new component form open
-        self.browser.find_element_by_link_text("New Component Statement").click()
+        try:
+            new_comp_btn = self.browser.find_element_by_link_text("New Component Statement")
 
+        except:
+            new_comp_btn = self.browser.find_element_by_id(f"producer_element-{num}-title")
+        new_comp_btn.click()
+        var_sleep(2)
         # Fill out form
         self.browser.find_element_by_id("producer_element_name").send_keys(name)
         self.browser.find_elements_by_name("body")[-1].send_keys(statement)
@@ -489,27 +650,43 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         # login as the first user and create a new project
         self._login()
         self._new_project()
-        var_sleep(1)
 
+        # TODO: Why is system being overridden/conditional. system_id will be 1 in test class and 4 in full test suite
+        systemid = System.objects.all().first()
+        #print("systemid")
+        #print(systemid.id)
+        self.navigateToPage(f"/systems/{systemid.id}/controls/selected")
 
         # Select moderate
-        self.navigateToPage("/systems/1/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
+        self.navigateToPage(f"/systems/{systemid.id}/controls/baseline/NIST_SP-800-53_rev4/moderate/_assign")
         # Head to the control ac-3
-        self.navigateToPage("/systems/1/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
+        self.navigateToPage(f"/systems/{systemid.id}/controls/catalogs/NIST_SP-800-53_rev4/control/ac-3")
 
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 0
-
+        # Starts at 4
+        num = 4
         # Creating a few components
-        self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_',"Planned", "Component remarks")
-        self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_',"Planned", "Component remarks")
 
+        self.create_fill_statement_form("Component 1", "Component body", 'a', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Component 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Component 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Test name 1", "Component body", 'a', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Test name 2", "Component body", 'b', 'status_', "Planned", "Component remarks", num)
+        num += 1
+        var_sleep(.5)
+        self.create_fill_statement_form("Test name 3", "Component body", 'c', 'status_', "Planned", "Component remarks", num)
+        var_sleep(1)
         self.click_components_tab()
-
+        var_sleep(1)
         # Confirm the dropdown sees all components
         comps_dropdown = self.dropdown_option("selected_producer_element_form_id")
         assert len(comps_dropdown.options) == 6
@@ -536,28 +713,36 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         assert len(comps_dropdown.options) == 2
 
         # Add a new component based on one of the options available in the filtered dropdown
+        try:
+            ## Test name 2 has a value of 6 and Component 2 has a value of 3
+            self.select_option("select#selected_producer_element_form_id", "6")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
+        except:
+            self.select_option("select#selected_producer_element_form_id", "13")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "13"
 
-        ## Test name 2 has a value of 6 and Component 2 has a value of 3
-        self.select_option("select#selected_producer_element_form_id", "6")
-        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
-
-        self.select_option("select#selected_producer_element_form_id", "3")
-        assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+        try:
+            ## Test name 2 has a value of 6 and Component 2 has a value of 3
+            self.select_option("select#selected_producer_element_form_id", "3")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
+        except:
+            self.select_option("select#selected_producer_element_form_id", "10")
+            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "10"
 
         # Open a modal will with component statements related to the select component prototype
         add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")
         add_related_statements_btn[-1].click()
-
+        var_sleep(2)
         # Ensure we can't submit no component statements and that the alert pops up.
         self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button").click()
 
         # Open the first panel
         component_element_btn = self.browser.find_element_by_id("related-panel-1")
         component_element_btn.click()
-
+        var_sleep(1)
         select_comp_statement_check = self.browser.find_element_by_name("relatedcomps")
         select_comp_statement_check.click()
-
+        var_sleep(1)
         # Add component statement
         submit_comp_statement = self.browser.find_element_by_xpath("//*[@id='relatedcompModal']/div/div[1]/div[4]/button")
         submit_comp_statement.click()
@@ -567,3 +752,30 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 7
 
+class ControlTestHelper(object):
+
+    def create_simple_import_record(self):
+        # Create an Import Record with a component and statement
+        import_record = ImportRecord.objects.create()
+        import_record.save()
+
+        component = Element.objects.create(
+            name='Test Component',
+            description='This is a test component',
+            element_type="system_element",
+            import_record=import_record,
+        )
+        component.save()
+
+        statement = Statement.objects.create(
+            sid='ac-7',
+            sid_class='NIST_SP-800-53_rev4',
+            pid='a',
+            body='This is a sample statement',
+            statement_type="control_implementation_prototype",
+            producer_element=component,
+            import_record=import_record,
+        )
+        statement.save()
+
+        return import_record

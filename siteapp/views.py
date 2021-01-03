@@ -27,6 +27,7 @@ from .good_settings_helpers import \
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
 from .notifications_helpers import *
 
+import sys
 import logging
 logging.basicConfig()
 import structlog
@@ -1162,6 +1163,43 @@ def rename_project(request, project):
     project.root_task.on_answer_changed()
     return JsonResponse({ "status": "ok" })
 
+def move_project(request, project_id):
+    """Move project to a new portfolio
+    Args:
+    request ([HttpRequest]): The network request
+    project_id ([int|str]): The id of the project
+    Returns:
+        [JsonResponse]: Either a ok status or an error 
+    """
+    try:
+        new_portfolio_id = request.POST.get("new_portfolio", "").strip() or None
+        project = get_object_or_404(Project, id=int(project_id))
+        cur_portfolio = project.portfolio
+        new_portfolio = get_object_or_404(Portfolio, id=int(new_portfolio_id))
+        project.portfolio = new_portfolio
+        project.save()
+        # Log successful project move to a different portfolio
+        logger.info(
+            event="move_project_different_portfolio successful",
+            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id},
+            from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
+            to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
+        )
+        # message = "Project {} successfully moved to portfolio {}".format(project, new_portfolio.title)
+        # messages.add_message(request, messages.INFO, message)
+        return JsonResponse({ "status": "ok" })
+    except:
+        # Log unsuccessful project move to a different portfolio
+        logger.info(
+            event="move_project_different_portfolio successful",
+            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id},
+            from_portfolio={"portfolio_title": cur_portfolio.title, "id": cur_portfolio.id},
+            to_portfolio={"portfolio_title": new_portfolio.title, "id": new_portfolio.id}
+        )
+        # message = "Project {} failed moved to portfolio {}".format(project, new_portfolio.title)
+        # messages.add_message(request, messages.ERROR, message)
+        return JsonResponse({ "status": "error", "message": sys.exc_info() })
+
 @project_admin_login_post_required
 def upgrade_project(request, project):
     """Upgrade root task of project to newer version"""
@@ -1648,8 +1686,12 @@ def send_invitation(request):
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
     except Exception as e:
-        import sys
-        sys.stderr.write(str(e) + "\n")
+        logger.error(
+            event="send invitation",
+            object={"status": "error",
+                    "message": " ".join(["There was a problem -- sorry!", str(e)])},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         return JsonResponse({ "status": "error", "message": "There was a problem -- sorry!" })
 
 @login_required
