@@ -32,8 +32,8 @@ urlpatterns = [
     url(r"^discussion/", include("discussion.urls")),
 
     # Controls and Systems
-    url(r"^controls/", include("controls.urls")),
     url(r"^systems/", include("controls.urls")),
+    url(r"^controls/", include("controls.urls")),
 
     # app store
     url(r'^store$', views.apps_catalog, name="store"),

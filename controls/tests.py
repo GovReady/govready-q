@@ -300,7 +300,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.browser.get(url)
 
         # Test initial import of Component(s) and Statement(s)
-        self.click_element('a#component-import-oscal')
         self.click_element('a#import_records_link')
 
         current_path = urlparse(self.browser.current_url).path
