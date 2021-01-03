@@ -51,6 +51,9 @@ urlpatterns = [
     url(r'^import_records/(?P<import_record_id>.*)/delete_confirm$', views.confirm_import_record_delete, name="confirm_import_record_delete"),
     url(r'^import_records/(?P<import_record_id>.*)/delete$', views.import_record_delete, name="import_record_delete"),
 
+    # Elements
+    url(r'^elements/(\d+)/__rename$', views.rename_element, name="rename_element"),
+
     # Controls
     url(r'^catalogs/(?P<catalog_key>.*)/group/(?P<g_id>.*)', views.group, name="control_group"),
     url(r'^catalogs/(?P<catalog_key>.*)/control/(?P<cl_id>.*)', views.control, name="control_info"),
