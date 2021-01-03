@@ -27,6 +27,7 @@ from .good_settings_helpers import \
 from .models import Folder, Invitation, Portfolio, Project, User, Organization, Support
 from .notifications_helpers import *
 
+import sys
 import logging
 logging.basicConfig()
 import structlog
@@ -1162,6 +1163,29 @@ def rename_project(request, project):
     project.root_task.on_answer_changed()
     return JsonResponse({ "status": "ok" })
 
+def move_project(request, project_id):
+    """Move project to a new portfolio
+    Args:
+    request ([HttpRequest]): The network request
+    project_id ([int|str]): The id of the project
+    Returns:
+        [JsonResponse]: Either a ok status or an error 
+    """
+    try:
+        new_portfolio_id = request.POST.get("new_portfolio", "").strip() or None
+        project = get_object_or_404(Project, id=int(project_id))
+        new_portfolio = get_object_or_404(Portfolio, id=int(new_portfolio_id))
+        project.portfolio = new_portfolio
+        project.save()
+        logger.info(
+            event="move_project successful",
+            object={"project_id": project.id,"new_portfolio_id": new_portfolio.id}
+        )
+        return JsonResponse({ "status": "ok" })
+    except:
+        return JsonResponse({ "status": "error", "message": sys.exc_info() })
+   
+    
 @project_admin_login_post_required
 def upgrade_project(request, project):
     """Upgrade root task of project to newer version"""

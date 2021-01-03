@@ -26,7 +26,8 @@ from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTes
 from system_settings.models import SystemSettings
 from .models import *
 from .oscal import Catalogs, Catalog
-
+from siteapp.models import User, Project, Portfolio
+from system_settings.models import SystemSettings
 
 from urllib.parse import urlparse
 
@@ -514,6 +515,27 @@ class ElementUnitTests(TestCase):
         e.save()
         self.assertTrue(e.name == "Renamed Element A")
 
+
+class ProjectUnitTests(TestCase):
+    ## Simply dummy test ##
+    def test_tests(self):
+        self.assertEqual(1,1)
+
+    def test_move_project_create(self):
+        """Test moving a project to another portfolio"""
+        initial_porfolio = Portfolio.objects.create(title="Portfolio 1") 
+        new_portfolio = Portfolio.objects.create(title="Portfolio 2") 
+        project = Project.objects.create(portfolio=initial_porfolio)
+        project.portfolio = initial_porfolio
+        self.assertIsNotNone(initial_porfolio.id)
+        self.assertIsNotNone(new_portfolio.id)
+        self.assertIsNotNone(project.id)
+        self.assertIsNotNone(project.portfolio.id)
+        self.assertEqual(project.portfolio.title,"Portfolio 1")
+        project.portfolio = new_portfolio
+        self.assertEqual(project.portfolio.title,"Portfolio 2")
+        project.delete()
+        self.assertTrue(project.id is None)
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
