@@ -20,6 +20,7 @@ v.999 (December XX, 2020)
 * Add "Edit" button in Component Library for Administrators to rename a component.
 * Add "Move Project" action button on project page to move project to a different portfolio.
 * Add "Manage Portofolio" links on portfolio page for editing portfolio details and deleting portfolio.
+* Conditionally show button to delete portfolio if portfolio is empty and user has permission to change portfolio.
 
 **Developer changes**
 

@@ -27,7 +27,6 @@ class PortfolioForm(ModelForm):
         model = Portfolio
         fields = ['title', 'description' ]
 
-
 class PortfolioSignupForm(ModelForm):
 
     class Meta:

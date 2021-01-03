@@ -1450,7 +1450,7 @@ def new_portfolio(request):
                 )
                 return redirect('portfolio_projects', pk=portfolio.pk)
         except IntegrityError:
-            messages.add_message(request, messages.ERROR, "Portfolio name not available." )
+            messages.add_message(request, messages.ERROR, "Portfolio name not available.")
     else:
         form = PortfolioForm()
     return render(request, 'portfolios/form.html', {
@@ -1461,23 +1461,81 @@ def new_portfolio(request):
 @login_required
 def delete_portfolio(request, pk):
     """Form to delete portfolios"""
+
     if request.method == 'GET':
         portfolio = Portfolio.objects.get(pk=pk)
-        logger.info(
-            event="delete_portfolio",
-            object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-            user={"id": request.user.id, "username": request.user.username}
-        )
-        Portfolio.objects.get(pk=pk).delete()
-        return redirect("list_portfolios")
 
+        # Confirm user has permission to delete portfolio
+        CAN_DELETE_PORTFOLIO = False
+        if request.user.is_superuser:
+            CAN_DELETE_PORTFOLIO = True
+        if request.user.has_perm('delete_portfolio', portfolio):
+            CAN_DELETE_PORTFOLIO = True
+
+        if not CAN_DELETE_PORTFOLIO:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "USER IS SUPER USER"}
+            )
+            messages.add_message(request, messages.ERROR, f"You do not have permission to delete portfolio '{portfolio.title}.'")
+            return redirect("list_portfolios")
+
+        # Only delete a portfolio with no projects
+        if len(portfolio.projects.all()) > 0:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "Portfolio not empty"}
+            )
+            messages.add_message(request, messages.ERROR, f"Failed to delete portfolio '{portfolio.title}.' The portfolio is not empty.")
+            return redirect("list_portfolios")
+
+        # Delete portfolio
+        try:
+            Portfolio.objects.get(pk=pk).delete()
+            logger.info(
+                event="delete_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been deleted.")
+            return redirect("list_portfolios")
+        except:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "Other error when running delete on portfolio object."}
+            )
 
 @login_required
 def edit_portfolio(request, pk):
     """Form to edit portfolios"""
 
+    # TODO: Check permissions: Only admins (superusers) and Portfolio owners can edit portfolio
     if request.method == 'GET':
         portfolio = Portfolio.objects.get(pk=pk)
+
+        # Confirm user has permission to edit portfolio
+        CAN_EDIT_PORTFOLIO = False
+        if request.user.is_superuser:
+            CAN_EDIT_PORTFOLIO = True
+        if request.user.has_perm('change_portfolio', portfolio):
+            CAN_EDIT_PORTFOLIO = True
+
+        if not CAN_EDIT_PORTFOLIO:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "USER IS SUPER USER"}
+            )
+            messages.add_message(request, messages.ERROR, f"You do not have permission to delete portfolio '{portfolio.title}.'")
+            return redirect("list_portfolios")
+
         form = PortfolioForm(request.POST or None, instance=portfolio, initial={'portfolio': portfolio.id})
         if form.is_valid():
             form.save()
@@ -1501,13 +1559,16 @@ def edit_portfolio(request, pk):
             form = PortfolioForm(request.POST, instance=portfolio)
             if form.is_valid():
                 form.save()
+            # Log portfolio update
+            messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been updated.")
         except IntegrityError:
             messages.add_message(request, messages.ERROR, "There is different Portfolio with this name.")
         return redirect("list_portfolios")
 
     return render(request, 'portfolios/edit_form.html', {
         'form': form,
-        'portfolio': portfolio.title,
+        # 'portfolio': portfolio.title,
+        'portfolio': portfolio,
         "can_change_portfolio": request.user.has_perm('change_portfolio', portfolio),
     })
 
