@@ -15,19 +15,16 @@ import os.path
 import pathlib
 import re
 import tempfile
-from unittest import skip
-
-from django.contrib.auth.models import Permission
-from django.conf import settings
-from selenium.webdriver.support.select import Select
+import selenium.webdriver
 from django.contrib.auth.models import Permission
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # StaticLiveServerTestCase can server static files but you have to make sure settings have DEBUG set to True
 from django.utils.crypto import get_random_string
-from selenium.webdriver.support.select import Select
 
 from siteapp.models import (Organization, Portfolio, Project,
                             ProjectMembership, User)
+from siteapp.settings import HEADLESS, DOS
+from tools.utils.linux_to_dos import convert_w
 
 
 def var_sleep(duration):
@@ -64,8 +61,7 @@ class SeleniumTest(StaticLiveServerTestCase):
         #settings.DEBUG = True
 
         # Start a headless browser.
-        import selenium.webdriver
-        from selenium.webdriver.chrome.options import Options as ChromeOptions
+
         options = selenium.webdriver.ChromeOptions()
         options.add_argument("disable-infobars") # "Chrome is being controlled by automated test software."
         if SeleniumTest.window_geometry == "maximized":
@@ -74,21 +70,29 @@ class SeleniumTest(StaticLiveServerTestCase):
             options.add_argument("--window-size=" + ",".join(str(dim) for dim in SeleniumTest.window_geometry))
 
         options.add_argument("--incognito")
-        # Set up selenium Chrome browser for Windows or Linux
-        from platform import uname, system
-        if system() == "Windows" or 'Microsoft' in uname().release:
-            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
-        else:
-            cls.browser = selenium.webdriver.Chrome(chrome_options=options)
 
+        if DOS:
+            # WSL has a hard time finding tempdir so we feed it the dos conversion
+            tempfile.tempdir = convert_w(os.getcwd())
         # enable Selenium support for downloads
-        cls.download_path = temp_path = pathlib.Path(tempfile.gettempdir())
+        cls.download_path = pathlib.Path(tempfile.gettempdir())
         options.add_experimental_option("prefs", {
             "download.default_directory": str(cls.download_path),
             "download.prompt_for_download": False,
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True
         })
+
+        if HEADLESS:
+            options.add_argument('--headless')
+
+        # Set up selenium Chrome browser for Windows or Linux
+        if DOS:
+            # TODO: Find out a way to get chromedriver implicit executable path in WSL
+            cls.browser = selenium.webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+        else:
+            cls.browser = selenium.webdriver.Chrome(chrome_options=options)
+
         cls.browser.implicitly_wait(3) # seconds
 
         # Clean up and quit tests if Q is in SSO mode
@@ -186,6 +190,29 @@ class SeleniumTest(StaticLiveServerTestCase):
         # instance is initialized when the first message is sent.
         outbox = getattr(django.core.mail, 'outbox', [])
         return len(outbox) > 0
+
+    def filepath_conversion(self, file_input, filepath, conversion_type):
+        if conversion_type.lower() == "sendkeys":
+            try:
+                # Current file system path might be incongruent linux-dos
+                file_input.send_keys(filepath)
+            except Exception as ex:
+                print("Changing file path from linux to dos")
+                print(ex)
+                filepath = convert_w(filepath)
+                file_input.send_keys(filepath)
+        elif conversion_type.lower() == "fill":
+            try:
+                # Current file system path might be incongruent linux-dos
+                self.fill_field(file_input, filepath)
+            except Exception as ex:
+                print("Changing file path from linux to dos")
+                print(ex)
+                filepath = convert_w(filepath)
+                self.fill_field(file_input, filepath)
+        return filepath
+
+
 #####################################################################
 
 class SupportPageTests(SeleniumTest):
@@ -680,7 +707,7 @@ class GeneralTests(OrganizationSiteFunctionalTests):
         # self.assertInNodeText("Yes, @me, I am here", "#discussion .comment:not(.author-is-self) .comment-text")
         # self.assertInNodeText("reacted", "#discussion .replies .reply[data-emojis=heart]")
 
-class PortfolioProjetTests(OrganizationSiteFunctionalTests):
+class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
     def _fill_in_signup_form(self, email, username=None):
         if username:
@@ -1168,11 +1195,13 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
             'fixtures',
             'testimage.png'
         )
+        if DOS:
+            testFilePath = convert_w(testFilePath)
         var_sleep(1)
         self.fill_field("#inputctrl", testFilePath)
 
         self.click_element("#save-button")
-        var_sleep(1)
+        var_sleep(.5)
 
         # interstitial
         # nothing to really test in terms of functionality, but check that
@@ -1218,7 +1247,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
 
         def do_submodule(answer_text):
             var_sleep(1.25)
-            self.assertRegex(self.browser.title, "Next Question: Introduction")
+            self.assertRegex(self.browser.title, "Next Question:")
             self.click_element("#save-button")
             var_sleep(1.25)
             self.assertRegex(self.browser.title, "Next Question: The Question")
@@ -1251,7 +1280,7 @@ class QuestionsTests(OrganizationSiteFunctionalTests):
         self.click_element('#question input[name="value"][value="%d"]' % task_id)
         self.click_element("#save-button")
         var_sleep(.5)
-        self.assertRegex(self.browser.title, "^Test The Module Question Types - ")
+        self.assertRegex(self.browser.title, "Test The Module Question Types - ")
 
 class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
 

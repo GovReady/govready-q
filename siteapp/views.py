@@ -1592,8 +1592,12 @@ def send_invitation(request):
     except ValueError as e:
         return JsonResponse({ "status": "error", "message": str(e) })
     except Exception as e:
-        import sys
-        sys.stderr.write(str(e) + "\n")
+        logger.error(
+            event="send invitation",
+            object={"status": "error",
+                    "message": " ".join(["There was a problem -- sorry!", str(e)])},
+            user={"id": request.user.id, "username": request.user.username}
+        )
         return JsonResponse({ "status": "error", "message": "There was a problem -- sorry!" })
 
 @login_required
