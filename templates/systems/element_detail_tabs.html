@@ -185,6 +185,9 @@
                                                     {% elif smt.prototype_synched == 'not_synched' %}
                                                         <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span
                                                                 class="glyphicon glyphicon-alert"></span> Differs from certified</a></span>
+                                                    {% elif smt.prototype_synched == 'orphaned' %}
+                                                        <span id="diff_alert_{{ forloop.counter }}"><a href="#diff_{{ forloop.counter }}" class="" data-toggle="collapse" style="text-decoration: none;font-weight: normal; font-size: 9pt; color: firebrick;"><span
+                                                                class="glyphicon glyphicon-alert"></span> No related statement for component in library</a></span>
                                                     {% endif %}
                                                     <div id="diff_{{ forloop.counter }}" class="collapse smt_diff" style="font-size:10pt; font-weight: normal; margin-top: 12px;color: #666;">
                                                         <div style="text-decoration: underline;font-weight: bold;">
