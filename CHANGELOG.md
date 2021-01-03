@@ -8,11 +8,13 @@ v.999 (December XX, 2020)
 
 * Track batch imports of components (via OSCAL) into component library for tracking and management purposes; enable deletes of batch imports.
 * Support defining multiple allowed hosts via the `local/environment.json` file.
+* Allow administrators to change component name in Component Library.
 
 **UI changes**
 
 * New dialog in Component Library for importing components in OSCAL JSON format
 * New screens for tracking and deleting batch imports of components (via OSCAL) into component library.
+* Add "Edit" button in Component Library for Administrators to rename a component.
 
 **Developer changes**
 
