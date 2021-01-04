@@ -1559,7 +1559,7 @@ def edit_portfolio(request, pk):
     return render(request, 'portfolios/edit_form.html', {
         'form': form,
         'portfolio': portfolio,
-        "can_change_portfolio": request.user.has_perm('change_portfolio', portfolio),
+        "can_edit_portfolio": CAN_EDIT_PORTFOLIO,
     })
 
 def portfolio_read_required(f):
