@@ -60,8 +60,10 @@ urlpatterns = [
     url(r'^projects/(\d+)/(?:[\w\-]+)(/api)$', views.project_api), # must be last because regex matches some previous URLs
 
     # portfolios
-    url(r'^portfolios$', views.portfolio_list),
+    url(r'^portfolios$', views.portfolio_list, name="list_portfolios"),
     url(r'^portfolios/new$', views.new_portfolio),
+    url(r'^portfolios/(?P<pk>.*)/delete$', views.delete_portfolio, name="delete_portfolio"),
+    url(r'^portfolios/(?P<pk>.*)/edit$', views.edit_portfolio, name="edit_portfolio"),
     url(r'^portfolios/(?P<pk>.*)/projects$', views.portfolio_projects, name="portfolio_projects"),
     url(r'^portfolio/update_permissions', views.update_permissions, name="update_permissions"),
 

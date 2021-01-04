@@ -1,5 +1,5 @@
 import random
-
+from django.db import IntegrityError
 from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
@@ -1431,29 +1431,132 @@ def portfolio_list(request):
 def new_portfolio(request):
     """Form to create new portfolios"""
     if request.method == 'POST':
-      form = PortfolioForm(request.POST)
-      if form.is_valid():
-        form.save()
-        portfolio = form.instance
-        logger.info(
-            event="new_portfolio",
-            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
-            user={"id": request.user.id, "username": request.user.username}
-        )
-        portfolio.assign_owner_permissions(request.user)
-        logger.info(
-            event="new_portfolio assign_owner_permissions",
-            object={"object": "portfolio", "id": portfolio.id, "title":portfolio.title},
-            receiving_user={"id": request.user.id, "username": request.user.username},
-            user={"id": request.user.id, "username": request.user.username}
-        )
-        return redirect('portfolio_projects', pk=portfolio.pk)
+        form = PortfolioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            portfolio = form.instance
+            logger.info(
+                event="new_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            portfolio.assign_owner_permissions(request.user)
+            logger.info(
+                event="new_portfolio assign_owner_permissions",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                receiving_user={"id": request.user.id, "username": request.user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('portfolio_projects', pk=portfolio.pk)
     else:
         form = PortfolioForm()
-
     return render(request, 'portfolios/form.html', {
         'form': form,
         "project_form": ProjectForm(request.user),
+    })
+
+@login_required
+def delete_portfolio(request, pk):
+    """Form to delete portfolios"""
+
+    if request.method == 'GET':
+        portfolio = Portfolio.objects.get(pk=pk)
+
+        # Confirm user has permission to delete portfolio
+        CAN_DELETE_PORTFOLIO = False
+        if request.user.is_superuser or request.user.has_perm('delete_portfolio', portfolio):
+            CAN_DELETE_PORTFOLIO = True
+
+        if not CAN_DELETE_PORTFOLIO:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "USER IS SUPER USER"}
+            )
+            messages.add_message(request, messages.ERROR, f"You do not have permission to delete portfolio '{portfolio.title}.'")
+            return redirect("list_portfolios")
+
+        # Only delete a portfolio with no projects
+        if len(portfolio.projects.all()) > 0:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "Portfolio not empty"}
+            )
+            messages.add_message(request, messages.ERROR, f"Failed to delete portfolio '{portfolio.title}.' The portfolio is not empty.")
+            return redirect("list_portfolios")
+        # TODO: It will delete everything related to the portfolio as well with a summary of the deletion
+        # Delete portfolio
+        try:
+            Portfolio.objects.get(pk=pk).delete()
+            logger.info(
+                event="delete_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been deleted.")
+            return redirect("list_portfolios")
+        except:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "Other error when running delete on portfolio object."}
+            )
+
+@login_required
+def edit_portfolio(request, pk):
+    """Form to edit portfolios"""
+    portfolio = Portfolio.objects.get(pk=pk)
+    form = PortfolioForm(request.POST or None, instance=portfolio, initial={'portfolio': portfolio.id})
+    # Confirm user has permission to edit portfolio
+    CAN_EDIT_PORTFOLIO = False
+    if request.user.is_superuser or request.user.has_perm('change_portfolio', portfolio):
+        CAN_EDIT_PORTFOLIO = True
+    if request.method == 'GET':
+        if not CAN_EDIT_PORTFOLIO:
+            logger.info(
+                event="delete_portfolio_failed",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username},
+                detail={"message": "USER IS SUPER USER"}
+            )
+            messages.add_message(request, messages.ERROR, f"You do not have permission to delete portfolio '{portfolio.title}.'")
+            return redirect("list_portfolios")
+
+        if form.is_valid():
+            form.save()
+
+            logger.info(
+                event="edit_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            portfolio.assign_owner_permissions(request.user)
+            logger.info(
+                event="new_portfolio assign_owner_permissions",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                receiving_user={"id": request.user.id, "username": request.user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('portfolio_projects', pk=portfolio.pk)
+    if request.method == 'POST':
+        try:
+            form = PortfolioForm(request.POST, instance=portfolio)
+            if form.is_valid():
+                form.save()
+                # Log portfolio update
+                messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been updated.")
+                return redirect("list_portfolios")
+        except IntegrityError:
+            messages.add_message(request, messages.ERROR, "Portfolio name {} not available.".format(request.POST['title']))
+
+    return render(request, 'portfolios/edit_form.html', {
+        'form': form,
+        'portfolio': portfolio,
+        "can_edit_portfolio": CAN_EDIT_PORTFOLIO,
     })
 
 def portfolio_read_required(f):
@@ -1487,6 +1590,7 @@ def portfolio_projects(request, pk):
       "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
       "project_form": project_form,
       "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
+      "can_edit_portfolio": request.user.has_perm('change_portfolio', portfolio),
       "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
       "users_with_perms": portfolio.users_with_perms(),
       "display_users_with_perms": len(portfolio.users_with_perms()),
