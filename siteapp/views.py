@@ -1514,14 +1514,11 @@ def edit_portfolio(request, pk):
     """Form to edit portfolios"""
     portfolio = Portfolio.objects.get(pk=pk)
     form = PortfolioForm(request.POST or None, instance=portfolio, initial={'portfolio': portfolio.id})
-
+    # Confirm user has permission to edit portfolio
+    CAN_EDIT_PORTFOLIO = False
+    if request.user.is_superuser or request.user.has_perm('change_portfolio', portfolio):
+        CAN_EDIT_PORTFOLIO = True
     if request.method == 'GET':
-
-        # Confirm user has permission to edit portfolio
-        CAN_EDIT_PORTFOLIO = False
-        if request.user.is_superuser or request.user.has_perm('change_portfolio', portfolio):
-            CAN_EDIT_PORTFOLIO = True
-
         if not CAN_EDIT_PORTFOLIO:
             logger.info(
                 event="delete_portfolio_failed",
