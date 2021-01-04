@@ -1512,9 +1512,10 @@ def delete_portfolio(request, pk):
 @login_required
 def edit_portfolio(request, pk):
     """Form to edit portfolios"""
+    portfolio = Portfolio.objects.get(pk=pk)
+    form = PortfolioForm(request.POST or None, instance=portfolio, initial={'portfolio': portfolio.id})
 
     if request.method == 'GET':
-        portfolio = Portfolio.objects.get(pk=pk)
 
         # Confirm user has permission to edit portfolio
         CAN_EDIT_PORTFOLIO = False
@@ -1531,7 +1532,6 @@ def edit_portfolio(request, pk):
             messages.add_message(request, messages.ERROR, f"You do not have permission to delete portfolio '{portfolio.title}.'")
             return redirect("list_portfolios")
 
-        form = PortfolioForm(request.POST or None, instance=portfolio, initial={'portfolio': portfolio.id})
         if form.is_valid():
             form.save()
 
@@ -1549,20 +1549,15 @@ def edit_portfolio(request, pk):
             )
             return redirect('portfolio_projects', pk=portfolio.pk)
     if request.method == 'POST':
-        portfolio = Portfolio.objects.get(pk=pk)
-        try:
-            form = PortfolioForm(request.POST, instance=portfolio)
-            if form.is_valid():
-                form.save()
+        if form.is_valid():
+            form.save()
             # Log portfolio update
             messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been updated.")
-        except IntegrityError:
-            messages.add_message(request, messages.ERROR, "There is different Portfolio with this name.")
-        return redirect("list_portfolios")
+            return redirect("list_portfolios")
+        messages.error(request, "There is different Portfolio with this name.")
 
     return render(request, 'portfolios/edit_form.html', {
         'form': form,
-        # 'portfolio': portfolio.title,
         'portfolio': portfolio,
         "can_change_portfolio": request.user.has_perm('change_portfolio', portfolio),
     })
