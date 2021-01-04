@@ -1590,7 +1590,7 @@ def portfolio_projects(request, pk):
       "projects": projects if request.user.has_perm('view_portfolio', portfolio) else user_projects,
       "project_form": project_form,
       "can_invite_to_portfolio": request.user.has_perm('can_grant_portfolio_owner_permission', portfolio),
-      "can_change_portfolio": request.user.has_perm('change_portfolio', portfolio),
+      "can_edit_portfolio": request.user.has_perm('change_portfolio', portfolio),
       "send_invitation": Invitation.form_context_dict(request.user, portfolio, [request.user, anonymous_user]),
       "users_with_perms": portfolio.users_with_perms(),
       "display_users_with_perms": len(portfolio.users_with_perms()),
