@@ -29,15 +29,13 @@
     {% if "can_grant_portfolio_owner_permission" in perms %}
     <div class="col-md-2">Owner</div>
         <div class="col-md-2">
-            <span class="glyphicon glyphicon-pencil"></span>
-            <a id="new-project" class="portfolio-project-link" onclick="show_manage_portfolio_modal('{{portfolio.id}}', '{{ portfolio.title }}'); return false;" href="#">Manage Portfolio</a>
+            <a id="" class="portfolio-project-link" href="{% url "edit_portfolio" portfolio.id %}" title="Edit portfolio" aria-label="Edit portfolio" ><span class="glyphicon glyphicon-pencil"></span></a>
         </div>
     {% elif "change_portfolio" in perms%}
     <div class="col-md-2">Portfolio Member</div>
     <div class="col-md-2">
         <div class="col-md-2">
-            <span class="glyphicon glyphicon-pencil"></span>
-            <a id="new-project" class="portfolio-project-link" onclick="show_manage_portfolio_modal('{{portfolio.id}}', '{{ portfolio.title }}'); return false;" href="#">Manage Portfolio</a>
+            <a id="" class="portfolio-project-link" href="{% url "edit_portfolio" portfolio.id %}" title="Edit portfolio" aria-label="Edit portfolio"><span class="glyphicon glyphicon-pencil"></span></a>
         </div>
     {% else %}
     <div class="col-md-2">Project Member</div>

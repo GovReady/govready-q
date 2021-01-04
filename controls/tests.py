@@ -711,23 +711,18 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
         var_sleep(3)
         assert len(comps_dropdown.options) == 2
-
+        # Use elements from database to avoid hard-coding element ids expected
+        elements = Element.objects.all()
+        testname2_ele = str(elements[5].id)
+        component2_ele = str(elements[2].id)
         # Add a new component based on one of the options available in the filtered dropdown
-        try:
-            ## Test name 2 has a value of 6 and Component 2 has a value of 3
-            self.select_option("select#selected_producer_element_form_id", "6")
-            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
-        except:
-            self.select_option("select#selected_producer_element_form_id", "13")
-            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "13"
+        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        self.select_option("select#selected_producer_element_form_id", testname2_ele)
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_property("value") == testname2_ele
 
-        try:
-            ## Test name 2 has a value of 6 and Component 2 has a value of 3
-            self.select_option("select#selected_producer_element_form_id", "3")
-            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
-        except:
-            self.select_option("select#selected_producer_element_form_id", "10")
-            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "10"
+        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        self.select_option("select#selected_producer_element_form_id", component2_ele)
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_property("value") == component2_ele
 
         # Open a modal will with component statements related to the select component prototype
         add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")
