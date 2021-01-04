@@ -902,21 +902,21 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
 
         # verify new description by journeying back to edit_form
         self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
-        self.assertIn("new me portfolio", self.browser.find_element_by_css_selector("#id_description").get_property('value'))
+        self.assertIn("new me portfolio", self.browser.find_element_by_css_selector("#id_description").get_attribute('value'))
 
     def test_delete_portfolio(self):
         """
         Delete a portfolio from the database
         """
+        portfolio = Portfolio.objects.all().first()
         # Login and journey to portfolios
         self._login()
         self.browser.get(self.url("/portfolios"))
         # Hit deletion pattern
-        self.browser.get(self.url("/portfolios/1/delete"))
+        self.browser.get(self.url(f"/portfolios/{portfolio.id}/delete"))
+
         # Verify 'deleted' message is correct
         self.assertIn("The portfolio 'me' has been deleted.", self._getNodeText("div.alert.fade.in.alert-info"))
-
-
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
