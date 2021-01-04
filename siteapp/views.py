@@ -1431,26 +1431,23 @@ def portfolio_list(request):
 def new_portfolio(request):
     """Form to create new portfolios"""
     if request.method == 'POST':
-        try:
-            form = PortfolioForm(request.POST)
-            if form.is_valid():
-                form.save()
-                portfolio = form.instance
-                logger.info(
-                    event="new_portfolio",
-                    object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-                    user={"id": request.user.id, "username": request.user.username}
-                )
-                portfolio.assign_owner_permissions(request.user)
-                logger.info(
-                    event="new_portfolio assign_owner_permissions",
-                    object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
-                    receiving_user={"id": request.user.id, "username": request.user.username},
-                    user={"id": request.user.id, "username": request.user.username}
-                )
-                return redirect('portfolio_projects', pk=portfolio.pk)
-        except IntegrityError:
-            messages.add_message(request, messages.ERROR, "Portfolio name not available.")
+        form = PortfolioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            portfolio = form.instance
+            logger.info(
+                event="new_portfolio",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            portfolio.assign_owner_permissions(request.user)
+            logger.info(
+                event="new_portfolio assign_owner_permissions",
+                object={"object": "portfolio", "id": portfolio.id, "title": portfolio.title},
+                receiving_user={"id": request.user.id, "username": request.user.username},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+            return redirect('portfolio_projects', pk=portfolio.pk)
     else:
         form = PortfolioForm()
     return render(request, 'portfolios/form.html', {
@@ -1546,12 +1543,15 @@ def edit_portfolio(request, pk):
             )
             return redirect('portfolio_projects', pk=portfolio.pk)
     if request.method == 'POST':
-        if form.is_valid():
-            form.save()
-            # Log portfolio update
-            messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been updated.")
-            return redirect("list_portfolios")
-        messages.error(request, "There is different Portfolio with this name.")
+        try:
+            form = PortfolioForm(request.POST, instance=portfolio)
+            if form.is_valid():
+                form.save()
+                # Log portfolio update
+                messages.add_message(request, messages.INFO, f"The portfolio '{portfolio.title}' has been updated.")
+                return redirect("list_portfolios")
+        except IntegrityError:
+            messages.add_message(request, messages.ERROR, "Portfolio name {} not available.".format(request.POST['title']))
 
     return render(request, 'portfolios/edit_form.html', {
         'form': form,
