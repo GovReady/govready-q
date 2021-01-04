@@ -1487,7 +1487,7 @@ def delete_portfolio(request, pk):
             )
             messages.add_message(request, messages.ERROR, f"Failed to delete portfolio '{portfolio.title}.' The portfolio is not empty.")
             return redirect("list_portfolios")
-
+        # TODO: It will delete everything related to the portfolio as well with a summary of the deletion
         # Delete portfolio
         try:
             Portfolio.objects.get(pk=pk).delete()
