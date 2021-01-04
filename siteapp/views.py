@@ -1467,9 +1467,7 @@ def delete_portfolio(request, pk):
 
         # Confirm user has permission to delete portfolio
         CAN_DELETE_PORTFOLIO = False
-        if request.user.is_superuser:
-            CAN_DELETE_PORTFOLIO = True
-        if request.user.has_perm('delete_portfolio', portfolio):
+        if request.user.is_superuser or request.user.has_perm('delete_portfolio', portfolio):
             CAN_DELETE_PORTFOLIO = True
 
         if not CAN_DELETE_PORTFOLIO:
@@ -1515,15 +1513,12 @@ def delete_portfolio(request, pk):
 def edit_portfolio(request, pk):
     """Form to edit portfolios"""
 
-    # TODO: Check permissions: Only admins (superusers) and Portfolio owners can edit portfolio
     if request.method == 'GET':
         portfolio = Portfolio.objects.get(pk=pk)
 
         # Confirm user has permission to edit portfolio
         CAN_EDIT_PORTFOLIO = False
-        if request.user.is_superuser:
-            CAN_EDIT_PORTFOLIO = True
-        if request.user.has_perm('change_portfolio', portfolio):
+        if request.user.is_superuser or request.user.has_perm('change_portfolio', portfolio):
             CAN_EDIT_PORTFOLIO = True
 
         if not CAN_EDIT_PORTFOLIO:

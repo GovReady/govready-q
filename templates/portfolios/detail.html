@@ -32,7 +32,7 @@ Remove contextbar from top of page
     <div class="container">
     <div class="portfolio-main">
         {% if can_change_portfolio %}
-            <a id="manage-portfolio" href="/portfolios/{{ portfolio.id }}/edit" class=" btn">Edit Portfolio</a>
+            <a id="edit-portfolio" href='{% url "edit_portfolio" portfolio.id %}' class="btn btn-success">Edit Portfolio</a>
         {% endif %}
         <a id="new-project" onclick="show_select_portfolio_modal(); return false;" href="#" class=" btn
         btn-success">Start a project</a>
