@@ -866,7 +866,7 @@ def controls_selected_export_xacta_xslx(request, system_id):
         ws.title = "Controls_Implementation"
 
         # Add in field name row
-
+        # Paragraph/ReqID
         c = ws.cell(row=1, column=1, value="Paragraph/ReqID")
         c.fill = PatternFill("solid", fgColor="5599FE")
         c.font = Font(color="FFFFFF", bold=True)
