@@ -709,24 +709,28 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         search_comps_txtbar[-1].clear()
         search_comps_txtbar[-1].send_keys("2")
         self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
-        var_sleep(3)
+        var_sleep(1)
         assert len(comps_dropdown.options) == 2
 
         # Add a new component based on one of the options available in the filtered dropdown
         try:
             ## Test name 2 has a value of 6 and Component 2 has a value of 3
             self.select_option("select#selected_producer_element_form_id", "6")
+            var_sleep(1)
             assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
         except:
             self.select_option("select#selected_producer_element_form_id", "13")
+            var_sleep(1)
             assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "13"
 
         try:
             ## Test name 2 has a value of 6 and Component 2 has a value of 3
             self.select_option("select#selected_producer_element_form_id", "3")
+            var_sleep(1)
             assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
         except:
             self.select_option("select#selected_producer_element_form_id", "10")
+            var_sleep(1)
             assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "10"
 
         # Open a modal will with component statements related to the select component prototype
