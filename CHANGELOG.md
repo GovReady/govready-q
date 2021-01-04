@@ -29,7 +29,9 @@ v.999 (December XX, 2020)
 
 * Fix missing "part" field on Component's component statement form and incorrectly displaying the "remarks" field (#1232)
 * Fix display of OSCAL into correct tab on system's component's page
-
+* When generating OSCAL component files, emit `statement` elements
+  with ids that correlate with the control catalog.
+  
 v.0.9.1.48.1 (December 17, 2020)
 --------------------------------
 

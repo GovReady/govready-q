@@ -21,6 +21,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from controls.models import System
 from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
+from controls.views import OSCALComponentSerializer
 from siteapp.models import User
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests
 from system_settings.models import SystemSettings
@@ -105,6 +106,20 @@ class Oscal80053Tests(TestCase):
         description = control['description']
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
+
+class OSCALComponentSerializerTests(TestCase):
+    
+    def test_statement_id_from_control(self):
+        cases = (
+            ('ac-1', 'a', 'ac-1_smt.a'),
+            ('ac-1', '', 'ac-1_smt'),
+            ('ac-1.1', 'a', 'ac-1.1_smt.a'),
+            ('1.1.1', '', '1.1.1_smt')
+        )
+        test_func = OSCALComponentSerializer.statement_id_from_control
+        
+        for control_id, part, expected in cases:
+            self.assertEqual(test_func(control_id, part), expected)
 
 #####################################################################
 
