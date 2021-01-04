@@ -1,5 +1,5 @@
 {
-    "key": "low_fedramp",
+    "name": "low_fedramp",
     "values": {
         "ac-1_prm_2": "at least every 3 years",
         "ac-1_prm_3": "at least annually",
@@ -54,8 +54,7 @@
         "ia-4_prm_3": "ninety days for user identifiers (See additional requirements and guidance)",
         "ia-5.1_prm_2": "at least one",
         "ia-5.1_prm_4": "twenty four",
-        "ir-1
-    _prm_2": "at least every 3 years",
+        "ir-1_prm_2": "at least every 3 years",
         "ir-1_prm_3": "at least annually",
         "ir-2_prm_2": "at least annually",
         "ir-6_prm_1": "US-CERT incident reporting timelines as specified in NIST Special Publication 800-61 (as amended)",

@@ -597,15 +597,15 @@ class OrgParamTests(TestCase):
 
     def test_org_params(self):
         odp = OrgParams()
-        self.assertIn('org_params_low_fedramp', odp.odp_keys)
-        odp53 = odp._load_json('org_params_mod_fedramp')
+        self.assertIn('mod_fedramp', odp.get_names())
+        odp53 = odp.get_params("mod_fedramp")
         self.assertTrue('at least every 3 years' == odp53['ac-1_prm_2'])
-        self.assertEqual(177, len(odp.get_org_params('org_params_mod_fedramp')))
+        self.assertEqual(177, len(odp53))
 
     def test_catalog_all_controls_with_organizational_parameters(self):
         odp = OrgParams()
-        self.assertIn('org_params_low_fedramp', odp.odp_keys)
-        odp53 = odp._load_json('org_params_mod_fedramp')
+        self.assertIn('mod_fedramp', odp.get_names())
+        odp53 = odp.get_params("mod_fedramp")
         # parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
         parameter_values = odp53
         cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,

@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import json
 from django.db import models
@@ -639,26 +640,28 @@ class OrgParams(object):
     def init(self):
         global ORGPARAM_PATH
         self.cache = {}
-        for f in ['org_params_low_fedramp.json',
-                  'org_params_mod_fedramp.json',
-                  'org_params_high_fedramp.json']:
-            path = Path(ORGPARAM_PATH) / Path(f)
-            key, values = self.load_param_file(path)
-            self.cache[key] = values
+
+        path = Path(ORGPARAM_PATH)
+        for f in path.glob("*.json"):
+            print("Loading default organizational parameters from", f)
+            name, values = self.load_param_file(f)
+            if name in self.cache:
+                raise Exception("Duplicate default organizational parameters name {} from {}".format(name, f))
+            self.cache[name] = values
     
     def load_param_file(self, path):
         with path.open("r") as json_file:
             data = json.load(json_file)
-            if 'key' in data and 'values' in data:
-                return (data["key"], data["values"])
+            if 'name' in data and 'values' in data:
+                return (data["name"], data["values"])
             else:
-                raise Exception("Invalid organizational parameter file {}".format(path))
+                raise Exception("Invalid organizational parameters file {}".format(path))
                 
-    def get_keys(self):
+    def get_names(self):
         return self.cache.keys()
     
-    def get_params(self, key):
-        return self.cache.get(key, {})
+    def get_params(self, name):
+        return self.cache.get(name, {})
 
 
 class Poam(models.Model):

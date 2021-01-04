@@ -400,16 +400,9 @@ class Organization(models.Model):
         Return a dictionary of organizational settings for a given catalog key
         Keys are OSCAL style parameter identifiers, e.g. 'ac-1_prm_1' would be the
         first parameter for ac-1.
-
-        Default values come from the baseline controls.models.OrgParams;
-        each Organization can override via OrganizationalSettings.
         """
 
-        default_params = OrgParams().get_org_params('org_params_low_fedramp')
-        org_settings = self.organizationalsetting_set.filter(catalog_key=catalog_key)
-        org_params = dict((setting.parameter_key, setting.value) for setting in org_settings)
-
-        return ChainMap(org_params, default_params)
+        return  self.organizationalsetting_set.filter(catalog_key=catalog_key)
 
 class OrganizationalSetting(models.Model):
     """
@@ -1231,13 +1224,27 @@ class Project(models.Model):
         return True
 
 
+    def get_default_parameter_name(self):
+        # TODO: using 'mod_fedramp', but somehow we need to determine
+        # the correct name 
+        return "mod_fedramp"
+
     def get_parameter_values(self, catalog_id) -> Dict[str, str]:
         """
         Return a dictionary of organizational settings for a given catalog identifier.
-        Delegates to the project's organization.
+        Default values come from the baseline controls.models.OrgParams;
+        each Organization can override via OrganizationalSettings.
         """
 
-        return self.organization.get_parameter_values(catalog_id)
+        # start with the baseline defaults
+        default_params = OrgParams().get_params(self.get_default_parameter_name())
+
+        # get the organizational settings into dict form
+        org_settings = self.organization.get_parameter_values(catalog_id)
+        org_params = dict((setting.parameter_key, setting.value) for setting in org_settings)
+
+        # merge and return
+        return ChainMap(org_params, default_params)
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE, help_text="The Project this is defining membership for.")
