@@ -643,7 +643,6 @@ class OrgParams(object):
 
         path = Path(ORGPARAM_PATH)
         for f in path.glob("*.json"):
-            print("Loading default organizational parameters from", f)
             name, values = self.load_param_file(f)
             if name in self.cache:
                 raise Exception("Duplicate default organizational parameters name {} from {}".format(name, f))
