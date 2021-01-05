@@ -77,6 +77,10 @@ if "host" in environment:
 if (GOVREADY_URL.hostname and GOVREADY_URL.hostname is not "") and (GOVREADY_URL.hostname not in ALLOWED_HOSTS):
 	ALLOWED_HOSTS.append(GOVREADY_URL.hostname)
 print("INFO: ALLOWED_HOSTS", ALLOWED_HOSTS)
+# Support multiple hosts if set
+# `allowed_hosts` must be an ARRAY
+if "allowed_hosts" in environment:
+	ALLOWED_HOSTS.extend(environment["allowed_hosts"])
 
 # allauth requires the use of the sites framework.
 SITE_ID = 1
@@ -376,10 +380,10 @@ X_FRAME_OPTIONS = 'DENY' # don't allow site to be embedded in iframes
 # where "collectstatic" will put static files.
 #
 # Uncollected static files that ship with GovReady are located in `siteapp/static`.
-# In development (e.g. debug = false), Django will *ignore* the STATIC_ROOT setting and
+# In development (e.g. debug = true), Django will *ignore* the STATIC_ROOT setting and
 # search installed application paths when resolving STATIC_URL to find actual files.
 #
-# In production (e.g. debug = true), Django will use the STATIC_ROOT setting
+# In production (e.g. debug = false), Django will use the STATIC_ROOT setting
 # when resolving STATIC_URL to find the path to actual files.
 # Also, the `manage.py collectstatic` will copy found static files into the
 # STATIC_ROOT path.
