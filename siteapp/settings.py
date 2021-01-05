@@ -100,7 +100,6 @@ INSTALLED_APPS = [
 	'allauth',
 	'allauth.account',
 	'allauth.socialaccount',
-	'import_export',
 	# add any allauth social providers as you like
 ]
 
