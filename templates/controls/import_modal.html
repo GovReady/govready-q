@@ -5,9 +5,9 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="project_modal_title">Select a Project</h4>
       </div>
-<form method="post" enctype="multipart/form-data" action="/systems/{{project.system.id}}/import ">
+<form method="post" enctype="multipart/form-data" action="{% url 'project_import' project.id %}">
     {% csrf_token %}
-    <input type="file" name="import_project_data">
+    <input type="file" name="import_project_data"  onchange="attach_files(this.files)">
     <p>Please select format of file.</p>
     <select name="file-format" class="form-control my-3">
         <option selected>Choose format...</option>

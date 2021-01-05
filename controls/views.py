@@ -29,7 +29,6 @@ from .forms import ImportOSCALComponentForm
 from .forms import StatementPoamForm, PoamForm, ElementForm
 from .models import *
 from .utilities import *
-from .resources import StatementResource
 
 logging.basicConfig()
 import structlog
@@ -2404,28 +2403,29 @@ def poam_export(request, system_id, format='xlsx'):
         # User does not have permission to this system
         raise Http404
 
-def project_import(request, system_id):
+def project_import(request, project_id):
     """
     Import an entire project's components and control content
     """
+    project = Project.objects.get(id=project_id)
+    system_id = project.system.id
+    # Retrieve identified System
+    system = System.objects.get(id=system_id)
     # Retrieve identified System
     if request.method == 'POST':
+        # TODO: import project data do i want to create a new one or update an old one?
         file_format = request.POST['file-format'] #  TODO: need modal for import format selection
-        statement_resource = StatementResource()
         dataset = Dataset()
         project_data = request.FILES['import_project_data']
         if file_format == 'CSV':
-            imported_data = dataset.load(project_data.read().decode('utf-8'), format='csv')
-            result = statement_resource.import_data(dataset, dry_run=True)
+            pass
         elif file_format == 'JSON':
-            imported_data = dataset.load(project_data.read().decode('utf-8'), format='json')
-            # Testing data import
-            result = statement_resource.import_data(dataset, dry_run=True)
+            imported_jsondata = project_data.read().decode('utf-8')
+            # Load and get the components then dump
+            for k, val in enumerate(json.loads(imported_jsondata).get('component-definitions')):
+                oscal_component_json = json.dumps(json.loads(imported_jsondata).get('component-definitions')[k])
+                result = ComponentImporter().import_component_as_json(oscal_component_json, request)
 
-            # No errors? Then do the actual import
-        if not result.has_errors():
-            statement_resource.import_data(dataset, dry_run=False)
-    # TODO: Need to validate ids, and uuid, also need to accommodate element info
         return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
 
 def project_export(request, project_id):
@@ -2442,27 +2442,19 @@ def project_export(request, project_id):
     if request.user.has_perm('view_system', system):
 
         # Iterate through the elements associated with the system get all statements produced for each
-        smts = []
         oscal_comps = []
         for element in system.producer_elements:
-            smts += element.statements_produced.all()
             # Implementation statement OSCAL JSON
             impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
             component = OSCALComponentSerializer(element, impl_smts).as_json()
             oscal_comps.append(component)
 
-        # Get ids for statements and filter Statement on pk
-        smt_ids = [smt.id for smt in smts]
-        statements = Statement.objects.filter(pk__in=smt_ids).order_by('id')
-
     # TODO: multiple export types
-    # StatementResource
-    statement_resource = StatementResource()
-    statement_dataset = statement_resource.export(queryset=statements)
+
     questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
     data = json.loads(questionnaire_data)
-    #statement_json = json.loads(statement_dataset.json)
-
+    for oscal_comp in oscal_comps:
+        data['component-definitions'] = json.loads(oscal_comp)
     data['component-definitions'] = [json.loads(oscal_comp) for oscal_comp in oscal_comps]
     response = JsonResponse(data, json_dumps_params={"indent": 2})
     filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
