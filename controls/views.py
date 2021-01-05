@@ -20,8 +20,8 @@ from django.utils.text import slugify
 from django.views import View
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
-from tablib import Dataset
 from urllib.parse import quote
+from guidedmodules.models import Task, Module, AppVersion, AppSource
 from siteapp.forms import ProjectForm
 from siteapp.models import Project
 from system_settings.models import SystemSettings
@@ -2408,19 +2408,72 @@ def project_import(request, project_id):
     Import an entire project's components and control content
     """
     project = Project.objects.get(id=project_id)
-    system_id = project.system.id
-    # Retrieve identified System
-    system = System.objects.get(id=system_id)
     # Retrieve identified System
     if request.method == 'POST':
-        # TODO: import project data do i want to create a new one or update an old one?
-        file_format = request.POST['file-format'] #  TODO: need modal for import format selection
-        dataset = Dataset()
+
         project_data = request.FILES['import_project_data']
+        file_format = request.POST['file-format']
+        importcheck = False
+        if "importcheck" in request.POST:
+            importcheck = request.POST["importcheck"]
         if file_format == 'CSV':
             pass
         elif file_format == 'JSON':
             imported_jsondata = project_data.read().decode('utf-8')
+            # We are just updating the current project
+            if importcheck == False:
+                logger.info(
+                    event="project JSON import update",
+                    object={"object": "project", "id": project.id, "title": project.title},
+                    user={"id": request.user.id, "username": request.user.username}
+                )
+                messages.add_message(request, messages.INFO, 'The current project was updated.')
+            else:
+                # TODO: Iron this project creation out
+                # Creating a new project
+                new_project = Project.objects.create(organization=project.organization)
+                src = AppSource.objects.get(
+                    slug="govready-q-files-startpack",
+                    spec={
+                        "type": "local",
+                        "path": "q-files/vendors/govready/govready-q-files-startpack/q-files",# Need proper path
+                    }
+                )
+                app = AppVersion.objects.get(source=src, appname="PTA-Demo")
+                root_task = Task.objects.create(
+                    module=Module.objects.get(app=app, module_name="app"),
+                    project=project, editor=request.user)
+                new_project.root_task = root_task
+                new_project.system = project.system
+                new_project.portfolio = project.portfolio
+                project = new_project
+                project.save()
+                messages.add_message(request, messages.INFO, f'Created a new project with id: {project.id}.')
+
+            system_id = project.system.id
+            # Retrieve identified System
+            system = System.objects.get(id=system_id)
+            #Import questionnaire data
+            log_output = []
+            try:
+                from collections import OrderedDict
+                data = json.loads(imported_jsondata, object_pairs_hook=OrderedDict)
+            except Exception as e:
+                log_output.append("There was an error reading the export file.")
+            else:
+                try:
+                    # Update project data.
+                    project.import_json(data, request.user, "imp", lambda x: log_output.append(x))
+                except Exception as e:
+                    log_output.append(str(e))
+
+            # Log output
+            logger.info(
+                event="project JSON import",
+                object={"object": "project", "id": project.id, "title": project.title, "log_output": log_output},
+                user={"id": request.user.id, "username": request.user.username}
+            )
+
             # Load and get the components then dump
             for k, val in enumerate(json.loads(imported_jsondata).get('component-definitions')):
                 oscal_component_json = json.dumps(json.loads(imported_jsondata).get('component-definitions')[k])
