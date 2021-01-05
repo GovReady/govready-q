@@ -402,7 +402,8 @@ class Organization(models.Model):
         first parameter for ac-1.
         """
 
-        return  self.organizationalsetting_set.filter(catalog_key=catalog_key)
+        settings = self.organizationalsetting_set.filter(catalog_key=catalog_key)
+        return dict((setting.parameter_key, setting.value) for setting in settings)
 
 class OrganizationalSetting(models.Model):
     """
@@ -1240,8 +1241,7 @@ class Project(models.Model):
         default_params = OrgParams().get_params(self.get_default_parameter_name())
 
         # get the organizational settings into dict form
-        org_settings = self.organization.get_parameter_values(catalog_id)
-        org_params = dict((setting.parameter_key, setting.value) for setting in org_settings)
+        org_params = self.organization.get_parameter_values(catalog_id)
 
         # merge and return
         return ChainMap(org_params, default_params)
