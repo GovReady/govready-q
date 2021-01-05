@@ -18,8 +18,9 @@ from django.views import View
 from jsonschema import validate
 from jsonschema.exceptions import SchemaError, ValidationError as SchemaValidationError
 from tablib import Dataset
-
+from urllib.parse import quote
 from siteapp.forms import ProjectForm
+from siteapp.models import Project
 from system_settings.models import SystemSettings
 from .forms import ImportOSCALComponentForm
 from .forms import StatementPoamForm, PoamForm, ElementForm
@@ -2231,7 +2232,6 @@ def poam_export(request, system_id, format='xlsx'):
         # User does not have permission to this system
         raise Http404
 
-
 def project_import(request, system_id):
     """
     Import an entire project's components and control content
@@ -2256,11 +2256,13 @@ def project_import(request, system_id):
     # TODO: Need to validate ids, and uuid, also need to accommodate element info
         return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
 
-
-def project_export(request, system_id):
+def project_export(request, project_id):
     """
     Export an entire project's components and control content
     """
+    # Of the project in the current system. pick one project to export
+    project = Project.objects.get(id=project_id)
+    system_id = project.system.id
     # Retrieve identified System
     system = System.objects.get(id=system_id)
 
@@ -2276,10 +2278,16 @@ def project_export(request, system_id):
         smt_ids = [smt.id for smt in smts]
         statements = Statement.objects.filter(pk__in=smt_ids).order_by('id')
 
-    # TODO: Need multiple export types
+    # TODO: multiple export types
     # StatementResource
     statement_resource = StatementResource()
     statement_dataset = statement_resource.export(queryset=statements)
-    response = HttpResponse(statement_dataset.csv, content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="elements_statements.csv"'
+    data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
+    data = json.loads(data)
+    statement_json = json.loads(statement_dataset.json)
+    data['statement_info'] = statement_json
+
+    response = HttpResponse(json.dumps(data), content_type='application/json')#statement_dataset.json
+    filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
+    response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
     return response
