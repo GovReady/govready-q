@@ -1286,7 +1286,7 @@ def export_project_questionnaire(request, project):
     return resp
 
 @project_admin_login_post_required
-def import_project_data(request, project):
+def import_project_questionnaire(request, project):
     # Deserialize the JSON from request.FILES. Assume the JSON data is
     # UTF-8 encoded and ensure dicts are parsed as OrderedDict so that
     # key order is preserved, since key order matters because deserialization

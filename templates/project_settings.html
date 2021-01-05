@@ -421,7 +421,7 @@ h3.question-group-title {
                 <span class="glyphicon glyphicon-cloud-upload" style="margin-right: .25em"> </span> Import Answers From File
               </button>
               <form id="import-form" style="display: none;"
-                method="post" enctype="multipart/form-data" action="{% url "import_project_data" project.id %}">{% csrf_token %}
+                method="post" enctype="multipart/form-data" action="{% url "import_project_questionnaire" project.id %}">{% csrf_token %}
                 <input name="value" type="file" id="import-file-input" class="form-control"
                   style="width: auto; border:  none; padding: 0; display: inline-block"
                   onchange="$('#import-form').submit()" />
