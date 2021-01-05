@@ -48,7 +48,7 @@ urlpatterns = [
     url(r'^projects/(\d+)/__rename$', views.rename_project, name="rename_project"),
     url(r'^projects/(\d+)/__delete$', views.delete_project, name="delete_project"),
     url(r'^projects/(\d+)/__admins$', views.make_revoke_project_admin, name="make_revoke_project_admin"),
-    url(r'^projects/(\d+)/__export$', views.export_project, name="export_project"),
+    url(r'^projects/(\d+)/__export$', views.export_project_questionnaire, name="export_project_questionnaire"),
     url(r'^projects/(\d+)/__import$', views.import_project_data, name="import_project_data"),
     url(r'^projects/(\d+)/__upgrade$', views.upgrade_project, name="upgrade_project"),
     url(r'^projects/(\d+)/(?:[\w\-]+)()$', views.project), # must be last because regex matches some previous URLs

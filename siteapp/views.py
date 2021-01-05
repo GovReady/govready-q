@@ -1239,7 +1239,7 @@ def make_revoke_project_admin(request, project):
     return JsonResponse({ "status": "ok" })
 
 @project_admin_login_post_required
-def export_project(request, project):
+def export_project_questionnaire(request, project):
     from urllib.parse import quote
     data = project.export_json(include_metadata=True, include_file_content=True)
     resp = JsonResponse(data, json_dumps_params={"indent": 2})

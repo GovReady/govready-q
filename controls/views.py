@@ -2282,12 +2282,13 @@ def project_export(request, project_id):
     # StatementResource
     statement_resource = StatementResource()
     statement_dataset = statement_resource.export(queryset=statements)
-    data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
-    data = json.loads(data)
+    questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
+    data = json.loads(questionnaire_data)
     statement_json = json.loads(statement_dataset.json)
     data['statement_info'] = statement_json
+    #resp = JsonResponse(data, json_dumps_params={"indent": 2})
 
-    response = HttpResponse(json.dumps(data), content_type='application/json')#statement_dataset.json
+    response = JsonResponse(data, json_dumps_params={"indent": 2})
     filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
     return response
