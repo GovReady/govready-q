@@ -2443,8 +2443,13 @@ def project_export(request, project_id):
 
         # Iterate through the elements associated with the system get all statements produced for each
         smts = []
+        oscal_comps = []
         for element in system.producer_elements:
             smts += element.statements_produced.all()
+            # Implementation statement OSCAL JSON
+            impl_smts = element.statements_produced.filter(consumer_element=system.root_element)
+            component = OSCALComponentSerializer(element, impl_smts).as_json()
+            oscal_comps.append(component)
 
         # Get ids for statements and filter Statement on pk
         smt_ids = [smt.id for smt in smts]
@@ -2456,10 +2461,9 @@ def project_export(request, project_id):
     statement_dataset = statement_resource.export(queryset=statements)
     questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
     data = json.loads(questionnaire_data)
-    statement_json = json.loads(statement_dataset.json)
-    data['statement_info'] = statement_json
-    #resp = JsonResponse(data, json_dumps_params={"indent": 2})
+    #statement_json = json.loads(statement_dataset.json)
 
+    data['component-definitions'] = [json.loads(oscal_comp) for oscal_comp in oscal_comps]
     response = JsonResponse(data, json_dumps_params={"indent": 2})
     filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
     response['Content-Disposition'] = f'attachment; filename="{quote(filename)}.json"'
