@@ -2410,16 +2410,14 @@ def project_import(request, project_id):
     project = Project.objects.get(id=project_id)
     # Retrieve identified System
     if request.method == 'POST':
-
-        project_data = request.FILES['import_project_data']
-        file_format = request.POST['file-format']
+        project_data = request.POST['json_content']
+        file_format = "JSON"# TODO: Check the file format properly
         importcheck = False
         if "importcheck" in request.POST:
             importcheck = request.POST["importcheck"]
         if file_format == 'CSV':
             pass
         elif file_format == 'JSON':
-            imported_jsondata = project_data.read().decode('utf-8')
             # We are just updating the current project
             if importcheck == False:
                 logger.info(
@@ -2457,7 +2455,7 @@ def project_import(request, project_id):
             log_output = []
             try:
                 from collections import OrderedDict
-                data = json.loads(imported_jsondata, object_pairs_hook=OrderedDict)
+                data = json.loads(project_data, object_pairs_hook=OrderedDict)
             except Exception as e:
                 log_output.append("There was an error reading the export file.")
             else:
@@ -2473,13 +2471,13 @@ def project_import(request, project_id):
                 object={"object": "project", "id": project.id, "title": project.title, "log_output": log_output},
                 user={"id": request.user.id, "username": request.user.username}
             )
-            loaded_imported_jsondata = json.loads(imported_jsondata)
+            loaded_imported_jsondata = json.loads(project_data)
             # Load and get the components then dump
             for k, val in enumerate(loaded_imported_jsondata.get('component-definitions')):
                 oscal_component_json = json.dumps(loaded_imported_jsondata.get('component-definitions')[k])
                 result = ComponentImporter().import_component_as_json(oscal_component_json, request)
 
-        return HttpResponseRedirect(f"/systems/{system_id}/controls/selected")
+        return HttpResponseRedirect("/projects")
 
 def project_export(request, project_id):
     """

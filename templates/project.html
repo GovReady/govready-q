@@ -155,7 +155,7 @@ h3.question-group-title {
       <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.system.id}}/poams';">
         <em class="glyphicon glyphicon-check"></em>&nbsp; POA&Ms</a>
       </button>
-      <button class="btn btn-sm btn-default" onclick="show_project_modal('{{ portfolio.id }}'); return false;" href="#">
+      <button class="btn btn-sm btn-default" onclick="show_import_project_modal('{{ portfolio.id }}'); return false;" href="#">
         <em class="glyphicon glyphicon-arrow-up"></em>&nbsp; Import Project</a>
       </button>
       <button class="btn btn-sm btn-default" onclick="window.location = '/systems/{{project.id}}/export';">
@@ -490,7 +490,7 @@ h3.question-group-title {
 {% endblock %}
 
 {% block modals %}
-{% include "controls/import_modal.html" %}
+{% include "controls/import_project_modal.html" %}
 {% if authoring_tool_enabled %}
 {# should be in body so that it comes before the global error modal so that ajax errors show on top of this #}
 {% include "authoring-tool-modal.html" %}

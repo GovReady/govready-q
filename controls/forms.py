@@ -88,3 +88,32 @@ class ImportOSCALComponentForm(forms.Form):
         required=False
     )
     json_content = forms.CharField(label='OSCAL (JSON)', widget=forms.Textarea())
+
+class ImportProjectForm(forms.Form):
+
+    file = forms.FileField(label="Select project file (.json)",
+        widget=forms.FileInput(
+            attrs={
+                'onchange': "fillJSONContent(this);",
+                'accept':'application/json'
+            }
+        ),
+        required=False
+    )
+    json_content = forms.CharField(label='Project (JSON)', widget=forms.Textarea())
+    importcheck =  forms.BooleanField(label="Import as a new project", required=False)
+
+
+    def clean(self):
+        cleaned_data = super(ImportProjectForm, self).clean()
+        file = cleaned_data.get('file')
+
+        if file:
+            filename = file.name
+            if filename.endswith('.json'):
+                print('File is a .json file')
+            else:
+                print('File is NOT a .json file')
+                raise forms.ValidationError("File is not a mp3. Please upload only mp3 files")
+
+        return file

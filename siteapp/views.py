@@ -16,6 +16,7 @@ from django.views.decorators.http import require_http_methods
 from guardian.decorators import permission_required_or_403
 from guardian.shortcuts import get_perms_for_model
 
+from controls.forms import ImportProjectForm
 from discussion.models import Discussion
 from guidedmodules.models import (Module, ModuleQuestion, ProjectMembership,
                                   Task)
@@ -814,6 +815,7 @@ def project(request, project):
 
         "authoring_tool_enabled": project.root_task.module.is_authoring_tool_enabled(request.user),
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "import_project_form": ImportProjectForm()
     })
 
 @project_read_required
