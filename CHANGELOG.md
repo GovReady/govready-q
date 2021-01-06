@@ -10,12 +10,9 @@ v.999 (December XX, 2020)
 * Support defining multiple allowed hosts via the `local/environment.json` file.
 * Allow administrators to change component name in Component Library.
 * Existing projects can be moved between existing portfolios.
-<<<<<<< HEAD
 * Edit existing portfolio's title and description.
 * Delete existing portfolio.
-=======
 * Add default Organizational Defined Parameter values.
->>>>>>> f7d52da9... Add default Org Defined Parameter data.
 
 **UI changes**
 
