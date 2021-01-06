@@ -1967,7 +1967,7 @@ def assign_baseline(request, system_id, catalog_key, baseline_name):
                              'Baseline "{} {}" assignment failed.'.format(catalog_key.replace("_", " "),
                                                                           baseline_name.title()))
 
-    return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
+    return HttpResponseRedirect(f"/systems/{system_id}/controls/selected")
 
 
 # Export OpenControl
@@ -2473,13 +2473,13 @@ def project_import(request, project_id):
                 object={"object": "project", "id": project.id, "title": project.title, "log_output": log_output},
                 user={"id": request.user.id, "username": request.user.username}
             )
-
+            loaded_imported_jsondata = json.loads(imported_jsondata)
             # Load and get the components then dump
-            for k, val in enumerate(json.loads(imported_jsondata).get('component-definitions')):
-                oscal_component_json = json.dumps(json.loads(imported_jsondata).get('component-definitions')[k])
+            for k, val in enumerate(loaded_imported_jsondata.get('component-definitions')):
+                oscal_component_json = json.dumps(loaded_imported_jsondata.get('component-definitions')[k])
                 result = ComponentImporter().import_component_as_json(oscal_component_json, request)
 
-        return HttpResponseRedirect("/systems/{}/controls/selected".format(system_id))
+        return HttpResponseRedirect(f"/systems/{system_id}/controls/selected")
 
 def project_export(request, project_id):
     """
@@ -2506,8 +2506,6 @@ def project_export(request, project_id):
 
     questionnaire_data = json.dumps(project.export_json(include_metadata=True, include_file_content=True))
     data = json.loads(questionnaire_data)
-    for oscal_comp in oscal_comps:
-        data['component-definitions'] = json.loads(oscal_comp)
     data['component-definitions'] = [json.loads(oscal_comp) for oscal_comp in oscal_comps]
     response = JsonResponse(data, json_dumps_params={"indent": 2})
     filename = project.title.replace(" ", "_") + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M")
