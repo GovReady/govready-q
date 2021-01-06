@@ -1,6 +1,13 @@
 GovReady-Q Release Notes
 ========================
 
+v.999 (January XX, 2021)
+--------------------------------
+
+**Bug fixes**
+
+* New non-admin users did not have the permission to view appsource. Added permission after the new user is created with the SignupForm from allauth.account.forms.
+
 v.999 (December XX, 2020)
 --------------------------------
 
