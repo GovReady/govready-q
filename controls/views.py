@@ -217,12 +217,14 @@ def rename_element(request,element_id):
     """
     try:
         new_name = request.POST.get("name", "").strip() or None
+        new_description = request.POST.get("description", "").strip() or None
         element = get_object_or_404(Element, id=element_id)
         element.name = new_name
+        element.description = new_description
         element.save()
         logger.info(
             event="rename_element",
-            element={"id": element.id, "new_name": new_name}
+            element={"id": element.id, "new_name": new_name, "new_description": new_description}
         )
         return JsonResponse({ "status": "ok" }) 
     except:
