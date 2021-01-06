@@ -108,7 +108,7 @@
       <div class="col-sm-2">
         <div id="btn-edit-title" style="text-align: center;">
           {% if is_admin %}
-            <button class="btn btn-default btn-small" id="edit-button" onclick="return rename_component();">Edit</button>
+            <button class="btn btn-default btn-small" id="edit-button" onclick="return edit_component();">Edit</button>
           {% endif %}
         </div>
       </div>
@@ -425,17 +425,17 @@
               }
           }
         }
-        function rename_component() {
-          var new_name = prompt("Rename this component?", "{{element.name|escapejs}}");
-          if (new_name === null || new_name == "{{element.name|escapejs}}") return;
-          ajax_with_indicator({
-            url: '{% url "rename_element" element.id %}',
-            method: "POST",
-            data: {name: new_name},
-            keep_indicator_forever: true,
-            success: function() {
-              window.location.reload();
-            }
+        function edit_component() {
+          show_edit_component_modal("{{element.name}}","{{element.description}}",(newName, newDescription)=>{
+            ajax_with_indicator({
+              url: '{% url "rename_element" element.id %}',
+              method: "POST",
+              data: {name: newName,description: newDescription},
+              keep_indicator_forever: true,
+              success: function() {
+                window.location.reload();
+              }
+            });
           });
         }
       </script>
