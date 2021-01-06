@@ -4,9 +4,14 @@ GovReady-Q Release Notes
 v.999 (January XX, 2021)
 --------------------------------
 
+**IMPORTANT**
+
+ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSION may not see any Compliance Apps when starting a project. This bug has been fixed. ADMINS MUST VISIT /ADMIN AND ADD PERMISSION  "guidedmodules | app source | can view app source" TO EACH USER TO FIX PERMISSIONS FOR EXISTING USERS.
+
 **Bug fixes**
 
-* New non-admin users did not have the permission to view appsource. Added permission after the new user is created with the SignupForm from allauth.account.forms. Note for any users created before this fix an admin must assign view appsource permission to the given user.
+* New non-admin users did not have the permission to view appsource. Added permission after the new user is created with the SignupForm from allauth.account.forms.
+
 
 v.999 (December XX, 2020)
 --------------------------------
