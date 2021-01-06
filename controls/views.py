@@ -2431,18 +2431,18 @@ def project_import(request, project_id):
             else:
                 # TODO: Iron this project creation out
                 # Creating a new project
-                new_project = Project.objects.create(organization=project.organization)
+                new_project = Project.objects.create(organization=project.organization)# Field for og
                 src = AppSource.objects.get(
                     slug="govready-q-files-startpack",
                     spec={
                         "type": "local",
-                        "path": "q-files/vendors/govready/govready-q-files-startpack/q-files",# Need proper path
+                        "path": "q-files/vendors/govready/govready-q-files-startpack/q-files",# TODO: Need field for proper path
                     }
                 )
-                app = AppVersion.objects.get(source=src, appname="PTA-Demo")
+                app = AppVersion.objects.get(source=src, appname="PTA-Demo")# TODO:  Need to create not get
                 root_task = Task.objects.create(
                     module=Module.objects.get(app=app, module_name="app"),
-                    project=project, editor=request.user)
+                    project=project, editor=request.user)# TODO: Make sure the root task created here is saved
                 new_project.root_task = root_task
                 new_project.system = project.system
                 new_project.portfolio = project.portfolio
