@@ -33,17 +33,7 @@
     $("#import_loading_spinner").hide();
     m.modal();
   }
-  function fillJSONContent(file) {
-    filecontents = $('#{{import_form.file.auto_id}}').prop('files')[0];
-    var reader = new FileReader();
-    reader.readAsText(filecontents);
-    reader.onload = function(e) {
-        $('#{{import_form.json_content.auto_id}}').val(e.target.result);
-    };
-  }
 
-  function show_spinner() {
-    $("#import_loading_spinner").show();
-  }
+
 </script>
 {% endblock %}

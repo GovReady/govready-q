@@ -878,6 +878,7 @@ def project_settings(request, project):
         "users": User.objects.all(),
 
         "project_form": ProjectForm(request.user, initial={'portfolio': project.portfolio.id}),
+        "import_project_form": ImportProjectForm()
     })
 
 @project_read_required
