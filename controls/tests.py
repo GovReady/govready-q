@@ -21,12 +21,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from controls.models import System
 from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
+from controls.views import OSCALComponentSerializer
 from siteapp.models import User
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests
 from system_settings.models import SystemSettings
 from .models import *
 from .oscal import Catalogs, Catalog
-
+from siteapp.models import User, Project, Portfolio
+from system_settings.models import SystemSettings
 
 from urllib.parse import urlparse
 
@@ -105,6 +107,19 @@ class Oscal80053Tests(TestCase):
         self.assertTrue('Access control policy every 12 parsecs' in description,
                         description)
 
+class OSCALComponentSerializerTests(TestCase):
+    
+    def test_statement_id_from_control(self):
+        cases = (
+            ('ac-1', 'a', 'ac-1_smt.a'),
+            ('ac-1', '', 'ac-1_smt'),
+            ('ac-1.1', 'a', 'ac-1.1_smt.a'),
+            ('1.1.1', '', '1.1.1_smt')
+        )
+        test_func = OSCALComponentSerializer.statement_id_from_control
+        
+        for control_id, part, expected in cases:
+            self.assertEqual(test_func(control_id, part), expected)
 
 #####################################################################
 
@@ -123,9 +138,7 @@ class ControlUITests(SeleniumTest):
         self.assertInNodeText("AC-2 (4)", "#control-heading")
         self.assertInNodeText("Automated Audit Actions", "#control-heading")
 
-
 #####################################################################
-
 
 class ComponentUITests(OrganizationSiteFunctionalTests):
 
@@ -300,7 +313,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.browser.get(url)
 
         # Test initial import of Component(s) and Statement(s)
-        self.click_element('a#component-import-oscal')
         self.click_element('a#import_records_link')
 
         current_path = urlparse(self.browser.current_url).path
@@ -518,7 +530,6 @@ class ElementUnitTests(TestCase):
         self.assertEqual(e.name, "Renamed Element A")
         self.assertEqual(e.description, "Renamed Element A Description")
 
-
 class SystemUnitTests(TestCase):
     def test_system_create(self):
         e = Element.objects.create(name="New Element", full_name="New Element Full Name", element_type="system")
@@ -718,23 +729,18 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
         self.browser.find_elements_by_id("selected_producer_element_form_id")[-1].click()
         var_sleep(3)
         assert len(comps_dropdown.options) == 2
-
+        # Use elements from database to avoid hard-coding element ids expected
+        elements = Element.objects.all()
+        testname2_ele = str(elements[5].id)
+        component2_ele = str(elements[2].id)
         # Add a new component based on one of the options available in the filtered dropdown
-        try:
-            ## Test name 2 has a value of 6 and Component 2 has a value of 3
-            self.select_option("select#selected_producer_element_form_id", "6")
-            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "6"
-        except:
-            self.select_option("select#selected_producer_element_form_id", "13")
-            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "13"
+        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        self.select_option("select#selected_producer_element_form_id", testname2_ele)
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_property("value") == testname2_ele
 
-        try:
-            ## Test name 2 has a value of 6 and Component 2 has a value of 3
-            self.select_option("select#selected_producer_element_form_id", "3")
-            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "3"
-        except:
-            self.select_option("select#selected_producer_element_form_id", "10")
-            assert self.find_selected_option("select#selected_producer_element_form_id").get_attribute("value") == "10"
+        ## Test name 2 has a value of 6 and Component 2 has a value of 3
+        self.select_option("select#selected_producer_element_form_id", component2_ele)
+        assert self.find_selected_option("select#selected_producer_element_form_id").get_property("value") == component2_ele
 
         # Open a modal will with component statements related to the select component prototype
         add_related_statements_btn = self.browser.find_elements_by_id("add_related_statements")
@@ -758,7 +764,6 @@ class ControlComponentTests(OrganizationSiteFunctionalTests):
 
         statement_title_list = self.browser.find_elements_by_css_selector("span#producer_element-panel_num-title")
         assert len(statement_title_list) == 7
-
 
 class ControlTestHelper(object):
 

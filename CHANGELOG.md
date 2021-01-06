@@ -1,6 +1,18 @@
 GovReady-Q Release Notes
 ========================
 
+v.999 (January XX, 2021)
+--------------------------------
+
+**IMPORTANT**
+
+ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSION may not see any Compliance Apps when starting a project. This bug has been fixed. ADMINS MUST VISIT /ADMIN AND ADD PERMISSION  "guidedmodules | app source | can view app source" TO EACH USER TO FIX PERMISSIONS FOR EXISTING USERS.
+
+**Bug fixes**
+
+* New non-admin users did not have the permission to view appsource. Added permission after the new user is created with the SignupForm from allauth.account.forms.
+
+
 v.999 (December XX, 2020)
 --------------------------------
 
@@ -8,11 +20,19 @@ v.999 (December XX, 2020)
 
 * Track batch imports of components (via OSCAL) into component library for tracking and management purposes; enable deletes of batch imports.
 * Support defining multiple allowed hosts via the `local/environment.json` file.
+* Allow administrators to change component name in Component Library.
+* Existing projects can be moved between existing portfolios.
+* Edit existing portfolio's title and description.
+* Delete existing portfolio.
 
 **UI changes**
 
 * New dialog in Component Library for importing components in OSCAL JSON format
 * New screens for tracking and deleting batch imports of components (via OSCAL) into component library.
+* Add "Edit" button in Component Library for Administrators to rename a component.
+* Add "Move Project" action button on project page to move project to a different portfolio.
+* Add "Edit Portofolio" links on portfolio page for editing portfolio details and deleting portfolio.
+* Conditionally show button to delete portfolio if portfolio is empty and user has permission to change portfolio.
 
 **Developer changes**
 
@@ -25,7 +45,9 @@ v.999 (December XX, 2020)
 
 * Fix missing "part" field on Component's component statement form and incorrectly displaying the "remarks" field (#1232)
 * Fix display of OSCAL into correct tab on system's component's page
-
+* When generating OSCAL component files, emit `statement` elements
+  with ids that correlate with the control catalog.
+  
 v.0.9.1.48.1 (December 17, 2020)
 --------------------------------
 

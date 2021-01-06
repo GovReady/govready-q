@@ -212,7 +212,6 @@ class SeleniumTest(StaticLiveServerTestCase):
                 self.fill_field(file_input, filepath)
         return filepath
 
-
 #####################################################################
 
 class SupportPageTests(SeleniumTest):
@@ -719,7 +718,6 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.fill_field("#id_password1", new_test_user_password)
         self.fill_field("#id_password2", new_test_user_password)
 
- 
     def test_create_portfolios(self):
         # Create a new account
         self.browser.get(self.url("/"))
@@ -831,6 +829,94 @@ class PortfolioProjectTests(OrganizationSiteFunctionalTests):
         self.click_element("#me3_remove_permissions")
         self.assertNotInNodeText("me3", "#portfolio-members")
         self.assertNodeNotVisible("#portfolio-member-me3")
+
+    def test_move_project_create(self):
+            """Test moving a project to another portfolio"""
+            initial_porfolio = Portfolio.objects.create(title="Portfolio 1")
+            new_portfolio = Portfolio.objects.create(title="Portfolio 2")
+            project = Project.objects.create(portfolio=initial_porfolio)
+            project.portfolio = initial_porfolio
+            self.assertIsNotNone(initial_porfolio.id)
+            self.assertIsNotNone(new_portfolio.id)
+            self.assertIsNotNone(project.id)
+            self.assertIsNotNone(project.portfolio.id)
+            self.assertEqual(project.portfolio.title,"Portfolio 1")
+            project.portfolio = new_portfolio
+            self.assertEqual(project.portfolio.title,"Portfolio 2")
+            project.delete()
+            self.assertTrue(project.id is None)
+
+    def test_edit_portfolio(self):
+        """
+        Editing a portfolio's title and/or description provides appropriate validation and messaging
+        """
+        # journey to portfolios and ensure i have multiple portfolios if not then create new portfolios
+        self._login()
+        self.browser.get(self.url("/portfolios"))
+        # Navigate to the portfolio form
+        self.click_element_with_link_text("Portfolios")
+        # Click Create Portfolio button
+        self.click_element("#new-portfolio")
+        var_sleep(0.25)
+        # Fill in form
+        self.fill_field("#id_title", "Test 1")
+        self.fill_field("#id_description", "Test 1 portfolio")
+        # Submit form
+        self.click_element("#create-portfolio-button")
+        # Test we are on portfolio page we just created
+        var_sleep(0.35)
+        self.assertRegex(self.browser.title, "Test 1 Portfolio - GovReady-Q")
+        # Navigate to portfolios
+        self.browser.get(self.url("/portfolios"))
+        # Assert we have the new portfolio
+        self.assertIn("Test 1", self._getNodeText("#portfolio_Test\ 1"))
+
+        # Click on the pencil anchor tag to edit the newly created portfolio
+        self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
+
+        # test editing the title to be the same as another portfolio title. Check for validation error message Portfolio with this Title already exists.
+        # Fill in form
+        self.clear_and_fill_field("#id_title", "me")
+        # Submit form
+        self.click_element("#edit_portfolio_submit")
+        # We should get an error
+        var_sleep(0.25)
+        # test error
+        self.assertIn("Portfolio name me not available.", self._getNodeText("div.alert.fade.in.alert-danger"))
+
+        # Navigate to portfolios
+        self.browser.get(self.url("/portfolios"))
+        # Click on the pencil anchor tag to edit
+        self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
+
+        # Edit title to a real new name and press update
+        self.clear_and_fill_field("#id_title", "new me")
+        self.clear_and_fill_field("#id_description", "new me portfolio")
+        # Submit form
+        self.click_element("#edit_portfolio_submit")
+
+        # Verify new portfolio name is listed under portfolios
+        self.assertIn("new me", self._getNodeText("#portfolio_new\ me"))
+        # Verify 'updated' message is correct
+        self.assertIn("The portfolio 'new me' has been updated.", self._getNodeText("div.alert.fade.in.alert-info"))
+
+        # verify new description by journeying back to edit_form
+        self.browser.find_elements_by_class_name("portfolio-project-link")[-1].click()
+        self.assertIn("new me portfolio", self.browser.find_element_by_css_selector("#id_description").get_attribute('value'))
+
+    def test_delete_portfolio(self):
+        """
+        Delete a portfolio from the database
+        """
+        portfolio = Portfolio.objects.all().first()
+        # Login and journey to portfolios
+        self._login()
+        self.browser.get(self.url("/portfolios"))
+        # Hit deletion pattern
+        self.browser.get(self.url(f"/portfolios/{portfolio.id}/delete"))
+
+        # Verify 'deleted' message is correct
+        self.assertIn("The portfolio 'me' has been deleted.", self._getNodeText("div.alert.fade.in.alert-info"))
 
 class QuestionsTests(OrganizationSiteFunctionalTests):
 
@@ -1336,4 +1422,3 @@ class OrganizationSettingsTests(OrganizationSiteFunctionalTests):
         # self._test_api_get(["question_types_text", "q_text_with_default"], "I am a kiwi.")
         # # email-address
         # self.assertRegex(self.browser.title, "Next Question: email-address")
-

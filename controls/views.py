@@ -1,7 +1,9 @@
+from itertools import groupby
 import logging
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import PurePath
+from uuid import uuid4
 
 import rtyaml
 import shutil
@@ -335,6 +337,14 @@ class ComponentSerializer(object):
 
 class OSCALComponentSerializer(ComponentSerializer):
 
+    @staticmethod
+    def statement_id_from_control(control_id, part_id):
+        if part_id:
+            return f"{control_id}_smt.{part_id}"
+        else:
+            return f"{control_id}_smt"
+
+
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
@@ -366,21 +376,39 @@ class OSCALComponentSerializer(ComponentSerializer):
 
         by_class = defaultdict(list)
         
-        for smt in self.impl_smts:
+        # work:
+        # group stmts by control-id
+        # emit an requirement for the control-id
+        # iterate over each group
+        # emit a statement for each member of the group
+        # notes:
+        # - OSCAL implemented_requirements and control_implementations need UUIDs
+        #   which we don't have in the db, so we construct them.
+
+        for control_id, group in groupby(sorted(self.impl_smts, key=lambda ismt: ismt.sid),
+                                         lambda ismt: ismt.sid):
             requirement = {
-                "uuid": str(smt.uuid),
-                "control-id": smt.sid,
-                "description": smt.body,
-                "remarks": smt.remarks
+                "uuid": str(uuid4()),
+                "control-id": control_id,
+                "description": "",
+                "remarks": "",
+                "statements": {}
             }
-            # if there is a part ID, add it as a label property
-            if smt.pid:
-                requirement['properties'] = [dict(name='label', value=smt.pid)]
+
+            for smt in group:
+                statement = {
+                    "uuid": str(smt.uuid),
+                    "description": smt.body,
+                    "remarks": smt.remarks
+                }
+                statement_id = self.statement_id_from_control(control_id, smt.pid)
+                requirement["statements"][statement_id] = statement
+                
             by_class[smt.sid_class].append(requirement)
 
         for sid_class, requirements in by_class.items():
             control_implementation = {
-                "uuid": requirements[0]['uuid'], # REMIND: need a real UUID?
+                "uuid": str(uuid4()),
                 "source": sid_class,
                 "description": f"Partial implementation of {sid_class}",
                 "implemented-requirements": [req for req in requirements]
