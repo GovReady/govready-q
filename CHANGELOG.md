@@ -6,8 +6,7 @@ v.999 (January XX, 2021)
 
 **Bug fixes**
 
-* New non-admin users did not have the permission to view appsource. Added permission after the new user is created with the SignupForm from allauth.account.forms.
-
+* New non-admin users did not have the permission to view appsource. Added permission after the new user is created with the SignupForm from allauth.account.forms. Note for any users created before this fix an admin must assign view appsource permission to the given user.
 v.999 (December XX, 2020)
 --------------------------------
 
