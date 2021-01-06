@@ -6,7 +6,7 @@ v.999 (January XX, 2021)
 
 **IMPORTANT**
 
-ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSION may not see any Compliance Apps when starting a project. This bug has been fixed. ADMINS MUST VISIT /ADMIN AND ADD PERMISSION  "guidedmodules | app source | can view app source" TO EACH USER TO FIX PERMISSIONS FOR EXISTING USERS.
+ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSION may not see any Compliance Apps when starting a project. This bug has been fixed. ADMINS MUST VISIT /ADMIN AND ADD PERMISSION  "guidedmodules | app source | can view app source" TO EACH USER TO FIX PERMISSIONS FOR EXISTING USERS. Alternatively, you can in django admin use the custom action add_viewappsource_permission to selectively add this permission.
 
 **Bug fixes**
 
