@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load guardian_tags %}
+{% load static %}
+{% load q %}
+
+{% block title %}
+{{ portfolio.title }} Import Records
+{% endblock %}
+
+{% block head %}
+{% include "controls/_style-controls.html" %}
+
+{% endblock %}
+
+{% block contextbar %}{% endblock %}
+
+{% block body %}
+
+
+<div class="portfolio-top">
+  <div class="container">
+    <div class="portfolio-main">
+    </div>
+
+    <h2 class="">Import Records</h2>
+
+    {% if import_components|length > 0 %}
+    <p>You have access to {{ import_components|length }} imports{{ import|pluralize }}.</p>
+    {% else %}
+    <p>You do not have access to any imports.</p>
+    {% endif %}
+
+    <p>&nbsp;</p>
+
+  <div id="tab-content" class="row rows-header" style="">
+    <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">Import Record ID</div>
+    <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">Date</div>
+    <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">Components</div>
+  </div>
+  {% for import, components in import_components.items %}
+    <div id="tab-content" class="row row-control" style="">
+      <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+        <a class="import_record_detail_link" href="/controls/import_records/{{ import.id }}/details">{{ import.id }}</a>
+      </div>
+      <div id="" class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">{{ import.created }}</div>
+      <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">{{ components|length }}</div>
+    </div>
+  {% endfor %}
+
+  {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

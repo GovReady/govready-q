@@ -1,3 +1,7 @@
+import logging
+import structlog
+from structlog import get_logger
+
 from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
@@ -14,6 +18,8 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
 
+logging.basicConfig()
+logger = get_logger()
 
 class AppSource(models.Model):
     is_system_source = models.BooleanField(default=False, help_text="This field is set to True for a single AppSource that holds the system modules such as user profiles.")
@@ -1291,7 +1297,7 @@ class Task(models.Model):
                     self.get_app_icon_url = self.get_static_asset_image_data_url(icon_img, 75)
                 except ValueError:
                     # no asset or image error
-                    pass
+                    logger.error(event="get_app_icon_url", msg="No asset or image error")
         return self.get_app_icon_url
 
     def get_subtask(self, question_id):

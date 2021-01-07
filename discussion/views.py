@@ -1,3 +1,7 @@
+import logging
+import structlog
+from structlog import get_logger
+
 from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseNotAllowed
@@ -6,6 +10,9 @@ from django.conf import settings
 from django.utils import timezone
 
 from .models import Discussion, Comment, Attachment
+
+logging.basicConfig()
+logger = get_logger()
 
 @login_required
 @transaction.atomic
@@ -24,7 +31,11 @@ def update_discussion_comment_draft(request):
         try:
             comment = discussion.comments.get(id=request.POST['draft'], user=request.user, draft=True)
         except:
-            pass
+            logger.error(
+                event="update_discussion_comment_draft",
+                object={"object": "comment", "id": request.POST['draft']},
+                user={"id": request.user.id, "username": request.user.username}
+            )
         else:
             comment.text = text
             comment.save()
