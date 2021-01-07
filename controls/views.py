@@ -2428,10 +2428,6 @@ def project_import(request, project_id):
             new_project = Project.objects.create(organization=project.organization)
             # Need to get or create the app source by the id of the given app source
             src = AppSource.objects.get(id=request.POST["appsource_compapp"])
-
-           # src.spec['path'] = "q-files/vendors/govready/govready-q-files-startpack/q-files"
-            # Get app version from the given source if it already there for the given appname otherwise create it.
-            #app = AppVersion.objects.get_or_create(source=src, appname=request.POST["appsource_compapp"].split("/")[-1])[0]
             app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
             module_name = json.loads(project_data).get('project').get('module').get('key')
             root_task = Task.objects.create(
