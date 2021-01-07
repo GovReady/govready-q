@@ -1938,7 +1938,7 @@ class TaskAnswer(models.Model):
                 self.save()
 
 class TaskAnswerHistory(models.Model):
-    taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an aswer to.")
+    taskanswer = models.ForeignKey(TaskAnswer, related_name="answer_history", on_delete=models.CASCADE, help_text="The TaskAnswer that this is an answer to.")
 
     answered_by = models.ForeignKey(User, on_delete=models.PROTECT, help_text="The user that provided this answer.")
     answered_by_method = models.CharField(max_length=3, choices=[("web", "Web"), ("imp", "Import"), ("api", "API"), ("del", ("Task Deletion"))], help_text="How this answer was submitted, via the website by a user, via the Export/Import mechanism, or via an API programmatically.")
