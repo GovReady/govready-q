@@ -102,7 +102,7 @@ def load_app_into_database(app, update_mode=AppImportUpdateMode.CreateInstance, 
         appinst.catalog_metadata\
             .setdefault("description", {})["long"] = readme
     except fs.errors.ResourceNotFound:
-        logger.error(event="read_from_radme.md", msg="Failed to read README.md")
+        logger.error(event="read_from_readme.md", msg="Failed to read README.md")
 
     # Update appinst. It may have been modified by extract_catalog_metadata
     # and by the loading of a README.md file.
