@@ -7,6 +7,7 @@ from uuid import uuid4
 
 import rtyaml
 import shutil
+import operator
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -769,6 +770,35 @@ def component_library_component(request, element_id):
     }
     return render(request, "components/element_detail_tabs.html", context)
 
+def api_controls_select(request):
+    """Return list of controls in json for select2 options from all control catalogs"""
+
+    # Create array to hold accumulated controls
+    cxs = []
+    # Loop through control catalogs
+    catalogs = Catalogs()
+    for ck in catalogs._list_catalog_keys():
+        cx = Catalog.GetInstance(catalog_key=ck)
+        # Get controls
+        ctl_list = cx.get_flattened_controls_all_as_dict()
+        # Build objects for rendering Select2 auto complete list from catalog
+        select_list = [{'id': ctl_list[ctl]['id'], 'title': ctl_list[ctl]['title'], 'class': ctl_list[ctl]['class'], 'catalog_key_display': cx.catalog_key_display, 'display_text': f"{ctl_list[ctl]['label']} - {ctl_list[ctl]['title']} - {cx.catalog_key_display}"} for ctl in ctl_list]
+        # Extend array of accumuated controls with catalog's control list
+        cxs.extend(select_list)
+    # Sort the accummulated list
+    cxs.sort(key = operator.itemgetter('id', 'catalog_key_display'))
+    data = cxs
+
+    if True:
+        status = "ok"
+        message = "Sending list."
+        return JsonResponse( {"status": "success", "message": message, "data": {"controls": data} })
+    else:
+        status = "error"
+        message = "Could not generate controls list."
+        data = {}
+        return JsonResponse({"status": status, "message": message, "data": data})
+
 def component_library_component_copy(request, element_id):
     """Copy a component"""
 
@@ -1394,6 +1424,10 @@ def save_smt(request):
                 remarks=form_values['remarks'],
             )
             new_statement = True
+            # Convert the human readable catalog name to proper catalog key, if needed
+            # from huma readable `NIST SP-800-53 rev4` to `NIST_SP-800-53_rev4`
+            statement.sid_class = statement.sid_class.replace(" ","_")
+
         # Save Statement object
         try:
             statement.save()
@@ -1441,53 +1475,60 @@ def save_smt(request):
                 statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
                 return JsonResponse({"status": "error", "message": statement_msg})
 
-        # Create new Prototype Statement object on new statement creation (not statement edit)
-        if new_statement:
-            try:
-                statement_prototype = statement.create_prototype()
-            except Exception as e:
-                statement_status = "error"
-                statement_msg = "Statement save failed while saving statement prototype. Error reported {}".format(e)
-                return JsonResponse({ "status": "error", "message": statement_msg })
+        # Retain only prototype statement if statement is created in the component library
+        # A statement of type `control_implementation` should only exists if associated a consumer_element.
+        # When the statement is created in the component library, no consuming_element will exist.
+        # TODO
+        # - Delete the statement that created the statement prototyp
+        # - Skip the associating the statement with the system's root_element because we do not have a system identified
+        statement_del_msg = ""
+        if "form_source" in form_values and form_values['form_source'] == 'component_library':
+            # Form source is part of form
+            # Form received from component library
+            from django.core import serializers
+            serialized_obj = serializers.serialize('json', [statement, ])
+            # Delete statement
+            statement.delete()
+            statement_del_msg = "Statement unassociated with System/Consumer Element deleted."
+        else:
+            # Associate Statement and System's root_element
+            system_id = form_values['system_id']
+            if new_statement and system_id is not None:
+                try:
+                    statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
+                    statement.save()
+                    statement_consumer_status = "ok"
+                    statement_consumer_msg = "Statement associated with System/Consumer Element."
+                except Exception as e:
+                    statement_consumer_status = "error"
+                    statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
+                    return JsonResponse(
+                        {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
 
-        # Associate Statement and System's root_element
-        system_id = form_values['system_id']
-        if new_statement and system_id is not None:
-            try:
-                statement.consumer_element = System.objects.get(pk=form_values['system_id']).root_element
-                statement.save()
-                statement_consumer_status = "ok"
-                statement_consumer_msg = "Statement associated with System/Consumer Element."
-            except Exception as e:
-                statement_consumer_status = "error"
-                statement_consumer_msg = "Failed to associate statement with System/Consumer Element {}".format(e)
-                return JsonResponse(
-                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_consumer_msg})
+            # If we are updating a smt of type control_implementation_prototype from a system
+            # then update ElementControl smts_updated to know when control element on system was recently updated
+            statement_element_msg = ""
+            if statement.statement_type == "control_implementation":
+                try:
+                    ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid,
+                                                    oscal_catalog_key=statement.sid_class)
+                    ec.smts_updated = statement.updated
+                    ec.save()
+                except Exception as e:
+                    statement_element_status = "error"
+                    statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
+                    return JsonResponse(
+                        {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
 
-        # If we are updating a smt of type control_implementation_prototype
-        # then update ElementControl smts_updated to know when control element on system was recently updated
-        statement_element_msg = ""
-        if statement.statement_type == "control_implementation":
-            try:
-                ec = ElementControl.objects.get(element=statement.consumer_element, oscal_ctl_id=statement.sid,
-                                                oscal_catalog_key=statement.sid_class)
-                ec.smts_updated = statement.updated
-                ec.save()
-            except Exception as e:
-                statement_element_status = "error"
-                statement_element_msg = "Failed to update ControlElement smt_updated {}".format(e)
-                return JsonResponse(
-                    {"status": "error", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg})
-
-    # Serialize saved data object(s) to send back to update web page
-    # The submitted form needs to be updated with the object primary keys (ids)
-    # in order that future saves will be treated as updates.
-    from django.core import serializers
-    serialized_obj = serializers.serialize('json', [statement, ])
+            # Serialize saved data object(s) to send back to update web page
+            # The submitted form needs to be updated with the object primary keys (ids)
+            # in order that future saves will be treated as updates.
+            from django.core import serializers
+            serialized_obj = serializers.serialize('json', [statement, ])
 
     # Return successful save result to web page's Ajax request
     return JsonResponse(
-        {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg,
+        {"status": "success", "message": statement_msg + " " + producer_element_msg + " " + statement_element_msg + statement_del_msg,
          "statement": serialized_obj})
 
 def update_smt_prototype(request):
