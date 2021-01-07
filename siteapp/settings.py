@@ -46,8 +46,8 @@ else:
 	# Show the defaults.
 	print("\nCouldn't find `local/environment.json` file. Generating default environment params.")
 	print("Please create a '%s' file containing something like this:" % local("environment.json"))
+	environment["secret-key"] = make_secret_key() # Generate a new key since the initial one was printed for the user for edification
 	print(json.dumps(environment, sort_keys=True, indent=2))
-	print()
 
 # Load pre-specified admin users
 # Example: "govready_admins":[{"username": "username", "email":"first.last@example.com", "password": "REPLACEME"}]
