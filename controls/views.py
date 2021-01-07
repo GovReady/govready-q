@@ -2427,11 +2427,11 @@ def project_import(request, project_id):
             # TODO: Iron this project creation out
             # Creating a new project
             new_project = Project.objects.create(organization=project.organization)# Field for og
-            src = AppSource.objects.get(
-                slug="govready-q-files-startpack",
+            src = AppSource.objects.get_or_create(
+                slug=request.POST["appsource_slug"],
                 spec={
-                    "type": "local",
-                    "path": "q-files/vendors/govready/govready-q-files-startpack/q-files",# TODO: Need field for proper path
+                    "type":  request.POST["appsource_type"],
+                    "path": request.POST["appsource_path"]
                 }
             )
             app = AppVersion.objects.get(source=src, appname="PTA-Demo")# TODO:  Need to create not get

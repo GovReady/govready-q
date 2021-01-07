@@ -100,20 +100,9 @@ class ImportProjectForm(forms.Form):
         ),
         required=False
     )
-    json_content = forms.CharField(label='Project (JSON)', widget=forms.Textarea())
-    importcheck =  forms.BooleanField(label="Import as a new project", required=False)
+    json_content = forms.CharField(label='Project (JSON)', widget=forms.Textarea(), help_text="The JSON necessary for importing a project.")
+    importcheck =  forms.BooleanField(label="Import as a new project", required=False, help_text="If checked the current import will become a new project.")
+    appsource_slug = forms.CharField(label="Enter the slug name of App Source", help_text="Needs a unique slug name for the App Source.")
+    appsource_type = forms.CharField(label="Enter the type of App Source", help_text="Enter the App Source type.")
+    appsource_path = forms.FilePathField(label="Choose an App Source path", path='.', recursive=True, allow_files=False, allow_folders=True, help_text="Select the App Source Associated with this project.")
 
-
-    def clean(self):
-        cleaned_data = super(ImportProjectForm, self).clean()
-        file = cleaned_data.get('file')
-
-        if file:
-            filename = file.name
-            if filename.endswith('.json'):
-                print('File is a .json file')
-            else:
-                print('File is NOT a .json file')
-                raise forms.ValidationError("File is not a mp3. Please upload only mp3 files")
-
-        return file

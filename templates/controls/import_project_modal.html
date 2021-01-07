@@ -10,9 +10,13 @@
                 {% csrf_token %}
                 <div class="modal-body">
                     {{ import_project_form.file }}
-                    <br>
+                    <label for="{{ import_project_form.appsource_slug.id_auto }}">{{ import_project_form.appsource_slug.label }}:</label>
+                    {{ import_project_form.appsource_slug }}
+                    <label for="{{ import_project_form.appsource_type.id_auto }}">{{ import_project_form.appsource_type.label }}:</label>
+                    {{ import_project_form.appsource_type }}
+                    <label for="{{ import_project_form.appsource_path.id_auto }}">{{ import_project_form.appsource_path.label }}:</label>
+                    <div>{{ import_project_form.appsource_path }}</div>
                     <label for="{{ import_project_form.json_content.id_auto }}">{{ import_project_form.json_content.label }}:</label>
-                    <br>
                     {{ import_project_form.json_content }}
 
                     <div class="modal-footer">
