@@ -289,8 +289,9 @@ a#delete-import.btn {float: right; margin-top: 1em;}
 form #id_json_content { width: 100%; overflow: auto !important; } /* The !important is to fix a bug with textareas not allowing scrolling. */
 
 
-/* Import Form field*/
-form #id_appsource_path { width: 100%; overflow: auto !important; }
+/* Import Form fields */
+form #id_appsource_version_id { width: 100%; overflow: auto !important; }
+form #id_appsource_compapp { width: 100%; overflow: auto !important; }
 
 /* org groups */
 

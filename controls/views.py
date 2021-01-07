@@ -2424,19 +2424,18 @@ def project_import(request, project_id):
             )
             messages.add_message(request, messages.INFO, 'The current project was updated.')
         else:
-            # TODO: Iron this project creation out
             # Creating a new project
-            new_project = Project.objects.create(organization=project.organization)# Field for og
-            src = AppSource.objects.get_or_create(
-                slug=request.POST["appsource_slug"],
-                spec={
-                    "type":  request.POST["appsource_type"],
-                    "path": request.POST["appsource_path"]
-                }
-            )
-            app = AppVersion.objects.get(source=src, appname="PTA-Demo")# TODO:  Need to create not get
+            new_project = Project.objects.create(organization=project.organization)
+            # Need to get or create the app source by the id of the given app source
+            src = AppSource.objects.get(id=request.POST["appsource_compapp"])
+
+           # src.spec['path'] = "q-files/vendors/govready/govready-q-files-startpack/q-files"
+            # Get app version from the given source if it already there for the given appname otherwise create it.
+            #app = AppVersion.objects.get_or_create(source=src, appname=request.POST["appsource_compapp"].split("/")[-1])[0]
+            app = AppVersion.objects.get(source=src, id=request.POST["appsource_version_id"])
+            module_name = json.loads(project_data).get('project').get('module').get('key')
             root_task = Task.objects.create(
-                module=Module.objects.get(app=app, module_name="app"),
+                module=Module.objects.get(app=app, module_name=module_name),
                 project=project, editor=request.user)# TODO: Make sure the root task created here is saved
             new_project.root_task = root_task
             new_project.system = project.system
@@ -2469,10 +2468,11 @@ def project_import(request, project_id):
             user={"id": request.user.id, "username": request.user.username}
         )
         loaded_imported_jsondata = json.loads(project_data)
-        # Load and get the components then dump
-        for k, val in enumerate(loaded_imported_jsondata.get('component-definitions')):
-            oscal_component_json = json.dumps(loaded_imported_jsondata.get('component-definitions')[k])
-            result = ComponentImporter().import_component_as_json(oscal_component_json, request)
+        if loaded_imported_jsondata.get('component-definitions') != None:
+            # Load and get the components then dump
+            for k, val in enumerate(loaded_imported_jsondata.get('component-definitions')):
+                oscal_component_json = json.dumps(loaded_imported_jsondata.get('component-definitions')[k])
+                result = ComponentImporter().import_component_as_json(oscal_component_json, request)
 
         return HttpResponseRedirect("/projects")
 

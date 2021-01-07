@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.forms.widgets import HiddenInput
 from django.db.models import Exists
 
+from guidedmodules.models import AppSource, AppVersion
 from .models import Statement, Poam, Element
 
 class StatementPoamForm(ModelForm):
@@ -102,7 +103,11 @@ class ImportProjectForm(forms.Form):
     )
     json_content = forms.CharField(label='Project (JSON)', widget=forms.Textarea(), help_text="The JSON necessary for importing a project.")
     importcheck =  forms.BooleanField(label="Import as a new project", required=False, help_text="If checked the current import will become a new project.")
-    appsource_slug = forms.CharField(label="Enter the slug name of App Source", help_text="Needs a unique slug name for the App Source.")
-    appsource_type = forms.CharField(label="Enter the type of App Source", help_text="Enter the App Source type.")
-    appsource_path = forms.FilePathField(label="Choose an App Source path", path='.', recursive=True, allow_files=False, allow_folders=True, help_text="Select the App Source Associated with this project.")
+    #appsource_slug = forms.CharField(label="Enter the slug name of App Source", help_text="Needs a unique slug name for the App Source.")
+    #appsource_type = forms.CharField(label="Enter the type of App Source", help_text="Enter the App Source type.")
+   # appsource_path = forms.FilePathField(label="Choose an App Source path", path='.', recursive=True, allow_files=False, allow_folders=True, help_text="Select the App Source Associated with this project.")
+   # appsource_compapp = forms.FilePathField(label="Choose the compliance app from your App Source", path='.', recursive=True, allow_files=False, allow_folders=True, help_text="Select the App Source compliance app.")
+    appsource_version_id = forms.ModelMultipleChoiceField(queryset=AppVersion.objects.all(),label="Select the app name of the App Source", help_text="An app name is assigned to each app version")
+    appsource_compapp = forms.ModelMultipleChoiceField(queryset=AppSource.objects.all(),label="Choose the compliance app from your App Source", help_text="Need the App Source compliance app.")
+
 
