@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 from .models import ImportRecord, Statement, Element, ElementControl, System, CommonControlProvider, CommonControl, ElementCommonControl, Poam
 from guardian.admin import GuardedModelAdmin
+from simple_history.admin import SimpleHistoryAdmin
 
 class ExportCsvMixin:
     # From https://books.agiliq.com/projects/django-admin-cookbook/en/latest/export.html
@@ -28,7 +29,7 @@ class ImportRecordAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('created', 'uuid')
     actions = ["export_as_csv"]
 
-class StatementAdmin(admin.ModelAdmin, ExportCsvMixin):
+class StatementAdmin(SimpleHistoryAdmin, ExportCsvMixin):
     list_display = ('id', 'sid', 'sid_class', 'producer_element', 'statement_type', 'uuid')
     actions = ["export_as_csv"]
     readonly_fields = ('created', 'updated', 'uuid')
