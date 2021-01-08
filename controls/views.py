@@ -451,8 +451,8 @@ class OpenControlComponentSerializer(ComponentSerializer):
 
 class ComponentImporter(object):
 
-    def import_component_as_json(self, import_name, json_object, request):
-        """Imports a Component from a JSON object
+    def import_components_as_json(self, import_name, json_object, request):
+        """Imports Components from a JSON object
 
         @type import_name: str
         @param import_name: Name of import file (if it exists)
@@ -472,13 +472,13 @@ class ComponentImporter(object):
             # Returns list of created components
             created_components = self.create_components(oscal_json, request)
             messages.add_message(request, messages.INFO, f"Created {len(created_components)} components.")
-            new_import_record = self.create_component_import_record(import_name, created_components)
+            new_import_record = self.create_import_record(import_name, created_components)
             return new_import_record
         else:
             messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
             return False
 
-    def create_component_import_record(self, import_name, components):
+    def create_import_record(self, import_name, components):
         """Associates components and statements to an import record
 
         @type import_name: str
@@ -520,50 +520,41 @@ class ComponentImporter(object):
         components_created = []
         components = oscal_json['component-definition']['components']
         for component in components:
-            new_component = self.create_component(component, components[component], request)
+            new_component = self.create_component(components[component], request)
             if new_component is not None:
                 components_created.append(new_component)
 
         return components_created
 
-    def create_component(self, component_uuid, component_json, request):
+    def create_component(self, component_json, request):
         """Creates a component from a JSON dict
 
-        @type component_uuid: str
-        @param component_uuid: UUID of imported component
         @type component_json: dict
         @param component_json: Component attributes from JSON object
         @rtype: Element
         @returns: Element object if created, None otherwise
         """
-        try:
-            existing_element_uuids = Element.objects.filter(uuid=component_uuid).count()
-        except ValidationError:
-            logger.info(f"Invalid Component UUID ({component_uuid}). Skipping Component...")
-            return None
-        if existing_element_uuids > 0:
-            logger.info(f"Component already exists with UUID {component_uuid}. Skipping Component...")
-            return None
-        try:
-            new_component = Element.objects.create(
-                name=component_json['name'],
-                description=component_json['description'],
-                # Components uploaded to the Component Library are all system_element types
-                # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
-                element_type="system_element",
-                uuid=component_uuid
-            )
-            new_component.save()
-            logger.info(f"Component {component_json['name']} created.")
-            control_implementation_statements = component_json['control-implementations']
-            for control_element in control_implementation_statements:
-                catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
-                implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
-                created_statements = self.create_control_implementation_statements(catalog, implemented_reqs, new_component, request)
-            return new_component
-        except IntegrityError:
-            logger.info(f"Component with name {component_json['name']} already exists. Skipping Component...")
-            return None
+
+        component_name = component_json['name']
+        while Element.objects.filter(name=component_name).count() > 0:
+            component_name = increment_component_name(component_name)
+
+        new_component = Element.objects.create(
+            name=component_name,
+            description=component_json['description'] if 'description' in component_json else '',
+            # Components uploaded to the Component Library are all system_element types
+            # TODO: When components can be uploaded by project, set element_type from component-type OSCAL property
+            element_type="system_element"
+        )
+        new_component.save()
+        logger.info(f"Component {new_component.name} created with UUID {new_component.uuid}.")
+        control_implementation_statements = component_json['control-implementations']
+        for control_element in control_implementation_statements:
+            catalog = oscalize_catalog_key(control_element['source']) if 'source' in control_element else None
+            implemented_reqs = control_element['implemented-requirements'] if 'implemented-requirements' in control_element else []
+            created_statements = self.create_control_implementation_statements(catalog, implemented_reqs,
+                                                                               new_component, request)
+        return new_component
 
     def create_control_implementation_statements(self, catalog_key, implemented_reqs, parent_component, request):
         """Creates a Statement from a JSON dictimplemented-requirements
@@ -578,7 +569,7 @@ class ComponentImporter(object):
         @returns: New statement objects created
         """
 
-        new_statements = []
+        statements_created = []
 
         for implemented_control in implemented_reqs:
 
@@ -588,57 +579,39 @@ class ComponentImporter(object):
             for stmnt_id in statements:
                 statement = statements[stmnt_id]
 
-                # If the UUID already exists or is invalid, skip this statement
-                if 'uuid' in statement:
-                    stmnt_uuid = statement['uuid']
-                    try:
-                        existing_statement_uuids = Statement.objects.filter(uuid=stmnt_uuid).count()
-                    except ValidationError:
-                        logger.info(f"Statement UUID {stmnt_uuid} is invalid. Skipping Statement...")
-                        continue
-                    if existing_statement_uuids > 0:
-                        logger.info(f"Statement with UUID {stmnt_uuid} already exists. Skipping Statement...")
-                        continue
-
-                part = get_control_statement_part(stmnt_id)
-                if 'description' in statement:
-                    description = statement['description']
-                elif 'description' in implemented_control:
-                    description = implemented_control['description']
-                else:
-                    description = ''
-
-                if 'remarks' in statement:
-                    remarks = statement['remarks']
-                elif 'remarks' in implemented_control:
-                    remarks = implemented_control['remarks']
-                else:
-                    remarks = ''
-
                 if self.control_exists_in_catalog(catalog_key, control_id):
-                    try:
-                        new_statement = Statement.objects.create(
-                            sid=control_id,
-                            sid_class=catalog_key,
-                            pid=part,
-                            body=description,
-                            statement_type="control_implementation_prototype",
-                            remarks=remarks,
-                            status=implemented_control['status'] if 'status' in implemented_control else None,
-                            producer_element=parent_component,
-                            uuid=stmnt_uuid,
-                        )
-                        new_statement.save()
-                        logger.info(f"New statement with UUID {stmnt_uuid} created.")
-                        new_statements.append(new_statement)
-                    except IntegrityError:
-                        logger.info(f"Statement with UUID {stmnt_uuid} already exists. Skipping Statement...")
-                        continue
-                else:
-                    logger.info(f"Control {control_id} doesn't exist in this Catalog. Skipping Statement with UUID {stmnt_uuid}...")
-                    continue
+                    if 'description' in statement:
+                        description = statement['description']
+                    elif 'description' in implemented_control:
+                        description = implemented_control['description']
+                    else:
+                        description = ''
 
-        return new_statements
+                    if 'remarks' in statement:
+                        remarks = statement['remarks']
+                    elif 'remarks' in implemented_control:
+                        remarks = implemented_control['remarks']
+                    else:
+                        remarks = ''
+
+                    new_statement = Statement.objects.create(
+                        sid=control_id,
+                        sid_class=catalog_key,
+                        pid=get_control_statement_part(stmnt_id),
+                        body=description,
+                        statement_type="control_implementation_prototype",
+                        remarks=remarks,
+                        status=implemented_control['status'] if 'status' in implemented_control else None,
+                        producer_element=parent_component,
+                    )
+                    new_statement.save()
+                    logger.info(f"New statement with UUID {new_statement.uuid} created.")
+                    statements_created.append(new_statement)
+
+                else:
+                    logger.info(f"Control {control_id} doesn't exist in catalog {catalog_key}. Skipping Statement...")
+
+        return statements_created
 
     def control_exists_in_catalog(self, catalog_key, control_id):
         """Searches for the presence of a specific control id in a catalog.
@@ -825,9 +798,9 @@ def component_library_component_copy(request, element_id):
 def import_component(request):
     """Import a Component in JSON"""
 
-    import_name = request.POST['import_name']
-    oscal_component_json = request.POST['json_content']
-    result = ComponentImporter().import_component_as_json(import_name, oscal_component_json, request)
+    import_name = request.POST.get('import_name', '')
+    oscal_component_json = request.POST.get('json_content', '')
+    result = ComponentImporter().import_components_as_json(import_name, oscal_component_json, request)
     return component_library(request)
 
 
