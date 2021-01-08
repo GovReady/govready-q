@@ -449,9 +449,11 @@ class OpenControlComponentSerializer(ComponentSerializer):
 
 class ComponentImporter(object):
 
-    def import_component_as_json(self, json_object, request):
+    def import_component_as_json(self, import_name, json_object, request):
         """Imports a Component from a JSON object
 
+        @type import_name: str
+        @param import_name: Name of import file (if it exists)
         @type json_object: dict
         @param json_object: Element attributes from JSON object
         @rtype: list if success, bool (false) if failure
@@ -468,22 +470,24 @@ class ComponentImporter(object):
             # Returns list of created components
             created_components = self.create_components(oscal_json, request)
             messages.add_message(request, messages.INFO, f"Created {len(created_components)} components.")
-            new_import_record = self.create_component_import_record(created_components)
+            new_import_record = self.create_component_import_record(import_name, created_components)
             return new_import_record
         else:
             messages.add_message(request, messages.ERROR, f"Invalid OSCAL. Component(s) not created.")
             return False
 
-    def create_component_import_record(self, components):
+    def create_component_import_record(self, import_name, components):
         """Associates components and statements to an import record
 
+        @type import_name: str
+        @param import_name: Name of import file (if it exists)
         @type components: list
         @param components: List of components
         @rtype: ImportRecord
         @returns: New ImportRecord object with components and statements associated
         """
 
-        new_import_record = ImportRecord.objects.create()
+        new_import_record = ImportRecord.objects.create(name=import_name)
         for component in components:
             statements = Statement.objects.filter(producer_element=component)
             for statement in statements:
@@ -819,8 +823,9 @@ def component_library_component_copy(request, element_id):
 def import_component(request):
     """Import a Component in JSON"""
 
+    import_name = request.POST['import_name']
     oscal_component_json = request.POST['json_content']
-    result = ComponentImporter().import_component_as_json(oscal_component_json, request)
+    result = ComponentImporter().import_component_as_json(import_name, oscal_component_json, request)
     return component_library(request)
 
 

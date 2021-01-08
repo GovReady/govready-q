@@ -14,6 +14,7 @@
           <label for="{{import_form.json_content.id_auto}}">{{ import_form.json_content.label }}:</label>
           <br>
           {{ import_form.json_content }}
+          {{ import_form.import_name }}
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
             <input id="import_component_submit" class="btn btn-success btn-submit" type="submit" value="Import" />
@@ -32,8 +33,10 @@
     $("#import_loading_spinner").hide();
     m.modal();
   }
+
   function fillJSONContent(file) {
     filecontents = $('#{{import_form.file.auto_id}}').prop('files')[0];
+    $('#{{import_form.import_name.auto_id}}').val(filecontents.name);
     var reader = new FileReader();
     reader.readAsText(filecontents);
     reader.onload = function(e) {
