@@ -519,13 +519,16 @@ class ElementUnitTests(TestCase):
         """Test renaming an element"""
 
         # Create an element
-        e = Element.objects.create(name="Element A", full_name="Element A FN", element_type="component")
-        self.assertTrue(e.id is not None)
-        self.assertTrue(e.name == "Element A")
+        e = Element.objects.create(name="Element A", full_name="Element A Full Name",description="Element A Description",element_type="component")
+        self.assertIsNotNone(e.id)
+        self.assertEqual(e.name, "Element A")
+        self.assertEqual(e.description, "Element A Description")
         e.save() 
         e.name = "Renamed Element A"
+        e.description = "Renamed Element A Description"
         e.save()
-        self.assertTrue(e.name == "Renamed Element A")
+        self.assertEqual(e.name, "Renamed Element A")
+        self.assertEqual(e.description, "Renamed Element A Description")
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):
