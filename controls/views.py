@@ -2434,7 +2434,15 @@ def project_import(request, project_id):
                 module=Module.objects.get(app=app, module_name=module_name),
                 project=project, editor=request.user)# TODO: Make sure the root task created here is saved
             new_project.root_task = root_task
-            new_project.system = project.system
+            # Need new element to for the new System
+            element = Element()
+            element.name = new_project.title
+            element.element_type = "system"
+            element.save()
+            # Create system
+            system = System(root_element=element)
+            system.save()
+            new_project.system = system
             new_project.portfolio = project.portfolio
             project = new_project
             project.save()
