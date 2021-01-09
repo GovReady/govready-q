@@ -793,6 +793,17 @@ def import_component(request):
     result = ComponentImporter().import_component_as_json(oscal_component_json, request)
     return component_library(request)
 
+def statement_history_modal(request):
+    """Returns the history for the given statement"""
+
+    from controls.models import Statement
+    from datetime import datetime
+    smt_smt = Statement.objects.get(id=request.POST.get('smt_id'))
+    full_smt_history = smt_smt.history.all()
+    print(full_smt_history)
+
+    return HttpResponse(full_smt_history)
+
 
 def system_element_download_oscal_json(request, system_id, element_id):
 

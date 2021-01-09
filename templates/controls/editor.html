@@ -272,9 +272,10 @@
                                                 <input type="hidden" id="statement_type" name="statement_type" value="control_implementation">
                                                 <div class="modal-footer">
                                                     <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
-                                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">Close</a>&nbsp;
+                                                    <a role="button" data-toggle="collapse" data-parent="#accordion" class="btn btn-xs btn-default" href="#document-{{ forloop.counter }}-body" aria-expanded="false" aria-controls="document-{{ forloop.counter }}-body">Close</a>&nbsp;
                                                     <button type="button" name="delete" value="delete" class="btn btn-xs btn-danger" onclick="delete_smt('smt_{{ forloop.counter }}');return false;">Delete</button>
                                                     <button type="button" name="save" value="save" class="btn btn-xs btn-success" onclick="save_smt('smt_{{ forloop.counter }}');return false;">Save</button>
+                                                    <button type="button" name="revert" value="revert" class="btn btn-xs btn-primary" onclick="show_history_modal('{{ smt.id }}');return false;">Revert</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -394,6 +395,7 @@
     </div>
 
     {{ block.super }}
+      {% include "controls/history-modal.html" %}
 {% endblock %}
 
 {% block scripts %}
