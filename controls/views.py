@@ -340,14 +340,6 @@ class ComponentSerializer(object):
 
 class OSCALComponentSerializer(ComponentSerializer):
 
-    @staticmethod
-    def statement_id_from_control(control_id, part_id):
-        if part_id:
-            return f"{control_id}_smt.{part_id}"
-        else:
-            return f"{control_id}_smt"
-
-
     def as_json(self):
         # Build OSCAL
         # Example: https://github.com/usnistgov/OSCAL/blob/master/src/content/ssp-example/json/example-component.json
@@ -404,7 +396,7 @@ class OSCALComponentSerializer(ComponentSerializer):
                     "description": smt.body,
                     "remarks": smt.remarks
                 }
-                statement_id = self.statement_id_from_control(control_id, smt.pid)
+                statement_id = smt.oscal_statement_id
                 requirement["statements"][statement_id] = statement
                 
             by_class[smt.sid_class].append(requirement)
