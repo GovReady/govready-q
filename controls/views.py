@@ -793,17 +793,45 @@ def import_component(request):
     result = ComponentImporter().import_component_as_json(oscal_component_json, request)
     return component_library(request)
 
-def statement_history_modal(request):
+def statement_history(request, smt_id=None):
     """Returns the history for the given statement"""
-
     from controls.models import Statement
-    from datetime import datetime
-    smt_smt = Statement.objects.get(id=request.POST.get('smt_id'))
+
+    smt_smt = Statement.objects.get(id=smt_id)
     full_smt_history = smt_smt.history.all()
-    print(full_smt_history)
+    context = {"statement": full_smt_history}
 
-    return HttpResponse(full_smt_history)
+    return render(request, "controls/statement_history.html", context)
 
+def revert_to_history(request, smt_id, history_id):
+    """
+    Revert the current model instance to a previous version
+    """
+
+    smt = Statement.objects.get(id=smt_id)
+    recent_smt = smt.history.first()
+    historical_smt = smt.history.get(history_id=history_id)
+
+    # saving historical statement as a new instance
+    historical_smt.instance.save()
+    logger.info(f"Reverting the current statement with an id of {smt_id} to version with a history id of {history_id}")
+
+   # Diff between most recent and the historical record
+    all_hist = smt.history.all()
+    recent_record = all_hist.filter(history_id=recent_smt.history_id).first()
+    historical_record = all_hist.filter(history_id=historical_smt.history_id).first()
+
+    delta = historical_record.diff_against(recent_record)
+    for change in delta.changes:
+        logger.info("{} changed from {} to {}".format(change.field, change.old, change.new))
+
+    full_smt_history = smt.history.all()
+    context = {
+        "history_id": history_id,
+        "smt_id": smt_id,
+        "statement": full_smt_history}
+
+    return render(request, "controls/statement_history.html", context)
 
 def system_element_download_oscal_json(request, system_id, element_id):
 
