@@ -815,8 +815,9 @@ def revert_to_history(request, smt_id, history_id):
     # saving historical statement as a new instance
     historical_smt.instance.save()
     logger.info(f"Reverting the current statement with an id of {smt_id} to version with a history id of {history_id}")
+    messages.add_message(request, messages.INFO, f'Successfully reverted the statement to version history {history_id}')
 
-   # Diff between most recent and the historical record
+    # Diff between most recent and the historical record
     all_hist = smt.history.all()
     recent_record = all_hist.filter(history_id=recent_smt.history_id).first()
     historical_record = all_hist.filter(history_id=historical_smt.history_id).first()

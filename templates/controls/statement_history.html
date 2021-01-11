@@ -5,7 +5,7 @@
 {% load q %}
 
 {% block body %}
-    <div class="jumbotron"><h1>Statement History for {{ statement.0.sid }}.{{ statement.0.pid }}</h1>
+    <div class="jumbotron text-center"><h1>Statement Version History for {{ statement.0.sid }}.{{ statement.0.pid }}</h1>
         <h2> (This statement comes from the {{ statement.0.producer_element.name }} component)</h2>
     </div>
     <div>
@@ -23,14 +23,12 @@
 
                 <div id="document-{{ forloop.counter }}-body" class="panel-collapse {% if forloop.first %}in{% endif %}" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
                     <div class="panel-body">
-                        <div class="smt_block">
-                            <form id="smt_{{ forloop.counter }}" class="smt_form">
                                 <div>
                                     <label for="statement">Original statement id: </label>
                                     <div>{{ smt_record.id }}</div>
                                 </div>
                                 <div>
-                                    <label for="statement">Version statement id: </label>
+                                    <label for="statement">Version history id: </label>
                                     <div>{{ smt_record.history_id }}</div>
                                 </div>
                                 <div>
@@ -39,40 +37,15 @@
                                 </div>
                                 <label for="statement">Date created: </label>
                                 <div>{{ smt_record.history_date }}</div>
-                        </div>
                         <div class="modal-footer">
-                            <div id="success-msg-smt_{{ forloop.counter }}" style="display: inline; margin-right: 20px; color: gray;"></div>
                             <a href="{% url 'revert_to' smt_id=smt_record.id history_id=smt_record.history_id %}" name="revert" class="btn btn-xs btn-primary">Revert</a>
                         </div>
                         </form>
                     </div>
-                </div><!-- end div class="panel-body"-->
+                </div>
             </div>
             </div>
         {% endfor %}
 
 
-    </div>
-
-    <div id="history_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="history_modal_title" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title" id="history_modal_title">Import OSCAL Component</h4></div>
-                <form id="statement_history_form" action="{% url 'statement_history' smt_id=3 %}" onsubmit="show_spinner();" role="form" method="POST">{% csrf_token %}
-                    <div class="modal-body">
-                        {{ statement }}
-                        <div id="thebody"></div>
-                        {{ statement }}
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                            <input id="history_modal_submit" class="btn btn-success btn-submit" type="submit" value="Import"/>
-                            <img id="import_loading_spinner" src="{% static "img/icons/spinner.gif" %}"/>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 {% endblock %}
