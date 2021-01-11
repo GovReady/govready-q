@@ -33,7 +33,7 @@ v.999 (December XX, 2020)
 
 * Track batch imports of components (via OSCAL) into component library for tracking and management purposes; enable deletes of batch imports.
 * Support defining multiple allowed hosts via the `local/environment.json` file.
-* Allow administrators to change component name in Component Library.
+* Allow administrators to change component name and description in Component Library.
 * Existing projects can be moved between existing portfolios.
 * Edit existing portfolio's title and description.
 * Delete existing portfolio.
