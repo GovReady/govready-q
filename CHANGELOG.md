@@ -54,9 +54,6 @@ Properly generate JSON, YAML questionnaire output documents from a JSON (or YAML
 
 Fix tests so they execute successfully in CircleCI.
 
-
-
-
 **Feature changes**
 
 * Support Compliance As Code reuse of statements via "certified" control sets. This capability is enabled by adding having statements sub-typed to `control_implementation_prototype` to support local statements sub-typed to `control_implementation` and `control_implementation_prototype` with the latter representing the "certified" version of a component-control element.  Every `control_implementation` statement type was given a Django foreign key called `prototype` to connect that statement to the "certified" version of the control (e.g., `control_implementation_prototype`). This model supports the features in the UI:
