@@ -4,7 +4,6 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import PurePath
 from uuid import uuid4
-
 import rtyaml
 import shutil
 import operator
@@ -12,7 +11,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, \
     HttpResponseNotAllowed
@@ -810,8 +809,7 @@ def statement_history(request, smt_id=None):
     try:
         smt = Statement.objects.get(id=smt_id)
         full_smt_history = smt.history.all()
-
-    except:
+    except Statement.DoesNotExist:
         messages.add_message(request, messages.ERROR, f'The statement id is not valid. Is this still a statement in GovReady?')
 
     context = {"statement": full_smt_history}
@@ -826,15 +824,18 @@ def restore_to_history(request, smt_id, history_id):
     try:
         smt = Statement.objects.get(id=smt_id)
         recent_smt = smt.history.first()
-    except:
-        messages.add_message(request, messages.ERROR, f'The statement id is not valid. Is this still a statement in GovReady?')
+
+    except ObjectDoesNotExist as ex:
+        messages.add_message(request, messages.ERROR, f'{ex} The statement id is not valid. Is this still a statement in GovReady?')
 
     try:
         historical_smt = smt.history.get(history_id=history_id)
         # saving historical statement as a new instance
         historical_smt.instance.save()
-        logger.info(f"Restoring the current statement with an id of {smt_id} to version with a history id of {history_id}")
-        messages.add_message(request, messages.INFO, f'Successfully restored the statement to version history {history_id}')
+        logger.info(
+            f"Restoring the current statement with an id of {smt_id} to version with a history id of {history_id}")
+        messages.add_message(request, messages.INFO,
+                             f'Successfully restored the statement to version history {history_id}')
 
         # Diff between most recent and the historical record
         full_smt_history = smt.history.all()
@@ -844,8 +845,8 @@ def restore_to_history(request, smt_id, history_id):
         delta = historical_record.diff_against(recent_record)
         for change in delta.changes:
             logger.info("{} changed from {} to {}".format(change.field, change.old, change.new))
-    except:
-        messages.add_message(request, messages.ERROR, f'This record is not in the system. Is this still a statement record in GovReady?')
+    except ObjectDoesNotExist as ex:
+        messages.add_message(request, messages.ERROR, f'{ex} Is this still a statement record in GovReady?')
 
 
 
