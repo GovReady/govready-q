@@ -803,9 +803,9 @@ def statement_history(request, smt_id=None):
 
     return render(request, "controls/statement_history.html", context)
 
-def revert_to_history(request, smt_id, history_id):
+def restore_to_history(request, smt_id, history_id):
     """
-    Revert the current model instance to a previous version
+    Restore the current model instance to a previous version
     """
 
     smt = Statement.objects.get(id=smt_id)
@@ -814,8 +814,8 @@ def revert_to_history(request, smt_id, history_id):
 
     # saving historical statement as a new instance
     historical_smt.instance.save()
-    logger.info(f"Reverting the current statement with an id of {smt_id} to version with a history id of {history_id}")
-    messages.add_message(request, messages.INFO, f'Successfully reverted the statement to version history {history_id}')
+    logger.info(f"Restoring the current statement with an id of {smt_id} to version with a history id of {history_id}")
+    messages.add_message(request, messages.INFO, f'Successfully Restored the statement to version history {history_id}')
 
     # Diff between most recent and the historical record
     all_hist = smt.history.all()

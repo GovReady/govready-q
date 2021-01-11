@@ -40,7 +40,7 @@
 
                 </div>
                 <div class="panel-footer right-text">
-                    <a href="{% url 'revert_to' smt_id=smt_record.id history_id=smt_record.history_id %}" name="revert" class="btn btn-xs btn-primary">Revert</a>
+                    <a href="{% url 'restore_to' smt_id=smt_record.id history_id=smt_record.history_id %}" name="restore" class="btn btn-xs btn-primary">Restore</a>
                 </div>
             </div>
         </div>
