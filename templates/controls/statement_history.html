@@ -5,46 +5,36 @@
 {% load q %}
 
 {% block body %}
-    <div class="jumbotron text-center"><h1>Statement Version History for {{ statement.0.sid }}.{{ statement.0.pid }}</h1>
-        <h2> (This statement comes from the {{ statement.0.producer_element.name }} component)</h2>
+
+    <div class="container">
+        <h1 class="text-center"><u>Statement Version History for {{ statement.0.sid }}.{{ statement.0.pid }}</u></h1>
+        <h3 class="text-center"> (This statement comes from the {{ statement.0.producer_element.name }} component)</h3><br>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Original statement id</th>
+                <th>Version history id</th>
+                <th>Date created</th>
+                <th>Version statement body</th>
+                <th>Restore to this version</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if statement %}
+                {% for smt_record in statement %}
+                    <tr>
+                        <td>{{ smt_record.id }}</td>
+                        <td>{{ smt_record.history_id }}</td>
+                        <td>{{ smt_record.history_date }}</td>
+                        <td>{{ smt_record.body }}</td>
+                        <td><a href="{% url 'restore_to' smt_id=smt_record.id history_id=smt_record.history_id %}" name="restore" class="btn btn-xs btn-primary">Restore</a></td>
+                    </tr>
+                {% endfor %}
+             {% else %}
+            <div>Somehow there is no statement history for this statement please contact your GovReady administrator.</div>
+             {% endif %}
+
+            </tbody>
+        </table>
     </div>
-    {% for smt_record in statement %}
-        <div id="panel-{{ forloop.counter }}" class="panel panel-default col-sm-6">
-            <div class="panel-heading" id="statement-{{ forloop.counter }}-title">
-                <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
-                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#statement-{{ forloop.counter }}-body" aria-expanded="true" aria-controls="statement-{{ forloop.counter }}-body">
-                        <span id="panel-heading-smt statement-{{ forloop.counter }}-heading">{% if forloop.first %}<strong>Current</strong>{% endif %} Statement</span>
-                    </a>
-                </h4>
-            </div>
-
-            <div id="statement-{{ forloop.counter }}-body" class="panel-collapse in" role="tabpanel" aria-labelledby="statement-{{ forloop.counter }}-title">
-                <div class="panel-body">
-                    <div class="col-sm-4">
-                        <label for="statement">Original statement id: </label>
-                        <div>{{ smt_record.id }}</div>
-                    </div>
-                    <div class="col-sm-4">
-                        <label for="statement">Version history id: </label>
-                        <div>{{ smt_record.history_id }}</div>
-                    </div>
-                    <div class="col-sm-4">
-                        <label for="statement">Date created: </label>
-                        <div>{{ smt_record.history_date }}</div>
-                    </div>
-                    <div class="col-sm-12">
-                        <label for="statement">Version statement body: </label>
-                        <div>{{ smt_record.body }}</div>
-                    </div>
-
-
-                </div>
-                <div class="panel-footer right-text">
-                    <a href="{% url 'restore_to' smt_id=smt_record.id history_id=smt_record.history_id %}" name="restore" class="btn btn-xs btn-primary">Restore the version</a>
-                </div>
-            </div>
-        </div>
-
-    {% endfor %}
-
 {% endblock %}
