@@ -1,4 +1,6 @@
+import logging
 import requests
+import structlog
 import parsel
 from random import sample
 import re
@@ -11,6 +13,9 @@ from siteapp.urls import urlpatterns
 from django.urls.exceptions import Resolver404 as Resolver404
 
 from siteapp.models import *
+
+logging.basicConfig()
+logger = get_logger()
 
 class WebClient():
     session = None
@@ -45,7 +50,7 @@ class WebClient():
                     self._use_page(match.func(req, *match.args, **match.kwargs))
                     return
             except Resolver404:
-                pass
+                logger.error(event="_resolve_path", msg="404: Failed to resolve url request path")
         raise Exception("{} not resolved".format(req.path))
 
     def load(self, path):

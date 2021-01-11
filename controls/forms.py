@@ -88,3 +88,4 @@ class ImportOSCALComponentForm(forms.Form):
         required=False
     )
     json_content = forms.CharField(label='OSCAL (JSON)', widget=forms.Textarea())
+    import_name = forms.CharField(label='Import File Name', widget=forms.HiddenInput(), required=False)

@@ -236,6 +236,10 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         file_input = self.find_selected_option('input#id_file')
         self.filepath_conversion(file_input, oscal_json_path, "sendkeys")
 
+        element_count_before_import = Element.objects.filter(element_type="system_element").count()
+        statement_count_before_import = Statement.objects.filter(
+            statement_type="control_implementation_prototype").count()
+
         # Verify that the contents got copied correctly from the file to the textfield
         try:
             # Load contents from file
@@ -253,19 +257,19 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element('input#import_component_submit')
 
-        element_count = Element.objects.filter(uuid='123456a7-b890-1234-cd56-e789fa012bcd').count()
-        self.assertEqual(element_count, 0)
+        element_count_after_import = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count_before_import, element_count_after_import)
 
-        statement1_count = Statement.objects.filter(uuid='1ab2c345-67d8-9e0f-1234-5a6bcd789efa').count()
-        self.assertEqual(statement1_count, 0)
-
-        statement2_count = Statement.objects.filter(uuid='2bc3d456-78e9-0f1a-2345-6b7cde890fab').count()
-        self.assertEqual(statement2_count, 0)
+        statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count_before_import, statement_count_after_import)
 
     def test_component_import_oscal_json(self):
         self._login()
         url = self.url(f"/controls/components")
         self.browser.get(url)
+
+        element_count_before_import = Element.objects.filter(element_type="system_element").count()
+        statement_count_before_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
 
         # Test initial import of Component(s) and Statement(s)
         self.click_element('a#component-import-oscal')
@@ -276,23 +280,22 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element('input#import_component_submit')
 
-        element_count = Element.objects.filter(element_type="system_element").count()
-        self.assertEqual(element_count, 2)
+        var_sleep(3) # Wait for OSCAL to be imported
 
-        statement_count = Statement.objects.filter(statement_type="control_implementation_prototype").count()
-        self.assertEqual(statement_count, 4)
+        element_count_after_import = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count_before_import + 2, element_count_after_import)
 
-        # Verify that statements without a proper Catalog don't get entered
-        bad_catalog_statement_count = Statement.objects.filter(uuid='1bb0b252-90d3-4d2c-9785-0c4efb254dfc').count()
-        self.assertEqual(bad_catalog_statement_count, 0)
+        statement_count_after_import = Statement.objects.filter(statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count_before_import + 4, statement_count_after_import)
+        # Test file contains 6 Statements, but only 4 get imported
+        # because one has an improper Catalog
+        # and another has an improper Control
+        # but we can't test individual statements because the UUIDs are randomly generated and not consistent
+        # with the OSCAL JSON file. So we simply do a count.
 
-        # Verify that statements without a proper Control don't get entered
-        bad_control_id_statement_count = Statement.objects.filter(uuid='3bb0b252-90d3-4d2c-9785-0c4efb254dfc').count()
-        self.assertEqual(bad_control_id_statement_count, 0)
+        var_sleep(3) # Needed to allow page to refresh and messages to render
 
-        var_sleep(1) # Needed to allow page to refresh and messages to render
-
-        # Test that duplicate Components and Statements are not re-imported
+        # Test that duplicate Components are re-imported with a different name and that Statements get reimported
         self.click_element('a#component-import-oscal')
         file_input = self.find_selected_option('input#id_file')
         # Using converted keys from above
@@ -300,11 +303,21 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
 
         self.click_element('input#import_component_submit')
 
-        element_count = Element.objects.filter(element_type="system_element").count()
-        self.assertEqual(element_count, 2)
+        var_sleep(3) # Wait for OSCAL to be imported
 
-        statement_count = Statement.objects.filter(statement_type="control_implementation_prototype").count()
-        self.assertEqual(statement_count, 4)
+        element_count_after_duplicate_import = Element.objects.filter(element_type="system_element").count()
+        self.assertEqual(element_count_after_import + 2, element_count_after_duplicate_import)
+
+        original_import_element_count = Element.objects.filter(name='Test OSCAL Component1').count()
+        self.assertEqual(original_import_element_count, 1)
+
+        duplicate_import_element_count = Element.objects.filter(name='Test OSCAL Component1 (1)').count()
+        self.assertEqual(duplicate_import_element_count, 1)
+
+        statement_count_after_duplicate_import = Statement.objects.filter(
+            statement_type="control_implementation_prototype").count()
+        self.assertEqual(statement_count_after_import + 4, statement_count_after_duplicate_import)
+
 
     def test_import_tracker(self):
         """Tests that imports are tracked correctly."""
@@ -520,13 +533,16 @@ class ElementUnitTests(TestCase):
         """Test renaming an element"""
 
         # Create an element
-        e = Element.objects.create(name="Element A", full_name="Element A FN", element_type="component")
-        self.assertTrue(e.id is not None)
-        self.assertTrue(e.name == "Element A")
+        e = Element.objects.create(name="Element A", full_name="Element A Full Name",description="Element A Description",element_type="component")
+        self.assertIsNotNone(e.id)
+        self.assertEqual(e.name, "Element A")
+        self.assertEqual(e.description, "Element A Description")
         e.save() 
         e.name = "Renamed Element A"
+        e.description = "Renamed Element A Description"
         e.save()
-        self.assertTrue(e.name == "Renamed Element A")
+        self.assertEqual(e.name, "Renamed Element A")
+        self.assertEqual(e.description, "Renamed Element A Description")
 
 class SystemUnitTests(TestCase):
     def test_system_create(self):

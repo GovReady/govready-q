@@ -1,5 +1,9 @@
 from collections import ChainMap
 from itertools import chain
+import logging
+import structlog
+from structlog import get_logger
+from structlog.stdlib import LoggerFactory
 from typing import Dict
 
 from django.conf import settings
@@ -16,15 +20,10 @@ from guardian.shortcuts import (assign_perm, get_objects_for_user,
 from controls.models import System, Element, OrgParams
 from jsonfield import JSONField
 
-import logging
 logging.basicConfig()
-import structlog
-from structlog import get_logger
-from structlog.stdlib import LoggerFactory
 structlog.configure(logger_factory=LoggerFactory())
 structlog.configure(processors=[structlog.processors.JSONRenderer()])
 logger = get_logger()
-# logger = logging.getLogger(__name__)
 
 
 class User(AbstractUser):
@@ -215,7 +214,8 @@ class User(AbstractUser):
         try:
             del profile["picture"]["content_dataurl"]
         except:
-            pass
+            logger.warning(event="render_context_dict",
+                msg="Failed to delete profile picture content_dataurl")
 
         # Add username to profile
         profile["username"] = self.username
