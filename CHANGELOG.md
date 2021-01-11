@@ -1,17 +1,44 @@
 GovReady-Q Release Notes
 ========================
 
-v.999 (December XX, 2020)
+v.999 (January XX, 2021)
 --------------------------------
+
+**IMPORTANT**
+
+ADMIN NOTE: New users registering in your GovReady instance PRIOR TO THIS VERSION may not see any Compliance Apps when starting a project. This bug has been fixed, but ADMINS MUST ADD PERMISSION  "guidedmodules | app source | can view app source" TO EACH USER TO FIX PERMISSIONS FOR EXISTING USERS. SEE DJANGO ADMIN CUSTOMER ACTION "add_viewappsource_permission" TO ADD SELECTIVELY ADD THIS PERMISSION TO USERS.
+
+**Bug fixes**
+
+* New non-admin users did not have the permission to view appsource. Added permission after the new user is created with the SignupForm from allauth.account.forms.
+
+v.999 (December XX, 2020)
+-------------------------
+
+**Data changes**
+
+* Add `validators` argument to the `file` field in the Attachment model.
+
+**UI changes**
+
+* Added error messages for any files that fail validation for Comment Attachment uploads
+
+**Developer changes**
+
+* Update various Python libraries
+* Added file extension, size and type  validation for Comment Attachment uploads
+* Introducing request profiling with pyinstrument
 
 **Feature changes**
 
 * Track batch imports of components (via OSCAL) into component library for tracking and management purposes; enable deletes of batch imports.
 * Support defining multiple allowed hosts via the `local/environment.json` file.
-* Allow administrators to change component name in Component Library.
+* Allow administrators to change component name and description in Component Library.
 * Existing projects can be moved between existing portfolios.
 * Edit existing portfolio's title and description.
 * Delete existing portfolio.
+* Add default Organizational Defined Parameter values.
+* Add an autocomplete in component library to look up controls across multiple catalogs for writing a control implementation statement.
 
 **UI changes**
 
@@ -21,6 +48,7 @@ v.999 (December XX, 2020)
 * Add "Move Project" action button on project page to move project to a different portfolio.
 * Add "Edit Portofolio" links on portfolio page for editing portfolio details and deleting portfolio.
 * Conditionally show button to delete portfolio if portfolio is empty and user has permission to change portfolio.
+* Support a Select2 autocomplete dropdown selection box in the component library to assign a control when authoring a new component control implementation statement for a component in the library.
 
 **Developer changes**
 
@@ -28,6 +56,11 @@ v.999 (December XX, 2020)
 * New routes and views related for tracking batch imports of components (via OSCAL) into component library.
 * Fix OSCAL component import to use "statement" JSON property.
 * Support defining multiple allowed hosts via the `local/environment.json` file via new `allowed_hosts` environment parameter.
+* Added route `controls/api/controlsselect/` and view `api_controls_select` to get list of controls.
+* Modified view `save_smt` to just save prototype statement when statement is being created in the component library.
+* Modified template `templates/components/element_detail_tabs.html` to use jQuery select2 for autocomplete and search of catalog of controls to add a control to a component.
+* Update hidden sid_class field with catalog human readable name. Add hidden field `form_source` to identufy to save smt view that we are receiving form submission from component library.
+* Add 'label' value to `oscal.Catalog.cx.get_flattened_controls_all_as_dict`.
 
 **Bug fixes**
 
@@ -93,6 +126,7 @@ Fix tests so they execute successfully in CircleCI.
 
 * Add `copy` method to `Element` data model to create a new element (e.g. component) as a copy of existing component.
 * Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`.
+* Add default Organizational Defined Parameter values in `controls/data/org_defined_parameters`.
 
 **Bug fixes**
 
@@ -171,6 +205,7 @@ Example:
 * Update various libraries. See changes in `requirements.txt`.
 * Removed instance of using sys.stderr and replaced with logger for proper logging.
 * Fix tests so they execute successfully in CircleCI.
+* Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 
 **Other**
 
@@ -244,6 +279,7 @@ v0.9.1.45.1 (November 5, 2020)
 
 * Update various Python libraries (#1052)
 * Update jquery to 3.5.1, quill to 1.3.7, bootstrap to 3.4.1 (#1052)
+
 
 v0.9.1.45 (October 24, 2020)
 ----------------------------

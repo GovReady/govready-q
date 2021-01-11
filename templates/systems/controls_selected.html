@@ -110,8 +110,8 @@
 {% block scripts %}
 <script>
   function show_control_by_id() {
-    var control_id = $('#control_lookup').find('input[name="id"]').val();
-    var url = "/controls/"+"800-53"+"/"+control_id+"/";
+    var control_id = $('#control-lookup').find('input[name="id"]').val();
+    var url = "/systems/{{ system.id }}/controls/catalogs/{{ control_id.oscal_catalog_key }}/control/" + control_id;
     window.location.href = url;
   }
 

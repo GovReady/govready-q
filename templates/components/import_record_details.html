@@ -24,8 +24,10 @@
       <a class="btn" href="{% url 'import_records' %}">&#171; Back to All Import Records</a>
     </div>
 
-    <h2>Import Record: {{ import_record.id }}</h2>
+    <h2>Import Record ID: {{ import_record.id }}</h2>
+    <h3>{{ import_record.name }}</h3>
     <h3>{{ import_record.created }}</h3>
+    <br>
 
   {% if component_statements|length > 0 %}
     <p>This import includes {{ component_statements|length }} components{{ component|pluralize }}.</p>
