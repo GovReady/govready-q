@@ -37,6 +37,7 @@ v.999 (December XX, 2020)
 * Existing projects can be moved between existing portfolios.
 * Edit existing portfolio's title and description.
 * Delete existing portfolio.
+* Add default Organizational Defined Parameter values.
 * Add an autocomplete in component library to look up controls across multiple catalogs for writing a control implementation statement.
 
 **UI changes**
@@ -125,6 +126,7 @@ Fix tests so they execute successfully in CircleCI.
 
 * Add `copy` method to `Element` data model to create a new element (e.g. component) as a copy of existing component.
 * Add `statements` method to `Element` data model to produce a list of statements of a particular `statement_type`.
+* Add default Organizational Defined Parameter values in `controls/data/org_defined_parameters`.
 
 **Bug fixes**
 
@@ -203,6 +205,7 @@ Example:
 * Update various libraries. See changes in `requirements.txt`.
 * Removed instance of using sys.stderr and replaced with logger for proper logging.
 * Fix tests so they execute successfully in CircleCI.
+* Add default `controls.models.OrgParams` class to support basic, default generation of orgizational defined parameters.
 
 **Other**
 

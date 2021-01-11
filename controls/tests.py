@@ -22,7 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from controls.models import System
 from controls.models import STATEMENT_SYNCHED, STATEMENT_NOT_SYNCHED, STATEMENT_ORPHANED
 from controls.views import OSCALComponentSerializer
-from siteapp.models import User
+from siteapp.models import User, Organization, OrganizationalSetting
 from siteapp.tests import SeleniumTest, var_sleep, OrganizationSiteFunctionalTests
 from system_settings.models import SystemSettings
 from .models import *
@@ -158,6 +158,7 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         self.system = System()
         self.system.root_element = root_element
         self.system.save()
+
         project = self.org.get_organization_project()
         project.system = self.system
         project.save()
@@ -607,6 +608,96 @@ class PoamUnitTests(TestCase):
         poam.save()
         # poam.delete()
         # self.assertTrue(poam.uuid is None)
+
+class OrgParamTests(TestCase):
+    """Class for OrgParam Unit Tests"""
+
+    def test_org_params(self):
+        odp = OrgParams()
+        self.assertIn('mod_fedramp', odp.get_names())
+        odp53 = odp.get_params("mod_fedramp")
+        self.assertTrue('at least every 3 years' == odp53['ac-1_prm_2'])
+        self.assertEqual(177, len(odp53))
+
+    def test_catalog_all_controls_with_organizational_parameters(self):
+        odp = OrgParams()
+        self.assertIn('mod_fedramp', odp.get_names())
+        odp53 = odp.get_params("mod_fedramp")
+        # parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
+        parameter_values = odp53
+        cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
+                                 parameter_values=parameter_values)
+        cg_flat = cg.get_flattened_controls_all_as_dict()
+        control = cg_flat['ac-1']
+        description = control['description']
+        self.assertTrue('at least every 3 years' in description, description)
+
+    def test_organizational_parameters_via_project(self):
+
+        # for this test, we need a Project, System, and Organization
+
+        # REMIND: it would be nice to refactor all this setup code so
+        # it could be easily reused ...
+        
+        from guidedmodules.models import AppSource
+        from guidedmodules.management.commands.load_modules import Command as load_modules
+        
+        AppSource.objects.all().delete()
+        AppSource.objects.get_or_create(
+            slug="system",
+            is_system_source=True,
+            defaults={
+                "spec": { # required system projects
+                    "type": "local",
+                    "path": "fixtures/modules/system",
+                }
+            }
+        )
+        load_modules().handle() # load system modules
+
+        AppSource.objects.create(
+            slug="project",
+            spec={ # contains a test project
+                "type": "local",
+                "path": "fixtures/modules/other",
+            },
+            trust_assets=True
+        )\
+            .add_app_to_catalog("simple_project")
+
+        user = User.objects.create(
+            username="me",
+            email="test+user@q.govready.com",
+            is_staff=True
+        )
+        org = Organization.create(name="Our Organization", slug="testorg",
+                                  admin_user=user)
+
+        root_element = Element(name="My Root Element",
+                               description="Description of my root element")
+        root_element.save()
+
+        system = System()
+        system.root_element = root_element
+        system.save()
+
+        project = org.get_organization_project()
+        project.system = system
+        project.save()
+
+        parameter_values = project.get_parameter_values(Catalogs.NIST_SP_800_53_rev4)
+        self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 3 years")
+
+        # now, add an organizational setting and try again
+        OrganizationalSetting.objects.create(organization=org, 
+                                             catalog_key=Catalogs.NIST_SP_800_53_rev4,
+                                             parameter_key="ac-1_prm_2", 
+                                             value="at least every 100 years")
+        
+        # we should now see the organizational setting override
+        parameter_values = project.get_parameter_values(Catalogs.NIST_SP_800_53_rev4)
+        self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 100 years")
+
 
 class ControlComponentTests(OrganizationSiteFunctionalTests):
 

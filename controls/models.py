@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import json
 from django.db import models
@@ -12,6 +13,7 @@ from copy import deepcopy
 from django.db import transaction
 
 BASELINE_PATH = os.path.join(os.path.dirname(__file__),'data','baselines')
+ORGPARAM_PATH = os.path.join(os.path.dirname(__file__),'data','org_defined_parameters')
 
 class ImportRecord(models.Model):
     name = models.CharField(max_length=100, help_text="File name of the import", unique=False, blank=True, null=True)
@@ -620,6 +622,47 @@ class Baselines (object):
     @property
     def body(self):
         return self.legacy_imp_smt
+
+class OrgParams(object):
+    """
+    Represent list of organizational defined parameters. Temporary
+    class to work with default org params.
+    """
+    
+    _singleton = None
+    
+    def __new__(cls):
+        if cls._singleton is None:
+            cls._singleton = super(OrgParams, cls).__new__(cls)
+            cls._singleton.init()
+            
+        return cls._singleton
+    
+    def init(self):
+        global ORGPARAM_PATH
+        self.cache = {}
+
+        path = Path(ORGPARAM_PATH)
+        for f in path.glob("*.json"):
+            name, values = self.load_param_file(f)
+            if name in self.cache:
+                raise Exception("Duplicate default organizational parameters name {} from {}".format(name, f))
+            self.cache[name] = values
+    
+    def load_param_file(self, path):
+        with path.open("r") as json_file:
+            data = json.load(json_file)
+            if 'name' in data and 'values' in data:
+                return (data["name"], data["values"])
+            else:
+                raise Exception("Invalid organizational parameters file {}".format(path))
+                
+    def get_names(self):
+        return self.cache.keys()
+    
+    def get_params(self, name):
+        return self.cache.get(name, {})
+
 
 class Poam(models.Model):
     statement = models.OneToOneField(Statement, related_name="poam", unique=False, blank=True, null=True, on_delete=models.CASCADE, help_text="The Poam details for this statement. Statement must be type Poam.")

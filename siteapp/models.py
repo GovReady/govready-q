@@ -1,3 +1,4 @@
+from collections import ChainMap
 from itertools import chain
 import logging
 import structlog
@@ -16,7 +17,7 @@ from django.utils import crypto, timezone
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
-from controls.models import System, Element
+from controls.models import System, Element, OrgParams
 from jsonfield import JSONField
 
 logging.basicConfig()
@@ -403,7 +404,7 @@ class Organization(models.Model):
 
         settings = self.organizationalsetting_set.filter(catalog_key=catalog_key)
         return dict((setting.parameter_key, setting.value) for setting in settings)
-    
+
 class OrganizationalSetting(models.Model):
     """
     Captures an organizationally-defined setting for a parameterized control
@@ -1224,13 +1225,26 @@ class Project(models.Model):
         return True
 
 
+    def get_default_parameter_name(self):
+        # TODO: using 'mod_fedramp', but somehow we need to determine
+        # the correct name 
+        return "mod_fedramp"
+
     def get_parameter_values(self, catalog_id) -> Dict[str, str]:
         """
         Return a dictionary of organizational settings for a given catalog identifier.
-        Delegates to the project's organization.
+        Default values come from the baseline controls.models.OrgParams;
+        each Organization can override via OrganizationalSettings.
         """
 
-        return self.organization.get_parameter_values(catalog_id)
+        # start with the baseline defaults
+        default_params = OrgParams().get_params(self.get_default_parameter_name())
+
+        # get the organizational settings into dict form
+        org_params = self.organization.get_parameter_values(catalog_id)
+
+        # merge and return
+        return ChainMap(org_params, default_params)
 
 class ProjectMembership(models.Model):
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE, help_text="The Project this is defining membership for.")
