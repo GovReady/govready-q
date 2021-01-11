@@ -12,22 +12,20 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th>Original statement id</th>
-                <th>Version history id</th>
+                <th>Version id</th>
                 <th>Date created</th>
-                <th>Version statement body</th>
-                <th>Restore to this version</th>
+                <th>Statement body</th>
+                <th>Action</th>
             </tr>
             </thead>
             <tbody>
             {% if statement %}
                 {% for smt_record in statement %}
                     <tr>
-                        <td>{{ smt_record.id }}</td>
-                        <td>{{ smt_record.history_id }}</td>
-                        <td>{{ smt_record.history_date }}</td>
+                        <td class="col-xs-1 col-sm-1 col-md-1">{{ smt_record.history_id }}</td>
+                        <td class="col-xs-2 col-sm-2 col-md-2">{{ smt_record.history_date }}</td>
                         <td>{{ smt_record.body }}</td>
-                        <td><a href="{% url 'restore_to' smt_id=smt_record.id history_id=smt_record.history_id %}" name="restore" class="btn btn-xs btn-primary">Restore</a></td>
+                        <td class="col-xs-1 col-sm-1 col-md-1">{% if forloop.first %} {#This is the current version#} {% else %}<a href="{% url 'restore_to' smt_id=smt_record.id history_id=smt_record.history_id %}" name="restore" class="btn btn-xs btn-primary">Restore to this version</a>{% endif %}</td>
                     </tr>
                 {% endfor %}
              {% else %}
