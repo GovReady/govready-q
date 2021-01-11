@@ -806,9 +806,14 @@ def import_component(request):
 def statement_history(request, smt_id=None):
     """Returns the history for the given statement"""
     from controls.models import Statement
+    full_smt_history = None
+    try:
+        smt = Statement.objects.get(id=smt_id)
+        full_smt_history = smt.history.all()
 
-    smt_smt = Statement.objects.get(id=smt_id)
-    full_smt_history = smt_smt.history.all()
+    except:
+        messages.add_message(request, messages.ERROR, f'The statement id is not valid. Is this still a statement in GovReady?')
+
     context = {"statement": full_smt_history}
 
     return render(request, "controls/statement_history.html", context)
@@ -817,26 +822,33 @@ def restore_to_history(request, smt_id, history_id):
     """
     Restore the current model instance to a previous version
     """
+    full_smt_history = None
+    try:
+        smt = Statement.objects.get(id=smt_id)
+        recent_smt = smt.history.first()
+    except:
+        messages.add_message(request, messages.ERROR, f'The statement id is not valid. Is this still a statement in GovReady?')
 
-    smt = Statement.objects.get(id=smt_id)
-    recent_smt = smt.history.first()
-    historical_smt = smt.history.get(history_id=history_id)
+    try:
+        historical_smt = smt.history.get(history_id=history_id)
+        # saving historical statement as a new instance
+        historical_smt.instance.save()
+        logger.info(f"Restoring the current statement with an id of {smt_id} to version with a history id of {history_id}")
+        messages.add_message(request, messages.INFO, f'Successfully restored the statement to version history {history_id}')
 
-    # saving historical statement as a new instance
-    historical_smt.instance.save()
-    logger.info(f"Restoring the current statement with an id of {smt_id} to version with a history id of {history_id}")
-    messages.add_message(request, messages.INFO, f'Successfully restored the statement to version history {history_id}')
+        # Diff between most recent and the historical record
+        full_smt_history = smt.history.all()
+        recent_record = full_smt_history.filter(history_id=recent_smt.history_id).first()
+        historical_record = full_smt_history.filter(history_id=historical_smt.history_id).first()
 
-    # Diff between most recent and the historical record
-    all_hist = smt.history.all()
-    recent_record = all_hist.filter(history_id=recent_smt.history_id).first()
-    historical_record = all_hist.filter(history_id=historical_smt.history_id).first()
+        delta = historical_record.diff_against(recent_record)
+        for change in delta.changes:
+            logger.info("{} changed from {} to {}".format(change.field, change.old, change.new))
+    except:
+        messages.add_message(request, messages.ERROR, f'This record is not in the system. Is this still a statement record in GovReady?')
 
-    delta = historical_record.diff_against(recent_record)
-    for change in delta.changes:
-        logger.info("{} changed from {} to {}".format(change.field, change.old, change.new))
 
-    full_smt_history = smt.history.all()
+
     context = {
         "history_id": history_id,
         "smt_id": smt_id,
