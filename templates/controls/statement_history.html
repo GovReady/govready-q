@@ -8,44 +8,43 @@
     <div class="jumbotron text-center"><h1>Statement Version History for {{ statement.0.sid }}.{{ statement.0.pid }}</h1>
         <h2> (This statement comes from the {{ statement.0.producer_element.name }} component)</h2>
     </div>
-    <div>
+    {% for smt_record in statement %}
+        <div id="panel-{{ forloop.counter }}" class="panel panel-default col-sm-6">
+            <div class="panel-heading" id="statement-{{ forloop.counter }}-title">
+                <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
+                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#statement-{{ forloop.counter }}-body" aria-expanded="true" aria-controls="statement-{{ forloop.counter }}-body">
+                        <span id="panel-heading-smt statement-{{ forloop.counter }}-heading">{% if forloop.first %}<strong>Current</strong>{% endif %} Statement</span>
+                    </a>
+                </h4>
+            </div>
 
-        {% for smt_record in statement %}
-            <div id="panel-{{ forloop.counter }}" class="panel panel-default">
-                <div class="panel-heading" role="tabx" id="document-{{ forloop.counter }}-title">
-                    <h4 id="panel-{{ forloop.counter }}-title" class="panel-title">
-                        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#document-{{ forloop.counter }}-body" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="document-{{ forloop.counter }}-body">
-                            <span id="producer_element-{{ forloop.counter }}-title">{% if forloop.first %}<strong>Current</strong>{% endif %} Statement</span>
-                            <div class="panel-heading-smt"></div>
-                        </a>
-                    </h4>
-                </div>
-
-                <div id="document-{{ forloop.counter }}-body" class="panel-collapse {% if forloop.first %}in{% endif %}" role="tabpanel" aria-labelledby="document-{{ forloop.counter }}-title">
-                    <div class="panel-body">
-                                <div>
-                                    <label for="statement">Original statement id: </label>
-                                    <div>{{ smt_record.id }}</div>
-                                </div>
-                                <div>
-                                    <label for="statement">Version history id: </label>
-                                    <div>{{ smt_record.history_id }}</div>
-                                </div>
-                                <div>
-                                    <label for="statement">Version statement body: </label>
-                                    <div>{{ smt_record.body }}</div>
-                                </div>
-                                <label for="statement">Date created: </label>
-                                <div>{{ smt_record.history_date }}</div>
-                        <div class="modal-footer">
-                            <a href="{% url 'revert_to' smt_id=smt_record.id history_id=smt_record.history_id %}" name="revert" class="btn btn-xs btn-primary">Revert</a>
-                        </div>
-                        </form>
+            <div id="statement-{{ forloop.counter }}-body" class="panel-collapse in" role="tabpanel" aria-labelledby="statement-{{ forloop.counter }}-title">
+                <div class="panel-body">
+                    <div class="col-sm-4">
+                        <label for="statement">Original statement id: </label>
+                        <div>{{ smt_record.id }}</div>
                     </div>
+                    <div class="col-sm-4">
+                        <label for="statement">Version history id: </label>
+                        <div>{{ smt_record.history_id }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <label for="statement">Date created: </label>
+                        <div>{{ smt_record.history_date }}</div>
+                    </div>
+                    <div class="col-sm-12">
+                        <label for="statement">Version statement body: </label>
+                        <div>{{ smt_record.body }}</div>
+                    </div>
+
+
+                </div>
+                <div class="panel-footer right-text">
+                    <a href="{% url 'revert_to' smt_id=smt_record.id history_id=smt_record.history_id %}" name="revert" class="btn btn-xs btn-primary">Revert</a>
                 </div>
             </div>
-            </div>
-        {% endfor %}
+        </div>
 
+    {% endfor %}
 
 {% endblock %}
