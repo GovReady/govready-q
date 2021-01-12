@@ -365,8 +365,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         current_path = urlparse(self.browser.current_url).path
         self.assertEqual('/controls/components', current_path)
 
-<<<<<<< HEAD
-=======
         import_records_count = ImportRecord.objects.all().count()
         self.assertEqual(import_records_count, 1)
         component_count = Element.objects.filter(import_record=import_record).count()
@@ -403,7 +401,6 @@ class ComponentUITests(OrganizationSiteFunctionalTests):
         # Asserts that the edit button element is not found on the page
         self.assertTrue(len(self.browser.find_elements_by_css_selector('#edit-button'))<1)
 
->>>>>>> develop
 class StatementUnitTests(TestCase):
     ## Simply dummy test ##
     def test_tests(self):
@@ -617,17 +614,6 @@ class OrgParamTests(TestCase):
 
     def test_org_params(self):
         odp = OrgParams()
-<<<<<<< HEAD
-        self.assertIn('org_params_low_fedramp', odp.odp_keys)
-        odp53 = odp._load_json('org_params_mod_fedramp')
-        self.assertTrue('at least every 3 years' == odp53['ac-1_prm_2'])
-        self.assertEqual(177, len(odp.get_org_params('org_params_mod_fedramp')))
-
-    def test_catalog_all_controls_with_organizational_parameters(self):
-        odp = OrgParams()
-        self.assertIn('org_params_low_fedramp', odp.odp_keys)
-        odp53 = odp._load_json('org_params_mod_fedramp')
-=======
         self.assertIn('mod_fedramp', odp.get_names())
         odp53 = odp.get_params("mod_fedramp")
         self.assertTrue('at least every 3 years' == odp53['ac-1_prm_2'])
@@ -637,7 +623,6 @@ class OrgParamTests(TestCase):
         odp = OrgParams()
         self.assertIn('mod_fedramp', odp.get_names())
         odp53 = odp.get_params("mod_fedramp")
->>>>>>> develop
         # parameter_values = { 'ac-1_prm_2': 'every 12 parsecs' }
         parameter_values = odp53
         cg = Catalog.GetInstance(Catalogs.NIST_SP_800_53_rev4,
@@ -647,8 +632,6 @@ class OrgParamTests(TestCase):
         description = control['description']
         self.assertTrue('at least every 3 years' in description, description)
 
-<<<<<<< HEAD
-=======
     def test_organizational_parameters_via_project(self):
 
         # for this test, we need a Project, System, and Organization
@@ -715,8 +698,6 @@ class OrgParamTests(TestCase):
         parameter_values = project.get_parameter_values(Catalogs.NIST_SP_800_53_rev4)
         self.assertEquals(parameter_values["ac-1_prm_2"], "at least every 100 years")
 
-
->>>>>>> develop
 class ControlComponentTests(OrganizationSiteFunctionalTests):
 
     def create_test_statement(self, sid, sid_class, body, statement_type, status):
