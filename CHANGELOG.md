@@ -4,7 +4,8 @@ GovReady-Q Release Notes
 v.999 (January xx, 2021)
 -----------------------------
 
-
+* You can now click the history button in a given statement's panel in the controls selected implementation statement page or component library.
+* You can now import and export a project from a project's page or its settings page.
 
 v.0.9.1.49 (January 12, 2021)
 -----------------------------

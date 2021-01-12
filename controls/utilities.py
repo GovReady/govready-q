@@ -93,8 +93,8 @@ def get_control_statement_part(control_stmnt_id):
     return split_stmnt[1] if len(split_stmnt) > 1 else ""
 
 
-def increment_component_name(component_name):
-    """Increments a Component Name by adding (1)"""
+def increment_element_name(component_name):
+    """Increments an Element's name to avoid naming conflicts for a system or component"""
 
     if re.search("\((\d+)\)$", component_name):
         new_component_name = re.sub("\((\d+)\)$", lambda m: " (" + str(int(m.groups()[0])+1) + ")", component_name)
