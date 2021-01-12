@@ -950,18 +950,18 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         self.assertEqual(Project.objects.all().count(), 3)
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 0)
 
-        ## Update currentproject
+        ## Update current project
         # click import project button, opening the modal
         self.click_element("#action-buttons\ action-row > div.btn-group > button:nth-child(4)")
         ## select through the modal information needed and browse for the import needed
         self.select_option_by_visible_text("#id_appsource_compapp", "project")
-        try:
-            self.select_option_by_visible_text("#id_appsource_version_id", "<project/simple_project(3)>")
-        except:
-            self.select_option_by_visible_text("#id_appsource_version_id", "<project/simple_project(9)>")
 
+        # The selection variable found by id
+        select = Select(self.browser.find_element_by_id("id_appsource_version_id"))
+        # Select the last option by index
+        selectLen = len(select.options)
+        select.select_by_index(selectLen - 1)
 
-        #self.browser.find_element_by_id("id_file").click()
         file_input = self.browser.find_element_by_css_selector("#id_file")
 
         file_path = os.getcwd() + "/fixtures/test_project_import_data.json"
