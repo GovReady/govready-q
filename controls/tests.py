@@ -943,7 +943,7 @@ class ImportExportProjectTests(OrganizationSiteFunctionalTests):
         # Check the new number of projects, and validate that it's 1 more than the previous count.
         self.assertEqual(Project.objects.all().count(), project_count_before_import + 1)
         # Has the correct name?
-        self.assertEqual(Project.objects.get(id=[project_count_after_import - 1]).title, "New Test Project")
+        self.assertEqual(Project.objects.get(id=project_count_after_import).title, "New Test Project")
         # Components and their statements?
         self.assertEqual(Element.objects.all().exclude(element_type='system').count(), 1)
         self.assertEqual(Statement.objects.all().count(), 3)
