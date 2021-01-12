@@ -99,7 +99,7 @@ COPY siteapp ./siteapp
 COPY templates ./templates
 COPY fixtures ./fixtures
 COPY q-files ./q-files
-COPY testmocking ./testmocking
+COPY loadtesting ./loadtesting
 COPY system_settings ./system_settings
 COPY manage.py .
 COPY install-govready-q.sh .

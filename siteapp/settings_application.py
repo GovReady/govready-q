@@ -17,7 +17,7 @@ INSTALLED_APPS += [
     'controls',
     'system_settings',
 
-    'testmocking',
+    'loadtesting',
 ]
 
 
