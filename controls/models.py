@@ -6,6 +6,8 @@ from django.utils.functional import cached_property
 from guardian.shortcuts import (assign_perm, get_objects_for_user,
                                 get_perms_for_model, get_user_perms,
                                 get_users_with_perms, remove_perm)
+from simple_history.models import HistoricalRecords
+
 from .oscal import Catalogs, Catalog
 import uuid
 import tools.diff_match_patch.python3 as dmp_module
@@ -59,7 +61,7 @@ class Statement(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="A UUID (a unique identifier) for this Statement.")
     import_record = models.ForeignKey(ImportRecord, related_name="import_record_statements", on_delete=models.CASCADE,
                                       unique=False, blank=True, null=True, help_text="The Import Record which created this Statement.")
-
+    history = HistoricalRecords(cascade_delete_history=True)
     class Meta:
         indexes = [models.Index(fields=['producer_element'], name='producer_element_idx'),]
         permissions = [('can_grant_smt_owner_permission', 'Grant a user statement owner permission'),]

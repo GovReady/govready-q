@@ -3,6 +3,17 @@ GovReady-Q Release Notes
 
 v.999 (January XX, 2021)
 --------------------------------
+**Data changes**
+
+* Add `history` field in the Statement model. This is the source for the new HistoricalStatement table that captures all Statement history.
+
+**UI changes**
+
+* You can now click the history button in a given statement's panel in the controls selected implementation statement page or component library.
+
+**Developer changes**
+
+* Introducing model history tracking with django-simple-history
 
 **IMPORTANT**
 
