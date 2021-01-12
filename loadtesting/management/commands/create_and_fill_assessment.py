@@ -41,16 +41,12 @@ class Command(BaseCommand):
             initial_task_count = Task.objects.count()
 
             echo_section('Adding system...')
-            sys_t0 = time.time()
             call_command('add_system', '--username', admin.username, '--org', org_slug)
             delay()
-            sys_t1 = time.time()
 
             echo_section('Adding assessments...')
-            assess_t0 = time.time()
             call_command('start_section', '--to-completion', '--username', admin.username, '--org', org_slug, '--delay', options['action_delay'])
             delay()
-            assess_t1 = time.time()
             echo_section('Adding assessments...')
 
             current_task_count = Task.objects.count()
@@ -58,16 +54,9 @@ class Command(BaseCommand):
             # only do the newly-added tasks. (should probably rejigger this so it doesn't rely on checking count)
             task_ids = ','.join([str(x) for x in range(initial_task_count, current_task_count)])
 
-            ans_t0 = time.time()
             echo_section('Prepping assessments (tasks, pass #1)...')
             call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org_slug, '--delay', options['action_delay'], '--task_ids', task_ids)
             delay()
 
             echo_section('Filling assessments (tasks, pass #2)...')
             call_command('answer_all_tasks', '--quiet', '--impute', 'answer', '--org', org_slug, '--delay', options['action_delay'], '--task_ids', task_ids)
-            ans_t1 = time.time()
-            # with open('benchmark.tmp', 'a') as file:
-            #     file.write("add_system: {} sec\n".format(sys_t1 - sys_t0))
-            #     file.write("start_section: {} sec\n".format(assess_t1 - assess_t0))
-            #     file.write("answer_all_tasks: {} sec\n".format(ans_t1 - ans_t0))
-            #     file.write("\n")
